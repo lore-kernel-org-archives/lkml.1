@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbXFNRpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbXFNRqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbXFNRpy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 13:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbXFNRpq
+	id S1755194AbXFNRqP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 13:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXFNRps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 13:45:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52923 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750771AbXFNRpp (ORCPT
+	Thu, 14 Jun 2007 13:45:48 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:37642 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314AbXFNRpr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 13:45:45 -0400
-Date: Thu, 14 Jun 2007 10:44:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <20070614171504.GT3588@stusta.de>
-Message-ID: <alpine.LFD.0.98.0706141036460.14121@woody.linux-foundation.org>
-References: <466A3EC6.6030706@netone.net.tr> <200706132140.13490.dhazelton@enter.net>
- <20070614020827.GO3588@stusta.de> <200706132243.14651.dhazelton@enter.net>
- <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu>
- <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
- <20070614171504.GT3588@stusta.de>
+	Thu, 14 Jun 2007 13:45:47 -0400
+Date: Thu, 14 Jun 2007 10:46:42 -0700
+From: Greg KH <greg@kroah.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm 4/7] PM: Remove suspend and resume support from
+	struct device_type
+Message-ID: <20070614174642.GB10378@kroah.com>
+References: <200706131551.51336.rjw@sisk.pl> <3ae72650706131520m3091d04et31b1db64be692385@mail.gmail.com> <200706140010.03438.dtor@insightbb.com> <200706141437.16267.rjw@sisk.pl> <d120d5000706140559h10461e50q2f30ff423468676e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d120d5000706140559h10461e50q2f30ff423468676e@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 14 Jun 2007, Adrian Bunk wrote:
+On Thu, Jun 14, 2007 at 08:59:20AM -0400, Dmitry Torokhov wrote:
+>  On 6/14/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Thursday, 14 June 2007 06:10, Dmitry Torokhov wrote:
+> > > On Wednesday 13 June 2007 18:20, Kay Sievers wrote:
+> > > > Dmitry, you added this recently, is this used in any code you plan to
+> > > > merge soon?
+> > > >
+> > >
+> > > Yes, I will need it to implement input device resume (mainly to restore 
+> > LED
+> > > state and repeat rate for keyboards).
+> >
+> > Would that be a big problem to reintroduce it along with the user?
+> >
 > 
-> I'm wondering more and more why you choose the GPL and not the BSD 
-> licence for the Linux kernel...
+>  Yes because that part is in Greg's domain so I am trying to set
+>  infrastructure up before I can commit my patches into my tree so that
+>  Andrew can safely pull from me into -mm. Greg normally adds such stuff
+>  during merge window so that means if we remove it now we'd need ~2
+>  releases to get it and the user back in.
 
-Why do people confuse "anti-GPLv3" with "pro-BSD"?
+Yes, don't worry, I'm not going to remove this as I know you rely on it.
 
-What's the logic?
+Sorry for the delay in getting to these patches, I'm in meetings down in
+CA for the rest of the week...
 
-The BSD license is not doing tit-for-tat. It doesn't give me anything 
-back. I don't believe in that kind of model. So I'd not use it for my 
-projects.
+thanks,
 
-The GPLv2 has a good balance. It encourages tit-for-tat, and it makes sure 
-that the software is kept free. And it doesn't try to force anything else, 
-or play politics. The only thing you have to believe in is "tit-for-tat".
-
-The GPLv3 goes too far. It's no longer "tit-for-tat", it's "our software 
-is worth _soo_ much, that we want to force you to behave well, or you 
-cannot use it".
-
-I think one of the above licenses are good. The fact that I reject the 
-GPLv3 in _no_ way implies that I should like the BSD license. Both the BSD 
-license and the GPLv3 are flawed - they are just flawed in fundamentally 
-different ways.
-
-So the whole question of "why don't you use he BSD license then" is just 
-fundamentally bogus. A license is about a *balance* of things. "Fairness" 
-is not about laissez-faire (BSD) or about total-control (GPLv3). To me, 
-It's about something in the middle, where people give back in kind.
-
-And btw, that "to me" is important. 
-
-Different people have different opinions. That's _fine_. Use the GPLv3 for 
-your projects. Go wild. Use the BSD license. It's your choice. 
-
-But by the same token, it was _my_ choice (and it was an informed choice) 
-to use the GPLv2. 
-
-And to then come in fifteen years later and call me "confused" about a 
-license I've chosen is a damn affront to me. I'm not confused. Somebody 
-else may be, but it's not me.
-
-		Linus
+greg k-h
