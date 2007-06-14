@@ -1,132 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbXFNEp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbXFNE6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbXFNEp1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 00:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbXFNEpT
+	id S1753303AbXFNE6r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 00:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbXFNE6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 00:45:19 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:56739 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750975AbXFNEpS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 00:45:18 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Bongani Hlope <bhlope@mweb.co.za>
+	Thu, 14 Jun 2007 00:58:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53942 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984AbXFNE6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 00:58:38 -0400
+To: Bron Gondwana <brong@fastmail.fm>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Adams <cmadams@hiwaay.net>,
+       linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 06:44:25 +0200
-User-Agent: KMail/1.9.7
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br> <200706140215.54179.bhlope@mweb.co.za>
-In-Reply-To: <200706140215.54179.bhlope@mweb.co.za>
+References: <fa.khBgzvPDXYj45cntZBDPf6OM0jQ@ifi.uio.no>
+	<fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no>
+	<fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no>
+	<fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no>
+	<fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no>
+	<20070614013214.GA1124293@hiwaay.net>
+	<20070614025248.6e0f72f0@the-village.bc.nu>
+	<20070614041041.GA6788@brong.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 01:58:26 -0300
+In-Reply-To: <20070614041041.GA6788@brong.net> (Bron Gondwana's message of "Thu\, 14 Jun 2007 14\:10\:41 +1000")
+Message-ID: <orsl8vi13h.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1284544.hfIq8RzoeR";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706140644.50109.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181796318;12acdc61;
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1284544.hfIq8RzoeR
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Jun 14, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
 
-> > > The fact is, Tivo didn't take those rights away from you, yet the FSF
-> > > says that what Tivo did was "against the spirit". That's *bullshit*.
-> >
-> > Oh, good, let's take this one.
-> >
-> >   if you distribute copies of such a program, [...]
-> >   you must give the recipients all the rights that you have
-> >
-> > So, TiVo includes a copy of Linux in its DVR.
-> >
->=20
-> And they give you the same right that they had, which is obtain free soft=
-ware=20
-> that you can modify and redistribute. There's nothing in there that says =
-they=20
-> should give you the tools they used after they received the software, whi=
-ch=20
-> is what you seem to be looking for.
+> Tivo gets sick of the endless flamewars on lkml, signs a copy
+> of QNX, pushes it out to the hardware.  No more Linux on Tivo.
 
-IANAL so I won't comment on the legal aspects of TiVo's doing.
+What do we lose?
 
-However it definitely is against _MY_ understanding of the spirit
-of the GPL. At least to me that's quite obvious. I'm sure you all
-know the story of the printer driver RMS couldn't fix that reportedly
-made him start the whole FSF business.
+Do we actually get any benefit whatsoever from TiVO's choice of Linux
+as the kernel for its device?
 
-Looking at what TiVo did I realize glaring similarities.
+Do TiVO customers lose anything from the change from one non-Free
+software to another?  (the Linux binary, as shipped in the TiVO, has
+become non-Free)
 
-<disclaimer>
-I'm in no way related with the FSF. I hereby state I'm not parroting
-anyone's else position but have come to this conclusion solely on
-my own.
-</disclaimer>
-
-> > TiVo retains the right to modify that copy of Linux as it sees fit.
-> >
-> > It doesn't give the recipients the same right.
->=20
-> It does, can't you modify their kernel source? Where does it say you shou=
-ld be=20
-> able to run you modifications on the same hardware?
-
-Come on! The whole idea of software is to have it run on some HW.
-Why would I want to change it in the first place if I can't run it ?
-
-If what they did is actually allowed by the wording of the legal phrases
-of the GPLv2 then that IMO is a loophole w/r to the spirit (as I understand)
-it and IMO should be plugged.
-
-> The only fear that I have with the whole Tivo saga, is that companies lik=
-e=20
-> Dell can use the same thing to say: "Our hardware will only run Company's=
- X=20
-> distribution of Linux".=20
-
-Would not such a restriction voilate the spirit of the GPL ?
-
-Anyway, my simplistic view is:
-Once it is under the GPL I could change it and actually make the
-changes work as I see fit.
-
-That's what I think my freedom as of the GPL is about.
-
-Now all that needs to be done is make sure the legal phrases are such
-that they convince the judges they actually mean this in court too.
-
-Best wishes,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
-
---nextPart1284544.hfIq8RzoeR
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGcMfCUYYhyuxDQc4RAgfPAJ4iLI1KnRtHZcUR6iJsiMbZAe1lawCeM4IF
-vwufmKrYVVQpSdL+X29Klx4=
-=0jtN
------END PGP SIGNATURE-----
-
---nextPart1284544.hfIq8RzoeR--
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
