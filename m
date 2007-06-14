@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXFNV1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbXFNV2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbXFNV1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXFNV1r
+	id S1756492AbXFNV2q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbXFNV2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:27:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48618 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbXFNV1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:27:46 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+	Thu, 14 Jun 2007 17:28:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59660 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751522AbXFNV2h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 17:28:37 -0400
+Date: Thu, 14 Jun 2007 14:27:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<20070614073232.GB22543@linux-sh.org>
-	<ormyz2fp8p.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706141617.46734.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 18:27:27 -0300
-In-Reply-To: <200706141617.46734.dhazelton@enter.net> (Daniel Hazelton's message of "Thu\, 14 Jun 2007 16\:17\:46 -0400")
-Message-ID: <or645q9qgw.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+In-Reply-To: <orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr> <200706132140.13490.dhazelton@enter.net>
+ <20070614020827.GO3588@stusta.de> <200706132243.14651.dhazelton@enter.net>
+ <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu>
+ <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
+ <20070614131409.9a5800dc.seanlkml@sympatico.ca>
+ <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org>
+ <orzm32cr8v.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706141153550.14121@woody.linux-foundation.org>
+ <or1wgeco9v.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706141311330.14121@woody.linux-foundation.org>
+ <orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-> <somewhat sarcastic>
-> And the companies that produce devices that come with Linux and/or
-> other GPL'd software installed and place limits such that only
-> people that have purchased that hardware have access to the
-> "modified" source running on the device are following the letter,
-> and the spirit, of the GPL.
 
-WAIT, WAIT, THAT'S... :-)
+On Thu, 14 Jun 2007, Alexandre Oliva wrote:
 
-> Before you start yelling I'm wrong, think about it this way: they
-> make the source available to the people that they've given binary
-> versions to, and there is nothing stopping one of those people from
-> making the source available to the rest of the world.
+> On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> > No. I'm not stupid.
+> >
+> > The GPLv3 explicitly allows removing additional permissions.
+> 
+> So what?  You just refrain from accepting contributions that attempt
+> to remove them, and you'll keep TiVO happy.
 
-The *only* in your sentence betrayed you.
+You really aren't thinking, are you?
 
-If they place the limits such that nobody else can access the sources,
-they're in violation of the license.
+It's not about keeping Tivo happy. It's about keeping *me* happy. That's 
+my primary (only) motivation for a license.
 
-If they merely refrain from distributing the sources to others, but
-still enable the recipients to do so, this is not a violation of the
-license.
+And let's go back to why I selected the GPLv2 in the first place, shall 
+we?
 
-But then IANAL.
+I want to be able to use other peoples improvements. If they release 
+improved versions of the software I started, I want to be able to merge 
+those improvements if I want to.
 
-> *AND* the GPL has never been about making the source available to
-> everyone - just to those that get the binaries.
+Your *IDIOTIC* suggestion is explicitly against the whole POINT! By saying 
+that I shouldn't accept contributions like that, you just INVALIDATED the 
+whole point of the license in the first place!
 
-Exactly.  Not even to the upstream distributor.  That's where Linus'
-theory of tit-for-tat falls apart.
+Can you really not see that?
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+		Linus
