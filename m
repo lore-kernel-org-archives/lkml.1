@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbXFNP42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbXFNQAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752805AbXFNP42 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 11:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbXFNP4O
+	id S1753308AbXFNQAZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 12:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbXFNQAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 11:56:14 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:27950 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751992AbXFNP4L (ORCPT
+	Thu, 14 Jun 2007 12:00:15 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:58825 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752243AbXFNQAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 11:56:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G7gaMXhRjs6rVkMt/AbA9yhzFt0ki4VfSN1wfbr5ndfiEyt3sgQQAKGP5tzh/vHEqpWnubN3YlXDl1uvOa9DanD+4D0Y0j/OlgV6cGrbfMw3IvHoKq3uU05DGvpYONvabspMsQRS/tWdDlwwerAb8rL+inT27UZRgNa4ASH9ZKQ=
-Message-ID: <d120d5000706140856s5fdb29c6j1b53cafc291f8ec1@mail.gmail.com>
-Date: Thu, 14 Jun 2007 11:56:10 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Alexandre Oliva" <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Daniel Hazelton" <dhazelton@enter.net>,
-       "Bongani Hlope" <bhlope@mweb.co.za>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
-       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, "Tarkan Erimer" <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
-In-Reply-To: <orps3zghgo.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 14 Jun 2007 12:00:13 -0400
+Date: Thu, 14 Jun 2007 08:59:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com, iss_storagedev@hp.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] cciss: force ignore of responses to unsent scsi
+ commands after kexec reboot
+Message-Id: <20070614085924.258f9426.randy.dunlap@oracle.com>
+In-Reply-To: <20070614153119.GC32137@hmsreliant.homelinux.net>
+References: <20070614153119.GC32137@hmsreliant.homelinux.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	 <200706132108.50030.dhazelton@enter.net>
-	 <orlkenjnxm.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <200706140125.24815.dtor@insightbb.com>
-	 <orps3zghgo.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/14/07, Alexandre Oliva <aoliva@redhat.com> wrote:
-> On Jun 14, 2007, Dmitry Torokhov <dtor@insightbb.com> wrote:
->
-> > On Wednesday 13 June 2007 21:59, Alexandre Oliva wrote:
-> >> For example, if you distribute copies of such a program, whether
-> >> gratis or for a fee, you must give the recipients
-> >> all the rights that you have.
-> >> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->
-> > So if I am a sole author of a program and I chose to distribute it under
-> > GPL
->
-> then you're not a licensee, you're a licensor, and these terms don't
-> apply to you.
+On Thu, 14 Jun 2007 11:31:19 -0400 Neil Horman wrote:
 
-Heh. When you change a GPLed program and pass your changes you are the
-licensor for the new code. You still have a right and license pieces
-of the code you wrote under different license but you do not pass that
-right to recepient of modified work.
+> Hey -
+> 	cciss hardware currently can continue to send responses to scsi commands
+> after the host system has undergone a kexec reboot.  The way the drier is
+> currently written, reception of these commands results in a BUG halt, since it
+> can't match the response to any issued command since the boot.  This patch
+> corrects that by using the kexec reset_devices command line paramter to force
+> ignore any commands that it cant correlate.
+> 
+> Regards
+> Neil
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> 
+>  cciss.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> 
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> index 5acc6c4..ec1c1d2 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -2131,6 +2131,14 @@ static int add_sendcmd_reject(__u8 cmd, int ctlr, unsigned long complete)
+>  		       ctlr, complete);
+>  		/* not much we can do. */
+>  #ifdef CONFIG_CISS_SCSI_TAPE
+> +		/* We might get notification of completion of commands
+> +		 * which we never issued in this kernel if this boot is
+> +		 * taking place after previous kernel's crash. Simply
+> +		 * ignore the commands in this case.
+> +		 */
+> +		if (reset_devices)
+> +			return 0;
+> +
+>  		return 1;
+>  	}
 
--- 
-Dmitry
+But this patch applies only to SCSI tape devices, not to
+disk devices?
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
