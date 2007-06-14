@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbXFNOdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbXFNOiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593AbXFNOdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 10:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbXFNOdH
+	id S1752625AbXFNOiI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 10:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbXFNOh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 10:33:07 -0400
-Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:38806
-	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751681AbXFNOdG (ORCPT
+	Thu, 14 Jun 2007 10:37:56 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:57467 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbXFNOh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 10:33:06 -0400
+	Thu, 14 Jun 2007 10:37:56 -0400
+Date: Thu, 14 Jun 2007 10:37:23 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] sched: fix SysRq-N (normalize RT tasks)
+In-reply-to: <20070614135106.GA8325@elte.hu>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Bernd Paysan <bernd.paysan@gmx.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<20070614112329.3645c397@the-village.bc.nu>
-	<20070614103846.GA7902@elte.hu>
-	<200706141328.00798.bernd.paysan@gmx.de>
-	<20070614132457.GB29423@elte.hu>
-From: Michael Poole <mdpoole@troilus.org>
-Date: Thu, 14 Jun 2007 10:33:04 -0400
-In-Reply-To: <20070614132457.GB29423@elte.hu> (Ingo Molnar's message of "Thu\, 14 Jun 2007 15\:24\:57 +0200")
-Message-ID: <87bqfi38tb.fsf@graviton.dyn.troilus.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Chris Wright <chrisw@sous-sol.org>
+Message-id: <200706141037.23903.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070614094830.GA494@elte.hu>
+ <200706140948.48005.gene.heskett@gmail.com> <20070614135106.GA8325@elte.hu>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+On Thursday 14 June 2007, Ingo Molnar wrote:
+>* Gene Heskett <gene.heskett@gmail.com> wrote:
+>> Ingo: I appended this patch to the cfs-v16 patch for 2.6.22-rc4, and
+>> got this while applying it:
+>>
+>> patching file kernel/sched.c
+>> Hunk #1 FAILED at 7071.
+>> Hunk #2 FAILED at 7095.
+>> 2 out of 2 hunks FAILED -- saving rejects to file kernel/sched.c.rej
+>
+>yep, this fix is already included in CFS. (in fact in CFS i also changed
+>this function to renormalizing negative-nice tasks to nice-0 - but this
+>is not something upstream has to pick up for .22.)
+>
+>	Ingo
 
-> this is largely irrelevant to my argument: the FSF is clearly trying to 
-> extend the scope of the GPL to restrict the distribution of certain 
-> hardware+software combinations. The FSF is not really arguing that the 
-> boundary between software and hardware is diffuse. (which btw. it 
-> clearly is) The FSF simply wants to be able to say via the GPLv3: "to be 
-> able to distribute GPL-ed software, the hardware is required to do this 
-> and this".
+I built it without it, but I saw something else that's been mentioned before 
+here:
 
-Most people arguing for the expansive interpretation do not really
-care what hardware is combined with what software.  They care about
-the ability for the user (in the GPLv2's terms, someone who receives
-GPL'ed software) to have comparable ability to modify and
-(re-)distribute the software as the software distributor does.  The
-issue of GPLed software on DRMed hardware applies equally to digital
-video recorders, where the hardware and software distributor are
-usually the same, and video game consoles, where they are not.
+  MODPOST vmlinux
+WARNING: arch/i386/kernel/built-in.o(.text+0x844d): Section mismatch: 
+reference to .init.text:amd_init_mtrr (between 'mtrr_bp_init' 
+and 'mtrr_save_state')
+WARNING: arch/i386/kernel/built-in.o(.text+0x8452): Section mismatch: 
+reference to .init.text:cyrix_init_mtrr (between 'mtrr_bp_init' 
+and 'mtrr_save_state')
+WARNING: arch/i386/kernel/built-in.o(.text+0x8457): Section mismatch: 
+reference to .init.text:centaur_init_mtrr (between 'mtrr_bp_init' 
+and 'mtrr_save_state')
+WARNING: arch/i386/kernel/built-in.o(.text+0x9274): Section mismatch: 
+reference to .init.text: (between 'get_mtrr_state' and 'generic_get_mtrr')
+WARNING: arch/i386/kernel/built-in.o(.text+0x9288): Section mismatch: 
+reference to .init.text: (between 'get_mtrr_state' and 'generic_get_mtrr')
+WARNING: arch/i386/kernel/built-in.o(.text+0x92ac): Section mismatch: 
+reference to .init.text: (between 'get_mtrr_state' and 'generic_get_mtrr')
 
-There is no good reason to treat a "GPL-incompatible" hardware
-platform (for example, incompatible due to restrictions on the keys to
-generate digital signatures) differently than a "GPL-incompatible"
-patent area.  If a software distributor cannot simultaneously comply
-with the GPL and his other obligations, he should either not
-distribute the software or be prepared to face the liability from
-breaching his obligations.
+Which looks a little worrisome.  Its done, so I'll see if it will boot.
 
-Michael Poole
+It did.  I had several items that failed on the shutdown, NDI why, but 
+everything seemed to restart ok.  Now to live with it for a day or so.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Netscape is not a newsreader, and probably never shall be.
+	-- Tom Christiansen
