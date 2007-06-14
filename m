@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbXFNRlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbXFNRoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbXFNRlR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 13:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbXFNRlI
+	id S1753514AbXFNRoi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 13:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbXFNRo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 13:41:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36338 "EHLO mx1.redhat.com"
+	Thu, 14 Jun 2007 13:44:29 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47744 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751074AbXFNRlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 13:41:06 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706132121.04532.dhazelton@enter.net>
-	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706132304.21984.dhazelton@enter.net>
-	<20070614112329.3645c397@the-village.bc.nu>
-	<20070614103846.GA7902@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 14:40:18 -0300
-In-Reply-To: <20070614103846.GA7902@elte.hu> (Ingo Molnar's message of "Thu\, 14 Jun 2007 12\:38\:46 +0200")
-Message-ID: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1750725AbXFNRo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 13:44:27 -0400
+Message-ID: <46717E77.3050706@garzik.org>
+Date: Thu, 14 Jun 2007 13:44:23 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: James Bottomley <James.Bottomley@SteelEye.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       htejun@gmail.com, arjan@linux.intel.com
+Subject: Re: [patch 2a/3] Expose Power Management Policy option to users
+References: <20070611184146.448266229@intel.com>	<20070611114820.5290a903.kristen.c.accardi@intel.com>	<466DA9DD.8080004@garzik.org>	<20070612104631.44dab4a3.kristen.c.accardi@intel.com>	<1181748408.3421.7.camel@mulgrave.il.steeleye.com> <20070614093952.c8ebef17.kristen.c.accardi@intel.com>
+In-Reply-To: <20070614093952.c8ebef17.kristen.c.accardi@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+Kristen Carlson Accardi wrote:
+> Ok - sorry for my ignorance about SCSI - but my sources (i.e. Arjan) tell 
+> me that the problem is that Link in ATA land means something different than 
+> Link in SCSI land, and that what I really need to do is leave this code under
+> the Host class, but rename it to something that more accurately reflects
+> what it means under SCSI.
 
-> I think the proper limit is the boundary where the limit of the
-> software is - because that's the only sane and globally workable way
-> to stop the power-hungry.
+James' analogy holds, and is even more true once SATA Port Multipliers 
+are in the picture.  Then you have remote SATA phys.  And James has 
+essentially stated a long term libata problem:  libata wants its own ATA 
+transport class, and perhaps a cleaning-up and coalescing of the 
+in-kernel SATA phy objects and processes.
 
-But see, I'm not talking about getting permission to hack the
-hardware.  I'm only talking about getting permission to hack the Free
-Software in it.
+The main difference is that SATA doesn't have to worry about target phys 
+and initiator phys, largely just the initiator phy.  And phys in SATA 
+don't have unique identifiers (WWNs).
 
-It's your position that mingles the issues and permits people to use
-the hardware to deprive users of freedom over the software that
-they're entitled to have.
+I don't think we should delay ALPM in order to complete phy objects and 
+an ATA transport class.  But OTOH a transport class may be the best 
+place to put these new sysfs nodes.  But#2, that train of logic leads 
+one down the road of implementing a minimal ATA transport class across 
+all supported ATA devices, which is something that probably only James 
+is an expert at (transport classes that is, not ATA).
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+
+> Should I rename the file to "segment_power_management_policy"?
+
+No.
+
+	Jeff
+
+
+
