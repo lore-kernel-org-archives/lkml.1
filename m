@@ -1,173 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbXFNVFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbXFNVGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbXFNVFz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXFNVFp
+	id S1756560AbXFNVGY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbXFNVGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:05:45 -0400
-Received: from mail.tmr.com ([64.65.253.246]:32901 "EHLO gaimboi.tmr.com"
+	Thu, 14 Jun 2007 17:06:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53836 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbXFNVFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:05:44 -0400
-Message-ID: <4671AD7C.4010109@tmr.com>
-Date: Thu, 14 Jun 2007 17:05:00 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1750952AbXFNVGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 17:06:14 -0400
+Date: Thu, 14 Jun 2007 23:05:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Alexandre Oliva <aoliva@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614210537.GB14076@elte.hu>
+References: <466A3EC6.6030706@netone.net.tr> <200706132121.04532.dhazelton@enter.net> <orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132304.21984.dhazelton@enter.net> <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu> <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu> <20070614203230.GS21478@ftp.linux.org.uk>
 MIME-Version: 1.0
-To: Mike Snitzer <snitzer@gmail.com>
-CC: Neil Brown <neilb@suse.de>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, nbd-general@lists.sourceforge.net,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Clements <Paul.Clements@steeleye.com>
-Subject: Re: raid1 with nbd member hangs MD on SLES10 and RHEL5
-References: <170fa0d20706121930g3b89ddeex8b31c8923d2a0ff6@mail.gmail.com>	 <18031.22930.243723.550238@notabene.brown>	 <170fa0d20706121959w480213bcvaba1b6881710379f@mail.gmail.com>	 <170fa0d20706122009h5e3db54ek7487be4940a3d780@mail.gmail.com>	 <18031.25581.353761.802283@notabene.brown>	 <170fa0d20706122130q2c77d365tbe9261bab1a5b1b@mail.gmail.com>	 <170fa0d20706131123q17e4fb9ehe6be25a07462cc30@mail.gmail.com> <170fa0d20706131630p6cd29aa5i8f51856780a9c691@mail.gmail.com>
-In-Reply-To: <170fa0d20706131630p6cd29aa5i8f51856780a9c691@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070614203230.GS21478@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Snitzer wrote:
-> On 6/13/07, Mike Snitzer <snitzer@gmail.com> wrote:
->> On 6/13/07, Mike Snitzer <snitzer@gmail.com> wrote:
->> > On 6/12/07, Neil Brown <neilb@suse.de> wrote:
->> ...
->> > > > > On 6/12/07, Neil Brown <neilb@suse.de> wrote:
->> > > > > > On Tuesday June 12, snitzer@gmail.com wrote:
->> > > > > > >
->> > > > > > > I can provided more detailed information; please just ask.
->> > > > > > >
->> > > > > >
->> > > > > > A complete sysrq trace (all processes) might help.
->>
->> Bringing this back to a wider audience.  I provided the full sysrq
->> trace of the RHEL5 kernel to Neil; in it we saw that md0_raid1 had the
->> following trace:
->>
->> md0_raid1     D ffff810026183ce0  5368 31663     11          3822 
->> 29488 (L-TLB)
->>  ffff810026183ce0 ffff810031e9b5f8 0000000000000008 000000000000000a
->>  ffff810037eef040 ffff810037e17100 00043e64d2983c1f 0000000000004c7f
->>  ffff810037eef210 0000000100000001 000000081c506640 00000000ffffffff
->> Call Trace:
->>  [<ffffffff8003e371>] keventd_create_kthread+0x0/0x61
->>  [<ffffffff801b9364>] md_super_wait+0xa8/0xbc
->>  [<ffffffff8003e711>] autoremove_wake_function+0x0/0x2e
->>  [<ffffffff801b9adb>] md_update_sb+0x1dd/0x23a
->>  [<ffffffff801bed2a>] md_check_recovery+0x15f/0x449
->>  [<ffffffff882a1af3>] :raid1:raid1d+0x27/0xc1e
->>  [<ffffffff80233209>] thread_return+0x0/0xde
->>  [<ffffffff8023279c>] __sched_text_start+0xc/0xa79
->>  [<ffffffff8003e371>] keventd_create_kthread+0x0/0x61
->>  [<ffffffff80233a9f>] schedule_timeout+0x1e/0xad
->>  [<ffffffff8003e371>] keventd_create_kthread+0x0/0x61
->>  [<ffffffff801bd06c>] md_thread+0xf8/0x10e
->>  [<ffffffff8003e711>] autoremove_wake_function+0x0/0x2e
->>  [<ffffffff801bcf74>] md_thread+0x0/0x10e
->>  [<ffffffff8003e5e7>] kthread+0xd4/0x109
->>  [<ffffffff8000a505>] child_rip+0xa/0x11
->>  [<ffffffff8003e371>] keventd_create_kthread+0x0/0x61
->>  [<ffffffff8003e513>] kthread+0x0/0x109
->>  [<ffffffff8000a4fb>] child_rip+0x0/0x11
->>
->> To which Neil had the following to say:
->>
->> > > md0_raid1 is holding the lock on the array and trying to write 
->> out the
->> > > superblocks for some reason, and the write isn't completing.
->> > > As it is holding the locks, mdadm and /proc/mdstat are hanging.
-> ...
->
->> > We're using MD+NBD for disaster recovery (one local scsi device, one
->> > remote via nbd).  The nbd-server is not contributing to md0.  The
->> > nbd-server is connected to a remote machine that is running a raid1
->> > remotely
->>
->> To take this further I've now collected a full sysrq trace of this
->> hang on a SLES10 SP1 RC5 2.6.16.46-0.12-smp kernel, the relevant
->> md0_raid1 trace is comparable to the RHEL5 trace from above:
->>
->> md0_raid1     D ffff810001089780     0  8583     51          8952  
->> 8260 (L-TLB)
->> ffff810812393ca8 0000000000000046 ffff8107b7fbac00 000000000000000a
->>        ffff81081f3c6a18 ffff81081f3c67d0 ffff8104ffe8f100 
->> 000044819ddcd5e2
->>        000000000000eb8b 00000007028009c7
->> Call Trace: <ffffffff801e1f94>{generic_make_request+501}
->>        <ffffffff8026946c>{md_super_wait+168}
->> <ffffffff80145aa2>{autoremove_wake_function+0}
->>        <ffffffff8026f056>{write_page+128} 
->> <ffffffff80269ac7>{md_update_sb+220}
->>        <ffffffff8026bda5>{md_check_recovery+361}
->> <ffffffff883a97f5>{:raid1:raid1d+38}
->>        <ffffffff8013ad8f>{lock_timer_base+27}
->> <ffffffff8013ae01>{try_to_del_timer_sync+81}
->>        <ffffffff8013ae16>{del_timer_sync+12}
->> <ffffffff802d9adf>{schedule_timeout+146}
->>        <ffffffff801456a9>{keventd_create_kthread+0}
->> <ffffffff8026d5d8>{md_thread+248}
->>        <ffffffff80145aa2>{autoremove_wake_function+0}
->> <ffffffff8026d4e0>{md_thread+0}
->>        <ffffffff80145965>{kthread+236} <ffffffff8010bdce>{child_rip+8}
->>        <ffffffff801456a9>{keventd_create_kthread+0}
->> <ffffffff80145879>{kthread+0}
->>        <ffffffff8010bdc6>{child_rip+0}
->>
->> Taking a step back, here is what was done to reproduce on SLES10:
->> 1) establish a raid1 mirror (md0) using one local member (sdc1) and
->> one remote member (nbd0)
->> 2) power off the remote machine, whereby severing nbd0's connection
->> 3) perform IO to the filesystem that is on the md0 device to enduce
->> the MD layer to mark the nbd device as "faulty"
->> 4) cat /proc/mdstat hangs, sysrq trace was collected and showed the
->> above md0_raid1 trace.
->>
->> To be clear, the MD superblock update hangs indefinitely on RHEL5.
->> But with SLES10 it eventually succeeds (and MD marks the nbd0 member
->> faulty); and the other tasks that were blocking waiting for the MD
->> lock (e.g. 'cat /proc/mdstat') then complete immediately.
->>
->> It should be noted that this MD+NBD configuration has worked
->> flawlessly using a stock kernel.org 2.6.15.7 kernel (ontop of a
->> RHEL4U4 distro).  Steps have not been taken to try to reproduce  with
->> 2.6.15.7 on SLES10; it may be useful to pursue but I'll defer to
->> others to suggest I do so.
->>
->> 2.6.15.7 does not have the SMP race fixes that were made in 2.6.16;
->> yet both SLES10 and RHEL5 kernels do:
->> http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=4b2f0260c74324abca76ccaa42d426af163125e7 
->>
->>
->> If not this specific NBD change, something appears to have changed
->> with how NBD behaves in the face of it's connection to the server
->> being lost.  Almost like the MD superblock update that would be
->> written to nbd0 is blocking within nbd or the network layer because of
->> a network timeout issue?
->
-> Just a quick update; it is really starting to look like there is
-> definitely an issue with the nbd kernel driver.  I booted the SLES10
-> 2.6.16.46-0.12-smp kernel with maxcpus=1 to test the theory that the
-> nbd SMP fix that went into 2.6.16 was in some way causing this MD/NBD
-> hang.  But it _still_ occurs with the 4-step process I outlined above.
->
-First, running an smp kernel with maxcpus=1 is not the same as running a 
-uni kernel, not is nosmp option. The code is different.
 
-Second, AFAIK nbd hasn't working in a while. I haven't tried it in ages, 
-but was told it wouldn't work with smp and I kind of lost interest. If 
-Neil thinks it should work in 2.6.21 or later I'll test it, since I have 
-a machine which wants a fresh install soon, and is both backed up and 
-available.
-> The nbd0 device _should_ feel an NBD_DISCONNECT because the nbd-server
-> is no longer running (the node it was running on was powered off)...
-> however the nbd-client is still connected to the kernel (meaning the
-> kernel didn't return an error back to userspace).
-> Also, MD is still blocking waiting to write the superblock (presumably
-> to nbd0). 
+* Al Viro <viro@ftp.linux.org.uk> wrote:
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+> On Thu, Jun 14, 2007 at 09:55:17PM +0200, Ingo Molnar wrote:
+> > This "right to modify" and "have the same rights as the hardware maker" 
+> > arguments are _totally_ bogus, they were made up after the fact, just 
+> > because quite apparently RMS had a fit over Tivo and started this verbal 
+> > (and legal) vendetta. The FSF is now attempting to rewrite history and 
+> > pretends that this "always was in the GPLv2" and applies this newly 
+> > thought up concept to the GPLv3 in a way that substantially departs from 
+> > the spirit of the GPLv2. Which spirit the GPLv2 explicitly promised to 
+> > uphold in Section 9. Which could make any contrary section of the GPLv3 
+> > unenforceable, when applied to "GPLv2 or later" licensed software.
+> 
+> That, BTW, is perhaps the worst problem with v2 (inherited by v3). WTF 
+> _is_ "the spirit of the license" and who gets to decide if two 
+> licenses are in the same spirit? [...]
 
+yeah. I see this as: "RMS does not want to let go of the community". 
+This clause amounts to "power to relicense" _vast_ amounts of free 
+software and this is by far the worst problem with the "GPLv3 process".
+
+The GPLv3 process was pretended to be "open", but regardless of what the 
+"GPL comittees" said, in the end it was one person: the president of the 
+FSF (Richard Stallman) who singlehandedly decided what went into the 
+GPLv3 draft and what not. For example he singlehandedly has ignored all 
+the criticism that the the "Tivo" section has received.
+
+And note how hypocritic RMS's position is here. Where is that freedom 
+when it comes to the licensing process? Why does RMS have more rights 
+over modifications to the license than all the other free software 
+developers have? Should not he give that freedom to others too? Shouldnt 
+there be a fair and just election, a vote? You know, that democracy 
+thing.
+
+And with his current attitude he affects somewhere around of 1 billion 
+lines of free software. Via a license that is just a few hunded lines 
+long.
+
+I believe RMS should accept the fact that most of that code was written 
+without people having bought into his ideology, and he should accept 
+_responsibility_ for the power he has acquired by genius or by accident 
+(your choice) and he should try to _understand_ how those people tick - 
+instead of trying to further his own personal agenda.
+
+He shouldnt say what amounts to "oh, my original intent was this and 
+that, if you didnt understand it and still wrote code and used the 
+default 'or later' license, it's your damn fault".
+
+He should accept that what happened happened, after he wrote 100,000 
+lines of original GNU code another ten thousand people wrote about a 
+_ten thousand times more_ code. He should also accept that the "open 
+source" community is about many other things, and it is alot more varied 
+than his thinking is. He does not have to _like_ Tivo, but he should try 
+to _understand_ them, and he should be compassionate about other 
+people's right to have their own opinion and their own approaches to 
+freedom. It is very clear that he has not even attempted to do that so 
+far.
+
+And the best way to start would be to significantly limit the 'same 
+spirit' clause by putting in something like this:
+
+ 'in the event of a section of this license being rules unenforceable by 
+  a court of law the FSF has the option to modify the license in the 
+  most minimal fashion to make that section enforceable again'.
+
+but this would mean RMS would have to give up power irreversibly. Will 
+that ever happen?
+
+	Ingo
