@@ -1,165 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbXFNRcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbXFNRdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbXFNRcG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 13:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbXFNRb4
+	id S1754689AbXFNRdf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 13:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbXFNRdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 13:31:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43672 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbXFNRbz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 13:31:55 -0400
-Date: Thu, 14 Jun 2007 18:31:53 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: linux-kernel@vger.kernel.org, npiggin@suse.de, mark.fasheh@oracle.com,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: iov_iter_fault_in_readable fix
-Message-ID: <20070614173153.GA14771@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	linux-kernel@vger.kernel.org, npiggin@suse.de,
-	mark.fasheh@oracle.com, linux-ext4@vger.kernel.org, xfs@oss.sgi.com
-References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net> <20070613134005.GA13815@localhost.sw.ru> <20070613135759.GD13815@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070613135759.GD13815@localhost.sw.ru>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 14 Jun 2007 13:33:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47656 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751229AbXFNRdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 13:33:24 -0400
+Message-ID: <46717BE2.3000703@garzik.org>
+Date: Thu, 14 Jun 2007 13:33:22 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Nigel Kukard <nkukard@lbsd.net>
+CC: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: SATA problems
+References: <8vX5T-4hg-5@gated-at.bofh.it> <8w0n1-15u-27@gated-at.bofh.it> <467173C4.1050500@lbsd.net>
+In-Reply-To: <467173C4.1050500@lbsd.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 05:57:59PM +0400, Dmitriy Monakhov wrote:
->  	Function prerform check for signgle region, with out respect to
->  	segment nature of iovec, For example writev no longer works :)
+Nigel Kukard wrote:
+>>> I'm stumped trying to track down the below intermittent problem.....
+>>>
+>>> I've confirmed this problem on 2.6.19, 2.6.20 and 2.6.21.
 
-Btw, could someone please start to collect all sniplets like this in
-a nice simple regression test suite?  If no one wants to start a new
-one we should probably just put it into xfsqa (which should be useable
-for other filesystems aswell despite the name)
+>>> Jun 14 07:55:52 nigel-m2v kernel: ata2.00: exception Emask 0x0 SAct 0x0
+>>> SErr 0x0 action 0x2 frozen
+>>> Jun 14 07:55:52 nigel-m2v kernel: ata2.00: cmd
+>>> ca/00:18:87:e7:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 12288 out
+>>> Jun 14 07:55:52 nigel-m2v kernel:          res
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> Jun 14 07:55:52 nigel-m2v kernel: ata2: soft resetting port
+>>> Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
+>>> 0x0001c807
+>>> Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
+>>> 0x0001c807
+>>> Jun 14 07:56:22 nigel-m2v kernel: ata2.00: qc timeout (cmd 0xef)
+>>> Jun 14 07:56:22 nigel-m2v kernel: ata2.00: failed to set xfermode
+>>> (err_mask=0x4)
 
-> 
-> 	/* TESTCASE BEGIN */
-> 	#include <stdio.h>
-> 	#include <sys/types.h>
-> 	#include <sys/stat.h>
-> 	#include <fcntl.h>
-> 	#include <sys/uio.h>
-> 	#include <sys/mman.h>
-> 	#define SIZE  (4096 * 2)
-> 	int main(int argc, char* argv[])
-> 	{	
-> 		char* ptr[4];
-> 		struct iovec iov[2];
-> 		int fd, ret;
-> 		ptr[0] = mmap(NULL, SIZE, PROT_READ|PROT_WRITE,
-> 			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-> 		ptr[1] = mmap(NULL, SIZE, PROT_NONE,
-> 			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-> 		ptr[2] = mmap(NULL, SIZE, PROT_READ|PROT_WRITE,
-> 			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-> 		ptr[3] = mmap(NULL, SIZE, PROT_NONE, 
-> 			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-> 
-> 		iov[0].iov_base = ptr[0] + (SIZE -1);
-> 		iov[0].iov_len = 1;
-> 		memset(ptr[0], 1, SIZE);
-> 
-> 		iov[1].iov_base = ptr[2];
-> 		iov[1].iov_len = SIZE;
-> 		memset(ptr[2], 2, SIZE);
-> 
-> 		fd = open(argv[1], O_CREAT|O_RDWR|O_TRUNC, 0666);
-> 		ret = writev(fd, iov, sizeof(iov) / sizeof(struct iovec));
-> 		return 0;
-> 	}	
-> 	/* TESTCASE END*/
-> 	We will get folowing result:
-> 		writev(3, [{"\1", 1}, {"\2"..., 8192}], 2) = -1 EFAULT (Bad address)
->  	
-> 	this is hidden bug, and it was invisiable because XXXX_fault_in_readable
->  	return value was ignored before. Lets iov_iter_fault_in_readable
->  	perform checks for all segments.
-> 
-> Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
-> 
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index fef19fc..7e025ea 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -433,7 +433,7 @@ size_t iov_iter_copy_from_user_atomic(struct page *page,
->  size_t iov_iter_copy_from_user(struct page *page,
->  		struct iov_iter *i, unsigned long offset, size_t bytes);
->  void iov_iter_advance(struct iov_iter *i, size_t bytes);
-> -int iov_iter_fault_in_readable(struct iov_iter *i, size_t bytes);
-> +int iov_iter_fault_in_readable(struct iov_iter *i, size_t *bytes);
->  size_t iov_iter_single_seg_count(struct iov_iter *i);
->  
->  static inline void iov_iter_init(struct iov_iter *i,
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index 8d59ed9..8600c3e 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -1817,10 +1817,32 @@ void iov_iter_advance(struct iov_iter *i, size_t bytes)
->  }
->  EXPORT_SYMBOL(iov_iter_advance);
->  
-> -int iov_iter_fault_in_readable(struct iov_iter *i, size_t bytes)
-> +int iov_iter_fault_in_readable(struct iov_iter *i, size_t* bytes)
->  {
-> -	char __user *buf = i->iov->iov_base + i->iov_offset;
-> -	return fault_in_pages_readable(buf, bytes);
-> +	size_t len = *bytes;
-> +	int ret;
-> +	if (likely(i->nr_segs == 1)) {
-> +		ret = fault_in_pages_readable(i->iov->iov_base, len);
-> +		if (ret)
-> +			*bytes = 0;
-> +	} else {
-> +		const struct iovec *iov = i->iov;
-> +		size_t base = i->iov_offset;
-> +		*bytes = 0;
-> +		while (len) {
-> +			int copy = min(len, iov->iov_len - base);
-> +			if ((ret = fault_in_pages_readable(iov->iov_base + base, copy)))
-> +				break;
-> +			*bytes += copy;
-> +			len -= copy;
-> +			base += copy;
-> +			if (iov->iov_len == base) {
-> +				iov++;
-> +				base = 0;
-> +			}
-> +		}
-> +	}
-> +	return ret;	
->  }
->  EXPORT_SYMBOL(iov_iter_fault_in_readable);
->  
-> @@ -2110,7 +2132,7 @@ static ssize_t generic_perform_write_2copy(struct file *file,
->  		 * to check that the address is actually valid, when atomic
->  		 * usercopies are used, below.
->  		 */
-> -		if (unlikely(iov_iter_fault_in_readable(i, bytes))) {
-> +		if (unlikely(iov_iter_fault_in_readable(i, &bytes) && !bytes)) {
->  			status = -EFAULT;
->  			break;
->  		}
-> @@ -2284,7 +2306,7 @@ again:
->  		 * to check that the address is actually valid, when atomic
->  		 * usercopies are used, below.
->  		 */
-> -		if (unlikely(iov_iter_fault_in_readable(i, bytes))) {
-> +		if (unlikely(iov_iter_fault_in_readable(i, &bytes)&& !bytes)) {
->  			status = -EFAULT;
->  			break;
->  		}
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
----end quoted text---
+>> Try 2.6.22-rc4-gitX...
+
+> Is there a patch in particular I can maybe apply? I see you made a
+> couple of commits ... my problem is this is also happening on one of my
+> production boxes which has a few other patches applied, I'm a bit scared
+> of conflicts ... I don't really want to break anything by upgrading the
+> kernel.
+
+The two most relevant git commits:
+
+commit 51b94d2a5a90d4800e74d7348bcde098a28f4fb3
+Author: Tejun Heo <htejun@gmail.com>
+Date:   Fri Jun 8 13:46:55 2007 -0700
+
+     sata_promise: use TF interface for polling NODATA commands
+
+commit 464cf177df7727efcc5506322fc5d0c8b896f545
+Author: Tejun Heo <htejun@gmail.com>
+Date:   Sun May 27 15:10:40 2007 +0200
+
+     libata: always use polling SETXFER
+
+If you have a git tree local to you, "git-diff-tree -p $COMMIT" will 
+extract a patch, otherwise click "raw" after surfing to 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=$COMMIT
+
+Regards,
+
+	Jeff
+
+
