@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbXFNUu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbXFNUzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbXFNUu7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbXFNUuv
+	id S1753466AbXFNUzw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbXFNUzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:50:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55377 "EHLO mx1.redhat.com"
+	Thu, 14 Jun 2007 16:55:45 -0400
+Received: from bee.hiwaay.net ([216.180.54.11]:36099 "EHLO bee.hiwaay.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750941AbXFNUuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:50:50 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	id S1750775AbXFNUzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 16:55:44 -0400
+Date: Thu, 14 Jun 2007 15:55:41 -0500
+From: Chris Adams <cmadams@hiwaay.net>
+To: linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706132121.04532.dhazelton@enter.net>
-	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706132304.21984.dhazelton@enter.net>
-	<20070614112329.3645c397@the-village.bc.nu>
-	<20070614103846.GA7902@elte.hu>
-	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614195517.GA4933@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 17:48:39 -0300
-In-Reply-To: <20070614195517.GA4933@elte.hu> (Ingo Molnar's message of "Thu\, 14 Jun 2007 21\:55\:17 +0200")
-Message-ID: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
+Message-ID: <20070614205541.GA886803@hiwaay.net>
+References: <fa.V8u0BBHrkymrjcYrFArgehF4jRA@ifi.uio.no> <fa.98cYXp0MWFizp+AzMAkKWAo+bpE@ifi.uio.no> <fa.21pY11gonruis9l1QAvUgcD/c7g@ifi.uio.no> <fa.dR+SnekmQGzom7HRgnAyn3+gVkU@ifi.uio.no>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+Once upon a time, Alexandre Oliva  <aoliva@redhat.com> said:
+>> What the GPL *does* say is that you can't "add additional
+>> restrictions to the license"
+>
+>Not quite.  It's more general than that:
+>
+>  You may not impose any further restrictions on the recipients'
+>  exercise of the rights granted herein.
 
-> * Alexandre Oliva <aoliva@redhat.com> wrote:
+GPLv2 section 0 says:
 
-> you are not "entitled" to dictate the hardware's design (or any other 
-> copyrighted work's design),
+  Activities other than copying, distribution and modification are not
+  covered by this License; they are outside its scope.  The act of
+  running the Program is not restricted, ...
 
-Agreed.
+The license does not cover running of the program.  It doesn't restrict
+it, but it doesn't cover it.  Claiming otherwise is turning the GPL into
+yet another dreaded EULA.
 
-> By your argument we'd have to put the following items into the
-> license too:
+Nowhere does the GPLv2 define modification as "modify and run in place".
+The Preamble emphasizes sharing; hardware is a fixed object and can't be
+shared in the same fashion as software.
 
-No, you're confusing two very different situations.
+Also, GPLv2 section 2 includes:
 
-In the case of TiVO, it's getting out of its way to make sure users
-can't enjoy one of the freedoms that the license says it ought to pass
-on.
+  In addition, mere aggregation of another work not based on the Program
+  with the Program (or with a work based on the Program) on a volume of
+  a storage or distribution medium does not bring the other work under
+  the scope of this License.
 
-In the cases you mentioned, the company would have to get out of its
-way to put the other parties on equal grounds.
+TiVo's firmware (and any restrictions it may carry) is not affected by
+the GPLv2.
 
-The former is bad, it's against the spirit of the license, it's a
-further restriction.
-
-The latter would be nice to have, but it would be wrong to demand it.
-
-You're picturing the difference between blocking the way such that you
-can't get there, and actually taking you there.  What the GPL seeks is
-just that you don't get in the way.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
