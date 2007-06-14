@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbXFNTZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbXFNT0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbXFNTZs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbXFNTZi
+	id S1754945AbXFNT0M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbXFNTZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:25:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45518 "EHLO mx1.redhat.com"
+	Thu, 14 Jun 2007 15:25:57 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4583 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752781AbXFNTZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:25:37 -0400
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: "Daniel Hazelton" <dhazelton@enter.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706132304.21984.dhazelton@enter.net>
-	<ork5u7i0oi.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706141014.21574.rgetz@blackfin.uclinux.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 14:46:40 -0300
-In-Reply-To: <200706141014.21574.rgetz@blackfin.uclinux.org> (Robin Getz's message of "Thu\, 14 Jun 2007 10\:14\:21 -0400")
-Message-ID: <or1wgefmyn.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1752523AbXFNTZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:25:56 -0400
+Date: Thu, 14 Jun 2007 15:25:23 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: linux-kernel@vger.kernel.org, ISS StorageDev <iss_storagedev@hp.com>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
+Message-ID: <20070614192523.GB1110@hmsreliant.homelinux.net>
+References: <20070614153119.GC32137@hmsreliant.homelinux.net> <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+On Thu, Jun 14, 2007 at 06:16:03PM -0000, Miller, Mike (OS Dev) wrote:
+>  
+> 
+> > -----Original Message-----
+> > From: Neil Horman [mailto:nhorman@tuxdriver.com] 
+> > Sent: Thursday, June 14, 2007 10:31 AM
+> > To: linux-kernel@vger.kernel.org
+> > Cc: Miller, Mike (OS Dev); ISS StorageDev; 
+> > akpm@linux-foundation.org; nhorman@tuxdriver.com
+> > Subject: [PATCH] cciss: force ignore of responses to unsent 
+> > scsi commands after kexec reboot
+> > 
+> > Hey -
+> > 	cciss hardware currently can continue to send responses 
+> > to scsi commands after the host system has undergone a kexec 
+> > reboot.  The way the drier is currently written, reception of 
+> > these commands results in a BUG halt, since it can't match 
+> > the response to any issued command since the boot.  This 
+> > patch corrects that by using the kexec reset_devices command 
+> > line paramter to force ignore any commands that it cant correlate.
+> > 
+> > Regards
+> > Neil
+> > 
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > 
+> > 
+> >  cciss.c |    8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> > 
+> > 
+> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c 
+> > index 5acc6c4..ec1c1d2 100644
+> > --- a/drivers/block/cciss.c
+> > +++ b/drivers/block/cciss.c
+> > @@ -2131,6 +2131,14 @@ static int add_sendcmd_reject(__u8 
+> > cmd, int ctlr, unsigned long complete)
+> >  		       ctlr, complete);
+> >  		/* not much we can do. */
+> >  #ifdef CONFIG_CISS_SCSI_TAPE
+> > +		/* We might get notification of completion of commands
+> > +		 * which we never issued in this kernel if this boot is
+> > +		 * taking place after previous kernel's crash. Simply
+> > +		 * ignore the commands in this case.
+> > +		 */
+> > +		if (reset_devices)
+> > +			return 0;
+> > +
+> >  		return 1;
+> >  	}
+> >  
+> I don't understand how this will help. We need to reset the controller
+> which reset_devices cannot do alone. I just haven't have the time to
+> implement the fix yet.
+> 
+> mikem 
 
-> On Thu 14 Jun 2007 01:07, Alexandre Oliva pondered:
+I definately agree.  Actually resetting the hardware so that odd responses would
+never be received would be a much better solution.  However, when this problem
+(and the above corresponding workaround to fix it) was first proposed almost a
+year ago:
+http://www.ussg.iu.edu/hypermail/linux/kernel/0606.2/3055.html
 
->> then maybe the small 
->> company could have been more careful about the regulations.  There are
->> various ways to prevent these changes that don't involve imposing
->> restrictions of modification on any software in the device, all the
->> way from hardware-constrained output power to hardware-verified
->> authorized configuration parameters.
+It was met with no action.  I understand that actually doing a reset of the
+hardware is a much better solution, but I'm certainly not knoweldgeable enough,
+nor do I have the documentation needed to implement that solution.  Until it is,
+this patch lets kexec work properly on this hardware, which I think is a good
+trade until such time as the proper fix is implemented.
 
-> As a person pretty familiar with the hardware in these types of
-> devices - this just isn't practical.
-
-I actually left out the most obvious one: store the program in ROM.
-Is that not practical?
-
-You're claiming that adding hardware locks and chains and bolts,
-implemented with help from the loader software, is simpler than just
-using ROM?
-
-Well, then, ok: do all that loader and hardware signature-checking
-dancing, sign the image, store it in the machine, and throw the
-signing key away.  This should be good for the highly-regulated areas
-you're talking about.  And then, since you can no longer modify the
-program, you don't have to let the user do that any more.  Problem
-solved.
+Thanks & Regards
+Neil
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
