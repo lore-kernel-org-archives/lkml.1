@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbXFNG7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbXFNHA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753008AbXFNG7e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 02:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXFNG7Z
+	id S1753636AbXFNHA0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 03:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbXFNHAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 02:59:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:25563 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034AbXFNG7X (ORCPT
+	Thu, 14 Jun 2007 03:00:14 -0400
+Received: from paragon.brong.net ([66.232.154.163]:50468 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034AbXFNHAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 02:59:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lpuXfSlF+QDqjP/QAExETNCoLuGizDj9J5x1fNbg0wT4xaCvDUUIcso82kn9CRHZIND+v9rjOf9thj13wlr9xRnxtVkP41Kix2eL6DUoemO7Yf0gDd1VHgPceOU95LqOq7TidP+V3y8M8lV/NvQwS9zmkgozCfXsavZ4UOd5Vb4=
-Message-ID: <787b0d920706132359h17531f57gdc4ed01724e53361@mail.gmail.com>
-Date: Thu, 14 Jun 2007 02:59:23 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: "Chris Mason" <chris.mason@oracle.com>
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, snitzer@gmail.com
-In-Reply-To: <20070613165706.GF28279@think.oraclecorp.com>
+	Thu, 14 Jun 2007 03:00:13 -0400
+Date: Thu, 14 Jun 2007 17:00:06 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Bron Gondwana <brong@fastmail.fm>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614070006.GA7393@brong.net>
+References: <fa.khBgzvPDXYj45cntZBDPf6OM0jQ@ifi.uio.no> <fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no> <fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no> <fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no> <fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no> <20070614013214.GA1124293@hiwaay.net> <20070614025248.6e0f72f0@the-village.bc.nu> <20070614041041.GA6788@brong.net> <orsl8vi13h.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <787b0d920706122245j3a2ff7e8ja611ecf41cc67a4c@mail.gmail.com>
-	 <20070613120037.GA28279@think.oraclecorp.com>
-	 <787b0d920706130914l676a24cau62525e90a90b5839@mail.gmail.com>
-	 <20070613165706.GF28279@think.oraclecorp.com>
+In-Reply-To: <orsl8vi13h.fsf@oliva.athome.lsd.ic.unicamp.br>
+Organization: brong.net
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/13/07, Chris Mason <chris.mason@oracle.com> wrote:
-> On Wed, Jun 13, 2007 at 12:14:40PM -0400, Albert Cahalan wrote:
-> > On 6/13/07, Chris Mason <chris.mason@oracle.com> wrote:
-> > >On Wed, Jun 13, 2007 at 01:45:28AM -0400, Albert Cahalan wrote:
+On Thu, Jun 14, 2007 at 01:58:26AM -0300, Alexandre Oliva wrote:
+> On Jun 14, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
+> 
+> > Tivo gets sick of the endless flamewars on lkml, signs a copy
+> > of QNX, pushes it out to the hardware.  No more Linux on Tivo.
+> 
+> What do we lose?
+> 
+> Do we actually get any benefit whatsoever from TiVO's choice of Linux
+> as the kernel for its device?
 
-> > >> * secure delete via destruction of per-file or per-block random crypto
-> > >keys
-> > >
-> > >I'd rather keep secure delete as a userland problem (or a layered FS
-> > >problem).  When you take backups and other copies of the file into
-> > >account, it's a bigger problem than btrfs wants to tackle right now.
-> >
-> > It can't be a userland problem if you allow disk blocks to move.
-> > Volume resizing, logging/journalling, etc. -- they combine to make
-> > the userland solution essentially impossible. (one could wipe the
-> > whole partition, or maybe fill ALL space on the volume)
->
-> Right about here is where I would insert a long story about ecryptfs, or
-> encryption solutions that happen all in userland.  At any rate, it is
-> outside the scope of v1.0, even though I definitely agree it is an
-> important problem for some people.
+Sure, if they make any changes or fixes to Linux.  Other than that,
+only the same benefit that Microsoft get from Windows piracy - TiVo
+employees become familiar with Linux and are more likely to use it
+and maybe contribute more in another job later.
 
-I'm sure you do have a nice long story, and I'm sure it seems
-correct, but there is something not quite right about the add-on
-hacks.
+What we don't get is TiVo having a better kernel than everyone else
+because they've put some work into extending it without giving that
+work back.
 
-BTW, I'm suggesting that this be about deletion, not protection
-of data you wish to keep. It covers more than just file bodies.
-It covers inode data, block allocations, etc.
+I see stuff in arch/powerpc/kernel/ which is Copyright "TiVo, Inc"
+and more recent stuff in usb/net/asix.c and usb/net/mcs7830.c which
+is more than I've ever contributed to the kernel, despite making
+extensive use and even selling services where I ran servers with
+Linux on them but didn't allow my customers to change the kernel
+on the servers if there was some feature they wanted to play with.
 
-> > >> * atomic creation of copy-on-write directory trees
-> > >
-> > >Do you mean something more fine grained than the current snapshotting
-> > >system?
-> >
-> > I believe so. Example: I have a linux-2.6 directory. It's not
-> > a mount point or anything special like that. I want to copy
-> > it to a new directory called wip, without actually copying
-> > all the blocks. To all the normal POSIX API stuff, this copy
-> > should look like the result of "cp -a", not hard links.
->
-> This would be a snapshot, which has to be done on a subvolume right now.
-> It is not as nice as being able to pick a random directory, but I've
-> only been able to get this far by limiting the feature scope
-> significantly.  What I did do was make subvolumes very cheap...just make
-> a bunch of them.
+> Do TiVO customers lose anything from the change from one non-Free
+> software to another?  (the Linux binary, as shipped in the TiVO, has
+> become non-Free)
 
-Can a regular user create and use a subvolume? If not, then
-this doesn't work. (if so, then I have other concerns...)
+Not particularly, no.  Other than maybe some nice features that TiVo
+gains from being able to use Linux.
+
+Bron.
