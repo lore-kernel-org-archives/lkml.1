@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbXFNQxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXFNQye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767AbXFNQxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 12:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbXFNQxe
+	id S1753922AbXFNQye (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 12:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbXFNQy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 12:53:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:24081 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbXFNQxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 12:53:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=h41rizRCvgmjbrqwXfzIW/itoRNvuBVPOkJfBH4TwsFF/FYZYPPedCpLuVr9G054oi2Xw/Dw0Sty0dksATy7uu0ExEuS2S6ySZzIBW5rKlxNWFpEMJigyQkIN7w7Ofa8watwkWGYS4qybRnxvj4HjRb2qxWO6OAPnxcxcLaGyJw=
-Message-ID: <6934efce0706140953x2167944fr54eca6376e1f8d63@mail.gmail.com>
-Date: Thu, 14 Jun 2007 09:53:33 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: carsteno@de.ibm.com
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       richard.griffiths@windriver.com,
-       "Richard Griffiths" <res07ml0@verizon.net>,
-       linux-kernel@vger.kernel.org,
-       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@lazybastard.org>
-In-Reply-To: <4671495A.3020605@de.ibm.com>
+	Thu, 14 Jun 2007 12:54:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48338 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751750AbXFNQy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 12:54:26 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
+	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706140305.50095.dhazelton@enter.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 13:52:59 -0300
+In-Reply-To: <200706140305.50095.dhazelton@enter.net> (Daniel Hazelton's message of "Thu\, 14 Jun 2007 03\:05\:49 -0400")
+Message-ID: <orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1179871779.24163.11.camel@localhost.localdomain>
-	 <20070522154905.1d7e8a2e.akpm@linux-foundation.org>
-	 <4653F264.1030807@de.ibm.com> <465BB5BA.3050900@yahoo.com.au>
-	 <6934efce0706011748p46cf7995vdca0b9cc3f0b06a3@mail.gmail.com>
-	 <46612D6F.6000002@yahoo.com.au> <46641472.3080802@de.ibm.com>
-	 <6934efce0706121711m738bd9abqa02350ccc7eabf9f@mail.gmail.com>
-	 <4671495A.3020605@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> An alternative approach, which does not need to have struct page at
-> hand, would be to use the nopfn vm operations struct. That one would
-> have to rely on get_xip_pfn.
+On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-Of course!  Okay now I'm begining to understand.
+> And? There is *absolutely* *nothing* in any version of the GPL *prior* to 3 
+> that says that hardware cannot impose restrictions.
 
-> The current path would then be deprecated.
+It's not that the hardware is deciding to impose restrictions on its
+own.  It's the hardware distributor that is deciding to use the
+hardware to impose restrictions on the user.  Seems like a violation
+of section 6 of GPLv2 to me.
 
-Why?  Wouldn't both paths be valid options?
+> What the GPL *does* say is that you can't "add additional
+> restrictions to the license"
 
-> If you're interrested in using the later for xip without
-> struct page, I would volounteer to go ahead and implement this?
+Not quite.  It's more general than that:
 
-I'm very interested in this.
+  You may not impose any further restrictions on the recipients'
+  exercise of the rights granted herein.
 
+>> > So take another example: I obviously distribute code that is copyrighted
+>> > by others under the GPLv2. Do I follow the GPLv2? I sure as hell do! But
+>> > do I give you the same rights as I have to modify the copy on
+>> > master.kernel.org as I have? I sure as hell DO NOT!
 
- I'm not opposed to using struct page, but I'm confused as to how to
-start that.  As I understand it, which is not well, defined a
-CONFIG_DISCONTIGMEM region to cover the Flash memory would add that to
-my pool of RAM.  That would be 'bad', right?  I don't see how to
-create the page structs and set this memory aside as different.
+>> That's an interesting argument.
+
+>> People don't get your copy, so they're not entitled to anything about
+>> it.
+
+>> When they download the software, they get another copy, and they have
+>> a right to modify that copy.
+
+> But you get the TiVO corporations copy of the software?
+
+Yes.  The customer gets the copy that TiVO stored in the hard disk in
+the device it sells.  And it's that copy that the customer is entitled
+to modify because TiVO is still able to modify it.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
