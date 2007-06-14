@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbXFNG25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbXFNGdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbXFNG25 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 02:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXFNG2s
+	id S1753304AbXFNGdL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 02:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXFNGc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 02:28:48 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:53743 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751033AbXFNG2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 02:28:47 -0400
-Message-ID: <381802490.31610@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070614062447.058708836@mail.ustc.edu.cn>
-User-Agent: quilt/0.45-1
-Date: Thu, 14 Jun 2007 14:21:19 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] ondemand readahead simplifications
+	Thu, 14 Jun 2007 02:32:58 -0400
+Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:61378 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750879AbXFNGc6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 02:32:58 -0400
+Date: Thu, 14 Jun 2007 08:33:12 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org
+Subject: Re: [PATCH] i2c-gpio: Make some internal functions static
+Message-ID: <20070614083312.5ffcc992@hyperion.delvare>
+In-Reply-To: <20070613131641.59cea221@dhcp-255-175.norway.atmel.com>
+References: <20070613.005438.126760855.anemo@mba.ocn.ne.jp>
+	<20070613131641.59cea221@dhcp-255-175.norway.atmel.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+On Wed, 13 Jun 2007 13:16:41 +0200, Haavard Skinnemoen wrote:
+> On Wed, 13 Jun 2007 00:54:38 +0900 (JST)
+> Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> 
+> > i2c_gpio_getsda() and i2c_gpio_getscl() are only used in this file.
+> > 
+> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> 
+> Ah, of course. Hopefully this is the last remaining sign that the
+> driver started out as a quick hack :-)
+> 
+> Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-With the help from Rusty, the interface and data structure of ondemand
-readahead are made more clear:
+Correct. Applied, thanks.
 
-	readahead: split ondemand readahead interface into two functions
-	readahead: sanify file_ra_state names
-
-diffstat:
- fs/ext3/dir.c      |    4 -
- fs/ext4/dir.c      |    4 -
- fs/splice.c        |    6 -
- include/linux/fs.h |   61 +--------------
- include/linux/mm.h |   20 +++--
- mm/filemap.c       |   10 +-
- mm/readahead.c     |  165 +++++++++++++++++++++----------------------
- 7 files changed, 116 insertions(+), 154 deletions(-)
-
-Regards,
-Fengguang
+-- 
+Jean Delvare
