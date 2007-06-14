@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbXFNWvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbXFNWwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbXFNWvu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757502AbXFNWvk
+	id S1757927AbXFNWwb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbXFNWwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:51:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47847 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756892AbXFNWvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:51:37 -0400
-Subject: Re: libertas (private) ioctls vs. nl80211
-From: Dan Williams <dcbw@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, johannes@sipsolutions.net,
-       linux-wireless@vger.kernel.org, hs4233@mail.mn-solutions.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070614223125.GA28235@infradead.org>
-References: <1181757483.29767.99.camel@johannes.berg>
-	 <20070614170901.GA13384@infradead.org>
-	 <20070614103836.23b07a72.akpm@linux-foundation.org>
-	 <20070614181307.GA16856@infradead.org>
-	 <alpine.LFD.0.98.0706141121080.14121@woody.linux-foundation.org>
-	 <46718D81.9080402@garzik.org>
-	 <1181859755.23567.3.camel@xo-28-0B-88.localdomain>
-	 <20070614223125.GA28235@infradead.org>
-Content-Type: text/plain
-Date: Thu, 14 Jun 2007 18:55:58 -0400
-Message-Id: <1181861758.23567.26.camel@xo-28-0B-88.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Thu, 14 Jun 2007 18:52:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:65027 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753798AbXFNWwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 18:52:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VoUiCjAkTkd/u4oug/inIw0OPGWJl8/GzJHqMuMSukSass/7Y4P0lJ7FXeOM6EaKNhaYykN6xYJGcRx3NK3upnV6HHBK5tGe1iymYBVUrSwVyxj/hDmhT3HE1CDB3oWOzUFGn9ndIJYlncmbz5IICBL0/+UkEe7oT4UVl/Te62U=
+Message-ID: <9a8748490706141552l6d112c16tc306784664c6504d@mail.gmail.com>
+Date: Fri, 15 Jun 2007 00:52:20 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: davide <davidenitti@gmail.com>
+Subject: Re: Random X lockup
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4671AF64.9050201@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4671AF64.9050201@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-14 at 23:31 +0100, Christoph Hellwig wrote:
-> On Thu, Jun 14, 2007 at 06:22:35PM -0400, Dan Williams wrote:
-> > And that's what I did in the last pull you got from John; all pointless
-> > and duplicated ioctls were removed.  The only ones left are mesh
-> > tweakables, an LED GPIO control ioctl, and a regulatory region/domain
-> > thing.  I agree the interface is somewhat ugly (like the
-> > char-128/char-128 ones that return information from the mesh forwarding
-> > table), and I also agree that we need to move to using netlink for this
-> > sort of stuff in the future.  There are _no_ ioctls that duplicate WEXT
-> > functionality.
-> 
-> The problem is not any kind of duplication.  The problem is that the
-> interface is plain and simply bad.  If anyone else would come in with
-> an ioctl interface using pointer indirections and subfunctions which
-> is horribly complex and not 32on64 clean they would get beaten up.
+On 14/06/07, davide <davidenitti@gmail.com> wrote:
+> I have a problem with X, I have random lockup of X, when happen i can't
+> use mouse or keyboard.
+> Using a SSH remote session I can see that X taking 99.9% cpu.
+> I have this problem with all version of kernel, linux distributions,
+[snip]
 
-I agree that it's suboptimal; I tried to clean it up and bashed my head
-against the current iwpriv system for about 2 days before concluding
-that the iwpriv stuff is just too insane to actually use.  We both want
-a well-defined, clean, generic 802.11s-type interface, make no mistake.
-Unfortunately, we don't have any framework which that interface could
-use (ie, nl80211 or cfg80211).  That's unlikely to land until 2.6.23 or
-even later.  And the regulatory stuff is still probably 6 months away
-from agreement.
+Have you tried building and running a kernel with some (or all) of the
+debugging options enabled (you find those in the "kernel hacking"
+section of the kernel config)?
+Hopefully one or more of those debug options will provide some info in
+dmesg to help find the source of the problem.
 
-So if everybody is objecting to _any_ new private ioctls, even if they
-don't duplicate WEXT functionality, whatever; rip them out and we'll
-maintain them out-of-kernel or something until there's a nicer framework
-to piggy-back the mesh tune-ables on.
 
-Dan
+> -- GFX cards: Radeon 9200, Radeon 9700, NVidia GeForce2 GTS/Pro, GeForce
+> Ultra 5700, Geforce FX 5200
 
-> So even if the interface is not going to be generic it needs to be
-> done properly and document.  And once it's documented you've actually
-> layed down the first building block have it generic.  If no other
-> driver actually implements the same kind of non-standardized mesh
-> interface it'll stay that way, if other pop up they can implement
-> the same interface and eventually we'll grow a generic layer helping
-> out with it.
+Are you using any proprietary, closed source, X drivers for those
+graphics cards? If yes, then the first thing to try would be to use
+one of the open source drivers - for example, use the 'nv' driver for
+the nVidia cards instead of the 'nvidia' driver. If your kernel is
+tainted by a close source driver nobody here will be able to help you
+debug the issue.
+If you can't reproduce the issue with an open source driver, then you
+should contact your graphics card vendor for help as they are the only
+people who will be able to help you with problems involving their
+closed driver.
 
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
