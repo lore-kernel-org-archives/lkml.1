@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbXFNWjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbXFNWkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756416AbXFNWjk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbXFNWjd
+	id S1754995AbXFNWkX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbXFNWkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:39:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53185 "EHLO ogre.sisk.pl"
+	Thu, 14 Jun 2007 18:40:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44095 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750861AbXFNWjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:39:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH -mm 6/7] PM: Remove power_state.event checks from suspend core code
-Date: Fri, 15 Jun 2007 00:46:12 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <200706131551.51336.rjw@sisk.pl> <200706131716.57915.rjw@sisk.pl> <200706140721.35478.david-b@pacbell.net>
-In-Reply-To: <200706140721.35478.david-b@pacbell.net>
+	id S1752643AbXFNWkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 18:40:10 -0400
+Date: Thu, 14 Jun 2007 18:39:23 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Bron Gondwana <brong@fastmail.fm>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614223923.GA6738@nostromo.devel.redhat.com>
+Mail-Followup-To: Alexandre Oliva <aoliva@redhat.com>,
+	Bron Gondwana <brong@fastmail.fm>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+References: <fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no> <fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no> <20070614013214.GA1124293@hiwaay.net> <20070614025248.6e0f72f0@the-village.bc.nu> <20070614041041.GA6788@brong.net> <orsl8vi13h.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614070006.GA7393@brong.net> <orvedqfpkp.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614181626.GF3522@nostromo.devel.redhat.com> <orhcpae6l4.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706150046.13650.rjw@sisk.pl>
+In-Reply-To: <orhcpae6l4.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 14 June 2007 16:21, David Brownell wrote:
-> On Wednesday 13 June 2007, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > The suspend routines should be called for every device during a system sleep
-> > transition, regardless of the device's state, so that drivers can regard these
-> > method calls as notifications that the system is about to go to sleep, rather
-> > than as directives to put their devices into the 'off' state.
+Alexandre Oliva (aoliva@redhat.com) said: 
+> But how about inside the TiVO, so as to use Linux and the rest of the
+> GNU/Linux distro put in there for an even better DVR experience?
 > 
-> Did you audit all the drivers to make sure this won't break things?
-> Like for example through inappropriate pci_save_state() calls?
+> Sure, this might still be accomplished on another hardware platform.
+> But the TiVO already has all the hardware there, and you already have
+> all the software ready to work on it.  Except that you can't change
+> it.  You'd have to waste time and money just to get to the same status
+> on another hardware platform.
+> 
+> What do we gain?
 
-I did, but not very carefully.
+Nothing. But that's not the terms it was licensed under, and no matter
+what someone may claim about the *spirit* of the license, adding clauses
+that restrict how you can deploy GPL software for use is a fundamental
+enough change to the practical aspect of the license that it's no wonder
+that people will choose not to use it.
 
-> I'd really expect this patch would break things...
+If the designers of the license are more interested in vendettas against
+those using the software in a way they didn't see beforehand (come on,
+explicitly trying to define 'consumer product'?) in order to accomplish
+pyrrhic victories (people moving to other platforms instead of using your
+newly licensed code), that's fine, it's their choice. But not everyone
+will want to follow that choice.
 
-Well, in that case I'll have a closer look at them.
-
-Greetings,
-Rafael
+Bill
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
