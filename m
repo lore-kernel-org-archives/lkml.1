@@ -1,308 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbXFNI3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbXFNI37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754358AbXFNI3a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 04:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbXFNI3W
+	id S1754869AbXFNI37 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 04:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbXFNI3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 04:29:22 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50691 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbXFNI3U (ORCPT
+	Thu, 14 Jun 2007 04:29:51 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:19747 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752099AbXFNI3t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 04:29:20 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 04:29:10 -0400
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706140236.39394.dhazelton@enter.net> <orhcpbggcu.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orhcpbggcu.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 14 Jun 2007 04:29:49 -0400
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: holzheu@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
+       heiko.carstens@de.ibm.com,
+       "lf_kernel_messages@linux-foundation.org" 
+	<lf_kernel_messages@linux-foundation.org>
+In-Reply-To: <20070613111549.db1fa4d9.akpm@linux-foundation.org>
+References: <1181747217.29512.9.camel@localhost.localdomain>
+	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 14 Jun 2007 10:31:04 +0200
+Message-Id: <1181809864.5446.28.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706140429.11049.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 03:11:45 Alexandre Oliva wrote:
-> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Thursday 14 June 2007 01:51:13 Alexandre Oliva wrote:
-> >> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> >> > On Wednesday 13 June 2007 22:38:05 Alexandre Oliva wrote:
-> >> >> In 95% of the desktop computers, you can't make changes to the OS
-> >> >> that runs on it.  Whom is this good for?
-> >> >
-> >> > Faulty logic. I have yet to find a computer that I couldn't change the
-> >> > OS on.
-> >>
-> >> I was not talking about installing another OS, I was talking about
-> >> making changes to the OS.  As in, improving one particular driver,
-> >> avoiding a blue screen, stuff like that.
-> >
-> > Ah, well... In the case of "Windos" and other proprietary OS's I try to
-> > educate people and get them to switch.
->
-> Good.  So I presume you'd tell them to switch away from a
-> turned-proprietary GNU/Linux operating system as well, right?
+On Wed, 2007-06-13 at 11:15 -0700, Andrew Morton wrote: 
+> Your proposal is similar to one I made to some Japanese developers
+> earlier this year.
 
-If that happened I'd be lost. I've tried the various BSD's and found they had 
-problems with hardware support and getting a new version of the BSD kernel to 
-compile and boot is something of a black art.
+Interesting. Our requirement comes from Japan as well.
 
-The point is moot, though. It can never happen.
+>   I was more modest, proposing that we
+> 
+> - add an enhanced printk
+> 
+>         xxprintk(msgid, KERN_ERR "some text %d\n", some_number);
 
-> So, again, what do we gain if companies abuse the GPL and disrespect
-> users' rights that we meant them to respect?
->
-> >> > Or do you mean "transferring the recorded copies off the TiVO
-> >> > and on to a different medium"?
-> >>
-> >> Sure.  Such that I can watch shows while wasting time in public
-> >> transportation, in an airplane, whatever.
-> >
-> > Under the US Copyright law I'm not sure that making a "second copy"
-> > like that is legal. IIRC, "Fair Use" only allows for one copy.
->
-> Even if you delete the "first copy"?
->
-> Actually, I thought fair use in US entitled you to make a backup copy.
-> So the copy in your TiVO would be your original, and the external copy
-> would be your fair-use backup.
+Some kind of id is always required to be able to identify the message.
+The task is to make the tagging as simple as possible.
 
-Hrm... Perhaps. 
+> - An externally managed database will provide translations, diagnostics,
+>   remedial actions, etc, keyed off the msgid string
 
-> > As has been noted in their TOS and the licenses for the hardware from the
-> > start.
->
-> If it is used to disrespect the inalienable freedoms associated with
-> the GPL software in the device, it seems like a license violation to
-> me.
+There I have my doubts if this can work. If you keep an external
+database with the additional information about the messages the kernel
+code and the database will get out of sync. Thats why we advocate the
+kernel-doc style approach: the message catalogue will always be in sync
+because it is delivered with the kernel.
 
-As much as the US "Declaration of Independence" and other sources want people 
-to believe otherwise there is no such thing as "inalienable rights" 
-or "inalienable freedoms". In this case I have been unable to find 
-this "inalienable freedom" to run custom versions of software "on the same 
-machine" that you received the original copy on anywhere before the GPLv3 - 
-and even then it isn't explicitly clear. There is no restriction on your 
-right to modify, copy, distribute or run the software as provided by versions 
-of the GPL prior to version 3. If this "run modified copies on the same 
-hardware you received the original on" *IS* the "spirit" of the license, then 
-why isn't it stated anywhere before GPLv3? (After all, the FSF has have 20+ 
-years to mention it)
+> - Format and management of the msgid hasn't been clearly identified yet
+>   as far as I know.  But all we really need is that each ID be unique,
+>   kernel-wide.  We develop a simple tool which can check the whole tree
+>   for duplicated msgids.
 
-> > The FSF itself explicitly reserves the right to change the GPL at any
-> > time - which is no different.
->
-> Actually, it's completely different.
->
-> If the FSF revises the GPL, the old version remains available for
-> anyone to use for any new software, and all software released under
-> the old version remains available under that old version.
+This is a paint point with Michaels approach as well. The KMSG_COMPONENT
+defines are rather ugly. A clever way how to generate kernel unique IDs
+would be nice. Intervention required..
 
-I'll grant you that. But, at this point, where can I find a copy of the GPLv1 
-without having to dig around the net ?
+> - From a practical day-to-day POV what this means is that a person
+>   from the kernel-messages team will prepare a patch for your driver
+>   which adds the msgids and you the driver author should take care not
+>   to break the tagging.
+> 
+>   This is deliberately designed to be minimum-impact upon general 
+>   developers.  We want a system in place where driver/fs/etc developers
+>   can concentrate on what they do, and kernel-message developers can
+>   as independently as possibe take care of what _they_ do.
 
-> In contrast, your TiVO may get a software upgrade without your
-> permission that will take your rights away from that point on, and
-> there's very little you can do about it, other than unplugging it from
-> the network to avoid the upgrade if it's not too late already.
+With the KMSG approach all that needs to be done is to replace the
+KERN_xxx with KMSG_xxx(<number) and to add a comment at the end of the
+file.
 
-And because its a device that connects to their network - and TiVO isn't a 
-telecommunications company - they have the right to upgrade and configure the 
-software inside however they want. (In the US at least)
+> - A project has started up and there is a mailing list (cc'ed here) and
+>   meetings are happening at the LF collaboration summit this week.
+> 
+>   Please see https://lists.linux-foundation.org/mailman/listinfo/lf_kernel_messages
+>   and don't miss the next conference call ;)
+> 
+>   (argh.  The lf_kernel_messages archives are subscriber-only and it could be that
+>   only members can post to it.  Oh well.  Please subscribe, and review the archives)
 
-> > A lot of them would probably have private modifications that would
-> > never be distributed - and under the GPLv2 it is clear that you can
-> > keep modifications private as long as you don't distribute them.
->
-> Likewise with GPLv3.
-
-I can see this, but will a company see this?
-
-> > "Pushing them away" means that they'd not do that because they would
-> > be concerned that the license will change under them in such a way
-> > that even those private modifications need to be released to the
-> > public.
->
-> This would not only change the spirit of the license, but turn it into
-> a non-Free Software license.
-
-Point. But once again - would a company pay attention to that fact?
-
-> And then, again, the license can't possibly be changed from under
-> them.  A new revision of the GPL would only affect software licensed
-> under that new revision.  If you already got it under an earlier
-> revision, you know what you got, and nobody can take that away from
-> you.
-
-True. But that doesn't save them from lawsuits trying to force them to obey 
-the terms of the new revision even though they received the software under an 
-earlier version.
-
-> > (and don't try to argue that even though those modifications are
-> > truly private (to the company) they should be released anyway to
-> > comply with the "spirit" of the license. It is made clear that it
-> > isn't by the text of the license itself)
->
-> How could you possibly come to the conclusion that forcing anyone to
-> release private modifications would be in compliance with the spirit
-> of the license?  can != must
-
-I was trying to be sarcastic and inject a little humor here. Guess I should 
-have used the old <sarcasm> tag :)
-
-> >> > Why should I repeat Linus' explanation of the ways that GPLv3 violates
-> >> > the spirit of GPLv2?
-> >>
-> >> Don't worry about parrotting here, he hasn't provided that explanation
-> >> yet ;-)  Please give it a try.
-> >
-> > But he has. Whether you have accepted that his explanations are
-> > valid or not doesn't change the fact.
->
-> His explanation is based on a reading of the license that doesn't
-> match what its authors meant.  I guess the authors know better what
-> they meant the spirit of the license to be than someone else who
-> studied it a lot but that until very recently couldn't even tell the
-> spirit from the legal terms.
-
-And his interpretation is no less valid than that of anyone else. In fact, 
-after a recent conversation with a couple of lawyers that I know, I can state 
-that his interpretation isn't that far off from theirs.
-
-> >> > Just like people have started using "GNU/Linux" or "GNU+Linux" to
-> >> > refer to Linux
-> >>
-> >> No, no, you got it wrong.  Linux is the kernel.  GNU was the
-> >> nearly-complete operating system it fit in.  GNU+Linux is a complete
-> >> operating system.
-> >
-> > *AND* you cut out the bit where I said "I have no problems with it"
->
-> Referring to Linux as GNU/Linux would be wrong, because Linux is the
-> kernel, and that's unrelated with the GNU operating system.  It's the
-> combination of them that forms GNU+Linux.  And it's referring to this
-> combination as Linux that is wrong.
->
-> I'm sorry that I got the impression that you meant the combination
-> when you wrote "refer to Linux" above.  It looked like you meant the
-> combination, since I've never seen anyone call the kernel GNU/Linux or
-> GNU+Linux.
-
-Then you're lucky. I've had a lot of people say something similar to the 
-following: "Oh, I've heard about that. So which version of the GNU-Linux 
-kernel are you running?" 
-
-> > Never claimed otherwise. The problem is that using a composite name like
-> > that *does* confuse a hell of a lot of people.
->
-> Pronouncing the '+' or '/' helps a lot.  GNU plus Linux makes a lot of
-> sense, and so does GNU on Linux.
-
-Yes, it does. While pronouncing the '/' or '+' sounds a bit odd it does get 
-the point across that it's the GNU userspace running on top of the Linux 
-kernel. (as does "GNU on Linux")
-
-> >> > A "TiVO" is not, and has never been, a "General Purpose
-> >> > Computational Device".
-> >>
-> >> Err...  Last I looked it was a bunch of general-purpose components,
-> >> packaged in a way that made it not look like a general-purpose
-> >> computer.  Who gets to decide?  And with what motivations?
-> >
-> > And so is every game console. But until the original XBox was released
-> > nobody tried using one as a "General Purpose" machine. The TiVO wasn't
-> > designed as a general purpose machine - it was designed for a specific
-> > purpose. That the *easiest* design to produce uses a bunch of general
-> > purpose components is an economic choice, nothing else.
->
-> So, if I put together a general-purpose computer, a general-purpose
-> operating system, adding a label "not a general-purpose computer" is
-> enough to make it so, just so that I can escape the obligations to
-> respect users' freedoms?
->
-> > I will not, however, argue about this anymore.
->
-> Fair enough.
->
-> > Let me quote Linus here:
-> >
-> > But I think the whole thing is totally misguided, because the fact is,
-> > the GPLv2 doesn't talk about "in place" or "on the same hardware".
-> >
-> > In other words, GPLv3 is breaking with its predecessor - it's adding a
-> > requirement that doesn't exist in previous versions.
->
-> No dispute about this.  The requirements are being added to the legal
-> terms, precisely such that they better reflect the spirit, under the
-> light of the new threats that appeared since GPLv2 was published.
->
-> But the new requirements do abide by the same spirit, and that was a
-> promise the FSF made WRT revisions of the GPL.
-
-As I've stated before - I can find nothing in the history of the GPL or the 
-FSF that makes the "on the same hardware" requirement clear and part of 
-the "spirit" of "Free Software". The closest anything comes is the "printer 
-driver" that was the (in)famous "last straw" for RMS and caused him to create 
-the FSF and the GNU Project.
-
-> > *AND* it's dictating terms for *HARDWARE* when it isn't a hardware
-> > license.
->
-> Only in as much as you try to use the hardware as means to disrespect
-> the spirit of the license and escape from the obligation to respect
-> users' freedoms.
-
-Shouldn't matter. As I've repeated quite a bit I cannot find a single mention 
-that "on the same hardware" has been a goal of the FSF or part of 
-the "spirit" of the GPL at any point before the drafting of GPLv3.
-
-> > If I release software under the GPL and somebody modifies it to run
-> > on a different hardware platform I'll be happy, even if they don't
-> > send me a patchset for the new version.
->
-> Yup.  See the bit about GPL not being tit-for-tat.
->
-> > If I create a piece of hardware and run Linux on it, but have it
-> > locked to a specific version or versions from a specific source (ie:
-> > me) and release it to the public, I *WILL* release the version of
-> > Linux I'm running on it.
->
-> Good.
->
-> > What I won't do is release whatever tools and such that are needed to
-> > make the hardware run a different version of the kernel. Why? Because:
-> > the hardware was designed so that a specific version of the kernel runs
-> > without problems, there is hardware that is very picky and running a
-> > customized kernel could cause that hardware to fail, etc...
->
-> Why do you care?  It's no longer your hardware, it's theirs.
-
-Legal requirements in some countries that require manufacturers to provide 
-support for their product for a period of time after it has been purchased.
-
-> Why would you refrain from providing information to others such that
-> they *could* make the software do what *they* want in their hardware
-> that they got from you?
-
-See above. 
-
-> If you let them change it and they break it, they get to keep all the
-> pieces.  Your job is done.  Why get out of your way to stop them from
-> making the best out of *their* hardware?
-
-*thinks* Okay - looks like I had a thinko there. Arguments on this subject 
-(ie: the theoretical hardware) are withdrawn and the point is conceded.
-
-DRH
+Very interesting. We did not know about this project. Thanks for the
+hint.
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
