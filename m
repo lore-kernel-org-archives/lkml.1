@@ -1,98 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXFNOMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbXFNOTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbXFNOMr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 10:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbXFNOMk
+	id S1752754AbXFNOTl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 10:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbXFNOTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 10:12:40 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:14862 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbXFNOMk (ORCPT
+	Thu, 14 Jun 2007 10:19:34 -0400
+Received: from smtp111.sbc.mail.mud.yahoo.com ([68.142.198.210]:29047 "HELO
+	smtp111.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751429AbXFNOTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 10:12:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=LFVPJKxgdlj7SFNh7q6pu6wkwUi0sVdx6+vxqywCwZRpYfbd7QoXaUHHF5uxlsR3pz5NOmwIgcZrK+CHgP5ayEYGoMe1OCBdhvqek2LtkDpZoqIoRD6Nggu7e4+h/2M5YoHdqcVdgW9fu+9l5SGqLCfJAtxr4DjwP9GQSxhn3ls=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] sched: fix SysRq-N (normalize RT tasks)
-Date: Thu, 14 Jun 2007 10:12:30 -0400
+	Thu, 14 Jun 2007 10:19:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=jyebz2UhjYXoNMgnMnffBBFTB0wwx0uj8dXOJuMKajAIRBUCw524dLkfXLR7511+GL5a2TZJjjc0a/8zvjfslqONKuZP5RG6Vw5TSeU6LHwldOaQGby4YAYcBebs8c9suw4/Hs4lQnxxiXzQ++v6lcwikKQbJnSo80HP47E1P/Y=  ;
+X-YMail-OSG: pIXxzIcVM1k3N6ejgQ8nvLdxirV3JRZ7HX8wlXDjZ_b15hoVtMD.dFJ1Q67mI9g.XRfOZoD4hA--
+From: David Brownell <david-b@pacbell.net>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Subject: Re: [PATCH -mm 4/7] PM: Remove suspend and resume support from struct device_type
+Date: Thu, 14 Jun 2007 07:19:28 -0700
 User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>
-References: <20070614094830.GA494@elte.hu>
-In-Reply-To: <20070614094830.GA494@elte.hu>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+References: <200706131551.51336.rjw@sisk.pl> <3ae72650706131520m3091d04et31b1db64be692385@mail.gmail.com> <200706140010.03438.dtor@insightbb.com>
+In-Reply-To: <200706140010.03438.dtor@insightbb.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706141012.31048.gene.heskett@gmail.com>
+Message-Id: <200706140719.28829.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007, Ingo Molnar wrote:
->From: Ingo Molnar <mingo@elte.hu>
->Subject: [patch] sched: fix SysRq-N (normalize RT tasks)
->
->Gene Heskett reported the following problem while testing CFS: SysRq-N
->is not always effective in normalizing tasks back to SCHED_OTHER.
->
->the reason for that turns out to be the following bug:
->normalize_rt_tasks() uses for_each_process() to iterate through all
->tasks in the system. The problem is, this method does not iterate
->through all tasks, it iterates through all thread groups. The proper
->mechanism to enumerate all tasks is to use a do_each_thread() +
->while_each_thread() loop.
->
->obvious bugfix for v2.6.22 inclusion. -stable candidate as well.
->
->Reported-by: Gene Heskett <gene.heskett@gmail.com>
->Signed-off-by: Ingo Molnar <mingo@elte.hu>
->---
-> kernel/sched.c |    8 +++++---
-> 1 file changed, 5 insertions(+), 3 deletions(-)
->
->Index: linux/kernel/sched.c
->===================================================================
->--- linux/kernel/sched.c
->+++ linux/kernel/sched.c
->@@ -7071,12 +7071,13 @@ EXPORT_SYMBOL(__might_sleep);
-> void normalize_rt_tasks(void)
-> {
-> 	struct prio_array *array;
->-	struct task_struct *p;
->+	struct task_struct *g, *p;
-> 	unsigned long flags;
-> 	struct rq *rq;
->
-> 	read_lock_irq(&tasklist_lock);
->-	for_each_process(p) {
->+
->+	do_each_thread(g, p) {
-> 		if (!rt_task(p))
-> 			continue;
->
->@@ -7094,7 +7095,8 @@ void normalize_rt_tasks(void)
->
-> 		__task_rq_unlock(rq);
-> 		spin_unlock_irqrestore(&p->pi_lock, flags);
->-	}
->+	} while_each_thread(g, p);
->+
-> 	read_unlock_irq(&tasklist_lock);
-> }
+On Wednesday 13 June 2007, Dmitry Torokhov wrote:
+> On Wednesday 13 June 2007 18:20, Kay Sievers wrote:
+> > Dmitry, you added this recently, is this used in any code you plan to
+> > merge soon?
+> >
+> 
+> Yes, I will need it to implement input device resume (mainly to restore LED
+> state and repeat rate for keyboards).
 
-When I looked at sched.c, I found it about 1000 lines shorter than the offsets 
-listed above.  So I took it back out and will test the plain 
-2.6.22-rc4-cfs-v16 shortly.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-To save a single life is better than to build a seven story pagoda.
+Why wouldn't that use the class device suspend/resume mechanism?
