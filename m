@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbXFNXIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758160AbXFNXJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758014AbXFNXIm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 19:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbXFNXIe
+	id S1758160AbXFNXJS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 19:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbXFNXJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 19:08:34 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54267
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754186AbXFNXId (ORCPT
+	Thu, 14 Jun 2007 19:09:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36016 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbXFNXJA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 19:08:33 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Bernd Paysan <bernd.paysan@gmx.de>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 19:08:34 -0400
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <466A3EC6.6030706@netone.net.tr> <20070614103846.GA7902@elte.hu> <200706141328.00798.bernd.paysan@gmx.de>
-In-Reply-To: <200706141328.00798.bernd.paysan@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jun 2007 19:09:00 -0400
+Date: Fri, 15 Jun 2007 00:08:58 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Mr Bowtie <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] a100u2w: Convert into Linux style
+Message-ID: <20070614230858.GA29872@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Mr Bowtie <James.Bottomley@HansenPartnership.com>,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070615001122.0abccc5e@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706141908.35639.rob@landley.net>
+In-Reply-To: <20070615001122.0abccc5e@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 07:27:59 Bernd Paysan wrote:
-> Where is the boundary between hard- and software?
+On Fri, Jun 15, 2007 at 12:11:22AM +0100, Alan Cox wrote:
+> - Remove the BSD dual licence on the new work
+> - Switch the if ALPHA to if __LP64__. (struct size is then right elsewhere)
 
-Software's the bit that's infinitely replicable at zero cost.  Hardware tends 
-not to be.
+__LP64__ is not a correct check unfortunately.  Please use
+CONFIG_64BIT instead.
 
-Rob
