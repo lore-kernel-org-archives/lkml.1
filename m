@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbXFNGDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbXFNGER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753359AbXFNGDe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 02:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbXFNGDY
+	id S1753604AbXFNGER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 02:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXFNGEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 02:03:24 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:35373 "EHLO smtp2.it.da.ut.ee"
+	Thu, 14 Jun 2007 02:04:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42347 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbXFNGDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 02:03:23 -0400
-Date: Thu, 14 Jun 2007 09:03:22 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Wang Zhenyu <zhenyu.z.wang@intel.com>
-cc: Dave Jones <davej@redhat.com>, Wang Zhenyu <zhen78@gmail.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>
-Subject: Re: I815 suddenly unkown to agpgart?
-In-Reply-To: <20070614020104.GB31534@zhen-devel.sh.intel.com>
-Message-ID: <Pine.SOC.4.64.0706140902390.24211@math>
-References: <Pine.SOC.4.64.0706131804180.2614@math> <20070613160152.GC3875@redhat.com>
- <20070613161513.GE3875@redhat.com> <20070613180039.GA4508@localhost.localdomain>
- <20070613182240.GA3726@redhat.com> <20070614013412.GA31534@zhen-devel.sh.intel.com>
- <20070614020104.GB31534@zhen-devel.sh.intel.com>
+	id S1751724AbXFNGEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 02:04:00 -0400
+To: Valdis.Kletnieks@vt.edu
+Cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706131946.15714.dhazelton@enter.net>
+	<20070614021619.381331dc@the-village.bc.nu>
+	<200706132129.52736.dhazelton@enter.net>
+	<or8xanjm1c.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<9114.1181792906@turing-police.cc.vt.edu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 03:03:40 -0300
+In-Reply-To: <9114.1181792906@turing-police.cc.vt.edu> (Valdis Kletnieks's message of "Wed\, 13 Jun 2007 23\:48\:26 -0400")
+Message-ID: <or7iq7hy2r.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> oop, for 945GME like case, we should stop scan if still no detection. 
-> Updated patch here. 
-> 
-> [AGPGART] intel_agp: fix device probe
+On Jun 14, 2007, Valdis.Kletnieks@vt.edu wrote:
 
-Thanks, this also works on i815+ATI AGP.
+> If a company sells you hardware that includes a ROM that contains GPL'ed
+> software, are they in violation of the GPL if they don't include a ROM burner
+> in the hardware?  Or are ROM burners like compilers, where you have to supply
+> your own?
+
+  this requirement does not apply if neither you nor any third party
+  retains the ability to install modified object code on the User
+  Product (for example, the work has been installed in ROM).
 
 -- 
-Meelis Roos (mroos@linux.ee)
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
