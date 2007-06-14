@@ -1,183 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbXFNWL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbXFNWLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbXFNWL1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbXFNWJL
+	id S1756392AbXFNWLn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXFNWJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:09:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36463 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752865AbXFNWJJ (ORCPT
+	Thu, 14 Jun 2007 18:09:12 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:50983 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbXFNWJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:09:09 -0400
-Message-Id: <20070614220446.975889268@chello.nl>
+	Thu, 14 Jun 2007 18:09:10 -0400
+Message-Id: <20070614220446.853313577@chello.nl>
 References: <20070614215817.389524447@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 23:58:27 +0200
+Date: Thu, 14 Jun 2007 23:58:25 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, andrea@suse.de
-Subject: [PATCH 10/17] mm: scalable bdi statistics counters.
-Content-Disposition: inline; filename=bdi_stat.patch
+Subject: [PATCH 08/17] containers: bdi init hooks
+Content-Disposition: inline; filename=bdi_init_container.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide scalable per backing_dev_info statistics counters.
+split off from the large bdi_init patch because containers are not slated
+for mainline any time soon.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/backing-dev.h |   96 +++++++++++++++++++++++++++++++++++++++++++-
- mm/backing-dev.c            |   21 +++++++++
- 2 files changed, 115 insertions(+), 2 deletions(-)
+ kernel/container.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/include/linux/backing-dev.h
+Index: linux-2.6/kernel/container.c
 ===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h	2007-05-10 10:21:53.000000000 +0200
-+++ linux-2.6/include/linux/backing-dev.h	2007-05-10 10:23:26.000000000 +0200
-@@ -8,6 +8,8 @@
- #ifndef _LINUX_BACKING_DEV_H
- #define _LINUX_BACKING_DEV_H
+--- linux-2.6.orig/kernel/container.c
++++ linux-2.6/kernel/container.c
+@@ -554,12 +554,13 @@ static int container_populate_dir(struct
+ static struct inode_operations container_dir_inode_operations;
+ static struct file_operations proc_containerstats_operations;
  
-+#include <linux/percpu_counter.h>
-+#include <linux/log2.h>
- #include <asm/atomic.h>
- 
- struct page;
-@@ -24,6 +26,12 @@ enum bdi_state {
- 
- typedef int (congested_fn)(void *, int);
- 
-+enum bdi_stat_item {
-+	NR_BDI_STAT_ITEMS
++static struct backing_dev_info container_backing_dev_info = {
++	.capabilities	= BDI_CAP_NO_ACCT_DIRTY | BDI_CAP_NO_WRITEBACK,
 +};
 +
-+#define BDI_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
-+
- struct backing_dev_info {
- 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
- 	unsigned long state;	/* Always use atomic bitops on this */
-@@ -32,14 +40,86 @@ struct backing_dev_info {
- 	void *congested_data;	/* Pointer to aux data for congested func */
- 	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
- 	void *unplug_io_data;
-+
-+	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
- };
- 
--static inline void bdi_init(struct backing_dev_info *bdi)
-+void bdi_init(struct backing_dev_info *bdi);
-+void bdi_destroy(struct backing_dev_info *bdi);
-+
-+static inline void __mod_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item, s32 amount)
-+{
-+	__percpu_counter_mod(&bdi->bdi_stat[item], amount, BDI_STAT_BATCH);
-+}
-+
-+static inline void __inc_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	__mod_bdi_stat(bdi, item, 1);
-+}
-+
-+static inline void inc_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	__inc_bdi_stat(bdi, item);
-+	local_irq_restore(flags);
-+}
-+
-+static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
+ static struct inode *container_new_inode(mode_t mode, struct super_block *sb)
  {
-+	__mod_bdi_stat(bdi, item, -1);
- }
+ 	struct inode *inode = new_inode(sb);
+-	static struct backing_dev_info container_backing_dev_info = {
+-		.capabilities	= BDI_CAP_NO_ACCT_DIRTY | BDI_CAP_NO_WRITEBACK,
+-	};
  
--static inline void bdi_destroy(struct backing_dev_info *bdi)
-+static inline void dec_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
- {
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	__dec_bdi_stat(bdi, item);
-+	local_irq_restore(flags);
-+}
-+
-+static inline s64 bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	return percpu_counter_read_positive(&bdi->bdi_stat[item]);
-+}
-+
-+static inline s64 __bdi_stat_sum(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	return percpu_counter_sum(&bdi->bdi_stat[item]);
-+}
-+
-+static inline s64 bdi_stat_sum(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	s64 sum;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	sum = __bdi_stat_sum(bdi, item);
-+	local_irq_restore(flags);
-+
-+	return sum;
-+}
-+
-+/*
-+ * maximal error of a stat counter.
-+ */
-+static inline unsigned long bdi_stat_error(struct backing_dev_info *bdi)
-+{
-+#ifdef CONFIG_SMP
-+	return nr_cpu_ids * BDI_STAT_BATCH;
-+#else
-+	return 1;
-+#endif
- }
+ 	if (inode) {
+ 		inode->i_mode = mode;
+@@ -2058,6 +2059,8 @@ int __init container_init(void)
+ 	if (err < 0)
+ 		goto out;
  
- /*
-Index: linux-2.6/mm/backing-dev.c
-===================================================================
---- linux-2.6.orig/mm/backing-dev.c	2007-05-10 10:21:46.000000000 +0200
-+++ linux-2.6/mm/backing-dev.c	2007-05-10 10:23:08.000000000 +0200
-@@ -5,6 +5,24 @@
- #include <linux/sched.h>
- #include <linux/module.h>
- 
-+void bdi_init(struct backing_dev_info *bdi)
-+{
-+	int i;
++	bdi_init(&container_backing_dev_info);
 +
-+	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
-+		percpu_counter_init_irq(&bdi->bdi_stat[i], 0);
-+}
-+EXPORT_SYMBOL(bdi_init);
-+
-+void bdi_destroy(struct backing_dev_info *bdi)
-+{
-+	int i;
-+
-+	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
-+		percpu_counter_destroy(&bdi->bdi_stat[i]);
-+}
-+EXPORT_SYMBOL(bdi_destroy);
-+
- static wait_queue_head_t congestion_wqh[2] = {
- 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[0]),
- 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[1])
+ 	entry = create_proc_entry("containers", 0, NULL);
+ 	if (entry)
+ 		entry->proc_fops = &proc_containerstats_operations;
 
 -- 
 
