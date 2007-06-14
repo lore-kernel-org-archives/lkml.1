@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbXFNTLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbXFNTM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753415AbXFNTLE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXFNTKy
+	id S1753527AbXFNTM7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXFNTMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:10:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39636 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751245AbXFNTKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:10:54 -0400
-To: Bron Gondwana <brong@fastmail.fm>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Adams <cmadams@hiwaay.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no>
-	<fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no>
-	<fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no>
-	<fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no>
-	<20070614013214.GA1124293@hiwaay.net>
-	<20070614025248.6e0f72f0@the-village.bc.nu>
-	<20070614041041.GA6788@brong.net>
-	<orsl8vi13h.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614070006.GA7393@brong.net>
-	<orvedqfpkp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614181626.GF3522@nostromo.devel.redhat.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 15:25:43 -0300
-In-Reply-To: <20070614181626.GF3522@nostromo.devel.redhat.com> (Bill Nottingham's message of "Thu\, 14 Jun 2007 14\:16\:26 -0400")
-Message-ID: <orhcpae6l4.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 14 Jun 2007 15:12:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49499 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbXFNTMw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:12:52 -0400
+Date: Thu, 14 Jun 2007 12:12:06 -0700
+From: Greg KH <greg@kroah.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: "Huang, Ying" <ying.huang@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver core: multithreaded device matching with
+	dependency
+Message-ID: <20070614191206.GA13589@kroah.com>
+References: <9D7649D18729DE4BB2BD7B494F7FEDC2041319@pdsmsx415.ccr.corp.intel.com> <466AD638.9030409@s5r6.in-berlin.de> <1181643157.2779.23.camel@caritas-dev.intel.com> <466EAE21.7090407@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <466EAE21.7090407@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Bill Nottingham <notting@redhat.com> wrote:
+On Tue, Jun 12, 2007 at 04:30:57PM +0200, Stefan Richter wrote:
+> 
+> There is so much unskilled labor in driver hacking land (I'm merely
+> speaking for myself of course) that something like the driver core
+> /really/ needs well-working, easy to understand, and well-documented APIs.
+> 
+> PS:  By a well-documented struct definition I mean:
+>    - Public members have a type and name which indicate the meaning of
+>      the member, and there is a comment on permissible or required
+>      write/read accesses to the member.
+>    - Private members are undocumented or even better yet explicitly
+>      marked as private.
 
-> Alexandre Oliva (aoliva@redhat.com) said: 
->> > Sure, if they make any changes or fixes to Linux.  Other than that,
->> > only the same benefit that Microsoft get from Windows piracy - TiVo
->> > employees become familiar with Linux and are more likely to use it
->> > and maybe contribute more in another job later.
->> 
->> Now, what if TiVO actually permitted all of its customers to make
->> changes or fixes to Linux, and become familiar with it and become more
->> likely to use it and maybe contribute more later?
+We are slowly working toward this goal with the cleanups and work that
+Kay has been doing over the past year.  So be patient, it is slowly
+coming, or please help out if you can.
 
-> a) there's nothing that prevents a Tivo user from changing or fixing
-> Linux completely outside of the Tivo
+> If the access methods to public members turn out too difficult and
+> fragile, make the members private and provide documented public accessors.
 
-But how about inside the TiVO, so as to use Linux and the rest of the
-GNU/Linux distro put in there for an even better DVR experience?
+Well, let's not get into the whole "accessors are good/evil" type thread
+here, but yes, we'll work to try to make this whole thing easier to use
+and very hard to use incorrectly (which is not true today, I know,
+sorry...)
 
-Sure, this might still be accomplished on another hardware platform.
-But the TiVO already has all the hardware there, and you already have
-all the software ready to work on it.  Except that you can't change
-it.  You'd have to waste time and money just to get to the same status
-on another hardware platform.
+thanks,
 
-What do we gain?
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+greg k-h
