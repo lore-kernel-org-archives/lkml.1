@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbXFNRVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbXFNRWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754601AbXFNRVR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 13:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXFNRVF
+	id S1754716AbXFNRWd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 13:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbXFNRW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 13:21:05 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:46765 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbXFNRVE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 13:21:04 -0400
-Message-ID: <467178B9.5070302@wpkg.org>
-Date: Thu, 14 Jun 2007 19:19:53 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: ext2 on flash memory
-References: <466D379C.6000809@wpkg.org> <20070614163803.GA31984@lazybastard.org>
-In-Reply-To: <20070614163803.GA31984@lazybastard.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 14 Jun 2007 13:22:26 -0400
+Received: from mail.screens.ru ([213.234.233.54]:55333 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751111AbXFNRWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 13:22:25 -0400
+Date: Thu, 14 Jun 2007 21:22:43 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Clements <Paul.Clements@steeleye.com>, Pavel Machek <pavel@ucw.cz>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] nbd.c:sock_xmit: cleanup signal related code
+Message-ID: <20070614172243.GA2446@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel schrieb:
-> On Mon, 11 June 2007 13:53:00 +0200, Tomasz Chmielewski wrote:
->> jffs2 only works on mtd devices, and that excludes pendrives, which are 
->> block devices. I know LogFS will work with block devices one day, but 
->> currently, it doesn't (and is not in the kernel yet as well).
-> 
-> Actually, LogFS does work on block devices now.  Performance on hard
-> disks is quite bad.  Hopefully that becomes untrue just as fast as your
-> slightly outdated claim. :)
+sock_xmit() re-implements sigprocmask() and dequeue_signal_lock().
 
-Cool, does it mean we have the first Linux filesystem supporting 
-compression, which can be used on USB-sticks (I don't count old 
-ext2+compression patches)? :)
+Note: I can't understand this dequeue_signal(), it can dequeue SIGKILL
+for the user-space task doing nbd_ioctl() ?
 
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
--- 
-Tomasz Chmielewski
-http://wpkg.org
-
+--- sig/drivers/block/nbd.c~1_nbd	2007-05-21 13:57:50.000000000 +0400
++++ sig/drivers/block/nbd.c	2007-06-14 19:39:55.000000000 +0400
+@@ -122,17 +122,12 @@ static int sock_xmit(struct socket *sock
+ 	int result;
+ 	struct msghdr msg;
+ 	struct kvec iov;
+-	unsigned long flags;
+-	sigset_t oldset;
++	sigset_t blocked, oldset;
+ 
+ 	/* Allow interception of SIGKILL only
+ 	 * Don't allow other signals to interrupt the transmission */
+-	spin_lock_irqsave(&current->sighand->siglock, flags);
+-	oldset = current->blocked;
+-	sigfillset(&current->blocked);
+-	sigdelsetmask(&current->blocked, sigmask(SIGKILL));
+-	recalc_sigpending();
+-	spin_unlock_irqrestore(&current->sighand->siglock, flags);
++	siginitsetinv(&blocked, sigmask(SIGKILL));
++	sigprocmask(SIG_SETMASK, &blocked, &oldset);
+ 
+ 	do {
+ 		sock->sk->sk_allocation = GFP_NOIO;
+@@ -151,11 +146,9 @@ static int sock_xmit(struct socket *sock
+ 
+ 		if (signal_pending(current)) {
+ 			siginfo_t info;
+-			spin_lock_irqsave(&current->sighand->siglock, flags);
+ 			printk(KERN_WARNING "nbd (pid %d: %s) got signal %d\n",
+-				current->pid, current->comm, 
+-				dequeue_signal(current, &current->blocked, &info));
+-			spin_unlock_irqrestore(&current->sighand->siglock, flags);
++				current->pid, current->comm,
++				dequeue_signal_lock(current, &current->blocked, &info));
+ 			result = -EINTR;
+ 			break;
+ 		}
+@@ -169,10 +162,7 @@ static int sock_xmit(struct socket *sock
+ 		buf += result;
+ 	} while (size > 0);
+ 
+-	spin_lock_irqsave(&current->sighand->siglock, flags);
+-	current->blocked = oldset;
+-	recalc_sigpending();
+-	spin_unlock_irqrestore(&current->sighand->siglock, flags);
++	sigprocmask(SIG_SETMASK, &oldset, NULL);
+ 
+ 	return result;
+ }
 
