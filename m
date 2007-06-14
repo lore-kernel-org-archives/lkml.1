@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbXFNWnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbXFNWoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756221AbXFNWnV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbXFNWnO
+	id S1757271AbXFNWoc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXFNWoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:43:14 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:45202 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751479AbXFNWnN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:43:13 -0400
-Date: Thu, 14 Jun 2007 18:43:11 -0400
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614224311.GM10008@csclub.uwaterloo.ca>
-References: <9578.1181793617@turing-police.cc.vt.edu> <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org> <orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141100390.14121@woody.linux-foundation.org> <ork5u6cpc2.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org> <orvedq9s0d.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141402400.14121@woody.linux-foundation.org> <ortzta88x3.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ortzta88x3.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Thu, 14 Jun 2007 18:44:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45405 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751818AbXFNWoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 18:44:22 -0400
+Subject: Re: libertas (private) ioctls vs. nl80211
+From: Dan Williams <dcbw@redhat.com>
+To: Holger Schurig <hs4233@mail.mn-solutions.de>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       linux-wireless@vger.kernel.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200706142203.13779.hs4233@mail.mn-solutions.de>
+References: <1181757483.29767.99.camel@johannes.berg>
+	 <20070614170901.GA13384@infradead.org>
+	 <200706142203.13779.hs4233@mail.mn-solutions.de>
+Content-Type: text/plain
+Date: Thu, 14 Jun 2007 18:48:32 -0400
+Message-Id: <1181861312.23567.18.camel@xo-28-0B-88.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 07:31:52PM -0300, Alexandre Oliva wrote:
-> Ok, the MIT license could get you that.  Even public domain could.
-
-Those would not ensure that the source code stays free.
-
-> > I didn't want money, I didn't want hardware, I just wanted the
-> > improvements back.
+On Thu, 2007-06-14 at 22:03 +0200, Holger Schurig wrote:
+> > Independent of any nl80211 status the private libertas ioctls have to
+> > go.  Not only don't we want private ioctls for mesh networking but
+> > rather have it as driver-independent interface, but the actual
+> > libertas interface is the worst possible choice.
 > 
-> GPL won't get you that.  You want a non-Free Software license.
+> I have been told that the Libertas mesh functionality is not 802.11s, 
+
+Technically this is correct.  A bit more back-story though.  802.11s is
+still in draft form.  It'll be there for a while yet.  Stuff like
+authentication and encryption are in heavy flux.  Previously, the mesh
+stuff was using the 4th value in the 802.11 frame type.  But it turns
+out that a lot of fullmac parts can't handle that because they drop
+those frames in silicon.  So the standard is moving towards using WDS
+frames without changing the frame type, which is what the Marvell
+implementation is _already_ using.  I repeat, the standard is moving
+towards the Marvell mesh implementation.  Furthermore, the CozyBit guys
+who wrote the Marvell mesh implementation are heavily involved in the
+802.11s standards groups anyway.
+
+> Marvell brew their own beer (because it predates 802.11s, I guess). 
+> However, for the kernel I'd see more an interface that supports 
+> 802.11s --- or is flexible to support both this and the libertas one.
+
+Definitely; 
+
+> I also have two related observations:
 > 
-> It will only as long as people play along nicely and perceive the
-> benefits of cooperation.  But some players don't.
+> If I'm correctt, the only non-mesh ioctl in ioctl.c is the led_gpio 
+> ioctl. Theoretically one can abstract this, many WLAN chips have GPIOs. 
 
-It seems to work very well in practice though.
+Plus the set_region call that can be replaced by whatever the regulatory
+stuff comes up with.
 
-> No.  Honestly, I really don't.  Even when I try and look at it from
-> your perspective, that you described very beautifully in the rest of
-> the message that I snipped, it's still a mistery to me why you think
-> permitting Tivoization could possibly be advantageous to your project.
+> But mostly there is no documentation available about how those GPIOs 
+> are used, where they are soldered to etc. To blindly allow changing 
+> arbitrary GPIOs migth even be harmful to the hardware.
+> 
+> That said: with the USB 8388 dongle that I have, the LED GPIO iwpriv 
+> call didn't do anything. Not sure if it works on OLPC ... but I doubt 
+> that one can see the LEDs there ...
 
-Perhaps there is no benefit in permitting "Tivoization".  But at the
-same time, perhaps there are benefits in not preventing "Tivoization" in
-ways that may or may not be foreseen at this time.
+I think it's all dependent on the firmware; do you know what version of
+the CF firmware you have?  The ledgpio function is apparently from an
+older version of the firmware but is still in our 8388 5.x branch.
+There's apparently a new command for this sort of thing.
 
-> What is it in the anti-Tivoization provision that gets you any less
-> improvements back?
+> Another thing: I'm working on a CF 8385 based driver. Here I have a 
+> firmware that does not (as far as I know this undocumented pile of 
+> bytes) have any mesh functionality at all. So I need a way from if_cs.c 
+> to disable all those iwpriv ioctls. Haven't thought about this issue 
+> yet, other things are more pressing right now. However, I already don't 
+> create the mshX interface.
 
-Tivo has provided some code changes and improvements to Linux.  If they
-had been totally unable to use Linux due to the license, they would
-probably have used vxworks or BSD or something else, and Linux would
-have gotten nothing back.  So the Linux source code improved and other
-systems using the linux code base got better as a result.
+Well, can't the ioctl stuff just return -EOPNOTSUPP or something if mesh
+isn't available?
 
-> If anything, I'd think that, by not permitting TiVO to prohibit users
-> from running modified versions of your code that they don't authorize
-> themselves, these users would do *more* than TiVO alone ever could,
-> and if a fraction of them contributes something back, you're way
-> better off.
+Dan
 
-Users of the Tivo hardware would be able to do more, sure, but then
-again, actualyl, maybe not.  After all if it ran vxworks or bsd, the
-user still wouldn't be able to do anything about it.  The end result is
-the same.  The answer is also still the same: Don't buy a tivo if you
-want to change what it does, because it doesn't let you do that.
 
---
-Len Sorensen
