@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbXFNTz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbXFNT4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbXFNTz5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbXFNTzq
+	id S1756777AbXFNT4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbXFNTz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:55:46 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60069 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755933AbXFNTzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:55:44 -0400
-Date: Thu, 14 Jun 2007 21:56:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: clameter@sgi.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 01/14] Define functions for page cache handling
-Message-ID: <20070614195646.GB2258@uranus.ravnborg.org>
-References: <20070614193839.878721298@sgi.com> <20070614194052.663061482@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Jun 2007 15:55:58 -0400
+Received: from keil-draco.com ([216.193.185.50]:50489 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756523AbXFNTz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:55:57 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Kevin Fox <Kevin.Fox@pnl.gov>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Thu, 14 Jun 2007 15:55:43 -0400
+User-Agent: KMail/1.9.6
+Cc: Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706132042.02728.dhazelton@enter.net> <1181837191.21942.24.camel@zathras.emsl.pnl.gov>
+In-Reply-To: <1181837191.21942.24.camel@zathras.emsl.pnl.gov>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070614194052.663061482@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200706141555.44085.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 12:38:40PM -0700, clameter@sgi.com wrote:
-> We use the macros PAGE_CACHE_SIZE PAGE_CACHE_SHIFT PAGE_CACHE_MASK
-> and PAGE_CACHE_ALIGN in various places in the kernel. Many times
-> common operations like calculating the offset or the index are coded
-> using shifts and adds. This patch provides inline function to
-> get the calculations accomplished in a consistent way.
-> 
-> All functions take an address_space pointer. The address space pointer
-> will be used in the future to eventually support a variable size
-> page cache. Information reachable via the mapping may then determine
-> page size.
-> 
-> New function			Related base page constant
-> ---------------------------------------------------
-> page_cache_shift(a)		PAGE_CACHE_SHIFT
-> page_cache_size(a)		PAGE_CACHE_SIZE
-> page_cache_mask(a)		PAGE_CACHE_MASK
-> page_cache_index(a, pos)	Calculate page number from position
-> page_cache_next(addr, pos)	Page number of next page
-> page_cache_offset(a, pos)	Calculate offset into a page
-> page_cache_pos(a, index, offset)
-> 				Form position based on page number
-> 				and an offset.
-> 
-> This provides a basis that would allow the conversion of all page cache
-> handling in the kernel and ultimately allow the removal of the PAGE_CACHE_*
-> constants.
+On Thursday 14 June 2007 12:06:31 Kevin Fox wrote:
+> On Wed, 2007-06-13 at 20:42 -0400, Daniel Hazelton wrote:
+> <SNIP>
+>
+> > > Do you deny that TiVo prevents you (or at least a random customer)
+> > > from modifying the copy of Linux that they ship in their DVR?
+> >
+> > Exactly. They don't. What TiVO prevents is using that modified version on
+> > their hardware. And they have that right, because the Hardware *ISN'T*
+> > covered by the GPL.
+>
+> The hardware isn't directly covered by the GPL, correct. But, if they
+> want to use the software on the hardware, they have to comply with the
+> GPL. The software license can then influence hardware IF they want to
+> use it badly enough.
 
-We need access to PAGE_SIZE in vmlinux.lds.h.
-What is your plan with that usage?
+Until GPLv3 there was no requirement that the modified code be able to operate 
+on any given device - even the one its designed for. Claiming otherwise seems 
+stupid to me, almost ridiculous.
 
-	Sam
+> For example, the hardware is perfectly capable of being used to break
+> the terms of the GPL by being used to distribute a modified binary
+> without releasing the source. But the hardware's behavior is restricted
+> by the software for the betterment of all.
+
+But this can be done *NOW* - has been done by at least one company, IIRC. 
+(and, IIRC again, they didn't so much as "not release the modified version" 
+as "not release all tools/scripts/installation/build instructions")
+
+> This whole argument is about the spirit of the GPL. Linus and others
+> think the spirit is one thing, the FSF guys think its something else.
+> Since the license is clearly owned by the FSF, I think they get the
+> final vote on what they "intended" it to be when they wrote it, no? If
+> they say they intended it to not allow Tivoization then believe them,
+> because they are the only ones that know what they were thinking when
+> they wrote it! The GPLv2 seems to allow it though. If Linus and friends
+> want to allow it, then they can stay with the GPLv2. For those who want
+> to disallow Tivoization, choose v3. No worries guys.
+>
+> > Do you understand that, or do I need to break out the finger-puppets next
+> > ?
+>
+> Guys, we are all friends here. No reason to be so insulting. Its just a
+> difference of opinion. People seem to be talking past each other instead
+> of to one another. This usually happens when people are basing their
+> underlying assumptions on different things and not listening to the
+> other. Please take a step back and think about it.
+
+I noticed that ten or twenty messages after I made that comment. In truth, the 
+reason I made it was, and is, because I am tired of explaining the fact that 
+there is no "one" interpretation of the GPLv2 - or any license - *UNLESS* it 
+has been ruled on by a court. And even then, the courts ruling only applies 
+to the parts of the license that were in contention before it.
+
+DRH
+
+> <SNIP>
+
+
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
