@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbXFNH5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbXFNH5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbXFNH5D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 03:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbXFNH4w
+	id S1754820AbXFNH5g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 03:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbXFNH50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 03:56:52 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:24567 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbXFNH4u (ORCPT
+	Thu, 14 Jun 2007 03:57:26 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:59723 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752979AbXFNH5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 03:56:50 -0400
+	Thu, 14 Jun 2007 03:57:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=CKMBYztX3IkJ0Pul8eqNnJHfxnqpo2ZL7faUOrVg6vwy3TM7XYm8VZoGh6MmVA1CJsBjTURlAOXhNWxy8yLNjqtRHTR4uEaSDH5MBjkXqmW3SZ2HKbSCAFCzml6b56p1+LsNgM7/7g8Cxzi8c/K/HQfv1ByhyBGMZs5+W18ESIc=
-Message-ID: <4670F4BB.3060306@gmail.com>
-Date: Thu, 14 Jun 2007 16:56:43 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=jwiD/AGj7N6ZvCFYPGqAHtS0gT+Qv3pQQsJTM6Y2t94Huiv66lOin0Fdl1kZFy84t04Ukha1dqohX/VwkwB9m3BGngEj3abBHlDn5nWjqfsBbHXn/SnSgArsNw+te1FH2gzSjcEJQYKQ3oqJqIfexdPEIxRca9pprQRiGeFoQ1w=
+From: Paulo Pereira <pfmp.404@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions with patches v3
+Date: Thu, 14 Jun 2007 08:57:14 +0100
+User-Agent: KMail/1.9.6
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <46704B5D.5020106@googlemail.com> <46704C4D.5010803@googlemail.com> <20070613203501.GA5708@suse.de>
+In-Reply-To: <20070613203501.GA5708@suse.de>
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@linux.intel.com>,
-       jeff@garzik.org, james.bottomley@steeleye.com,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [patch 0/3] AHCI Link Power Management
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com>	<466DFDB5.9030901@gmail.com>	<466E0642.5020506@linux.intel.com>	<466E1D51.9070007@gmail.com>	<20070613090430.GK13747@elf.ucw.cz> <20070613092607.4ddf0f79.kristen.c.accardi@intel.com>
-In-Reply-To: <20070613092607.4ddf0f79.kristen.c.accardi@intel.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706140857.14824.pfmp.404@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
->>>>> I'm not sure about this.  We need better PM framework to support 
->>>>> powersaving in other controllers and some ahcis don't save much
->>>>> when only link power management is used,
->>>> do you have data to support this?
->>> Yeah, it was some Lenovo notebook.  Pavel is more familiar with the
->>> hardware.  Pavel, what was the notebook which didn't save much power
->>> with standard SATA power save but needed port to be completely turned off?
->> Thinkpad x60. Some one Kristen probably used while developing the
->> patch :-).
-> 
-> Yes - that confirms my conclusion that the first patch just wasn't
-> done correctly - cause when I measure the power savings with a power
-> meter on the X60 with my patches I see ~ 1W.
+A Wednesday 13 June 2007 21:35:02, Greg KH escreveu:
+> On Wed, Jun 13, 2007 at 09:58:05PM +0200, Michal Piotrowski wrote:
+> >  USB
+> >
+> >  Subject    : list_add corruption. prev->next should be next (f7d28794),
+> > but was f0df8ed4 (prev=f0df8ed4) Kernel Bug at lib/list_debug.c:33
+> >  References : http://bugzilla.kernel.org/show_bug.cgi?id=8561
+> >  Submitter  : Paulo Pereira <pfmp.404@gmail.com>
+> >  Handled-By : Alan Stern <stern@rowland.harvard.edu>
+> >  Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8561#c8
+> >  Status     : patch was suggested
+>
+> I'm pretty sure this wasn't a "regression" and was always there, and
+> that the proposed patch did fix the solution, right Paulo and Alan?
+>
+> thanks,
+>
+> greg k-h
 
-Hmmm... Could it be that the controller doesn't enter powersave state
-when SControl is written to?
-
--- 
-tejun
+	No I haven't fix the problem... I'am waiting for a friend that is in 
+holiday's and work's with linux well. I'am beginer in linux and I can't put 
+the patch to work, because of that I'am waiting for him to see if the patch 
+work. 
+	Sorry, the fact I don't say anything about the problem but my friend comes 
+this week and them we put the patch and I will tell something!!
+Regards, Paulo.
