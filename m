@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbXFNRqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbXFNRqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194AbXFNRqP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 13:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXFNRps
+	id S1755390AbXFNRqa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 13:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbXFNRpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 13:45:48 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:37642 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314AbXFNRpr (ORCPT
+	Thu, 14 Jun 2007 13:45:49 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:39490 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752572AbXFNRps (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 13:45:47 -0400
-Date: Thu, 14 Jun 2007 10:46:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm 4/7] PM: Remove suspend and resume support from
-	struct device_type
-Message-ID: <20070614174642.GB10378@kroah.com>
-References: <200706131551.51336.rjw@sisk.pl> <3ae72650706131520m3091d04et31b1db64be692385@mail.gmail.com> <200706140010.03438.dtor@insightbb.com> <200706141437.16267.rjw@sisk.pl> <d120d5000706140559h10461e50q2f30ff423468676e@mail.gmail.com>
+	Thu, 14 Jun 2007 13:45:48 -0400
+X-Sasl-enc: 5xA99Kak/Vpxb8Qw8OuWlOysy9NV55s6mhAcxxjuxH/8 1181843147
+Date: Thu, 14 Jun 2007 14:45:40 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Greg KH <greg@kroah.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-stable <stable@kernel.org>,
+       Dave Jones <davej@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, dsd@gentoo.org
+Subject: Re: [stable]  libata spindown patches for 2.6.21-stable
+Message-ID: <20070614174540.GB358@khazad-dum.debian.net>
+References: <4671664A.8010404@redhat.com> <20070614173051.GA9039@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d120d5000706140559h10461e50q2f30ff423468676e@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070614173051.GA9039@kroah.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 08:59:20AM -0400, Dmitry Torokhov wrote:
->  On 6/14/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Thursday, 14 June 2007 06:10, Dmitry Torokhov wrote:
-> > > On Wednesday 13 June 2007 18:20, Kay Sievers wrote:
-> > > > Dmitry, you added this recently, is this used in any code you plan to
-> > > > merge soon?
-> > > >
-> > >
-> > > Yes, I will need it to implement input device resume (mainly to restore 
-> > LED
-> > > state and repeat rate for keyboards).
-> >
-> > Would that be a big problem to reintroduce it along with the user?
-> >
-> 
->  Yes because that part is in Greg's domain so I am trying to set
->  infrastructure up before I can commit my patches into my tree so that
->  Andrew can safely pull from me into -mm. Greg normally adds such stuff
->  during merge window so that means if we remove it now we'd need ~2
->  releases to get it and the user back in.
+On Thu, 14 Jun 2007, Greg KH wrote:
+> Are there reported bugs that this patchset fixes?
 
-Yes, don't worry, I'm not going to remove this as I know you rely on it.
+Yes, at least one I opened and which got a CODE_FIX when Tejun prepared the
+first version of the patch.
 
-Sorry for the delay in getting to these patches, I'm in meetings down in
-CA for the rest of the week...
+http://bugzilla.kernel.org/show_bug.cgi?id=7838
 
-thanks,
-
-greg k-h
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
