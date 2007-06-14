@@ -1,39 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbXFNRZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbXFNRaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbXFNRZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 13:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbXFNRZR
+	id S1754220AbXFNRaH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 13:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXFNR35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 13:25:17 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38017 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753409AbXFNRZP (ORCPT
+	Thu, 14 Jun 2007 13:29:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39693 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbXFNR35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 13:25:15 -0400
-Date: Thu, 14 Jun 2007 18:25:00 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Kevin Fox <Kevin.Fox@pnl.gov>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614172500.GR21478@ftp.linux.org.uk>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org> <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132042.02728.dhazelton@enter.net> <1181837191.21942.24.camel@zathras.emsl.pnl.gov>
-Mime-Version: 1.0
+	Thu, 14 Jun 2007 13:29:57 -0400
+Date: Thu, 14 Jun 2007 10:30:51 -0700
+From: Greg KH <greg@kroah.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-stable <stable@kernel.org>, Dave Jones <davej@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, dsd@gentoo.org
+Subject: Re: [stable]  libata spindown patches for 2.6.21-stable
+Message-ID: <20070614173051.GA9039@kroah.com>
+References: <4671664A.8010404@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1181837191.21942.24.camel@zathras.emsl.pnl.gov>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <4671664A.8010404@redhat.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 09:06:31AM -0700, Kevin Fox wrote:
- 
-> This whole argument is about the spirit of the GPL. Linus and others
-> think the spirit is one thing, the FSF guys think its something else.
+<added Daniel to CC:>
 
-What the fsck it is, linux-kernel or bleeding Council of Nikea?
+On Thu, Jun 14, 2007 at 12:01:14PM -0400, Chuck Ebbert wrote:
+> Should we put these patches in 2.6.21-stable?
+> 
+> Gentoo developers did a full backport:
+> 
+> http://marc.info/?l=linux-ide&m=118047865916766&w=2
+
+I think it looks way too big.
+
+If there are smaller patches, it might be a bit more reasonable.
+
+Are there reported bugs that this patchset fixes?
+
+thanks,
+
+greg k-h
