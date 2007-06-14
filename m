@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbXFNRA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbXFNRBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbXFNRA6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 13:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXFNRAv
+	id S1752462AbXFNRBb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 13:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXFNRBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 13:00:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50375 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750862AbXFNRAt convert rfc822-to-8bit (ORCPT
+	Thu, 14 Jun 2007 13:01:22 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:3649 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbXFNRBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 13:00:49 -0400
-To: Matt Keenan <tank.en.mate@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+	Thu, 14 Jun 2007 13:01:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GC/If3XAN10Ud2OFbdC9CzN7b12JAB0XVL2AYiOBrvtgEAksCYrakjjCnsyrGNu6gD+eC1FvDq6XqlFMIo2CHs56wcFQiG+N/MrwtlcQbm+zB20PQ2WrvLB0Ane1QlJUbzSSmjaVyJnhC3mJMc3fnrDnzeTBOQ+POASeze6oweA=
+Message-ID: <d120d5000706141001o2d00f20cqb4133bf7b9ba11ab@mail.gmail.com>
+Date: Thu, 14 Jun 2007 13:01:20 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Al Viro" <viro@ftp.linux.org.uk>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<466BCBBC.90305@netone.net.tr>
-	<Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
-	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-	<20070610160531.GA12179@kroah.com>
-	<f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
-	<20070612184110.GB7980@kroah.com>
-	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>
-	<or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070613211432.GH10008@csclub.uwaterloo.ca>
-	<orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org>
-	<or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131930120.14121@woody.linux-foundation.org>
-	<ory7ingij5.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4670F3C5.5090602@gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 14:00:21 -0300
-In-Reply-To: <4670F3C5.5090602@gmail.com> (Matt Keenan's message of "Thu\, 14 Jun 2007 08\:52\:37 +0100")
-Message-ID: <orir9qfp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+Cc: "Bernd Paysan" <bernd.paysan@gmx.de>, "Krzysztof Halasa" <khc@pm.waw.pl>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070614164124.GP21478@ftp.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466A3EC6.6030706@netone.net.tr>
+	 <200706141023.21624.bernd.paysan@gmx.de>
+	 <20070614153935.GO21478@ftp.linux.org.uk>
+	 <200706141832.58526.bernd.paysan@gmx.de>
+	 <20070614164124.GP21478@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Matt Keenan <tank.en.mate@gmail.com> wrote:
+On 6/14/07, Al Viro <viro@ftp.linux.org.uk> wrote:
+> On Thu, Jun 14, 2007 at 06:32:57PM +0200, Bernd Paysan wrote:
+>
+> > BTW: If I grep through Linux, I find two files where you have noted your
+> > copyright and the release conditions (GPL v2), and I think last time I did
+> > the same thing, I found two GPLv2-files, as well - all other files with "Al
+> > Viro" in it apparently have multiple authors. These two files may be the
+> > same ones, or maybe there are two other files, making it four in total (or
+> > some further I missed, the text of v2 only is not as normed as the text
+> > for "v2 or later", but in general it's rare). These files clearly have to
+> > be rewritten or premission has to be asked when updating COPYING to GPLv3.
+> > But that's not a show-stopper.
+>
+> Rot.  "Multiple authors" doesn't get you out of that.  If you take a code
+> available under GPLv2 or later and combine it with code under specific
+> version of GPL, result is under than specific version of GPL.  If you want
+> to argue against that, make sure to Cc RMS on that, I would really like to
+> hear his opinion.
+>
+> Multiple authors == need permission from each author with enough
+> contributions to that file to make the contributions in question
+> copyrightable.
+>
+> And in my case (and case of gregkh, and...) that would be considerably
+> more than a couple of files.  Really.
 
-> Alexandre Oliva wrote:
-
->> Err, no.  Software, per legal definitions in Brazil, US and elsewhere,
->> require some physical support.  That's the hard disk in the TiVO DVR,
->> in this case.  I don't see how this matters, though.
-
-> I'm now intrigued, where are these (Brazilian and US) definitions
-> stipulated, and under what authority?
-
-http://www.planalto.gov.br/ccIVIL_03/LEIS/L9609.htm
-
-LEI Nº 9.609 , DE 19 DE FEVEREIRO DE 1998.
-
-Art. 1º Programa de computador é a expressão de um conjunto organizado
-de instruções em linguagem natural ou codificada, contida em suporte
-                                                  ^^^^^^^^^^^^^^^^^^
-físico de qualquer natureza, de emprego necessário em máquinas
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-automáticas de tratamento da informação, dispositivos, instrumentos ou
-equipamentos periféricos, baseados em técnica digital ou análoga, para
-fazê-los funcionar de modo e para fins determinados.
-
+I would expect that if you contribute to a file that explicitely says
+"GPL v2 or later" and you do not change that wording then you agree
+GPL v2 or later for that particular contribution. So for example
+drivers/net/plip.c could be changed to GPL v3 even though you
+contributed to it.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dmitry
