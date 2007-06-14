@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbXFNXrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbXFNXro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758081AbXFNXrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 19:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbXFNXrL
+	id S1755758AbXFNXro (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 19:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbXFNXre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 19:47:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38848 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754942AbXFNXrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 19:47:10 -0400
-Date: Thu, 14 Jun 2007 19:45:08 -0400
-From: Bill Nottingham <notting@redhat.com>
+	Thu, 14 Jun 2007 19:47:34 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:38486
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754059AbXFNXrd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 19:47:33 -0400
+Date: Thu, 14 Jun 2007 16:46:29 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
 To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Florin Malita <fmalita@gmail.com>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kevin Fox <Kevin.Fox@pnl.gov>, Daniel Hazelton <dhazelton@enter.net>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614234507.GA3860@nostromo.devel.redhat.com>
-Mail-Followup-To: Alexandre Oliva <aoliva@redhat.com>,
-	Florin Malita <fmalita@gmail.com>,
-	Daniel Hazelton <dhazelton@enter.net>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-	david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <466A3EC6.6030706@netone.net.tr> <alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org> <ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br> <200706140305.50095.dhazelton@enter.net> <orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br> <46717C58.8050501@gmail.com> <ord4zye6iv.fsf@oliva.athome.lsd.ic.unicamp.br> <4671A528.5040300@gmail.com> <or1wge9pwr.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orr6oe9rqf.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706141643120.29630@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+ <alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org>
+ <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132042.02728.dhazelton@enter.net>
+ <1181837191.21942.24.camel@zathras.emsl.pnl.gov>
+ <alpine.LFD.0.98.0706140923250.14121@woody.linux-foundation.org>
+ <orsl8ucq2n.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706141301340.14121@woody.linux-foundation.org>
+ <orr6oe9rqf.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <or1wge9pwr.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexandre Oliva (aoliva@redhat.com) said: 
-> And since the specific implementation involves creating a derived work
-> of the GPLed kernel (the signature, or the signed image, or what have
-> you)
+On Thu, 14 Jun 2007, Alexandre Oliva wrote:
 
-Wait, a signed filesystem image that happens to contain GPL code
-is now a derived work? Under what sort of interpretation does *that*
-occur?
+> On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>> Tivo *respected* the freedoms, and gave source back, and gave you all the
+>> same rights you had to Linux originally, and to their modifications.
+>
+>> How stupid are you to not acknowledge that?
+>
+>> Tivo limited their *hardware*, not the software.
+>
+> Have you ever wondered *why* it limited the hardware?
+>
+> Is it per chance such that I cannot modify the software that runs on
+> the hardware?
 
-(This pretty much throws the 'aggregation' premise in GPLv2 completely
-out.)
+if you cannot modify the software that runs on your Tivo hardware you 
+haven't tried very hard.
 
-Bill
+true, they don't go out of their way to make it easy, but even if they 
+didn't do the integrity checking of the system it still wouldn't be easy 
+to load your own software on the tivo, there's no path to load the 
+software without disassembling the hardware.
+
+> How is that respecting the freedoms?  How is this not imposing further
+> restrictions?
+
+I think the software is all available at www.tivo.com/linux that provides 
+you all the freedom that they got.
+
+David Lang
+
+>
+> And, more importantly, how is it that permitting this makes for
+> *better* compliance with your tit-for-tat conceptions about the GPL?
+>
+> I.e., if Tivoization is the only issue that you think makes GPLv3 a
+> worse license than GPLv2, and you like GPLv2 because of this
+> tit-for-tat, surely you should be able to explain why Tivoization
+> promotes this tit-for-tat notion better than GPLv3, right?
+>
+>
