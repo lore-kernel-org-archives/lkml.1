@@ -1,90 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXFNDtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbXFNDyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbXFNDtz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 23:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbXFNDts
+	id S1753634AbXFNDyQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 23:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbXFNDyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 23:49:48 -0400
-Received: from keil-draco.com ([216.193.185.50]:50167 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752232AbXFNDtr (ORCPT
+	Wed, 13 Jun 2007 23:54:01 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4157 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752190AbXFNDyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 23:49:47 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Wed, 13 Jun 2007 23:49:41 -0400
-User-Agent: KMail/1.9.6
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <466A3EC6.6030706@netone.net.tr> <200706132243.14651.dhazelton@enter.net> <20070614025640.GQ3588@stusta.de>
-In-Reply-To: <20070614025640.GQ3588@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 23:54:00 -0400
+Date: Thu, 14 Jun 2007 13:53:41 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: cannot set IP for ethernet
+Message-ID: <20070614035341.GA21010@gondor.apana.org.au>
+References: <200706121441.13561.oliver@neukum.org> <466EA861.2070509@trash.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706132349.42044.dhazelton@enter.net>
+In-Reply-To: <466EA861.2070509@trash.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 June 2007 22:56:40 Adrian Bunk wrote:
-> On Wed, Jun 13, 2007 at 10:43:14PM -0400, Daniel Hazelton wrote:
-> > On Wednesday 13 June 2007 22:08:27 Adrian Bunk wrote:
-> > > On Wed, Jun 13, 2007 at 09:40:13PM -0400, Daniel Hazelton wrote:
-> > > > On Wednesday 13 June 2007 21:24:01 Adrian Bunk wrote:
-> >
-> >...
-> >
-> > > > > Either private keys required to run the kernel on the hardware are
-> > > > > always considered part of "the complete source code" or they are
-> > > > > never part of it.
-> > > >
-> > > > No. It all depends on the use-case. If the hardware is designed for
-> > > > the user to install their own, custom versions of the code on then
-> > > > the signing keys are part of the source as defined by the GPLv2.
-> > > >
-> > > > If, OTOH, the hardware was never meant for the end-user to install
-> > > > custom versions of the software on, then while the signing keys are
-> > > > still *technically* part of the source, in practice they are not.
-> > > > Why? Because in most of those cases the end-user isn't granted the
-> > > > right to install and run custom binaries on the hardware. If the
-> > > > manufacturer provided the signing keys they'd be facilitating the
-> > > > commission of a crime. (call it "Breach of Contract")
-> > > >...
-> > >
-> > > Repetition doesn't let wrong things become true.
-> > >
-> > > Where does the GPLv2 talk about the distinction you are trying to make
-> > > based on distributor intentions?
-> > >
-> > > We are talking about the GPLv2 licence text, not about what you would
-> > > personally prefer.
-> >
-> > The GPLv2 doesn't have to cover this distinction to make it a reality.
-> > This distinction is *EXACTLY* the type of distinction a lawyer will make
-> > when arguing the point.
-> >...
->
-> Reality check:
->
-> Harald convinced companies that they have to provide the private keys
-> required to run the Linux kernel they ship on their hardware.
+On Tue, Jun 12, 2007 at 04:06:25PM +0200, Patrick McHardy wrote:
+> Oliver Neukum wrote:
+> > with 2.6.22-rc4-git2 I am getting errors when setting IP for ethernet
+> > interfaces:
+> > 
+> > ioctl(4, SIOCSIFADDR, 0x7fff94931600)   = -1 ENOBUFS (No buffer space available)
+> > 
+> > The error is independant of the interface. It happens to all interfaces.
+> > There's nothing in the syslog.
+> > 
+> > valisk:/home/oliver # uname -a
+> > Linux valisk 2.6.22-rc4-git2-default #3 SMP Tue Jun 12 13:27:54 CEST 2007 x86_64 x86_64 x86_64 GNU/Linux
+> 
+> This can happen if the initial inetdev allocation when the netdevice is
+> registered fails. I think it would make sense to try to allocate again
+> when adding addresses in that case, otherwise there is no way of
+> recovery other than unregistering and registering the device again.
 
-In Germany, not America. I should have qualified my statement to make it clear 
-I mean "In America". Sorry about the confusion.
+Actually in his case it's because 2.6.22-rc4-git2 doesn't have the
+following changeset.
 
-DRH
+Let me have a think about your approach too.
 
->
-> cu
-> Adrian
-
-
-
+Thanks,
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+commit 6363097cc4d182f93788131b5d8f72aa91d950a0
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Thu Jun 7 18:35:38 2007 -0700
+
+    [IPV4]: Do not remove idev when addresses are cleared
+
+    Now that we create idev before addresses are added, it no longer makes
+    sense to remove them when addresses are all deleted.
+
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+6363097cc4d182f93788131b5d8f72aa91d950a0
+diff --git a/net/ipv4/devinet.c b/net/ipv4/devinet.c
+index fa97b96..abf6352 100644
+--- a/net/ipv4/devinet.c
++++ b/net/ipv4/devinet.c
+@@ -327,12 +327,8 @@ static void __inet_del_ifa(struct in_device *in_dev, struct in_ifaddr **ifap,
+ 		}
+ 
+ 	}
+-	if (destroy) {
++	if (destroy)
+ 		inet_free_ifa(ifa1);
+-
+-		if (!in_dev->ifa_list)
+-			inetdev_destroy(in_dev);
+-	}
+ }
+ 
+ static void inet_del_ifa(struct in_device *in_dev, struct in_ifaddr **ifap,
