@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbXFNAoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbXFNAsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbXFNAoR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 20:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbXFNAoJ
+	id S1758248AbXFNAsy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 20:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbXFNAsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 20:44:09 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34443 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756511AbXFNAoI (ORCPT
+	Wed, 13 Jun 2007 20:48:47 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50852 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756707AbXFNAsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 20:44:08 -0400
-Date: Thu, 14 Jun 2007 02:44:19 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Alexandre Oliva <aoliva@redhat.com>,
+	Wed, 13 Jun 2007 20:48:46 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Neil Brown <neilb@suse.de>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Wed, 13 Jun 2007 20:48:40 -0400
+User-Agent: KMail/1.9.6
+Cc: =?iso-8859-1?q?J=F6rn_Engel?= <joern@logfs.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, "david@lang.hm" <david@lang.hm>,
        Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614004419.GL3588@stusta.de>
-References: <466A3EC6.6030706@netone.net.tr> <alpine.LFD.0.98.0706131456230.14121@woody.linux-foundation.org> <orejkfla3l.fsf@oliva.athome.lsd.ic.unicamp.br> <200706131946.15714.dhazelton@enter.net>
+References: <466BCBBC.90305@netone.net.tr> <200706131950.14683.dhazelton@enter.net> <18032.34935.616729.721945@notabene.brown>
+In-Reply-To: <18032.34935.616729.721945@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200706131946.15714.dhazelton@enter.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200706132048.40810.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 07:46:15PM -0400, Daniel Hazelton wrote:
-> On Wednesday 13 June 2007 19:15:42 Alexandre Oliva wrote:
-> > On Jun 13, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > On Wed, 13 Jun 2007, Alan Cox wrote:
-> > >> > find offensive, so I don't choose to use it. It's offensive because
-> > >> > Tivo never did anything wrong, and the FSF even acknowledged that. The
-> > >> > fact
-> > >>
-> > >> Not all of us agree with this for the benefit of future legal
-> > >> interpretation.
-> > >
-> > > Well, even the FSF lawyers did,
-> >
-> > Or rather they didn't think an attempt to enforce that in the US would
-> > prevail (or so I'm told).  That's not saying what TiVo did was right,
-> > and that's not saying that what TiVo did was permitted by the license.
-> > Only courts of law can do that.
-> 
-> Wrong! Anyone with half a brain can make the distinction. What TiVO did is 
-> entirely legal - they fully complied with the GPLv2. Note that what they 
-> *DON'T* allow people to do is run whatever version of whatever software they 
-> want on their hardware. They have that right - its the "Free Software 
-> Foundation" and the GPL - regardless of version - is a *SOFTWARE* license. 
->...
+On Wednesday 13 June 2007 20:14:47 Neil Brown wrote:
+> On Wednesday June 13, dhazelton@enter.net wrote:
+> > 1: Sheeple (n): People that act like sheep - ie: they cannot think or
+> > form opinions for themselves and always look to someone else for their
+> > thoughts and parrot the opinions of some "trusted" figure.
+>
+> I recommend that you avoid definitions like this.  Using them simply
+> makes you appear to have a very poor understanding of your fellow
+> humans.
+>
+> "cannot" and "always" are absolutes that never apply (well, hardly
+> ever).
 
-The GPLv2 says:
+In this case I gave a very hasty definition of the term, though it does fit 
+very well. 
 
-"For an executable work, complete source code means all the source code 
-for all modules it contains, plus any associated interface definition 
-files, plus the scripts used to control compilation and installation of 
-the executable."
+> In my experience, most people do think for themselves and do form
+> opinions about areas where they have an interest/ability, and tend to
+> follow trusted others in areas where they have less interest or
+> ability.
 
-The question is whether this includes private keys.
-Different people have different opinions regarding this issue.
+Agreed. But those *aren't* "Sheeple".
 
-If "the complete source code" includes private keys, the GPLv2 requires 
-them to give any costumer the private keys.
+> The problem that I think you see is particularly the "parrot the
+> opinions" bit.  When a person tries to argue a case based largely on
+> the opinion of someone else with little personal understanding, they
+> are in very risky territory.   This is akin to 'fundamentalism' that
+> you also mentioned in your post.
+>
+> Accusing people of arguing opinions that are not their own may well be
+> appropriate. Accusing them of not be able to think is not.
 
-Fact is that Harald Welte did in several cases successfully convince 
-vendors that private keys are part of the source code if they are 
-required for running the compiled binary on some hardware.
+I never accused any specific person of either. I was making an observation 
+about the general nature of humanity as I've observed it. A better definition 
+of "Sheeple" would be "Someone who continually parrots some "trusted" figures 
+opinion even when presented with proof that that opinion is in error. They 
+also, generally, do not "think deeply" on any topic."
 
-AFAIK there haven't been any court rulings on this issue, and it could 
-even be that courts in different countries will decide differently.
+And while I won't apologize to anyone that may have felt the "Sheeple" remark 
+was directed at them, I will apologize for not taking more time to choose a 
+better definition for the term originally.
 
-cu
-Adrian
+DRH
+
+> NeilBrown
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
