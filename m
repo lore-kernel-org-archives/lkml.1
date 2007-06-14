@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbXFNU5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752909AbXFNU5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbXFNU5T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbXFNU5J
+	id S1752909AbXFNU5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbXFNU5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:57:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57237 "EHLO mx1.redhat.com"
+	Thu, 14 Jun 2007 16:57:34 -0400
+Received: from comtv.ru ([217.10.32.17]:58141 "EHLO comtv.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750731AbXFNU5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:57:05 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706132140.13490.dhazelton@enter.net>
-	<20070614020827.GO3588@stusta.de>
-	<200706132243.14651.dhazelton@enter.net>
-	<20070614025640.GQ3588@stusta.de>
-	<9578.1181793617@turing-police.cc.vt.edu>
-	<20070614152034.GS3588@stusta.de>
-	<alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
-	<orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141100390.14121@woody.linux-foundation.org>
-	<ork5u6cpc2.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 17:54:10 -0300
-In-Reply-To: <alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 14 Jun 2007 13\:09\:46 -0700 \(PDT\)")
-Message-ID: <orvedq9s0d.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1751549AbXFNU5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 16:57:33 -0400
+X-UCL: actv
+Date: Fri, 15 Jun 2007 00:56:27 +0400 (MSD)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] sched: accurate user accounting
+In-Reply-To: <20070614204253.GA14076@elte.hu>
+Message-ID: <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru>
+References: <200703251159.03616.kernel@kolivas.org>
+ <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru> <200703260901.54943.kernel@kolivas.org>
+ <200703260957.34798.kernel@kolivas.org> <Pine.LNX.4.64.0703261439270.2621@linmac.oyster.ru>
+ <20070328113743.GA5615@elte.hu> <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru>
+ <20070614204253.GA14076@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thu, 14 Jun 2007, Ingo Molnar wrote:
 
->  - I chose the GPLv2, fully understanding that the Tivo kind of
->  situation is ok.
+>
+> * Vassili Karpov <av1474@comtv.ru> wrote:
+>
+>> Hello Ingo and others,
+>>
+>> After reading http://lwn.net/Articles/236485/ and noticing few
+>> refernces to accounting i decided to give CFS a try. With
+>> sched-cfs-v2.6.21.4-16 i get pretty weird results, it seems like
+>> scheduler is dead set on trying to move the processes to different
+>> CPUs/cores all the time. And with hog (manually tweaking the amount
+>> iterations) i get fairly strange resuls, first of all the process is
+>> split between two cores, secondly while integral load provided by the
+>> kernel looks correct, it's off by good 20 percent on each idividial
+>> core.
+>>
+>> (http://www.boblycat.org/~malc/apc/hog-cfs-v16.png)
+>>
+>> Thought this information might be of some interest.
+>
+> hm - what does 'hog' do, can i download hog.c from somewhere?
 
-Wow, do you remember the date when you first thought of this business
-model?
+http://www.boblycat.org/~malc/apc/hog.c and also a in
+Documentation/cpu-load.txt.
 
-> And you are apparently totally unable to understand - or respect - that I 
-> actually made an informed decision that happens to be different from what 
-> you *wish* it were.
+>
+> the alternating balancing might be due to an uneven number of tasks
+> perhaps? If you have 3 tasks on 2 cores then there's no other solution
+> to achieve even performance of each task but to rotate them amongst the
+> cores.
 
-While you insist in the nonsensical tit-for-tat argument and "in kind"
-retributions, I don't think I have much of a choice, because this is
-not what the GPL is about, this is not what it requires of licensees.
+One task, one thread. I have also tried to watch fairly demanding video
+(Elephants Dream in 1920x1080/MPEG4) with mplayer, and CFS moves the
+only task between cores almost every second.
+
+>> P.S. How come the /proc/stat information is much closer to reality
+>>      now? Something like what Con Kolivas suggested was added to
+>>      sched.c?
+>
+> well, precise/finegrained accounting patches have been available for
+> years, the thing with CFS is that there we get them 'for free', because
+> CFS needs those metrics for its own logic. That's why this information
+> is much closer to reality now. But note: right now what is affected by
+> the changes in the CFS patches is /proc/PID/stat (i.e. the per-task
+> information that 'top' and 'ps' displays, _not_ /proc/stat) - but more
+> accurate /proc/stat could certainly come later on too.
+
+Aha. I see, it's just that integral load for hog is vastly improved
+compared to vanilla 2.6.21 (then again some other tests are off by a few
+percent (at least), though they were fine with Con's patch (which was
+announced at the beginning of this thread))
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+vale
