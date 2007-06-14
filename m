@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755802AbXFNUTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbXFNUUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755802AbXFNUTE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXFNUSy
+	id S1756068AbXFNUUy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXFNUUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:18:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48523 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752025AbXFNUSy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:18:54 -0400
-Date: Thu, 14 Jun 2007 13:18:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Bongani Hlope <bhlope@mweb.co.za>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <ork5u6b8zz.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <alpine.LFD.0.98.0706141316180.14121@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
- <200706132108.50030.dhazelton@enter.net> <orlkenjnxm.fsf@oliva.athome.lsd.ic.unicamp.br>
- <200706140125.24815.dtor@insightbb.com> <orps3zghgo.fsf@oliva.athome.lsd.ic.unicamp.br>
- <d120d5000706140856s5fdb29c6j1b53cafc291f8ec1@mail.gmail.com>
- <orodjie7gs.fsf@oliva.athome.lsd.ic.unicamp.br>
- <d120d5000706141200r744d7cdfv3bfbbf558a05248e@mail.gmail.com>
- <ork5u6b8zz.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 14 Jun 2007 16:20:48 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:60897 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753190AbXFNUUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 16:20:47 -0400
+Date: Thu, 14 Jun 2007 22:20:47 +0200
+From: DervishD <lkml@dervishd.net>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext2 on flash memory
+Message-ID: <20070614202047.GD1928@DervishD>
+Mail-Followup-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org> <20070614182201.GD31984@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070614182201.GD31984@lazybastard.org>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+    Hi Jörn :)
 
+ * Jörn Engel <joern@logfs.org> dixit:
+> Any method I can imagine to offer good wear leveling will result in
+> either a filesystem or at least a simplified one-file-system with the
+> only file being the "block device" exported outward.  So naturally my
+> answer to the problem is called LogFS. :)
 
-On Thu, 14 Jun 2007, Alexandre Oliva wrote:
-> 
-> I see what you mean.  IANAL, but I don't think that's how it works.
+    I'm with you in that. So stop emailing and go working on it XD
 
-Why the hell do you keep saying that?
+    Now seriously, I will take a look at LogFS from time to time, and if
+you want me to, I can do tests on my Kingston DT.
 
-There *are* lawyers who have said that what Tivo did was legal. They were 
-the FSF's own lawyers. So now you're saying "I am not a lawyer, but that's 
-not right".
+    Raúl Núñez de Arenas Coronado
 
-So you're trying to state some legal point, admitting that you're not a 
-lawyer, and admitting that actual real-life lawyers disagree with you?
-
-So please explain why the *hell* you would expect us to take your points 
-seriously?
-
-		Linus
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
