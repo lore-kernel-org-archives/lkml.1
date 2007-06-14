@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbXFNU34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbXFNUcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757288AbXFNU34 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbXFNU3q
+	id S1754288AbXFNUcz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXFNUcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:29:46 -0400
-Received: from ag-out-0708.google.com ([72.14.246.241]:44340 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753144AbXFNU3p (ORCPT
+	Thu, 14 Jun 2007 16:32:47 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36229 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbXFNUcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:29:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=YI/5WKrDboGm4keZayrHg4IiblSP5I5zvi9wqZAhDXJ81duo5ZARNXBNDW0yFvare7pb0zx/b2aehFboNGRMpnmUCu0uq8aPun0osTYiFDCgZYh4r1Rk+GzVLnh2Iu62PokkrNnDxKKXHrlpk3T0Ak9B5UfjZKoB+6k+o2BZY6I=
-Message-ID: <4671A528.5040300@gmail.com>
-Date: Thu, 14 Jun 2007 16:29:28 -0400
-From: Florin Malita <fmalita@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
-MIME-Version: 1.0
-To: Alexandre Oliva <aoliva@redhat.com>
-CC: Daniel Hazelton <dhazelton@enter.net>,
+	Thu, 14 Jun 2007 16:32:46 -0400
+Date: Thu, 14 Jun 2007 21:32:30 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexandre Oliva <aoliva@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>	<alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>	<200706140305.50095.dhazelton@enter.net>	<orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>	<46717C58.8050501@gmail.com> <ord4zye6iv.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <ord4zye6iv.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070614203230.GS21478@ftp.linux.org.uk>
+References: <466A3EC6.6030706@netone.net.tr> <200706132121.04532.dhazelton@enter.net> <orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132304.21984.dhazelton@enter.net> <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu> <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070614195517.GA4933@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/14/2007 02:27 PM, Alexandre Oliva wrote:
->> No, by this twisted logic Tivo *cannot* modify that particular copy
->> any more than you can. They can modify *another* copy (just like you)
->> and they can *replace* the copy in your device with the new version
->> (unlike you).
->>     
->
-> Again, replacing is one form of modification.
->   
+On Thu, Jun 14, 2007 at 09:55:17PM +0200, Ingo Molnar wrote:
+> This "right to modify" and "have the same rights as the hardware maker" 
+> arguments are _totally_ bogus, they were made up after the fact, just 
+> because quite apparently RMS had a fit over Tivo and started this verbal 
+> (and legal) vendetta. The FSF is now attempting to rewrite history and 
+> pretends that this "always was in the GPLv2" and applies this newly 
+> thought up concept to the GPLv3 in a way that substantially departs from 
+> the spirit of the GPLv2. Which spirit the GPLv2 explicitly promised to 
+> uphold in Section 9. Which could make any contrary section of the GPLv3 
+> unenforceable, when applied to "GPLv2 or later" licensed software.
 
-No, it's not: replacing does not create derivative work. Modification does.
+That, BTW, is perhaps the worst problem with v2 (inherited by v3).
+WTF _is_ "the spirit of the license" and who gets to decide if two
+licenses are in the same spirit?  As soon as we get to "well, original
+authors of the license are the final authority on that", we are
+in the "I've always said ..." country.
 
-You've chosen to attach a physical dimension to "program copy" and I'm 
-arguing that even under this distorted line of reasoning you can't 
-support your position:
+Look, humans _suck_ at revision control, especially that of our
+intentions and opinions.  It doesn't even require malice, all
+ancedotes about spouses/mothers-in-law/etc. nonwithstanding.
 
-> The customer gets the copy that TiVO stored in the hard disk in
-> the device it sells.  And it's that copy that the customer is entitled
-> to modify because TiVO is still able to modify it.
+We all easily fall into belief that we had always meant what we mean
+now; that even if we said something different, it was just a poor
+wording; that if we had known what we know now, we would certainly
+had come to the same conclusions we have come to now.
 
-* Tivo takes public sources, modifies them and builds a brand new blob
-* Tivo installs this new copy on the device, most likely side-by-side 
-with the old one - notice how the new copy is derived from public 
-sources and has absolutely nothing to do with the old version (heck, it 
-can be a totally different kernel for what it's worth)
-* Tivo deletes the old copy from the device
-
-It seems pretty obvious that the only right Tivo is withholding is the 
-right to install new versions on the device - they never do (and really 
-never could) "modify" the physical copy on your device (which is your 
-main argument).
-
-
-> What do you think you do when you save a modified source file in your
-> editor?
-
-Don't skip the part where the in-memory version started as an exact copy 
-of the original being replaced. Notice the difference? ;)
-
----
-fm
-
-
+"In the same spirit" is just about the weakest requirement in that
+area.  I.e. the most prone to drift, especially when one is an ideologist
+and thus has severely decayed integrity to start with.  Call it a
+professional disease of crystal ball users - or a prerequisite for
+playing a visionary, if you will ;-/
