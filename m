@@ -1,261 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752993AbXFNUkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbXFNUm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752993AbXFNUkl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbXFNUkd
+	id S1753774AbXFNUm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXFNUmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:40:33 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50729 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbXFNUkc (ORCPT
+	Thu, 14 Jun 2007 16:42:53 -0400
+Received: from lazybastard.de ([212.112.238.170]:54937 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751016AbXFNUmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:40:32 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 16:40:16 -0400
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706140429.11049.dhazelton@enter.net> <orejkefnw9.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orejkefnw9.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jun 2007 16:42:52 -0400
+Date: Thu, 14 Jun 2007 22:38:01 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Cc: DervishD <lkml@dervishd.net>
+Subject: Re: ext2 on flash memory
+Message-ID: <20070614203800.GG31984@lazybastard.org>
+References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org> <20070614201714.GC1928@DervishD>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200706141640.17217.dhazelton@enter.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070614201714.GC1928@DervishD>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 13:26:30 Alexandre Oliva wrote:
-> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Thursday 14 June 2007 03:11:45 Alexandre Oliva wrote:
-> >> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> >> > Ah, well... In the case of "Windos" and other proprietary OS's I try
-> >> > to educate people and get them to switch.
-> >>
-> >> Good.  So I presume you'd tell them to switch away from a
-> >> turned-proprietary GNU/Linux operating system as well, right?
-> >
-> > If that happened I'd be lost. I've tried the various BSD's and found they
-> > had problems with hardware support and getting a new version of the BSD
-> > kernel to compile and boot is something of a black art.
-> >
-> > The point is moot, though. It can never happen.
->
-> Look again, it's already happened in the TiVO and other devices.
->
-> The software that ships in them is no longer Free Software.
->
+On Thu, 14 June 2007 22:17:14 +0200, DervishD wrote:
+>  * Jörn Engel <joern@logfs.org> dixit:
+> > So let us look at the problems and how they interact with filesystems.
+> > 
+> > 1. Write overhead
+> > 
+> > If a filesystem only writes a small amount of data, typically 512 or
+> > 4096 bytes, smartmedia has to erase and write a full block.  Most
+> > flashes used in embedded systems has block sizes of 128KiB or so.  Most
+> > flashes used for smartmedia have 16KiB.  Writing 16KiB when the
+> > filesystem only requests writing 4KiB increases the wear 4x and reduces
+> > performance 4x.
+> 
+>     But this is not easily addressable by ext2... or FAT. Even if you
+> use 16KiB blocks in ext2, sometimes you will be writing only 512 bytes.
+> And FAT will be even worse, I imagine, when using 512-byte blocks. Won't
+> buffer cache (under Linux) alleviate this problem?
 
-In *YOUR* opinion and by *YOUR* definition of the term. Yes, I have seen some 
-evidence that TiVO hasn't made some of the modifications they made public - 
-doesn't mean that they won't, just it hasn't *YET* been done. (Not that I'm 
-so omniscient I can say, definitively, whether they will or won't - or even 
-that they haven't done it already).
+Sometimes writing 512 bytes is not a big problem.  If 99% of the writes
+are large, everything will be fine.  But with a 32x increase from 512
+byte writes, those really should be rare.
 
-By my own definition replacement != modification.
+> > 2. Wear leveling
+> > 
+> > Wear leveling happens implicitly by picking a different physical block
+> > from the spares on each write.  However, some blocks are never used.  If
+> > a physical block is mapped to a logical block that never gets written,
+> > it is out of the rotation.  Two seperate 1024-block areas have their
+> > internal wear leveling each, but nothing is spreading high wear from one
+> > area to another.
+> 
+>     I thought that wear leveling wasn't local to a group of blocks. This
+> means that you can destroy a flash memory by writing to the same
+> positions... which is a very common usage pattern.
 
->
-> Consider a new microprocessor.
->
-> Consider that Linux is ported to it by the microprocessor
-> manufacturer.
->
-> Consider that the manufacturer only sells devices with that
-> microprocessor with TiVO-like locks.
->
-> How exactly can you enjoy the freedoms WRT the GPLed software you got
-> from the manufacturer?
+That is correct.  Noticing this will take a while, though.  Even the
+worst chips sold today seem to have a manufacturer guarantee of 10.000
+erases per block.  Across a 16MB area, that means you have to write
+160GB of data to that one area before you enter the danger zone.
+Significantly less with static data around, but still a lot.
 
-The same as I would with a TiVO. I have the right to copy, modify, distribute 
-and run the code - even if I can't do any of those things on the hardware the 
-original binary operates on.
+And even when that happens, the chips doesn't suddenly explode on the
+10.001st erase.  Your chances of getting correctable or uncorrectable
+errors will increase, though.
 
->
->
-> Now consider that you have a single computer, and that's built by TiVO.
->
-> How exactly can you enjoy the freedoms the author meant you to have,
-> if the TiVO box won't run the program after you modify it?
+For the majority of use cases, such a behaviour is good enough.  It
+beats floppies hands down.  You will never wear them out with your
+digital camera or mp3 player.  Using it instead of a hard disk in your
+notebook may be a little risky, though.
 
-Simple: I don't buy it. Each and every piece of hardware I buy has a rather 
-laborious research process before I actually spend the money on it. This 
-makes it a certainty that I can use the hardware in the manner I want without 
-problems like your hypothetical.
+> > 4. FAT requirement
+> > 
+> > When I claimed there was nothing more to smartmedia, I was actually
+> > lying.  Smartmedia has the odd requirement that only FAT is supported as
+> > a filesystem.  In fact, the specifications describe FAT in great detail.
+> 
+>     Right, but I've seen many people using their pendrives with ext2
+> with no problems (e.g. for SLAX). So, what do you mean by "supported"?
+> If a filesystem can be used with the memory, do you mean that wear
+> leveling and other characteristics of the flash memory are tailored for
+> FAT? or do you mean you cannot use reliably (read: you will lose data)
+> other filesystems?
 
-Whats worse - forcing your morals and ideals on someone or giving them the 
-same freedom of choice you had?
+It doesn't matter much what I mean.  The question is how the
+manufacturer of your device interpreted it.  Most likely ext2 will work
+just fine within the limitations I've outlined.
 
-Before you answer remember that that is *EXACTLY* what is being done with 
-GPLv3. With GPLv2 and prior there was a simple guarantee that 
-every "Licensee" had exactly the same rights. With GPLv3 you are forcing your 
-ethics and morals on people - and isn't this exactly what the Roman Catholic 
-church did during the Spanish Inquisition?
+What changes is the failure mode.  Floppies died from storing them in a
+dark and cool place.  Some were sold brand-new and dead.  Disks die from
+random, mostly mechanical, failures at a rate of 7% per years in a
+Google setup.  Flash usually dies from writing to it, the more you write
+the faster it dies.
 
-> > If this "run modified copies on the same hardware you received the
-> > original on" *IS* the "spirit" of the license, then why isn't it
-> > stated anywhere before GPLv3?
->
-> For the same reasons that the pro-DRM laws weren't mentioned before,
-> and the patent retaliation clauses weren't mention before: these
-> specific cases hadn't been studied, only the general idea of
-> respecting users' freedoms was.
+So as long as you rarely write, pick any filesystem you like.  The
+choice only matters when you write a lot.
 
-Bzzt! Wrong! The reason is that it wasn't necessary - at all. It still isn't, 
-but a group that feels modification == replacement wants it to be, so it has 
-suddenly become necessary. (Note that anti-DRM stuff *IS* good - DRM is part 
-of an attempt by failing business models to stop the failure)
+> > a) Do wear leveling!
+> > 
+> > Smartmedia wear leveling is limited to within areas.  Any cross-device
+> > wear leveling must be done by the filesystem.  FAT does that fairly
+> > well.  The Ext family doesn't.
+> 
+>     Cross-device wear leveling? I don't understand, sorry O:)
 
-> > I'll grant you that. But, at this point, where can I find a copy of
-> > the GPLv1 without having to dig around the net ?
->
-> In the program you received under GPLv1.
->
-> Hey, you said there was code under GPLv1.1 in the Linux tree.  Then,
-> there should be a copy of GPLv1.1 in there, otherwise AFAICT the
-> distribution of that code is copyright infringement.  IANAL.
+Wear leveling across the whole device, not just one area.
 
-Ah, but I never said I had a GPLv1 program. If GPLv1 is still valid and 
-available I should be able to find a copy of it *RIGHT* *NOW* to license a 
-new project if I want to use GPLv1 as its license. So your logic is again 
-flawed.
+>     Thanks for your explanation, it has been very educational :)
 
-> >> In contrast, your TiVO may get a software upgrade without your
-> >> permission that will take your rights away from that point on, and
-> >> there's very little you can do about it, other than unplugging it from
-> >> the network to avoid the upgrade if it's not too late already.
-> >
-> > And because its a device that connects to their network - and TiVO
-> > isn't a telecommunications company - they have the right to upgrade
-> > and configure the software inside however they want. (In the US at
-> > least)
->
-> But do they have the right to not pass this right on, under the GPL?
+No worries!
 
-Yes, they do. It isn't a right they have as "copyright holders" - in fact, it 
-isn't a part of their rights under the copyright at all. It's a part of their 
-rights as the owners of the network. 
-
-> >> > A lot of them would probably have private modifications that would
-> >> > never be distributed - and under the GPLv2 it is clear that you can
-> >> > keep modifications private as long as you don't distribute them.
-> >>
-> >> Likewise with GPLv3.
-> >
-> > I can see this, but will a company see this?
->
-> In what sense does the GPLv3 make this particular point any less
-> obscure?
-
-Never claimed it was less obscure, just that you've usually got a board-room 
-filled with middle-aged men that might have problems agreeing that it is a 
-clear-cut case.
-
-> > True. But that doesn't save them from lawsuits trying to force them
-> > to obey the terms of the new revision even though they received the
-> > software under an earlier version.
->
-> Nothing saves anyone from silly lawsuits.  This one would likely be
-> laughed out of court in no time.  Anyone worried about this should
-> also be concerned about their neighbor suing them for copyright
-> infringment every time they set their stereo loud enough for the
-> neighbors to listen and be annoyed.  (Hint: only the copyright holder
-> would stand a chance of winning such a lawsuit)
-
-Yes, but the fact that it would cost money to get the suit dropped is a 
-problem. 
-
-> >> > (and don't try to argue that even though those modifications are
-> >> > truly private (to the company) they should be released anyway to
-> >> > comply with the "spirit" of the license. It is made clear that it
-> >> > isn't by the text of the license itself)
-> >>
-> >> How could you possibly come to the conclusion that forcing anyone to
-> >> release private modifications would be in compliance with the spirit
-> >> of the license?  can != must
-> >
-> > I was trying to be sarcastic and inject a little humor here. Guess I
-> > should have used the old <sarcasm> tag :)
->
-> Aah.  I'm not sure I'd have understood it either.
->
-> >> >> > Why should I repeat Linus' explanation of the ways that GPLv3
-> >> >> > violates the spirit of GPLv2?
-> >> >>
-> >> >> Don't worry about parrotting here, he hasn't provided that
-> >> >> explanation yet ;-)  Please give it a try.
-> >> >
-> >> > But he has. Whether you have accepted that his explanations are
-> >> > valid or not doesn't change the fact.
-> >>
-> >> His explanation is based on a reading of the license that doesn't
-> >> match what its authors meant.  I guess the authors know better what
-> >> they meant the spirit of the license to be than someone else who
-> >> studied it a lot but that until very recently couldn't even tell the
-> >> spirit from the legal terms.
-> >
-> > And his interpretation is no less valid than that of anyone else. In
-> > fact, after a recent conversation with a couple of lawyers that I
-> > know, I can state that his interpretation isn't that far off from
-> > theirs.
->
-> Interpretation as applied to the legal terms, yes.  As for the spirit
-> of the license, the authors ought to know better than anyone else what
-> they meant.  Sure, other interpretations might lead to different
-> understandings as to what the readers *think* it means, but that
-> doesn't change what it was *intended* to mean.
-
-Doesn't matter what the author intended it to mean - at all. What matters is 
-how its interpreted when/if it shows up in court. This can be seen *ALL* the 
-time with laws across the globe. In the US there is this thing called 
-the "RICO" Laws- "Racketeering Influenced Criminal Organization" - that give 
-the government the ability to seize anything that is deemed a "profit of drug 
-sales" or of a "Criminal Organization". It has been used for that purpose, 
-but its interpretation has caused it to be used to seize money that has had 
-no source in either.
-
-> > Then you're lucky. I've had a lot of people say something similar to the
-> > following: "Oh, I've heard about that. So which version of the GNU-Linux
-> > kernel are you running?"
->
-> Oh my.  That's indeed unfortunate and unfair.
->
-> > As I've stated before - I can find nothing in the history of the GPL or
-> > the FSF that makes the "on the same hardware" requirement clear and part
-> > of the "spirit" of "Free Software".
->
-> Put the considerations above, about a single computer or a
-> uniformly-limited computing platform, and you'll see that this "on the
-> same hardware" argument is just a means to deny people freedom.  If I
-> could stop you from running modified versions on one piece of
-> hardware, then I could on two, and 3, and then soon it's all of them,
-> and we're back to square zero in terms of freedom.
->
-> >> > What I won't do is release whatever tools and such that are needed to
-> >> > make the hardware run a different version of the kernel. Why? Because:
-> >> > the hardware was designed so that a specific version of the kernel
-> >> > runs without problems, there is hardware that is very picky and
-> >> > running a customized kernel could cause that hardware to fail, etc...
-> >>
-> >> Why do you care?  It's no longer your hardware, it's theirs.
-> >
-> > Legal requirements in some countries that require manufacturers to
-> > provide support for their product for a period of time after it has been
-> > purchased.
->
-> If you replace a component in the hardware, are you still required to
-> provide support or offer warranty?  Why should this be different just
-> because it's a software component?
-
-Artificial distinctions in the law
-
-DRH
+Jörn
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Homo Sapiens is a goal, not a description.
+-- unknown
