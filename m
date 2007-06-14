@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbXFNL5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752267AbXFNL6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752052AbXFNL5v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 07:57:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXFNL5o
+	id S1752267AbXFNL6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 07:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXFNL6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 07:57:44 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35702 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbXFNL5n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 07:57:43 -0400
-Date: Thu, 14 Jun 2007 17:36:05 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       containers@lists.osdl.org, ckrm-tech@lists.sourceforge.net
-Subject: Re: [RFC][PATCH 5/6] core changes for group fairness
-Message-ID: <20070614120605.GA30965@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070611154724.GA32435@in.ibm.com> <20070611155608.GE2109@in.ibm.com> <b647ffbd0706131356q344af13as3744c151b4a4f680@mail.gmail.com>
+	Thu, 14 Jun 2007 07:58:40 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:20343 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750929AbXFNL6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 07:58:38 -0400
+Date: Thu, 14 Jun 2007 13:56:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
+       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch 0/3] AHCI Link Power Management
+Message-ID: <20070614115600.GF6149@kernel.dk>
+References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E1D51.9070007@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b647ffbd0706131356q344af13as3744c151b4a4f680@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <466E1D51.9070007@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 10:56:06PM +0200, Dmitry Adamushko wrote:
-> >+static int balance_tasks(struct rq *this_rq, int this_cpu, struct rq 
-> >*busiest,
-> >+                     unsigned long max_nr_move, unsigned long 
-> >max_load_move,
-> >+                     struct sched_domain *sd, enum idle_type idle,
-> >+                     int *all_pinned, unsigned long *load_moved,
-> >+                     int this_best_prio, int best_prio, int 
-> >best_prio_seen,
-> >+                     void *iterator_arg,
-> >+                     struct task_struct *(*iterator_start)(void *arg),
-> >+                     struct task_struct *(*iterator_next)(void *arg));
+On Tue, Jun 12 2007, Tejun Heo wrote:
+> Arjan van de Ven wrote:
+> >> I'm not sure about this.  We need better PM framework to support 
+> >> powersaving in other controllers and some ahcis don't save much
+> >> when only link power management is used,
+> > 
+> > do you have data to support this?
 > 
-> IMHO, it looks a bit frightening :) 
-
-I agree :) It is taking (ooops) 15 args (8 perhaps was the previous record
-in sched.c (move_tasks)!
-
-> maybe it would be possible to
-> create a structure that combines some relevant argumens .. at least,
-> the last 3 ones.
-
-How does this look?
-
-struct balance_tasks_args {
-	struct rq *this_rq, struct rq *busiest;
-	unsigned long max_nr_move, unsigned long max_load_move;
-	struct sched_domain *sd, enum idle_type idle;
-	int this_best_prio, best_prio, best_prio_seen;
-	int *all_pinned;
-	unsigned long *load_moved;
-	void *iterator_arg;
-	struct task_struct *(*iterator_start)(void *arg);
-	struct task_struct *(*iterator_next)(void *arg));
-};
-
-static int balance_tasks(struct balance_tasks_args *arg);
-
-[ down to one argument now! ]
-
-?
-
-I will try this in my next iteration ..
-
-
-> >-static int move_tasks(struct rq *this_rq, int this_cpu, struct rq 
-> >*busiest,
-> >+static int balance_tasks(struct rq *this_rq, int this_cpu, struct rq 
-> >*busiest,
-> >                      unsigned long max_nr_move, unsigned long 
-> >                      max_load_move,
-> >                      struct sched_domain *sd, enum idle_type idle,
-> >-                     int *all_pinned)
-> >+                     int *all_pinned, unsigned long *load_moved,
-> >+                     int this_best_prio, int best_prio, int 
-> >best_prio_seen,
-> >+                     void *iterator_arg,
-> >+                     struct task_struct *(*iterator_start)(void *arg),
-> >+                     struct task_struct *(*iterator_next)(void *arg))
+> Yeah, it was some Lenovo notebook.  Pavel is more familiar with the
+> hardware.  Pavel, what was the notebook which didn't save much power
+> with standard SATA power save but needed port to be completely turned off?
 > 
-> I think, there is a possible problem here. If I'm not complete wrong,
-> this function (move_tasks() in the current mainline) can move more
-> 'load' than specified by the 'max_load_move'..
+> > The data we have from this patch is that it saves typically a Watt of
+> > power (depends on the machine of course, but the range is 0.5W to
+> > 1.5W). If you want to also have an even more agressive thing where
+> > you want to start disabling the entire controller... I don't see how
+> > this is in conflict with saving power on the link level by "just"
+> > enabling a hardware feature ....
+> 
+> Well, both implement about the same thing.  I prefer software
+> implementation because it's more generic and ALPE/ASP seems too
+> aggressive to me.  Here are reasons why sw implementation wasn't merged.
+> 
+> 1. It didn't have proper interface with userland.  This was mainly
+> because of missing ATA sysfs nodes.  I'm not sure whether adding this to
+> scsi node is a good idea.
+> 
+> 2. It was focused on SATA link PS and couldn't cover the Lenovo case.
+> 
+> I think we need something at the block layer.
 
-Yes I think you are right. I will tackle this in next iteration.
+I think the hardware method is preferable, actually. Doing this in the
+block layer would mean keeping track of idle time, and that quickly
+turns into a lot of timer management. Not exactly free, in terms of CPU
+usage.
 
-Thanks for all your review so far!
+I've yet to do some power measurements with this ahci patch, I just
+noticed that with min_power performance drops from ~55mb/sec to
+~15mb/sec sequential on my drive. That's pretty drastic :-)
 
 -- 
-Regards,
-vatsa
+Jens Axboe
+
