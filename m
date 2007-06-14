@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752115AbXFNM0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752115AbXFNMai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752115AbXFNM0O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 08:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXFNM0A
+	id S1752115AbXFNMai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 08:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXFNMac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 08:26:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35274 "EHLO mx3.mail.elte.hu"
+	Thu, 14 Jun 2007 08:30:32 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:60084 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750946AbXFNMZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 08:25:59 -0400
-Date: Thu, 14 Jun 2007 14:25:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614122546.GB22078@elte.hu>
-References: <466A3EC6.6030706@netone.net.tr> <200706132121.04532.dhazelton@enter.net> <orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132304.21984.dhazelton@enter.net> <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu> <20070614122031.4751a52b@the-village.bc.nu>
+	id S1751333AbXFNMab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 08:30:31 -0400
+Date: Thu, 14 Jun 2007 14:30:27 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Islam Amer <pharon@gmail.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: USB remote control missing keycodes
+In-Reply-To: <1181823597.6136.8.camel@iamer-laptop>
+Message-ID: <Pine.LNX.4.64.0706141425180.23280@twin.jikos.cz>
+References: <20070611101319.GA14284@DervishD> <466D2DF7.9020709@aladin.ro> 
+ <1181563063.19258.11.camel@iamer-laptop>  <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
+  <1181743734.6163.1.camel@iamer-laptop>  <Pine.LNX.4.64.0706131654180.23280@twin.jikos.cz>
+  <d120d5000706130817v5b9291d4h8653ade63882d2bc@mail.gmail.com> 
+ <Pine.LNX.4.64.0706131741420.23280@twin.jikos.cz>  <1181750326.6163.6.camel@iamer-laptop>
+  <Pine.LNX.4.64.0706131809530.23280@twin.jikos.cz> <1181823597.6136.8.camel@iamer-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070614122031.4751a52b@the-village.bc.nu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 14 Jun 2007, Islam Amer wrote:
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> Ok here is everything from dmesg after the point of plugging in the usb 
+> IR receiver, which is quite lengthy so as an attachment.
 
-> > that's fine, but the fundamental question is: where is the moral 
-> > boundary of the power that the copyright license gives? The FSF 
-> > seems to
-> 
-> Assuming a democratic state then the laws of the land ought to reflect 
-> the 'general will' (if you believe Rousseau anyway). They should thus 
-> define the boundary ['derivative work' generally ] according to the 
-> general good and with the consent of the people.
+Thanks. Obviously this remote has broken report descriptor -- it generates 
+0xfa usage code from Consumer page for the "back" key (not to mention that 
+it should rather generate 0x224 for KEY_BACK), but logical maximum for 
+coresponding field is set to 0xf9, as far as I can see from the dump you 
+provided.
 
-uhm, so if the MPAA and the RIAA pays for another nice piece of 
-legislation that extends the power of copyright owners, do you find it 
-morally justified to use those powers, as long as it's argued to be in 
-favor of some long-term goal that you judge to be moral, even if it 
-results in some "temporary injustice"?
+I have met such devices already, we are fixing their report descriptors on 
+the fly before they enter the HID parser. I will prepare a patch for you 
+to test (probably tomorrow, sorry).
 
-i think that could be the main difference in thinking. I argue that the 
-only way to be moral is to be moral _now_, not "later, once this very 
-important fight for the common good is over". I think the moral approach 
-to this is to say _no_ to attempts to extend the license to beyond the 
-"moral scope" of the software we wrote - regardless of what new powers 
-are legislated into the hands of copyright owners. It's naturally hard 
-to do, because giving up power is always hard to do.
+BTW this also means that the support for the BACK key can't currently be 
+written in userspace using the setkeycodes() method, because this usage is 
+currently just ignored, due to being out of range.
 
-In other words: we need to apply our concepts of freedom and fairness 
-not only to the end result, but to the means and methods of achieving 
-those end results as well. The end goals are often forgotten, it's the 
-process that matters to the end result.
-
-Or in yet another set of words: this concept of morality also happens to 
-be expressed fairly accurately in the thousands of years of 'quid pro 
-quo' concept. (shared amongst many, many cultures on this planet, shared 
-amongst far more cultures than the western 'freedom' concept.) (which 
-concept of quid-pro-quo fairness is likely coded into our brains and 
-into our thinking genetically - because it's a simple and very efficient 
-group survival method.)
-
-	Ingo
+-- 
+Jiri Kosina
