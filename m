@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbXFNSQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbXFNSVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbXFNSQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 14:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbXFNSQU
+	id S1753664AbXFNSVy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 14:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbXFNSVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 14:16:20 -0400
-Received: from ccerelbas01.cce.hp.com ([161.114.21.104]:45739 "EHLO
-	ccerelbas01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016AbXFNSQT convert rfc822-to-8bit (ORCPT
+	Thu, 14 Jun 2007 14:21:44 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:54095 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbXFNSVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 14:16:19 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 14 Jun 2007 14:21:43 -0400
+Message-ID: <467186EA.6090409@oracle.com>
+Date: Thu, 14 Jun 2007 14:20:26 -0400
+From: Chuck Lever <chuck.lever@oracle.com>
+Reply-To: chuck.lever@oracle.com
+Organization: Corporate Architecture team, Oracle USA
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
-Date: Thu, 14 Jun 2007 18:16:03 -0000
-Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net>
-In-Reply-To: <20070614153119.GC32137@hmsreliant.homelinux.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
-Thread-Index: AceumVCfmU2K2QuWQTmky5+1XtzPpwAFondQ
-References: <20070614153119.GC32137@hmsreliant.homelinux.net>
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: "Neil Horman" <nhorman@tuxdriver.com>, <linux-kernel@vger.kernel.org>
-Cc: "ISS StorageDev" <iss_storagedev@hp.com>, <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 14 Jun 2007 18:16:04.0670 (UTC) FILETIME=[123B45E0:01C7AEB0]
+To: Chris Mason <chris.mason@oracle.com>
+CC: John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+References: <20070612161029.GB28279@think.oraclecorp.com> <18031.26764.586958.632146@stoffel.org>
+In-Reply-To: <18031.26764.586958.632146@stoffel.org>
+Content-Type: multipart/mixed;
+ boundary="------------070306050908040203050904"
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+This is a multi-part message in MIME format.
+--------------070306050908040203050904
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> -----Original Message-----
-> From: Neil Horman [mailto:nhorman@tuxdriver.com] 
-> Sent: Thursday, June 14, 2007 10:31 AM
-> To: linux-kernel@vger.kernel.org
-> Cc: Miller, Mike (OS Dev); ISS StorageDev; 
-> akpm@linux-foundation.org; nhorman@tuxdriver.com
-> Subject: [PATCH] cciss: force ignore of responses to unsent 
-> scsi commands after kexec reboot
-> 
-> Hey -
-> 	cciss hardware currently can continue to send responses 
-> to scsi commands after the host system has undergone a kexec 
-> reboot.  The way the drier is currently written, reception of 
-> these commands results in a BUG halt, since it can't match 
-> the response to any issued command since the boot.  This 
-> patch corrects that by using the kexec reset_devices command 
-> line paramter to force ignore any commands that it cant correlate.
-> 
-> Regards
-> Neil
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-> 
->  cciss.c |    8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> 
-> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c 
-> index 5acc6c4..ec1c1d2 100644
-> --- a/drivers/block/cciss.c
-> +++ b/drivers/block/cciss.c
-> @@ -2131,6 +2131,14 @@ static int add_sendcmd_reject(__u8 
-> cmd, int ctlr, unsigned long complete)
->  		       ctlr, complete);
->  		/* not much we can do. */
->  #ifdef CONFIG_CISS_SCSI_TAPE
-> +		/* We might get notification of completion of commands
-> +		 * which we never issued in this kernel if this boot is
-> +		 * taking place after previous kernel's crash. Simply
-> +		 * ignore the commands in this case.
-> +		 */
-> +		if (reset_devices)
-> +			return 0;
-> +
->  		return 1;
->  	}
->  
-I don't understand how this will help. We need to reset the controller
-which reset_devices cannot do alone. I just haven't have the time to
-implement the fix yet.
+Hi Chris-
 
-mikem 
+John Stoffel wrote:
+> As a user of Netapps, having quotas (if only for reporting purposes)
+> and some way to migrate non-used files to slower/cheaper storage would
+> be great.
+> 
+> Ie. being able to setup two pools, one being RAID6, the other being
+> RAID1, where all currently accessed files are in the RAID1 setup, but
+> if un-used get migrated to the RAID6 area.  
+> 
+> And of course some way for efficient backups and more importantly
+> RESTORES of data which is segregated like this.  
+
+I like the way dump and restore was handled in AFS (and now ZFS and 
+NetApp).  There is a simple command to flatten a file system and send it 
+to another system, which can receive it and re-expand it.  The 
+dump/restore process uses snapshots and can easily send incremental 
+backups which are significantly smaller than 0-level.  This is somewhat 
+better than rsync, because you don't need checksums to discover what 
+data has changed -- you already have the new data segregated into 
+copied-on-write blocks.
+
+NetApp happens to use the standard NDMP protocol for sending the 
+flattened file system.  NetApp uses it for synchronous replication, 
+volume migration, and back up to nearline storage and tape.  AFS used 
+"vol dump" and "vol restore" for migration, replication, and back-up. 
+ZFS has the "zfs send" and "zfs receive" commands that do basically the 
+same (Eric Kustarz recently published a blog entry that described how 
+these work).  And of course, all file system objects are able to be sent 
+this way:  streams, xattrs, ACLs, and so on are all supported.
+
+Note also that NFSv4 supports the idea of migrated or replicated file 
+objects.  All that is needed to support it is a mechanism on the servers 
+to actually move the data.
+
+--------------070306050908040203050904
+Content-Type: text/x-vcard; charset=utf-8;
+ name="chuck.lever.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="chuck.lever.vcf"
+
+begin:vcard
+fn:Chuck Lever
+n:Lever;Chuck
+org:Oracle Corporation;Corporate Architecture: Linux Projects Group
+adr:;;1015 Granger Avenue;Ann Arbor;MI;48104;USA
+email;internet:chuck dot lever at nospam oracle dot com
+title:Principal Member of Staff
+tel;work:+1 248 614 5091
+x-mozilla-html:FALSE
+version:2.1
+end:vcard
+
+
+--------------070306050908040203050904--
