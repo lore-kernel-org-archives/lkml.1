@@ -1,213 +1,1021 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759164AbXFNBfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbXFNBgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759164AbXFNBfN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 21:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400AbXFNBfB
+	id S1759494AbXFNBgP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 21:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbXFNBf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 21:35:01 -0400
-Received: from mga01.intel.com ([192.55.52.88]:64124 "EHLO mga01.intel.com"
+	Wed, 13 Jun 2007 21:35:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38265 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757356AbXFNBfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 21:35:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,418,1175497200"; 
-   d="scan'208";a="256626950"
-Date: Thu, 14 Jun 2007 09:34:12 +0800
-From: Wang Zhenyu <zhenyu.z.wang@intel.com>
-To: Dave Jones <davej@redhat.com>, Wang Zhenyu <zhen78@gmail.com>,
-       Meelis Roos <mroos@linux.ee>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>
-Subject: Re: I815 suddenly unkown to agpgart?
-Message-ID: <20070614013412.GA31534@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Wang Zhenyu <zhen78@gmail.com>, Meelis Roos <mroos@linux.ee>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Eric Anholt <eric@anholt.net>
-References: <Pine.SOC.4.64.0706131804180.2614@math> <20070613160152.GC3875@redhat.com> <20070613161513.GE3875@redhat.com> <20070613180039.GA4508@localhost.localdomain> <20070613182240.GA3726@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757356AbXFNBfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 21:35:55 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH]: add parameter "struct bin_attribute *" in .read/.write methods for sysfs binary attributes
+Date: Wed, 13 Jun 2007 21:35:44 -0400
+User-Agent: KMail/1.9.5
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       "linux-acpi@vger" <linux-acpi@vger.kernel.org>
+References: <1181208695.5317.2.camel@localhost.localdomain> <20070608145237.GA6560@kroah.com> <1181368642.6587.0.camel@localhost.localdomain>
+In-Reply-To: <1181368642.6587.0.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070613182240.GA3726@redhat.com>
-User-Agent: Mutt/1.4.2.1i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
+Message-Id: <200706132135.44949.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.13 14:22:40 +0000, Dave Jones wrote:
+I've applied this to acpi-test with an Acked-by: gregkh -- as we need it
+for the acpi table patch.
+
+Greg, unless I hear from you, I'll assume that this is okay for 2.6.23.
+
+thanks,
+-Len
+ 
+On Saturday 09 June 2007 01:57, Zhang Rui wrote:
+> From: Zhang Rui <rui.zhang@intel.com>
 > 
-> Oops :)
-> I'll merge this, and get it to Linus today.
-> Don't forget to add a Signed-off-by: for future patches.
+> Well, first of all, I don't want to change so many files either.
 > 
-
-Dave, after rethinking about this, I think we mixed two cases 
-need to be fixed here. This is the patch for this, sorry for mess
-it up. Meelis, could you help to test by replace my last patch with this? 
-
-Thanks
-
----
-[PATCH] [AGPGART] intel_agp: fix device probe
-
-This patch trys to fix device probe in two cases. First we should
-correctly detect device if integrated graphics device is not enabled
-or exists, like an add-in card is plugged. Second on some type of intel
-GMCH, it might have multiple graphic chip models, like 945GME case, so
-we should be sure the detect works through the whole table.
-
-Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
----
- drivers/char/agp/intel-agp.c |   97 ++++++++++++++++++++++--------------------
- 1 files changed, 51 insertions(+), 46 deletions(-)
-
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index d383168..bf5a602 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -1810,68 +1810,69 @@ static int find_gmch(u16 device)
- static const struct intel_driver_description {
- 	unsigned int chip_id;
- 	unsigned int gmch_chip_id;
-+	unsigned int multi_gmch_chip;
- 	char *name;
- 	const struct agp_bridge_driver *driver;
- 	const struct agp_bridge_driver *gmch_driver;
- } intel_agp_chipsets[] = {
--	{ PCI_DEVICE_ID_INTEL_82443LX_0, 0, "440LX", &intel_generic_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82443BX_0, 0, "440BX", &intel_generic_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82443GX_0, 0, "440GX", &intel_generic_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82810_MC1, PCI_DEVICE_ID_INTEL_82810_IG1, "i810",
-+	{ PCI_DEVICE_ID_INTEL_82443LX_0, 0, 0, "440LX", &intel_generic_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82443BX_0, 0, 0, "440BX", &intel_generic_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82443GX_0, 0, 0, "440GX", &intel_generic_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82810_MC1, PCI_DEVICE_ID_INTEL_82810_IG1, 0, "i810",
- 		NULL, &intel_810_driver },
--	{ PCI_DEVICE_ID_INTEL_82810_MC3, PCI_DEVICE_ID_INTEL_82810_IG3, "i810",
-+	{ PCI_DEVICE_ID_INTEL_82810_MC3, PCI_DEVICE_ID_INTEL_82810_IG3, 0, "i810",
- 		NULL, &intel_810_driver },
--	{ PCI_DEVICE_ID_INTEL_82810E_MC, PCI_DEVICE_ID_INTEL_82810E_IG, "i810",
-+	{ PCI_DEVICE_ID_INTEL_82810E_MC, PCI_DEVICE_ID_INTEL_82810E_IG, 0, "i810",
- 		NULL, &intel_810_driver },
--	{ PCI_DEVICE_ID_INTEL_82815_MC, PCI_DEVICE_ID_INTEL_82815_CGC, "i815",
--		&intel_810_driver, &intel_815_driver },
--	{ PCI_DEVICE_ID_INTEL_82820_HB, 0, "i820", &intel_820_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82820_UP_HB, 0, "i820", &intel_820_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82830_HB, PCI_DEVICE_ID_INTEL_82830_CGC, "830M",
-+	{ PCI_DEVICE_ID_INTEL_82815_MC, PCI_DEVICE_ID_INTEL_82815_CGC, 0, "i815",
-+		&intel_815_driver, &intel_810_driver },
-+	{ PCI_DEVICE_ID_INTEL_82820_HB, 0, 0, "i820", &intel_820_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82820_UP_HB, 0, 0, "i820", &intel_820_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82830_HB, PCI_DEVICE_ID_INTEL_82830_CGC, 0, "830M",
- 		&intel_830mp_driver, &intel_830_driver },
--	{ PCI_DEVICE_ID_INTEL_82840_HB, 0, "i840", &intel_840_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82845_HB, 0, "845G", &intel_845_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82845G_HB, PCI_DEVICE_ID_INTEL_82845G_IG, "830M",
-+	{ PCI_DEVICE_ID_INTEL_82840_HB, 0, 0, "i840", &intel_840_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82845_HB, 0, 0, "845G", &intel_845_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82845G_HB, PCI_DEVICE_ID_INTEL_82845G_IG, 0, "830M",
- 		&intel_845_driver, &intel_830_driver },
--	{ PCI_DEVICE_ID_INTEL_82850_HB, 0, "i850", &intel_850_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82855PM_HB, 0, "855PM", &intel_845_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82855GM_HB, PCI_DEVICE_ID_INTEL_82855GM_IG, "855GM",
-+	{ PCI_DEVICE_ID_INTEL_82850_HB, 0, 0, "i850", &intel_850_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82855PM_HB, 0, 0, "855PM", &intel_845_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82855GM_HB, PCI_DEVICE_ID_INTEL_82855GM_IG, 0, "855GM",
- 		&intel_845_driver, &intel_830_driver },
--	{ PCI_DEVICE_ID_INTEL_82860_HB, 0, "i860", &intel_860_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82865_HB, PCI_DEVICE_ID_INTEL_82865_IG, "865",
-+	{ PCI_DEVICE_ID_INTEL_82860_HB, 0, 0, "i860", &intel_860_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82865_HB, PCI_DEVICE_ID_INTEL_82865_IG, 0, "865",
- 		&intel_845_driver, &intel_830_driver },
--	{ PCI_DEVICE_ID_INTEL_82875_HB, 0, "i875", &intel_845_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_82915G_HB, PCI_DEVICE_ID_INTEL_82915G_IG, "915G",
-+	{ PCI_DEVICE_ID_INTEL_82875_HB, 0, 0, "i875", &intel_845_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82915G_HB, PCI_DEVICE_ID_INTEL_82915G_IG, 0, "915G",
- 		&intel_845_driver, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82915GM_HB, PCI_DEVICE_ID_INTEL_82915GM_IG, "915GM",
-+	{ PCI_DEVICE_ID_INTEL_82915GM_HB, PCI_DEVICE_ID_INTEL_82915GM_IG, 0, "915GM",
- 		&intel_845_driver, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82945G_HB, PCI_DEVICE_ID_INTEL_82945G_IG, "945G",
-+	{ PCI_DEVICE_ID_INTEL_82945G_HB, PCI_DEVICE_ID_INTEL_82945G_IG, 0, "945G",
- 		&intel_845_driver, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, "945GM",
-+	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, 1, "945GM",
- 		&intel_845_driver, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GME_IG, "945GME",
-+	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GME_IG, 1, "945GME",
- 		&intel_845_driver, &intel_915_driver },
--	{ PCI_DEVICE_ID_INTEL_82946GZ_HB, PCI_DEVICE_ID_INTEL_82946GZ_IG, "946GZ",
-+	{ PCI_DEVICE_ID_INTEL_82946GZ_HB, PCI_DEVICE_ID_INTEL_82946GZ_IG, 0, "946GZ",
- 		&intel_845_driver, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965G_1_HB, PCI_DEVICE_ID_INTEL_82965G_1_IG, "965G",
-+	{ PCI_DEVICE_ID_INTEL_82965G_1_HB, PCI_DEVICE_ID_INTEL_82965G_1_IG, 0, "965G",
- 		&intel_845_driver, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965Q_HB, PCI_DEVICE_ID_INTEL_82965Q_IG, "965Q",
-+	{ PCI_DEVICE_ID_INTEL_82965Q_HB, PCI_DEVICE_ID_INTEL_82965Q_IG, 0, "965Q",
- 		&intel_845_driver, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965G_HB, PCI_DEVICE_ID_INTEL_82965G_IG, "965G",
-+	{ PCI_DEVICE_ID_INTEL_82965G_HB, PCI_DEVICE_ID_INTEL_82965G_IG, 0, "965G",
- 		&intel_845_driver, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, "965GM",
-+	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, 1, "965GM",
- 		&intel_845_driver, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GME_IG, "965GME/GLE",
-+	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GME_IG, 1, "965GME/GLE",
- 		&intel_845_driver, &intel_i965_driver },
--	{ PCI_DEVICE_ID_INTEL_7505_0, 0, "E7505", &intel_7505_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_7205_0, 0, "E7205", &intel_7505_driver, NULL },
--	{ PCI_DEVICE_ID_INTEL_G33_HB, PCI_DEVICE_ID_INTEL_G33_IG, "G33",
-+	{ PCI_DEVICE_ID_INTEL_7505_0, 0, 0, "E7505", &intel_7505_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_7205_0, 0, 0, "E7205", &intel_7505_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_G33_HB, PCI_DEVICE_ID_INTEL_G33_IG, 0, "G33",
- 		&intel_845_driver, &intel_g33_driver },
--	{ PCI_DEVICE_ID_INTEL_Q35_HB, PCI_DEVICE_ID_INTEL_Q35_IG, "Q35",
-+	{ PCI_DEVICE_ID_INTEL_Q35_HB, PCI_DEVICE_ID_INTEL_Q35_IG, 0, "Q35",
- 		&intel_845_driver, &intel_g33_driver },
--	{ PCI_DEVICE_ID_INTEL_Q33_HB, PCI_DEVICE_ID_INTEL_Q33_IG, "Q33",
-+	{ PCI_DEVICE_ID_INTEL_Q33_HB, PCI_DEVICE_ID_INTEL_Q33_IG, 0, "Q33",
- 		&intel_845_driver, &intel_g33_driver },
--	{ 0, 0, NULL, NULL, NULL }
-+	{ 0, 0, 0, NULL, NULL, NULL }
- };
- 
- static int __devinit agp_intel_probe(struct pci_dev *pdev,
-@@ -1892,10 +1893,19 @@ static int __devinit agp_intel_probe(struct pci_dev *pdev,
- 		/* In case that multiple models of gfx chip may
- 		   stand on same host bridge type, this can be
- 		   sure we detect the right IGD. */
--		if ((pdev->device == intel_agp_chipsets[i].chip_id) &&
--			((intel_agp_chipsets[i].gmch_chip_id == 0) ||
--				find_gmch(intel_agp_chipsets[i].gmch_chip_id)))
--			break;
-+		if (pdev->device == intel_agp_chipsets[i].chip_id) {
-+			if ((intel_agp_chipsets[i].gmch_chip_id != 0) &&
-+				find_gmch(intel_agp_chipsets[i].gmch_chip_id)) {
-+				bridge->driver = 
-+					intel_agp_chipsets[i].gmch_driver;
-+				break;
-+			} else if (intel_agp_chipsets[i].multi_gmch_chip) {
-+				continue;
-+			} else {
-+	    			bridge->driver = intel_agp_chipsets[i].driver;
-+				break;
-+			}
-+		}
- 	}
- 
- 	if (intel_agp_chipsets[i].name == NULL) {
-@@ -1906,11 +1916,6 @@ static int __devinit agp_intel_probe(struct pci_dev *pdev,
- 		return -ENODEV;
- 	}
- 
--	if (intel_agp_chipsets[i].gmch_chip_id != 0)
--	    bridge->driver = intel_agp_chipsets[i].gmch_driver;
--	else
--	    bridge->driver = intel_agp_chipsets[i].driver;
--
- 	if (bridge->driver == NULL) {
- 		printk(KERN_WARNING PFX "Failed to find bridge device "
- 			"(chip_id: %04x)\n", intel_agp_chipsets[i].gmch_chip_id);
--- 
-1.4.4.4
+> What I do:
+> Adding a new parameter "struct bin_attribute *" in the
+> .read/.write methods for the sysfs binary attributes.
+> 
+> In fact, only the four lines change in fs/sysfs/bin.c and
+> include/linux/sysfs.h do the real work.
+> But I have to update all the files that use binary attributes
+> to make them compatible with the new .read and .write methods.
+> I'm not sure if I missed any. :(
+> 
+> Why I do this:
+> For a sysfs attribute, we can get a pointer pointing to the
+> struct attribute in the .show/.store method,
+> while we can't do this for the binary attributes.
+> I don't know why this is different, but this does make it not
+> so handy to use the binary attributes as the regular ones.
+> So I think this patch is reasonable. :)
+> 
+> Who benefits from it:
+> The patch that exposes ACPI tables in sysfs
+> requires such an improvement.
+> All the table binary attributes share the same .read method.
+> Parameter "struct bin_attribute *" is used to get
+> the table signature and instance number which are used to
+> distinguish different ACPI table binary attributes.
+> 
+> Without this parameter, we need to offer different .read methods
+> for different ACPI table binary attributes.
+> This is impossible as there are various ACPI tables on different
+> platforms, and we don't know what they are until they are loaded.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  Documentation/firmware_class/firmware_sample_firmware_class.c |    2 
+>  drivers/base/firmware_class.c                                 |    4 
+>  drivers/firmware/dcdbas.c                                     |   10 +-
+>  drivers/firmware/dell_rbu.c                                   |   25 +++--
+>  drivers/i2c/chips/eeprom.c                                    |    3 
+>  drivers/i2c/chips/max6875.c                                   |    5 -
+>  drivers/pci/hotplug/acpiphp_ibm.c                             |    6 -
+>  drivers/pci/pci-sysfs.c                                       |   18 ++-
+>  drivers/pcmcia/socket_sysfs.c                                 |    8 +
+>  drivers/rapidio/rio-sysfs.c                                   |    6 -
+>  drivers/rtc/rtc-ds1553.c                                      |   10 +-
+>  drivers/rtc/rtc-ds1742.c                                      |   10 +-
+>  drivers/s390/cio/chp.c                                        |   10 +-
+>  drivers/scsi/arcmsr/arcmsr_attr.c                             |   15 +--
+>  drivers/scsi/ipr.c                                            |   18 ++-
+>  drivers/scsi/libsas/sas_expander.c                            |   16 ++-
+>  drivers/scsi/lpfc/lpfc_attr.c                                 |   12 +-
+>  drivers/scsi/qla2xxx/qla_attr.c                               |   50 ++++++----
+>  drivers/spi/at25.c                                            |    6 -
+>  drivers/video/aty/radeon_base.c                               |    8 +
+>  drivers/w1/slaves/w1_ds2433.c                                 |   10 +-
+>  drivers/w1/slaves/w1_therm.c                                  |    7 +
+>  drivers/w1/w1.c                                               |   12 +-
+>  drivers/zorro/zorro-sysfs.c                                   |    5 -
+>  fs/sysfs/bin.c                                                |    4 
+>  include/linux/sysfs.h                                         |    6 -
+>  net/bridge/br_sysfs_br.c                                      |    5 -
+>  27 files changed, 185 insertions(+), 106 deletions(-)
+> 
+> Index: linux-2.6.22-rc4/Documentation/firmware_class/firmware_sample_firmware_class.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/Documentation/firmware_class/firmware_sample_firmware_class.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/Documentation/firmware_class/firmware_sample_firmware_class.c	2007-06-08 13:25:33.000000000 +0800
+> @@ -78,6 +78,7 @@ static CLASS_DEVICE_ATTR(loading, 0644,
+>  			 firmware_loading_show, firmware_loading_store);
+>  
+>  static ssize_t firmware_data_read(struct kobject *kobj,
+> +				  struct bin_attribute *bin_attr,
+>  				  char *buffer, loff_t offset, size_t count)
+>  {
+>  	struct class_device *class_dev = to_class_dev(kobj);
+> @@ -88,6 +89,7 @@ static ssize_t firmware_data_read(struct
+>  	return count;
+>  }
+>  static ssize_t firmware_data_write(struct kobject *kobj,
+> +				   struct bin_attribute *bin_attr,
+>  				   char *buffer, loff_t offset, size_t count)
+>  {
+>  	struct class_device *class_dev = to_class_dev(kobj);
+> Index: linux-2.6.22-rc4/drivers/base/firmware_class.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/base/firmware_class.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/base/firmware_class.c	2004-01-03 06:36:47.000000000 +0800
+> @@ -175,7 +175,7 @@ static ssize_t firmware_loading_store(st
+>  static DEVICE_ATTR(loading, 0644, firmware_loading_show, firmware_loading_store);
+>  
+>  static ssize_t
+> -firmware_data_read(struct kobject *kobj,
+> +firmware_data_read(struct kobject *kobj, struct bin_attribute *bin_attr,
+>  		   char *buffer, loff_t offset, size_t count)
+>  {
+>  	struct device *dev = to_dev(kobj);
+> @@ -240,7 +240,7 @@ fw_realloc_buffer(struct firmware_priv *
+>   *	the driver as a firmware image.
+>   **/
+>  static ssize_t
+> -firmware_data_write(struct kobject *kobj,
+> +firmware_data_write(struct kobject *kobj, struct bin_attribute *bin_attr,
+>  		    char *buffer, loff_t offset, size_t count)
+>  {
+>  	struct device *dev = to_dev(kobj);
+> Index: linux-2.6.22-rc4/drivers/firmware/dcdbas.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/firmware/dcdbas.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/firmware/dcdbas.c	2007-06-08 13:26:23.000000000 +0800
+> @@ -149,8 +149,9 @@ static ssize_t smi_data_buf_size_store(s
+>  	return count;
+>  }
+>  
+> -static ssize_t smi_data_read(struct kobject *kobj, char *buf, loff_t pos,
+> -			     size_t count)
+> +static ssize_t smi_data_read(struct kobject *kobj,
+> +			     struct bin_attribute *bin_attr,
+> +			     char *buf, loff_t pos, size_t count)
+>  {
+>  	size_t max_read;
+>  	ssize_t ret;
+> @@ -170,8 +171,9 @@ out:
+>  	return ret;
+>  }
+>  
+> -static ssize_t smi_data_write(struct kobject *kobj, char *buf, loff_t pos,
+> -			      size_t count)
+> +static ssize_t smi_data_write(struct kobject *kobj,
+> +			      struct bin_attribute *bin_attr,
+> +			      char *buf, loff_t pos, size_t count)
+>  {
+>  	ssize_t ret;
+>  
+> Index: linux-2.6.22-rc4/drivers/firmware/dell_rbu.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/firmware/dell_rbu.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/firmware/dell_rbu.c	2007-06-08 13:27:35.000000000 +0800
+> @@ -543,8 +543,9 @@ static ssize_t read_rbu_mono_data(char *
+>  	return ret_count;
+>  }
+>  
+> -static ssize_t read_rbu_data(struct kobject *kobj, char *buffer,
+> -	loff_t pos, size_t count)
+> +static ssize_t read_rbu_data(struct kobject *kobj,
+> +			     struct bin_attribute *bin_attr,
+> +			     char *buffer, loff_t pos, size_t count)
+>  {
+>  	ssize_t ret_count = 0;
+>  
+> @@ -591,8 +592,9 @@ static void callbackfn_rbu(const struct 
+>  	spin_unlock(&rbu_data.lock);
+>  }
+>  
+> -static ssize_t read_rbu_image_type(struct kobject *kobj, char *buffer,
+> -	loff_t pos, size_t count)
+> +static ssize_t read_rbu_image_type(struct kobject *kobj,
+> +				   struct bin_attribute *bin_attr,
+> +				   char *buffer, loff_t pos, size_t count)
+>  {
+>  	int size = 0;
+>  	if (!pos)
+> @@ -600,8 +602,9 @@ static ssize_t read_rbu_image_type(struc
+>  	return size;
+>  }
+>  
+> -static ssize_t write_rbu_image_type(struct kobject *kobj, char *buffer,
+> -	loff_t pos, size_t count)
+> +static ssize_t write_rbu_image_type(struct kobject *kobj,
+> +				    struct bin_attribute *bin_attr,
+> +				    char *buffer, loff_t pos, size_t count)
+>  {
+>  	int rc = count;
+>  	int req_firm_rc = 0;
+> @@ -660,8 +663,9 @@ static ssize_t write_rbu_image_type(stru
+>  	return rc;
+>  }
+>  
+> -static ssize_t read_rbu_packet_size(struct kobject *kobj, char *buffer,
+> -	loff_t pos, size_t count)
+> +static ssize_t read_rbu_packet_size(struct kobject *kobj,
+> +				    struct bin_attribute *bin_attr,
+> +				    char *buffer, loff_t pos, size_t count)
+>  {
+>  	int size = 0;
+>  	if (!pos) {
+> @@ -672,8 +676,9 @@ static ssize_t read_rbu_packet_size(stru
+>  	return size;
+>  }
+>  
+> -static ssize_t write_rbu_packet_size(struct kobject *kobj, char *buffer,
+> -	loff_t pos, size_t count)
+> +static ssize_t write_rbu_packet_size(struct kobject *kobj,
+> +				     struct bin_attribute *bin_attr,
+> +				     char *buffer, loff_t pos, size_t count)
+>  {
+>  	unsigned long temp;
+>  	spin_lock(&rbu_data.lock);
+> Index: linux-2.6.22-rc4/drivers/i2c/chips/eeprom.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/i2c/chips/eeprom.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/i2c/chips/eeprom.c	2004-01-03 06:36:47.000000000 +0800
+> @@ -110,7 +110,8 @@ exit:
+>  	mutex_unlock(&data->update_lock);
+>  }
+>  
+> -static ssize_t eeprom_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t eeprom_read(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +			   char *buf, loff_t off, size_t count)
+>  {
+>  	struct i2c_client *client = to_i2c_client(container_of(kobj, struct device, kobj));
+>  	struct eeprom_data *data = i2c_get_clientdata(client);
+> Index: linux-2.6.22-rc4/drivers/i2c/chips/max6875.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/i2c/chips/max6875.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/i2c/chips/max6875.c	2007-06-08 13:28:14.000000000 +0800
+> @@ -125,8 +125,9 @@ exit_up:
+>  	mutex_unlock(&data->update_lock);
+>  }
+>  
+> -static ssize_t max6875_read(struct kobject *kobj, char *buf, loff_t off,
+> -			    size_t count)
+> +static ssize_t max6875_read(struct kobject *kobj,
+> +			    struct bin_attribute *bin_attr,
+> +			    char *buf, loff_t off, size_t count)
+>  {
+>  	struct i2c_client *client = kobj_to_i2c_client(kobj);
+>  	struct max6875_data *data = i2c_get_clientdata(client);
+> Index: linux-2.6.22-rc4/drivers/pci/hotplug/acpiphp_ibm.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/pci/hotplug/acpiphp_ibm.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/pci/hotplug/acpiphp_ibm.c	2007-06-08 13:29:09.000000000 +0800
+> @@ -106,7 +106,8 @@ static int ibm_get_attention_status(stru
+>  static void ibm_handle_events(acpi_handle handle, u32 event, void *context);
+>  static int ibm_get_table_from_acpi(char **bufp);
+>  static ssize_t ibm_read_apci_table(struct kobject *kobj,
+> -		char *buffer, loff_t pos, size_t size);
+> +				   struct bin_attribute *bin_attr,
+> +				   char *buffer, loff_t pos, size_t size);
+>  static acpi_status __init ibm_find_acpi_device(acpi_handle handle,
+>  		u32 lvl, void *context, void **rv);
+>  static int __init ibm_acpiphp_init(void);
+> @@ -358,7 +359,8 @@ read_table_done:
+>   * our solution is to only allow reading the table in all at once
+>   **/
+>  static ssize_t ibm_read_apci_table(struct kobject *kobj,
+> -		char *buffer, loff_t pos, size_t size)
+> +				   struct bin_attribute *bin_attr,
+> +				   char *buffer, loff_t pos, size_t size)
+>  {
+>  	int bytes_read = -EINVAL;
+>  	char *table = NULL;
+> Index: linux-2.6.22-rc4/drivers/pci/pci-sysfs.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/pci/pci-sysfs.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/pci/pci-sysfs.c	2004-01-03 06:36:47.000000000 +0800
+> @@ -213,7 +213,8 @@ struct device_attribute pci_dev_attrs[] 
+>  };
+>  
+>  static ssize_t
+> -pci_read_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +pci_read_config(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		char *buf, loff_t off, size_t count)
+>  {
+>  	struct pci_dev *dev = to_pci_dev(container_of(kobj,struct device,kobj));
+>  	unsigned int size = 64;
+> @@ -285,7 +286,8 @@ pci_read_config(struct kobject *kobj, ch
+>  }
+>  
+>  static ssize_t
+> -pci_write_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +pci_write_config(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		 char *buf, loff_t off, size_t count)
+>  {
+>  	struct pci_dev *dev = to_pci_dev(container_of(kobj,struct device,kobj));
+>  	unsigned int size = count;
+> @@ -352,7 +354,8 @@ pci_write_config(struct kobject *kobj, c
+>   * callback routine (pci_legacy_read).
+>   */
+>  ssize_t
+> -pci_read_legacy_io(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +pci_read_legacy_io(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		   char *buf, loff_t off, size_t count)
+>  {
+>          struct pci_bus *bus = to_pci_bus(container_of(kobj,
+>                                                        struct class_device,
+> @@ -376,7 +379,8 @@ pci_read_legacy_io(struct kobject *kobj,
+>   * callback routine (pci_legacy_write).
+>   */
+>  ssize_t
+> -pci_write_legacy_io(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +pci_write_legacy_io(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		    char *buf, loff_t off, size_t count)
+>  {
+>          struct pci_bus *bus = to_pci_bus(container_of(kobj,
+>  						      struct class_device,
+> @@ -529,7 +533,8 @@ static inline void pci_remove_resource_f
+>   * writing anything except 0 enables it
+>   */
+>  static ssize_t
+> -pci_write_rom(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +pci_write_rom(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +	      char *buf, loff_t off, size_t count)
+>  {
+>  	struct pci_dev *pdev = to_pci_dev(container_of(kobj, struct device, kobj));
+>  
+> @@ -552,7 +557,8 @@ pci_write_rom(struct kobject *kobj, char
+>   * device corresponding to @kobj.
+>   */
+>  static ssize_t
+> -pci_read_rom(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +pci_read_rom(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +	     char *buf, loff_t off, size_t count)
+>  {
+>  	struct pci_dev *pdev = to_pci_dev(container_of(kobj, struct device, kobj));
+>  	void __iomem *rom;
+> Index: linux-2.6.22-rc4/drivers/pcmcia/socket_sysfs.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/pcmcia/socket_sysfs.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/pcmcia/socket_sysfs.c	2007-06-08 14:16:28.000000000 +0800
+> @@ -283,7 +283,9 @@ static ssize_t pccard_extract_cis(struct
+>  	return (ret);
+>  }
+>  
+> -static ssize_t pccard_show_cis(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t pccard_show_cis(struct kobject *kobj,
+> +			       struct bin_attribute *bin_attr,
+> +			       char *buf, loff_t off, size_t count)
+>  {
+>  	unsigned int size = 0x200;
+>  
+> @@ -311,7 +313,9 @@ static ssize_t pccard_show_cis(struct ko
+>  	return (count);
+>  }
+>  
+> -static ssize_t pccard_store_cis(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t pccard_store_cis(struct kobject *kobj,
+> +				struct bin_attribute *bin_attr,
+> +				char *buf, loff_t off, size_t count)
+>  {
+>  	struct pcmcia_socket *s = to_socket(container_of(kobj, struct device, kobj));
+>  	cisdump_t *cis;
+> Index: linux-2.6.22-rc4/drivers/rapidio/rio-sysfs.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/rapidio/rio-sysfs.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/rapidio/rio-sysfs.c	2004-01-03 06:36:47.000000000 +0800
+> @@ -67,7 +67,8 @@ struct device_attribute rio_dev_attrs[] 
+>  };
+>  
+>  static ssize_t
+> -rio_read_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +rio_read_config(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		char *buf, loff_t off, size_t count)
+>  {
+>  	struct rio_dev *dev =
+>  	    to_rio_dev(container_of(kobj, struct device, kobj));
+> @@ -137,7 +138,8 @@ rio_read_config(struct kobject *kobj, ch
+>  }
+>  
+>  static ssize_t
+> -rio_write_config(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +rio_write_config(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		 char *buf, loff_t off, size_t count)
+>  {
+>  	struct rio_dev *dev =
+>  	    to_rio_dev(container_of(kobj, struct device, kobj));
+> Index: linux-2.6.22-rc4/drivers/rtc/rtc-ds1553.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/rtc/rtc-ds1553.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/rtc/rtc-ds1553.c	2007-06-08 13:55:23.000000000 +0800
+> @@ -258,8 +258,9 @@ static const struct rtc_class_ops ds1553
+>  	.ioctl		= ds1553_rtc_ioctl,
+>  };
+>  
+> -static ssize_t ds1553_nvram_read(struct kobject *kobj, char *buf,
+> -				 loff_t pos, size_t size)
+> +static ssize_t ds1553_nvram_read(struct kobject *kobj,
+> +				 struct bin_attribute *bin_attr,
+> +				 char *buf, loff_t pos, size_t size)
+>  {
+>  	struct platform_device *pdev =
+>  		to_platform_device(container_of(kobj, struct device, kobj));
+> @@ -272,8 +273,9 @@ static ssize_t ds1553_nvram_read(struct 
+>  	return count;
+>  }
+>  
+> -static ssize_t ds1553_nvram_write(struct kobject *kobj, char *buf,
+> -				  loff_t pos, size_t size)
+> +static ssize_t ds1553_nvram_write(struct kobject *kobj,
+> +				  struct bin_attribute *bin_attr,
+> +				  char *buf, loff_t pos, size_t size)
+>  {
+>  	struct platform_device *pdev =
+>  		to_platform_device(container_of(kobj, struct device, kobj));
+> Index: linux-2.6.22-rc4/drivers/rtc/rtc-ds1742.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/rtc/rtc-ds1742.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/rtc/rtc-ds1742.c	2007-06-08 13:55:47.000000000 +0800
+> @@ -127,8 +127,9 @@ static const struct rtc_class_ops ds1742
+>  	.set_time	= ds1742_rtc_set_time,
+>  };
+>  
+> -static ssize_t ds1742_nvram_read(struct kobject *kobj, char *buf,
+> -				 loff_t pos, size_t size)
+> +static ssize_t ds1742_nvram_read(struct kobject *kobj,
+> +				 struct bin_attribute *bin_attr,
+> +				 char *buf, loff_t pos, size_t size)
+>  {
+>  	struct platform_device *pdev =
+>  		to_platform_device(container_of(kobj, struct device, kobj));
+> @@ -141,8 +142,9 @@ static ssize_t ds1742_nvram_read(struct 
+>  	return count;
+>  }
+>  
+> -static ssize_t ds1742_nvram_write(struct kobject *kobj, char *buf,
+> -				  loff_t pos, size_t size)
+> +static ssize_t ds1742_nvram_write(struct kobject *kobj,
+> +				  struct bin_attribute *bin_attr,
+> +				  char *buf, loff_t pos, size_t size)
+>  {
+>  	struct platform_device *pdev =
+>  		to_platform_device(container_of(kobj, struct device, kobj));
+> Index: linux-2.6.22-rc4/drivers/scsi/arcmsr/arcmsr_attr.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/scsi/arcmsr/arcmsr_attr.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/scsi/arcmsr/arcmsr_attr.c	2007-06-08 13:56:37.000000000 +0800
+> @@ -59,8 +59,9 @@
+>  struct class_device_attribute *arcmsr_host_attrs[];
+>  
+>  static ssize_t
+> -arcmsr_sysfs_iop_message_read(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +arcmsr_sysfs_iop_message_read(struct kobject *kobj,
+> +			      struct bin_attribute *bin_attr,
+> +			      char *buf, loff_t off, size_t count)
+>  {
+>  	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+>  	struct Scsi_Host *host = class_to_shost(cdev);
+> @@ -105,8 +106,9 @@ arcmsr_sysfs_iop_message_read(struct kob
+>  }
+>  
+>  static ssize_t
+> -arcmsr_sysfs_iop_message_write(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +arcmsr_sysfs_iop_message_write(struct kobject *kobj,
+> +			       struct bin_attribute *bin_attr,
+> +			       char *buf, loff_t off, size_t count)
+>  {
+>  	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+>  	struct Scsi_Host *host = class_to_shost(cdev);
+> @@ -152,8 +154,9 @@ arcmsr_sysfs_iop_message_write(struct ko
+>  }
+>  
+>  static ssize_t
+> -arcmsr_sysfs_iop_message_clear(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +arcmsr_sysfs_iop_message_clear(struct kobject *kobj,
+> +			       struct bin_attribute *bin_attr,
+> +			       char *buf, loff_t off, size_t count)
+>  {
+>  	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+>  	struct Scsi_Host *host = class_to_shost(cdev);
+> Index: linux-2.6.22-rc4/drivers/scsi/ipr.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/scsi/ipr.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/scsi/ipr.c	2007-06-08 13:57:39.000000000 +0800
+> @@ -2465,6 +2465,7 @@ restart:
+>  /**
+>   * ipr_read_trace - Dump the adapter trace
+>   * @kobj:		kobject struct
+> + * @bin_attr:		bin_attribute struct
+>   * @buf:		buffer
+>   * @off:		offset
+>   * @count:		buffer size
+> @@ -2472,8 +2473,9 @@ restart:
+>   * Return value:
+>   *	number of bytes printed to buffer
+>   **/
+> -static ssize_t ipr_read_trace(struct kobject *kobj, char *buf,
+> -			      loff_t off, size_t count)
+> +static ssize_t ipr_read_trace(struct kobject *kobj,
+> +			      struct bin_attribute *bin_attr,
+> +			      char *buf, loff_t off, size_t count)
+>  {
+>  	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+>  	struct Scsi_Host *shost = class_to_shost(cdev);
+> @@ -3166,6 +3168,7 @@ static struct class_device_attribute *ip
+>  /**
+>   * ipr_read_dump - Dump the adapter
+>   * @kobj:		kobject struct
+> + * @bin_attr:		bin_attribute struct
+>   * @buf:		buffer
+>   * @off:		offset
+>   * @count:		buffer size
+> @@ -3173,8 +3176,9 @@ static struct class_device_attribute *ip
+>   * Return value:
+>   *	number of bytes printed to buffer
+>   **/
+> -static ssize_t ipr_read_dump(struct kobject *kobj, char *buf,
+> -			      loff_t off, size_t count)
+> +static ssize_t ipr_read_dump(struct kobject *kobj,
+> +			     struct bin_attribute *bin_attr,
+> +			     char *buf, loff_t off, size_t count)
+>  {
+>  	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+>  	struct Scsi_Host *shost = class_to_shost(cdev);
+> @@ -3327,6 +3331,7 @@ static int ipr_free_dump(struct ipr_ioa_
+>  /**
+>   * ipr_write_dump - Setup dump state of adapter
+>   * @kobj:		kobject struct
+> + * @bin_attr:		bin_attribute struct
+>   * @buf:		buffer
+>   * @off:		offset
+>   * @count:		buffer size
+> @@ -3334,8 +3339,9 @@ static int ipr_free_dump(struct ipr_ioa_
+>   * Return value:
+>   *	number of bytes printed to buffer
+>   **/
+> -static ssize_t ipr_write_dump(struct kobject *kobj, char *buf,
+> -			      loff_t off, size_t count)
+> +static ssize_t ipr_write_dump(struct kobject *kobj,
+> +			      struct bin_attribute *bin_attr,
+> +			      char *buf, loff_t off, size_t count)
+>  {
+>  	struct class_device *cdev = container_of(kobj,struct class_device,kobj);
+>  	struct Scsi_Host *shost = class_to_shost(cdev);
+> Index: linux-2.6.22-rc4/drivers/scsi/libsas/sas_expander.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/scsi/libsas/sas_expander.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/scsi/libsas/sas_expander.c	2007-06-08 14:01:44.000000000 +0800
+> @@ -38,8 +38,10 @@ static int sas_disable_routing(struct do
+>  
+>  #if 0
+>  /* FIXME: smp needs to migrate into the sas class */
+> -static ssize_t smp_portal_read(struct kobject *, char *, loff_t, size_t);
+> -static ssize_t smp_portal_write(struct kobject *, char *, loff_t, size_t);
+> +static ssize_t smp_portal_read(struct kobject *, struct bin_attribute *,
+> +			       char *, loff_t, size_t);
+> +static ssize_t smp_portal_write(struct kobject *, struct bin_attribute *,
+> +				char *, loff_t, size_t);
+>  #endif
+>  
+>  /* ---------- SMP task management ---------- */
+> @@ -1846,8 +1848,9 @@ out:
+>  #if 0
+>  /* ---------- SMP portal ---------- */
+>  
+> -static ssize_t smp_portal_write(struct kobject *kobj, char *buf, loff_t offs,
+> -				size_t size)
+> +static ssize_t smp_portal_write(struct kobject *kobj,
+> +				struct bin_attribute *bin_attr,
+> +				char *buf, loff_t offs, size_t size)
+>  {
+>  	struct domain_device *dev = to_dom_device(kobj);
+>  	struct expander_device *ex = &dev->ex_dev;
+> @@ -1873,8 +1876,9 @@ static ssize_t smp_portal_write(struct k
+>  	return size;
+>  }
+>  
+> -static ssize_t smp_portal_read(struct kobject *kobj, char *buf, loff_t offs,
+> -			       size_t size)
+> +static ssize_t smp_portal_read(struct kobject *kobj,
+> +			       struct bin_attribute *bin_attr,
+> +			       char *buf, loff_t offs, size_t size)
+>  {
+>  	struct domain_device *dev = to_dom_device(kobj);
+>  	struct expander_device *ex = &dev->ex_dev;
+> Index: linux-2.6.22-rc4/drivers/scsi/lpfc/lpfc_attr.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/scsi/lpfc/lpfc_attr.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/scsi/lpfc/lpfc_attr.c	2004-01-03 06:36:47.000000000 +0800
+> @@ -1133,7 +1133,8 @@ struct class_device_attribute *lpfc_host
+>  };
+>  
+>  static ssize_t
+> -sysfs_ctlreg_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +sysfs_ctlreg_write(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		   char *buf, loff_t off, size_t count)
+>  {
+>  	size_t buf_off;
+>  	struct Scsi_Host *host = class_to_shost(container_of(kobj,
+> @@ -1165,7 +1166,8 @@ sysfs_ctlreg_write(struct kobject *kobj,
+>  }
+>  
+>  static ssize_t
+> -sysfs_ctlreg_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +sysfs_ctlreg_read(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		  char *buf, loff_t off, size_t count)
+>  {
+>  	size_t buf_off;
+>  	uint32_t * tmp_ptr;
+> @@ -1222,7 +1224,8 @@ sysfs_mbox_idle (struct lpfc_hba * phba)
+>  }
+>  
+>  static ssize_t
+> -sysfs_mbox_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +sysfs_mbox_write(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		 char *buf, loff_t off, size_t count)
+>  {
+>  	struct Scsi_Host * host =
+>  		class_to_shost(container_of(kobj, struct class_device, kobj));
+> @@ -1274,7 +1277,8 @@ sysfs_mbox_write(struct kobject *kobj, c
+>  }
+>  
+>  static ssize_t
+> -sysfs_mbox_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +sysfs_mbox_read(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +		char *buf, loff_t off, size_t count)
+>  {
+>  	struct Scsi_Host *host =
+>  		class_to_shost(container_of(kobj, struct class_device,
+> Index: linux-2.6.22-rc4/drivers/scsi/qla2xxx/qla_attr.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/scsi/qla2xxx/qla_attr.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/scsi/qla2xxx/qla_attr.c	2007-06-08 14:09:53.000000000 +0800
+> @@ -11,8 +11,9 @@
+>  /* SYSFS attributes --------------------------------------------------------- */
+>  
+>  static ssize_t
+> -qla2x00_sysfs_read_fw_dump(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_read_fw_dump(struct kobject *kobj,
+> +			   struct bin_attribute *bin_attr,
+> +			   char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -31,8 +32,9 @@ qla2x00_sysfs_read_fw_dump(struct kobjec
+>  }
+>  
+>  static ssize_t
+> -qla2x00_sysfs_write_fw_dump(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_write_fw_dump(struct kobject *kobj,
+> +			    struct bin_attribute *bin_attr,
+> +			    char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -81,8 +83,9 @@ static struct bin_attribute sysfs_fw_dum
+>  };
+>  
+>  static ssize_t
+> -qla2x00_sysfs_read_nvram(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_read_nvram(struct kobject *kobj,
+> +			 struct bin_attribute *bin_attr,
+> +			 char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -101,8 +104,9 @@ qla2x00_sysfs_read_nvram(struct kobject 
+>  }
+>  
+>  static ssize_t
+> -qla2x00_sysfs_write_nvram(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_write_nvram(struct kobject *kobj,
+> +			  struct bin_attribute *bin_attr,
+> +			  char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -157,8 +161,9 @@ static struct bin_attribute sysfs_nvram_
+>  };
+>  
+>  static ssize_t
+> -qla2x00_sysfs_read_optrom(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_read_optrom(struct kobject *kobj,
+> +			  struct bin_attribute *bin_attr,
+> +			  char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -176,8 +181,9 @@ qla2x00_sysfs_read_optrom(struct kobject
+>  }
+>  
+>  static ssize_t
+> -qla2x00_sysfs_write_optrom(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_write_optrom(struct kobject *kobj,
+> +			   struct bin_attribute *bin_attr,
+> +			   char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -206,8 +212,9 @@ static struct bin_attribute sysfs_optrom
+>  };
+>  
+>  static ssize_t
+> -qla2x00_sysfs_write_optrom_ctl(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_write_optrom_ctl(struct kobject *kobj,
+> +			       struct bin_attribute *bin_attr,
+> +			       char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -286,8 +293,9 @@ static struct bin_attribute sysfs_optrom
+>  };
+>  
+>  static ssize_t
+> -qla2x00_sysfs_read_vpd(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_read_vpd(struct kobject *kobj,
+> +		       struct bin_attribute *bin_attr,
+> +		       char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -305,8 +313,9 @@ qla2x00_sysfs_read_vpd(struct kobject *k
+>  }
+>  
+>  static ssize_t
+> -qla2x00_sysfs_write_vpd(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_write_vpd(struct kobject *kobj,
+> +			struct bin_attribute *bin_attr,
+> +			char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> @@ -335,8 +344,9 @@ static struct bin_attribute sysfs_vpd_at
+>  };
+>  
+>  static ssize_t
+> -qla2x00_sysfs_read_sfp(struct kobject *kobj, char *buf, loff_t off,
+> -    size_t count)
+> +qla2x00_sysfs_read_sfp(struct kobject *kobj,
+> +		       struct bin_attribute *bin_attr,
+> +		       char *buf, loff_t off, size_t count)
+>  {
+>  	struct scsi_qla_host *ha = to_qla_host(dev_to_shost(container_of(kobj,
+>  	    struct device, kobj)));
+> Index: linux-2.6.22-rc4/drivers/spi/at25.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/spi/at25.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/spi/at25.c	2004-01-03 06:36:47.000000000 +0800
+> @@ -111,7 +111,8 @@ at25_ee_read(
+>  }
+>  
+>  static ssize_t
+> -at25_bin_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +at25_bin_read(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +	      char *buf, loff_t off, size_t count)
+>  {
+>  	struct device		*dev;
+>  	struct at25_data	*at25;
+> @@ -236,7 +237,8 @@ at25_ee_write(struct at25_data *at25, ch
+>  }
+>  
+>  static ssize_t
+> -at25_bin_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +at25_bin_write(struct kobject *kobj, struct bin_attribute *bin_attr,
+> +	       char *buf, loff_t off, size_t count)
+>  {
+>  	struct device		*dev;
+>  	struct at25_data	*at25;
+> Index: linux-2.6.22-rc4/drivers/video/aty/radeon_base.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/video/aty/radeon_base.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/video/aty/radeon_base.c	2007-06-08 14:10:47.000000000 +0800
+> @@ -2102,7 +2102,9 @@ static ssize_t radeon_show_one_edid(char
+>  }
+>  
+>  
+> -static ssize_t radeon_show_edid1(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t radeon_show_edid1(struct kobject *kobj,
+> +				 struct bin_attribute *bin_attr,
+> +				 char *buf, loff_t off, size_t count)
+>  {
+>  	struct device *dev = container_of(kobj, struct device, kobj);
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+> @@ -2113,7 +2115,9 @@ static ssize_t radeon_show_edid1(struct 
+>  }
+>  
+>  
+> -static ssize_t radeon_show_edid2(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t radeon_show_edid2(struct kobject *kobj,
+> +				 struct bin_attribute *bin_attr,
+> +				 char *buf, loff_t off, size_t count)
+>  {
+>  	struct device *dev = container_of(kobj, struct device, kobj);
+>  	struct pci_dev *pdev = to_pci_dev(dev);
+> Index: linux-2.6.22-rc4/drivers/w1/slaves/w1_ds2433.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/w1/slaves/w1_ds2433.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/w1/slaves/w1_ds2433.c	2007-06-08 14:11:37.000000000 +0800
+> @@ -91,8 +91,9 @@ static int w1_f23_refresh_block(struct w
+>  }
+>  #endif	/* CONFIG_W1_SLAVE_DS2433_CRC */
+>  
+> -static ssize_t w1_f23_read_bin(struct kobject *kobj, char *buf, loff_t off,
+> -			       size_t count)
+> +static ssize_t w1_f23_read_bin(struct kobject *kobj,
+> +			       struct bin_attribute *bin_attr,
+> +			       char *buf, loff_t off, size_t count)
+>  {
+>  	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+>  #ifdef CONFIG_W1_SLAVE_DS2433_CRC
+> @@ -199,8 +200,9 @@ static int w1_f23_write(struct w1_slave 
+>  	return 0;
+>  }
+>  
+> -static ssize_t w1_f23_write_bin(struct kobject *kobj, char *buf, loff_t off,
+> -				size_t count)
+> +static ssize_t w1_f23_write_bin(struct kobject *kobj,
+> +				struct bin_attribute *bin_attr,
+> +				char *buf, loff_t off, size_t count)
+>  {
+>  	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+>  	int addr, len, idx;
+> Index: linux-2.6.22-rc4/drivers/w1/slaves/w1_therm.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/w1/slaves/w1_therm.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/w1/slaves/w1_therm.c	2007-06-08 14:12:15.000000000 +0800
+> @@ -42,7 +42,8 @@ static u8 bad_roms[][9] = {
+>  				{}
+>  			};
+>  
+> -static ssize_t w1_therm_read_bin(struct kobject *, char *, loff_t, size_t);
+> +static ssize_t w1_therm_read_bin(struct kobject *, struct bin_attribute *,
+> +				 char *, loff_t, size_t);
+>  
+>  static struct bin_attribute w1_therm_bin_attr = {
+>  	.attr = {
+> @@ -159,7 +160,9 @@ static int w1_therm_check_rom(u8 rom[9])
+>  	return 0;
+>  }
+>  
+> -static ssize_t w1_therm_read_bin(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t w1_therm_read_bin(struct kobject *kobj,
+> +				 struct bin_attribute *bin_attr,
+> +				 char *buf, loff_t off, size_t count)
+>  {
+>  	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+>  	struct w1_master *dev = sl->master;
+> Index: linux-2.6.22-rc4/drivers/w1/w1.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/w1/w1.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/w1/w1.c	2007-06-08 14:12:55.000000000 +0800
+> @@ -105,7 +105,9 @@ static ssize_t w1_slave_read_name(struct
+>  	return sprintf(buf, "%s\n", sl->name);
+>  }
+>  
+> -static ssize_t w1_slave_read_id(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t w1_slave_read_id(struct kobject *kobj,
+> +				struct bin_attribute *bin_attr,
+> +				char *buf, loff_t off, size_t count)
+>  {
+>  	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+>  
+> @@ -136,7 +138,9 @@ static struct bin_attribute w1_slave_att
+>  
+>  /* Default family */
+>  
+> -static ssize_t w1_default_write(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t w1_default_write(struct kobject *kobj,
+> +				struct bin_attribute *bin_attr,
+> +				char *buf, loff_t off, size_t count)
+>  {
+>  	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+>  
+> @@ -153,7 +157,9 @@ out_up:
+>  	return count;
+>  }
+>  
+> -static ssize_t w1_default_read(struct kobject *kobj, char *buf, loff_t off, size_t count)
+> +static ssize_t w1_default_read(struct kobject *kobj,
+> +			       struct bin_attribute *bin_attr,
+> +			       char *buf, loff_t off, size_t count)
+>  {
+>  	struct w1_slave *sl = kobj_to_w1_slave(kobj);
+>  
+> Index: linux-2.6.22-rc4/drivers/zorro/zorro-sysfs.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/zorro/zorro-sysfs.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/zorro/zorro-sysfs.c	2007-06-08 14:13:30.000000000 +0800
+> @@ -49,8 +49,9 @@ static ssize_t zorro_show_resource(struc
+>  
+>  static DEVICE_ATTR(resource, S_IRUGO, zorro_show_resource, NULL);
+>  
+> -static ssize_t zorro_read_config(struct kobject *kobj, char *buf, loff_t off,
+> -				 size_t count)
+> +static ssize_t zorro_read_config(struct kobject *kobj,
+> +				 struct bin_attribute *bin_attr,
+> +				 char *buf, loff_t off, size_t count)
+>  {
+>  	struct zorro_dev *z = to_zorro_dev(container_of(kobj, struct device,
+>  					   kobj));
+> Index: linux-2.6.22-rc4/fs/sysfs/bin.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/fs/sysfs/bin.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/fs/sysfs/bin.c	2004-01-03 06:36:47.000000000 +0800
+> @@ -29,7 +29,7 @@ fill_read(struct dentry *dentry, char *b
+>  	if (!attr->read)
+>  		return -EIO;
+>  
+> -	return attr->read(kobj, buffer, off, count);
+> +	return attr->read(kobj, attr, buffer, off, count);
+>  }
+>  
+>  static ssize_t
+> @@ -75,7 +75,7 @@ flush_write(struct dentry *dentry, char 
+>  	if (!attr->write)
+>  		return -EIO;
+>  
+> -	return attr->write(kobj, buffer, offset, count);
+> +	return attr->write(kobj, attr, buffer, offset, count);
+>  }
+>  
+>  static ssize_t write(struct file * file, const char __user * userbuf,
+> Index: linux-2.6.22-rc4/include/linux/sysfs.h
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/include/linux/sysfs.h	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/include/linux/sysfs.h	2007-06-08 14:14:11.000000000 +0800
+> @@ -59,8 +59,10 @@ struct bin_attribute {
+>  	struct attribute	attr;
+>  	size_t			size;
+>  	void			*private;
+> -	ssize_t (*read)(struct kobject *, char *, loff_t, size_t);
+> -	ssize_t (*write)(struct kobject *, char *, loff_t, size_t);
+> +	ssize_t (*read)(struct kobject *, struct bin_attribute *,
+> +			char *, loff_t, size_t);
+> +	ssize_t (*write)(struct kobject *, struct bin_attribute *,
+> +			 char *, loff_t, size_t);
+>  	int (*mmap)(struct kobject *, struct bin_attribute *attr,
+>  		    struct vm_area_struct *vma);
+>  };
+> Index: linux-2.6.22-rc4/net/bridge/br_sysfs_br.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/net/bridge/br_sysfs_br.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/net/bridge/br_sysfs_br.c	2007-06-08 14:14:54.000000000 +0800
+> @@ -360,8 +360,9 @@ static struct attribute_group bridge_gro
+>   *
+>   * Returns the number of bytes read.
+>   */
+> -static ssize_t brforward_read(struct kobject *kobj, char *buf,
+> -			   loff_t off, size_t count)
+> +static ssize_t brforward_read(struct kobject *kobj,
+> +			      struct bin_attribute *bin_attr,
+> +			      char *buf, loff_t off, size_t count)
+>  {
+>  	struct device *dev = to_dev(kobj);
+>  	struct net_bridge *br = to_bridge(dev);
+> Index: linux-2.6.22-rc4/drivers/s390/cio/chp.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/s390/cio/chp.c	2004-01-03 06:33:28.000000000 +0800
+> +++ linux-2.6.22-rc4/drivers/s390/cio/chp.c	2004-01-03 06:36:47.000000000 +0800
+> @@ -141,8 +141,9 @@ static int s390_vary_chpid(struct chp_id
+>  /*
+>   * Channel measurement related functions
+>   */
+> -static ssize_t chp_measurement_chars_read(struct kobject *kobj, char *buf,
+> -					  loff_t off, size_t count)
+> +static ssize_t chp_measurement_chars_read(struct kobject *kobj,
+> +					  struct bin_attribute *bin_attr,
+> +					  char *buf, loff_t off, size_t count)
+>  {
+>  	struct channel_path *chp;
+>  	unsigned int size;
+> @@ -193,8 +194,9 @@ static void chp_measurement_copy_block(s
+>  	} while (reference_buf.values[0] != buf->values[0]);
+>  }
+>  
+> -static ssize_t chp_measurement_read(struct kobject *kobj, char *buf,
+> -				    loff_t off, size_t count)
+> +static ssize_t chp_measurement_read(struct kobject *kobj,
+> +				    struct bin_attribute *bin_attr,
+> +				    char *buf, loff_t off, size_t count)
+>  {
+>  	struct channel_path *chp;
+>  	struct channel_subsystem *css;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
