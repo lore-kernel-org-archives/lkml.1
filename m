@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbXFNHA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbXFNHCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636AbXFNHA0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 03:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbXFNHAO
+	id S1754022AbXFNHCa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 03:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbXFNHCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 03:00:14 -0400
-Received: from paragon.brong.net ([66.232.154.163]:50468 "EHLO
-	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034AbXFNHAN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 03:00:13 -0400
-Date: Thu, 14 Jun 2007 17:00:06 +1000
-From: Bron Gondwana <brong@fastmail.fm>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Bron Gondwana <brong@fastmail.fm>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614070006.GA7393@brong.net>
-References: <fa.khBgzvPDXYj45cntZBDPf6OM0jQ@ifi.uio.no> <fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no> <fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no> <fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no> <fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no> <20070614013214.GA1124293@hiwaay.net> <20070614025248.6e0f72f0@the-village.bc.nu> <20070614041041.GA6788@brong.net> <orsl8vi13h.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Thu, 14 Jun 2007 03:02:22 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:40036 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750967AbXFNHCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 03:02:21 -0400
+From: Darren Hart <dvhltc@us.ibm.com>
+Organization: IBM Linux Technology Center
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH RT] fix migrating softirq [cause of network hang]
+Date: Thu, 14 Jun 2007 00:02:17 -0700
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+References: <1181738836.10408.54.camel@localhost.localdomain>
+In-Reply-To: <1181738836.10408.54.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <orsl8vi13h.fsf@oliva.athome.lsd.ic.unicamp.br>
-Organization: brong.net
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200706140002.17411.dvhltc@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 01:58:26AM -0300, Alexandre Oliva wrote:
-> On Jun 14, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
-> 
-> > Tivo gets sick of the endless flamewars on lkml, signs a copy
-> > of QNX, pushes it out to the hardware.  No more Linux on Tivo.
-> 
-> What do we lose?
-> 
-> Do we actually get any benefit whatsoever from TiVO's choice of Linux
-> as the kernel for its device?
+On Wednesday 13 June 2007 05:47:16 Steven Rostedt wrote:
 
-Sure, if they make any changes or fixes to Linux.  Other than that,
-only the same benefit that Microsoft get from Windows piracy - TiVo
-employees become familiar with Linux and are more likely to use it
-and maybe contribute more in another job later.
+> This patch temporarily binds the hardirq thread on the CPU that it runs
+> the softirqs on.  With this patch I have not seen my network hang. I ran
+> it over night, doing compiles and such, and it seems fine. I would be
+> able to cause the hang with various loads within a minute, now I can't
+> cause it after several minutes.
+>
+> I'm assuming that this fix may fix other bugs too.
+>
 
-What we don't get is TiVo having a better kernel than everyone else
-because they've put some work into extending it without giving that
-work back.
+I ran 2.6.21-rt10 + this patch with kernbench and then loops building a kernel 
+(which would previously rapidly exhaust memory).  It successfully built 400 
+kernels with "make -j 32" on an 8 opteron machine with 8 GB of RAM and has so 
+far completed 25 "make -j" on the same system.  Looks like a winner to me so 
+far.
 
-I see stuff in arch/powerpc/kernel/ which is Copyright "TiVo, Inc"
-and more recent stuff in usb/net/asix.c and usb/net/mcs7830.c which
-is more than I've ever contributed to the kernel, despite making
-extensive use and even selling services where I ran servers with
-Linux on them but didn't allow my customers to change the kernel
-on the servers if there was some feature they wanted to play with.
+Thanks,
 
-> Do TiVO customers lose anything from the change from one non-Free
-> software to another?  (the Linux binary, as shipped in the TiVO, has
-> become non-Free)
-
-Not particularly, no.  Other than maybe some nice features that TiVo
-gains from being able to use Linux.
-
-Bron.
+-- 
+Darren Hart
+IBM Linux Technology Center
+Realtime Linux Team
