@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbXFNWTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbXFNWTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758368AbXFNWTD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbXFNWQb
+	id S1758580AbXFNWTf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbXFNWTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:16:31 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35402 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757638AbXFNWQ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:16:29 -0400
-Date: Fri, 15 Jun 2007 00:16:43 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: [-mm patch] drivers/ide/ide-dma.c: unexport ide_set_dma
-Message-ID: <20070614221642.GD3588@stusta.de>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 14 Jun 2007 18:19:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38234 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753891AbXFNWTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 18:19:13 -0400
+Subject: Re: libertas (private) ioctls vs. nl80211
+From: Dan Williams <dcbw@redhat.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, johannes@sipsolutions.net,
+       linux-wireless@vger.kernel.org, hs4233@mail.mn-solutions.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46718D81.9080402@garzik.org>
+References: <1181757483.29767.99.camel@johannes.berg>
+	 <20070614170901.GA13384@infradead.org>
+	 <20070614103836.23b07a72.akpm@linux-foundation.org>
+	 <20070614181307.GA16856@infradead.org>
+	 <alpine.LFD.0.98.0706141121080.14121@woody.linux-foundation.org>
+	 <46718D81.9080402@garzik.org>
+Content-Type: text/plain
+Date: Thu, 14 Jun 2007 18:22:35 -0400
+Message-Id: <1181859755.23567.3.camel@xo-28-0B-88.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ide_set_dma no longer has any modular user.
+On Thu, 2007-06-14 at 14:48 -0400, Jeff Garzik wrote:
+> Linus Torvalds wrote:
+> > 
+> > On Thu, 14 Jun 2007, Christoph Hellwig wrote:
+> >>> I suspect that the probability of your proposal succeeding would be increased
+> >>> if you could prepare a patch...
+> >> Here we go:
+> > 
+> > I don't mind ripping them out, but it makes sense only if people are 
+> > actually signed up to implementing this on a higher layer. As such, I'd 
+> > need to get a sign-off from somebody actually involved in wireless mesh 
+> > stuff etc.
+> 
+> Correct me if I'm wrong, linux-wireless, but AFAIK there has never been 
+> a single post or line of code written for a generic wireless _mesh_ 
+> interface.
+> 
+> My general sentiment is -- remove the pointless and iw-duplicated 
+> ioctls, but leave the mesh ones that won't see generic counterparts for 
+> years.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+And that's what I did in the last pull you got from John; all pointless
+and duplicated ioctls were removed.  The only ones left are mesh
+tweakables, an LED GPIO control ioctl, and a regulatory region/domain
+thing.  I agree the interface is somewhat ugly (like the
+char-128/char-128 ones that return information from the mesh forwarding
+table), and I also agree that we need to move to using netlink for this
+sort of stuff in the future.  There are _no_ ioctls that duplicate WEXT
+functionality.
 
----
---- linux-2.6.22-rc4-mm2/drivers/ide/ide-dma.c.old	2007-06-14 23:52:30.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/drivers/ide/ide-dma.c	2007-06-14 23:52:38.000000000 +0200
-@@ -847,8 +847,6 @@
- 	return rc;
- }
- 
--EXPORT_SYMBOL_GPL(ide_set_dma);
--
- #ifdef CONFIG_BLK_DEV_IDEDMA_PCI
- void ide_dma_lost_irq (ide_drive_t *drive)
- {
+Dan
+
 
