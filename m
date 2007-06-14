@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbXFNKxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbXFNLEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbXFNKxd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 06:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXFNKxX
+	id S1752031AbXFNLEL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 07:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXFNLEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 06:53:23 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:42681 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751235AbXFNKxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 06:53:22 -0400
-Subject: Re: [RFC] TOMOYO Linux
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: "william(at)elan.net" <william@elan.net>
-Cc: Toshiharu Harada <haradats@gmail.com>, Rik van Riel <riel@redhat.com>,
-       Toshiharu Harada <haradats@nttdata.co.jp>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.62.0706131631280.1344@sokol.elan.net>
-References: <466FA71C.1020309@nttdata.co.jp>
-	 <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
-	 <9d732d950706130722g12a22604p223381a8e281a4a1@mail.gmail.com>
-	 <46704D49.8010308@redhat.com>
-	 <9d732d950706131435s636b852di98026aed1d9a6ac6@mail.gmail.com>
-	 <467064B9.1080005@redhat.com>
-	 <9d732d950706131525n667587e6t59e94c5cee951c6d@mail.gmail.com>
-	 <Pine.LNX.4.62.0706131631280.1344@sokol.elan.net>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 14 Jun 2007 06:53:04 -0400
-Message-Id: <1181818384.17547.546.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jun 2007 07:04:00 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:56233 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbXFNLD7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 07:03:59 -0400
+Date: Thu, 14 Jun 2007 13:16:21 +0200
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, kbuild-devel@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Need opinions on asm-offsets cleanup (Re: [patch 01/03] kbuild, asm-values: infrastructure)
+Message-ID: <20070614111621.GL7266@flower.upol.cz>
+References: <20070612233650.486224000@flower.upol.cz> <20070612234558.648949000@flower.upol.cz> <20070614074143.GK7266@flower.upol.cz> <20070614091225.GA30817@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070614091225.GA30817@uranus.ravnborg.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-13 at 16:32 -0700, william(at)elan.net wrote:
-> On Thu, 14 Jun 2007, Toshiharu Harada wrote:
+On Thu, Jun 14, 2007 at 11:12:25AM +0200, Sam Ravnborg wrote:
+> On Thu, Jun 14, 2007 at 09:41:43AM +0200, Oleg Verych wrote:
+> > Jun 13, 2007 at 01:36:51AM +0200, asm-values patch set:
+> > > 	* header with widely used value definitions
+> > > 	* handle all asm-related things in one file (Makefile.asm)
+> > > 	* move some asm bits from Makefile.build there
+> > > 	  (rule %.s:%.c)
+> > > 	* add script to generate headers from assembles output
+> > > 	  (hopefully better output, MIPS testing/joining to all arch
+> > > 	   probably needed)
+> > > 
+> > > rfc-by: Oleg Verych
+> > > ---
+> > 
+> > So, is it another not so juicy lets-break-it-all stuff from me, or it just
+> > doesn't apply for you?
 > 
-> > 2007/6/14, Rik van Riel <riel@redhat.com>:
-> >> Toshiharu Harada wrote:
-> >> > 2007/6/14, Rik van Riel <riel@redhat.com>:
-> >> > SELinux has a well designed robust and flexible functions.
-> >> > So it should be used for everywhere.  I understand it.
-> >> > As you mentioned one can analyze the system (process)
-> >> > behaviors from AVC logs. But the maintenance cost is not trivial.
-> >> >
-> >> > If logging with process context is the only purpose,
-> >> > current TOMOYO Linux can do it with no hustle at all.
-> >> 
-> >> Yes, but so does standard SELinux.
-> >> 
-> >> You are making me curious: what does TOMOYO do that is
-> >> not done by regular SELinux?
-> >> 
-> >> Logging with process name, path name and contexts is
-> >> already done.  I must have missed some other TOMOYO
-> >> feature in your initial email...
-> >
-> > I see SELinux can log with process name, path name and
-> > contexts, but "contexts" must be defined beforehand.
-> > TOMOYO Linux kernel does that with pathname, so no
-> > label definitions needed.
-> > You can confirm the process (domain) transitions any time
-> > and access occurred are clarified per domain basis automatically.
-> > Security context in TOMOYO Linux is represented and stored
-> > as a call chain and very intuitive.
-> >
-> > TOMOYO Linux has a mode called "learning"
-> > in addition to "permissive" and "enforce". You can easily
-> > get the TOMOYO Linux policy with learning mode that
-> > SELinux does not have. In addition, access control mode of
-> > TOMOYO Linux can be managed for every difference domain.
-> 
-> This sounds a like like feature differences "compared" at:
->   http://www.novell.com/linux/security/apparmor/selinux_comparison.html
-
-Amazing, per that table, AppArmor is better in every way than SELinux.
-Nothing like an unbiased and fair-minded comparison.
-
--- 
-Stephen Smalley
-National Security Agency
-
+> I have not yet looked at it. A few other items pending that I need to finish
+> off before next merge window has priority.
+ 
+That's my view about asm-offsets cleanup/generalizing. I just need ack or
+nack from, for example arch maintainers if this is acceptable at all or
+anybody, actually interested in this kind of things. Not cool stuff, but
+still quite straight and easy to finish and merge.
+____
