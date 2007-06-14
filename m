@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbXFNCNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbXFNCRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbXFNCNg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 22:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbXFNCN3
+	id S1753013AbXFNCRU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 22:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbXFNCRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 22:13:29 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:46287 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbXFNCN2 convert rfc822-to-8bit (ORCPT
+	Wed, 13 Jun 2007 22:17:13 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34508 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750944AbXFNCRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 22:13:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZGQLhbjAx3w1FnwUPaKMscrbZvldE/SRjDHkMp5BGyEu+jF3w6cZlgis/OBEaqubXOyxjLHoMZwRaT4lF0viHFUtm8lqDy/zcYdm5GPkUWv3S0QWrKIrQcD8TJUaD/u6o9GVbpe58+0pV4VPy1BFHGwKfaKuSMezHDBCqCRi0FA=
-Message-ID: <a781481a0706131913s518ed1f1t47685bc7d9cb807f@mail.gmail.com>
-Date: Thu, 14 Jun 2007 07:43:26 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
+	Wed, 13 Jun 2007 22:17:12 -0400
+Date: Thu, 14 Jun 2007 04:17:24 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Alexandre Oliva" <aoliva@redhat.com>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, "Tarkan Erimer" <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
-In-Reply-To: <20070613233541.GA27689@lazybastard.org>
+Message-ID: <20070614021724.GP3588@stusta.de>
+References: <466A3EC6.6030706@netone.net.tr> <200706131946.15714.dhazelton@enter.net> <20070614004419.GL3588@stusta.de> <200706132101.28330.dhazelton@enter.net> <20070614024540.3a24598c@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <466BCBBC.90305@netone.net.tr>
-	 <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-	 <20070610160531.GA12179@kroah.com>
-	 <f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
-	 <20070612184110.GB7980@kroah.com>
-	 <orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>
-	 <or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706131415090.14121@woody.linux-foundation.org>
-	 <20070613233541.GA27689@lazybastard.org>
+In-Reply-To: <20070614024540.3a24598c@the-village.bc.nu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Gmail did horrible things to the original post by giving it a base64
-content transfer encoding, so majordomo@vger dropped it. It's just
-an off-topic digression, but I cared enough to resend anyway, fwiw. ]
+On Thu, Jun 14, 2007 at 02:45:40AM +0100, Alan Cox wrote:
+>...
+> > > AFAIK there haven't been any court rulings on this issue, and it could
+> > > even be that courts in different countries will decide differently.
+> > 
+> > Agreed.
+> 
+> That in theory shouldn't happen as the conventions on copyright are
+> supposed to stop that mess occuring.
 
-On 6/14/07, Jörn Engel <joern@logfs.org> wrote:
-> On Wed, 13 June 2007 14:33:07 -0700, Linus Torvalds wrote:
-> >
-> > The beauty of the GPLv2 is exactly that it's a "tit-for-tat" license, and
-> > you can use it without having to drink the kool-aid.
->
-> One could even add that "tit-for-tat" appears to be the best strategy
-> in game theory for continuous runs of the prisoners dilemma.
+Is there any way how this would be resolved?
 
-Tit-for-tat is the best *deterministic* strategy when playing
-iterated prisoner's dilemma. But note that "deterministic" and
-"rational" are not adjectives that go well with "humans", and
-most real-world (social) situations are noisy environments --
-miscommunication and misunderstandings are the usual noise.
-A double-D noise perceived by any player would throw a
-tit-for-tat-playing couple into a perennial spiral of D's, for example,
-which is clearly not a Pareto-efficient solution for either.
+I can easily imagine that two courts, no matter whether they are in the 
+same or different countries, would decide differently in grey areas like 
+non-GPL modules or the GPLv2 and private keys.
 
-> At times I
-> wonder why game theory isn't taught in schools yet - it might shorten
-> discussions like these.
+If the two courts are in the same country there's usually a higher court 
+above both that can resolve this. But what if let's say the highest 
+court in the USA and the highest court in Germany would disagree on such 
+a matter?
 
-Yes, and no.
+cu
+Adrian
 
-Yes - for teaching game theory (and its social relevance) in schools;
-and add behavioral economics to this list :-)
+-- 
 
-No - it doesn't shorten discussions, however. And it shouldn't either.
-Human / social situations are complex, Jörn; tit-for-tat can win
-computer contests, for example, but it's not a behaviour one person
-would find as entirely agreeable in another.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Satyam
