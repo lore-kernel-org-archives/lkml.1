@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbXFNU2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbXFNU2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784AbXFNU2e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbXFNU1Q
+	id S1757070AbXFNU2u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753773AbXFNU1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:27:16 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:34107 "EHLO
+	Thu, 14 Jun 2007 16:27:19 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:34108 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752966AbXFNU1I (ORCPT
+	with ESMTP id S1754019AbXFNU1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:27:08 -0400
-Date: Thu, 14 Jun 2007 16:26:48 -0400
+	Thu, 14 Jun 2007 16:27:18 -0400
+Date: Thu, 14 Jun 2007 16:26:49 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/5] UML - pty channel tidying
-Message-ID: <20070614202648.GA9630@c2.user-mode-linux.org>
+Subject: [PATCH 2/5] UML - handle errors on opening host side of consoles
+Message-ID: <20070614202649.GA9635@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,187 +24,148 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup, mostly style violations.
+If the host side of a console can't be opened, this will now produce
+visible error messages.
 
-Tidied the includes.
+enable_chan now returns a status and this is passed up to con_open and
+ssl_open, which will complain if anything went wrong.
 
-getmaster returns a real errno, which pty_open returns if there's a
-problem.
-
-The printks now have severity.
-
-Changed os_* calls to call libc directly.
+The default host device for the serial line driver is now a pts device
+rather than a pty device since lots of hosts have LEGACY_PTYS
+disabled.  This had always been failing on such hosts, but silently.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/drivers/pty.c |   76 ++++++++++++++++++++++++++------------------------
- 1 file changed, 40 insertions(+), 36 deletions(-)
+ arch/um/defconfig               |    2 +-
+ arch/um/drivers/chan_kern.c     |   23 +++++++++++++++++++----
+ arch/um/drivers/line.c          |    5 ++++-
+ arch/um/drivers/ssl.c           |    8 +++++++-
+ arch/um/drivers/stdio_console.c |    7 ++++++-
+ arch/um/include/chan_kern.h     |    2 +-
+ 6 files changed, 38 insertions(+), 9 deletions(-)
 
-Index: linux-2.6.21-mm/arch/um/drivers/pty.c
+Index: linux-2.6.21-mm/arch/um/drivers/chan_kern.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/pty.c	2007-06-06 09:28:13.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/pty.c	2007-06-14 15:35:13.000000000 -0400
-@@ -1,5 +1,5 @@
- /* 
-- * Copyright (C) 2001, 2002 Jeff Dike (jdike@karaya.com)
-+ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
-  * Licensed under the GPL
-  */
- 
-@@ -7,12 +7,14 @@
- #include <stdlib.h>
- #include <unistd.h>
- #include <string.h>
-+#include <fcntl.h>
- #include <errno.h>
- #include <termios.h>
-+#include <sys/stat.h>
- #include "chan_user.h"
--#include "user.h"
--#include "kern_util.h"
- #include "os.h"
-+#include "user.h"
-+#include "kern_constants.h"
- #include "um_malloc.h"
- 
- struct pty_chan {
-@@ -28,11 +30,13 @@ static void *pty_chan_init(char *str, in
- 	struct pty_chan *data;
- 
- 	data = um_kmalloc(sizeof(*data));
--	if(data == NULL) return(NULL);
-+	if (data == NULL)
-+		return NULL;
-+
- 	*data = ((struct pty_chan) { .announce  	= opts->announce, 
- 				     .dev  		= device,
- 				     .raw  		= opts->raw });
--	return(data);
-+	return data;
+--- linux-2.6.21-mm.orig/arch/um/drivers/chan_kern.c	2007-06-14 15:40:01.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/chan_kern.c	2007-06-14 16:00:23.000000000 -0400
+@@ -203,22 +203,37 @@ void chan_enable_winch(struct list_head 
+ 	}
  }
  
- static int pts_open(int input, int output, int primary, void *d,
-@@ -43,31 +47,35 @@ static int pts_open(int input, int outpu
- 	int fd, err;
- 
- 	fd = get_pty();
--	if(fd < 0){
-+	if (fd < 0) {
- 		err = -errno;
--		printk("open_pts : Failed to open pts\n");
-+		printk(UM_KERN_ERR "open_pts : Failed to open pts\n");
- 		return err;
- 	}
--	if(data->raw){
-+
-+	if (data->raw) {
- 		CATCH_EINTR(err = tcgetattr(fd, &data->tt));
--		if(err)
--			return(err);
-+		if (err)
-+			return err;
- 
- 		err = raw(fd);
--		if(err)
--			return(err);
-+		if (err)
-+			return err;
- 	}
- 
- 	dev = ptsname(fd);
- 	sprintf(data->dev_name, "%s", dev);
- 	*dev_out = data->dev_name;
-+
- 	if (data->announce)
- 		(*data->announce)(dev, data->dev);
--	return(fd);
-+
-+	return fd;
- }
- 
- static int getmaster(char *line)
+-void enable_chan(struct line *line)
++int enable_chan(struct line *line)
  {
-+	struct stat buf;
- 	char *pty, *bank, *cp;
- 	int master, err;
+ 	struct list_head *ele;
+ 	struct chan *chan;
++	int err;
  
-@@ -75,24 +83,29 @@ static int getmaster(char *line)
- 	for (bank = "pqrs"; *bank; bank++) {
- 		line[strlen("/dev/pty")] = *bank;
- 		*pty = '0';
--		if (os_stat_file(line, NULL) < 0)
-+		/* Did we hit the end ? */
-+		if ((stat(line, &buf) < 0) && (errno == ENOENT))
- 			break;
+ 	list_for_each(ele, &line->chan_list){
+ 		chan = list_entry(ele, struct chan, list);
+-		if(open_one_chan(chan))
++		err = open_one_chan(chan);
++		if (err) {
++			if (chan->primary)
++				goto out_close;
 +
- 		for (cp = "0123456789abcdef"; *cp; cp++) {
- 			*pty = *cp;
--			master = os_open_file(line, of_rdwr(OPENFLAGS()), 0);
-+			master = open(line, O_RDWR);
- 			if (master >= 0) {
- 				char *tp = &line[strlen("/dev/")];
+ 			continue;
++		}
  
- 				/* verify slave side is usable */
- 				*tp = 't';
--				err = os_access(line, OS_ACC_RW_OK);
-+				err = access(line, R_OK | W_OK);
- 				*tp = 'p';
--				if(err == 0) return(master);
--				(void) os_close_file(master);
-+				if(!err)
-+					return master;
-+				close(master);
- 			}
- 		}
- 	}
--	return(-1);
-+
-+	printk(UM_KERN_ERR "getmaster - no usable host pty devices\n");
-+	return -ENOENT;
- }
- 
- static int pty_open(int input, int output, int primary, void *d,
-@@ -103,20 +116,22 @@ static int pty_open(int input, int outpu
- 	char dev[sizeof("/dev/ptyxx\0")] = "/dev/ptyxx";
- 
- 	fd = getmaster(dev);
--	if(fd < 0)
--		return(-errno);
-+	if (fd < 0)
-+		return fd;
- 
- 	if(data->raw){
- 		err = raw(fd);
--		if(err)
--			return(err);
+ 		if(chan->enabled)
+ 			continue;
+-		line_setup_irq(chan->fd, chan->input, chan->output, line,
+-			       chan);
++		err = line_setup_irq(chan->fd, chan->input, chan->output, line,
++				     chan);
 +		if (err)
-+			return err;
- 	}
- 	
--	if(data->announce) (*data->announce)(dev, data->dev);
-+	if (data->announce)
-+		(*data->announce)(dev, data->dev);
- 
- 	sprintf(data->dev_name, "%s", dev);
- 	*dev_out = data->dev_name;
--	return(fd);
++			goto out_close;
 +
-+	return fd;
+ 		chan->enabled = 1;
+ 	}
++
++	return 0;
++
++ out_close:
++	close_chan(&line->chan_list, 0);
++	return err;
  }
  
- const struct chan_ops pty_ops = {
-@@ -144,14 +159,3 @@ const struct chan_ops pts_ops = {
- 	.free		= generic_free,
- 	.winch		= 0,
- };
--
--/*
-- * Overrides for Emacs so that we follow Linus's tabbing style.
-- * Emacs will notice this stuff at the end of the file and automatically
-- * adjust the settings for this buffer only.  This must remain at the end
-- * of the file.
-- * ---------------------------------------------------------------------------
-- * Local variables:
-- * c-file-style: "linux"
-- * End:
-- */
+ /* Items are added in IRQ context, when free_irq can't be called, and
+Index: linux-2.6.21-mm/arch/um/drivers/line.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/line.c	2007-06-14 15:40:01.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/line.c	2007-06-14 16:00:23.000000000 -0400
+@@ -454,7 +454,10 @@ int line_open(struct line *lines, struct
+ 	tty->driver_data = line;
+ 	line->tty = tty;
+ 
+-	enable_chan(line);
++	err = enable_chan(line);
++	if (err)
++		return err;
++
+ 	INIT_DELAYED_WORK(&line->task, line_timer_cb);
+ 
+ 	if(!line->sigio){
+Index: linux-2.6.21-mm/arch/um/drivers/ssl.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/ssl.c	2007-06-14 15:40:01.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/ssl.c	2007-06-14 16:00:23.000000000 -0400
+@@ -97,7 +97,13 @@ static int ssl_remove(int n, char **erro
+ 
+ static int ssl_open(struct tty_struct *tty, struct file *filp)
+ {
+-	return line_open(serial_lines, tty);
++	int err = line_open(serial_lines, tty);
++
++	if (err)
++		printk(KERN_ERR "Failed to open serial line %d, err = %d\n",
++		       tty->index, err);
++
++	return err;
+ }
+ 
+ #if 0
+Index: linux-2.6.21-mm/arch/um/drivers/stdio_console.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/stdio_console.c	2007-06-14 15:40:01.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/stdio_console.c	2007-06-14 16:00:23.000000000 -0400
+@@ -99,7 +99,12 @@ static int con_remove(int n, char **erro
+ 
+ static int con_open(struct tty_struct *tty, struct file *filp)
+ {
+-	return line_open(vts, tty);
++	int err = line_open(vts, tty);
++	if (err)
++		printk(KERN_ERR "Failed to open console %d, err = %d\n",
++		       tty->index, err);
++
++	return err;
+ }
+ 
+ /* Set in an initcall, checked in an exitcall */
+Index: linux-2.6.21-mm/arch/um/include/chan_kern.h
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/include/chan_kern.h	2007-06-14 15:40:01.000000000 -0400
++++ linux-2.6.21-mm/arch/um/include/chan_kern.h	2007-06-14 16:00:23.000000000 -0400
+@@ -40,7 +40,7 @@ extern int console_open_chan(struct line
+ extern void deactivate_chan(struct list_head *chans, int irq);
+ extern void reactivate_chan(struct list_head *chans, int irq);
+ extern void chan_enable_winch(struct list_head *chans, struct tty_struct *tty);
+-extern void enable_chan(struct line *line);
++extern int enable_chan(struct line *line);
+ extern void close_chan(struct list_head *chans, int delay_free_irq);
+ extern int chan_window_size(struct list_head *chans, 
+ 			     unsigned short *rows_out, 
+Index: linux-2.6.21-mm/arch/um/defconfig
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/defconfig	2007-06-14 15:40:01.000000000 -0400
++++ linux-2.6.21-mm/arch/um/defconfig	2007-06-14 16:00:23.000000000 -0400
+@@ -189,7 +189,7 @@ CONFIG_XTERM_CHAN=y
+ # CONFIG_NOCONFIG_CHAN is not set
+ CONFIG_CON_ZERO_CHAN="fd:0,fd:1"
+ CONFIG_CON_CHAN="xterm"
+-CONFIG_SSL_CHAN="pty"
++CONFIG_SSL_CHAN="pts"
+ CONFIG_UNIX98_PTYS=y
+ CONFIG_LEGACY_PTYS=y
+ CONFIG_LEGACY_PTY_COUNT=256
