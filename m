@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbXFNTiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbXFNTlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754310AbXFNTiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbXFNTiK
+	id S1754692AbXFNTlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbXFNTkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:38:10 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:40343 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbXFNTiJ (ORCPT
+	Thu, 14 Jun 2007 15:40:53 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50432 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751333AbXFNTkx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:38:09 -0400
-Message-ID: <46719902.2000207@nortel.com>
-Date: Thu, 14 Jun 2007 13:37:38 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Alexandre Oliva <aoliva@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kevin Fox <Kevin.Fox@pnl.gov>, Daniel Hazelton <dhazelton@enter.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org> <or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132042.02728.dhazelton@enter.net> <1181837191.21942.24.camel@zathras.emsl.pnl.gov> <alpine.LFD.0.98.0706140923250.14121@woody.linux-foundation.org> <orsl8ucq2n.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orsl8ucq2n.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jun 2007 19:37:42.0231 (UTC) FILETIME=[7967C670:01C7AEBB]
+	Thu, 14 Jun 2007 15:40:53 -0400
+Message-Id: <20070614193839.878721298@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 14 Jun 2007 12:38:39 -0700
+From: clameter@sgi.com
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+Subject: [patch 00/14] Page cache cleanup in anticipation of Large Blocksize support
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexandre Oliva wrote:
+This patchset cleans up the page cache handling by replacing
+open coded shifts and adds through inline function calls.
 
-> So can you please explain to me how enabling TiVO to deny others the
-> freedom that it received "in kind", failing to keep with the "in kind"
-> spirit of the GPL, encourage people to work together, and to merge?
+The ultimate goal is to replace all uses of PAGE_CACHE_xxx in the
+kernel through the use of these functions. All the functions take
+a mapping parameter. This is in anticipation of support for higher order
+pages in the page cache (like demonstrated by the Large Blocksize patchset).
 
-They're not denying others the freedom that they themselves received. 
-Tivo took GPL'd software, modified it, and distributed it with their own 
-custom hardware.  You have the right to take their changes, possibly 
-modify them further, and distribute them (possibly with your own hardware).
+It will take some time to get through all of the kernel source code.
+The patches here convert only the core VM. We can likely do much
+of the rest against Andrew's tree shortly before the merge window
+opens for 2.6.23.
 
-The fact that you can't modify the software and load it back onto the 
-tivo is irrelevent.  They are not restricting your distribution of the 
-software in any way.  Rather, they're restricting the *running* of the 
-software on their proprietary hardware platform.
+This patchset should have no effect. Both PAGE_CACHE_xxx and
+page_cache-xxx functions can coexist while the conversion is
+in progress. As long as filesystems / device drivers only use
+PAGE_SIZE pages they can stay they are even if some file systems
+and devices start to support higher order pages.
 
-Chris
+Patchset against 2.6.22-rc4-mm2
+
+After this patchset more cleanups will follow against filesystems.
+I have patches for 3 filesystems so far.
+
+-- 
