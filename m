@@ -1,82 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbXFNT03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbXFNT1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbXFNT03 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbXFNT0P
+	id S1755386AbXFNT1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbXFNT1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:26:15 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4585 "EHLO ra.tuxdriver.com"
+	Thu, 14 Jun 2007 15:27:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46079 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754926AbXFNT0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:26:13 -0400
-Date: Thu, 14 Jun 2007 15:09:36 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
+	id S1752993AbXFNT07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:26:59 -0400
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, johannes@sipsolutions.net,
-       linux-wireless@vger.kernel.org, dcbw@redhat.com,
-       hs4233@mail.mn-solutions.de, linux-kernel@vger.kernel.org,
-       marcelo@kvack.org
-Subject: Re: libertas (private) ioctls vs. nl80211
-Message-ID: <20070614190936.GA28917@tuxdriver.com>
-References: <1181757483.29767.99.camel@johannes.berg> <20070614170901.GA13384@infradead.org> <20070614103836.23b07a72.akpm@linux-foundation.org> <20070614181307.GA16856@infradead.org> <alpine.LFD.0.98.0706141121080.14121@woody.linux-foundation.org>
-Mime-Version: 1.0
+Cc: Daniel Hazelton <dhazelton@enter.net>, Adrian Bunk <bunk@stusta.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
+	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706140305.50095.dhazelton@enter.net>
+	<orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141003550.14121@woody.linux-foundation.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 15:35:29 -0300
+In-Reply-To: <alpine.LFD.0.98.0706141003550.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 14 Jun 2007 10\:14\:37 -0700 \(PDT\)")
+Message-ID: <or8xame64u.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706141121080.14121@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 11:23:11AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 14 Jun 2007, Christoph Hellwig wrote:
-> >
-> > > I suspect that the probability of your proposal succeeding would be increased
-> > > if you could prepare a patch...
-> > 
-> > Here we go:
+On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-FWIW, I do appreciate the patch rather than just mere
-complaining... :-)
+> On Thu, 14 Jun 2007, Alexandre Oliva wrote:
+>> 
+>> It's not that the hardware is deciding to impose restrictions on its
+>> own.  It's the hardware distributor that is deciding to use the
+>> hardware to impose restrictions on the user.  Seems like a violation
+>> of section 6 of GPLv2 to me.
 
-> I don't mind ripping them out, but it makes sense only if people are 
-> actually signed up to implementing this on a higher layer. As such, I'd 
-> need to get a sign-off from somebody actually involved in wireless mesh 
-> stuff etc.
+> You *still* haven't figured out the difference between "the software" and 
+> "a particular copy of the software", have you?
 
-I'm not aware of any project working on wireless mesh in mac80211 at
-the moment, serious or otherwise.  I think one would be worthwhile,
-but I don't know of anyone working on it.
+I have.  And so has GPLv2, look:
 
-> Please? I do agree that the private iwpriv interface seems to be totally 
-> the wrong thing to do, but I want to see this as a first step towards a 
-> better situation, rather than just a "remove code that is ugly" issue!
+  2. You may modify your copy or copies of the Program or any portion
+                         ^^^^
 
-Private wireless extensions are ugly, even uglier in some ways than
-normal private ioctls.  However, they have been used in the past for
-just this sort of thing (i.e. something a given driver can do but is
-not generically available).
+> What's your problem?
 
-We don't have either generic functionality
-for mesh in mac80211 or even other drivers doing mesh on their own,
-so there is nothing to validate a generic configuration option.
-Further, while the beginnings of nl80211 are available it will still
-be some non-zero time before it is even mature enough to replace
-truly generic configuration facilities in the wireless extensions.
+Trying to get you to see what is so obvious to me.
 
-> Comments?
+> So let's look at that "section 6" that you talk about, and quote the 
+> relevant parts, will  we:
 
-Aside from simply carrying an out-of-stream patch, the OLPC and
-libertas driver people would have only the alternative of hacking-up
-a debugfs configuration regime.  Is it worthwhile to obligate them
-to either alternative?  What is to be gained?
+> 	You may not impose any further restrictions on the recipients' 
+> 	exercise of the rights granted herein.
 
-It does not make sense to me to rip this out purely for aesthetic
-reasons.
+> and then let's look at Red Hat sending me a CD-ROM or a DVD.
 
-John
+> Now, Red Hat clearly *did* "further restrict" my rights as it pertains TO 
+> THAT COPY ON THE CD-ROM! I cannot change it! Waa waa waa! I'll sue your 
+> sorry ass off!
+
+Red Hat is not stopping you from making changes.  The media is, and
+that's not something Red Hat can control.
+
+Compare this with the TiVO.  TiVO *designs* the thing such that it can
+still make changes, but customers can't.
+
+That's the difference.
+
+TiVO is using hardware to "impose further restrictions on the
+recipients' exercise of the rights granted herein", and this violates
+section 6 of GPLv2.
+
+> See the issue? You are continually making the mistake of thinking that the 
+> GPLv2 talks about individual copies of software.
+
+It does.  You're making the mistake of thinking that it doens't.  And
+even in the legal terms that you claimed to have understood so
+thoroughly.
+
+> The rights granted are the rights to "distribute and modify the software". 
+
+More specifically, some of the rights are:
+
+  copy and distribute verbatim copies of the Program's source code as
+  you receive it
+
+  modify your copy or copies of the Program or any portion of it, thus
+  forming a work based on the Program, and copy and distribute such
+  modifications or work
+
+> But by "the software", the license is not talking about a particular 
+> *copy* of the software, it's talking about the software IN THE ABSTRACT.
+
+Please read it again.
+
 -- 
-John W. Linville
-linville@tuxdriver.com
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
