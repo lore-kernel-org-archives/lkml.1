@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbXFNBLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759070AbXFNBPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759270AbXFNBLa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 21:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbXFNBLX
+	id S1759070AbXFNBPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 21:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbXFNBPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 21:11:23 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41679 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757219AbXFNBLW (ORCPT
+	Wed, 13 Jun 2007 21:15:08 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:12206 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757227AbXFNBPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 21:11:22 -0400
-Date: Thu, 14 Jun 2007 02:16:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614021619.381331dc@the-village.bc.nu>
-In-Reply-To: <200706131946.15714.dhazelton@enter.net>
-References: <466A3EC6.6030706@netone.net.tr>
-	<alpine.LFD.0.98.0706131456230.14121@woody.linux-foundation.org>
-	<orejkfla3l.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706131946.15714.dhazelton@enter.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 21:15:07 -0400
+Date: Thu, 14 Jun 2007 03:15:06 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Dave Jones <davej@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: DRI/AGP on AMD64 based machine
+Message-ID: <20070614011506.GA30566@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
+References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070613162925.GG3875@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Only courts of law can do that.
+On Wed, Jun 13, 2007 at 12:29:25PM -0400, Dave Jones wrote:
+> For the sake of AGP, we only use the on-CPU GART.
+> The (nvidia) chipset one is ignored.
 > 
-> Wrong! Anyone with half a brain can make the distinction. What TiVO did is 
+> If amd64-agp isn't working for you, attach your dmesg.
+> (You can also confirm its working by running testgart[1])
 
-Maybe half a brain can, but anyone with a whole brain can assure you its
-a bit more complex and you are wrong..
+Hi Dave, I have an amd64 box for which every kernel
+after 2.6.18 hangs during boot, so I have no dmesg :(
 
-> version of it that we provide on our hardware". Why is that legal? Because 
-> TiVO produces the hardware and sells it to you with a certain *LICENSE* - 
+I used git bisect to find out where the problem patch is,
+and assuming bisect works (imho it jumped between versions
+very weirdly: closing in on the last 6 revisions, it
+jumped from 2.6.18 to 2.6.18-rc2 to 2.6.18-rc6), the problem
+is a patch in intel-agp.c, where support for the intel 965G
+is added (which I have).
 
-The keys required to make the code run with the hardware are part of the
-software. The license requires the software and relevant scripts etc are
-included. Thus there is a very good argument that the keys are part of
-the software.
+I mailed the author of the patch, including the git Id
+of that patch... but he didn't reply... and I didn't keep the
+mail :/ So, I am afraid I can't give much details.
 
-And since there is no court ruling to high enough level in the USA, UK or
-any other jurisdiction on that it remains a matter of opinion.
+I'd still like to have it sorted out. If you give me the
+green light (in the sense that you are willing to help
+a kernel-newbie when needed) then I'll have another
+attempt at getting more information.
 
-Tivo may control the hardware but the authors control the software (via
-the GPL), and subject to the limits of what may be specified by a
-copyright license (as opposed to contract) can make such demands as they
-see fit about their software and anything derivative of it.
+-- 
+Carlo Wood <carlo@alinoe.com>
 
-> because it does contain hardware covered under any number of patents. That 
-> license grants you the right to use the patents - in this case algorithms - 
+PS I believe it was you who committed the patch.
 
-You can't patent algorithms either
-
-Alan
