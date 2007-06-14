@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbXFNCro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbXFNCwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbXFNCro (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 22:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbXFNCrh
+	id S1753517AbXFNCwr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 22:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbXFNCwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 22:47:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60372 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751813AbXFNCrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 22:47:36 -0400
-To: Chris Adams <cmadams@hiwaay.net>
-Cc: linux-kernel@vger.kernel.org
+	Wed, 13 Jun 2007 22:52:40 -0400
+Received: from mail.lmcg.wisc.edu ([144.92.101.145]:36983 "EHLO
+	mail.lmcg.wisc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbXFNCwk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 22:52:40 -0400
+X-Greylist: delayed 1786 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jun 2007 22:52:39 EDT
+Date: Wed, 13 Jun 2007 21:22:50 -0500
+From: Daniel Forrest <forrest@lmcg.wisc.edu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <fa.khBgzvPDXYj45cntZBDPf6OM0jQ@ifi.uio.no>
-	<fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no>
-	<fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no>
-	<fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no>
-	<fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no>
-	<20070614013214.GA1124293@hiwaay.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Wed, 13 Jun 2007 23:46:50 -0300
-In-Reply-To: <20070614013214.GA1124293@hiwaay.net> (Chris Adams's message of "Wed\, 13 Jun 2007 20\:32\:14 -0500")
-Message-ID: <or4plbjlr9.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
+Message-ID: <20070613212250.A21801@yoda.lmcg.wisc.edu>
+Reply-To: Daniel Forrest <forrest@lmcg.wisc.edu>
+References: <fa.khBgzvPDXYj45cntZBDPf6OM0jQ@ifi.uio.no> <fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no> <fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no> <fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no> <fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no> <20070614013214.GA1124293@hiwaay.net> <20070614025248.6e0f72f0@the-village.bc.nu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5.1i
+In-Reply-To: <20070614025248.6e0f72f0@the-village.bc.nu>; from alan@lxorguk.ukuu.org.uk on Thu, Jun 14, 2007 at 02:52:48AM +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 13, 2007, Chris Adams <cmadams@hiwaay.net> wrote:
+On Thu, Jun 14, 2007 at 02:52:48AM +0100, Alan Cox wrote:
+> 
+> As a PS to the GPL3 comment here is the basic difference
+> 
+> ROM	-	I can't modify the code on the device
+> 		The creator can't modify the code further on the device
+> 
+> Tivo	-	I can't modify the code on the device
+> 		The owner can modify the code
+> 
+> One is an implicit limitation of the hardware (just like I can't run
+> openoffice on a 4MB PC even though the license gives me the right to
+> try), the other is an artificial restriction.
+> 
+> One case is witholding freedom in the GPL sense by one party while
+> keeping it themselves, the other is a limitation of the system
+> inevitably imposed on everyone.
 
-> Once upon a time, Alexandre Oliva  <aoliva@redhat.com> said:
->> if you distribute copies of such a program, [...]
->> you must give the recipients all the rights that you have
+I've been following this discussion and I find this interesting.
+Consider these two cases:
 
->> So, TiVo includes a copy of Linux in its DVR.  
+1.) I ship the device back to the manufacturer, they replace the ROM,
+    and ship it back to me.
 
->> TiVo retains the right to modify that copy of Linux as it sees fit.
+2.) I ship the device back to the manufacturer, they load new code
+    into it, and ship it back to me.
 
->> It doesn't give the recipients the same right.
-
-> Sure it does; you received a program (the kernel) and you can modify it.
-
-If I take the software I received, build it and install it on the same
-hardware, it won't run.  Something is missing in the source code I
-received, I guess..
-
-If I make changes to the source code, build it, and install it on that
-same computer, it won't run.  How is that being able to modify *that*
-copy of the program?
-
-If TiVo makes the same changes, builds tehm, and installs it on my
-computer, it will run just fine.  How are they passing on the right
-they had to me?
-
-> You also received hardware; they don't support modification of that.
-
-They don't have to support them.  They don't have to help me if it
-breaks.  But if they can do it and I can't, they're failing to comply
-with the spirit of the GPL.
-
-> Nowhere in the license does it say they have to, because the license
-> only covers the program.
-
-They can't distribute the program while imposing restrictions on
-modification not present in the software license itself.
-
-> Or are you claiming that putting software on hardware makes the result a
-> derivative work?  I think it falls under the "mere aggregation" clause.
-
-I tend to agree, in this particular case, but IANAL.  I don't rule out
-derivative works in future attempts to find loopholes in the GPL.
-
-> What if TiVo had put the kernel in a burned-in ROM
-
-Then they wouldn't have the ability to change it any more, so there
-wouldn't be such a right to pass on to the users.
+How do these two differ?  Or is it now just a question of the ROM
+being in a socket?  I can't see how the technicalities of how the
+hardware is constructed can change the legality of the software.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dan
