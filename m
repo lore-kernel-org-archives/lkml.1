@@ -1,91 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbXFNSO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbXFNSQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbXFNSO7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 14:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXFNSOw
+	id S1754733AbXFNSQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 14:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbXFNSQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 14:14:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44228 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751724AbXFNSOv (ORCPT
+	Thu, 14 Jun 2007 14:16:20 -0400
+Received: from ccerelbas01.cce.hp.com ([161.114.21.104]:45739 "EHLO
+	ccerelbas01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751016AbXFNSQT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 14:14:51 -0400
-Date: Thu, 14 Jun 2007 11:14:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Adrian Bunk <bunk@stusta.de>, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <orsl8ue7ou.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <alpine.LFD.0.98.0706141106540.14121@woody.linux-foundation.org>
-References: <466A3EC6.6030706@netone.net.tr>
- <alpine.LFD.0.98.0706131456230.14121@woody.linux-foundation.org>
- <orejkfla3l.fsf@oliva.athome.lsd.ic.unicamp.br> <200706131946.15714.dhazelton@enter.net>
- <20070614004419.GL3588@stusta.de> <alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
- <ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706140817520.14121@woody.linux-foundation.org>
- <orsl8ue7ou.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Thu, 14 Jun 2007 14:16:19 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
+Date: Thu, 14 Jun 2007 18:16:03 -0000
+Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net>
+In-Reply-To: <20070614153119.GC32137@hmsreliant.homelinux.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
+Thread-Index: AceumVCfmU2K2QuWQTmky5+1XtzPpwAFondQ
+References: <20070614153119.GC32137@hmsreliant.homelinux.net>
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: "Neil Horman" <nhorman@tuxdriver.com>, <linux-kernel@vger.kernel.org>
+Cc: "ISS StorageDev" <iss_storagedev@hp.com>, <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 14 Jun 2007 18:16:04.0670 (UTC) FILETIME=[123B45E0:01C7AEB0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ 
 
-
-On Thu, 14 Jun 2007, Alexandre Oliva wrote:
+> -----Original Message-----
+> From: Neil Horman [mailto:nhorman@tuxdriver.com] 
+> Sent: Thursday, June 14, 2007 10:31 AM
+> To: linux-kernel@vger.kernel.org
+> Cc: Miller, Mike (OS Dev); ISS StorageDev; 
+> akpm@linux-foundation.org; nhorman@tuxdriver.com
+> Subject: [PATCH] cciss: force ignore of responses to unsent 
+> scsi commands after kexec reboot
 > 
-> > In other words, Red Hat distributes copies (and yes, you *get* that copy), 
-> > and you cannot modify that copy that you got.
+> Hey -
+> 	cciss hardware currently can continue to send responses 
+> to scsi commands after the host system has undergone a kexec 
+> reboot.  The way the drier is currently written, reception of 
+> these commands results in a BUG halt, since it can't match 
+> the response to any issued command since the boot.  This 
+> patch corrects that by using the kexec reset_devices command 
+> line paramter to force ignore any commands that it cant correlate.
 > 
-> And Red Hat can't either.  I thought that was quite obvious.
+> Regards
+> Neil
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> 
+> 
+>  cciss.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> 
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c 
+> index 5acc6c4..ec1c1d2 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -2131,6 +2131,14 @@ static int add_sendcmd_reject(__u8 
+> cmd, int ctlr, unsigned long complete)
+>  		       ctlr, complete);
+>  		/* not much we can do. */
+>  #ifdef CONFIG_CISS_SCSI_TAPE
+> +		/* We might get notification of completion of commands
+> +		 * which we never issued in this kernel if this boot is
+> +		 * taking place after previous kernel's crash. Simply
+> +		 * ignore the commands in this case.
+> +		 */
+> +		if (reset_devices)
+> +			return 0;
+> +
+>  		return 1;
+>  	}
+>  
+I don't understand how this will help. We need to reset the controller
+which reset_devices cannot do alone. I just haven't have the time to
+implement the fix yet.
 
-That's TOTALLY IRRELEVANT!
-
-There is no language in the GPLv2 (only in the GPLv3 drafts) about "same 
-upgradability as third parties".
-
-You're arguing a point that DOES NOT EXIST in the GPLv2.
-
-The GPLv2 talks about specific rights, like the ability to make changes 
-and distribute things, and says that you have to give downstream all those 
-same rights.
-
-And I've pointed out to you (now about five times) that those rights 
-CANNOT be able "in-place", since even Red Hat does not actually give you 
-the right to do in-place modification of the software they sell.
-
-> The 'passing on the rights you have' makes it an issue.
-
-No. It does not.
-
-I have extra rights as a copyright holder, and that "the rights you have" 
-are as they pertain to the software under the GPLv2, not as it pertains to 
-the physical device, or outside the GPLv2.
-
-For example, for any code that I have full copyright over, I have rights 
-that you DO NOT HAVE! I have the right to re-license it under some other 
-license. The fact that I pass on a copy of the software to you under the 
-GPLv2 does *not* give you those rights, but that's not even what the GPLv2 
-asks for!
-
-The GPLv2, when it talks about "passing on the rights", talks about the 
-rights you got *per*the*GPLv2*. 
-
-Any other reading is nonsensical, since the copyrigth owner *always* has 
-more rights than a licensee! I legally literally *couldn't* pass over all 
-the rights I have to my software! If you read the GPLv2 as meaning that I 
-have to, you are mis-reading it. It's that simple.
-
-Anyway, I'm not interested in continuing this flame war.
-
-The fact is, the license for the kernel is the GPLv2. And I think it's a 
-superior license. As such, I'd be a total moron to relicense the kernel 
-under what I believe is a worse license.
-
-So if you want to argue that I should re-license, you should argue that 
-the GPLv3 is better. And quite frankly, you haven't.
-
-		Linus
+mikem 
