@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbXFNPcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbXFNPdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbXFNPcc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 11:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbXFNPc0
+	id S1754171AbXFNPdw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 11:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbXFNPdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 11:32:26 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2690 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751566AbXFNPcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 11:32:25 -0400
-Date: Thu, 14 Jun 2007 11:31:19 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: mike.miller@hp.com, iss_storagedev@hp.com, akpm@linux-foundation.org,
-       nhorman@tuxdriver.com
-Subject: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
-Message-ID: <20070614153119.GC32137@hmsreliant.homelinux.net>
+	Thu, 14 Jun 2007 11:33:45 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:57146 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbXFNPdo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 11:33:44 -0400
+Message-ID: <46715FD4.6040803@s5r6.in-berlin.de>
+Date: Thu, 14 Jun 2007 17:33:40 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Oleg Verych <olecom@flower.upol.cz>
+CC: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: regression tracking (Re: Linux 2.6.21)
+References: <20070426040806.GJ3468@stusta.de> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower>
+In-Reply-To: <E1HyipW-0005wJ-0Q@flower>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey -
-	cciss hardware currently can continue to send responses to scsi commands
-after the host system has undergone a kexec reboot.  The way the drier is
-currently written, reception of these commands results in a BUG halt, since it
-can't match the response to any issued command since the boot.  This patch
-corrects that by using the kexec reset_devices command line paramter to force
-ignore any commands that it cant correlate.
+Oleg Verych wrote:
+> I'm seeing this long (198) thread and just have no idea how it has
+> ended (wiki? hand-mailing?).
 
-Regards
-Neil
+Direct or indirect results:
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+  - See Michal Piotrowski's periodic posts and
+    http://kernelnewbies.org/known_regressions .
 
+  - Meanwhile, the people who maintain bugzilla.kernel.org seem to work
+    on improvements.  I noticed that (a) each page now has a backlink to
+    the bugzilla.kernel.org start page, (b) the show_bug.cgi=... page
+    layout is now an unreadable mess, (c) e-mail integration is still
+    the same (it's impossible at least for me to send e-mails to bugs).
 
- cciss.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+[...]
+> Why you didn't proposed (used) Debian's BTS as alternative to bugzilla,
+[...]
 
-
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 5acc6c4..ec1c1d2 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -2131,6 +2131,14 @@ static int add_sendcmd_reject(__u8 cmd, int ctlr, unsigned long complete)
- 		       ctlr, complete);
- 		/* not much we can do. */
- #ifdef CONFIG_CISS_SCSI_TAPE
-+		/* We might get notification of completion of commands
-+		 * which we never issued in this kernel if this boot is
-+		 * taking place after previous kernel's crash. Simply
-+		 * ignore the commands in this case.
-+		 */
-+		if (reset_devices)
-+			return 0;
-+
- 		return 1;
- 	}
- 
+BTS has been mentioned in that thread in a few posts; mostly positively
+as I recall.
+-- 
+Stefan Richter
+-=====-=-=== -==- -===-
+http://arcgraph.de/sr/
