@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbXFNT3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbXFNT3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755629AbXFNT3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbXFNT30
+	id S1752197AbXFNT3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbXFNT33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:29:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46959 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753573AbXFNT3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:29:24 -0400
-To: Valdis.Kletnieks@vt.edu
-Cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706131946.15714.dhazelton@enter.net>
-	<20070614021619.381331dc@the-village.bc.nu>
-	<200706132129.52736.dhazelton@enter.net>
-	<or8xanjm1c.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<9114.1181792906@turing-police.cc.vt.edu>
-	<or7iq7hy2r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20019.1181843459@turing-police.cc.vt.edu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 16:29:03 -0300
-In-Reply-To: <20019.1181843459@turing-police.cc.vt.edu> (Valdis Kletnieks's message of "Thu\, 14 Jun 2007 13\:50\:59 -0400")
-Message-ID: <orbqficp34.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 14 Jun 2007 15:29:29 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2888 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755408AbXFNT32 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:29:28 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Thu, 14 Jun 2007 12:28:34 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEEFCEJAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <20070613180953.GA18512@delft.aura.cs.cmu.edu>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 14 Jun 2007 12:29:08 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 14 Jun 2007 12:29:09 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Valdis.Kletnieks@vt.edu wrote:
 
-> On Thu, 14 Jun 2007 03:03:40 -0300, Alexandre Oliva said:
->> On Jun 14, 2007, Valdis.Kletnieks@vt.edu wrote:
->> 
->> > If a company sells you hardware that includes a ROM that contains GPL'ed
->> > software, are they in violation of the GPL if they don't include a ROM burner
->> > in the hardware?  Or are ROM burners like compilers, where you have to supply
->> > your own?
->> 
->> this requirement does not apply if neither you nor any third party
->> retains the ability to install modified object code on the User
->> Product (for example, the work has been installed in ROM).
+> The GPL applies to "the Program" which in this case is the Linux kernel
+> as a whole and it in fact does indicate a specific version. All code
+> submitted and included in this program has has been submitted with the
+> understanding that the work as a whole is specifically licensed as
+> GPLv2. Some authors have granted additional rights, such as dual BSD/GPL
+> or GPLv2 and later and explicitly added such a notice.
 
-> Do they have to provide a ROM burner if the ROM is socketed rather than
-> soldered into place?
+Since the Linux kernel as a whole does not have a single author, it is
+impossible to license it as a whole. Nobody has the authority to do that.
+(The GPL is not a copyright assignment type license.)
 
-Of course not.  They just can't impose restrictions on your obtaining
-a ROM burner and doing the work yourself.
+Fortunately, the GPL clears this up:
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+"Each time you redistribute the Program (or any work based on the
+Program), the recipient automatically receives a license from the
+original licensor to copy, distribute or modify the Program subject to
+these terms and conditions.  You may not impose any further
+restrictions on the recipients' exercise of the rights granted herein.
+You are not responsible for enforcing compliance by third parties to
+this License."
+
+Linus cannot impose any further restrictions on the recipients' exercise of
+the rights granted.
+
+When you download a copy of the Linux kernel, you do not receive one license
+because nobody could grant you one license. You receive a logically separate
+license from each original licensor. You receive from Linus only a license
+to his contributions.
+
+Note that you cannot take a GPLv2+ work and redistribute it as GPLv3 only.
+You can license your contributions as GPLv3 only of course. However, each
+recipient still receives a GPLv2+ license to the parts that were originally
+licensed that way. The people you distribute the work from receive licenses
+from the original licensors to those parts, and you have no right to modify
+that license. (See GPL section 6, quoted above.)
+
+DS
+
+
