@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751631AbXFNKZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbXFNKa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751631AbXFNKZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 06:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbXFNKZJ
+	id S1751908AbXFNKa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 06:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXFNKav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 06:25:09 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:37903 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750859AbXFNKZH (ORCPT
+	Thu, 14 Jun 2007 06:30:51 -0400
+Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:4865 "EHLO
+	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750911AbXFNKat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 06:25:07 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 10:46:52 +0200
-User-Agent: KMail/1.9.7
-Cc: Bongani Hlope <bhlope@mweb.co.za>, Alexandre Oliva <aoliva@redhat.com>,
+	Thu, 14 Jun 2007 06:30:49 -0400
+Date: Thu, 14 Jun 2007 11:30:25 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706140644.50109.mgd@technosis.de> <20070614050828.GN21478@ftp.linux.org.uk>
-In-Reply-To: <20070614050828.GN21478@ftp.linux.org.uk>
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Jay Vosburgh <fubar@us.ibm.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
+       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+In-Reply-To: <20070614020055.GL15426@holomorphy.com>
+Message-ID: <Pine.LNX.4.61.0706141123160.28903@mtfhpc.demon.co.uk>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
+ <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+ <20070614020055.GL15426@holomorphy.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2773618.fveevZrXcB";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706141047.18700.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181816707;21213348;
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2773618.fveevZrXcB
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi All,
 
-> > > able to run you modifications on the same hardware?
->                                          ^^^^
-> > Come on! The whole idea of software is to have it run on some HW.
->                                                            ^^^^
-> > Why would I want to change it in the first place if I can't run it ?
->=20
-> See the difference?
+They apear as soon as simpleinit starts up. Somtimes I get to a login 
+prompt before seeing any. Other times, commands in the simpleinit rc 
+script fail.
 
-=46orgive my poor mastery of the english language and me letting slip
-this inconsistency.
+They do apear to be random. If a command failes, you re-run the command 
+and it is OK. Commands seen to fail are basic (depmod, rm cat ..).
 
-The first sentence you cited was a general remark IMO valid outside
-of this context and possibly ill placed as it was.
+The test I did use the same binaries with both the OK and problem kernels 
+so it is not a change to the application code, it is definatly a kernel 
+issue.
 
-The second sentence pertains the key msg I was trying to deliver and
-apparently I did a poor job in phrasing it so let me redo it:
-Why would I want to change the SW targetted for some HW if I can't run
-the changed version on said HW ?
+Regards
+ 	Mark Fortescue.
 
-[note that for the TiVo case I possibly would not own or be able to own
-similar HW being able to run my modified SW; so even some HW would not
-be triggered either]                                 ^^^^
+On Wed, 13 Jun 2007, William Lee Irwin III wrote:
 
-Remember I'm discussing my understanding of the spirit of the GPL,
-not whether the legal part actually does give me that right enforceable
-in court.
-
-Here is another stmt which is valid outside of this context AFAIAC:
-If the GPLv2 does not legally give me the right that I think its spirit
-gives me then the legal phrases should be changed to achieve that.
-
-Whether or not others share my view of what the spirit of the GPL
-implies is completely theirs to decide and if they differ they likely
-won't agree on my previous stmt either. Fine with me.
-
-And this leads to another observation:
-IMO this thread is partly fueled by a fundamental mixing of PoVs.
-Some argue based on their perceived view of the spirit of the GPL
-and some based on the actual legal phrases in GPLv2 and GPLv3 and
-whether or how they reflect the perceived spirit.
-
-Best wishes,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
-
---nextPart2773618.fveevZrXcB
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGcQCWUYYhyuxDQc4RAuJKAJ91v+C1bTtiPuC+u813D2fMMsnbMACaAwZj
-/4vZ7qgaebK7I+7PhhEZ8Sg=
-=lNEc
------END PGP SIGNATURE-----
-
---nextPart2773618.fveevZrXcB--
+> On Wed, Jun 13, 2007 at 11:25:20PM +0100, Mark Fortescue wrote:
+>> The random seg faults on x86_64 is interesting as I have been getting
+>> random illegal instruction faults on sparc (sun4c) with 2.6.22-rc3. I have
+>> not yet tried to track it down. All I know at present is that it is not a
+>> problem on 2.6.20.9.
+>
+> Very interesting. Any hints as to how to test or how long to wait
+> before the illegal instructions happen?
+>
+>
+> -- wli
+>
