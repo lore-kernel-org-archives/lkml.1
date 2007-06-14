@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXFNQye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753060AbXFNQ7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbXFNQye (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 12:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbXFNQy1
+	id S1753060AbXFNQ7R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 12:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbXFNQ7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 12:54:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48338 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751750AbXFNQy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 12:54:26 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
-	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706140305.50095.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 13:52:59 -0300
-In-Reply-To: <200706140305.50095.dhazelton@enter.net> (Daniel Hazelton's message of "Thu\, 14 Jun 2007 03\:05\:49 -0400")
-Message-ID: <orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 14 Jun 2007 12:59:07 -0400
+Received: from smtp-0-1.linuxrulz.org ([64.191.81.102]:49291 "EHLO
+	smtp-0-1.linuxrulz.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbXFNQ7G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 12:59:06 -0400
+Message-ID: <467173C4.1050500@lbsd.net>
+Date: Thu, 14 Jun 2007 16:58:44 +0000
+From: Nigel Kukard <nkukard@lbsd.net>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: SATA problems
+References: <8vX5T-4hg-5@gated-at.bofh.it> <8w0n1-15u-27@gated-at.bofh.it>
+In-Reply-To: <8w0n1-15u-27@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-> And? There is *absolutely* *nothing* in any version of the GPL *prior* to 3 
-> that says that hardware cannot impose restrictions.
 
-It's not that the hardware is deciding to impose restrictions on its
-own.  It's the hardware distributor that is deciding to use the
-hardware to impose restrictions on the user.  Seems like a violation
-of section 6 of GPLv2 to me.
+>> I'm stumped trying to track down the below intermittent problem.....
+>>
+>> I've confirmed this problem on 2.6.19, 2.6.20 and 2.6.21.
+>>
+>> Any help greatly appreciated!
+>>
+>> Regards
+>> Nigel
+>>
+>>
+>> Jun 14 07:55:52 nigel-m2v kernel: ata2.00: exception Emask 0x0 SAct 0x0
+>> SErr 0x0 action 0x2 frozen
+>> Jun 14 07:55:52 nigel-m2v kernel: ata2.00: cmd
+>> ca/00:18:87:e7:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 12288 out
+>> Jun 14 07:55:52 nigel-m2v kernel:          res
+>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> Jun 14 07:55:52 nigel-m2v kernel: ata2: soft resetting port
+>> Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
+>> 0x0001c807
+>> Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on port
+>> 0x0001c807
+>> Jun 14 07:56:22 nigel-m2v kernel: ata2.00: qc timeout (cmd 0xef)
+>> Jun 14 07:56:22 nigel-m2v kernel: ata2.00: failed to set xfermode
+>> (err_mask=0x4)
+> 
+> Try 2.6.22-rc4-gitX...
+> 
+>     Jeff
 
-> What the GPL *does* say is that you can't "add additional
-> restrictions to the license"
+Hi Jeff,
 
-Not quite.  It's more general than that:
+Is there a patch in particular I can maybe apply? I see you made a
+couple of commits ... my problem is this is also happening on one of my
+production boxes which has a few other patches applied, I'm a bit scared
+of conflicts ... I don't really want to break anything by upgrading the
+kernel.
 
-  You may not impose any further restrictions on the recipients'
-  exercise of the rights granted herein.
 
->> > So take another example: I obviously distribute code that is copyrighted
->> > by others under the GPLv2. Do I follow the GPLv2? I sure as hell do! But
->> > do I give you the same rights as I have to modify the copy on
->> > master.kernel.org as I have? I sure as hell DO NOT!
+Kind Regards
+Nigel
 
->> That's an interesting argument.
 
->> People don't get your copy, so they're not entitled to anything about
->> it.
 
->> When they download the software, they get another copy, and they have
->> a right to modify that copy.
 
-> But you get the TiVO corporations copy of the software?
-
-Yes.  The customer gets the copy that TiVO stored in the hard disk in
-the device it sells.  And it's that copy that the customer is entitled
-to modify because TiVO is still able to modify it.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
