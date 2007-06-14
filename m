@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXFNU2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbXFNU2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbXFNU2P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbXFNU1O
+	id S1754784AbXFNU2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbXFNU1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:27:14 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:34106 "EHLO
+	Thu, 14 Jun 2007 16:27:16 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:34107 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753039AbXFNU1I (ORCPT
+	with ESMTP id S1752966AbXFNU1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Jun 2007 16:27:08 -0400
-Date: Thu, 14 Jun 2007 16:26:55 -0400
+Date: Thu, 14 Jun 2007 16:26:48 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 4/5] UML - Simplify helper stack handling
-Message-ID: <20070614202655.GA9647@c2.user-mode-linux.org>
+Subject: [PATCH 1/5] UML - pty channel tidying
+Message-ID: <20070614202648.GA9630@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,339 +24,187 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-run_helper and run_helper_thread had arguments which were the same in
-all callers.  run_helper's stack_out was always NULL and
-run_helper_thread's stack_order was always 0.  These are now gone, and
-the constants folded into the code.
+Cleanup, mostly style violations.
 
-Also fixed leaks of the helper stack in the AIO and SIGIO code.
+Tidied the includes.
+
+getmaster returns a real errno, which pty_open returns if there's a
+problem.
+
+The printks now have severity.
+
+Changed os_* calls to call libc directly.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/drivers/chan_user.c              |    2 +-
- arch/um/drivers/harddog_user.c           |    2 +-
- arch/um/drivers/net_user.c               |    2 +-
- arch/um/drivers/port_user.c              |    2 +-
- arch/um/drivers/slip_user.c              |    2 +-
- arch/um/drivers/slirp_user.c             |    2 +-
- arch/um/drivers/xterm.c                  |    2 +-
- arch/um/include/os.h                     |    6 ++----
- arch/um/os-Linux/aio.c                   |   11 ++++++-----
- arch/um/os-Linux/drivers/ethertap_user.c |    2 +-
- arch/um/os-Linux/drivers/tuntap_user.c   |    2 +-
- arch/um/os-Linux/helper.c                |   19 +++++++------------
- arch/um/os-Linux/sigio.c                 |   19 ++++++++++++-------
- 13 files changed, 36 insertions(+), 37 deletions(-)
+ arch/um/drivers/pty.c |   76 ++++++++++++++++++++++++++------------------------
+ 1 file changed, 40 insertions(+), 36 deletions(-)
 
-Index: linux-2.6.21-mm/arch/um/drivers/harddog_user.c
+Index: linux-2.6.21-mm/arch/um/drivers/pty.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/harddog_user.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/harddog_user.c	2007-06-13 18:44:41.000000000 -0400
-@@ -68,7 +68,7 @@ int start_watchdog(int *in_fd_ret, int *
- 		args = pid_args;
- 	}
- 
--	pid = run_helper(pre_exec, &data, args, NULL);
-+	pid = run_helper(pre_exec, &data, args);
- 
- 	os_close_file(out_fds[0]);
- 	os_close_file(in_fds[1]);
-Index: linux-2.6.21-mm/arch/um/drivers/net_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/net_user.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/net_user.c	2007-06-14 11:20:36.000000000 -0400
-@@ -187,7 +187,7 @@ static int change_tramp(char **argv, cha
- 	}
- 	pe_data.close_me = fds[0];
- 	pe_data.stdout = fds[1];
--	pid = run_helper(change_pre_exec, &pe_data, argv, NULL);
-+	pid = run_helper(change_pre_exec, &pe_data, argv);
- 
- 	if (pid > 0)	/* Avoid hang as we won't get data in failure case. */
- 		read_output(fds[0], output, output_len);
-Index: linux-2.6.21-mm/arch/um/drivers/port_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/port_user.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/port_user.c	2007-06-14 11:20:36.000000000 -0400
-@@ -188,7 +188,7 @@ int port_connection(int fd, int *socket,
- 		{ .sock_fd  		= new,
- 		  .pipe_fd 		= socket[1] });
- 
--	err = run_helper(port_pre_exec, &data, argv, NULL);
-+	err = run_helper(port_pre_exec, &data, argv);
- 	if(err < 0)
- 		goto out_shutdown;
- 
-Index: linux-2.6.21-mm/arch/um/drivers/slip_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/slip_user.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/slip_user.c	2007-06-14 11:20:36.000000000 -0400
-@@ -85,7 +85,7 @@ static int slip_tramp(char **argv, int f
- 	pe_data.stdin = fd;
- 	pe_data.stdout = fds[1];
- 	pe_data.close_me = fds[0];
--	err = run_helper(slip_pre_exec, &pe_data, argv, NULL);
-+	err = run_helper(slip_pre_exec, &pe_data, argv);
- 	if(err < 0)
- 		goto out_close;
- 	pid = err;
-Index: linux-2.6.21-mm/arch/um/drivers/slirp_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/slirp_user.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/slirp_user.c	2007-06-13 18:44:41.000000000 -0400
-@@ -42,7 +42,7 @@ static int slirp_tramp(char **argv, int 
- 
- 	pe_data.stdin = fd;
- 	pe_data.stdout = fd;
--	pid = run_helper(slirp_pre_exec, &pe_data, argv, NULL);
-+	pid = run_helper(slirp_pre_exec, &pe_data, argv);
- 
- 	return(pid);
- }
-Index: linux-2.6.21-mm/arch/um/drivers/xterm.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/xterm.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/xterm.c	2007-06-13 18:44:41.000000000 -0400
-@@ -132,7 +132,7 @@ static int xterm_open(int input, int out
- 	}
- 
- 	sprintf(title, data->title, data->device);
--	pid = run_helper(NULL, NULL, argv, NULL);
-+	pid = run_helper(NULL, NULL, argv);
- 	if (pid < 0) {
- 		err = pid;
- 		printk(UM_KERN_ERR "xterm_open : run_helper failed, "
-Index: linux-2.6.21-mm/arch/um/include/os.h
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/include/os.h	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/include/os.h	2007-06-13 18:44:41.000000000 -0400
-@@ -239,11 +239,9 @@ extern unsigned long __do_user_copy(void
- /* execvp.c */
- extern int execvp_noalloc(char *buf, const char *file, char *const argv[]);
- /* helper.c */
--extern int run_helper(void (*pre_exec)(void *), void *pre_data, char **argv,
--		      unsigned long *stack_out);
-+extern int run_helper(void (*pre_exec)(void *), void *pre_data, char **argv);
- extern int run_helper_thread(int (*proc)(void *), void *arg,
--			     unsigned int flags, unsigned long *stack_out,
--			     int stack_order);
-+			     unsigned int flags, unsigned long *stack_out);
- extern int helper_wait(int pid);
- 
- 
-Index: linux-2.6.21-mm/arch/um/os-Linux/aio.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/aio.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/aio.c	2007-06-13 18:44:41.000000000 -0400
-@@ -177,6 +177,7 @@ static int do_not_aio(struct aio_thread_
- static int aio_req_fd_r = -1;
- static int aio_req_fd_w = -1;
- static int aio_pid = -1;
-+static unsigned long aio_stack;
- 
- static int not_aio_thread(void *arg)
- {
-@@ -212,7 +213,6 @@ static int not_aio_thread(void *arg)
- 
- static int init_aio_24(void)
- {
--	unsigned long stack;
- 	int fds[2], err;
- 
- 	err = os_pipe(fds, 1, 1);
-@@ -227,7 +227,7 @@ static int init_aio_24(void)
- 		goto out_close_pipe;
- 
- 	err = run_helper_thread(not_aio_thread, NULL,
--				CLONE_FILES | CLONE_VM | SIGCHLD, &stack, 0);
-+				CLONE_FILES | CLONE_VM | SIGCHLD, &aio_stack);
- 	if(err < 0)
- 		goto out_close_pipe;
- 
-@@ -252,7 +252,6 @@ out:
- #define DEFAULT_24_AIO 0
- static int init_aio_26(void)
- {
--	unsigned long stack;
- 	int err;
- 
- 	if(io_setup(256, &ctx)){
-@@ -263,7 +262,7 @@ static int init_aio_26(void)
- 	}
- 
- 	err = run_helper_thread(aio_thread, NULL,
--				CLONE_FILES | CLONE_VM | SIGCHLD, &stack, 0);
-+				CLONE_FILES | CLONE_VM | SIGCHLD, &aio_stack);
- 	if(err < 0)
- 		return err;
- 
-@@ -365,8 +364,10 @@ __initcall(init_aio);
- 
- static void exit_aio(void)
- {
--	if(aio_pid != -1)
-+	if (aio_pid != -1) {
- 		os_kill_process(aio_pid, 1);
-+		free_stack(aio_stack, 0);
-+	}
- }
- 
- __uml_exitcall(exit_aio);
-Index: linux-2.6.21-mm/arch/um/os-Linux/drivers/ethertap_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/drivers/ethertap_user.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/drivers/ethertap_user.c	2007-06-14 11:20:36.000000000 -0400
-@@ -117,7 +117,7 @@ static int etap_tramp(char *dev, char *g
- 	pe_data.control_remote = control_remote;
- 	pe_data.control_me = control_me;
- 	pe_data.data_me = data_me;
--	pid = run_helper(etap_pre_exec, &pe_data, args, NULL);
-+	pid = run_helper(etap_pre_exec, &pe_data, args);
- 
- 	if(pid < 0)
- 		err = pid;
-Index: linux-2.6.21-mm/arch/um/os-Linux/drivers/tuntap_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/drivers/tuntap_user.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/drivers/tuntap_user.c	2007-06-13 18:44:41.000000000 -0400
-@@ -83,7 +83,7 @@ static int tuntap_open_tramp(char *gate,
- 	data.stdout = remote;
- 	data.close_me = me;
- 
--	pid = run_helper(tuntap_pre_exec, &data, argv, NULL);
-+	pid = run_helper(tuntap_pre_exec, &data, argv);
- 
- 	if(pid < 0)
- 		return -pid;
-Index: linux-2.6.21-mm/arch/um/os-Linux/helper.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/helper.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/helper.c	2007-06-14 11:20:36.000000000 -0400
-@@ -44,17 +44,13 @@ static int helper_child(void *arg)
- /* Returns either the pid of the child process we run or -E* on failure.
-  * XXX The alloc_stack here breaks if this is called in the tracing thread, so
-  * we need to receive a preallocated stack (a local buffer is ok). */
--int run_helper(void (*pre_exec)(void *), void *pre_data, char **argv,
--	       unsigned long *stack_out)
-+int run_helper(void (*pre_exec)(void *), void *pre_data, char **argv)
- {
- 	struct helper_data data;
- 	unsigned long stack, sp;
- 	int pid, fds[2], ret, n;
- 
--	if ((stack_out != NULL) && (*stack_out != 0))
--		stack = *stack_out;
--	else
--		stack = alloc_stack(0, __cant_sleep());
-+	stack = alloc_stack(0, __cant_sleep());
- 	if (stack == 0)
- 		return -ENOMEM;
- 
-@@ -113,22 +109,21 @@ out_close:
- 		close(fds[1]);
- 	close(fds[0]);
- out_free:
--	if ((stack_out == NULL) || (*stack_out == 0))
--		free_stack(stack, 0);
-+	free_stack(stack, 0);
- 	return ret;
- }
- 
- int run_helper_thread(int (*proc)(void *), void *arg, unsigned int flags,
--		      unsigned long *stack_out, int stack_order)
-+		      unsigned long *stack_out)
- {
- 	unsigned long stack, sp;
- 	int pid, status, err;
- 
--	stack = alloc_stack(stack_order, __cant_sleep());
-+	stack = alloc_stack(0, __cant_sleep());
- 	if (stack == 0)
- 		return -ENOMEM;
- 
--	sp = stack + (UM_KERN_PAGE_SIZE << stack_order) - sizeof(void *);
-+	sp = stack + UM_KERN_PAGE_SIZE - sizeof(void *);
- 	pid = clone(proc, (void *) sp, flags | SIGCHLD, arg);
- 	if (pid < 0) {
- 		err = -errno;
-@@ -147,7 +142,7 @@ int run_helper_thread(int (*proc)(void *
- 		if (!WIFEXITED(status) || (WEXITSTATUS(status) != 0))
- 			printk("run_helper_thread - thread returned status "
- 			       "0x%x\n", status);
--		free_stack(stack, stack_order);
-+		free_stack(stack, 0);
- 	} else
- 		*stack_out = stack;
- 	return pid;
-Index: linux-2.6.21-mm/arch/um/os-Linux/sigio.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/sigio.c	2007-06-13 17:13:42.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/sigio.c	2007-06-14 11:20:36.000000000 -0400
-@@ -26,6 +26,7 @@
-  * exitcall.
+--- linux-2.6.21-mm.orig/arch/um/drivers/pty.c	2007-06-06 09:28:13.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/pty.c	2007-06-14 15:35:13.000000000 -0400
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2001, 2002 Jeff Dike (jdike@karaya.com)
++ * Copyright (C) 2001 - 2007 Jeff Dike (jdike@{addtoit,linux.intel}.com)
+  * Licensed under the GPL
   */
- static int write_sigio_pid = -1;
-+static unsigned long write_sigio_stack;
  
- /* These arrays are initialized before the sigio thread is started, and
-  * the descriptors closed after it is killed.  So, it can't see them change.
-@@ -144,8 +145,10 @@ static void update_thread(void)
- 	return;
-  fail:
- 	/* Critical section start */
--	if(write_sigio_pid != -1)
-+	if (write_sigio_pid != -1) {
- 		os_kill_process(write_sigio_pid, 1);
-+		free_stack(write_sigio_stack, 0);
-+	}
- 	write_sigio_pid = -1;
- 	close(sigio_private[0]);
- 	close(sigio_private[1]);
-@@ -243,7 +246,6 @@ static struct pollfd *setup_initial_poll
+@@ -7,12 +7,14 @@
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <string.h>
++#include <fcntl.h>
+ #include <errno.h>
+ #include <termios.h>
++#include <sys/stat.h>
+ #include "chan_user.h"
+-#include "user.h"
+-#include "kern_util.h"
+ #include "os.h"
++#include "user.h"
++#include "kern_constants.h"
+ #include "um_malloc.h"
  
- static void write_sigio_workaround(void)
- {
--	unsigned long stack;
- 	struct pollfd *p;
- 	int err;
- 	int l_write_sigio_fds[2];
-@@ -293,7 +295,8 @@ static void write_sigio_workaround(void)
- 	memcpy(sigio_private, l_sigio_private, sizeof(l_sigio_private));
+ struct pty_chan {
+@@ -28,11 +30,13 @@ static void *pty_chan_init(char *str, in
+ 	struct pty_chan *data;
  
- 	write_sigio_pid = run_helper_thread(write_sigio_thread, NULL,
--					    CLONE_FILES | CLONE_VM, &stack, 0);
-+					    CLONE_FILES | CLONE_VM,
-+					    &write_sigio_stack);
- 
- 	if (write_sigio_pid < 0)
- 		goto out_clear;
-@@ -356,10 +359,12 @@ out:
- 
- static void sigio_cleanup(void)
- {
--	if(write_sigio_pid != -1){
--		os_kill_process(write_sigio_pid, 1);
--		write_sigio_pid = -1;
--	}
-+	if (write_sigio_pid == -1)
-+		return;
+ 	data = um_kmalloc(sizeof(*data));
+-	if(data == NULL) return(NULL);
++	if (data == NULL)
++		return NULL;
 +
-+	os_kill_process(write_sigio_pid, 1);
-+	free_stack(write_sigio_stack, 0);
-+	write_sigio_pid = -1;
+ 	*data = ((struct pty_chan) { .announce  	= opts->announce, 
+ 				     .dev  		= device,
+ 				     .raw  		= opts->raw });
+-	return(data);
++	return data;
  }
  
- __uml_exitcall(sigio_cleanup);
-Index: linux-2.6.21-mm/arch/um/drivers/chan_user.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/chan_user.c	2007-06-13 18:44:36.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/chan_user.c	2007-06-13 18:44:41.000000000 -0400
-@@ -161,7 +161,7 @@ static int winch_tramp(int fd, struct tt
- 	 * problem with /dev/net/tun, which if held open by this
- 	 * thread, prevents the TUN/TAP device from being reused.
- 	 */
--	err = run_helper_thread(winch_thread, &data, CLONE_FILES, stack_out, 0);
-+	err = run_helper_thread(winch_thread, &data, CLONE_FILES, stack_out);
- 	if(err < 0){
- 		printk("fork of winch_thread failed - errno = %d\n", -err);
- 		goto out_close;
+ static int pts_open(int input, int output, int primary, void *d,
+@@ -43,31 +47,35 @@ static int pts_open(int input, int outpu
+ 	int fd, err;
+ 
+ 	fd = get_pty();
+-	if(fd < 0){
++	if (fd < 0) {
+ 		err = -errno;
+-		printk("open_pts : Failed to open pts\n");
++		printk(UM_KERN_ERR "open_pts : Failed to open pts\n");
+ 		return err;
+ 	}
+-	if(data->raw){
++
++	if (data->raw) {
+ 		CATCH_EINTR(err = tcgetattr(fd, &data->tt));
+-		if(err)
+-			return(err);
++		if (err)
++			return err;
+ 
+ 		err = raw(fd);
+-		if(err)
+-			return(err);
++		if (err)
++			return err;
+ 	}
+ 
+ 	dev = ptsname(fd);
+ 	sprintf(data->dev_name, "%s", dev);
+ 	*dev_out = data->dev_name;
++
+ 	if (data->announce)
+ 		(*data->announce)(dev, data->dev);
+-	return(fd);
++
++	return fd;
+ }
+ 
+ static int getmaster(char *line)
+ {
++	struct stat buf;
+ 	char *pty, *bank, *cp;
+ 	int master, err;
+ 
+@@ -75,24 +83,29 @@ static int getmaster(char *line)
+ 	for (bank = "pqrs"; *bank; bank++) {
+ 		line[strlen("/dev/pty")] = *bank;
+ 		*pty = '0';
+-		if (os_stat_file(line, NULL) < 0)
++		/* Did we hit the end ? */
++		if ((stat(line, &buf) < 0) && (errno == ENOENT))
+ 			break;
++
+ 		for (cp = "0123456789abcdef"; *cp; cp++) {
+ 			*pty = *cp;
+-			master = os_open_file(line, of_rdwr(OPENFLAGS()), 0);
++			master = open(line, O_RDWR);
+ 			if (master >= 0) {
+ 				char *tp = &line[strlen("/dev/")];
+ 
+ 				/* verify slave side is usable */
+ 				*tp = 't';
+-				err = os_access(line, OS_ACC_RW_OK);
++				err = access(line, R_OK | W_OK);
+ 				*tp = 'p';
+-				if(err == 0) return(master);
+-				(void) os_close_file(master);
++				if(!err)
++					return master;
++				close(master);
+ 			}
+ 		}
+ 	}
+-	return(-1);
++
++	printk(UM_KERN_ERR "getmaster - no usable host pty devices\n");
++	return -ENOENT;
+ }
+ 
+ static int pty_open(int input, int output, int primary, void *d,
+@@ -103,20 +116,22 @@ static int pty_open(int input, int outpu
+ 	char dev[sizeof("/dev/ptyxx\0")] = "/dev/ptyxx";
+ 
+ 	fd = getmaster(dev);
+-	if(fd < 0)
+-		return(-errno);
++	if (fd < 0)
++		return fd;
+ 
+ 	if(data->raw){
+ 		err = raw(fd);
+-		if(err)
+-			return(err);
++		if (err)
++			return err;
+ 	}
+ 	
+-	if(data->announce) (*data->announce)(dev, data->dev);
++	if (data->announce)
++		(*data->announce)(dev, data->dev);
+ 
+ 	sprintf(data->dev_name, "%s", dev);
+ 	*dev_out = data->dev_name;
+-	return(fd);
++
++	return fd;
+ }
+ 
+ const struct chan_ops pty_ops = {
+@@ -144,14 +159,3 @@ const struct chan_ops pts_ops = {
+ 	.free		= generic_free,
+ 	.winch		= 0,
+ };
+-
+-/*
+- * Overrides for Emacs so that we follow Linus's tabbing style.
+- * Emacs will notice this stuff at the end of the file and automatically
+- * adjust the settings for this buffer only.  This must remain at the end
+- * of the file.
+- * ---------------------------------------------------------------------------
+- * Local variables:
+- * c-file-style: "linux"
+- * End:
+- */
