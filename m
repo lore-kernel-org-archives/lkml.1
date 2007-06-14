@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbXFNJsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbXFNJw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754043AbXFNJsu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 05:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbXFNJsn
+	id S1753291AbXFNJw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 05:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbXFNJww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 05:48:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43447 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbXFNJsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 05:48:42 -0400
-Date: Thu, 14 Jun 2007 11:48:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch] sched: fix SysRq-N (normalize RT tasks)
-Message-ID: <20070614094830.GA494@elte.hu>
-MIME-Version: 1.0
+	Thu, 14 Jun 2007 05:52:52 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54480 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbXFNJwu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 05:52:50 -0400
+Date: Thu, 14 Jun 2007 11:52:49 +0200
+From: Jan Kara <jack@suse.cz>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>, lkml <linux-kernel@vger.kernel.org>,
+       mark.fasheh@oracle.com, ext4 <linux-ext4@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com
+Subject: Re: + fs-introduce-write_begin-write_end-and-perform_write-aops.patch added to -mm tree
+Message-ID: <20070614095249.GG17819@atrey.karlin.mff.cuni.cz>
+References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net> <20070613134005.GA13815@localhost.sw.ru> <20070613114356.GD17547@wotan.suse.de> <1181776021.21924.87.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1181776021.21924.87.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Subject: [patch] sched: fix SysRq-N (normalize RT tasks)
+> On Wed, 2007-06-13 at 13:43 +0200, Nick Piggin wrote:
+> ..
+> >  
+> > > 5) ext3_write_end:
+> > > 	Before  write_begin/write_end patch set we have folowing locking
+> > > 	order:
+> > > 		stop_journal(handle);
+> > > 		unlock_page(page);
+> > > 	But now order is oposite:
+> > > 		unlock_page(page);
+> > > 		stop_journal(handle);
+> > > 	Can we got any race condition now? I'm not sure is it actual problem,
+> > > 	may be somebody cant describe this.
+> > 
+> > Can we just change it to the original order? That would seem to be
+> > safest unless one of the ext3 devs explicitly acks it.
+  Sorry, I've missed beginning of this thread. But what problems can
+exactly cause this ordering change? ext3_journal_stop has no need to be
+protected by the page lock - it can be even better that it's not
+protected as it can trigger commit and all that would happen
+unnecessarily under page lock...
 
-Gene Heskett reported the following problem while testing CFS: SysRq-N 
-is not always effective in normalizing tasks back to SCHED_OTHER.
+								Honza
 
-the reason for that turns out to be the following bug: 
-normalize_rt_tasks() uses for_each_process() to iterate through all 
-tasks in the system. The problem is, this method does not iterate 
-through all tasks, it iterates through all thread groups. The proper 
-mechanism to enumerate all tasks is to use a do_each_thread() + 
-while_each_thread() loop.
-
-obvious bugfix for v2.6.22 inclusion. -stable candidate as well.
-
-Reported-by: Gene Heskett <gene.heskett@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -7071,12 +7071,13 @@ EXPORT_SYMBOL(__might_sleep);
- void normalize_rt_tasks(void)
- {
- 	struct prio_array *array;
--	struct task_struct *p;
-+	struct task_struct *g, *p;
- 	unsigned long flags;
- 	struct rq *rq;
- 
- 	read_lock_irq(&tasklist_lock);
--	for_each_process(p) {
-+
-+	do_each_thread(g, p) {
- 		if (!rt_task(p))
- 			continue;
- 
-@@ -7094,7 +7095,8 @@ void normalize_rt_tasks(void)
- 
- 		__task_rq_unlock(rq);
- 		spin_unlock_irqrestore(&p->pi_lock, flags);
--	}
-+	} while_each_thread(g, p);
-+
- 	read_unlock_irq(&tasklist_lock);
- }
- 
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
