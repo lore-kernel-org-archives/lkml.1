@@ -1,110 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbXFNTpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbXFNTpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770AbXFNTpH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755040AbXFNTlL
+	id S1756848AbXFNTpi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbXFNTlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:41:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55608 "EHLO
+	Thu, 14 Jun 2007 15:41:12 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50455 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753787AbXFNTk4 (ORCPT
+	with ESMTP id S1754213AbXFNTlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:40:56 -0400
-Message-Id: <20070614194055.697260443@sgi.com>
+	Thu, 14 Jun 2007 15:41:00 -0400
+Message-Id: <20070614194055.231680473@sgi.com>
 References: <20070614193839.878721298@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 12:38:53 -0700
+Date: Thu, 14 Jun 2007 12:38:51 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
-Subject: [patch 14/14] Use page_cache_xx in fs/splice.c
-Content-Disposition: inline; filename=vps_fs_splice
+Subject: [patch 12/14] Use page_cache_xxx in mm/mpage.c
+Content-Disposition: inline; filename=vps_fs_mpage
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/splice.c |   23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+ fs/mpage.c |   28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
-Index: vps/fs/splice.c
+Index: vps/fs/mpage.c
 ===================================================================
---- vps.orig/fs/splice.c	2007-06-09 22:18:02.000000000 -0700
-+++ vps/fs/splice.c	2007-06-09 22:22:08.000000000 -0700
-@@ -282,9 +282,9 @@ __generic_file_splice_read(struct file *
- 		.ops = &page_cache_pipe_buf_ops,
- 	};
+--- vps.orig/fs/mpage.c	2007-06-11 22:33:07.000000000 -0700
++++ vps/fs/mpage.c	2007-06-11 22:37:24.000000000 -0700
+@@ -133,7 +133,8 @@ mpage_alloc(struct block_device *bdev,
+ static void 
+ map_buffer_to_page(struct page *page, struct buffer_head *bh, int page_block) 
+ {
+-	struct inode *inode = page->mapping->host;
++	struct address_space *mapping = page->mapping;
++	struct inode *inode = mapping->host;
+ 	struct buffer_head *page_bh, *head;
+ 	int block = 0;
  
--	index = *ppos >> PAGE_CACHE_SHIFT;
--	loff = *ppos & ~PAGE_CACHE_MASK;
--	nr_pages = (len + loff + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+	index = page_cache_index(mapping, *ppos);
-+	loff = page_cache_offset(mapping, *ppos);
-+	nr_pages = page_cache_next(mapping, len + loff);
- 
- 	if (nr_pages > PIPE_BUFFERS)
- 		nr_pages = PIPE_BUFFERS;
-@@ -345,7 +345,7 @@ __generic_file_splice_read(struct file *
- 	 * Now loop over the map and see if we need to start IO on any
- 	 * pages, fill in the partial map, etc.
- 	 */
--	index = *ppos >> PAGE_CACHE_SHIFT;
-+	index = page_cache_index(mapping, *ppos);
- 	nr_pages = spd.nr_pages;
- 	spd.nr_pages = 0;
- 	for (page_nr = 0; page_nr < nr_pages; page_nr++) {
-@@ -357,7 +357,8 @@ __generic_file_splice_read(struct file *
- 		/*
- 		 * this_len is the max we'll use from this page
+@@ -142,9 +143,9 @@ map_buffer_to_page(struct page *page, st
+ 		 * don't make any buffers if there is only one buffer on
+ 		 * the page and the page just needs to be set up to date
  		 */
--		this_len = min_t(unsigned long, len, PAGE_CACHE_SIZE - loff);
-+		this_len = min_t(unsigned long, len,
-+					page_cache_size(mapping) - loff);
- 		page = pages[page_nr];
+-		if (inode->i_blkbits == PAGE_CACHE_SHIFT && 
++		if (inode->i_blkbits == page_cache_shift(mapping) &&
+ 		    buffer_uptodate(bh)) {
+-			SetPageUptodate(page);    
++			SetPageUptodate(page);
+ 			return;
+ 		}
+ 		create_empty_buffers(page, 1 << inode->i_blkbits, 0);
+@@ -177,9 +178,10 @@ do_mpage_readpage(struct bio *bio, struc
+ 		sector_t *last_block_in_bio, struct buffer_head *map_bh,
+ 		unsigned long *first_logical_block, get_block_t get_block)
+ {
+-	struct inode *inode = page->mapping->host;
++	struct address_space *mapping = page->mapping;
++	struct inode *inode = mapping->host;
+ 	const unsigned blkbits = inode->i_blkbits;
+-	const unsigned blocks_per_page = PAGE_CACHE_SIZE >> blkbits;
++	const unsigned blocks_per_page = page_cache_size(mapping) >> blkbits;
+ 	const unsigned blocksize = 1 << blkbits;
+ 	sector_t block_in_file;
+ 	sector_t last_block;
+@@ -196,7 +198,7 @@ do_mpage_readpage(struct bio *bio, struc
+ 	if (page_has_buffers(page))
+ 		goto confused;
  
- 		if (PageReadahead(page))
-@@ -416,7 +417,7 @@ __generic_file_splice_read(struct file *
- 			 * i_size must be checked after ->readpage().
- 			 */
- 			isize = i_size_read(mapping->host);
--			end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-+			end_index = page_cache_index(mapping, isize - 1);
- 			if (unlikely(!isize || index > end_index))
- 				break;
+-	block_in_file = (sector_t)page->index << (PAGE_CACHE_SHIFT - blkbits);
++	block_in_file = (sector_t)page->index << (page_cache_shift(mapping) - blkbits);
+ 	last_block = block_in_file + nr_pages * blocks_per_page;
+ 	last_block_in_file = (i_size_read(inode) + blocksize - 1) >> blkbits;
+ 	if (last_block > last_block_in_file)
+@@ -284,7 +286,8 @@ do_mpage_readpage(struct bio *bio, struc
+ 	}
  
-@@ -425,7 +426,8 @@ __generic_file_splice_read(struct file *
- 			 * the length and stop
- 			 */
- 			if (end_index == index) {
--				loff = PAGE_CACHE_SIZE - (isize & ~PAGE_CACHE_MASK);
-+				loff = page_cache_size(mapping)
-+					- page_cache_offset(mapping, isize);
- 				if (total_len + loff > isize)
- 					break;
- 				/*
-@@ -557,6 +559,7 @@ static int pipe_to_file(struct pipe_inod
- 	struct page *page;
- 	void *fsdata;
- 	int ret;
-+	int pagesize = page_cache_size(mapping);
+ 	if (first_hole != blocks_per_page) {
+-		zero_user_segment(page, first_hole << blkbits, PAGE_CACHE_SIZE);
++		zero_user_segment(page, first_hole << blkbits,
++					page_cache_size(mapping));
+ 		if (first_hole == 0) {
+ 			SetPageUptodate(page);
+ 			unlock_page(page);
+@@ -462,7 +465,7 @@ static int __mpage_writepage(struct page
+ 	struct inode *inode = page->mapping->host;
+ 	const unsigned blkbits = inode->i_blkbits;
+ 	unsigned long end_index;
+-	const unsigned blocks_per_page = PAGE_CACHE_SIZE >> blkbits;
++	const unsigned blocks_per_page = page_cache_size(mapping) >> blkbits;
+ 	sector_t last_block;
+ 	sector_t block_in_file;
+ 	sector_t blocks[MAX_BUF_PER_PAGE];
+@@ -531,7 +534,8 @@ static int __mpage_writepage(struct page
+ 	 * The page has no buffers: map it to disk
+ 	 */
+ 	BUG_ON(!PageUptodate(page));
+-	block_in_file = (sector_t)page->index << (PAGE_CACHE_SHIFT - blkbits);
++	block_in_file = (sector_t)page->index <<
++			(page_cache_shift(mapping) - blkbits);
+ 	last_block = (i_size - 1) >> blkbits;
+ 	map_bh.b_page = page;
+ 	for (page_block = 0; page_block < blocks_per_page; ) {
+@@ -563,7 +567,7 @@ static int __mpage_writepage(struct page
+ 	first_unmapped = page_block;
+ 
+ page_is_mapped:
+-	end_index = i_size >> PAGE_CACHE_SHIFT;
++	end_index = page_cache_index(mapping, i_size);
+ 	if (page->index >= end_index) {
+ 		/*
+ 		 * The page straddles i_size.  It must be zeroed out on each
+@@ -573,11 +577,11 @@ page_is_mapped:
+ 		 * is zeroed when mapped, and writes to that region are not
+ 		 * written out to the file."
+ 		 */
+-		unsigned offset = i_size & (PAGE_CACHE_SIZE - 1);
++		unsigned offset = page_cache_offset(mapping, i_size);
+ 
+ 		if (page->index > end_index || !offset)
+ 			goto confused;
+-		zero_user_segment(page, offset, PAGE_CACHE_SIZE);
++		zero_user_segment(page, offset, page_cache_size(mapping));
+ 	}
  
  	/*
- 	 * make sure the data in this buffer is uptodate
-@@ -565,11 +568,11 @@ static int pipe_to_file(struct pipe_inod
- 	if (unlikely(ret))
- 		return ret;
- 
--	offset = sd->pos & ~PAGE_CACHE_MASK;
-+	offset = page_cache_offset(mapping, sd->pos);
- 
- 	this_len = sd->len;
--	if (this_len + offset > PAGE_CACHE_SIZE)
--		this_len = PAGE_CACHE_SIZE - offset;
-+	if (this_len + offset > pagesize)
-+		this_len = pagesize - offset;
- 
- 	ret = pagecache_write_begin(file, mapping, sd->pos, sd->len,
- 				AOP_FLAG_UNINTERRUPTIBLE, &page, &fsdata);
 
 -- 
