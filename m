@@ -1,358 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbXFNWNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbXFNWOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbXFNWNw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXFNWJW
+	id S1757218AbXFNWOW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbXFNWJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:09:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36486 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753757AbXFNWJS (ORCPT
+	Thu, 14 Jun 2007 18:09:23 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:51009 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753800AbXFNWJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Jun 2007 18:09:18 -0400
-Message-Id: <20070614220447.296464031@chello.nl>
+Message-Id: <20070614220446.914040291@chello.nl>
 References: <20070614215817.389524447@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 23:58:32 +0200
+Date: Thu, 14 Jun 2007 23:58:26 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com, andrea@suse.de
-Subject: [PATCH 15/17] lib: floating proportions _single
-Content-Disposition: inline; filename=proportions_single.patch
+       yingchao.zhou@gmail.com, andrea@suse.de,
+       Robert Kaiser <rkaiser@sysgo.de>
+Subject: [PATCH 09/17] mtd: give mtdconcat devices their own backing_dev_info
+Content-Disposition: inline; filename=bdi_mtdconcat.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a prop_local that does not use a percpu variable for its counter.
-This is useful for items that are not (or infrequently) accessed from
-multiple context and/or are plenty enought that the percpu_counter overhead
-will hurt (tasks).
+These are actual devices, give them their own BDI.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Robert Kaiser <rkaiser@sysgo.de>
 ---
- include/linux/proportions.h |  112 +++++++++++++++++++++++++++++++++++++--
- lib/proportions.c           |  124 ++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 218 insertions(+), 18 deletions(-)
+ drivers/mtd/mtdconcat.c |   28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/include/linux/proportions.h
+Index: linux-2.6/drivers/mtd/mtdconcat.c
 ===================================================================
---- linux-2.6.orig/include/linux/proportions.h
-+++ linux-2.6/include/linux/proportions.h
-@@ -45,7 +45,11 @@ void prop_change_shift(struct prop_descr
- struct prop_global *prop_get_global(struct prop_descriptor *pd);
- void prop_put_global(struct prop_descriptor *pd, struct prop_global *pg);
- 
--struct prop_local {
-+/*
-+ * ----- PERCPU ------
-+ */
-+
-+struct prop_local_percpu {
- 	/*
- 	 * the local events counter
- 	 */
-@@ -59,23 +63,117 @@ struct prop_local {
- 	spinlock_t lock;		/* protect the snapshot state */
+--- linux-2.6.orig/drivers/mtd/mtdconcat.c	2007-04-22 18:55:17.000000000 +0200
++++ linux-2.6/drivers/mtd/mtdconcat.c	2007-04-22 19:01:42.000000000 +0200
+@@ -32,6 +32,7 @@ struct mtd_concat {
+ 	struct mtd_info mtd;
+ 	int num_subdev;
+ 	struct mtd_info **subdev;
++	struct backing_dev_info backing_dev_info;
  };
  
--void prop_local_init(struct prop_local *pl);
--void prop_local_destroy(struct prop_local *pl);
-+void prop_local_init_percpu(struct prop_local_percpu *pl);
-+void prop_local_destroy_percpu(struct prop_local_percpu *pl);
+ /*
+@@ -782,10 +783,9 @@ struct mtd_info *mtd_concat_create(struc
  
--void prop_norm(struct prop_global *pg, struct prop_local *pl);
-+void prop_norm_percpu(struct prop_global *pg, struct prop_local_percpu *pl);
+ 	for (i = 1; i < num_devs; i++) {
+ 		if (concat->mtd.type != subdev[i]->type) {
+-			kfree(concat);
+ 			printk("Incompatible device type on \"%s\"\n",
+ 			       subdev[i]->name);
+-			return NULL;
++			goto error;
+ 		}
+ 		if (concat->mtd.flags != subdev[i]->flags) {
+ 			/*
+@@ -794,10 +794,9 @@ struct mtd_info *mtd_concat_create(struc
+ 			 */
+ 			if ((concat->mtd.flags ^ subdev[i]->
+ 			     flags) & ~MTD_WRITEABLE) {
+-				kfree(concat);
+ 				printk("Incompatible device flags on \"%s\"\n",
+ 				       subdev[i]->name);
+-				return NULL;
++				goto error;
+ 			} else
+ 				/* if writeable attribute differs,
+ 				   make super device writeable */
+@@ -809,9 +808,12 @@ struct mtd_info *mtd_concat_create(struc
+ 		 * - copy-mapping is still permitted
+ 		 */
+ 		if (concat->mtd.backing_dev_info !=
+-		    subdev[i]->backing_dev_info)
++		    subdev[i]->backing_dev_info) {
++			concat->backing_dev_info = default_backing_dev_info;
++			bdi_init(&concat->backing_dev_info);
+ 			concat->mtd.backing_dev_info =
+-				&default_backing_dev_info;
++				&concat->backing_dev_info;
++		}
+ 
+ 		concat->mtd.size += subdev[i]->size;
+ 		concat->mtd.ecc_stats.badblocks +=
+@@ -821,10 +823,9 @@ struct mtd_info *mtd_concat_create(struc
+ 		    concat->mtd.oobsize    !=  subdev[i]->oobsize ||
+ 		    !concat->mtd.read_oob  != !subdev[i]->read_oob ||
+ 		    !concat->mtd.write_oob != !subdev[i]->write_oob) {
+-			kfree(concat);
+ 			printk("Incompatible OOB or ECC data on \"%s\"\n",
+ 			       subdev[i]->name);
+-			return NULL;
++			goto error;
+ 		}
+ 		concat->subdev[i] = subdev[i];
+ 
+@@ -903,11 +904,10 @@ struct mtd_info *mtd_concat_create(struc
+ 		    kmalloc(num_erase_region *
+ 			    sizeof (struct mtd_erase_region_info), GFP_KERNEL);
+ 		if (!erase_region_p) {
+-			kfree(concat);
+ 			printk
+ 			    ("memory allocation error while creating erase region list"
+ 			     " for device \"%s\"\n", name);
+-			return NULL;
++			goto error;
+ 		}
+ 
+ 		/*
+@@ -968,6 +968,12 @@ struct mtd_info *mtd_concat_create(struc
+ 	}
+ 
+ 	return &concat->mtd;
++
++error:
++	if (concat->mtd.backing_dev_info == &concat->backing_dev_info)
++		bdi_destroy(&concat->backing_dev_info);
++	kfree(concat);
++	return NULL;
+ }
  
  /*
-  *   ++x_{j}, ++t
-  */
- static inline
--void __prop_inc(struct prop_global *pg, struct prop_local *pl)
-+void __prop_inc_percpu(struct prop_global *pg, struct prop_local_percpu *pl)
+@@ -977,6 +983,8 @@ struct mtd_info *mtd_concat_create(struc
+ void mtd_concat_destroy(struct mtd_info *mtd)
  {
--	prop_norm(pg, pl);
-+	prop_norm_percpu(pg, pl);
- 	percpu_counter_mod(&pl->events, 1);
- 	percpu_counter_mod(&pg->events, 1);
- }
- 
--void prop_fraction(struct prop_global *pg, struct prop_local *pl,
-+void prop_fraction_percpu(struct prop_global *pg, struct prop_local_percpu *pl,
-+		long *numerator, long *denominator);
-+
-+/*
-+ * ----- SINGLE ------
-+ */
-+
-+struct prop_local_single {
-+	/*
-+	 * the local events counter
-+	 */
-+	unsigned long events;
-+
-+	/*
-+	 * snapshot of the last seen global state
-+	 * and a lock protecting this state
-+	 */
-+	int shift;
-+	unsigned long period;
-+	spinlock_t lock;		/* protect the snapshot state */
-+};
-+
-+void prop_local_init_single(struct prop_local_single *pl);
-+void prop_local_destroy_single(struct prop_local_single *pl);
-+
-+void prop_norm_single(struct prop_global *pg, struct prop_local_single *pl);
-+
-+/*
-+ *   ++x_{j}, ++t
-+ */
-+static inline
-+void __prop_inc_single(struct prop_global *pg, struct prop_local_single *pl)
-+{
-+	prop_norm_single(pg, pl);
-+	pl->events++;
-+	percpu_counter_mod(&pg->events, 1);
-+}
-+
-+void prop_fraction_single(struct prop_global *pg, struct prop_local_single *pl,
- 		long *numerator, long *denominator);
- 
-+/*
-+ * ----- GLUE ------
-+ */
-+
-+#undef TYPE_EQUAL
-+#define TYPE_EQUAL(expr, type) \
-+	__builtin_types_compatible_p(typeof(expr), type)
-+
-+extern int __bad_prop_local(void);
-+
-+#define prop_local_init(prop_local)					\
-+do {									\
-+	if (TYPE_EQUAL(*(prop_local), struct prop_local_percpu))	\
-+		prop_local_init_percpu(					\
-+			(struct prop_local_percpu *)(prop_local));	\
-+	else if (TYPE_EQUAL(*(prop_local), struct prop_local_single))	\
-+		prop_local_init_single(					\
-+			(struct prop_local_single *)(prop_local));	\
-+	else __bad_prop_local();					\
-+} while (0)
-+
-+#define prop_local_destroy(prop_local)					\
-+do {									\
-+	if (TYPE_EQUAL(*(prop_local), struct prop_local_percpu))	\
-+		prop_local_destroy_percpu(				\
-+			(struct prop_local_percpu *)(prop_local));	\
-+	else if (TYPE_EQUAL(*(prop_local), struct prop_local_single))	\
-+		prop_local_destroy_single(				\
-+			(struct prop_local_single *)(prop_local));	\
-+	else __bad_prop_local();					\
-+} while (0)
-+
-+#define __prop_inc(prop_global, prop_local)				\
-+do {									\
-+	if (TYPE_EQUAL(*(prop_local), struct prop_local_percpu))	\
-+		__prop_inc_percpu(prop_global,				\
-+			(struct prop_local_percpu *)(prop_local)); 	\
-+	else if (TYPE_EQUAL(*(prop_local), struct prop_local_single))	\
-+		__prop_inc_single(prop_global,				\
-+			(struct prop_local_single *)(prop_local)); 	\
-+	else __bad_prop_local();					\
-+} while (0)
-+
-+#define prop_fraction(prop_global, prop_local, num, denom)		\
-+do {									\
-+	if (TYPE_EQUAL(*(prop_local), struct prop_local_percpu))	\
-+		prop_fraction_percpu(prop_global,			\
-+			(struct prop_local_percpu *)(prop_local),	\
-+			num, denom);					\
-+	else if (TYPE_EQUAL(*(prop_local), struct prop_local_single))	\
-+		prop_fraction_single(prop_global,			\
-+			(struct prop_local_single *)(prop_local),	\
-+			num, denom);					\
-+	else __bad_prop_local();					\
-+} while (0)
-+
- #endif /* _LINUX_PROPORTIONS_H */
-Index: linux-2.6/lib/proportions.c
-===================================================================
---- linux-2.6.orig/lib/proportions.c
-+++ linux-2.6/lib/proportions.c
-@@ -149,22 +149,31 @@ void prop_put_global(struct prop_descrip
- 	rcu_read_unlock();
- }
- 
--static void prop_adjust_shift(struct prop_local *pl, int new_shift)
-+static void
-+__prop_adjust_shift(int *pl_shift, unsigned long *pl_period, int new_shift)
- {
--	int offset = pl->shift - new_shift;
-+	int offset = *pl_shift - new_shift;
- 
- 	if (!offset)
- 		return;
- 
- 	if (offset < 0)
--		pl->period <<= -offset;
-+		*pl_period <<= -offset;
- 	else
--		pl->period >>= offset;
-+		*pl_period >>= offset;
- 
--	pl->shift = new_shift;
-+	*pl_shift = new_shift;
- }
- 
--void prop_local_init(struct prop_local *pl)
-+#define prop_adjust_shift(prop_local, pg_shift)			\
-+	__prop_adjust_shift(&(prop_local)->shift,		\
-+			    &(prop_local)->period, pg_shift)
-+
-+/*
-+ * PERCPU
-+ */
-+
-+void prop_local_init_percpu(struct prop_local_percpu *pl)
- {
- 	spin_lock_init(&pl->lock);
- 	pl->shift = 0;
-@@ -172,7 +181,7 @@ void prop_local_init(struct prop_local *
- 	percpu_counter_init_irq(&pl->events, 0);
- }
- 
--void prop_local_destroy(struct prop_local *pl)
-+void prop_local_destroy_percpu(struct prop_local_percpu *pl)
- {
- 	percpu_counter_destroy(&pl->events);
- }
-@@ -184,8 +193,7 @@ void prop_local_destroy(struct prop_loca
-  *     x_{j} -= x_{j}/2;
-  *     c_{j}++;
-  */
--void prop_norm(struct prop_global *pg,
--		struct prop_local *pl)
-+void prop_norm_percpu(struct prop_global *pg, struct prop_local_percpu *pl)
- {
- 	unsigned long period = 1UL << (pg->shift - 1);
- 	unsigned long period_mask = ~(period - 1);
-@@ -242,17 +250,111 @@ void prop_norm(struct prop_global *pg,
-  *
-  *   p_{j} = x_{j} / (period/2 + t % period/2)
-  */
--void prop_fraction(struct prop_global *pg, struct prop_local *pl,
-+void prop_fraction_percpu(struct prop_global *pg, struct prop_local_percpu *pl,
- 		long *numerator, long *denominator)
- {
- 	unsigned long period_2 = 1UL << (pg->shift - 1);
- 	unsigned long counter_mask = period_2 - 1;
- 	unsigned long global_count;
- 
--	prop_norm(pg, pl);
-+	prop_norm_percpu(pg, pl);
- 	*numerator = percpu_counter_read_positive(&pl->events);
- 
- 	global_count = percpu_counter_read(&pg->events);
- 	*denominator = period_2 + (global_count & counter_mask);
- }
- 
-+/*
-+ * SINGLE
-+ */
-+
-+void prop_local_init_single(struct prop_local_single *pl)
-+{
-+	spin_lock_init(&pl->lock);
-+	pl->shift = 0;
-+	pl->period = 0;
-+	pl->events = 0;
-+}
-+
-+void prop_local_destroy_single(struct prop_local_single *pl)
-+{
-+}
-+
-+/*
-+ * Catch up with missed period expirations.
-+ *
-+ *   until (c_{j} == c)
-+ *     x_{j} -= x_{j}/2;
-+ *     c_{j}++;
-+ */
-+void prop_norm_single(struct prop_global *pg, struct prop_local_single *pl)
-+{
-+	unsigned long period = 1UL << (pg->shift - 1);
-+	unsigned long period_mask = ~(period - 1);
-+	unsigned long global_period;
-+	unsigned long flags;
-+
-+	global_period = percpu_counter_read(&pg->events);
-+	global_period &= period_mask;
-+
-+	/*
-+	 * Fast path - check if the local and global period count still match
-+	 * outside of the lock.
-+	 */
-+	if (pl->period == global_period)
-+		return;
-+
-+	spin_lock_irqsave(&pl->lock, flags);
-+	prop_adjust_shift(pl, pg->shift);
-+	/*
-+	 * For each missed period, we half the local counter.
-+	 * basically:
-+	 *   pl->events >> (global_period - pl->period);
-+	 *
-+	 * but since the distributed nature of single counters make division
-+	 * rather hard, use a regular subtraction loop. This is safe, because
-+	 * the events will only every be incremented, hence the subtraction
-+	 * can never result in a negative number.
-+	 */
-+	while (pl->period != global_period) {
-+		unsigned long val = pl->events;
-+		unsigned long half = (val + 1) >> 1;
-+
-+		/*
-+		 * Half of zero won't be much less, break out.
-+		 * This limits the loop to shift iterations, even
-+		 * if we missed a million.
-+		 */
-+		if (!val)
-+			break;
-+
-+		/*
-+		 * Iff shift >32 half might exceed the limits of
-+		 * the regular single_counter_mod.
-+		 */
-+		pl->events -= half;
-+		pl->period += period;
-+	}
-+	pl->period = global_period;
-+	spin_unlock_irqrestore(&pl->lock, flags);
-+}
-+
-+/*
-+ * Obtain an fraction of this proportion
-+ *
-+ *   p_{j} = x_{j} / (period/2 + t % period/2)
-+ */
-+void prop_fraction_single(struct prop_global *pg, struct prop_local_single *pl,
-+		long *numerator, long *denominator)
-+{
-+	unsigned long period_2 = 1UL << (pg->shift - 1);
-+	unsigned long counter_mask = period_2 - 1;
-+	unsigned long global_count;
-+
-+	prop_norm_single(pg, pl);
-+	*numerator = pl->events;
-+
-+	global_count = percpu_counter_read(&pg->events);
-+	*denominator = period_2 + (global_count & counter_mask);
-+}
-+
+ 	struct mtd_concat *concat = CONCAT(mtd);
++	if (concat->mtd.backing_dev_info == &concat->backing_dev_info)
++		bdi_destroy(&concat->backing_dev_info);
+ 	if (concat->mtd.numeraseregions)
+ 		kfree(concat->mtd.eraseregions);
+ 	kfree(concat);
 
 -- 
 
