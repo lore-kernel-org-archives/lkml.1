@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbXFNGHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbXFNGIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753464AbXFNGHy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 02:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXFNGHo
+	id S1753941AbXFNGIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 02:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXFNGIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 02:07:44 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:39613 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbXFNGHn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 02:07:43 -0400
-Date: Thu, 14 Jun 2007 09:07:38 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix race condition about network device name allocation
-Message-ID: <20070614060738.GA10095@localdomain>
-References: <1178862045.3979.33.camel@kane-linux> <20070511092519.1f34ab34@freepuppy> <1179130660.3881.23.camel@kane-linux> <20070514085840.17a343f7@freepuppy> <20070613094521.GA8860@localdomain> <20070613093631.42a45916@localhost>
+	Thu, 14 Jun 2007 02:08:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44649 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751360AbXFNGId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 02:08:33 -0400
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706131946.15714.dhazelton@enter.net>
+	<20070614004419.GL3588@stusta.de>
+	<200706132101.28330.dhazelton@enter.net>
+	<20070614024540.3a24598c@the-village.bc.nu>
+	<20070614021724.GP3588@stusta.de>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 03:07:17 -0300
+In-Reply-To: <20070614021724.GP3588@stusta.de> (Adrian Bunk's message of "Thu\, 14 Jun 2007 04\:17\:24 +0200")
+Message-ID: <or3b0vhxwq.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070613093631.42a45916@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 09:36:31AM -0700, Stephen Hemminger wrote:
-> On Wed, 13 Jun 2007 12:45:21 +0300
-> Dan Aloni <da-x@monatomic.org> wrote:
-> 
-> > On Mon, May 14, 2007 at 08:58:40AM -0700, Stephen Hemminger wrote:
-> > > Kenji Kaneshige found this race between device removal and
-> > > registration.  On unregister it is possible for the old device to
-> > > exist, because sysfs file is still open.  A new device with 'eth%d'
-> > > will select the same name, but sysfs kobject register will fial.
-> > > 
-> > > The following changes the shutdown order slightly. It hold a removes the sysfs
-> > > entries earlier (on unregister_netdevice), but holds a kobject reference.
-> > > Then when todo runs the actual last put free happens.
-> > > 
-> > > Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-> > 
-> > That patch breaks the bonding driver. After reverting it I avoid this crash:
-> > 
->[..]
-> > 
-> 
-> I assume this happens when bonded slave device is removed?
+On Jun 13, 2007, Adrian Bunk <bunk@stusta.de> wrote:
 
-Yes, it's just a simple removal via sysfs.
+> If the two courts are in the same country there's usually a higher court 
+> above both that can resolve this. But what if let's say the highest 
+> court in the USA and the highest court in Germany would disagree on such 
+> a matter?
 
-> Which kernel version?
+Upgrade the license so as to provide guidance as to the intent of the
+authors, such that the disagreement doesn't happen again.
 
-2.6.21.5
+If there's room in each country's laws to fix the problem, that is.
 
 -- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
