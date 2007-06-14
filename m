@@ -1,72 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752267AbXFNL6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbXFNMFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752267AbXFNL6t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 07:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXFNL6k
+	id S1752111AbXFNMFA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 08:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXFNMEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 07:58:40 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:20343 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbXFNL6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 07:58:38 -0400
-Date: Thu, 14 Jun 2007 13:56:00 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
-       james.bottomley@steeleye.com, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch 0/3] AHCI Link Power Management
-Message-ID: <20070614115600.GF6149@kernel.dk>
-References: <20070611114600.7fca1c24.kristen.c.accardi@intel.com> <466DFDB5.9030901@gmail.com> <466E0642.5020506@linux.intel.com> <466E1D51.9070007@gmail.com>
+	Thu, 14 Jun 2007 08:04:50 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48455 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750946AbXFNMEt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 08:04:49 -0400
+Date: Thu, 14 Jun 2007 22:04:13 +1000
+From: David Chinner <dgc@sgi.com>
+To: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       Suparna Bhattacharya <suparna@in.ibm.com>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070614120413.GD86004887@sgi.com>
+References: <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <466E1D51.9070007@gmail.com>
+In-Reply-To: <20070614091458.GH5181@schatzie.adilger.int>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12 2007, Tejun Heo wrote:
-> Arjan van de Ven wrote:
-> >> I'm not sure about this.  We need better PM framework to support 
-> >> powersaving in other controllers and some ahcis don't save much
-> >> when only link power management is used,
-> > 
-> > do you have data to support this?
+On Thu, Jun 14, 2007 at 03:14:58AM -0600, Andreas Dilger wrote:
+> On Jun 14, 2007  09:52 +1000, David Chinner wrote:
+> > B FA_PREALLOCATE
+> > provides the same functionality as
+> > B FA_ALLOCATE
+> > except it does not ever change the file size. This allows allocation
+> > of zero blocks beyond the end of file and is useful for optimising
+> > append workloads.
+> > TP
+> > B FA_DEALLOCATE
+> > removes the underlying disk space with the given range. The disk space
+> > shall be removed regardless of it's contents so both allocated space
+> > from
+> > B FA_ALLOCATE
+> > and
+> > B FA_PREALLOCATE
+> > as well as from
+> > B write(3)
+> > will be removed.
+> > B FA_DEALLOCATE
+> > shall never remove disk blocks outside the range specified.
 > 
-> Yeah, it was some Lenovo notebook.  Pavel is more familiar with the
-> hardware.  Pavel, what was the notebook which didn't save much power
-> with standard SATA power save but needed port to be completely turned off?
-> 
-> > The data we have from this patch is that it saves typically a Watt of
-> > power (depends on the machine of course, but the range is 0.5W to
-> > 1.5W). If you want to also have an even more agressive thing where
-> > you want to start disabling the entire controller... I don't see how
-> > this is in conflict with saving power on the link level by "just"
-> > enabling a hardware feature ....
-> 
-> Well, both implement about the same thing.  I prefer software
-> implementation because it's more generic and ALPE/ASP seems too
-> aggressive to me.  Here are reasons why sw implementation wasn't merged.
-> 
-> 1. It didn't have proper interface with userland.  This was mainly
-> because of missing ATA sysfs nodes.  I'm not sure whether adding this to
-> scsi node is a good idea.
-> 
-> 2. It was focused on SATA link PS and couldn't cover the Lenovo case.
-> 
-> I think we need something at the block layer.
+> So this is essentially the same as "punch".
 
-I think the hardware method is preferable, actually. Doing this in the
-block layer would mean keeping track of idle time, and that quickly
-turns into a lot of timer management. Not exactly free, in terms of CPU
-usage.
+Depends on your definition of "punch".
 
-I've yet to do some power measurements with this ahci patch, I just
-noticed that with min_power performance drops from ~55mb/sec to
-~15mb/sec sequential on my drive. That's pretty drastic :-)
+> There doesn't seem to be
+> a mechanism to only unallocate unused FA_{PRE,}ALLOCATE space at the
+> end.
 
+ftruncate()
+
+> > B FA_DEALLOCATE
+> > shall never change the file size. If changing the file size
+> > is required when deallocating blocks from an offset to end
+> > of file (or beyond end of file) is required,
+> > B ftuncate64(3)
+> > should be used.
+> 
+> This also seems to be a bit of a wart, since it isn't a natural converse
+> of either of the above functions.  How about having two modes,
+> similar to FA_ALLOCATE and FA_PREALLOCATE?
+
+<shrug>
+
+whatever.
+
+> Say, FA_PUNCH (which
+> would be as you describe here - deletes all data in the specified
+> range changing the file size if it overlaps EOF,
+
+Punch means different things to different people. To me (and probably
+most XFS aware ppl) punch implies no change to the file size.
+
+i.e. anyone curently using XFS_IOC_UNRESVSP will expect punching
+holes to leave the file size unchanged. This is the behaviour I
+described for FA_DEALLOCATE.
+
+> and FA_DEALLOCATE,
+> which only deallocates unused FA_{PRE,}ALLOCATE space?
+
+That's an "unwritten-to-hole" extent conversion. Is that really
+useful for anything? That's easily implemented with FIEMAP
+and FA_DEALLOCATE.
+
+Anyway, because we can't agree on a single pair of flags:
+
+	FA_ALLOCATE        == posix_fallocate()
+	FA_DEALLOCATE      == unwritten-to-hole ???
+	FA_RESV_SPACE      == XFS_IOC_RESVSP64
+	FA_UNRESV_SPACE    == XFS_IOC_UNRESVSP64
+
+> We might also consider making @mode be a mask instead of an enumeration:
+> 
+> FA_FL_DEALLOC	0x01 (default allocate)
+> FA_FL_KEEP_SIZE	0x02 (default extend/shrink size)
+> FA_FL_DEL_DATA	0x04 (default keep written data on DEALLOC)
+
+i.e:
+
+#define FA_ALLOCATE	0
+#define FA_DEALLOCATE	FA_FL_DEALLOC
+#define FA_RESV_SPACE	FA_FL_KEEP_SIZE
+#define FA_UNRESV_SPACE	FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA
+
+> I suppose it might be a bit late in the game to add a "goal"
+> parameter and e.g. FA_FL_REQUIRE_GOAL, FA_FL_NEAR_GOAL, etc to make
+> the API more suitable for XFS?
+
+It would suffice for the simpler operations, I think, but we'll
+rapidly run out of flags and we'll still need another interface
+for doing complex stuff.....
+
+> The goal could be a single __u64, or
+> a struct with e.g. __u64 byte offset (possibly also __u32 lun like
+> in FIEMAP).  I guess the one potential limitation here is the
+> number of function parameters on some architectures.
+
+To be useful it needs to __u64.
+
+> > B ENOSPC
+> > There is not enough space left on the device containing the file
+> > referred to by
+> > IR fd.
+> 
+> Should probably say whether space is removed on failure or not.  In
+
+Right. I'd say on error you need to FA_DEALLOCATE to ensure any space
+allocated was freed back up. That way the error handling in the allocate
+functions is much simpler (i.e. no need to undo there).
+
+Cheers,
+
+Dave.
 -- 
-Jens Axboe
-
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
