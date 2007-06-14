@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbXFNSby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbXFNSdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbXFNSby (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 14:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbXFNSbq
+	id S1754894AbXFNSdT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 14:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbXFNSdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 14:31:46 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:54734 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751223AbXFNSbq (ORCPT
+	Thu, 14 Jun 2007 14:33:10 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:12167 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751063AbXFNSdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 14:31:46 -0400
-Date: Thu, 14 Jun 2007 14:31:45 -0400
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614183145.GJ10008@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706140236.39394.dhazelton@enter.net> <orhcpbggcu.fsf@oliva.athome.lsd.ic.unicamp.br> <200706140429.11049.dhazelton@enter.net> <orejkefnw9.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <orejkefnw9.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Thu, 14 Jun 2007 14:33:08 -0400
+Subject: RE: [patch 0/3] no MAX_ARG_PAGES -v2
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Ollie Wild <aaw@google.com>, linux-kernel@vger.kernel.org,
+       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A01AF8CE6@scsmsx411.amr.corp.intel.com>
+References: <617E1C2C70743745A92448908E030B2A01AF8CE6@scsmsx411.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Thu, 14 Jun 2007 20:32:43 +0200
+Message-Id: <1181845964.5806.2.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 02:26:30PM -0300, Alexandre Oliva wrote:
-> In the program you received under GPLv1.
+On Thu, 2007-06-14 at 11:22 -0700, Luck, Tony wrote:
+> > > Interesting.  If you're exceeding your stack ulimit, you should be
+> > > seeing either an "argument list too long" message or getting a
+> > > SIGSEGV.  Have you tried bypassing wc and piping the output straight
+> > > to a file?
+> >
+> > I think it sends SIGKILL on failure paths.
 > 
-> Hey, you said there was code under GPLv1.1 in the Linux tree.  Then,
-> there should be a copy of GPLv1.1 in there, otherwise AFAICT the
-> distribution of that code is copyright infringement.  IANAL.
+> Setting stack limit to unlimited I managed to exec with 10MB, and
+> "wc" produced the correct output when it (finally) ran, so no
+> odd limits being hit in there.
 
-So now the copy of the GPL v2 isn't good enough for the GPLv1.1 code?
-Maybe that code said 'or later' in the license and hence someone added
-it to a GPL v2 project since that sounds perfectly OK.
+Ah, good :-)
 
---
-Len Sorensen
+> Ah ... running the 34*100K case direct from my shell prompt, I
+> do see a "Killed" that must get lost when I run this in the
+> shell script loop.
+
+Yes, so it seems we just trip the stack limit after we cross the point
+of no return.
+
+I started looking into growing the stack beforehand and perhaps
+shrinking the stack after we're done. That would get most if not all
+these failures before the point of no return.
+
