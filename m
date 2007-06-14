@@ -1,136 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbXFNVck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbXFNVdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbXFNVck (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbXFNVcd
+	id S1756999AbXFNVdK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbXFNVc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:32:33 -0400
-Received: from ext-ch1gw-8.online-age.net ([64.37.194.16]:57638 "EHLO
-	ext-ch1gw-8.online-age.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750878AbXFNVcc (ORCPT
+	Thu, 14 Jun 2007 17:32:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55818 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751138AbXFNVc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:32:32 -0400
-Date: Thu, 14 Jun 2007 16:32:18 -0500
-From: Rich Coe <Richard.Coe@med.ge.com>
-To: torvalds@osdl.org, jack@suse.cz
-Cc: linux-kernel@vger.kernel.org
-Subject: RFC: Re: PATCH: udf fs corruption on linux-2.6
-Message-Id: <20070614163218.1d75dda4.Richard.Coe@med.ge.com>
-In-Reply-To: <20070613154803.a1ad874a.Richard.Coe@med.ge.com>
-References: <20070613154803.a1ad874a.Richard.Coe@med.ge.com>
-Organization: CSE
-X-Mailer: Sylpheed 2.4.0beta4 (GTK+ 2.8.20; i686-pc-linux-gnu)
+	Thu, 14 Jun 2007 17:32:56 -0400
+Date: Thu, 14 Jun 2007 14:32:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
+ Blocksize support
+Message-Id: <20070614143248.736312f8.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
+References: <20070614193839.878721298@sgi.com>
+	<20070614130645.cabdff1b.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-GEHealthcare-MailScanner: Found to be clean
-X-GEHealthcare-MailScanner-From: richard.coe@med.ge.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've updated the patch below to use drop_inode rather than put_inode.
+> On Thu, 14 Jun 2007 14:20:04 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> > I think the best way to proceed would be to investigate that _general_
+> > optimisation and then, based upon the results of that work, decide whether
+> > further _specialised_ changes such as variable PAGE_CACHE_SIZE are needed,
+> > and if so, what they should be.
+> 
+> As has been pointed out performance is only one beneficial issue of
+> having a higher page cache. It is doubtful in principle that the proposed 
+> alternative can work given that locking overhead and management overhead
+> by the VM are not minimized but made more complex by your envisioned 
+> solution.
 
-drop_inode is only called when the last iput() reference to the inode is
-released, where put_inode is called for every iput().
+Why do we have to replay all of this?
 
-Rich
+You: conceptully-new add-on which benefits 0.25% of the user base, provided
+they select the right config options and filesystem.
 
-On Wed, 13 Jun 2007 15:48:03 -0500
-Rich Coe <Richard.Coe@med.ge.com> wrote:
-> Hi Linus, 
-> 
-> This patch fixes directory and missing files corruption in fs/udf which
-> occurs on all known 2.6 releases.
-> 
-> The corruption occurs because blocks which were pre-alloc'd for a directory 
-> are released back to the fs freelist, but the inode's alloc block information
-> is not updated to reflect this.
-> 
-> You would not see corruption if the number of files in any directory is 
-> less than 41, because the pre-alloc routine does not allocate blocks for the
-> directory until the number of files is over 40.
-> 
-> The problem occurs during unmounting because fs/udf incorrectly calls 
-> udf_discard_prealloc() from udf_clear_inode().  udf_discard_prealloc() will
-> update the inode and schedule it for write, but no write will ever occur 
-> because the fs is in the process of being umount'd. 
-> 
-> The solution is to add a put_inode routine to update the inode contents
-> and release the pre-alloc'd blocks to disk prior to clearing the inode
-> from the kernel.
-> 
-> Test case:
->     mkuddfs /dev/scd0
->     mount -o sync /dev/scd0 /mnt/cdrom
->     mkdir /mnt/cdrom/A /mnt/cdrom/B
->     cp A/* /mnt/cdrom/A		[ A contains 90 files of various sizes ]
->     cp B/* /mnt/cdrom/B 	[ B contains 20 or fewer files ]
->     umount /mnt/cdrom
-> 
-> Here you can see how 7 blocks starting at sector 139 are free and listed in the
-> directory entry for 'A'.  I used udfdump to get the following information:
->     [ ... ]
->     Free space found on this partition
-> 	[00000139 - 00000159]   [00000161 - 00000191]   [00000193 - 00000223]   
-> 	[00004464 - 00004475]   [00004485 - 00524286]   [00524287 - 01048573]
-> 	[01048574 - 01572860]   [01572861 - 02097147]   [02097148 - 02235039]   
->     [ ... ]
->     Filename `A`
->     [ ... ]
->     [ blob at sector     2038 for     2048 bytes in logical partion 0 ] 
->     [ blob at sector      137 for     4096 bytes in logical partion 0 ] 
->     [ blob at sector      139 for    14336 bytes in logical partion 0 flags 1 ] 
-> 
-> -- 
-> Rich Coe		richard.coe@med.ge.com
-> Virtual Principle Engineer  General Electric Healthcare Technologies
-> Global Software Platforms, Computer Technology Team
+Me: simpler enhancement which benefits 100% of the user base (ie: includes
+4k blocksize, 4k pagesize) and which also fixes your performance problem
+with that HBA.
 
-Signed-off-by: Rich Coe <richard.coe@med.ge.com>
----
-diff -urNp linux-2.6.20.orig/fs/udf/inode.c linux-2.6.20/fs/udf/inode.c
---- linux-2.6.20.orig/fs/udf/inode.c	2007-02-04 12:44:54.000000000 -0600
-+++ linux-2.6.20/fs/udf/inode.c	2007-06-13 11:32:41.930983471 -0500
-@@ -102,14 +102,17 @@ no_delete:
- 
- void udf_clear_inode(struct inode *inode)
- {
-+	kfree(UDF_I_DATA(inode));
-+	UDF_I_DATA(inode) = NULL;
-+}
-+
-+void udf_put_inode(struct inode *inode)
-+{
- 	if (!(inode->i_sb->s_flags & MS_RDONLY)) {
- 		lock_kernel();
- 		udf_discard_prealloc(inode);
- 		unlock_kernel();
- 	}
--
--	kfree(UDF_I_DATA(inode));
--	UDF_I_DATA(inode) = NULL;
- }
- 
- static int udf_writepage(struct page *page, struct writeback_control *wbc)
-diff -urNp linux-2.6.20.orig/fs/udf/super.c linux-2.6.20/fs/udf/super.c
---- linux-2.6.20.orig/fs/udf/super.c	2007-02-04 12:44:54.000000000 -0600
-+++ linux-2.6.20/fs/udf/super.c	2007-06-13 11:31:23.793017185 -0500
-@@ -166,6 +166,7 @@ static struct super_operations udf_sb_op
- 	.write_inode		= udf_write_inode,
- 	.delete_inode		= udf_delete_inode,
- 	.clear_inode		= udf_clear_inode,
-+	.drop_inode		= udf_put_inode,
- 	.put_super		= udf_put_super,
- 	.write_super		= udf_write_super,
- 	.statfs			= udf_statfs,
-diff -urNp linux-2.6.20.orig/fs/udf/udfdecl.h linux-2.6.20/fs/udf/udfdecl.h
---- linux-2.6.20.orig/fs/udf/udfdecl.h	2007-02-04 12:44:54.000000000 -0600
-+++ linux-2.6.20/fs/udf/udfdecl.h	2007-06-13 11:31:16.684293910 -0500
-@@ -97,6 +97,7 @@ extern void udf_truncate(struct inode *)
- extern void udf_read_inode(struct inode *);
- extern void udf_delete_inode(struct inode *);
- extern void udf_clear_inode(struct inode *);
-+extern void udf_put_inode(struct inode *);
- extern int udf_write_inode(struct inode *, int);
- extern long udf_block_map(struct inode *, long);
- extern int8_t inode_bmap(struct inode *, int, kernel_lb_addr *, uint32_t *, kernel_lb_addr *, uint32_t *, uint32_t *, struct buffer_head **);
+
+We want the 100% case.
