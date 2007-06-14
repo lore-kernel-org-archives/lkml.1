@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbXFNKa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbXFNKes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751908AbXFNKa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 06:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXFNKav
+	id S1752045AbXFNKes (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 06:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXFNKek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 06:30:51 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:4865 "EHLO
-	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750911AbXFNKat (ORCPT
+	Thu, 14 Jun 2007 06:34:40 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:59865 "EHLO
+	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbXFNKej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 06:30:49 -0400
-Date: Thu, 14 Jun 2007 11:30:25 +0100 (BST)
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Dan Aloni <da-x@monatomic.org>,
-       Chad Tindel <ctindel@users.sourceforge.net>,
-       Jay Vosburgh <fubar@us.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
-       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
-       Ioan Ionita <opslynx@gmail.com>
-Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
-In-Reply-To: <20070614020055.GL15426@holomorphy.com>
-Message-ID: <Pine.LNX.4.61.0706141123160.28903@mtfhpc.demon.co.uk>
-References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
- <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
- <20070614020055.GL15426@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 14 Jun 2007 06:34:39 -0400
+Subject: [PATCH]is_power_of_2-kernel/kfifo.c
+From: vignesh babu <vignesh.babu@wipro.com>
+Reply-To: vignesh.babu@wipro.com
+To: stelian <stelian@popies.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Janitors List <kernel-janitors@lists.osdl.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: WIPRO Technologies
+Date: Thu, 14 Jun 2007 16:05:06 +0530
+Message-Id: <1181817306.2474.22.camel@merlin.linuxcoe.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+X-OriginalArrivalTime: 14 Jun 2007 10:34:52.0739 (UTC) FILETIME=[A479B130:01C7AE6F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
 
-They apear as soon as simpleinit starts up. Somtimes I get to a login 
-prompt before seeing any. Other times, commands in the simpleinit rc 
-script fail.
+Replacing (n & (n-1)) in the context of power of 2 checks
+with is_power_of_2
 
-They do apear to be random. If a command failes, you re-run the command 
-and it is OK. Commands seen to fail are basic (depmod, rm cat ..).
+Signed-off-by: vignesh babu <vignesh.babu@wipro.com>
+--- 
+diff --git a/kernel/kfifo.c b/kernel/kfifo.c
+index cee4191..bc41ad0 100644
+--- a/kernel/kfifo.c
++++ b/kernel/kfifo.c
+@@ -24,6 +24,7 @@
+ #include <linux/slab.h>
+ #include <linux/err.h>
+ #include <linux/kfifo.h>
++#include <linux/log2.h>
+ 
+ /**
+  * kfifo_init - allocates a new FIFO using a preallocated buffer
+@@ -41,7 +42,7 @@ struct kfifo *kfifo_init(unsigned char *buffer, unsigned int size,
+ 	struct kfifo *fifo;
+ 
+ 	/* size must be a power of 2 */
+-	BUG_ON(size & (size - 1));
++	BUG_ON(!is_power_of_2(size));
+ 
+ 	fifo = kmalloc(sizeof(struct kfifo), gfp_mask);
+ 	if (!fifo)
 
-The test I did use the same binaries with both the OK and problem kernels 
-so it is not a change to the application code, it is definatly a kernel 
-issue.
+-- 
+Vignesh Babu BM 
+_____________________________________________________________ 
+"Why is it that every time I'm with you, makes me believe in magic?"
 
-Regards
- 	Mark Fortescue.
-
-On Wed, 13 Jun 2007, William Lee Irwin III wrote:
-
-> On Wed, Jun 13, 2007 at 11:25:20PM +0100, Mark Fortescue wrote:
->> The random seg faults on x86_64 is interesting as I have been getting
->> random illegal instruction faults on sparc (sun4c) with 2.6.22-rc3. I have
->> not yet tried to track it down. All I know at present is that it is not a
->> problem on 2.6.20.9.
->
-> Very interesting. Any hints as to how to test or how long to wait
-> before the illegal instructions happen?
->
->
-> -- wli
->
