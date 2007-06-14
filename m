@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXFNVTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbXFNVUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbXFNVTX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbXFNVTF
+	id S1754867AbXFNVUS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbXFNVUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:19:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33958 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754582AbXFNVTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:19:03 -0400
-Date: Thu, 14 Jun 2007 23:18:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: malc <av1474@comtv.ru>
-Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] sched: accurate user accounting
-Message-ID: <20070614211828.GA21243@elte.hu>
-References: <200703251159.03616.kernel@kolivas.org> <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru> <200703260901.54943.kernel@kolivas.org> <200703260957.34798.kernel@kolivas.org> <Pine.LNX.4.64.0703261439270.2621@linmac.oyster.ru> <20070328113743.GA5615@elte.hu> <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru> <20070614204253.GA14076@elte.hu> <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru>
+	Thu, 14 Jun 2007 17:20:06 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56619 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752440AbXFNVUF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 17:20:05 -0400
+Date: Thu, 14 Jun 2007 14:20:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
+ Blocksize support
+In-Reply-To: <20070614130645.cabdff1b.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
+References: <20070614193839.878721298@sgi.com> <20070614130645.cabdff1b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 14 Jun 2007, Andrew Morton wrote:
 
-* malc <av1474@comtv.ru> wrote:
+> If we never inflict variable PAGE_CACHE_SIZE upon the kernel, these changes
+> become pointless obfuscation.
 
-> > the alternating balancing might be due to an uneven number of tasks 
-> > perhaps? If you have 3 tasks on 2 cores then there's no other 
-> > solution to achieve even performance of each task but to rotate them 
-> > amongst the cores.
-> 
-> One task, one thread. I have also tried to watch fairly demanding 
-> video (Elephants Dream in 1920x1080/MPEG4) with mplayer, and CFS moves 
-> the only task between cores almost every second.
+But there is no such resonable scenario that I am aware of unless we 
+continue to add workarounds for the issues covered here to the VM.
 
-hm, mplayer is not running alone when it does video playback: Xorg is 
-also pretty active. Furthermore, the task you are using to monitor 
-mplayer counts too. The Core2Duo has a shared L2 cache between cores, so 
-it is pretty cheap to move tasks between the cores.
+And it was pointed out to you that such approach can never stand in place 
+of the different uses of having a larger page cache.
 
-> > well, precise/finegrained accounting patches have been available for 
-> > years, the thing with CFS is that there we get them 'for free', 
-> > because CFS needs those metrics for its own logic. That's why this 
-> > information is much closer to reality now. But note: right now what 
-> > is affected by the changes in the CFS patches is /proc/PID/stat 
-> > (i.e. the per-task information that 'top' and 'ps' displays, _not_ 
-> > /proc/stat) - but more accurate /proc/stat could certainly come 
-> > later on too.
-> 
-> Aha. I see, it's just that integral load for hog is vastly improved 
-> compared to vanilla 2.6.21 [...]
+> I think the best way to proceed would be to investigate that _general_
+> optimisation and then, based upon the results of that work, decide whether
+> further _specialised_ changes such as variable PAGE_CACHE_SIZE are needed,
+> and if so, what they should be.
 
-hm, which ones are improved? Could this be due to some other property of 
-CFS? If your app relies on /proc/stat then there's no extra precision in 
-those cpustat values yet.
+As has been pointed out performance is only one beneficial issue of
+having a higher page cache. It is doubtful in principle that the proposed 
+alternative can work given that locking overhead and management overhead
+by the VM are not minimized but made more complex by your envisioned 
+solution.
 
-i've Cc:-ed Balbir Singh and Dmitry Adamushko who are the main authors 
-of the current precise accounting code in CFS. Maybe i missed some 
-detail :-)
+The solution here significantly cleans up the page cache even if we never 
+go to the variable page cache. If we do get there then numerous 
+workarounds that we have in the tree because of not supporting larger I/O 
+go away cleaning up the VM further. The large disk sizes can be handled in 
+a reasonable way (f.e. fsck times would decrease) since we can handle
+large contiguous chunks of memory. This is a necessary strategic move for 
+the Linux kernel. It would also pave the way of managing large chunks
+of contiguous memory for other ways and has the potential of getting rid
+of such sore spots as the hugetlb filesystem.
 
-	Ingo
+
+
