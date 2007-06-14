@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbXFNKjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbXFNKli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751528AbXFNKjV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 06:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXFNKjM
+	id S1752452AbXFNKli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 06:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbXFNKlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 06:39:12 -0400
-Received: from ns1.suse.de ([195.135.220.2]:56079 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbXFNKjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 06:39:11 -0400
-Date: Thu, 14 Jun 2007 12:39:03 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jan Kara <jack@suse.cz>
-Cc: Badari Pulavarty <pbadari@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       mark.fasheh@oracle.com, ext4 <linux-ext4@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, cmm@us.ibm.com
-Subject: Re: + fs-introduce-write_begin-write_end-and-perform_write-aops.patch added to -mm tree
-Message-ID: <20070614103903.GA6703@wotan.suse.de>
-References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net> <20070613134005.GA13815@localhost.sw.ru> <20070613114356.GD17547@wotan.suse.de> <1181776021.21924.87.camel@dyn9047017100.beaverton.ibm.com> <20070614095249.GG17819@atrey.karlin.mff.cuni.cz>
-Mime-Version: 1.0
+	Thu, 14 Jun 2007 06:41:31 -0400
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:63665 "EHLO
+	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbXFNKla (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 06:41:30 -0400
+Date: Thu, 14 Jun 2007 11:41:28 +0100
+From: Ben Dooks <ben@fluff.org>
+To: ?????? <sns2002@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: An error of compile kernel2.6.22-rc3 for ARM CPU s3c2440
+Message-ID: <20070614104128.GB7171@fluff.org.uk>
+References: <9b9ffe290705280405m5086f2dbldea5961ed2b057ca@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070614095249.GG17819@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <9b9ffe290705280405m5086f2dbldea5961ed2b057ca@mail.gmail.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 11:52:49AM +0200, Jan Kara wrote:
-> > On Wed, 2007-06-13 at 13:43 +0200, Nick Piggin wrote:
-> > ..
-> > >  
-> > > > 5) ext3_write_end:
-> > > > 	Before  write_begin/write_end patch set we have folowing locking
-> > > > 	order:
-> > > > 		stop_journal(handle);
-> > > > 		unlock_page(page);
-> > > > 	But now order is oposite:
-> > > > 		unlock_page(page);
-> > > > 		stop_journal(handle);
-> > > > 	Can we got any race condition now? I'm not sure is it actual problem,
-> > > > 	may be somebody cant describe this.
-> > > 
-> > > Can we just change it to the original order? That would seem to be
-> > > safest unless one of the ext3 devs explicitly acks it.
->   Sorry, I've missed beginning of this thread. But what problems can
-> exactly cause this ordering change? ext3_journal_stop has no need to be
-> protected by the page lock - it can be even better that it's not
-> protected as it can trigger commit and all that would happen
-> unnecessarily under page lock...
+On Mon, May 28, 2007 at 07:05:43PM +0800, ?????? wrote:
+> Hi,All.
+> 
+> I compiled new kernel2.6.22-rc3 for my s3c2440 platform yesterday,
+> I got follow error message from gcc-compiler.
+> 
+> >CC      arch/arm/plat-s3c24xx/devs.o
+> >linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:410:
+> error:'S3C2443_PA_HSMMC' undeclared here (not in a function)
+> >linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:411:
+> error:'S3C2443_SZ_HSMMC' undeclared here (not in a function)
+> 
+> I found the reason of the error is the two marco  wasn't add into the
+> file "arch-s3c2410/map.h",so I make a patch file for the problem.
+> 
+> >>------------------------------------------------------
+> fix_miss_marco_for_s3c2443.patch
+> >>------------------------------------------------------
+> diff -Nurp linux-2.6.22-rc3-org/include/asm-arm/arch-s3c2410/map.h
+> linux-2.6.22-rc3/include/asm-arm/arch-s3c2410/map.h
+> --- linux-2.6.22-rc3-org/include/asm-arm/arch-s3c2410/map.h     2007-04-26
+> 11:08:32.000000000 +0800
+> +++ linux-2.6.22-rc3/include/asm-arm/arch-s3c2410/map.h 2007-05-28
+> 18:38:54.000000000 +0800
+> @@ -153,6 +153,10 @@
+> #define S3C2440_PA_AC97           (0x5B000000)
+> #define S3C2440_SZ_AC97           SZ_1M
+> 
+> +/* High-speed MMC/SD */
+> +#define S3C2443_PA_HSMMC          (0x4A800000)
+> +#define S3C2443_SZ_HSMMC          0xFF
+> +
+> /* ISA style IO, for each machine to sort out mappings for, if it
+> * implements it. We reserve two 16M regions for ISA.
+> */
 
-Sure, if you think it is safe. I would rather it be done in a
-different patch though.
+It was missed out of the original patch to setup the device and
+fixed as soon as the error was reported from kautobuild.
 
+Errors like this are better reported to the linux-arm-kernel list
+which I read more often than the linux-kernel list.
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
