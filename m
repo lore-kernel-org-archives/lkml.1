@@ -1,89 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbXFNX1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbXFNX2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbXFNX1x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 19:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbXFNX1q
+	id S1757337AbXFNX2g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 19:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbXFNX22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 19:27:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:3616 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbXFNX1p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 19:27:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EQjBA83ndcMs/C/poyjfD6rT6nCP+Oh6PaZwCvzF59hYqw64Sy4FcVQq9hMQ+XU1plTMmhPsqQSJ3N2QHYlB7Z7nnytnW7TL2uUtjrKI7hoG/P7NxL1LD4IbUHJuQ6u5vVEUV7t22ySHbsDIaTlNmwzVX0qOLyNh4TtVrS/O7BQ=
-Message-ID: <68676e00706141627s3cb87391sa0ee6711d2f7933f@mail.gmail.com>
-Date: Fri, 15 Jun 2007 01:27:44 +0200
-From: Luca <kronos.it@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] [BUG] Oops with KVM-27
-In-Reply-To: <20070614231359.GA5705@dreamland.darkstar.lan>
+	Thu, 14 Jun 2007 19:28:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53386 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752211AbXFNX21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 19:28:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [BUG] ptraced process waiting on syscall may return kernel internal errnos
+Date: Fri, 15 Jun 2007 01:35:14 +0200
+User-Agent: KMail/1.9.5
+Cc: Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <87hcplvdkl.wl%takeuchi_satoru@jp.fujitsu.com> <200706141426.45522.rjw@sisk.pl> <20070614125843.GA78@tv-sign.ru>
+In-Reply-To: <20070614125843.GA78@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <46651069.5040003@qumranet.com> <466BED18.5040708@qumranet.com>
-	 <68676e00706101354n5fe7e1a9y12cb690cae2924e3@mail.gmail.com>
-	 <466CFD6D.2080201@qumranet.com>
-	 <20070612175246.GA5864@dreamland.darkstar.lan>
-	 <466FB1ED.3090905@qumranet.com>
-	 <20070613204948.GA14710@dreamland.darkstar.lan>
-	 <4670FBB5.70707@qumranet.com>
-	 <20070614225324.GA4088@dreamland.darkstar.lan>
-	 <20070614231359.GA5705@dreamland.darkstar.lan>
+Message-Id: <200706150135.15364.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/15/07, Luca Tettamanti <kronos.it@gmail.com> wrote:
-> Il Fri, Jun 15, 2007 at 12:53:24AM +0200, Luca Tettamanti ha scritto:
-> > Il Thu, Jun 14, 2007 at 11:26:29AM +0300, Avi Kivity ha scritto:
-> > > Luca Tettamanti wrote:
-> > > >With GOOD_APIC apic_read_around is a nop, while apic_write_around is a
-> > > >normal write. With !GOOD_APIC apic_write_around writes to the APIC reg
-> > > >using xchg. With !GOOD_APIC and this patch:
-> > > >
-> > > >--- include/asm-i386/apic.h~       2007-04-26 05:08:32.000000000 +0200
-> > > >+++ include/asm-i386/apic.h        2007-06-13 22:35:00.000000000 +0200
-> > > >@@ -56,7 +56,8 @@
-> > > > static __inline fastcall void native_apic_write_atomic(unsigned long reg,
-> > > >                                                  unsigned long v)
-> > > > {
-> > > >-  xchg((volatile unsigned long *)(APIC_BASE+reg), v);
-> > > >+//        xchg((volatile unsigned long *)(APIC_BASE+reg), v);
-> > > >+  *((volatile unsigned long *)(APIC_BASE+reg)) = v;
-> > > > }
-> > > >
-> > > > static __inline fastcall unsigned long native_apic_read(unsigned long reg)
-> > > >
-> > > >The kernel boots fine.
-> > > >
-> > >
-> > > Looking at the xchg emulation code, it seems fine, but clearly it
-> > > isn't.
+On Thursday, 14 June 2007 14:58, Oleg Nesterov wrote:
+> On 06/14, Rafael J. Wysocki wrote:
 > >
-> > Btw, I've put a printk in x86_emulate.c, where it prepares the operands
-> > for the xchg operations: all the write_atomic are hitting this point,
-> > so the write is lost somewhere in cmpxchg_emulated->write_emulated.
->
-> Got it!
-> The emulator skips the writeback if the old value is unchanged, so the
-> apic doesn't see the write.
->
-> Forcing the writeback:
->
-> -      if ((d & Mov) || (dst.orig_val != dst.val)) {
-> -      if ((d & Mov) || (dst.orig_val != dst.val) || isxchg) {
->
-> seems to fix the issue :D I'm not sure that fix is correct though.
+> > Sorry for being late, I've just realized that you are discussing the freezer
+> > here. ;-)
+> 
+> my fault, I was going to cc you but forgot, sorry!
 
-After a bit of thinking: it's correct but removes an optimization;
-furthermore it may miss other instructions that write to memory mapped
-areas.
-A more proper fix should be "force the writeback if dst.ptr is in some
-kind of mmio area".
+No problem. :-)
 
-Ok, enough of reply-to-self. I'll go to sleep...
-Luca
+> > On Wednesday, 13 June 2007 17:15, Oleg Nesterov wrote:
+> >
+> > > > @@ -105,7 +105,11 @@ static int recalc_sigpending_tsk(struct 
+> > > >  		set_tsk_thread_flag(t, TIF_SIGPENDING);
+> > > >  		return 1;
+> > > >  	}
+> > > > -	clear_tsk_thread_flag(t, TIF_SIGPENDING);
+> > > > +	/*
+> > > > +	 * We must never clear the flag in another thread, or in current
+> > > > +	 * when it's possible the current syscall is returning -ERESTART*.
+> > > > +	 * So we don't clear it here, and only callers who know they should do.
+> > > > +	 */
+> > > >  	return 0;
+> > > >  }
+> > > 
+> > > This breaks cancel_freezing(). Somehow we should clear TIF_SIGPENDING for
+> > > kernel threads. Otherwise we may have subtle failures if try_to_freeze_tasks()
+> > > fails.
+> > 
+> > Well, the only code path in which we'd want to call cancel_freezing() for kernel
+> > threads is when the freezing of kernel threads.  However, this only happens if
+> > one of the kernel threads declares itself as freezable and the fails to call
+> > try_to_freeze(), which is a bug.
+> 
+> But this happens? We know a lot of reasons why try_to_freeze() can fail just
+> because some kthread waits for already frozen task.
+> 
+> >                                   Thus I don't think that we need to worry
+> > about that case too much.
+> 
+> Well, we can have very subtle problems because a kernel thread may run with
+> TIF_SIGPENDING forever. This means in particualar that any wait_event_interruptible()
+> can't succeed. I think this is worse than explicit failure (like -ERESSTART... leak),
+> because it is hard to reproduce/debug.
+> 
+> > Moreover, I'm not sure that it's a good idea at all to send signals to kernel
+> > threads from the freezer, since in fact we only need to wake them up to make
+> > them call try_to_freeze() (after we've set TIF_FREEZE for them).
+> 
+> Yes! I completely agree.
+
+Hmm, what about the appended patch, then?
+
+I've tested it a bit on a UP system.
+
+Greetings,
+Rafael
+
+
+---
+ include/linux/freezer.h |    9 -----
+ include/linux/sched.h   |   12 +++++++
+ include/linux/wait.h    |    6 +--
+ kernel/power/process.c  |   76 ++++++++++++++++++++++++++++++++++--------------
+ 4 files changed, 70 insertions(+), 33 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/kernel/power/process.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/power/process.c	2007-06-15 01:05:33.000000000 +0200
++++ linux-2.6.22-rc4-mm2/kernel/power/process.c	2007-06-15 01:33:52.000000000 +0200
+@@ -75,19 +75,67 @@ void refrigerator(void)
+ 	__set_current_state(save);
+ }
+ 
+-static void freeze_task(struct task_struct *p)
++static void send_fake_signal(struct task_struct *p)
+ {
+ 	unsigned long flags;
+ 
++	if (p->state == TASK_STOPPED)
++		force_sig_specific(SIGSTOP, p);
++	spin_lock_irqsave(&p->sighand->siglock, flags);
++	signal_wake_up(p, p->state == TASK_STOPPED);
++	spin_unlock_irqrestore(&p->sighand->siglock, flags);
++}
++
++/**
++ *	freeze_user_process - freeze user space process @p.
++ *
++ *	Kernel threads should not have TIF_FREEZE set at this point, so we must
++ *	ensure that either p->mm is not NULL *and* PF_BORROWED_MM is unset, or
++ *	TIF_FRREZE is left unset.  The task_lock() is necessary to prevent races
++ *	with exit_mm() or use_mm()/unuse_mm() from occuring.
++ */
++static int freeze_user_process(struct task_struct *p)
++{
++	int ret = 1;
++
++	task_lock(p);
++	if (!p->mm || (p->flags & PF_BORROWED_MM)) {
++		ret = 0;
++	} else if (!freezing(p)) {
++		rmb();
++		if (!frozen(p)) {
++			set_freeze_flag(p);
++			task_unlock(p);
++			send_fake_signal(p);
++			return ret;
++		}
++	}
++	task_unlock(p);
++	return ret;
++}
++
++/**
++ *	freeze_task - freeze taks @p, regardless of whether or not it is a
++ *		      user space process.
++ *
++ *	The task_lock() is necessary to prevent races with use_mm()/unuse_mm()
++ *	from occuring.
++ */
++static void freeze_task(struct task_struct *p)
++{
+ 	if (!freezing(p)) {
+ 		rmb();
+ 		if (!frozen(p)) {
+ 			set_freeze_flag(p);
+-			if (p->state == TASK_STOPPED)
+-				force_sig_specific(SIGSTOP, p);
+-			spin_lock_irqsave(&p->sighand->siglock, flags);
+-			signal_wake_up(p, p->state == TASK_STOPPED);
+-			spin_unlock_irqrestore(&p->sighand->siglock, flags);
++			task_lock(p);
++			/* We don't want to send signals to kernel threads */
++			if (p->mm && !(p->flags & PF_BORROWED_MM)) {
++				task_unlock(p);
++				send_fake_signal(p);
++			} else {
++				task_unlock(p);
++				wake_up_state(p, TASK_INTERRUPTIBLE);
++			}
+ 		}
+ 	}
+ }
+@@ -125,22 +173,8 @@ static int try_to_freeze_tasks(int freez
+ 					cancel_freezing(p);
+ 					continue;
+ 				}
+-				/*
+-				 * Kernel threads should not have TIF_FREEZE set
+-				 * at this point, so we must ensure that either
+-				 * p->mm is not NULL *and* PF_BORROWED_MM is
+-				 * unset, or TIF_FRREZE is left unset.
+-				 * The task_lock() is necessary to prevent races
+-				 * with exit_mm() or use_mm()/unuse_mm() from
+-				 * occuring.
+-				 */
+-				task_lock(p);
+-				if (!p->mm || (p->flags & PF_BORROWED_MM)) {
+-					task_unlock(p);
++				if (!freeze_user_process(p))
+ 					continue;
+-				}
+-				freeze_task(p);
+-				task_unlock(p);
+ 			} else {
+ 				freeze_task(p);
+ 			}
+Index: linux-2.6.22-rc4-mm2/include/linux/sched.h
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/include/linux/sched.h	2007-06-15 01:05:33.000000000 +0200
++++ linux-2.6.22-rc4-mm2/include/linux/sched.h	2007-06-15 01:05:41.000000000 +0200
+@@ -1797,6 +1797,18 @@ static inline void inc_syscw(struct task
+ }
+ #endif
+ 
++#ifdef CONFIG_PM
++static inline int freezing(struct task_struct *p)
++{
++	return unlikely(test_tsk_thread_flag(p, TIF_FREEZE));
++}
++#else
++static inline int freezing(struct task_struct *p)
++{
++	return 0;
++}
++#endif
++
+ #endif /* __KERNEL__ */
+ 
+ #endif
+Index: linux-2.6.22-rc4-mm2/include/linux/freezer.h
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/include/linux/freezer.h	2007-06-15 01:05:33.000000000 +0200
++++ linux-2.6.22-rc4-mm2/include/linux/freezer.h	2007-06-15 01:05:41.000000000 +0200
+@@ -15,14 +15,6 @@ static inline int frozen(struct task_str
+ }
+ 
+ /*
+- * Check if there is a request to freeze a process
+- */
+-static inline int freezing(struct task_struct *p)
+-{
+-	return test_tsk_thread_flag(p, TIF_FREEZE);
+-}
+-
+-/*
+  * Request that a process be frozen
+  */
+ static inline void set_freeze_flag(struct task_struct *p)
+@@ -128,7 +120,6 @@ static inline void set_freezable(void)
+ 
+ #else
+ static inline int frozen(struct task_struct *p) { return 0; }
+-static inline int freezing(struct task_struct *p) { return 0; }
+ static inline void set_freeze_flag(struct task_struct *p) {}
+ static inline void clear_freeze_flag(struct task_struct *p) {}
+ static inline int thaw_process(struct task_struct *p) { return 1; }
+Index: linux-2.6.22-rc4-mm2/include/linux/wait.h
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/include/linux/wait.h	2007-06-15 01:05:33.000000000 +0200
++++ linux-2.6.22-rc4-mm2/include/linux/wait.h	2007-06-15 01:05:41.000000000 +0200
+@@ -240,7 +240,7 @@ do {									\
+ 		prepare_to_wait(&wq, &__wait, TASK_INTERRUPTIBLE);	\
+ 		if (condition)						\
+ 			break;						\
+-		if (!signal_pending(current)) {				\
++		if (!signal_pending(current) && !freezing(current)) {	\
+ 			schedule();					\
+ 			continue;					\
+ 		}							\
+@@ -281,7 +281,7 @@ do {									\
+ 		prepare_to_wait(&wq, &__wait, TASK_INTERRUPTIBLE);	\
+ 		if (condition)						\
+ 			break;						\
+-		if (!signal_pending(current)) {				\
++		if (!signal_pending(current) && !freezing(current)) {				\
+ 			ret = schedule_timeout(ret);			\
+ 			if (!ret)					\
+ 				break;					\
+@@ -327,7 +327,7 @@ do {									\
+ 					TASK_INTERRUPTIBLE);		\
+ 		if (condition)						\
+ 			break;						\
+-		if (!signal_pending(current)) {				\
++		if (!signal_pending(current) && !freezing(current)) {				\
+ 			schedule();					\
+ 			continue;					\
+ 		}							\
