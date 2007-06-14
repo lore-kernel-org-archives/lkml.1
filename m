@@ -1,133 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbXFNGZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbXFNG20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558AbXFNGZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 02:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbXFNGZU
+	id S1752810AbXFNG20 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 02:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXFNG2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 02:25:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51695 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbXFNGZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 02:25:17 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<466BCBBC.90305@netone.net.tr>
-	<Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
-	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-	<20070610160531.GA12179@kroah.com>
-	<f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
-	<20070612184110.GB7980@kroah.com>
-	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>
-	<or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070613211432.GH10008@csclub.uwaterloo.ca>
-	<orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131549000.14121@woody.linux-foundation.org>
-	<or8xanl8jg.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131930120.14121@woody.linux-foundation.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 03:24:46 -0300
-In-Reply-To: <alpine.LFD.0.98.0706131930120.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Wed\, 13 Jun 2007 19\:55\:33 -0700 \(PDT\)")
-Message-ID: <ory7ingij5.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Jun 2007 02:28:19 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:53747 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751018AbXFNG2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 02:28:18 -0400
+Message-ID: <381802491.25968@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Message-Id: <20070614062816.085421580@mail.ustc.edu.cn>
+References: <20070614062447.058708836@mail.ustc.edu.cn>
+User-Agent: quilt/0.45-1
+Date: Thu, 14 Jun 2007 14:21:21 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] readahead: sanify file_ra_state names
+Content-Disposition: inline; filename=readahead-rename.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 13, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Rename some file_ra_state variables and remove some accessors.
 
-> On Wed, 13 Jun 2007, Alexandre Oliva wrote:
->> 
->> So, TiVo includes a copy of Linux in its DVR.  
+It results in much simpler code.
+Kudos to Rusty!
 
-> Stop right there.
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ include/linux/fs.h |   61 +++-----------------------------------
+ mm/readahead.c     |   68 +++++++++++++++----------------------------
+ 2 files changed, 31 insertions(+), 98 deletions(-)
 
-> You seem to make the mistake to think that software is something physical.
+--- linux-2.6.22-rc4-mm2.orig/include/linux/fs.h
++++ linux-2.6.22-rc4-mm2/include/linux/fs.h
+@@ -768,16 +768,12 @@ struct fown_struct {
+ 
+ /*
+  * Track a single file's readahead state
+- *
+- *  ================#============|==================#==================|
+- *                  ^            ^                  ^                  ^
+- *  file_ra_state.la_index    .ra_index   .lookahead_index   .readahead_index
+  */
+ struct file_ra_state {
+-	pgoff_t la_index;               /* enqueue time */
+-	pgoff_t ra_index;               /* begin offset */
+-	pgoff_t lookahead_index;        /* time to do next readahead */
+-	pgoff_t readahead_index;        /* end offset */
++	pgoff_t start;                  /* where readahead started */
++	unsigned long size;             /* # of readahead pages */
++	unsigned long async_size;       /* do asynchronous readahead when
++					   there are only # of pages ahead */
+ 
+ 	unsigned long ra_pages;		/* Maximum readahead window */
+ 	unsigned long mmap_hit;		/* Cache hit stat for mmap accesses */
+@@ -787,59 +783,14 @@ struct file_ra_state {
+ };
+ 
+ /*
+- * Measuring read-ahead sizes.
+- *
+- *                  |----------- readahead size ------------>|
+- *  ===#============|==================#=====================|
+- *     |------- invoke interval ------>|-- lookahead size -->|
+- */
+-static inline unsigned long ra_readahead_size(struct file_ra_state *ra)
+-{
+-	return ra->readahead_index - ra->ra_index;
+-}
+-
+-static inline unsigned long ra_lookahead_size(struct file_ra_state *ra)
+-{
+-	return ra->readahead_index - ra->lookahead_index;
+-}
+-
+-static inline unsigned long ra_invoke_interval(struct file_ra_state *ra)
+-{
+-	return ra->lookahead_index - ra->la_index;
+-}
+-
+-/*
+  * Check if @index falls in the readahead windows.
+  */
+ static inline int ra_has_index(struct file_ra_state *ra, pgoff_t index)
+ {
+-	return (index >= ra->la_index &&
+-		index <  ra->readahead_index);
+-}
+-
+-/*
+- * Where is the old read-ahead and look-ahead?
+- */
+-static inline void ra_set_index(struct file_ra_state *ra,
+-				pgoff_t la_index, pgoff_t ra_index)
+-{
+-	ra->la_index = la_index;
+-	ra->ra_index = ra_index;
++	return (index >= ra->start &&
++		index <  ra->start + ra->size);
+ }
+ 
+-/*
+- * Where is the new read-ahead and look-ahead?
+- */
+-static inline void ra_set_size(struct file_ra_state *ra,
+-				unsigned long ra_size, unsigned long la_size)
+-{
+-	ra->readahead_index = ra->ra_index + ra_size;
+-	ra->lookahead_index = ra->ra_index + ra_size - la_size;
+-}
+-
+-unsigned long ra_submit(struct file_ra_state *ra,
+-		       struct address_space *mapping, struct file *filp);
+-
+ struct file {
+ 	/*
+ 	 * fu_list becomes invalid after file_free is called and queued via
+--- linux-2.6.22-rc4-mm2.orig/mm/readahead.c
++++ linux-2.6.22-rc4-mm2/mm/readahead.c
+@@ -245,21 +245,16 @@ unsigned long max_sane_readahead(unsigne
+ /*
+  * Submit IO for the read-ahead request in file_ra_state.
+  */
+-unsigned long ra_submit(struct file_ra_state *ra,
++static unsigned long ra_submit(struct file_ra_state *ra,
+ 		       struct address_space *mapping, struct file *filp)
+ {
+-	unsigned long ra_size;
+-	unsigned long la_size;
+ 	int actual;
+ 
+-	ra_size = ra_readahead_size(ra);
+-	la_size = ra_lookahead_size(ra);
+ 	actual = __do_page_cache_readahead(mapping, filp,
+-					ra->ra_index, ra_size, la_size);
++					ra->start, ra->size, ra->async_size);
+ 
+ 	return actual;
+ }
+-EXPORT_SYMBOL_GPL(ra_submit);
+ 
+ /*
+  * Set the initial window size, round to next power of 2 and square
+@@ -288,7 +283,7 @@ static unsigned long get_init_ra_size(un
+ static unsigned long get_next_ra_size(struct file_ra_state *ra,
+ 						unsigned long max)
+ {
+-	unsigned long cur = ra->readahead_index - ra->ra_index;
++	unsigned long cur = ra->size;
+ 	unsigned long newsize;
+ 
+ 	if (cur < max / 16)
+@@ -305,28 +300,21 @@ static unsigned long get_next_ra_size(st
+  * The fields in struct file_ra_state represent the most-recently-executed
+  * readahead attempt:
+  *
+- *                    |-------- last readahead window -------->|
+- *       |-- application walking here -->|
+- * ======#============|==================#=====================|
+- *       ^la_index    ^ra_index          ^lookahead_index      ^readahead_index
+- *
+- * [ra_index, readahead_index) represents the last readahead window.
+- *
+- * [la_index, lookahead_index] is where the application would be walking(in
+- * the common case of cache-cold sequential reads): the last window was
+- * established when the application was at la_index, and the next window will
+- * be bring in when the application reaches lookahead_index.
++ *                        |<----- async_size ---------|
++ *     |------------------- size -------------------->|
++ *     |==================#===========================|
++ *     ^start             ^page marked with PG_readahead
+  *
+  * To overlap application thinking time and disk I/O time, we do
+  * `readahead pipelining': Do not wait until the application consumed all
+  * readahead pages and stalled on the missing page at readahead_index;
+- * Instead, submit an asynchronous readahead I/O as early as the application
+- * reads on the page at lookahead_index. Normally lookahead_index will be
+- * equal to ra_index, for maximum pipelining.
++ * Instead, submit an asynchronous readahead I/O as soon as there are
++ * only async_size pages left in the readahead window. Normally async_size
++ * will be equal to size, for maximum pipelining.
+  *
+  * In interleaved sequential reads, concurrent streams on the same fd can
+  * be invalidating each other's readahead state. So we flag the new readahead
+- * page at lookahead_index with PG_readahead, and use it as readahead
++ * page at (start+size-async_size) with PG_readahead, and use it as readahead
+  * indicator. The flag won't be set on already cached pages, to avoid the
+  * readahead-for-nothing fuss, saving pointless page cache lookups.
+  *
+@@ -355,24 +343,21 @@ ondemand_readahead(struct address_space 
+ 		   unsigned long req_size)
+ {
+ 	unsigned long max;	/* max readahead pages */
+-	pgoff_t ra_index;	/* readahead index */
+-	unsigned long ra_size;	/* readahead size */
+-	unsigned long la_size;	/* lookahead size */
+ 	int sequential;
+ 
+ 	max = ra->ra_pages;
+ 	sequential = (offset - ra->prev_index <= 1UL) || (req_size > max);
+ 
+ 	/*
+-	 * Lookahead/readahead hit, assume sequential access.
++	 * It's the expected callback offset, assume sequential access.
+ 	 * Ramp up sizes, and push forward the readahead window.
+ 	 */
+-	if (offset && (offset == ra->lookahead_index ||
+-			offset == ra->readahead_index)) {
+-		ra_index = ra->readahead_index;
+-		ra_size = get_next_ra_size(ra, max);
+-		la_size = ra_size;
+-		goto fill_ra;
++	if (offset && (offset == (ra->start + ra->size - ra->async_size) ||
++			offset == (ra->start + ra->size))) {
++		ra->start += ra->size;
++		ra->size = get_next_ra_size(ra, max);
++		ra->async_size = ra->size;
++		goto readit;
+ 	}
+ 
+ 	/*
+@@ -391,24 +376,21 @@ ondemand_readahead(struct address_space 
+ 	 * 	- oversize random read
+ 	 * Start readahead for it.
+ 	 */
+-	ra_index = offset;
+-	ra_size = get_init_ra_size(req_size, max);
+-	la_size = ra_size > req_size ? ra_size - req_size : ra_size;
++	ra->start = offset;
++	ra->size = get_init_ra_size(req_size, max);
++	ra->async_size = ra->size > req_size ? ra->size - req_size : ra->size;
+ 
+ 	/*
+-	 * Hit on a lookahead page without valid readahead state.
++	 * Hit on a marked page without valid readahead state.
+ 	 * E.g. interleaved reads.
+ 	 * Not knowing its readahead pos/size, bet on the minimal possible one.
+ 	 */
+ 	if (hit_readahead_marker) {
+-		ra_index++;
+-		ra_size = min(4 * ra_size, max);
++		ra->start++;
++		ra->size = get_next_ra_size(ra, max);
+ 	}
+ 
+-fill_ra:
+-	ra_set_index(ra, offset, ra_index);
+-	ra_set_size(ra, ra_size, la_size);
+-
++readit:
+ 	return ra_submit(ra, mapping, filp);
+ }
+ 
 
-Err, no.  Software, per legal definitions in Brazil, US and elsewhere,
-require some physical support.  That's the hard disk in the TiVO DVR,
-in this case.  I don't see how this matters, though.
-
->> TiVo retains the right to modify that copy of Linux as it sees fit.
-
->  (b) They never modified "a copy" of Linux - they simply replaced it with
->      "another copy" of Linux. The only thing that actually got *modified* 
->      was their hardware!
-
-Per this reasoning, nobody never modifies software.  When you open a
-source file in your editor, you make changes to it, then save it,
-you're not modifying it, you're replacing it with another copy, and
-the only thing that actually got modified was the hardware.
-
-Maybe look what "modify" means in legal context?
-
-Then refer to the GPL:
-
-  2. You may modify your copy or copies of the Program or any portion
-  of it, thus forming a work based on the Program,
-
-> And their hardware (and firmware) will run some integrity checks on 
-> *whatever* copies of software they have.  This is all totally outside 
-> Linux itself.
-
-Agreed.  But as it turns out they use these checks to stop people from
-modifying the copy of Linux they ship in the device, and this
-restriction is a GPL violation because they don't provide information
-you need to build a functioning modified version.
-
-> Btw, according to your _insane_ notion of "a copy" of software, you can 
-> never distribute GPL'd software on a CD-ROM, since you've taken away the 
-> right of people to modify that CD-ROM by burning and fixating it.
-
-You don't retain that right yourself.  When you pass that copy on, you
-pass it on with all the rights that you have.  No problem here.  This
-is no different from the software on ROM.
-
-> And I'm saying that the GPLv2 can mroe straightforwardly be read the way I 
-> read it - to talk about software, and to realize that software is not "a 
-> copy", it's a more abstract thing.
-
-If you choose to disregard the legal meaning of the legal terms used
-in the GPLv2, you may have a point.
-
-> that means that they have to give you access to and control over the
-> SOFTWARE.
-
-Yes.  That's all I'm saying.  You just can't use the hardware to take
-that control away.  That would be a violation of the license.
-
-> Face it: the GPLv3 is a _new_ license. Making funamentally _different_ and 
-> _new_ restrictions that do not exist in the GPLv2,
-
-This is true.
-
-> and do not exist in the preamble.
-
-This is not true.
-
-The spirit remains the same: let people modify and share the software.
-
-If the binary you got can't be created out of the corresponding
-sources, something is missing.  If it won't run without this missing
-bit, you're missing functional portions of the source code.  This all
-means the hardware is being used to impose a restriction on
-modification of the software, which is against the spirit of the GPL,
-and quite likely against its letter as well.
-
-If you don't want it to be so, you can always add an additional
-permission that clarifies this bit, such that TiVO and you will be
-happy.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+--
