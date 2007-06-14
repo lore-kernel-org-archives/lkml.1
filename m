@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbXFNWiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbXFNWjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbXFNWiL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 18:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXFNWh6
+	id S1756416AbXFNWjk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 18:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbXFNWjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 18:37:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43475 "EHLO mx1.redhat.com"
+	Thu, 14 Jun 2007 18:39:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53185 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbXFNWh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 18:37:57 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <fa.V8u0BBHrkymrjcYrFArgehF4jRA@ifi.uio.no>
-	<fa.98cYXp0MWFizp+AzMAkKWAo+bpE@ifi.uio.no>
-	<fa.21pY11gonruis9l1QAvUgcD/c7g@ifi.uio.no>
-	<fa.dR+SnekmQGzom7HRgnAyn3+gVkU@ifi.uio.no>
-	<20070614205541.GA886803@hiwaay.net>
-	<20070614224722.570e093b@the-village.bc.nu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 19:37:48 -0300
-In-Reply-To: <20070614224722.570e093b@the-village.bc.nu> (Alan Cox's message of "Thu\, 14 Jun 2007 22\:47\:22 +0100")
-Message-ID: <orlkem88n7.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1750861AbXFNWjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 18:39:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH -mm 6/7] PM: Remove power_state.event checks from suspend core code
+Date: Fri, 15 Jun 2007 00:46:12 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+References: <200706131551.51336.rjw@sisk.pl> <200706131716.57915.rjw@sisk.pl> <200706140721.35478.david-b@pacbell.net>
+In-Reply-To: <200706140721.35478.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706150046.13650.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Thursday, 14 June 2007 16:21, David Brownell wrote:
+> On Wednesday 13 June 2007, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > The suspend routines should be called for every device during a system sleep
+> > transition, regardless of the device's state, so that drivers can regard these
+> > method calls as notifications that the system is about to go to sleep, rather
+> > than as directives to put their devices into the 'off' state.
+> 
+> Did you audit all the drivers to make sure this won't break things?
+> Like for example through inappropriate pci_save_state() calls?
 
->> Activities other than copying, distribution and modification are not
->> covered by this License; they are outside its scope.  The act of
->> running the Program is not restricted, ...
->> 
->> The license does not cover running of the program.  It doesn't restrict
->> it, but it doesn't cover it.  Claiming otherwise is turning the GPL into
->> yet another dreaded EULA.
+I did, but not very carefully.
 
-> For many juridisctions loading from disk into memory is copying and in
-> some from memory to CPU cache a second copy. This is one reason as I
-> understand it GPLv3 talks about "conveying" - to avoid that mess and
-> confusion.
+> I'd really expect this patch would break things...
 
-Hmm...  This is interesting.  Let me sidetrack a little bit.
+Well, in that case I'll have a closer look at them.
 
-Who would be held liable should the copy not be authorized by the
-copyright holder?  The designer of the hardware?  The seller?  The
-person who powerer the computer on?  The author of the boot loader (if
-I'm talking about the kernel about to be loaded).
+Greetings,
+Rafael
 
-> Really irrelevant to the discussion. Tivo's firmware is up to them.
-> Whether the resulting system permits them to include GPLv2 software with
-> it is what matters.
-
-+1
-
-It all boils down to whether they're keeping their promise to not
-impose further restrictions on the exercise of the rights granted in
-the license.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+"Premature optimization is the root of all evil." - Donald Knuth
