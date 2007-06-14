@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbXFNN2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbXFNNhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752487AbXFNN2m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 09:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbXFNN2f
+	id S1752176AbXFNNhU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 09:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbXFNNhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 09:28:35 -0400
-Received: from smtp2.rz.uni-karlsruhe.de ([129.13.185.218]:42827 "EHLO
-	smtp2.rz.uni-karlsruhe.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402AbXFNN2e (ORCPT
+	Thu, 14 Jun 2007 09:37:09 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:33748
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751162AbXFNNhH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 09:28:34 -0400
-X-Greylist: delayed 1383 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jun 2007 09:28:34 EDT
-From: Malte Cornils <malte@cornils.net>
-To: linux-kernel@vger.kernel.org
-Subject: PROBLEM: PCI setup hangs on Asus Notebook (nolapic helps)
-Date: Thu, 14 Jun 2007 15:05:27 +0200
-User-Agent: KMail/1.9.5
+	Thu, 14 Jun 2007 09:37:07 -0400
+Date: Thu, 14 Jun 2007 15:38:26 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Vitez Gabor <vitezg@niif.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: heartbeat problems on linux 2.6.21.[34]
+Message-ID: <20070614133826.GC21005@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Vitez Gabor <vitezg@niif.hu>, linux-kernel@vger.kernel.org
+References: <20070614125203.GV20208@swszl.szkp.uni-miskolc.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200706141505.27380.malte@cornils.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070614125203.GV20208@swszl.szkp.uni-miskolc.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+El Thu, Jun 14, 2007 at 02:52:03PM +0200 Vitez Gabor ha dit:
+ 
+> I'm running debian etch in linux 2.6.21.[34], and ran into troubles with
+> heartbeat:
+> 
+> In some cases, I get "
+> Jun 12 13:14:36 sf1 heartbeat[2973]: ERROR: No local heartbeat. Forcing restart.
+> Jun 12 13:14:36 sf1 heartbeat[2973]: WARN: Late heartbeat: Node sf1: interval 42740 ms
+> 
+> "
+> 
+> The heartbeat configuration files were copied from another debian machine,
+> running 2.6.18-3-xen-686 stock debian kernel, with no problems. 
+> 
+> 
+> 
+> The machine is not loaded, I'm just testing heartbeat on it.
 
-my Asus M2N Notebook hangs doing the following on 2.6.22-rc3 (from Ubuntu 
-Gutsy Gibbon Tribe-1):
+you're writing to the wrong list, your problem seems to be a
+*heartbeat* issue and not a *kernel* one
 
-Setting up standard PCI resources
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-The non-scrollable output on the full screen can be found here:
-http://planck.djpig.de/~mcornils/pci-hang.jpg
-
-Booting with nolapic helps, but makes the SATAized IDE controller buggy 
-(spontaneous timeouts occuring, which do not happen on OpenBSD or Windows XP 
-(shiver)).
-
-I'm using the latest BIOS (A208). Now I know it's buggy as hell and I've 
-already complained to Asus, but to no avail.
-
-There have been other reports of the problem on Asus notebooks. I've collected 
-some links:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=8278
-https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.20/+bug/83290
-http://bugzilla.kernel.org/show_bug.cgi?id=7906 (maybe related)
-https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.15/+bug/8012 (maybe 
-related)
-http://lists.debian.org/debian-user-german/2006/12/msg01017.html (german)
-
-I'm willing to provide any needed information (like DSDT table, system 
-info, ...) and try out almost anything (I do not have a serial console handy 
-though - the system does not have serial). 
-
-Yours,
--Malte
-
-PS: A Cc: is preferred, but not necessary.
+    Yo soy como soy y tú eres como eres, construyamos un mundo donde yo
+    pueda ser sin dejar de ser yo, donde tú puedas ser sin dejar de ser
+    tú, y donde ni yo ni tú obliguemos al otro a ser como yo o como tú
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
