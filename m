@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbXFNA5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbXFNA7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758829AbXFNA5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 20:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756909AbXFNA5F
+	id S1758899AbXFNA7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 20:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbXFNA7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 20:57:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40542 "EHLO mx1.redhat.com"
+	Wed, 13 Jun 2007 20:59:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40900 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756511AbXFNA5C convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 20:57:02 -0400
-To: =?utf-8?Q?J=C3=B6rn?= Engel <joern@logfs.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>,
+	id S1757131AbXFNA7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 20:59:10 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       =?utf-8?Q?J=C3=B6rn?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
 References: <466BCBBC.90305@netone.net.tr>
-	<Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
-	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-	<20070610160531.GA12179@kroah.com>
-	<f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
-	<20070612184110.GB7980@kroah.com>
-	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>
-	<or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>
 	<alpine.LFD.0.98.0706131415090.14121@woody.linux-foundation.org>
 	<20070613233541.GA27689@lazybastard.org>
+	<200706131950.14683.dhazelton@enter.net>
+	<18032.34935.616729.721945@notabene.brown>
 From: Alexandre Oliva <aoliva@redhat.com>
 Organization: Red Hat OS Tools Group
-Date: Wed, 13 Jun 2007 21:56:44 -0300
-In-Reply-To: <20070613233541.GA27689@lazybastard.org> (=?utf-8?Q?=22J?=
- =?utf-8?Q?=C3=B6rn?= Engel"'s message of "Thu\, 14 Jun 2007 01\:35\:41
- +0200")
-Message-ID: <orzm33jqur.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Wed, 13 Jun 2007 21:58:47 -0300
+In-Reply-To: <18032.34935.616729.721945@notabene.brown> (Neil Brown's message of "Thu\, 14 Jun 2007 10\:14\:47 +1000")
+Message-ID: <orvedrjqrc.fsf@oliva.athome.lsd.ic.unicamp.br>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 13, 2007, Jörn Engel <joern@logfs.org> wrote:
+On Jun 13, 2007, Neil Brown <neilb@suse.de> wrote:
 
-> On Wed, 13 June 2007 14:33:07 -0700, Linus Torvalds wrote:
->> 
->> The beauty of the GPLv2 is exactly that it's a "tit-for-tat" license, and 
->> you can use it without having to drink the kool-aid.
+> Accusing people of arguing opinions that are not their own may well be
+> appropriate. Accusing them of not be able to think is not.
 
-> One could even add that "tit-for-tat" appears to be the best strategy
-> in game theory for continuous runs of the prisoners dilemma.
-
-It is, indeed.
-
-Now the remaining piece of the proof is to show that the GPLv2 is
-tit-for-tat.
+I agree with the latter, but the former is seldom appropriate.  Any
+accusation ought to be provable, and it's nearly impossible to prove
+that an opinion held by someone is not his own.  People quite often
+arrive at similar opinions independently.
 
 -- 
 Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
