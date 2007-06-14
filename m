@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbXFNSzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbXFNS5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbXFNSzh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 14:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXFNSzV
+	id S1754931AbXFNS5h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 14:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXFNS5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 14:55:21 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:19938 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705AbXFNSzS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 14:55:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MU1LabzWtAMTR30FQbODcyusyQD7BbhLWIhUI8i5Uvzax9kkZ3ZGefW6m1TMZYNsMHs8x5MdVJ9CU4Lx2QQ27vNnF88od83Vb7pZfV6R32nO838G/TpSU9w1Dt4yzwJMrYO8gQ7qMo4BYMBWhnJ23vvAYOejOGM1amXJdoB0OTo=
-Message-ID: <d120d5000706141155s4e9caceci6958ceceebad6c73@mail.gmail.com>
-Date: Thu, 14 Jun 2007 14:55:17 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Alexandre Oliva" <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Paulo Marques" <pmarques@grupopie.com>, "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Paysan" <bernd.paysan@gmx.de>,
-       "Krzysztof Halasa" <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <or4plae61r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Thu, 14 Jun 2007 14:57:30 -0400
+Received: from comtv.ru ([217.10.32.17]:37634 "EHLO comtv.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751191AbXFNS53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 14:57:29 -0400
+X-Greylist: delayed 3596 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jun 2007 14:57:29 EDT
+X-UCL: actv
+Date: Thu, 14 Jun 2007 21:56:51 +0400 (MSD)
+From: Vassili Karpov <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] sched: accurate user accounting
+In-Reply-To: <20070328113743.GA5615@elte.hu>
+Message-ID: <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru>
+References: <200703251159.03616.kernel@kolivas.org>
+ <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru> <200703260901.54943.kernel@kolivas.org>
+ <200703260957.34798.kernel@kolivas.org> <Pine.LNX.4.64.0703261439270.2621@linmac.oyster.ru>
+ <20070328113743.GA5615@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466A3EC6.6030706@netone.net.tr>
-	 <200706141023.21624.bernd.paysan@gmx.de>
-	 <20070614153935.GO21478@ftp.linux.org.uk>
-	 <200706141832.58526.bernd.paysan@gmx.de>
-	 <20070614164124.GP21478@ftp.linux.org.uk>
-	 <d120d5000706141001o2d00f20cqb4133bf7b9ba11ab@mail.gmail.com>
-	 <20070614170902.GQ21478@ftp.linux.org.uk>
-	 <467178D3.6010204@grupopie.com>
-	 <or4plae61r.fsf@oliva.athome.lsd.ic.unicamp.br>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/14/07, Alexandre Oliva <aoliva@redhat.com> wrote:
-> On Jun 14, 2007, Paulo Marques <pmarques@grupopie.com> wrote:
->
-> > $ find -name "*.c" | xargs grep "any later version" | wc -l
-> > 3138
-> > $ find -name "*.c" | wc -l
-> > 9482
->
-> How many of these don't mention version 2?
->
+Hello Ingo and others,
 
-It does not matter. GPL v2 and later can be reduced to v2 by
-recepient. Linus did just that so unless individual source file
-explicitely carries "and later" it is v2.
+After reading http://lwn.net/Articles/236485/ and noticing few refernces
+to accounting i decided to give CFS a try. With sched-cfs-v2.6.21.4-16
+i get pretty weird results, it seems like scheduler is dead set on trying
+to move the processes to different CPUs/cores all the time. And with hog
+(manually tweaking the amount iterations) i get fairly strange resuls,
+first of all the process is split between two cores, secondly while
+integral load provided by the kernel looks correct, it's off by good
+20 percent on each idividial core.
+
+(http://www.boblycat.org/~malc/apc/hog-cfs-v16.png)
+
+Thought this information might be of some interest.
+
+P.S. How come the /proc/stat information is much closer to reality now?
+      Something like what Con Kolivas suggested was added to sched.c?
 
 -- 
-Dmitry
+vale
