@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbXFNU1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbXFNU1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbXFNU1g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 16:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbXFNU1L
+	id S1756983AbXFNU1u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 16:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbXFNU1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 16:27:11 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:34103 "EHLO
+	Thu, 14 Jun 2007 16:27:13 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:34104 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752531AbXFNU1H (ORCPT
+	with ESMTP id S1753008AbXFNU1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 16:27:07 -0400
-Date: Thu, 14 Jun 2007 16:26:50 -0400
+	Thu, 14 Jun 2007 16:27:08 -0400
+Date: Thu, 14 Jun 2007 16:26:51 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 3/5] UML - SIGIO support cleanup
-Message-ID: <20070614202650.GA9641@c2.user-mode-linux.org>
+Subject: [PATCH 5/5] UML - Eliminate kernel allocator wrappers
+Message-ID: <20070614202651.GA9652@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,307 +24,321 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup of the SIGWINCH support.
+UML had two wrapper procedures for kmalloc, um_kmalloc and
+um_kmalloc_atomic because the flag constants weren't available in
+userspace code.  kern_constants.h had made kernel constants available
+for a long time, so there is no need for these wrappers any more.
+Rather, userspace code calls kmalloc directly with the userspace
+versions of the gfp flags.
 
-Some code and comment reformatting.
+kmalloc isn't a real procedure, so I had to essentially copy the
+inline wrapper around __kmalloc.
 
-The stack used for SIGWINCH threads was leaked.  This is now fixed by
-storing it with the pid and other information, and freeing it when the
-thread is killed.
-
-If something goes wrong with a WIGWINCH thread, and this is discovered
-in the interrupt handler, the winch record would leak.  It is now
-freed, except that the IRQ isn't freed.  This is hard to do from
-interrupt context.  This has the side-effect that the IRQ system
-maintains a reference to the freed structure, but that shouldn't cause
-a problem since the descriptor is disabled.
-
-register_winch_irq is now much better about cleaning up after an
-initialization failure.
+vmalloc also had its own wrapper for no good reason.  This is now gone.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/drivers/chan_user.c     |   70 +++++++++++++++++++++-------------------
- arch/um/drivers/line.c          |   60 ++++++++++++++++++++++------------
- arch/um/include/chan_user.h     |    3 +
- arch/um/os-Linux/skas/process.c |    2 -
- 4 files changed, 80 insertions(+), 55 deletions(-)
+ arch/um/drivers/cow_sys.h                |    2 +-
+ arch/um/drivers/daemon_user.c            |    4 ++--
+ arch/um/drivers/fd.c                     |    2 +-
+ arch/um/drivers/mcast_user.c             |    2 +-
+ arch/um/drivers/net_user.c               |    2 +-
+ arch/um/drivers/port_user.c              |    2 +-
+ arch/um/drivers/pty.c                    |    2 +-
+ arch/um/drivers/slip_user.c              |    2 +-
+ arch/um/drivers/tty.c                    |    2 +-
+ arch/um/include/common-offsets.h         |    3 +++
+ arch/um/include/um_malloc.h              |   12 +++++++++---
+ arch/um/kernel/irq.c                     |    1 -
+ arch/um/kernel/process.c                 |   16 ----------------
+ arch/um/os-Linux/drivers/ethertap_user.c |    4 ++--
+ arch/um/os-Linux/helper.c                |    4 ++--
+ arch/um/os-Linux/main.c                  |    4 ++--
+ arch/um/os-Linux/sigio.c                 |    4 ++--
+ 17 files changed, 30 insertions(+), 38 deletions(-)
 
-Index: linux-2.6.21-mm/arch/um/drivers/chan_user.c
+Index: linux-2.6.21-mm/arch/um/drivers/cow_sys.h
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/chan_user.c	2007-06-14 15:33:37.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/chan_user.c	2007-06-14 16:04:12.000000000 -0400
-@@ -51,19 +51,21 @@ error:
- /*
-  * UML SIGWINCH handling
-  *
-- * The point of this is to handle SIGWINCH on consoles which have host ttys and
-- * relay them inside UML to whatever might be running on the console and cares
-- * about the window size (since SIGWINCH notifies about terminal size changes).
-+ * The point of this is to handle SIGWINCH on consoles which have host
-+ * ttys and relay them inside UML to whatever might be running on the
-+ * console and cares about the window size (since SIGWINCH notifies
-+ * about terminal size changes).
-  *
-- * So, we have a separate thread for each host tty attached to a UML device
-- * (side-issue - I'm annoyed that one thread can't have multiple controlling
-- * ttys for purposed of handling SIGWINCH, but I imagine there are other reasons
-- * that doesn't make any sense).
-+ * So, we have a separate thread for each host tty attached to a UML
-+ * device (side-issue - I'm annoyed that one thread can't have
-+ * multiple controlling ttys for the purpose of handling SIGWINCH, but
-+ * I imagine there are other reasons that doesn't make any sense).
-  *
-- * SIGWINCH can't be received synchronously, so you have to set up to receive it
-- * as a signal.  That being the case, if you are going to wait for it, it is
-- * convenient to sit in sigsuspend() and wait for the signal to bounce you out of
-- * it (see below for how we make sure to exit only on SIGWINCH).
-+ * SIGWINCH can't be received synchronously, so you have to set up to
-+ * receive it as a signal.  That being the case, if you are going to
-+ * wait for it, it is convenient to sit in sigsuspend() and wait for
-+ * the signal to bounce you out of it (see below for how we make sure
-+ * to exit only on SIGWINCH).
-  */
+--- linux-2.6.21-mm.orig/arch/um/drivers/cow_sys.h	2007-06-14 15:33:34.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/cow_sys.h	2007-06-14 16:08:07.000000000 -0400
+@@ -8,7 +8,7 @@
  
- static void winch_handler(int sig)
-@@ -112,7 +114,8 @@ static int winch_thread(void *arg)
- 
- 	err = os_new_tty_pgrp(pty_fd, os_getpid());
- 	if(err < 0){
--		printk("winch_thread : new_tty_pgrp failed, err = %d\n", -err);
-+		printk("winch_thread : new_tty_pgrp failed on fd %d, "
-+		       "err = %d\n", pty_fd, -err);
- 		exit(1);
- 	}
- 
-@@ -126,8 +129,9 @@ static int winch_thread(void *arg)
- 		       "err = %d\n", -count);
- 
- 	while(1){
--		/* This will be interrupted by SIGWINCH only, since other signals
--		 * are blocked.*/
-+		/* This will be interrupted by SIGWINCH only, since
-+		 * other signals are blocked.
-+		 */
- 		sigsuspend(&sigs);
- 
- 		count = os_write_file(pipe_fd, &c, sizeof(c));
-@@ -137,10 +141,10 @@ static int winch_thread(void *arg)
- 	}
+ static inline void *cow_malloc(int size)
+ {
+-	return um_kmalloc(size);
++	return kmalloc(size, UM_GFP_KERNEL);
  }
  
--static int winch_tramp(int fd, struct tty_struct *tty, int *fd_out)
-+static int winch_tramp(int fd, struct tty_struct *tty, int *fd_out,
-+		       unsigned long *stack_out)
+ static inline void cow_free(void *ptr)
+Index: linux-2.6.21-mm/arch/um/drivers/daemon_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/daemon_user.c	2007-06-14 15:33:34.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/daemon_user.c	2007-06-14 16:08:07.000000000 -0400
+@@ -35,7 +35,7 @@ static struct sockaddr_un *new_addr(void
  {
- 	struct winch_data data;
--	unsigned long stack;
- 	int fds[2], n, err;
- 	char c;
+ 	struct sockaddr_un *sun;
  
-@@ -153,9 +157,11 @@ static int winch_tramp(int fd, struct tt
- 	data = ((struct winch_data) { .pty_fd 		= fd,
- 				      .pipe_fd 		= fds[1] } );
- 	/* CLONE_FILES so this thread doesn't hold open files which are open
--	 * now, but later closed.  This is a problem with /dev/net/tun.
-+	 * now, but later closed in a different thread.  This is a
-+	 * problem with /dev/net/tun, which if held open by this
-+	 * thread, prevents the TUN/TAP device from being reused.
- 	 */
--	err = run_helper_thread(winch_thread, &data, CLONE_FILES, &stack, 0);
-+	err = run_helper_thread(winch_thread, &data, CLONE_FILES, stack_out, 0);
- 	if(err < 0){
- 		printk("fork of winch_thread failed - errno = %d\n", -err);
+-	sun = um_kmalloc(sizeof(struct sockaddr_un));
++	sun = kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
+ 	if(sun == NULL){
+ 		printk("new_addr: allocation of sockaddr_un failed\n");
+ 		return NULL;
+@@ -83,7 +83,7 @@ static int connect_to_switch(struct daem
  		goto out_close;
-@@ -187,25 +193,25 @@ static int winch_tramp(int fd, struct tt
- 
- void register_winch(int fd, struct tty_struct *tty)
- {
--	int pid, thread, thread_fd = -1;
--	int count;
-+	unsigned long stack;
-+	int pid, thread, count, thread_fd = -1;
- 	char c = 1;
- 
- 	if(!isatty(fd))
- 		return;
- 
- 	pid = tcgetpgrp(fd);
--	if(!CHOOSE_MODE_PROC(is_tracer_winch, is_skas_winch, pid, fd,
--			     tty) && (pid == -1)){
--		thread = winch_tramp(fd, tty, &thread_fd);
--		if(thread > 0){
--			register_winch_irq(thread_fd, fd, thread, tty);
--
--			count = os_write_file(thread_fd, &c, sizeof(c));
--			if(count != sizeof(c))
--				printk("register_winch : failed to write "
--				       "synchronization byte, err = %d\n",
--					-count);
--		}
-+	if (!CHOOSE_MODE_PROC(is_tracer_winch, is_skas_winch, pid, fd, tty) &&
-+	    (pid == -1)) {
-+		thread = winch_tramp(fd, tty, &thread_fd, &stack);
-+		if (thread < 0)
-+			return;
-+
-+		register_winch_irq(thread_fd, fd, thread, tty, stack);
-+
-+		count = os_write_file(thread_fd, &c, sizeof(c));
-+		if(count != sizeof(c))
-+			printk("register_winch : failed to write "
-+			       "synchronization byte, err = %d\n", -count);
  	}
- }
-Index: linux-2.6.21-mm/arch/um/drivers/line.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/drivers/line.c	2007-06-14 16:00:23.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/drivers/line.c	2007-06-14 16:04:12.000000000 -0400
-@@ -749,8 +749,24 @@ struct winch {
- 	int tty_fd;
- 	int pid;
- 	struct tty_struct *tty;
-+	unsigned long stack;
- };
  
-+static void free_winch(struct winch *winch, int free_irq_ok)
-+{
-+	list_del(&winch->list);
+-	sun = um_kmalloc(sizeof(struct sockaddr_un));
++	sun = kmalloc(sizeof(struct sockaddr_un), UM_GFP_KERNEL);
+ 	if(sun == NULL){
+ 		printk("new_addr: allocation of sockaddr_un failed\n");
+ 		err = -ENOMEM;
+Index: linux-2.6.21-mm/arch/um/drivers/fd.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/fd.c	2007-06-14 15:33:34.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/fd.c	2007-06-14 16:08:07.000000000 -0400
+@@ -37,7 +37,7 @@ static void *fd_init(char *str, int devi
+ 		printk("fd_init : couldn't parse file descriptor '%s'\n", str);
+ 		return(NULL);
+ 	}
+-	data = um_kmalloc(sizeof(*data));
++	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
+ 	if(data == NULL) return(NULL);
+ 	*data = ((struct fd_chan) { .fd  	= n,
+ 				    .raw  	= opts->raw });
+Index: linux-2.6.21-mm/arch/um/drivers/mcast_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/mcast_user.c	2007-06-14 15:33:34.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/mcast_user.c	2007-06-14 16:08:07.000000000 -0400
+@@ -30,7 +30,7 @@ static struct sockaddr_in *new_addr(char
+ {
+ 	struct sockaddr_in *sin;
+ 
+-	sin = um_kmalloc(sizeof(struct sockaddr_in));
++	sin = kmalloc(sizeof(struct sockaddr_in), UM_GFP_KERNEL);
+ 	if(sin == NULL){
+ 		printk("new_addr: allocation of sockaddr_in failed\n");
+ 		return NULL;
+Index: linux-2.6.21-mm/arch/um/drivers/net_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/net_user.c	2007-06-14 16:07:30.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/net_user.c	2007-06-14 16:08:07.000000000 -0400
+@@ -217,7 +217,7 @@ static void change(char *dev, char *what
+ 		netmask[2], netmask[3]);
+ 
+ 	output_len = UM_KERN_PAGE_SIZE;
+-	output = um_kmalloc(output_len);
++	output = kmalloc(output_len, UM_GFP_KERNEL);
+ 	if(output == NULL)
+ 		printk("change : failed to allocate output buffer\n");
+ 
+Index: linux-2.6.21-mm/arch/um/drivers/pty.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/pty.c	2007-06-14 15:35:13.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/pty.c	2007-06-14 16:08:07.000000000 -0400
+@@ -29,7 +29,7 @@ static void *pty_chan_init(char *str, in
+ {
+ 	struct pty_chan *data;
+ 
+-	data = um_kmalloc(sizeof(*data));
++	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
+ 	if (data == NULL)
+ 		return NULL;
+ 
+Index: linux-2.6.21-mm/arch/um/drivers/slip_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/slip_user.c	2007-06-14 16:07:30.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/slip_user.c	2007-06-14 16:08:07.000000000 -0400
+@@ -91,7 +91,7 @@ static int slip_tramp(char **argv, int f
+ 	pid = err;
+ 
+ 	output_len = UM_KERN_PAGE_SIZE;
+-	output = um_kmalloc(output_len);
++	output = kmalloc(output_len, UM_GFP_KERNEL);
+ 	if(output == NULL){
+ 		printk("slip_tramp : failed to allocate output buffer\n");
+ 		os_kill_process(pid, 1);
+Index: linux-2.6.21-mm/arch/um/drivers/tty.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/tty.c	2007-06-14 15:33:34.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/tty.c	2007-06-14 16:08:07.000000000 -0400
+@@ -29,7 +29,7 @@ static void *tty_chan_init(char *str, in
+ 	}
+ 	str++;
+ 
+-	data = um_kmalloc(sizeof(*data));
++	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
+ 	if(data == NULL)
+ 		return NULL;
+ 	*data = ((struct tty_chan) { .dev 	= str,
+Index: linux-2.6.21-mm/arch/um/include/common-offsets.h
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/include/common-offsets.h	2007-06-14 16:00:19.000000000 -0400
++++ linux-2.6.21-mm/arch/um/include/common-offsets.h	2007-06-14 16:08:07.000000000 -0400
+@@ -27,6 +27,9 @@ DEFINE(UM_ELFCLASS64, ELFCLASS64);
+ 
+ DEFINE(UM_NR_CPUS, NR_CPUS);
+ 
++DEFINE(UM_GFP_KERNEL, GFP_KERNEL);
++DEFINE(UM_GFP_ATOMIC, GFP_ATOMIC);
 +
-+	if (winch->pid != -1)
-+		os_kill_process(winch->pid, 1);
-+	if (winch->fd != -1)
-+		os_close_file(winch->fd);
-+	if (winch->stack != 0)
-+		free_stack(winch->stack, 0);
-+	if (free_irq_ok)
-+		free_irq(WINCH_IRQ, winch);
-+	kfree(winch);
+ /* For crypto assembler code. */
+ DEFINE(crypto_tfm_ctx_offset, offsetof(struct crypto_tfm, __crt_ctx));
+ 
+Index: linux-2.6.21-mm/arch/um/include/um_malloc.h
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/include/um_malloc.h	2007-06-14 15:33:34.000000000 -0400
++++ linux-2.6.21-mm/arch/um/include/um_malloc.h	2007-06-14 16:08:07.000000000 -0400
+@@ -6,11 +6,17 @@
+ #ifndef __UM_MALLOC_H__
+ #define __UM_MALLOC_H__
+ 
+-extern void *um_kmalloc(int size);
+-extern void *um_kmalloc_atomic(int size);
++#include "kern_constants.h"
++
++extern void *__kmalloc(int size, int flags);
++static inline void *kmalloc(int size, int flags)
++{
++	return __kmalloc(size, flags);
 +}
 +
- static irqreturn_t winch_interrupt(int irq, void *data)
+ extern void kfree(const void *ptr);
+ 
+-extern void *um_vmalloc(int size);
++extern void *vmalloc(unsigned long size);
+ extern void vfree(void *ptr);
+ 
+ #endif /* __UM_MALLOC_H__ */
+Index: linux-2.6.21-mm/arch/um/kernel/irq.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/kernel/irq.c	2007-06-14 15:33:34.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/irq.c	2007-06-14 16:08:07.000000000 -0400
+@@ -30,7 +30,6 @@
+ #include "irq_kern.h"
+ #include "os.h"
+ #include "sigio.h"
+-#include "um_malloc.h"
+ #include "misc_constants.h"
+ #include "as-layout.h"
+ 
+Index: linux-2.6.21-mm/arch/um/kernel/process.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/kernel/process.c	2007-06-14 15:33:34.000000000 -0400
++++ linux-2.6.21-mm/arch/um/kernel/process.c	2007-06-14 16:08:07.000000000 -0400
+@@ -46,7 +46,6 @@
+ #include "mode.h"
+ #include "mode_kern.h"
+ #include "choose-mode.h"
+-#include "um_malloc.h"
+ 
+ /* This is a per-cpu array.  A processor only modifies its entry and it only
+  * cares about its entry, so it's OK if another processor is modifying its
+@@ -262,21 +261,6 @@ void dump_thread(struct pt_regs *regs, s
  {
- 	struct winch *winch = data;
-@@ -767,12 +783,13 @@ static irqreturn_t winch_interrupt(int i
- 				       "errno = %d\n", -err);
- 				printk("fd %d is losing SIGWINCH support\n",
- 				       winch->tty_fd);
-+				free_winch(winch, 0);
- 				return IRQ_HANDLED;
- 			}
- 			goto out;
- 		}
- 	}
--	tty  = winch->tty;
-+	tty = winch->tty;
- 	if (tty != NULL) {
- 		line = tty->driver_data;
- 		chan_window_size(&line->chan_list, &tty->winsize.ws_row,
-@@ -785,43 +802,44 @@ static irqreturn_t winch_interrupt(int i
- 	return IRQ_HANDLED;
  }
  
--void register_winch_irq(int fd, int tty_fd, int pid, struct tty_struct *tty)
-+void register_winch_irq(int fd, int tty_fd, int pid, struct tty_struct *tty,
-+			unsigned long stack)
- {
- 	struct winch *winch;
- 
- 	winch = kmalloc(sizeof(*winch), GFP_KERNEL);
- 	if (winch == NULL) {
- 		printk("register_winch_irq - kmalloc failed\n");
--		return;
-+		goto cleanup;
- 	}
- 
- 	*winch = ((struct winch) { .list  	= LIST_HEAD_INIT(winch->list),
- 				   .fd  	= fd,
- 				   .tty_fd 	= tty_fd,
- 				   .pid  	= pid,
--				   .tty 	= tty });
-+				   .tty 	= tty,
-+				   .stack	= stack });
-+
-+	if (um_request_irq(WINCH_IRQ, fd, IRQ_READ, winch_interrupt,
-+			   IRQF_DISABLED | IRQF_SHARED | IRQF_SAMPLE_RANDOM,
-+			   "winch", winch) < 0) {
-+		printk("register_winch_irq - failed to register IRQ\n");
-+		goto out_free;
-+	}
- 
- 	spin_lock(&winch_handler_lock);
- 	list_add(&winch->list, &winch_handlers);
- 	spin_unlock(&winch_handler_lock);
- 
--	if(um_request_irq(WINCH_IRQ, fd, IRQ_READ, winch_interrupt,
--			  IRQF_DISABLED | IRQF_SHARED | IRQF_SAMPLE_RANDOM,
--			  "winch", winch) < 0)
--		printk("register_winch_irq - failed to register IRQ\n");
+-void *um_kmalloc(int size)
+-{
+-	return kmalloc(size, GFP_KERNEL);
 -}
 -
--static void free_winch(struct winch *winch)
+-void *um_kmalloc_atomic(int size)
 -{
--	list_del(&winch->list);
+-	return kmalloc(size, GFP_ATOMIC);
+-}
 -
--	if(winch->pid != -1)
--		os_kill_process(winch->pid, 1);
--	if(winch->fd != -1)
--		os_close_file(winch->fd);
-+	return;
- 
--	free_irq(WINCH_IRQ, winch);
-+ out_free:
- 	kfree(winch);
-+ cleanup:
-+	os_kill_process(pid, 1);
-+	os_close_file(fd);
-+	if (stack != 0)
-+		free_stack(stack, 0);
- }
- 
- static void unregister_winch(struct tty_struct *tty)
-@@ -834,7 +852,7 @@ static void unregister_winch(struct tty_
- 	list_for_each(ele, &winch_handlers){
- 		winch = list_entry(ele, struct winch, list);
-                 if(winch->tty == tty){
--			free_winch(winch);
-+			free_winch(winch, 1);
- 			break;
-                 }
-         }
-@@ -850,7 +868,7 @@ static void winch_cleanup(void)
- 
- 	list_for_each_safe(ele, next, &winch_handlers){
- 		winch = list_entry(ele, struct winch, list);
--		free_winch(winch);
-+		free_winch(winch, 1);
+-void *um_vmalloc(int size)
+-{
+-	return vmalloc(size);
+-}
+-
+ int __cant_sleep(void) {
+ 	return in_atomic() || irqs_disabled() || in_interrupt();
+ 	/* Is in_interrupt() really needed? */
+Index: linux-2.6.21-mm/arch/um/os-Linux/drivers/ethertap_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/os-Linux/drivers/ethertap_user.c	2007-06-14 16:07:30.000000000 -0400
++++ linux-2.6.21-mm/arch/um/os-Linux/drivers/ethertap_user.c	2007-06-14 16:08:07.000000000 -0400
+@@ -54,7 +54,7 @@ static void etap_change(int op, unsigned
+ 		return;
  	}
  
- 	spin_unlock(&winch_handler_lock);
-Index: linux-2.6.21-mm/arch/um/os-Linux/skas/process.c
+-	output = um_kmalloc(UM_KERN_PAGE_SIZE);
++	output = kmalloc(UM_KERN_PAGE_SIZE, UM_GFP_KERNEL);
+ 	if(output == NULL)
+ 		printk("etap_change : Failed to allocate output buffer\n");
+ 	read_output(fd, output, UM_KERN_PAGE_SIZE);
+@@ -166,7 +166,7 @@ static int etap_open(void *data)
+ 	err = etap_tramp(pri->dev_name, pri->gate_addr, control_fds[0], 
+ 			 control_fds[1], data_fds[0], data_fds[1]);
+ 	output_len = UM_KERN_PAGE_SIZE;
+-	output = um_kmalloc(output_len);
++	output = kmalloc(output_len, UM_GFP_KERNEL);
+ 	read_output(control_fds[0], output, output_len);
+ 
+ 	if(output == NULL)
+Index: linux-2.6.21-mm/arch/um/os-Linux/helper.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/os-Linux/skas/process.c	2007-06-14 16:00:19.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/os-Linux/skas/process.c	2007-06-14 16:04:12.000000000 -0400
-@@ -41,7 +41,7 @@ int is_skas_winch(int pid, int fd, void 
- 	if(pid != os_getpgrp())
- 		return(0);
- 
--	register_winch_irq(-1, fd, -1, data);
-+	register_winch_irq(-1, fd, -1, data, 0);
- 	return(1);
- }
- 
-Index: linux-2.6.21-mm/arch/um/include/chan_user.h
+--- linux-2.6.21-mm.orig/arch/um/os-Linux/helper.c	2007-06-14 16:07:30.000000000 -0400
++++ linux-2.6.21-mm/arch/um/os-Linux/helper.c	2007-06-14 16:08:07.000000000 -0400
+@@ -72,8 +72,8 @@ int run_helper(void (*pre_exec)(void *),
+ 	data.pre_data = pre_data;
+ 	data.argv = argv;
+ 	data.fd = fds[1];
+-	data.buf = __cant_sleep() ? um_kmalloc_atomic(PATH_MAX) :
+-					um_kmalloc(PATH_MAX);
++	data.buf = __cant_sleep() ? kmalloc(PATH_MAX, UM_GFP_ATOMIC) :
++					kmalloc(PATH_MAX, UM_GFP_KERNEL);
+ 	pid = clone(helper_child, (void *) sp, CLONE_VM | SIGCHLD, &data);
+ 	if (pid < 0) {
+ 		ret = -errno;
+Index: linux-2.6.21-mm/arch/um/os-Linux/main.c
 ===================================================================
---- linux-2.6.21-mm.orig/arch/um/include/chan_user.h	2007-06-14 16:04:07.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/include/chan_user.h	2007-06-14 16:04:28.000000000 -0400
-@@ -42,7 +42,8 @@ extern void generic_free(void *data);
+--- linux-2.6.21-mm.orig/arch/um/os-Linux/main.c	2007-06-14 16:00:19.000000000 -0400
++++ linux-2.6.21-mm/arch/um/os-Linux/main.c	2007-06-14 16:08:07.000000000 -0400
+@@ -235,8 +235,8 @@ void *__wrap_malloc(int size)
+ 		return __real_malloc(size);
+ 	else if(size <= UM_KERN_PAGE_SIZE)
+ 		/* finding contiguous pages can be hard*/
+-		ret = um_kmalloc(size);
+-	else ret = um_vmalloc(size);
++		ret = kmalloc(size, UM_GFP_KERNEL);
++	else ret = vmalloc(size);
  
- struct tty_struct;
- extern void register_winch(int fd,  struct tty_struct *tty);
--extern void register_winch_irq(int fd, int tty_fd, int pid, struct tty_struct *tty);
-+extern void register_winch_irq(int fd, int tty_fd, int pid,
-+			       struct tty_struct *tty, unsigned long stack);
+ 	/* glibc people insist that if malloc fails, errno should be
+ 	 * set by malloc as well. So we do.
+Index: linux-2.6.21-mm/arch/um/os-Linux/sigio.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/os-Linux/sigio.c	2007-06-14 16:07:30.000000000 -0400
++++ linux-2.6.21-mm/arch/um/os-Linux/sigio.c	2007-06-14 16:08:07.000000000 -0400
+@@ -105,7 +105,7 @@ static int need_poll(struct pollfds *pol
+ 	if(n <= polls->size)
+ 		return 0;
  
- #define __channel_help(fn, prefix) \
- __uml_help(fn, prefix "[0-9]*=<channel description>\n" \
+-	new = um_kmalloc_atomic(n * sizeof(struct pollfd));
++	new = kmalloc(n * sizeof(struct pollfd), UM_GFP_ATOMIC);
+ 	if(new == NULL){
+ 		printk("need_poll : failed to allocate new pollfds\n");
+ 		return -ENOMEM;
+@@ -233,7 +233,7 @@ static struct pollfd *setup_initial_poll
+ {
+ 	struct pollfd *p;
+ 
+-	p = um_kmalloc(sizeof(struct pollfd));
++	p = kmalloc(sizeof(struct pollfd), UM_GFP_KERNEL);
+ 	if (p == NULL) {
+ 		printk("setup_initial_poll : failed to allocate poll\n");
+ 		return NULL;
+Index: linux-2.6.21-mm/arch/um/drivers/port_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/port_user.c	2007-06-14 16:07:30.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/port_user.c	2007-06-14 16:08:07.000000000 -0400
+@@ -50,7 +50,7 @@ static void *port_init(char *str, int de
+ 	if(kern_data == NULL)
+ 		return NULL;
+ 
+-	data = um_kmalloc(sizeof(*data));
++	data = kmalloc(sizeof(*data), UM_GFP_KERNEL);
+ 	if(data == NULL)
+ 		goto err;
+ 
