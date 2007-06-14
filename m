@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbXFNMeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbXFNMfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752871AbXFNMeX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 08:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbXFNMeO
+	id S1753228AbXFNMfH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 08:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbXFNMe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 08:34:14 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:31566 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751454AbXFNMeN (ORCPT
+	Thu, 14 Jun 2007 08:34:56 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:42971 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbXFNMez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 08:34:13 -0400
-Date: Thu, 14 Jun 2007 08:30:53 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, snitzer@gmail.com
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Message-ID: <20070614123053.GL28279@think.oraclecorp.com>
-References: <787b0d920706122245j3a2ff7e8ja611ecf41cc67a4c@mail.gmail.com> <20070613120037.GA28279@think.oraclecorp.com> <787b0d920706130914l676a24cau62525e90a90b5839@mail.gmail.com> <20070613165706.GF28279@think.oraclecorp.com> <787b0d920706132359h17531f57gdc4ed01724e53361@mail.gmail.com>
-MIME-Version: 1.0
+	Thu, 14 Jun 2007 08:34:55 -0400
+Date: Thu, 14 Jun 2007 18:13:24 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: dmitry.adamushko@gmail.com
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v15
+Message-ID: <20070614124324.GB30965@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070531150908.GA23538@elte.hu> <20070606064228.GA22443@in.ibm.com> <20070606070143.GA7375@elte.hu> <20070606074317.GB3274@in.ibm.com> <b647ffbd0706060208i5666f57eoe96215b636617622@mail.gmail.com> <46668E4D.8060206@linux.vnet.ibm.com> <20070606105950.GA32729@in.ibm.com> <b647ffbd0706060419v1ed81e15w312f44aad8975d5b@mail.gmail.com> <20070606113733.GD3274@in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <787b0d920706132359h17531f57gdc4ed01724e53361@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20070606113733.GD3274@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 02:59:23AM -0400, Albert Cahalan wrote:
-> On 6/13/07, Chris Mason <chris.mason@oracle.com> wrote:
-
-[ secure deletion in btrfs ]
-
-> >
-> >Right about here is where I would insert a long story about ecryptfs, or
-> >encryption solutions that happen all in userland.  At any rate, it is
-> >outside the scope of v1.0, even though I definitely agree it is an
-> >important problem for some people.
+On Wed, Jun 06, 2007 at 05:07:33PM +0530, Srivatsa Vaddagiri wrote:
+> > I don't think that rt_sched_class :: dequeue_task_rt() is in any of
+> > such "fast pathes" that we should really care about an additional
+> > math. operation.
+> > 
+> > If this approach is ok, logically-wise (no side effects from a short
+> > 'delta_exec', esp. on RT -> NORMAL).. I think it's better as it keeps
+> > the 'sched_class' interface simpler.
 > 
-> I'm sure you do have a nice long story, and I'm sure it seems
-> correct, but there is something not quite right about the add-on
-> hacks.
-> 
-> BTW, I'm suggesting that this be about deletion, not protection
-> of data you wish to keep. It covers more than just file bodies.
-> It covers inode data, block allocations, etc.
+> I can see your point, given that we just update exec_start in
+> dequeue_task_rt(). However the situation is slightly more complex in my
+> patch stack, as I need to update other things during group change. Perhaps
+> we can postpone this discussion until I post that patch stack.
 
-Sorry, it's still way outside the scope of v1.0.
+Now that I have posted the group scheduling patch stack, we can come
+back to this point.
 
-> 
-> >> >> * atomic creation of copy-on-write directory trees
-> >> >
-> >> >Do you mean something more fine grained than the current snapshotting
-> >> >system?
-> >>
-> >> I believe so. Example: I have a linux-2.6 directory. It's not
-> >> a mount point or anything special like that. I want to copy
-> >> it to a new directory called wip, without actually copying
-> >> all the blocks. To all the normal POSIX API stuff, this copy
-> >> should look like the result of "cp -a", not hard links.
-> >
-> >This would be a snapshot, which has to be done on a subvolume right now.
-> >It is not as nice as being able to pick a random directory, but I've
-> >only been able to get this far by limiting the feature scope
-> >significantly.  What I did do was make subvolumes very cheap...just make
-> >a bunch of them.
-> 
-> Can a regular user create and use a subvolume? If not, then
-> this doesn't work. (if so, then I have other concerns...)
+Basically I am maintaining a ->curr field in 'struct lrq' (when
+CONFIG_FAIR_GROUP_SCHED is on). It is NULL if the lrq is "inactive" [ none of 
+its entities are currently running ], otherwise it points to the currentive 
+active entity. This helps me optimize some functions like update_curr() - when 
+lrq->curr is NULL, we don't have to update fair_clock etc upon enqueue/dequeue 
+to the lrq.
 
-That's the long term goal, but I'll have to reorganize things such that
-subvolumes created by a user can all fall under sane accounting.
+pick_next_entity() sets lrq->curr while put_prev_entity resets lrq->curr
+to NULL.
 
--chris
+Also these lrqs could form a hierarchy. At the top could be a lrq which
+holds user-level sched entities on each cpu. Next, each user's lrq could
+hold task-level entities.
 
+So when a task moves from RT class to NORMAL class, it will get added to
+one of the lrqs (say root user's lrq on CPU0). At that time, I need to:
+
+	root_user_lrq[cpu0]->curr = &task_moving->se;
+	top_lrq[cpu0]->curr = &root_user->se;
+
+I have added a special callback set_curr_task() in fair_sched_class to
+accomplish this.
+
+Similarly when a task moves from NORMAL class to RT class, I need to:
+
+	root_user_cpu0_lrq->curr = NULL;
+	top_lrq_cpu0->curr = NULL;
+
+For this I am reusing the put_prev_task() callback.
+
+I have to accomplish the same steps when a task moves from one group to
+other also.
+
+Let me know what you think about set_curr_task() callback [in Patch #6]. The 
+other option was to tackle this requirement in enqueue/dequeue_task (if
+current task is being enqueue/dequeued then set/reset lrq->curr), which I felt
+add unnecessary overhead in normal path (a current task for ex gets
+dequeued when it goes to sleep).
+
+-- 
+Regards,
+vatsa
