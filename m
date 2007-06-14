@@ -1,99 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbXFNTOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbXFNTOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244AbXFNTOF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbXFNTNy
+	id S1753245AbXFNTOZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbXFNTOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:13:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40765 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752163AbXFNTNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:13:53 -0400
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	Thu, 14 Jun 2007 15:14:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40753 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752247AbXFNTOO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:14:14 -0400
+Date: Thu, 14 Jun 2007 12:13:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Diego Calleja <diegocg@gmail.com>
+cc: Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706132121.04532.dhazelton@enter.net>
-	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706132304.21984.dhazelton@enter.net>
-	<20070614112329.3645c397@the-village.bc.nu>
-	<20070614103846.GA7902@elte.hu>
-	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<46718044.1040108@nortel.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 16:13:31 -0300
-In-Reply-To: <46718044.1040108@nortel.com> (Chris Friesen's message of "Thu\, 14 Jun 2007 11\:52\:04 -0600")
-Message-ID: <orodjicpt0.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+In-Reply-To: <20070614204725.cdf790a7.diegocg@gmail.com>
+Message-ID: <alpine.LFD.0.98.0706141204330.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr> <200706132140.13490.dhazelton@enter.net>
+ <20070614020827.GO3588@stusta.de> <200706132243.14651.dhazelton@enter.net>
+ <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu>
+ <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
+ <orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614204725.cdf790a7.diegocg@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, "Chris Friesen" <cfriesen@nortel.com> wrote:
 
-> Alexandre Oliva wrote:
->> But see, I'm not talking about getting permission to hack the
->> hardware.  I'm only talking about getting permission to hack the Free
->> Software in it.
 
-> No you're not...you're talking about being able to hack the software
-> *and load it back onto the original hardware*.
+On Thu, 14 Jun 2007, Diego Calleja wrote:
+> 
+> And the FSF is trying to control the design and licensing of hardware throught
+> the influence of their software. And I think it's wrong. I'm all to forbid hardware
+> that imposes restrictions on hardware, but software licenses are NOT the way
+> to make it. That's a task for a "Free Hardware Foundation", not the FSF.
 
-Yes.  You wouldn't impose restrictions on modifying the software like
-that, now would you?  Even though the GPL says you can't impose
-further restrictions on modification and distribution.
+Amen. And btw, opencores.org does actually exist.
 
->> It's your position that mingles the issues and permits people to use
->> the hardware to deprive users of freedom over the software that
->> they're entitled to have.
+I don't even think open hardware is a big issue: the worry-warts about 
+hardware are likely wrong, and hardware today is a lot more open than it 
+used to be even just a decade ago. You can much more easily design your 
+own (FPGA's are cheap and powerful), and yes, it's more complex today, but 
+that's actually an argument _for_ openness rather than against it (open 
+processes work better in complex environments!).
 
-> The software license controls the software.  If the hardware has
-> restrictions on it that limit what software it will run, then that is
-> unrelated to the software license.
+The real issue is "open content", and we do actually have various 
+organizations that support that in particular. I would heartily encourage 
+people to get involved with the Creative Commons, and the EFF, and I think 
+Larry Lessig is a really smart and articulate person, who you should 
+listen to.
 
-As in, the license controls the software.  If a patent creates
-restrictions that limit what you can do with the software, then that
-is unrelated to the software license.
+> What the FSF is trying to do is EVIL.
 
-As in, the license controls the software.  If a discriminatory
-contract limits what you can do with the software, then that is
-unrelated to the software license.
+I wouldn't go that far (although, in the heat of the moment I probably 
+_have_ gone that far. Oops ;).
 
-As in, the license controls the software.  If I send you the source
-code, but it happens to be protected by a key that only the hardware
-can decode, and it won't decode for you, then that is unrelated to the
-software license.
+I don't think the FSF is evil. They're just too single-minded, and look 
+too much at one issue, and only care about the one thing they care about, 
+and in the process, they tend to have a really hard time seeing the other 
+side of the coin.
 
-Is that so, really?
+They define "freedom" one way, and by defining it in a very particular 
+way, they miss the fact that what is "freedom" to them is not "freedom" to 
+somebody else.
 
-> There is nothing stopping you from taking the code for the tivo,
-> modifying it, distributing it, or even running it on other hardware.
+They have a very particular agenda, and in having that agenda and a very 
+strict view of how the world should look (according to the FSF), they 
+dismiss the fact that other people have _other_ agenda's, and see the same 
+world totally differently.
 
-True.  But TiVO is still imposing further restrictions on how I can
-modify the software stored in their device, while reserving that
-ability to itself.  This is wrong.  This is not "in kind".  This is
-not "tit-for-tat".  Tit-for-tat is: if they can, then I can too, and
-if I can't, then they can't either.
+And I think that kind of single-mindedness is silly and 
+counter-productive. 
 
-> Suppose I had some machine that will only run microsoft-signed
-> binaries. Would it be at all related to any software license that this
-> machine won't let me run linux?
+I literally think that the GPLv2 has worked so well exactly because you 
+can strip it of its high-falutin' morality and the FSF Kool-Aid, and just 
+see it as a "tit-for-tat" license. It allows everybody to see that the 
+work they put in (into the _software_) is protected, and people cannot 
+make improved versions of that software and distribute those improved 
+versions without giving you the right back to use those improvements (to 
+the _software_).
 
-That would be an unfortunate machine to have, but if Linux or some
-other GPLed software was not shipped in it, then I don't see how this
-is relevant to this discussion.  It's not about the hardware, it's
-about the software in it, and about passing on the freedoms related
-with it.
+So the GPLv2 may have come out of a very single-minded endeavor, but I 
+think it ended up being capable of so much more than rms really even 
+envisioned, exactly because you don't have to _view_ it in that manner.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+		Linus
