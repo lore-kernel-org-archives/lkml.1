@@ -1,84 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbXFNKmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbXFNKxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbXFNKmj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 06:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbXFNKmb
+	id S1752035AbXFNKxd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 06:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbXFNKxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 06:42:31 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:27379 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbXFNKma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 06:42:30 -0400
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-From: holzheu <holzheu@linux.vnet.ibm.com>
-Reply-To: holzheu@linux.vnet.ibm.com
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       "lf_kernel_messages@linux-foundation.org" 
-	<lf_kernel_messages@linux-foundation.org>
-In-Reply-To: <20070614094128.GF17819@atrey.karlin.mff.cuni.cz>
-References: <1181747217.29512.9.camel@localhost.localdomain>
-	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>
-	 <20070614094128.GF17819@atrey.karlin.mff.cuni.cz>
+	Thu, 14 Jun 2007 06:53:23 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:42681 "EHLO jazzdrum.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751235AbXFNKxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 06:53:22 -0400
+Subject: Re: [RFC] TOMOYO Linux
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "william(at)elan.net" <william@elan.net>
+Cc: Toshiharu Harada <haradats@gmail.com>, Rik van Riel <riel@redhat.com>,
+       Toshiharu Harada <haradats@nttdata.co.jp>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.62.0706131631280.1344@sokol.elan.net>
+References: <466FA71C.1020309@nttdata.co.jp>
+	 <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
+	 <9d732d950706130722g12a22604p223381a8e281a4a1@mail.gmail.com>
+	 <46704D49.8010308@redhat.com>
+	 <9d732d950706131435s636b852di98026aed1d9a6ac6@mail.gmail.com>
+	 <467064B9.1080005@redhat.com>
+	 <9d732d950706131525n667587e6t59e94c5cee951c6d@mail.gmail.com>
+	 <Pine.LNX.4.62.0706131631280.1344@sokol.elan.net>
 Content-Type: text/plain
-Organization: IBM
-Date: Thu, 14 Jun 2007 12:38:53 +0200
-Message-Id: <1181817533.10064.18.camel@localhost.localdomain>
+Organization: National Security Agency
+Date: Thu, 14 Jun 2007 06:53:04 -0400
+Message-Id: <1181818384.17547.546.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-14 at 11:41 +0200, Jan Kara wrote:
->   <snip>
+On Wed, 2007-06-13 at 16:32 -0700, william(at)elan.net wrote:
+> On Thu, 14 Jun 2007, Toshiharu Harada wrote:
 > 
-> > Your proposal is similar to one I made to some Japanese developers
-> > earlier this year.  I was more modest, proposing that we
-> > 
-> > - add an enhanced printk
-> > 
-> > 	xxprintk(msgid, KERN_ERR "some text %d\n", some_number);
->   Maybe a stupid idea but why do we want to assign these numbers by hand?
-> I can imagine it could introduce collisions when merging tons of patches
-> with new messages... Wouldn't it be better to compute say, 8-byte hash
-> from the message and use it as it's identifier? We could do this
-> automagically at compile time.
+> > 2007/6/14, Rik van Riel <riel@redhat.com>:
+> >> Toshiharu Harada wrote:
+> >> > 2007/6/14, Rik van Riel <riel@redhat.com>:
+> >> > SELinux has a well designed robust and flexible functions.
+> >> > So it should be used for everywhere.  I understand it.
+> >> > As you mentioned one can analyze the system (process)
+> >> > behaviors from AVC logs. But the maintenance cost is not trivial.
+> >> >
+> >> > If logging with process context is the only purpose,
+> >> > current TOMOYO Linux can do it with no hustle at all.
+> >> 
+> >> Yes, but so does standard SELinux.
+> >> 
+> >> You are making me curious: what does TOMOYO do that is
+> >> not done by regular SELinux?
+> >> 
+> >> Logging with process name, path name and contexts is
+> >> already done.  I must have missed some other TOMOYO
+> >> feature in your initial email...
+> >
+> > I see SELinux can log with process name, path name and
+> > contexts, but "contexts" must be defined beforehand.
+> > TOMOYO Linux kernel does that with pathname, so no
+> > label definitions needed.
+> > You can confirm the process (domain) transitions any time
+> > and access occurred are clarified per domain basis automatically.
+> > Security context in TOMOYO Linux is represented and stored
+> > as a call chain and very intuitive.
+> >
+> > TOMOYO Linux has a mode called "learning"
+> > in addition to "permissive" and "enforce". You can easily
+> > get the TOMOYO Linux policy with learning mode that
+> > SELinux does not have. In addition, access control mode of
+> > TOMOYO Linux can be managed for every difference domain.
+> 
+> This sounds a like like feature differences "compared" at:
+>   http://www.novell.com/linux/security/apparmor/selinux_comparison.html
 
-Of course automatically generated message numbers would be great and
-something like:
+Amazing, per that table, AppArmor is better in every way than SELinux.
+Nothing like an unbiased and fair-minded comparison.
 
-hub.4a5bcd77: Detected some problem.
-
-looks acceptable for me.
-
-We could generate the hash using the format string of the printk. Since
-we specify the format string also in KMSG_DOC, the hash for the
-KMSG_DOC and the printk should match and we have the required link
-between printk and description.
-
-So technically that's probably doable.
-
-Problems are:
-
-* hashes are not unique
-* We need an additional preprocessor step
-* The might be people, who find 8 character hash values ugly in printks
-
-The big advantage is, that we do not need to maintain message numbers.
-
-> I know it also has it's problems - you
-> fix a spelling and the message gets a different id and you have to
-> update translation/documentation catalogue but maybe that could be
-> solved too...
-
-Since in our approach the message catalog is created automatically for
-exactly one kernel and the message catalog belongs therefore to exactly
-one kernel, I think the problem of changing error numbers is not too
-big.
-
-Michael
+-- 
+Stephen Smalley
+National Security Agency
 
