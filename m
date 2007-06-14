@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbXFNVVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbXFNVY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbXFNVVm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 17:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbXFNVVS
+	id S1756046AbXFNVY0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 17:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbXFNVYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 17:21:18 -0400
-Received: from lucidpixels.com ([75.144.35.66]:56061 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756516AbXFNVVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 17:21:17 -0400
-Date: Thu, 14 Jun 2007 17:21:16 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Pim Zandbergen <P.Zandbergen@macroscoop.nl>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-In-Reply-To: <200706141418.42082.jbarnes@virtuousgeek.org>
-Message-ID: <Pine.LNX.4.64.0706141720330.28719@p34.internal.lan>
-References: <200706071530.51552.jesse.barnes@intel.com> <4671992D.7060400@macroscoop.nl>
- <Pine.LNX.4.64.0706141625260.26236@p34.internal.lan>
- <200706141418.42082.jbarnes@virtuousgeek.org>
+	Thu, 14 Jun 2007 17:24:18 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:34204 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbXFNVYR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 17:24:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=SWfH7zzqgQbbASOPlBTQzZ6WSc01Bmkr9sUYYbcASa861DC1VhCt+Vq8CNaKBvWwfhFjw4WGsK4tVhmualJyb3Yg/jLbwZWidXS6Uz00z3yb5BntyRMOW8EAdVROaVW6n5PUqGdkRKuKApIb5KLn2At6c3QerTFTSEejGFbo/Yw=
+Message-ID: <161717d50706141424s1d9d77d9l46a759894ae05655@mail.gmail.com>
+Date: Thu, 14 Jun 2007 17:24:16 -0400
+From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+To: davids@webmaster.com
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEGOEJAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <161717d50706141324y303f3d89n54447b7cb387979c@mail.gmail.com>
+	 <MDEHLPKNGKAHNMBLJOLKIEGOEJAC.davids@webmaster.com>
+X-Google-Sender-Auth: 0e8f4f370b3c6487
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 14 Jun 2007, Jesse Barnes wrote:
-
-> On Thursday, June 14, 2007 1:26:07 Justin Piszcz wrote:
->> On Thu, 14 Jun 2007, Pim Zandbergen wrote:
->>> Thanks for this patch. I was having the exact same symptoms as
->>> Justin Piszcz, on a different, but similar motherboard:
->>>
->>> Motherboard: GigaByte GA-G33-DS3R
->>> BIOS rev: F2
->>> Chipset: Intel G33
->>> Memory: 8GB
->>> Distro: Fedora 7 x86_64
->>> Kernel: kernel-2.6.21-1.3194.fc7
->>>
->>> Building vanilla 2.6.22-rc4 with your patch solved the problem.
->>>
->>> I'm now seeing this in the syslog
->>>
->>> ***************
->>> **** WARNING: likely BIOS bug
->>> **** MTRRs don't cover all of memory, trimmed 196608 pages
->>> ***************
->>>
->>> leaving me 7416672 kB of usable memory.
->>>
->>> If there's any way I can help with more info or testing,
->>> then let me know.
->>>
->>> Thanks,
->>> Pim
+On 6/14/07, David Schwartz <davids@webmaster.com> wrote:
 >
-> Thanks for testing, Pim.  Glad it works for you.  Keep an eye out for
-> BIOS upgrades, the next version might fix it.
->
->> That's strange, I guess different chipsets 'chew' up different
->> amounts of memory OR you have your DVT(?) (video-card
->> memory/aperature) set to 256MB? I have mine set to 128MB, in top:
->>
->> Mem:   8039576k total,  6187304k used,  1852272k free,      696k
->> buffers
->>
->> What type of memory are you using and what is your DVT set to?
->
-> Different BIOSes will map things differently, so I'd expect differences
-> in the "trimmmed xxx pages" message across machines.  But yeah, BIOS
-> config options can also affect things, in particular I've heard that
-> the fan control options change MTRR setup significantly.
->
-> Jesse
->
+> And what about people who can't modify the Linux kernel? They don't know C.
+> They don't know how to use a shell. They're not familiar with UNIX operating
+> systems at all. Maybe they aren't smart enough to modify kernel code.
 
-To Intel,
+I learned C in part by modifying the Linux kernel and running the
+modified kernel on hardware I own, and enabling precisely that kind of
+tinkering is what the "spirit" of the GPL is about, as is quite plain
+(to me) from the preamble.
 
-When will HECI be supported via the kernel?  When it becomes supported, 
-would that alter the MTRR map at all?
+>
+> The GPL is about having the legal right to modify the software and being
+> able to put other people's distributed improvements back into the original
+> code base.
 
-Justin.
+I agree that is what the letter of the GPLv<3 is about.
+
+> It does not guarantee that you will actually be able to modify
+> the software and get it to work on some particular hardware.
+
+Please don't conflate my endorsement of the "spirit" of the GPL with
+Alexandre's assertion that the GPLv2 forbids TiVOisation. I don't
+agree with him. My point is that people arguing that the spirit of the
+GPL doesn't revolve around the freedom of the end user to modify the
+software *and* run modified copies seem to be missing the point. Linus
+gets that, as he said in a previous message, he just doesn't
+personally care about freedom defined that way.
+
+Dave
