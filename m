@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbXFNT3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbXFNTaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752197AbXFNT3v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 15:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbXFNT33
+	id S1754537AbXFNTaQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 15:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbXFNT3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 15:29:29 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2888 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755408AbXFNT32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 15:29:28 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 12:28:34 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKEEFCEJAC.davids@webmaster.com>
+	Thu, 14 Jun 2007 15:29:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47060 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755710AbXFNT3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 15:29:43 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<alpine.LFD.0.98.0706131456230.14121@woody.linux-foundation.org>
+	<orejkfla3l.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706131946.15714.dhazelton@enter.net>
+	<20070614004419.GL3588@stusta.de>
+	<alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
+	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706140817520.14121@woody.linux-foundation.org>
+	<orsl8ue7ou.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141106540.14121@woody.linux-foundation.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 16:28:22 -0300
+In-Reply-To: <alpine.LFD.0.98.0706141106540.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 14 Jun 2007 11\:14\:11 -0700 \(PDT\)")
+Message-ID: <orfy4ucp49.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070613180953.GA18512@delft.aura.cs.cmu.edu>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 14 Jun 2007 12:29:08 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 14 Jun 2007 12:29:09 -0700
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> The GPL applies to "the Program" which in this case is the Linux kernel
-> as a whole and it in fact does indicate a specific version. All code
-> submitted and included in this program has has been submitted with the
-> understanding that the work as a whole is specifically licensed as
-> GPLv2. Some authors have granted additional rights, such as dual BSD/GPL
-> or GPLv2 and later and explicitly added such a notice.
+> On Thu, 14 Jun 2007, Alexandre Oliva wrote:
+>> 
+>> > In other words, Red Hat distributes copies (and yes, you *get* that copy), 
+>> > and you cannot modify that copy that you got.
+>> 
+>> And Red Hat can't either.  I thought that was quite obvious.
 
-Since the Linux kernel as a whole does not have a single author, it is
-impossible to license it as a whole. Nobody has the authority to do that.
-(The GPL is not a copyright assignment type license.)
+> The GPLv2 talks about specific rights, like the ability to make changes 
+> and distribute things, and says that you have to give downstream all those 
+> same rights.
 
-Fortunately, the GPL clears this up:
+The spirit gives the intuition of "passing on all the rights".  The
+legal terms have to be more careful about that, to avoid the very
+situation you're debating, so they state "you can't impose further
+restrictions on the exercise of the rights".
 
-"Each time you redistribute the Program (or any work based on the
-Program), the recipient automatically receives a license from the
-original licensor to copy, distribute or modify the Program subject to
-these terms and conditions.  You may not impose any further
-restrictions on the recipients' exercise of the rights granted herein.
-You are not responsible for enforcing compliance by third parties to
-this License."
+Do you understand the difference?
 
-Linus cannot impose any further restrictions on the recipients' exercise of
-the rights granted.
+> For example, for any code that I have full copyright over, I have rights 
+> that you DO NOT HAVE!
 
-When you download a copy of the Linux kernel, you do not receive one license
-because nobody could grant you one license. You receive a logically separate
-license from each original licensor. You receive from Linus only a license
-to his contributions.
+No dispute about that, and this is irrelevant to this point.  I've
+already responded and clarified this point 2 or 3 times in this
+thread.  Do you need me to find a URL for you?  It was in respose to
+Dmitri Torokhov.
 
-Note that you cannot take a GPLv2+ work and redistribute it as GPLv3 only.
-You can license your contributions as GPLv3 only of course. However, each
-recipient still receives a GPLv2+ license to the parts that were originally
-licensed that way. The people you distribute the work from receive licenses
-from the original licensors to those parts, and you have no right to modify
-that license. (See GPL section 6, quoted above.)
+> So if you want to argue that I should re-license, you should argue that 
+> the GPLv3 is better. And quite frankly, you haven't.
 
-DS
+In fact, I haven't even tried.  So far, I've merely been trying to
+show that it still follows the same spirit, dispelling the muth that
+it doesn't, and trying to understand why you think GPLv2 is so much
+better, which I think is related with tit-for-tat and retribution in
+kind.
 
-
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
