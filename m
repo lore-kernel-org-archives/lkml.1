@@ -1,148 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbXFNMFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752454AbXFNMH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752111AbXFNMFA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 08:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXFNMEu
+	id S1752454AbXFNMH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 08:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbXFNMHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 08:04:50 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48455 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750946AbXFNMEt (ORCPT
+	Thu, 14 Jun 2007 08:07:50 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53637 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750886AbXFNMHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 08:04:49 -0400
-Date: Thu, 14 Jun 2007 22:04:13 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       Suparna Bhattacharya <suparna@in.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070614120413.GD86004887@sgi.com>
-References: <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int>
+	Thu, 14 Jun 2007 08:07:49 -0400
+Date: Thu, 14 Jun 2007 13:10:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070614131014.4e7c0035@the-village.bc.nu>
+In-Reply-To: <20070614021724.GP3588@stusta.de>
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706131946.15714.dhazelton@enter.net>
+	<20070614004419.GL3588@stusta.de>
+	<200706132101.28330.dhazelton@enter.net>
+	<20070614024540.3a24598c@the-village.bc.nu>
+	<20070614021724.GP3588@stusta.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070614091458.GH5181@schatzie.adilger.int>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 03:14:58AM -0600, Andreas Dilger wrote:
-> On Jun 14, 2007  09:52 +1000, David Chinner wrote:
-> > B FA_PREALLOCATE
-> > provides the same functionality as
-> > B FA_ALLOCATE
-> > except it does not ever change the file size. This allows allocation
-> > of zero blocks beyond the end of file and is useful for optimising
-> > append workloads.
-> > TP
-> > B FA_DEALLOCATE
-> > removes the underlying disk space with the given range. The disk space
-> > shall be removed regardless of it's contents so both allocated space
-> > from
-> > B FA_ALLOCATE
-> > and
-> > B FA_PREALLOCATE
-> > as well as from
-> > B write(3)
-> > will be removed.
-> > B FA_DEALLOCATE
-> > shall never remove disk blocks outside the range specified.
-> 
-> So this is essentially the same as "punch".
+> If the two courts are in the same country there's usually a higher court 
+> above both that can resolve this. But what if let's say the highest 
+> court in the USA and the highest court in Germany would disagree on such 
+> a matter?
 
-Depends on your definition of "punch".
-
-> There doesn't seem to be
-> a mechanism to only unallocate unused FA_{PRE,}ALLOCATE space at the
-> end.
-
-ftruncate()
-
-> > B FA_DEALLOCATE
-> > shall never change the file size. If changing the file size
-> > is required when deallocating blocks from an offset to end
-> > of file (or beyond end of file) is required,
-> > B ftuncate64(3)
-> > should be used.
-> 
-> This also seems to be a bit of a wart, since it isn't a natural converse
-> of either of the above functions.  How about having two modes,
-> similar to FA_ALLOCATE and FA_PREALLOCATE?
-
-<shrug>
-
-whatever.
-
-> Say, FA_PUNCH (which
-> would be as you describe here - deletes all data in the specified
-> range changing the file size if it overlaps EOF,
-
-Punch means different things to different people. To me (and probably
-most XFS aware ppl) punch implies no change to the file size.
-
-i.e. anyone curently using XFS_IOC_UNRESVSP will expect punching
-holes to leave the file size unchanged. This is the behaviour I
-described for FA_DEALLOCATE.
-
-> and FA_DEALLOCATE,
-> which only deallocates unused FA_{PRE,}ALLOCATE space?
-
-That's an "unwritten-to-hole" extent conversion. Is that really
-useful for anything? That's easily implemented with FIEMAP
-and FA_DEALLOCATE.
-
-Anyway, because we can't agree on a single pair of flags:
-
-	FA_ALLOCATE        == posix_fallocate()
-	FA_DEALLOCATE      == unwritten-to-hole ???
-	FA_RESV_SPACE      == XFS_IOC_RESVSP64
-	FA_UNRESV_SPACE    == XFS_IOC_UNRESVSP64
-
-> We might also consider making @mode be a mask instead of an enumeration:
-> 
-> FA_FL_DEALLOC	0x01 (default allocate)
-> FA_FL_KEEP_SIZE	0x02 (default extend/shrink size)
-> FA_FL_DEL_DATA	0x04 (default keep written data on DEALLOC)
-
-i.e:
-
-#define FA_ALLOCATE	0
-#define FA_DEALLOCATE	FA_FL_DEALLOC
-#define FA_RESV_SPACE	FA_FL_KEEP_SIZE
-#define FA_UNRESV_SPACE	FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA
-
-> I suppose it might be a bit late in the game to add a "goal"
-> parameter and e.g. FA_FL_REQUIRE_GOAL, FA_FL_NEAR_GOAL, etc to make
-> the API more suitable for XFS?
-
-It would suffice for the simpler operations, I think, but we'll
-rapidly run out of flags and we'll still need another interface
-for doing complex stuff.....
-
-> The goal could be a single __u64, or
-> a struct with e.g. __u64 byte offset (possibly also __u32 lun like
-> in FIEMAP).  I guess the one potential limitation here is the
-> number of function parameters on some architectures.
-
-To be useful it needs to __u64.
-
-> > B ENOSPC
-> > There is not enough space left on the device containing the file
-> > referred to by
-> > IR fd.
-> 
-> Should probably say whether space is removed on failure or not.  In
-
-Right. I'd say on error you need to FA_DEALLOCATE to ensure any space
-allocated was freed back up. That way the error handling in the allocate
-functions is much simpler (i.e. no need to undo there).
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+It would be very unusual for both cases to proceed in parallel. The one
+court will then strongly consider the decision of the other.
