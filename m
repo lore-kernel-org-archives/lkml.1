@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbXFNS3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbXFNSbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbXFNS3b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 14:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbXFNS3G
+	id S1755209AbXFNSbE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 14:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXFNSaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 14:29:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33189 "EHLO mx2.redhat.com"
+	Thu, 14 Jun 2007 14:30:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53153 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbXFNS3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 14:29:04 -0400
-To: Florin Malita <fmalita@gmail.com>
-Cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+	id S1751063AbXFNSay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 14:30:54 -0400
+Date: Thu, 14 Jun 2007 14:16:26 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Bron Gondwana <brong@fastmail.fm>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
-	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706140305.50095.dhazelton@enter.net>
-	<orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<46717C58.8050501@gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 15:27:04 -0300
-In-Reply-To: <46717C58.8050501@gmail.com> (Florin Malita's message of "Thu\, 14 Jun 2007 13\:35\:20 -0400")
-Message-ID: <ord4zye6iv.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+Message-ID: <20070614181626.GF3522@nostromo.devel.redhat.com>
+Mail-Followup-To: Alexandre Oliva <aoliva@redhat.com>,
+	Bron Gondwana <brong@fastmail.fm>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+References: <fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no> <fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no> <fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no> <fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no> <20070614013214.GA1124293@hiwaay.net> <20070614025248.6e0f72f0@the-village.bc.nu> <20070614041041.GA6788@brong.net> <orsl8vi13h.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614070006.GA7393@brong.net> <orvedqfpkp.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orvedqfpkp.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Florin Malita <fmalita@gmail.com> wrote:
+Alexandre Oliva (aoliva@redhat.com) said: 
+> > Sure, if they make any changes or fixes to Linux.  Other than that,
+> > only the same benefit that Microsoft get from Windows piracy - TiVo
+> > employees become familiar with Linux and are more likely to use it
+> > and maybe contribute more in another job later.
+> 
+> Now, what if TiVO actually permitted all of its customers to make
+> changes or fixes to Linux, and become familiar with it and become more
+> likely to use it and maybe contribute more later?
 
-> Alexandre Oliva wrote:
->> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
->> 
->>>> When they download the software, they get another copy, and they have
->>>> a right to modify that copy.
+a) there's nothing that prevents a Tivo user from changing or fixing
+Linux completely outside of the Tivo
+b) the 'interesting' bits that someone would modify the Tivo to change
+*aren't actually the bits that everyone is kvetching about here*
 
->>> But you get the TiVO corporations copy of the software?
-
->> Yes.  The customer gets the copy that TiVO stored in the hard disk in
->> the device it sells.  And it's that copy that the customer is entitled
->> to modify because TiVO is still able to modify it.
-
-> No, by this twisted logic Tivo *cannot* modify that particular copy
-> any more than you can. They can modify *another* copy (just like you)
-> and they can *replace* the copy in your device with the new version
-> (unlike you).
-
-Again, replacing is one form of modification.
-
-What do you think you do when you save a modified source file in your
-editor?
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Bill
