@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXFNBr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbXFNB77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759426AbXFNBr0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jun 2007 21:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbXFNBrU
+	id S1759007AbXFNB77 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jun 2007 21:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbXFNB7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jun 2007 21:47:20 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42469 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757243AbXFNBrT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jun 2007 21:47:19 -0400
-Date: Thu, 14 Jun 2007 02:52:48 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chris Adams <cmadams@hiwaay.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070614025248.6e0f72f0@the-village.bc.nu>
-In-Reply-To: <20070614013214.GA1124293@hiwaay.net>
-References: <fa.khBgzvPDXYj45cntZBDPf6OM0jQ@ifi.uio.no>
-	<fa.yLrgAnyZNUTaQtIdBjBq6aFGXU8@ifi.uio.no>
-	<fa.OeLmE9apDSUc1Jj/3NNi3Oh5dxg@ifi.uio.no>
-	<fa.81ogjXw6CW1aVETJQcz/2q97Mlw@ifi.uio.no>
-	<fa.1pq8pRNsm/jhYV6tXEtGFJB8M+0@ifi.uio.no>
-	<20070614013214.GA1124293@hiwaay.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jun 2007 21:59:49 -0400
+Received: from holomorphy.com ([66.93.40.71]:38719 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755247AbXFNB7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jun 2007 21:59:48 -0400
+Date: Wed, 13 Jun 2007 19:00:55 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Jay Vosburgh <fubar@us.ibm.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
+       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+Message-ID: <20070614020055.GL15426@holomorphy.com>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com> <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What if TiVo had put the kernel in a burned-in ROM (not flash, or on a
-> flash ROM with no provision for reprogramming it)?  Would that also
-> violate the "spirit" of the GPL?  Must any device that wishes to include
-> GPL code include additional hardware to support replacing that code
-> (even if that hardware is otherwise superfluous)?
+On Wed, Jun 13, 2007 at 11:25:20PM +0100, Mark Fortescue wrote:
+> The random seg faults on x86_64 is interesting as I have been getting 
+> random illegal instruction faults on sparc (sun4c) with 2.6.22-rc3. I have 
+> not yet tried to track it down. All I know at present is that it is not a 
+> problem on 2.6.20.9.
 
-As a PS to the GPL3 comment here is the basic difference
+Very interesting. Any hints as to how to test or how long to wait
+before the illegal instructions happen?
 
-ROM	-	I can't modify the code on the device
-		The creator can't modify the code further on the device
 
-Tivo	-	I can't modify the code on the device
-		The owner can modify the code 
-
-One is an implicit limitation of the hardware (just like I can't run
-openoffice on a 4MB PC even though the license gives me the right to
-try), the other is an artificial restriction.
-
-One case is witholding freedom in the GPL sense by one party while
-keeping it themselves, the other is a limitation of the system
-inevitably imposed on everyone.
-
+-- wli
