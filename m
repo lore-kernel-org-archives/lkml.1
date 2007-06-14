@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752538AbXFNOoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbXFNO5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752538AbXFNOoz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 10:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbXFNOor
+	id S1752679AbXFNO5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 10:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXFNO5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 10:44:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:44977 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbXFNOoq (ORCPT
+	Thu, 14 Jun 2007 10:57:37 -0400
+Received: from anchor-post-36.mail.demon.net ([194.217.242.86]:1024 "EHLO
+	anchor-post-36.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750863AbXFNO5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 10:44:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=F5RFxQ67bo/3IxNqWQ0n3XPH7P4jouw3ntTKHXk7tbOgEmdcSwFmnCRad5jw+7UfEnZ/hKv/oLzg/kqd/NyuhtbdIvL4YhBbcMxJ6TCjPdXNXBOpeSsIkL57N5BgYnyVNbudpgQYqqXRjX0tl9221lk5f/QTuCc/pdEzLSD0Ay4=
-Message-ID: <d120d5000706140744w13f3ed50xc923f11bda7cb8e6@mail.gmail.com>
-Date: Thu, 14 Jun 2007 10:44:45 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH -mm 4/7] PM: Remove suspend and resume support from struct device_type
-Cc: "Kay Sievers" <kay.sievers@vrfy.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>, "Greg KH" <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>
-In-Reply-To: <200706140719.28829.david-b@pacbell.net>
+	Thu, 14 Jun 2007 10:57:35 -0400
+Date: Thu, 14 Jun 2007 15:57:25 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Jay Vosburgh <fubar@us.ibm.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
+       Andi Kleen <ak@suse.de>, Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+In-Reply-To: <20070614142146.GN15426@holomorphy.com>
+Message-ID: <Pine.LNX.4.61.0706141539140.29274@mtfhpc.demon.co.uk>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
+ <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+ <20070614020055.GL15426@holomorphy.com> <Pine.LNX.4.61.0706141123160.28903@mtfhpc.demon.co.uk>
+ <20070614142146.GN15426@holomorphy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706131551.51336.rjw@sisk.pl>
-	 <3ae72650706131520m3091d04et31b1db64be692385@mail.gmail.com>
-	 <200706140010.03438.dtor@insightbb.com>
-	 <200706140719.28829.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/14/07, David Brownell <david-b@pacbell.net> wrote:
-> On Wednesday 13 June 2007, Dmitry Torokhov wrote:
-> > On Wednesday 13 June 2007 18:20, Kay Sievers wrote:
-> > > Dmitry, you added this recently, is this used in any code you plan to
-> > > merge soon?
-> > >
-> >
-> > Yes, I will need it to implement input device resume (mainly to restore LED
-> > state and repeat rate for keyboards).
->
-> Why wouldn't that use the class device suspend/resume mechanism?
->
 
-Because they are not class devices anymore.
+Benh's ptep_set_access_flags() patch needs to be applied in order to get 
+anyware with sun4c for all kernels >= linux-2.6.15. If not applied, you 
+will be lucky to get sash running as your init and even that will have 
+very limitit capabilities before it locks up the processor (power up 
+reset required).
 
--- 
-Dmitry
+It has been applied to both the kernels I used for testing so this 
+problem is independent of the ptep_set_access_flags patch but that 
+does not mean that it is not a related issue.
+
+I will try to get some testing done over the weekend to narrow down 
+when the random illegal instructions first occour.
+
+If I start with 2.6.21 then if that is OK, then I should be able to narow 
+the issue down without too much trouble. If it is between 2.6.20 and 
+2.6.21 then it will be a right pig as there are a large number of commits 
+that don't compile for sun4c between these two. What I am hoping is that 
+it occours in the 2.6.22-rc2 as per the x86_64.
+
+I am going to have to put a 'reset' button onto my test system as power up 
+resets are bad news on this old hardware and almost all kernel failures 
+result in a processor lockup. I have even had to make BUG reports 'panic' 
+as thoes that I have during kernel fault location had are terminal to a 
+sun4c (they cause a processor lockup).
+
+Regards
+ 	Mark Fortescue.
+
+On Thu, 14 Jun 2007, William Lee Irwin III wrote:
+
+> On Thu, Jun 14, 2007 at 11:30:25AM +0100, Mark Fortescue wrote:
+>> They apear as soon as simpleinit starts up. Somtimes I get to a login
+>> prompt before seeing any. Other times, commands in the simpleinit rc
+>> script fail.
+>> They do apear to be random. If a command failes, you re-run the command
+>> and it is OK. Commands seen to fail are basic (depmod, rm cat ..).
+>> The test I did use the same binaries with both the OK and problem kernels
+>> so it is not a change to the application code, it is definatly a kernel
+>> issue.
+>
+> This sounds like it may be addressed by benh's ptep_set_access_flags()
+> fixes. Those fixes are still in -mm, hopefully to hit mainline by 2.6.22.
+>
+>
+> -- wli
+>
