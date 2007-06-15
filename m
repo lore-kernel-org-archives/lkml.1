@@ -1,45 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbXFOKF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbXFOKO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbXFOKF0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 06:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbXFOKFO
+	id S1752727AbXFOKO6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 06:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbXFOKOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 06:05:14 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:38710 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750734AbXFOKFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 06:05:13 -0400
-Date: Fri, 15 Jun 2007 12:03:57 +0200 (MEST)
-Message-Id: <200706151003.l5FA3vd6008194@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: akpm@linux-foundation.org, vtaras@openvz.org
-Subject: Re: [PATCH] diskquota: 32bit quota tools on 64bit architectures
-Cc: dev@sw.ru, devel@openvz.org, jack@suse.cz, linux-kernel@vger.kernel.org,
-       nataliep@google.com, vvs@sw.ru
+	Fri, 15 Jun 2007 06:14:49 -0400
+Received: from keil-draco.com ([216.193.185.50]:50185 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbXFOKOs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 06:14:48 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Bernd Paysan <bernd.paysan@gmx.de>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 06:14:33 -0400
+User-Agent: KMail/1.9.6
+Cc: david@lang.hm, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kevin Fox <Kevin.Fox@pnl.gov>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <Pine.LNX.4.64.0706141643120.29630@asgard.lang.hm> <200706151130.11184.bernd.paysan@gmx.de>
+In-Reply-To: <200706151130.11184.bernd.paysan@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706150614.33558.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007 13:01:48 +0400, Vasily Tarasov wrote:
-> OpenVZ Linux kernel team has discovered the problem 
-> with 32bit quota tools working on 64bit architectures.
-> In 2.6.10 kernel sys32_quotactl() function was replaced by sys_quotactl() with
-> the comment "sys_quotactl seems to be 32/64bit clean, enable it for 32bit"
-> However this isn't right. Look at if_dqblk structure:
+On Friday 15 June 2007 05:30:09 Bernd Paysan wrote:
+> On Friday 15 June 2007 01:46, david@lang.hm wrote:
+> > if you cannot modify the software that runs on your Tivo hardware you
+> > haven't tried very hard.
+>
+> Yes, but the GPLv2 clearly says that you don't have to try very hard. The
+> preferred form of modification has to be distributed. I can run a
+> decompiler or disassembler on a program, and I can even modify it in place
+> with a hex editor (I have even modified programs in embedded ROMs by using
+> focussed ion beam, so I know you can modify every program if you try hard
+> enough). It's certainly possible to crack Tivo's firmware to accept my own
+> signature, but it's *not* the preferred form of modification, the source
+> code and Tivo's key for the signature.
 
-Your patch only converts ia32 on x86-64 or ia64.
-What about ppc32-on-ppc64 and sparc32-on-sparc64?
-And, I guess, mips32-on-mips64?
+How is a signing key part of the "preferred form for modification"? It isn't a 
+requirement to *modify* anything, just to *replace* something. (And I am 
+*NOT* going to explain why "replace != modify" again)
 
-> --- linux-2.6.22-rc4-fixed/fs/quota.c.orig	2007-06-14 15:55:26.000000000 +0400
-> +++ linux-2.6.22-rc4-fixed/fs/quota.c	2007-06-14 19:50:13.000000000 +0400
-...
-> +#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
-> +/*
-> + * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
-> + * and is necessary due to alignment problems.
-> + */
+> Since Tivo's firmware only accepts a signed kernel, the combination of
+> kernel+signature is the binary they ship. The kernel itself is useless, the
+> signature as well. Therefore, you can imply that Tivo's key is part of
+> the "other stuff" the GPLv2 mentions, because you need it to recreate the
+> same code as Tivo did and shipped (compilers insert timestamps and such),
+> and to modify that code. The source code is just a mean, the thing they
+> shipped is the end (the binary), and they have to comply with the GPL for
+> that binary - which by all means of practical understanding includes the
+> signature.
 
-The #ifdef looks way too arch-specific. And isn't there a shared
-compat.c module somewhere that this should go into?
+I can find no such requirement in the GPLv2. In fact, it actually says that 
+you don't even have to be able to *USE* the program. See section 12 of the 
+GPL if you don't believe me.
 
-/Mikael
+> "You can imply" means: It depends on court and legal system. I'm quite
+> confident that in Germany, the legal system might favor the "GPLv2 does not
+> allow tivoization" point of view, and in the USA, the legal sysem might do
+> the opposite.
+
+In light of the d-link case, I'm pretty certain that the German Courts 
+interpretation of the GPLv2 makes "Tivoization" a violation. In the US I can 
+say that the result would be "GPLv2 does not disallow tivoization". As I've 
+pointed out in other posts, the GPLv2 actually *limits* itself to three 
+specific "activities". Whether it was intended to "incidentally" cover other 
+things or not, it does *clearly* state what it's scope is. If that scope *IS* 
+*NOT* the intent of the person and/or person who authored the license, that 
+text *SHOULD* *NOT* exist.
+
+DRH
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
