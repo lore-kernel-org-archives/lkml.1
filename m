@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXFOMmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbXFOMn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbXFOMmV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXFOMmM
+	id S1755774AbXFOMn1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 08:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbXFOMnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:42:12 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:60453 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753838AbXFOMmK (ORCPT
+	Fri, 15 Jun 2007 08:43:18 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:53305 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753281AbXFOMnR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:42:10 -0400
-Date: Fri, 15 Jun 2007 14:42:11 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615124211.GA11830@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Alexandre Oliva <aoliva@redhat.com>,
-	Jeremy Maitin-Shepard <jbms@cmu.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-	Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-	debian developer <debiandev@gmail.com>, david@lang.hm,
-	Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <alpine.LFD.0.98.0706141153550.14121@woody.linux-foundation.org> <or1wgeco9v.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141311330.14121@woody.linux-foundation.org> <orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org> <orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org> <orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br> <87r6oeytin.fsf@jbms.ath.cx> <orsl8u54pa.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Fri, 15 Jun 2007 08:43:17 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+Date: Fri, 15 Jun 2007 14:42:23 +0200
+User-Agent: KMail/1.9.6
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200706150159.l5F1xNgM000459@hera.kernel.org> <200706151131.38429.arnd@arndb.de> <20070615121133.GF8154@parisc-linux.org>
+In-Reply-To: <20070615121133.GF8154@parisc-linux.org>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <orsl8u54pa.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706151442.23939.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/XE5DEXjG0S+fCdrI/4mXGtRbOFmD1+n+pGDe
+ v8faWp6HsYR4poofCvotrrxTjIDKgWqsxYBGZVYgYJAstyP4oh
+ xhe3uZwlkf31EYsCIzOHQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 11:31:13PM -0300, Alexandre Oliva wrote:
-> I know.  Neither will Linus.  But he says he chose GPLv2 such that he
-> could, and the v2 is better than v3 in this regard.  What's wrong with
-> this picture?
+On Friday 15 June 2007, Matthew Wilcox wrote:
+> You're relying on compat_[us]64 being only used in structures which are
+> already packed.  If someone uses them in a non-packed struct, they won't
+> decrease the alignment.  I think it would be more effective to specify
+> it as:
+> 
+> __attribute__((aligned(4), packed))
 
-I'm sure it's a rethorical question - but what is wrong is that
-imho the clause that normally is added to any file under the GPL
-("... version 2 or higher") is builtin in as a safeguard: If, for
-whatever reason, in the future it is discovered that the GPL version
-X has a flaw that was not forseen - then it can be 'patched' by
-writing a successor, having that released by the FSF and allow
-anyone to "upgrade" all GPL-ed software to the new license, as
-such having avoided the problems of the said (fictious) flaw.
+That's what I thought as well at first, since this is how the gcc 
+documentation seems to describe it. However, recent version of gcc
+complain about this:
 
-Therefore, it seems pretty weird to me that LONG before version 3
-was written and released, someone purposely would choose to freeze
-their software at version 2. Why make it "impossible" to use this
-safe-guard? ["impossible" because if you get a signature from every
-author where they transfer the authorship rights to you, you can
-re-release everything under a different license anyway.  However,
-the kernel has so many authors who never signed anything(?) that
-this is not possible anymore].
+gcc-4.1 -Wall -O2 test.c  -c
+test.c:1: warning: 'packed' attribute ignored
 
-I never knew it was possible to change the "version 2 or higher" into
-"only version 2", but I am not a laywer and not into licenses at all,
-and I am sure Linus had laywers look into this, so we can take this
-as a fact.
+I have tested versions 2.95, 3.3 and 4.1, an they all ignore do the
+right thing when you do not specify the packed attribute.
 
-The result is simple:
+> The other problem is that if someone defines a struct like this:
+> 
+> struct foo {
+>         short bar;
+>         compat_s64 baz;
+> } __attribute__((packed))
+> 
+> it'll have different definitions on x86 and ia64.
+> 
+> So I think we should be aiming for the ((aligned, packed)) definition and
+> remove the __attribute__((packed)) from the struct definitions.  What do
+> you think?
 
-1) A lot of files in the kernel are fixed at version 2.
-2) Version 3 is incompatible with version 2 (which I also take
-   for granted, having read that in this thread).
+There should never be an __attribute__((packed)) to solve this alignment
+problem, neither in the definition of compat_s64 nor in the definition of
+a data structure using it.
 
-Many (or at least important) authors of version-2 files do not
-wish to change the license to one that allows it to be transformed
-to GPL v3 (ie, add the clause "version 2 or higher". Therefore,
-this will not happen.
+We might ask the gcc developers to clarify the documentation, which as of 4.1
+states:
 
-The result is that it is impossible to accept/add patches that
-can not be converted to GPL v2 (ie, which are explicitely version 2
-or have the phrase "version 2 or higher").
+     The `aligned' attribute can only increase the alignment; but you
+     can decrease it by specifying `packed' as well.  See below.
 
-I think this whole thread has only one purpose:
+My understanding is that this only applies to statically allocated variables,
+but not to automatic stack variables and to usage of the type inside of
+a data structure.
 
-To "test" if the kernel source is indeed - by LAW - immutable
-and fixed to version 2.
-
-Of course, as an unwritten rule, everyone here will respect
-Linus' wishes: he is our leader for things like this. But that
-is irrelevant when it is about important things like this:
-One day he will be gone - and if this license "upgrade" is only
-stopped because people see him as a leader, then the discussion
-will happen again and again and again - until the software IS
-upgraded. This being a one-way lane (once upgraded, you can't
-go back) I think it is LOGICAL to do this: 1) Don't upgrade
-for as long as possible (possibly forever), 2) Have discussions
-like this while Linus is still alive until it is cristal clear that
-the kernel can or can not be "upgraded" to version 3 as a result
-of the law. And, imho, as I pointed out above - this is already
-clear to me (so this thread can end now as far as me is concerned).
-
-Finally - I realize that most people who seem to oppose Linus -
-ie Alexandre, and me included, are NOT (perse) in favour of version 3
-(I know I am not). The most important purpose of the discussion
-is to TEST if someone could force this "upgrade" in the future
-when leadership is less clear. So, I think it's good that some
-people are willing to take the side of version 3 and try to go
-all the way to prove that it's better and/or possible to "upgrade"
-etc - as if they REALLY want that.
-
--- 
-Carlo Wood <carlo@alinoe.com>
+	Arnd <><
