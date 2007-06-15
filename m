@@ -1,157 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbXFOKvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbXFOKxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbXFOKvS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 06:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXFOKvK
+	id S1753655AbXFOKxR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 06:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbXFOKxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 06:51:10 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:35732 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752457AbXFOKvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 06:51:09 -0400
-Date: Fri, 15 Jun 2007 12:51:05 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Islam Amer <pharon@gmail.com>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: USB remote control missing keycodes
-In-Reply-To: <Pine.LNX.4.64.0706151211210.23280@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.64.0706151249520.23280@twin.jikos.cz>
-References: <20070611101319.GA14284@DervishD> <466D2DF7.9020709@aladin.ro> 
- <1181563063.19258.11.camel@iamer-laptop>  <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
-  <1181743734.6163.1.camel@iamer-laptop>  <Pine.LNX.4.64.0706131654180.23280@twin.jikos.cz>
-  <d120d5000706130817v5b9291d4h8653ade63882d2bc@mail.gmail.com> 
- <Pine.LNX.4.64.0706131741420.23280@twin.jikos.cz>  <1181750326.6163.6.camel@iamer-laptop>
-  <Pine.LNX.4.64.0706131809530.23280@twin.jikos.cz> <1181823597.6136.8.camel@iamer-laptop>
- <Pine.LNX.4.64.0706141425180.23280@twin.jikos.cz>
- <Pine.LNX.4.64.0706151211210.23280@twin.jikos.cz>
+	Fri, 15 Jun 2007 06:53:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:48185 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752306AbXFOKxC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 06:53:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=PC5yjpUrME8Vtj8wONtiFKZ/bnzm3HS8nlb1/JRU9OJbZr4w1ok8GZpaRcstNiKNWYCplaTrATJug9xdTGO4MMUq5rtQsz1nAfuXW31AOtlMCUIBzc5MpTPQp6mVOx0kGhFxFe3OKK10clT0xib1QXX2FWeBMI0d0sW7xjYzvO8=
+Message-ID: <9a8748490706150353i452cf529oc5c0e8119f91e64e@mail.gmail.com>
+Date: Fri, 15 Jun 2007 12:53:01 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Daniel Hazelton" <dhazelton@enter.net>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, Jiri Kosina wrote:
+On 15/06/07, Nicolas Mailhot <nicolas.mailhot@laposte.net> wrote:
+> >> > by your argument, the user has some "right to modify the
+> software", on
+> >> > that piece of hardware it bought which had free software on it,
+> correct?
+> >>
+> >> Yes.  This means the hardware distributor who put the software in
+> >> there must not place roadblocks that impede the user to get where she
+> >> wants with the software, not that the vendor must offer the user a
+> >> sport car to take her there.
+>
+> >Okay. That means that if I ship Linux on a ROM chip I have to somehow
+> make
+> >it so that the person purchasing the chip can modify the copy of Linux
+> >installed on the chip *if* I want to follow both the spirit and the
+> letter
+> >of the GPLv2.
+>
+> The key word there is "can"
+>
+> You don't have to send the buyer the hardware design, replace the ROM
+> with a flash, use a rom socket that allows easy switching etc.
+>
+> But you can not add measures to your hardware specifically designed to
+> stop the user from modifying the GPL software part. Especially if
+> those measures are something like DRM that do not make the tinkering
+> just technically hard, but legally forbidden.
+>
+> As long as the restrictions result from technical choices not
+> targetted at forbidding changes you're ok.
+>
+That's simply not true.
 
-> please try the patch below (against 2.6.22-rc4) and send me the result.
+As long as you get a copy of the source code for the software that's
+running on the hardware it's OK. That's all the GPLv2 says.
 
-Now I see in the logs that there are also messages about the 
-report initialization failing, so we should also specify NOGET for this 
-device.
+If you buy a computer with a GPLv2 OS on it and GPLv2 applications
+running on it and recieve a CD-ROM with a copy of all the source code
+along with the computer, then whomever supplied you with that is in
+compliance with the GPLv2. This is true even if the computer does not
+allow you (by whatever means) to install or modify in any way the
+software currently installed on it. It's still true even if the
+manufacturer has a means to change the installed software.
+You have the right to modify, distribute etc the copy of the source
+code you obtained on the CD-ROM, that is the right granted to you by
+the GPLv2 - that does not somehow include the right to nessesarily
+execute the modified software on the specific hardware supplied to you
+by the manufacturer.  You can still use the modified software on some
+other compatible computer (if you can find one), you can still use
+parts of the modified software in other GPLv2 projects, you can still
+redistribute your copy of the source code to other people.
+You may not *like* the fact that you don't automatically get the right
+to execute a modified copy on the hardware that the software was
+originally designed for, you may not think it's morally the way things
+should be, you may think its unfair, but that's all irrelevant. Fact
+is, the hardware manufacturer is in its full right to lock you out of
+their hardware, as long as they have supplied you with the source code
+to the GPLv2 software that is running on the hardware - whether or not
+you can actually use that source code for anything meaningful without
+their hardware is not their problem.
 
-Could you please try the patch below instead, which does just that? 
-Thanks.
-
-diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index 7f81789..a112da2 100644
---- a/drivers/hid/hid-input.c
-+++ b/drivers/hid/hid-input.c
-@@ -566,6 +566,10 @@ static void hidinput_configure_usage(str
- 				case 0x0e5: map_key_clear(KEY_BASSBOOST);	break;
- 				case 0x0e9: map_key_clear(KEY_VOLUMEUP);	break;
- 				case 0x0ea: map_key_clear(KEY_VOLUMEDOWN);	break;
-+
-+				/* reserved in HUT 1.12. Reported on Petalynx remote */
-+				case 0x0fa: map_key_clear(KEY_BACK);		break;
-+
- 				case 0x183: map_key_clear(KEY_CONFIG);		break;
- 				case 0x184: map_key_clear(KEY_WORDPROCESSOR);	break;
- 				case 0x185: map_key_clear(KEY_EDITOR);		break;
-@@ -704,10 +708,10 @@ static void hidinput_configure_usage(str
- 			}
- 			break;
- 
--		case HID_UP_LOGIVENDOR: /* Reported on Logitech Ultra X Media Remote */
--
-+		case HID_UP_LOGIVENDOR:
- 			set_bit(EV_REP, input->evbit);
- 			switch(usage->hid & HID_USAGE) {
-+				/* Reported on Logitech Ultra X Media Remote */
- 				case 0x004: map_key_clear(KEY_AGAIN);		break;
- 				case 0x00d: map_key_clear(KEY_HOME);		break;
- 				case 0x024: map_key_clear(KEY_SHUFFLE);		break;
-@@ -725,6 +729,14 @@ static void hidinput_configure_usage(str
- 				case 0x04d: map_key_clear(KEY_SUBTITLE);	break;
- 				case 0x051: map_key_clear(KEY_RED);		break;
- 				case 0x052: map_key_clear(KEY_CLOSE);		break;
-+
-+				/* Reported on Petalynx Maxter remote */
-+				case 0x05a: map_key_clear(KEY_TEXT);		break;
-+				case 0x05b: map_key_clear(KEY_RED);		break;
-+				case 0x05c: map_key_clear(KEY_GREEN);		break;
-+				case 0x05d: map_key_clear(KEY_YELLOW);		break;
-+				case 0x05e: map_key_clear(KEY_BLUE);		break;
-+
- 				default:    goto ignore;
- 			}
- 			break;
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index d91b9da..b575a07 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -688,6 +688,22 @@ static void hid_fixup_logitech_descripto
- 	}
- }
- 
-+/* Petalynx Maxter Remote has maximum for consumer page set too low */
-+static void hid_fixup_petalynx_descriptor(unsigned char *rdesc, int rsize)
-+{
-+	if (rsize >= 60 && rdesc[39] == 0x2a
-+			&& rdesc[40] == 0xf5
-+			&& rdesc[41] == 0x00
-+			&& rdesc[59] == 0x26
-+			&& rdesc[60] == 0xf9
-+			&& rdesc[61] == 0x00) {
-+		info("Fixing up Petalynx Maxter Remote report descriptor");
-+		rdesc[60] = 0xfa;
-+		rdesc[40] = 0xfa;
-+	} else
-+		info("Not fixing up Petalynx Maxter Remote report descriptor");
-+}
-+
- /*
-  * Some USB barcode readers from cypress have usage min and usage max in
-  * the wrong order
-@@ -781,6 +797,9 @@ static struct hid_device *usb_hid_config
- 	if (quirks & HID_QUIRK_SWAPPED_MIN_MAX)
- 		hid_fixup_cypress_descriptor(rdesc, rsize);
- 
-+	if (quirks & HID_QUIRK_PETALYNX_DESCRIPTOR)
-+		hid_fixup_petalynx_descriptor(rdesc, rsize);
-+
- #ifdef CONFIG_HID_DEBUG
- 	printk(KERN_DEBUG __FILE__ ": report descriptor (size %u, read %d) = ", rsize, n);
- 	for (n = 0; n < rsize; n++)
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index f6c4145..bb34e90 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -220,6 +220,9 @@
- #define USB_VENDOR_ID_PANTHERLORD	0x0810
- #define USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK	0x0001
- 
-+#define USB_VENDOR_ID_PETALYNX		0x18b1
-+#define USB_DEVICE_ID_PETALYNX_MAXTER_REMOTE	0x0037
-+
- #define USB_VENDOR_ID_PLAYDOTCOM	0x0b43
- #define USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII	0x0003
- 
-@@ -418,6 +421,8 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_PANTHERLORD, USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK, HID_QUIRK_MULTI_INPUT | HID_QUIRK_SKIP_OUTPUT_REPORTS },
- 	{ USB_VENDOR_ID_PLAYDOTCOM, USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII, HID_QUIRK_MULTI_INPUT },
- 
-+	{ USB_VENDOR_ID_PETALYNX, USB_DEVICE_ID_PETALYNX_MAXTER_REMOTE, HID_QUIRK_PETALYNX_DESCRIPTOR | HID_QUIRK_NOGET },
-+
- 	{ USB_VENDOR_ID_SONY, USB_DEVICE_ID_SONY_PS3_CONTROLLER, HID_QUIRK_SONY_PS3_CONTROLLER },
- 
- 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_UC100KM, HID_QUIRK_NOGET },
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index 827ee74..3b1d638 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -276,6 +276,7 @@ struct hid_item {
- #define HID_QUIRK_DUPLICATE_USAGES		0x00200000
- #define HID_QUIRK_RESET_LEDS			0x00400000
- #define HID_QUIRK_SWAPPED_MIN_MAX		0x00800000
-+#define HID_QUIRK_PETALYNX_DESCRIPTOR		0x01000000
- 
- /*
-  * This is the global environment of the parser. This information is
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
