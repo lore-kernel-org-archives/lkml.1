@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbXFOPJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751144AbXFOPJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755643AbXFOPJa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbXFOPJW
+	id S1751144AbXFOPJn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbXFOPJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:09:22 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56784 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbXFOPJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:09:21 -0400
-Message-ID: <4672AB7F.7030702@garzik.org>
-Date: Fri, 15 Jun 2007 11:08:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, David Greaves <david@dgreaves.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH] block: always requeue !fs requests at the front
-References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org> <20070615110544.GR6149@kernel.dk> <20070615111728.GO29122@htj.dyndns.org>
-In-Reply-To: <20070615111728.GO29122@htj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	Fri, 15 Jun 2007 11:09:30 -0400
+Received: from mail.lmcg.wisc.edu ([144.92.101.145]:48071 "EHLO
+	mail.lmcg.wisc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755366AbXFOPJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:09:28 -0400
+Date: Fri, 15 Jun 2007 10:09:15 -0500
+From: Daniel Forrest <forrest@lmcg.wisc.edu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Bernd Paysan <bernd.paysan@gmx.de>, Alexandre Oliva <aoliva@redhat.com>,
+       Paulo Marques <pmarques@grupopie.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615100915.A24218@yoda.lmcg.wisc.edu>
+Reply-To: Daniel Forrest <forrest@lmcg.wisc.edu>
+References: <466A3EC6.6030706@netone.net.tr> <or4plae61r.fsf@oliva.athome.lsd.ic.unicamp.br> <d120d5000706141155s4e9caceci6958ceceebad6c73@mail.gmail.com> <200706151048.57762.bernd.paysan@gmx.de> <d120d5000706150546k6a31f831tb496bc73bbaa553@mail.gmail.com> <20070615135739.14862d6d@the-village.bc.nu> <d120d5000706150603w2f70431ei5a2ae461ac3d0ff4@mail.gmail.com> <20070615141923.63fd5cdd@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5.1i
+In-Reply-To: <20070615141923.63fd5cdd@the-village.bc.nu>; from alan@lxorguk.ukuu.org.uk on Fri, Jun 15, 2007 at 02:19:23PM +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> SCSI marks internal commands with REQ_PREEMPT and push it at the front
-> of the request queue using blk_execute_rq().  When entering suspended
-> or frozen state, SCSI devices are quiesced using
-> scsi_device_quiesce().  In quiesced state, only REQ_PREEMPT requests
-> are processed.  This is how SCSI blocks other requests out while
-> suspending and resuming.  As all internal commands are pushed at the
-> front of the queue, this usually works.
+On Fri, Jun 15, 2007 at 02:19:23PM +0100, Alan Cox wrote:
 > 
-> Unfortunately, this interacts badly with ordered requeueing.  To
-> preserve request order on requeueing (due to busy device, active EH or
-> other failures), requests are sorted according to ordered sequence on
-> requeue if IO barrier is in progress.
+> > GPL itself does not. But the author(s) may when they specify "any
+> > later version", "dual GPL/BSD", etc. In this case (IMHO) distributor
+> > in fact relicenses the code and may reduce license to sipmply BSD or
+> > simply GPL, or "GPL v3 from now on". To "restore" license you would
+> > need to go upstream and get the code from there.
+> > 
+> I don't see anything in the GPL that permits a redistributor to
+> change the licence a piece of code is distributed under. If my code
+> is GPL v2 or later you cannot take away the "or later" unless
+> explicitly granted powers by the author to vary the licence.
 > 
-> The following sequence deadlocks.
-> 
-> 1. IO barrier sequence issues.
-> 
-> 2. Suspend requested.  Queue is quiesced with part or all of IO
->    barrier sequence at the front.
-> 
-> 3. During suspending or resuming, SCSI issues internal command which
->    gets deferred and requeued for some reason.  As the command is
->    issued after the IO barrier in #1, ordered requeueing code puts the
->    request after IO barrier sequence.
-> 
-> 4. The device is ready to process requests again but still is in
->    quiesced state and the first request of the queue isn't
->    REQ_PREEMPT, so command processing is deadlocked -
->    suspending/resuming waits for the issued request to complete while
->    the request can't be processed till device is put back into
->    running state by resuming.
-> 
-> This can be fixed by always putting !fs requests at the front when
-> requeueing.
-> 
-> The following thread reports this deadlock.
-> 
->   http://thread.gmane.org/gmane.linux.kernel/537473
-> 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Jenn Axboe <jens.axboe@oracle.com>
-> Cc: David Greaves <david@dgreaves.com>
+> What you most certainly can do is modify it and decide your
+> modifications are GPLv3 only thus creating a derived work which is
+> GPLv3 only. However anyone receiving your modified version and
+> reverting the modifications is back at v2 or later.
 
-Acked-by: Jeff Garzik <jeff@garzik.org>
+But that begs the question: How do you know what has been modified so
+you can revert the modifications?  There won't necessarily be any
+indication of which files have been modified.
 
-Thanks Tejun, you kick ass as usual.
+So I think Dmitry's point is valid.  Don't you need to go upstream at
+least far enough to verify that you have unmodified code?
 
-	Jeff
+And how does the copyright work for kernel patches?  Consider a dual
+licensed (i.e. anything beyond GPLv2 only) file.  Someone supplies
+patches to Linus, he applies them, the resulting file is distributed
+with the kernel as GPLv2.  What precisely has to happen for someone
+to get that same file with equivalent patches applied that can be
+distributed with the original dual license?
 
+Somehow it seems to me that Linus would have to take the dual licensed
+files from his kernel repository and copy them to a separate archive
+and people would have to copy from there to keep the dual license.
+Aren't the files you extract from a linux tarball only licensed to you
+under the terms of GPLv2?
 
-
+-- 
+Dan
