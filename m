@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbXFOCcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbXFOCho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbXFOCcr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXFOCcj
+	id S1754284AbXFOCho (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbXFOChh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:32:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51185 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbXFOCci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:32:38 -0400
-To: Jeremy Maitin-Shepard <jbms@cmu.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706132140.13490.dhazelton@enter.net>
-	<20070614020827.GO3588@stusta.de>
-	<200706132243.14651.dhazelton@enter.net>
-	<20070614025640.GQ3588@stusta.de>
-	<9578.1181793617@turing-police.cc.vt.edu>
-	<20070614152034.GS3588@stusta.de>
-	<alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
-	<20070614131409.9a5800dc.seanlkml@sympatico.ca>
-	<alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org>
-	<orzm32cr8v.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141153550.14121@woody.linux-foundation.org>
-	<or1wgeco9v.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141311330.14121@woody.linux-foundation.org>
-	<orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org>
-	<orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org>
-	<orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<87r6oeytin.fsf@jbms.ath.cx>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 23:31:13 -0300
-In-Reply-To: <87r6oeytin.fsf@jbms.ath.cx> (Jeremy Maitin-Shepard's message of "Thu\, 14 Jun 2007 20\:02\:24 -0400")
-Message-ID: <orsl8u54pa.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 14 Jun 2007 22:37:37 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42332 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751016AbXFOChg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 22:37:36 -0400
+Date: Thu, 14 Jun 2007 19:37:35 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
+ Blocksize support
+In-Reply-To: <20070614192340.13d99e84.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706141931510.3749@schroedinger.engr.sgi.com>
+References: <20070614193839.878721298@sgi.com> <20070614130645.cabdff1b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
+ <20070614143248.736312f8.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com>
+ <20070614150417.c73fb6b9.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706141517120.2240@schroedinger.engr.sgi.com>
+ <20070614154939.c94b097f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706141742580.3220@schroedinger.engr.sgi.com>
+ <20070614184013.1ff51d34.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706141855570.3571@schroedinger.engr.sgi.com>
+ <20070614192340.13d99e84.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Jeremy Maitin-Shepard <jbms@cmu.edu> wrote:
+On Thu, 14 Jun 2007, Andrew Morton wrote:
 
-> Alexandre Oliva <aoliva@redhat.com> writes:
->> On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->>> On Thu, 14 Jun 2007, Alexandre Oliva wrote:
->>>> 
->>>> Hmm...  So, if someone takes one of the many GPLv2+ contributions and
->>>> makes improvements under GPLv3+, you're going to make an effort to
->>>> accept them, rather than rejecting them because they're under the
->>>> GPLv3?
+> > The metadata needs to refer to 1/16th of the earlier pages that need to be 
+> > tracked. metadata is shrunk significantly.
+> 
+> Only if the filesystems are altered to use larger blocksizes and if the
+> operator then chooses to use that feature.  Then they suck for small-sized
+> (and even medium-sized) files.
 
->>> You *cannot* make GPLv3-only contributions to the kernel.
+Nope. File systems already support that. The changes to XFS and ext2 are 
+basically just doing the cleanups that we are discussing here plus some 
+changes to set_blocksize.
+ 
+> So you're still talking about corner cases: specialised applications which
+> require careful setup and administrator intervention.
+> 
+> What can we do to optimise the common case?
 
->> I can make improvements to GPLv2+ files under GPLv3 (or rather will,
->> after GPLv3 is published).
+The common filesystem will be able to support large block sizes easily. 
+Most filesystems already run on 16k and 64k page size platforms and do 
+just fine. All the work is already done. Just the VM needs to give them 
+support for lager page sizes on smaller page size platforms.
 
-> You can do that, but you won't be able to distribute those changes along
-> with the rest of the kernel.
+This is optimizing the common case.
 
-I know.  Neither will Linus.  But he says he chose GPLv2 such that he
-could, and the v2 is better than v3 in this regard.  What's wrong with
-this picture?
+> The alleged fsck benefit is also unrelated to variable PAGE_CACHE_SIZE. 
+> It's a feature of larger (unweildy?) blocksize, and xfs already has that
+> working (doesn't it?)
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+It has a hack with severe limitations like we have done in many other 
+components of the kernel. These hacks can be removed if the large 
+blocksize support is merged. XFS still has the problem that the block 
+layer without page cache support for higher pages cannot easily deal with 
+large contiguous pages.
+
+> There may be some benefits to some future version of ext4.
+
+I have already run ext4 with 64k blocksize on x86_64 with 4k. It has been 
+done for years with 64k page size on IA64 and powerpc and there is no fs 
+issue with running it on 4k platforms with the large blocksize patchset.
+The filesystems work reliably. The core linux code is the issue that we 
+need to solve and this is the beginning of doing so.
+ 
