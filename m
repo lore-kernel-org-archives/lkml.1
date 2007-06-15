@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXFOCX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbXFOC1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757113AbXFOCX7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbXFOCXw
+	id S1755299AbXFOC1X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXFOC1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:23:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54644 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751750AbXFOCXv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:23:51 -0400
-Date: Thu, 14 Jun 2007 19:23:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
- Blocksize support
-Message-Id: <20070614192340.13d99e84.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706141855570.3571@schroedinger.engr.sgi.com>
-References: <20070614193839.878721298@sgi.com>
-	<20070614130645.cabdff1b.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
-	<20070614143248.736312f8.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com>
-	<20070614150417.c73fb6b9.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706141517120.2240@schroedinger.engr.sgi.com>
-	<20070614154939.c94b097f.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706141742580.3220@schroedinger.engr.sgi.com>
-	<20070614184013.1ff51d34.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706141855570.3571@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jun 2007 22:27:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49888 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750747AbXFOC1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 22:27:15 -0400
+To: Florin Malita <fmalita@gmail.com>
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
+	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706140305.50095.dhazelton@enter.net>
+	<orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<46717C58.8050501@gmail.com>
+	<ord4zye6iv.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4671A528.5040300@gmail.com>
+	<or1wge9pwr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614234507.GA3860@nostromo.devel.redhat.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 23:25:57 -0300
+In-Reply-To: <20070614234507.GA3860@nostromo.devel.redhat.com> (Bill Nottingham's message of "Thu\, 14 Jun 2007 19\:45\:08 -0400")
+Message-ID: <or1wge6jii.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jun 2007 19:04:27 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+On Jun 14, 2007, Bill Nottingham <notting@redhat.com> wrote:
 
-> > > Of course there is. The seeks are reduced since there are an factor 
-> > > of 16 less metadata blocks. fsck does not read files. It just reads 
-> > > metadata structures. And the larger contiguous areas the faster.
-> > 
-> > Some metadata is contiguous: inode tables, some directories (if they got
-> > lucky), bitmap tables.  But fsck surely reads them in a single swoop
-> > anyway, so there's no gain there.
-> 
-> The metadata needs to refer to 1/16th of the earlier pages that need to be 
-> tracked. metadata is shrunk significantly.
+> Alexandre Oliva (aoliva@redhat.com) said: 
+>> And since the specific implementation involves creating a derived work
+>> of the GPLed kernel (the signature, or the signed image, or what have
+>> you)
 
-Only if the filesystems are altered to use larger blocksizes and if the
-operator then chooses to use that feature.  Then they suck for small-sized
-(and even medium-sized) files.
+> Wait, a signed filesystem image that happens to contain GPL code
+> is now a derived work? Under what sort of interpretation does *that*
+> occur?
 
-So you're still talking about corner cases: specialised applications which
-require careful setup and administrator intervention.
+Is the signature not derived from the bits in the GPLed component, as
+much as it is derived from the key?
 
-What can we do to optimise the common case?
+Isn't the signature is a functional portion of the image, i.e., if I
+take it out from the system, it won't work any more?
 
-> > Other metadata (indirect blocks) are 100% discontiguous, and reading those
-> > with a 64k IO into 64k of memory is completely dumb.
-> 
-> The effect of a larger page size is that the filesystem will 
-> place more meta data into a single page instead of spreading it out. 
-> Reading a mass of meta data with a 64k read is an intelligent choice to 
-> make in particular if there is a large series of such reads.
+> (This pretty much throws the 'aggregation' premise in GPLv2 completely
+> out.)
 
-Again: requires larger blocksize: specialised, uninteresting for what will
-remain the common case: 4k blocksize.
+Not really.  It could take some explicit distinguishing between
+functional and non-functional signatures, but that's about it.
 
-The alleged fsck benefit is also unrelated to variable PAGE_CACHE_SIZE. 
-It's a feature of larger (unweildy?) blocksize, and xfs already has that
-working (doesn't it?)
+GPLv3 chose a different path to make this clarification.
 
-There may be some benefits to some future version of ext4.
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
