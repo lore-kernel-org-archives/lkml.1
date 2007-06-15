@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXFOUDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbXFOUFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbXFOUDV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXFOUDM
+	id S1757084AbXFOUFx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXFOUFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:03:12 -0400
-Received: from mga01.intel.com ([192.55.52.88]:60746 "EHLO mga01.intel.com"
+	Fri, 15 Jun 2007 16:05:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44958 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752807AbXFOUDK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:03:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,426,1175497200"; 
-   d="scan'208";a="257398816"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1753705AbXFOUFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:05:43 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706142237.31289.dhazelton@enter.net>
+	<ory7il51ix.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706150114.28068.dhazelton@enter.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 17:04:15 -0300
+In-Reply-To: <200706150114.28068.dhazelton@enter.net> (Daniel Hazelton's message of "Fri\, 15 Jun 2007 01\:14\:27 -0400")
+Message-ID: <orfy4tyog0.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] ia64: Scalability improvement of gettimeofday with jitter compensation
-Date: Fri, 15 Jun 2007 13:03:08 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A01B3475A@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <Pine.LNX.4.64.0706151040180.9132@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ia64: Scalability improvement of gettimeofday with jitter compensation
-Thread-Index: Acevd/b8F9uQzZuVQ7OINcpmQcThGwADSHJg
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Christoph Lameter" <clameter@sgi.com>,
-       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>
-Cc: <linux-ia64@vger.kernel.org>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 15 Jun 2007 20:03:09.0695 (UTC) FILETIME=[324208F0:01C7AF88]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >   ret = cmpxchg(&last_cycle, last, new);
-> >   if (ret == last)
-> >     return new; /* you win! */
-> >   else
-> >     return ret; /* you lose. ret is winner's new */
->
-> Interesting solution. But there may be multiple updates of last happening. 
-> Which of the winners is the real winner?
+On Jun 15, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-It might not matter.  Let's look at how good a guarantee an
-application can expect from gettimeofday().  First of all
-there may be arbitrary delays either before, or after the
-kernel comes up with the "current" time since the process
-could be context switched in the glibc prologue or epilogue
-for the system call.  So I think that the best that an
-application can expect is:
+> On Thursday 14 June 2007 23:39:50 Alexandre Oliva wrote:
+>> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+>> > You're making an artificial distinction based on whether the
+>> > *SOFTWARE* has a certain license or not.
+>> 
+>> What matters to me is that, when the GPL says you can't impose further
+>> restrictions, then you can't, no matter how convoluted your argument
+>> is
 
- Given two calls to gettimeofday A and B, where through some
- external syncronization it is known that call B is initiated
- after A has completed, then B shall not return a time value
- lower than that returned by A.
+> Convoluted? Not in the least.
 
-Now if that is the strongest ordering that an application can
-expect (and I'm not completely convinced that I'm right, other
-definitions gratefully accepted), then it would appear that
-is is just over-engineering to worry too much about calls that
-collide inside the kernel (since these don't satisfy the
-"B initiated after A completes" clause of my definition).
+I didn't say your arguments were convoluted, and I know I didn't mean
+to say that.  But I've heard enough arguments about excuses to escape
+the obligations of the GPL (and other licenses and obligations, FWIW)
+to know that such arguments can get very convoluted.
 
--Tony
+That said, I was actually trying to quote Eben Moglen, who once spoke
+about this, but the word he used was "elaborate", not "convoluted".
+Unfortunately, the right word escaped me ATM.
 
-[For some 50 year old British humour on the subject of time,
- read: http://www.hexmaster.com/goonscripts/what_time_is_it.html ]
+>> > If the intent of a law (or license) is to do A but it doesn't say
+>> > that, then how is the intent to be known?  Your answer: Ask the
+>> > author.
+>> 
+>> No, you interpret based on what the author wrote then.
+
+> Really? Well I must say I'm surprised at the sudden change of heart. I have 
+> several mails here in which you have either said "You ask the author" or that 
+> line has been quoted.
+
+It's no change.  You interpret what's there.  If it's clear, good.  If
+there's a dispute, you have to ask the author, only s/he knows what
+s/he meant.  It's really that simple.
+
+> Show me where in the preamble that this issue of "it must run on any given 
+> piece of hardware"
+
+Why is the burden of the proof on me?
+
+You show me where it says "one may impose restrictions on what
+particupar pieces of hardware the program can run", to override the
+general spirit of "passing on all the rights one has".
+
+> (And, by the way, if the FSF decided to release a GPLv4 that had an active 
+> section that said "You must turn over all copyright rights to a work released 
+> under this license to the FSF" it wouldn't "break spirit" with the GPL (v2 or 
+> v3).
+
+Can't.  These terms wouldn't apply to the copyright holder (the only
+person who could make the transfer), only to licensees.
+
+> If "tivoization" was against the spirit, then all that would have been needed 
+> was one extra clause clearly explaining that. Instead there are more than 6 
+> extra sections in the GPLv3.
+
+Erhm...  How did you get the (completely flawed, BTW) impression that
+tivoization was all GPLv3 was about?
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
