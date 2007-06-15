@@ -1,131 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbXFOVlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbXFOVmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbXFOVlv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbXFOVlo
+	id S1757557AbXFOVmX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXFOVmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:41:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57118 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752540AbXFOVln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:41:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [BUG] ptraced process waiting on syscall may return kernel internal errnos
-Date: Fri, 15 Jun 2007 23:48:11 +0200
-User-Agent: KMail/1.9.5
-Cc: Roland McGrath <roland@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <87hcplvdkl.wl%takeuchi_satoru@jp.fujitsu.com> <200706150135.15364.rjw@sisk.pl> <20070615113127.GB84@tv-sign.ru>
-In-Reply-To: <20070615113127.GB84@tv-sign.ru>
+	Fri, 15 Jun 2007 17:42:13 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:36380 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753048AbXFOVmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:42:11 -0400
+Date: Fri, 15 Jun 2007 17:42:08 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: Greg KH <greg@kroah.com>
+cc: Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+In-Reply-To: <20070615211157.GB7337@kroah.com>
+Message-ID: <Line.LNX.4.64.0706151736030.28697@localhost.localdomain>
+References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de>
+ <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com>
+ <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz>
+ <20070615211157.GB7337@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706152348.12019.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 15 June 2007 13:31, Oleg Nesterov wrote:
-> On 06/15, Rafael J. Wysocki wrote:
-> >
-> > +static void freeze_task(struct task_struct *p)
-> > +{
-> >  	if (!freezing(p)) {
-> >  		rmb();
-> >  		if (!frozen(p)) {
-> >  			set_freeze_flag(p);
-> > -			if (p->state == TASK_STOPPED)
-> > -				force_sig_specific(SIGSTOP, p);
-> > -			spin_lock_irqsave(&p->sighand->siglock, flags);
-> > -			signal_wake_up(p, p->state == TASK_STOPPED);
-> > -			spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> > +			task_lock(p);
-> > +			/* We don't want to send signals to kernel threads */
-> > +			if (p->mm && !(p->flags & PF_BORROWED_MM)) {
-> > +				task_unlock(p);
-> > +				send_fake_signal(p);
-> > +			} else {
-> > +				task_unlock(p);
-> > +				wake_up_state(p, TASK_INTERRUPTIBLE);
-> > +			}
+On Fri, 15 Jun 2007, Greg KH wrote:
+
+> > Or just create the files with restrictive labels by default. That way
+> > you "fail closed".
 > 
-> I don't think this is enough. Note that recalc_sigpending() checks freezing().
-> So a kernel thread still can get TIF_SIGPENDING if it does recalc_sigpending().
+> From my limited knowledge of SELinux, this is the default today so this
+> would happen by default.  Anyone with more SELinux experience want to
+> verify or fix my understanding of this?
 
-Yes, you're right, I have overlooked that.
+This is entirely controllable via policy.  That is, you specify that newly 
+create files are labeled to something safe (enforced atomically at the 
+kernel level), and then your userland relabeler would be invoked via 
+inotify to relabel based on your userland pathname specification.
 
-Still, this can be prevented by changing recalc_sigpending_tsk() in the following way:
-
---- linux-2.6.22-rc4.orig/kernel/signal.c	2007-06-07 00:01:48.000000000 +0200
-+++ linux-2.6.22-rc4/kernel/signal.c	2007-06-15 21:22:00.000000000 +0200
-@@ -99,13 +99,13 @@ static inline int has_pending_signals(si
- static int recalc_sigpending_tsk(struct task_struct *t)
- {
- 	if (t->signal->group_stop_count > 0 ||
--	    (freezing(t)) ||
- 	    PENDING(&t->pending, &t->blocked) ||
- 	    PENDING(&t->signal->shared_pending, &t->blocked)) {
- 		set_tsk_thread_flag(t, TIF_SIGPENDING);
- 		return 1;
- 	}
--	clear_tsk_thread_flag(t, TIF_SIGPENDING);
-+	if (!freezing(t))
-+		clear_tsk_thread_flag(t, TIF_SIGPENDING);
- 	return 0;
- }
- 
-> > --- linux-2.6.22-rc4-mm2.orig/include/linux/wait.h	2007-06-15 01:05:33.000000000 +0200
-> > +++ linux-2.6.22-rc4-mm2/include/linux/wait.h	2007-06-15 01:05:41.000000000 +0200
-> > @@ -240,7 +240,7 @@ do {									\
-> >  		prepare_to_wait(&wq, &__wait, TASK_INTERRUPTIBLE);	\
-> >  		if (condition)						\
-> >  			break;						\
-> > -		if (!signal_pending(current)) {				\
-> > +		if (!signal_pending(current) && !freezing(current)) {	\
-> >  			schedule();					\
-> >  			continue;					\
-> >  		}							\
-> 
-> Personally, I think we should not modify wait_event_interruptible() and friends.
-> If a kernel thread wants to be frozen, it should take care about freezing()
-> itself.
-
-Yes, I agree, but wanted to get a working patch quickly. ;-)
-
-I think we might define freezer-friendly versions of wait_event_interruptible()
-and friends in <linux/freezer.h>, like this:
-
-+#define wait_event_interruptible_ff(wq, condition)			\
-+({									\
-+	int __ret = 0;							\
-+	if (!(condition) && !freezing(current))				\
-+		__wait_event_interruptible(wq, 				\
-+				(condition) || freezing(current),	\
-+				__ret);					\
-+	if (!(condition) && freezing(current))				\
-+		__ret = -ERESTARTSYS;					\
-+	__ret;								\
-+})
-
-and make the freezable kernel threads use them instead of the ones defined
-in <linux/wait.h>.  There are only a few threads that need that, BTW.
- 
-> OK, I guess I was too paranoid and you were right, it is better to ignore this
-> minor problem for now.
-
-Okay, but I still think we shouldn't send fake signals to kernel threads. :-)
-
-I'd like to revisit it after 2.6.22 is out, if you don't mind.
-
-Greetings,
-Rafael
+This labeling policy can be as granular as you wish, from the entire 
+filesystem to a single file.  It can also be applied depending on the 
+process which created the file and the directory its created in, ranging 
+from all processes and all directories, to say, just those running as 
+user_t in directories labeled as public_html_t (or whatever).
 
 
+
+- James
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+James Morris
+<jmorris@namei.org>
