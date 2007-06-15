@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbXFONLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbXFONMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbXFONLA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXFONKv
+	id S1755820AbXFONMR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXFONMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:10:51 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41877 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753987AbXFONKu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:10:50 -0400
-Date: Fri, 15 Jun 2007 14:15:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <ak@suse.de>
-Cc: David Howells <dhowells@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
-Message-ID: <20070615141544.5a8e234e@the-village.bc.nu>
-In-Reply-To: <200706151454.28854.ak@suse.de>
-References: <200706151355.57464.ak@suse.de>
-	<200706151443.13511.ak@suse.de>
-	<20070615135420.7fe2e4c1@the-village.bc.nu>
-	<200706151454.28854.ak@suse.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 15 Jun 2007 09:12:03 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:40984 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754241AbXFONMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:12:01 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [2.6.22-rc4] kexec failed: invalid argument
+Date: Fri, 15 Jun 2007 16:10:58 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, horms@verge.net.au
+References: <200706142109.46027.caglar@pardus.org.tr> <m1hcpanlkw.fsf@ebiederm.dsl.xmission.com> <200706151150.19605.caglar@pardus.org.tr>
+In-Reply-To: <200706151150.19605.caglar@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart8044712.EHKf5oBSap";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200706151611.01166.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > For the parts used by the processors in question yes 
-> 
-> That means? They're expected to run only a subset of the network stack?
-> Is that expressed in Kconfig? Is it documented that the rest is dangerous?
+--nextPart8044712.EHKf5oBSap
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Have you audited every other line of code for every other kind of bug ? 
+15 Haz 2007 Cum tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 yazm=
+=C4=B1=C5=9Ft=C4=B1:=20
+> 15 Haz 2007 Cum tarihinde, Eric W. Biederman =C5=9Funlar=C4=B1 yazm=C4=B1=
+=C5=9Ft=C4=B1:
+> > Sight unseen I'm guessing that you have a kexec aware distro that is
+> > doing something in the runlevel change scripts and thus unloading the
+> > kernel. What do: /sys/kernel/kexec_loaded and
+> > /sys/kernel/kexec_crash_loaded say?
+>
+> Not sure, here is the pseudo output what our init system does;
+>
+> - Stop running services
+> - Save random seed, sync clock
+> - Unmount mounted fs's (this includes proc/sysfs etc.)
+> - Call kexec -e
+> - Call reboot
 
-> > people have done 
-> > that work so using the types without unaligned.
-> 
-> Very brave; we're talking about around half a million lines
-> of non trivial source code here.
+Heh, i found a problem in our init system and after solving that issue kexe=
+c=20
+starts to works fine :), thanks for the tip!
 
-And debug simulators that can be made to trap such accesses, and in most
-cases processors which fault such an access (so you find it) but don't
-provide enough information to restart.
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-The testing isn't that hard for a given embedded system and having done
-work Linux does not need other changes re-breaking things.
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
 
-Alan
+--nextPart8044712.EHKf5oBSap
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGco/ly7E6i0LKo6YRAmC8AJ9kAueUVEJpBAQj/FvEOH4SWNilpgCgneR7
+ufgLtfrG2r9rRPUKIT4Jtcc=
+=ELvN
+-----END PGP SIGNATURE-----
+
+--nextPart8044712.EHKf5oBSap--
