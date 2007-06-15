@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbXFONDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXFONGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756500AbXFONDi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbXFOND3
+	id S1755864AbXFONGK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbXFONF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:03:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:62471 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752605AbXFOND2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:03:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t+dbyOcx2y1G3oJneURj3zAhV+6QiZDPFj+BcRNvPFM8QBnF6ZnwS9+WaZ3IC9B9m6F1alcKzwEBVRBPba/vm3W5AlvfwAYVS8bPs8nnNXcg7LF96+5bwsTixzXL3/ovrfOBa2KO7J5XVMDbzQaVwv951iVoLidsFVb5YiagUas=
-Message-ID: <d120d5000706150603w2f70431ei5a2ae461ac3d0ff4@mail.gmail.com>
-Date: Fri, 15 Jun 2007 09:03:27 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Bernd Paysan" <bernd.paysan@gmx.de>,
-       "Alexandre Oliva" <aoliva@redhat.com>,
-       "Paulo Marques" <pmarques@grupopie.com>,
-       "Al Viro" <viro@ftp.linux.org.uk>, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070615135739.14862d6d@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jun 2007 09:05:56 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:40901 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752893AbXFONFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:05:55 -0400
+Date: Fri, 15 Jun 2007 17:03:43 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
+       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: [Patch 09/18] fs/logfs/gc.c
+Message-ID: <20070615130342.GA19569@2ka.mipt.ru>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184604.GJ8952@lazybastard.org> <20070615090357.GC20361@2ka.mipt.ru> <20070615111404.GB6791@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <466A3EC6.6030706@netone.net.tr>
-	 <or4plae61r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <d120d5000706141155s4e9caceci6958ceceebad6c73@mail.gmail.com>
-	 <200706151048.57762.bernd.paysan@gmx.de>
-	 <d120d5000706150546k6a31f831tb496bc73bbaa553@mail.gmail.com>
-	 <20070615135739.14862d6d@the-village.bc.nu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070615111404.GB6791@lazybastard.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 15 Jun 2007 17:04:09 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/15/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > No, you do receive the license from the person or entity you received
-> > the program. You have an _option_ to go to the original author and get
-> > copy of original code with original license (or maybe other license).
->
-> You receive the licence from the original author. The GPL contains no
-> text allowing a third party to grant new licences.
->
+On Fri, Jun 15, 2007 at 01:14:04PM +0200, Jörn Engel (joern@logfs.org) wrote:
+> On Fri, 15 June 2007 13:03:57 +0400, Evgeniy Polyakov wrote:
+> > On Sun, Jun 03, 2007 at 08:46:04PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
+> > > --- /dev/null	2007-03-13 19:15:28.862769062 +0100
+> > > +++ linux-2.6.21logfs/fs/logfs/gc.c	2007-06-03 19:18:57.000000000 +0200
+> > 
+> > Number of bugs in case of error looks quite sad...
+> 
+> Agreed.  I've started working on error handling.  Most erase errors are
+> dealt with.  Write errors still need some infrastructure.
+> 
+> If you like I can send another round of patches for review.
 
-GPL itself does not. But the author(s) may when they specify "any
-later version", "dual GPL/BSD", etc. In this case (IMHO) distributor
-in fact relicenses the code and may reduce license to sipmply BSD or
-simply GPL, or "GPL v3 from now on". To "restore" license you would
-need to go upstream and get the code from there.
+Yep, send them, when thinks they are ready.
+
+> Jörn
+> 
+> -- 
+> Joern's library part 12:
+> http://physics.nist.gov/cuu/Units/binary.html
 
 -- 
-Dmitry
+	Evgeniy Polyakov
