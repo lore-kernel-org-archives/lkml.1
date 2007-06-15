@@ -1,127 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbXFORq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbXFORtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753249AbXFORq0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbXFORqR
+	id S1752296AbXFORtw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbXFORto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:46:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59002 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751770AbXFORqQ (ORCPT
+	Fri, 15 Jun 2007 13:49:44 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:30789 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbXFORto convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:46:16 -0400
-Date: Fri, 15 Jun 2007 10:46:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-cc: linux-ia64@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ia64: Scalability improvement of gettimeofday with jitter
- compensation
-In-Reply-To: <466E0FA4.2040405@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0706151040180.9132@schroedinger.engr.sgi.com>
-References: <466E0FA4.2040405@jp.fujitsu.com>
+	Fri, 15 Jun 2007 13:49:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=uthBUYwOE4DvU9FnJX+p/TJtPoXH7myzG/P7zXHP+MH6LAz8X+eCel6GDQdwTLB1ZytR4qbH55V2ps4R8sKfABnTGRlsMB+pixNqUGYlM66rDpjBxKCrK5UyllcOizeNHv+sjEw4lO0SnrGdNOJhNq5Rv1318xPdgNcmndemiLw=
+From: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton@gmail.com>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Subject: Re: [patch] CFS scheduler, -v17
+Date: Fri, 15 Jun 2007 19:47:14 +0200
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+References: <20070614224908.GA9412@elte.hu> <20070615132841.5ee01f4d@localhost>
+In-Reply-To: <20070615132841.5ee01f4d@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200706151947.14266.mboton@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007, Hidetoshi Seto wrote:
+On Friday 15 June 2007 18:28, Luiz Fernando N. Capitulino wrote:
+>  Hmm, I'm getting this while compiling:
+>
+> """
+>   LD      .tmp_vmlinux1
+> kernel/built-in.o: In function `rq_clock':
+> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
+> undefined reference to `cpu_of'
+> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
+> undefined reference to `cpu_of'
+> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
+> undefined reference to `cpu_of'
+> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
+> undefined reference to `cpu_of'
+> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
+> undefined reference to `cpu_of'
+> kernel/built-in.o:/home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kern
+>el/sched.c:321: more undefined references to `cpu_of' follow make: ***
+> [.tmp_vmlinux1] Error 1
+> """
+>
+>  The code in question is really strange:
+>
+> #ifdef CONFIG_SMP
+> ...
+> static inline int cpu_of(struct rq *rq)
+> #ifdef CONFIG_SMP
+> 	return rq->cpu;
+> #else
+> 	return 0;
+> #endif
+> }
+> ...
+> #endif
 
-> 
-> [arch/ia64/kernel/time.c]
-> > #ifdef CONFIG_SMP
-> >   /* On IA64 in an SMP configuration ITCs are never accurately synchronized.
-> >    * Jitter compensation requires a cmpxchg which may limit
-> >    * the scalability of the syscalls for retrieving time.
-> >    * The ITC synchronization is usually successful to within a few
-> >    * ITC ticks but this is not a sure thing. If you need to improve
-> >    * timer performance in SMP situations then boot the kernel with the
-> >    * "nojitter" option. However, doing so may result in time fluctuating (maybe
-> >    * even going backward) if the ITC offsets between the individual CPUs
-> >    * are too large.
-> >    */
-> >   if (!nojitter) itc_interpolator.jitter = 1;
-> > #endif
-> 
-> ia64 uses jitter compensation to prevent time from going backward.
-> 
-> This jitter compensation logic which keep track of cycle value
-> recently returned is provided as generic code (and copied to
-> arch/ia64/kernel/fsys.S).
-> It seems that there is no user (setting jitter = 1) other than ia64.
+I patched kernel 2.6.21.5 with CFS v17 and I didn't experience this problem (I 
+checked that piece of code and I didn't see something wrong).
+Looks like it only appears in kernel 2.6.22-rc4.
 
-Yes there are only two users of time interpolators. The generic 
-gettimeofday work by John Stultz will make time interpolators obsolete 
-soon. I already saw a patch to remove them.
-
-> The cmpxchg is known to take long time in an SMP environment but
-> it is easy way to guarantee atomic operation.
-> I think this is acceptable while there are no better alternatives.
-> 
-> OTOH, the do-while forces retry if cmpxchg fails (no exchanges).
-> This means that if there are N threads trying to do cmpxchg at
-> same time, only 1 can out from this loop and N-1 others will be
-> trapped in the loop. This also means that a thread could loop
-> N times in worst case.
-
-Right.
-
-> Obviously this is a scalability issue.
-> To avoid this retry loop, I'd like to propose new logic that
-> removes do-while here.
-
-Booting with nojitter is the easiest way to solve this if one is willing 
-to accept slightly inaccurate clocks.
-
-> The basic idea is "use winner's cycle instead of retrying."
-> Assuming that there are N threads trying to do cmpxchg, it also
-> be assumed that they are trying to update last_cycle by its own
-> new value while all values are almost same.
-> Therefore, it will work that treating threads as a group and
-> deciding a group's return value by picking up one from the group.
-> 
-> Fortunately, cmpxchg mechanism can help this logic. Only first
-> one in group can exchange the last_cycle successfully, so this
-> "winner" gets previous last_cycle as the return value of cmpxchg.
-> The rests in group will fail to exchange since last_cycle is
-> already updated by winner, so these "loser" gets current
-> last_cycle on cmpxchg's return. This means that all thread in
-> the group can know the winner's cycle.
-> 
->   ret = cmpxchg(&last_cycle, last, new);
->   if (ret == last)
->     return new; /* you win! */
->   else
->     return ret; /* you lose. ret is winner's new */
-
-Interesting solution. But there may be multiple updates of last happening. 
-Which of the winners is the real winner?
-
-> 
-> I had a test running gettimeofday() processes at 1.5GHz*4way box.
-> It shows followings:
-> 
->  - x1 process:
->     0.15us / 1 gettimeofday() call
->     0.15us / 1 gettimeofday() call with patch
->  - x2 process:
->     0.31us / 1 gettimeofday() call
->     0.24us / 1 gettimeofday() call with patch
->  - x3 process:
->     1.59us / 1 gettimeofday() call
->     1.11us / 1 gettimeofday() call with patch
->  - x4 process:
->     2.34us / 1 gettimeofday() call
->     1.29us / 1 gettimeofday() call with patch
-> 
-> I know that this patch could not help quite huge system since
-> such system like having 1024CPUs should have better clocksource
-> instead of doing cmpxchg. Even though this patch will work good
-> on middle-sized box (4~8way, possibly 16~64way?).
-
-Our SGI machines have their own clock that is hardware replicated to all 
-nodes.
-
-This would certainly a nice improvement for SMP machines. It certainly 
-works nicely for 2 way systems.
+-- 
+	Miguel Botón
