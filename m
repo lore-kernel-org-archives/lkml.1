@@ -1,92 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbXFOCWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXFOCX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbXFOCWm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbXFOCWf
+	id S1757113AbXFOCX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbXFOCXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:22:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48805 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753206AbXFOCWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:22:34 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706132121.04532.dhazelton@enter.net>
-	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706132304.21984.dhazelton@enter.net>
-	<20070614112329.3645c397@the-village.bc.nu>
-	<20070614103846.GA7902@elte.hu>
-	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614195517.GA4933@elte.hu>
-	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 23:21:59 -0300
-In-Reply-To: <20070614235004.GA14952@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 01\:50\:04 +0200")
-Message-ID: <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Jun 2007 22:23:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54644 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751750AbXFOCXv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 22:23:51 -0400
+Date: Thu, 14 Jun 2007 19:23:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
+ Blocksize support
+Message-Id: <20070614192340.13d99e84.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706141855570.3571@schroedinger.engr.sgi.com>
+References: <20070614193839.878721298@sgi.com>
+	<20070614130645.cabdff1b.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
+	<20070614143248.736312f8.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com>
+	<20070614150417.c73fb6b9.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141517120.2240@schroedinger.engr.sgi.com>
+	<20070614154939.c94b097f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141742580.3220@schroedinger.engr.sgi.com>
+	<20070614184013.1ff51d34.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141855570.3571@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, 14 Jun 2007 19:04:27 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> the GPLv2 license says no such thing, and you seem to be mighty confused 
-> about how software licenses work.
+> > > Of course there is. The seeks are reduced since there are an factor 
+> > > of 16 less metadata blocks. fsck does not read files. It just reads 
+> > > metadata structures. And the larger contiguous areas the faster.
+> > 
+> > Some metadata is contiguous: inode tables, some directories (if they got
+> > lucky), bitmap tables.  But fsck surely reads them in a single swoop
+> > anyway, so there's no gain there.
+> 
+> The metadata needs to refer to 1/16th of the earlier pages that need to be 
+> tracked. metadata is shrunk significantly.
 
-> the GPL applies to software. It is a software license.
+Only if the filesystems are altered to use larger blocksizes and if the
+operator then chooses to use that feature.  Then they suck for small-sized
+(and even medium-sized) files.
 
-> the Tivo box is a piece of hardware.
+So you're still talking about corner cases: specialised applications which
+require careful setup and administrator intervention.
 
-> a disk is put into it with software copied to it already: a bootloader, 
-> a Linux kernel plus a handful of applications. The free software bits 
-> are available for download.
+What can we do to optimise the common case?
 
-> the Tivo box is another (copyrighted) work, a piece of hardware.
+> > Other metadata (indirect blocks) are 100% discontiguous, and reading those
+> > with a 64k IO into 64k of memory is completely dumb.
+> 
+> The effect of a larger page size is that the filesystem will 
+> place more meta data into a single page instead of spreading it out. 
+> Reading a mass of meta data with a 64k read is an intelligent choice to 
+> make in particular if there is a large series of such reads.
 
-> so how can, in your opinion, the hardware that Tivo produces, "take 
-> away" some right that the user has to the GPL-ed software?
+Again: requires larger blocksize: specialised, uninteresting for what will
+remain the common case: 4k blocksize.
 
-Consider egg yolk and egg shells.
+The alleged fsck benefit is also unrelated to variable PAGE_CACHE_SIZE. 
+It's a feature of larger (unweildy?) blocksize, and xfs already has that
+working (doesn't it?)
 
-I produce egg yolk.  I give it to you under terms that say "if you
-pass this on, you must do so in such a way that doesn't stop anyone
-from eating it"
-
-
-You produce egg shells.  You carefully construct your shell around the
-egg yolk and some white you got from a liberal third party.
-
-
-Then you sell the egg shells, with white and yolk inside, under
-contracts that specify "the shell must be kept intact, it can't be
-broken or otherwise perforated".
-
-
-Are you or are you not disrespecting the terms that apply to the yolk?
-
-
-> by your argument, the user has some "right to modify the software", on 
-> that piece of hardware it bought which had free software on it, correct? 
-
-Yes.  This means the hardware distributor who put the software in
-there must not place roadblocks that impede the user to get where she
-wants with the software, not that the vendor must offer the user a
-sport car to take her there.
-
-The goal is not to burden the vendor.  The goal is to stop the vendor
-from artificially burdening the user.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+There may be some benefits to some future version of ext4.
