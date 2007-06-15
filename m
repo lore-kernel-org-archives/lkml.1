@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbXFOCmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbXFOCrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758243AbXFOCmf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXFOCm2
+	id S1756921AbXFOCrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXFOCrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:42:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53637 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751662AbXFOCm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:42:27 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Paul Mundt <lethal@linux-sh.org>,
+	Thu, 14 Jun 2007 22:47:11 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50657 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbXFOCrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 22:47:10 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Michael Poole <mdpoole@troilus.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Thu, 14 Jun 2007 22:46:57 -0400
+User-Agent: KMail/1.9.6
+Cc: Alexandre Oliva <aoliva@redhat.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706141617.46734.dhazelton@enter.net>
-	<or645q9qgw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706142100.33478.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 23:42:05 -0300
-In-Reply-To: <200706142100.33478.dhazelton@enter.net> (Daniel Hazelton's message of "Thu\, 14 Jun 2007 21\:00\:33 -0400")
-Message-ID: <orodji5476.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706142049.41819.dhazelton@enter.net> <87fy4u0xty.fsf@graviton.dyn.troilus.org>
+In-Reply-To: <87fy4u0xty.fsf@graviton.dyn.troilus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706142246.57583.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+On Thursday 14 June 2007 22:13:13 Michael Poole wrote:
+> Daniel Hazelton writes:
+> > What rights did they give to "downstream" recipients of the "object code"
+> > version? *EXACTLY* those they received from the GPLv2.
+>
+> Doing the e-mail equivalent of yelling about this will not change the
 
-> On Thursday 14 June 2007 17:27:27 Alexandre Oliva wrote:
->> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
->> > <somewhat sarcastic>
->> > And the companies that produce devices that come with Linux and/or
->> > other GPL'd software installed and place limits such that only
->> > people that have purchased that hardware have access to the
->> > "modified" source running on the device are following the letter,
->> > and the spirit, of the GPL.
->> 
->> WAIT, WAIT, THAT'S... :-)
->> 
->> > Before you start yelling I'm wrong, think about it this way: they
->> > make the source available to the people that they've given binary
->> > versions to, and there is nothing stopping one of those people from
->> > making the source available to the rest of the world.
->> 
->> The *only* in your sentence betrayed you.
->> 
->> If they place the limits such that nobody else can access the sources,
->> they're in violation of the license.
+Sorry, I wasn't trying to "yell" - just provide a note that at that point I 
+would be providing verbal stress.
 
-> Nope. There is *NO* requirement *ANYWHERE* in the GPL, no matter the version, 
-> that says you have to *DISTRIBUTE* the source to *ANYONE* except those that 
-> you have given a binary to. Go read the licenses.
+> fact that people who think Tivo did something wrong -- legally and/or
+> morally -- consider DRM locks on a piece of software to be part of the
+> "work based on the Program" that is governed by the GPL.
 
-I agree.  I even said so.
+All I've done is get a little annoyed that, despite evidence that it isn't 
+legally wrong - at least under the laws I am most familiar with - people 
+continue repeat that it is.
 
-But the *only* gave me the impression that you were talking about
-magic, or any other sufficiently advanced technology ;-), that would
-enable the recipients to get the source code, but not usefully pass it
-on.
+I can't argue that it isn't "morally" wrong. While it may not be against my 
+morals, it could be against those of another person. It has never been my 
+intent to try and convince people that their morals are wrong.
 
-> That is *EXACTLY* what a number of companies have done - Acer (yes,
-> the laptop company) has done that. They sell laptops running Linux,
-> but unless you have purchased one of them you can't download the
-> sources (or even replacement binaries) for the version of linux they
-> put on their machines. (From Acer, that is)
+> The fundamental reason for this is that neither the executable code
+> nor the digital signature serves the desired function alone.  The user
+> received a copy of the executable for a particular purpose: to run the
+> program on a particular platform.  With DRM signatures, only the
+> combination of program and signature will perform that function, and
+> separating the two based on strictly read legal definitions is risky.
 
-That's the sort of stuff that breaks the tit-for-tat premise.  GPL
-indeed is not concerned about tit-for-tat.  It's concerned about
-respect for the freedoms.
+I agree.
+
+> The question of whether DRM signatures are covered by the license must
+> be resolved before one can determine whether Tivo gave "*EXACTLY*" the
+> same rights to object-code recipients as Tivo received.  GPLv2 is
+> worded such that the answer to this does not depend on whether one is
+> in file A and the other in file B, or whether one is on hard drive C
+> and the other is in flash device D, as long as they are delivered as
+> part of one unit; it *might* matter if, say, one is received on
+> physical media and the other is downloaded on demand.
+
+I have read the GPLv2 at least three times since it was pointed out that I had 
+forgotten part of it. At no point can I find a point where Tivo broke the 
+GPLv2 requirement that they give the recipients of the object code the same 
+rights they received when they acquired a copy of the object or source code.
+
+> (Linus likes to say that FSF counsel thinks that Tivo did not violate
+> GPLv2.  I suspect the actual situation is that FSF counsel believes
+> that there is no case law on point, and that it could go either way,
+> making it improper to publicly claim that Tivo violated any copyright.
+> Until a court rules on a close-enough case, the question of whether
+> GPLv2 covers DRM signatures remains open.  In the mean time, it makes
+> more sense for the FSF to issue a new license that squarely addresses
+> this -- such as the GPLv3 -- and persuade as many developers as
+> possible that using it is the best way to protect free software.)
+
+In examining the GPLv2 and the situation from a strictly factual basis I can 
+believe Linus' statement fully. The facts are as I stated them in a previous 
+mail.
+
+DRH
+
+> Michael Poole
+
+
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
