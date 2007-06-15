@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbXFOCIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbXFOCNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbXFOCIw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXFOCIp
+	id S1756778AbXFOCNW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbXFOCNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:08:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45838 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbXFOCIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:08:45 -0400
-To: Rob Landley <rob@landley.net>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
+	Thu, 14 Jun 2007 22:13:15 -0400
+Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:43426
+	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752262AbXFOCNO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 22:13:14 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706141014.21574.rgetz@blackfin.uclinux.org>
-	<or1wgefmyn.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706141944.21280.rob@landley.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 23:07:45 -0300
-In-Reply-To: <200706141944.21280.rob@landley.net> (Rob Landley's message of "Thu\, 14 Jun 2007 19\:44\:19 -0400")
-Message-ID: <orabv26kcu.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<200706141640.17217.dhazelton@enter.net>
+	<orabv29qtk.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706142049.41819.dhazelton@enter.net>
+From: Michael Poole <mdpoole@troilus.org>
+Date: Thu, 14 Jun 2007 22:13:13 -0400
+In-Reply-To: <200706142049.41819.dhazelton@enter.net> (Daniel Hazelton's message of "Thu\, 14 Jun 2007 20\:49\:41 -0400")
+Message-ID: <87fy4u0xty.fsf@graviton.dyn.troilus.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Rob Landley <rob@landley.net> wrote:
+Daniel Hazelton writes:
 
-> On Thursday 14 June 2007 13:46:40 Alexandre Oliva wrote:
+> What rights did they give to "downstream" recipients of the "object code" 
+> version? *EXACTLY* those they received from the GPLv2.
 
->> Well, then, ok: do all that loader and hardware signature-checking
->> dancing, sign the image, store it in the machine, and throw the
->> signing key away.  This should be good for the highly-regulated areas
->> you're talking about.  And then, since you can no longer modify the
->> program, you don't have to let the user do that any more.  Problem
->> solved.
+Doing the e-mail equivalent of yelling about this will not change the
+fact that people who think Tivo did something wrong -- legally and/or
+morally -- consider DRM locks on a piece of software to be part of the
+"work based on the Program" that is governed by the GPL.
 
-> A) Does that actually satisfy the terms of GPLv3?
+The fundamental reason for this is that neither the executable code
+nor the digital signature serves the desired function alone.  The user
+received a copy of the executable for a particular purpose: to run the
+program on a particular platform.  With DRM signatures, only the
+combination of program and signature will perform that function, and
+separating the two based on strictly read legal definitions is risky.
 
-I think so:
+The question of whether DRM signatures are covered by the license must
+be resolved before one can determine whether Tivo gave "*EXACTLY*" the
+same rights to object-code recipients as Tivo received.  GPLv2 is
+worded such that the answer to this does not depend on whether one is
+in file A and the other in file B, or whether one is on hard drive C
+and the other is in flash device D, as long as they are delivered as
+part of one unit; it *might* matter if, say, one is received on
+physical media and the other is downloaded on demand.
 
-  this requirement does not apply if neither you nor any third party
-  retains the ability to install modified object code on the User
-  Product
+(Linus likes to say that FSF counsel thinks that Tivo did not violate
+GPLv2.  I suspect the actual situation is that FSF counsel believes
+that there is no case law on point, and that it could go either way,
+making it improper to publicly claim that Tivo violated any copyright.
+Until a court rules on a close-enough case, the question of whether
+GPLv2 covers DRM signatures remains open.  In the mean time, it makes
+more sense for the FSF to issue a new license that squarely addresses
+this -- such as the GPLv3 -- and persuade as many developers as
+possible that using it is the best way to protect free software.)
 
-> If so, can't they just wait until they get sued and destroy the keys
-> then?
-
-I don't think this woulnd't satisfy the above.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Michael Poole
