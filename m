@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbXFOLJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbXFOLMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbXFOLJT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 07:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbXFOLJM
+	id S1753067AbXFOLMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 07:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbXFOLMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 07:09:12 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:41406 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbXFOLJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 07:09:11 -0400
-Date: Fri, 15 Jun 2007 13:08:11 +0200 (MEST)
-Message-Id: <200706151108.l5FB8BWH008633@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: arnd@arndb.de, mikpe@it.uu.se
-Subject: Re: [PATCH] diskquota: 32bit quota tools on 64bit architectures
-Cc: akpm@linux-foundation.org, dev@sw.ru, devel@openvz.org, jack@suse.cz,
-       linux-kernel@vger.kernel.org, nataliep@google.com, vtaras@openvz.org,
-       vvs@sw.ru
+	Fri, 15 Jun 2007 07:12:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:7614 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbXFOLMH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 07:12:07 -0400
+Date: Fri, 15 Jun 2007 13:12:05 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
+In-Reply-To: <466DB5B8.80005@zytor.com>
+Message-ID: <Pine.LNX.4.64.0706151311520.32724@fbirervta.pbzchgretzou.qr>
+References: <466D550C.4030600@shadowen.org> <63a08cc7547f14065becdf9a94d0d529@pinky>
+ <20070611091558.f468f205.akpm@linux-foundation.org> <20070611172006.GI9174@redhat.com>
+ <466D882D.70001@zytor.com> <Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr>
+ <466D9C00.6030608@zytor.com> <Pine.LNX.4.64.0706112239080.19578@fbirervta.pbzchgretzou.qr>
+ <466DB5B8.80005@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007 12:43:01 +0200, Arnd Bergmann wrote:
-> On Friday 15 June 2007, Mikael Pettersson wrote:
-> > > --- linux-2.6.22-rc4-fixed/fs/quota.c.orig=A0=A0=A0=A02007-06-14 15:55:=
-> 26.000000000 +0400
-> > > +++ linux-2.6.22-rc4-fixed/fs/quota.c=A02007-06-14 19:50:13.000000000 +=
-> 0400
-> > ...
-> > > +#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
-> > > +/*
-> > > + * This code works only for 32 bit quota tools over 64 bit OS (x86_64,=
->  ia64)
-> > > + * and is necessary due to alignment problems.
-> > > + */
-> >=20
-> > The #ifdef looks way too arch-specific. And isn't there a shared
-> > compat.c module somewhere that this should go into?
-> >=20
-> 
-> Only x86_64 and ia64 have this particular problem, the other architectures,
-> and hopefully all future 64 bit platforms with 32 bit user space use
-> the same alignment rules in elf32 and elf64.
 
-Ah yes, alignof(u64) is the same in 32- and 64-bit modes on !x86,
-thus they don't have a problem here.
+On Jun 11 2007 13:51, H. Peter Anvin wrote:
+>Jan Engelhardt wrote:
+>> (yay, 3.09 bogomips and a totally incapable processor :p)
+>> Have not tried more recent kernels yet though.
+>
+>Too bad I don't still have access to the 0.59 bogomips "double sigma"
+>386 machine that had the dubious honor of being the slowest Linux
+>machine in the world for quite a while.  That machine had 3 MB of RAM.
+>
+>However, to tie it back to the original discussion, these
+>extremely-low-memory machines need nonstandard kernel options anyay.
 
-Thanks for explaining that. I consider this is an essential
-piece of information that should be included in the patch.
-(In a comment in the code, not buried in some commit log.)
+Not really. Want a .config?
 
-/Mikael
+
+	Jan
+-- 
