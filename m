@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbXFOTbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbXFOTdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757256AbXFOTbz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbXFOTb3
+	id S1756770AbXFOTdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbXFOTdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:31:29 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:24484 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756538AbXFOTb2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:31:28 -0400
-Date: Fri, 15 Jun 2007 21:31:27 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chris Friesen <cfriesen@nortel.com>,
-       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: coding style
-In-Reply-To: <4672E6B3.1080205@intel.com>
-Message-ID: <Pine.LNX.4.64.0706152122050.32724@fbirervta.pbzchgretzou.qr>
-References: <20070614184836.GA6520@cvg> <20070615045111.GU943@1wt.eu>
- <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com>
- <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr>
- <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com>
- <20070615110326.b0762b7a.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr>
- <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com>
+	Fri, 15 Jun 2007 15:33:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34519 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753124AbXFOTdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:33:06 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706132121.04532.dhazelton@enter.net>
+	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706132304.21984.dhazelton@enter.net>
+	<20070614112329.3645c397@the-village.bc.nu>
+	<20070614103846.GA7902@elte.hu>
+	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614195517.GA4933@elte.hu>
+	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu>
+	<20070615011012.6c09066e@the-village.bc.nu>
+	<20070615012623.GA25189@elte.hu>
+	<20070615101007.0cbfd078@the-village.bc.nu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 16:18:19 -0300
+In-Reply-To: <20070615101007.0cbfd078@the-village.bc.nu> (Alan Cox's message of "Fri\, 15 Jun 2007 10\:10\:07 +0100")
+Message-ID: <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 15, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-On Jun 15 2007 12:21, Kok, Auke wrote:
-> Cyrill Gorcunov wrote:
->> [Jan Engelhardt - Fri, Jun 15, 2007 at 09:10:49PM +0200]
->> | On Jun 15 2007 11:03, Randy Dunlap wrote:
->> | > > 
->> | > > "use tabs for indents and spaces for alignment"
->> | > > 
->> | > > If that means you need to use two dozen spaces, then so be it.
->> | >
->> | >I don't think that's what that rule means, but I didn't write it,
->> | >so I'm not absolutely sure about it.
->> | >
->> | >but we know that tab stops are every 8th character, not 4 :)
->> | 
->> | Hardly.
->> | 
->> Jan, as I see from CodingStyle:
->> 
->>  "Tabs are 8 characters, and thus indentations are also 8 characters."
->> 
->> Actually it would be perfect to get strict rules also for math. and log.
->> operators being splitted on several lines:
->
-> this doesn't say anything about alignment, which was his point :)
+> What this means for the FSF goals if Tivo get up one morning and switch
+> their system firmware to ROM however is interesting 8)
 
-Well tabs should _never_ be assumed to be 8, and in this regard, as I 
-see it, CodingStyle has a bug. Tabs are there so that the user can set 
-their width according to _their_ taste, simply so that both sides,
+I'm not the FSF, and I don't speak for it, but it seems to me that
+this would be "mission accomplished".
 
-	from CodingStyle:
-	Tabs are 8 characters, and thus indentations are also 8
-	characters.  There are heretic movements that try to make
-	indentations 4 (or even 2!) characters deep, and that is akin
-	to trying to define the value of PI to be 3.
+The goal AFAIK is not to force people to enable others to hack the
+hardware or software to their liking.  The goal is respect for the
+freedoms, it's not making it more difficult for others to do what you
+can and want to do.  I guess it also goes under the name "Golden
+Rule".  Others might phrase it as tit-for-tat, or quid pro quo.
 
-Linus (did he wrote that part?) and the heretics both can have their fun 
-without impacting each other. If we wanted to force the user to have 
-exactly 8 screen blanks, we should use spaces throughout.
-
-(And BTW,  int pi = 3.141592 _is_ going to be 3 ;-) and floating point 
-is mostly an agreed no-go in kernel anyway, even if it's supported.)
-
-
-
-	Jan
 -- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
