@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbXFORIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbXFORMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752966AbXFORIQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbXFORIC
+	id S1751971AbXFORMF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbXFORLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:08:02 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:48168 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750724AbXFORIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:08:01 -0400
-Message-ID: <4672C76D.5050008@cfl.rr.com>
-Date: Fri, 15 Jun 2007 13:07:57 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: "R.F. Burns" <burnsrf@gmail.com>
-CC: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
-Subject: Re: PC speaker
-References: <a800cda90706120545w2c6d0bb0vb77bd4d961415c5c@mail.gmail.com>  <75b66ecd0706120744g7cdb3392l6537b5c68c2d6b21@mail.gmail.com> <a800cda90706121325p18c85b00r7bc4b15b95517371@mail.gmail.com>
-In-Reply-To: <a800cda90706121325p18c85b00r7bc4b15b95517371@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Jun 2007 17:08:09.0945 (UTC) FILETIME=[BFEB5490:01C7AF6F]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15240.000
-X-TM-AS-Result: No--3.527800-5.000000-31
+	Fri, 15 Jun 2007 13:11:55 -0400
+Received: from mx.laposte.net ([81.255.54.16]:54811 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750901AbXFORLz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 13:11:55 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: Florin Malita <fmalita@gmail.com>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Nicolas Mailhot <nicolas.mailhot@gmail.com>,
+       Daniel Hazelton <dhazelton@enter.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <4672BBD8.1010403@gmail.com>
+References: <9a8748490706150353i452cf529oc5c0e8119f91e64e@mail.gmail.com>
+	 <52052.192.54.193.51.1181907121.squirrel@rousalka.dyndns.org>
+	 <9a8748490706150641s4669c7ffrb64e1f0b92e5c931@mail.gmail.com>
+	 <42772.192.54.193.51.1181918039.squirrel@rousalka.dyndns.org>
+	 <4672BBD8.1010403@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Organization: Adresse perso
+Date: Fri, 15 Jun 2007 19:11:28 +0200
+Message-Id: <1181927488.4388.4.camel@rousalka.dyndns.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.3 (2.11.3-4.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-R.F. Burns wrote:
-> However, over the past several weeks, the students have found more
-> creative ways to abuse the PC speaker (outside of the OS.)  The Powers
-> that Be are asking that the PC speakers be disabled completely.  With
-> the small number of techs we have, it would be very impractical to go
-> around to all systems and remove the PC speaker from each and every
-> computer case.
+Le vendredi 15 juin 2007 à 12:18 -0400, Florin Malita a écrit :
+> On 06/15/2007 10:33 AM, Nicolas Mailhot wrote:
+> > Le Ven 15 juin 2007 15:41, Jesper Juhl a écrit :
+> >   
+> >> But the only thing that *actually* matters is what the license text
+> >> *says*. It doesn't matter what the authors of the license text
+> >> intended
+> >>     
+> >
+> > Judges would disagree there
+> >   
+> 
+> I very much doubt that, read Jesper's phrase carefully: what may matter 
+> is the intent of the *copyrighted work's* author, not the intent of the 
+> *license* author. The intent of the latter is (well, should be) 
+> completely irrelevant to the case.
 
-Now I am curious; how are they getting the pc speaker to make any sound 
-with the kernel module disabled?
+You're right though I suspect even in the case where the copyrighted
+work author and the licensing author are not the same, a judge will
+listen to the licensing author if licensor and licensee disagree on a
+point (the licensing author being a neutral third-party that presumably
+knows what's in the licence it wrote). Though in this case license
+author is nothing more than an expert witness
 
-Also there is a very simple solution to your problem.  When a student 
-abuses the computer, take a yardstick ( there should be one in any 
-classroom ), approach said student from behind, and break said yardstick 
-over their ass.  Or you could just ban them from using the computers 
-again.
-
-
+-- 
+Nicolas Mailhot
