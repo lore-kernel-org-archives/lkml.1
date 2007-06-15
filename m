@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbXFOWqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbXFOWvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758675AbXFOWqb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 18:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755895AbXFOWqY
+	id S1758177AbXFOWvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 18:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbXFOWvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 18:46:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49325 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754917AbXFOWqX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 18:46:23 -0400
-Date: Fri, 15 Jun 2007 15:45:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michael Gerdau <mgd@technosis.de>
-cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <200706160006.26428.mgd@technosis.de>
-Message-ID: <alpine.LFD.0.98.0706151520300.14121@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
- <200706150825.15491.mgd@technosis.de> <alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org>
- <200706160006.26428.mgd@technosis.de>
+	Fri, 15 Jun 2007 18:51:10 -0400
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:51452 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756766AbXFOWvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 18:51:08 -0400
+Date: Fri, 15 Jun 2007 15:51:07 -0700 (PDT)
+From: alan <alan@clueserver.org>
+X-X-Sender: alan@blackbox.fnordora.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+In-Reply-To: <467314E2.9010306@zytor.com>
+Message-ID: <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-ID: <alpine.LFD.0.98.0706151528031.14121@woody.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 15 Jun 2007, H. Peter Anvin wrote:
 
+> Jack Stone wrote:
+>> I hope I got the CC list right. Apologies to anyone in didn't include
+>> and anyone I shouldn't have included.
+>>
+>> The basic idea is to include an idea from VMS that seems to be quite
+>> useful: version numbers for files.
+>>
+>> The idea is that whenever you modify a file the system saves it to na
+>> new copy leaving the old file intact. This could be a great advantage
+>> from many view points:
+>> 	1) it would be much easier to do package management as the old
+>> 		version would be automatically saved for a package
+>> 		management system to deal with.
+>>
+>> 	2) backups would also be easier as all versions of a file
+>> 		are automatically saved so it could be potentially very
+>> 		useful for a company or the like.
+>>
+>
+> This is one of those things that seems like a good idea, but frequently
+> ends up short.  Part of the problem is that "whenever you modify a file"
+> is ill-defined, or rather, if you were to take the literal meaning of it
+> you'd end up with an unmanageable number of revisions.
 
-On Sat, 16 Jun 2007, Michael Gerdau wrote:
-> 
-> I beg to differ. By adopting _his_ license you adopted his view.
+And no drive space.
 
-I'm sorry, but that's simply bullshit. 
+> Furthermore, it turns out that often relationships between files are
+> more important.
 
-The GPLv2 does not state that you have to become a slave of rms and follow 
-him in all things, and agree with him. Really. You must have read some 
-other (perhaps unreleased early draft?) version.
+And there are files that are not important at all.
 
-The GPLv2 says what it says. Not what you (or rms) *wished* it says.
+Would you save every temp file?  To be meaningful you would need to know 
+the process they were tied to in many cases.
 
-You don't enter into contracts and licenses based on wishes and intents. 
-That's just not how it works. 
+> Thus, in the end it turns out that this stuff is better handled by
+> explicit version-control systems (which require explicit operations to
+> manage revisions) and atomic snapshots (for backup.)
 
-> >  (b) The language in the preamble: "must give the recipients all the 
-> >      rights that you have" means really *all* the rights and abilities!
-> 
-> I always did imply a "within reason". 
+ZFS is the cool new thing in that space.  Too bad the license makes it 
+hard to incorporate it into the kernel.  (I am one of those people that 
+believe that Linux should support EVERY file system, no matter how old or 
+obscure.)
 
-Your view is not relevant. The fact that the "preamble" is not the 
-"conditions" is what's relevant. 
-
-The preamble is explicitly stated to be *different* from the exact 
-conditions. It's not the real "terms of copying". It's there to explain, 
-it's not there to *be* the license.
-
-It's explanatory, but the wording that actually *matters* is the "terms 
-and conditions".
-
-And the fact that *you* can mentally add words to it when you read the 
-license (adding a "within reason") has absolutely no relevance 
-what-so-ever.
-
-			Linus
+-- 
+"ANSI C says access to the padding fields of a struct is undefined.
+ANSI C also says that struct assignment is a memcpy. Therefore struct
+assignment in ANSI C is a violation of ANSI C..."
+                                   - Alan Cox
