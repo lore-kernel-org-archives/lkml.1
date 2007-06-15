@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbXFOG2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbXFOG3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbXFOG2m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 02:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbXFOG2e
+	id S1755351AbXFOG3m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 02:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbXFOG3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 02:28:34 -0400
-Received: from web52502.mail.re2.yahoo.com ([206.190.48.185]:21063 "HELO
-	web52502.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752162AbXFOG2d (ORCPT
+	Fri, 15 Jun 2007 02:29:35 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:8817 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbXFOG3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 02:28:33 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jun 2007 02:28:33 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=V2m2DjSEG4kB/f8dAnNeOjd3BnptdI7C2dh2fqFnAHMlq+j+SN6tT7cDtsU1cS9AsT333mQegJr/QQNJatM+8irxaDr82lmmxIeoJixEz+Ko4xcDJIj2WuASREhW4/g5NolApeLrPPDTnjQTfiJkpT46rnbSCxy7kOP/nn2dXBM=  ;
-Message-ID: <20070615062152.4369.qmail@web52502.mail.re2.yahoo.com>
-X-YMail-OSG: h1olZnUVM1nTR6sbaTI1ZAsPoLATFpCi1tdUFUuJuX8gKVehHdERq2KmkO8lOQnnScQxcNQtU0oikZ_CNF.RzojRpoXXuWWnGrK5ffMYxcYWuczdauRK6bcKJ8zt6Q--
-Date: Thu, 14 Jun 2007 23:21:52 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Instead of GPL License - Why not LKL? (Linux Kernel License)
-To: linux-kernel@vger.kernel.org
+	Fri, 15 Jun 2007 02:29:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WbM6rlydjrUCyId+fKExp8oi4exWDP+9GfFtGDtEgqW5phZqPi1kI4fRwbvfxjTnwQWre4vnd6KF4RlwoiSxLBFO0hLVFUVj6NUyBGBogx/DsZxq1TBwHnJmCtnNWswkV2RmZv3VoePB0VAbQvUBml0CEi/lHPz2R1eQfjUqCf8=
+Message-ID: <5d6222a80706142329w43a5bfd0jef428165b2c40c30@mail.gmail.com>
+Date: Fri, 15 Jun 2007 03:29:32 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Daniel Hazelton" <dhazelton@enter.net>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Alexandre Oliva" <aoliva@redhat.com>, "Florin Malita" <fmalita@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@stusta.de>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
+       david@lang.hm, "Tarkan Erimer" <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
+In-Reply-To: <200706150157.13631.dhazelton@enter.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466A3EC6.6030706@netone.net.tr> <4671F127.40000@gmail.com>
+	 <or8xal6h1f.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <200706150157.13631.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been somewhat following the GPL2 vs. GPL3 debate
-and the problem is that it leads to confusion. GPL3 is
-nothing like GPL2 and the GPLx leads people to believe
-that GPL3 is just GPL3 improved.
+> As a simple matter of fact, the *only* activities covered by the GPLv2
+> are "copying, distributing and modifying". It says so in the license itself.
+Unless I have explicitly installed linux myself in the box, I have
+received the binary from them, so it can fall in the distribution
+case.
 
-So - just throwing out the idea that if Linus is
-unhappy with GPL3 that Linux lose the GPLx license and
-call it the Linux Kernel License or LKL for short. So
-LKL could equal GPL2.
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
-Thoughts?
-
-
-
-
-
-       
-____________________________________________________________________________________
-Sick sense of humor? Visit Yahoo! TV's 
-Comedy with an Edge to see what's on, when. 
-http://tv.yahoo.com/collections/222
+"The less confident you are, the more serious you have to act."
