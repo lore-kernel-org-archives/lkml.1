@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbXFOM7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbXFONA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbXFOM7Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbXFOM7B
+	id S1754965AbXFONA0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbXFONAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:59:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50214 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbXFOM7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:59:01 -0400
-Date: Fri, 15 Jun 2007 14:58:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615125837.GA25654@elte.hu>
-References: <466A3EC6.6030706@netone.net.tr> <200706131946.15714.dhazelton@enter.net> <20070614021619.381331dc@the-village.bc.nu> <200706132129.52736.dhazelton@enter.net> <1181859896.5211.38.camel@shinybook.infradead.org> <20070615114921.GC6269@elte.hu> <1181908678.25228.448.camel@pmac.infradead.org> <20070615122921.GA21120@elte.hu> <1181910994.25228.468.camel@pmac.infradead.org>
-MIME-Version: 1.0
+	Fri, 15 Jun 2007 09:00:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4343 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752846AbXFONAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:00:12 -0400
+Date: Fri, 15 Jun 2007 13:00:01 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       takedakn@nttdata.co.jp, hch@infradead.org
+Subject: Re: [TOMOYO 5/9] Memory and pathname management functions.
+Message-ID: <20070615130000.GI9442@ucw.cz>
+References: <787b0d920706150016n3e941a4fj4fc2e864a7e6f7d7@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1181910994.25228.468.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <787b0d920706150016n3e941a4fj4fc2e864a7e6f7d7@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
+> >>We limit the maximum length of any string data (such as
+> >>domainname and pathnames) to TOMOYO_MAX_PATHNAME_LEN
+> >>(which is 4000) bytes to fit within a single page.
+> >>
+> >>Userland programs can obtain the amount of RAM 
+> >>currently
+> >>used by TOMOYO from /proc interface.
+> >
+> >Same NACK for this as for AppArmor, on exactly the same 
+> >grounds.
+> >Please stop wasting your time on pathname-based 
+> >non-solutions.
+> 
+> This issue is a very very small wart on an otherwise 
+> fine idea.
+> It's really not worth getting bothered by. Truth is, big 
+> giant
+> pathnames break lots of stuff already, both kernel and 
+> userspace.
 
-> If even linking was considered 'mere aggregation on a volume of a 
-> storage or distribution medium', then when would the 'But when you 
-> distribute those same sections as part of a whole...' bit _ever_ 
-> apply? It _explicitly_ talks of sections which are independent and 
-> separate works in their own right, but which must be licensed under 
-> the GPL when they're distributed as part of a larger whole.
->
-> I don't see how we could hold the view that _even_ linking is 'mere 
-> aggregation on a volume of a storage or distribution medium', without 
-> conveniently either ignoring entire paragraphs of the GPL or declaring 
-> them to be entirely meaningless.
+> Just look in /proc for some nice juicy kernel breakage:
+> cwd, exe, fd/*, maps, mounts, mountstats, root, smaps
 
-as long as it's not distributed in one collective work, where is the 
-problem? A driver could be argued to be part of a mere compilation of 
-works (not part of a collective work), or just two separate works. But 
-... this is a much greyer area than the key stuff.
+Well, but we should be fixing that, not adding more. And /proc is
+info-only, while this is security related code.
 
-> Of course, that doesn't mean that a court _wouldn't_ do that. Given 
-> enough money, I'm sure you could get US court to declare that the 
-> world is flat. But it doesn't seem to be a reasonable viewpoint, to 
-> me. Or a likely outcome.
-
-i'm not that cynical about US courts.
-
-	Ingo
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
