@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbXFOATD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXFOAT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbXFOATD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 20:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbXFOASy
+	id S1757847AbXFOAT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 20:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXFOATt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 20:18:54 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43445 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752197AbXFOASx (ORCPT
+	Thu, 14 Jun 2007 20:19:49 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43488
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbXFOATr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 20:18:53 -0400
-Date: Fri, 15 Jun 2007 01:22:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Carlo Wood <carlo@alinoe.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615012201.19415e8b@the-village.bc.nu>
-In-Reply-To: <20070615000232.GB9463@alinoe.com>
-References: <20070614025640.GQ3588@stusta.de>
-	<9578.1181793617@turing-police.cc.vt.edu>
-	<20070614152034.GS3588@stusta.de>
-	<alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
-	<orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141100390.14121@woody.linux-foundation.org>
-	<ork5u6cpc2.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org>
-	<20070614231812.GA9463@alinoe.com>
-	<20070615003919.1abfb155@the-village.bc.nu>
-	<20070615000232.GB9463@alinoe.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jun 2007 20:19:47 -0400
+Date: Thu, 14 Jun 2007 17:18:43 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+cc: greg@kroah.com, agruen@suse.de, sds@tycho.nsa.gov, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, pavel@ucw.cz
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+In-Reply-To: <467193FD.3010803@hawkeye.stone.uk.eu.org>
+Message-ID: <Pine.LNX.4.64.0706141717320.29630@asgard.lang.hm>
+References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de>
+ <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de>
+ <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706081757070.18969@asgard.lang.hm>
+ <20070610083427.GA24808@elf.ucw.cz> <Pine.LNX.4.64.0706100201540.6675@asgard.lang.hm>
+ <20070610210547.GC25138@elf.ucw.cz> <Pine.LNX.4.64.0706102322490.6675@asgard.lang.hm>
+ <467193FD.3010803@hawkeye.stone.uk.eu.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Like, they can release/sell the whole thing under some arbitrary
-> other license at their choice. But once you license it with the GPLv2,
-> then you can't stop anyone else (who got it under that license) from
-> using the code under that license anymore, as such it doesn't matter that
-> you are the original author.
+On Thu, 14 Jun 2007, Jack Stone wrote:
 
-This is true of most licences. Ask musicians about trying to get their
-music back from a record company. 
+> david@lang.hm wrote:
+>> On Sun, 10 Jun 2007, Pavel Machek wrote:
+>>> But you have that regex in _user_ space, in a place where policy
+>>> is loaded into kernel.
+>>
+>> then the kernel is going to have to call out to userspace every time a
+>> file is created or renamed and the policy is going to be enforced
+>> incorrectly until userspace finished labeling/relabeling whatever is
+>> moved. building this sort of race condigion for security into the kernel
+>> is highly questionable at best.
+>>
+>>> AA has regex parser in _kernel_ space, which is very wrong.
+>>
+>> see Linus' rants about why it's not automaticaly the best thing to move
+>> functionality into userspace.
+>>
+>> remember that the files covered by an AA policy can change as files are
+>> renamed. this isn't the case with SELinux so it doesn't have this sort
+>> of problem.
+>
+> How about using the inotify interface on / to watch for file changes and
+> updating the SELinux policies on the fly. This could be done from a
+> userspace daemon and should require minimal SELinux changes.
+>
+> The only possible problems I can see are the (hopefully) small gap
+> between the file change and updating the policy and the performance
+> problems of watching the whole system for changes.
 
-> * This program is free software; you can redistribute it and/or modify
-> * it under the terms of the GNU General Public License as published by
-> * the Free Software Foundation; either version 2 of the License, or
-> * (at your option) any later version.
-> 
-> I might be wrong, but I always thought that that meant that John Doe
-> is free to redistribute the software under version 3 of the License,
-> as published by the FSF.
+as was mentioned by someone else, if you rename a directory this can 
+result in millions of files that need to be relabeled (or otherwise have 
+the policy changed for them)
 
-For those marked parts yes - thats the authors choice. Some of the kernel
-is dual licensed BSD even so you can use that bit for all sorts of stuff.
-Again authors choice, some authors wanted to share code between Linux and
-other projects. I believe you can buy proprietary licenses to reiserfs
-too.
+that can take a significant amount of time to do.
 
-Some authors like GPLv2 or later, some don't trust the FSF, some will
-decide once GPLv3 is out, some couldn't care etc.. as the kernel doesn't
-do copyright assignment all these wishes are respected and that is how it
-should be.
-
-Alan
+David Lang
