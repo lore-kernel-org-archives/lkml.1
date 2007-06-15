@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbXFOMtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbXFOMwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbXFOMtj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbXFOMt3
+	id S1755267AbXFOMwS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 08:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbXFOMwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:49:29 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58691 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756206AbXFOMt1 (ORCPT
+	Fri, 15 Jun 2007 08:52:07 -0400
+Received: from qb-out-0506.google.com ([72.14.204.239]:56858 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbXFOMwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:49:27 -0400
-Date: Fri, 15 Jun 2007 13:54:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <ak@suse.de>
-Cc: David Howells <dhowells@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
-Message-ID: <20070615135420.7fe2e4c1@the-village.bc.nu>
-In-Reply-To: <200706151443.13511.ak@suse.de>
-References: <200706151355.57464.ak@suse.de>
-	<200706151131.38429.arnd@arndb.de>
-	<5717.1181909357@redhat.com>
-	<200706151443.13511.ak@suse.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 15 Jun 2007 08:52:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OgmoUpIPpiGly4vkl9HECB61lIIQSJPVLQgl2NLPAL+6mSpCqp5I0LTnwCepIII7PojOucGjAgg6BFlyt4HJOxoJu1IYs1BlBwMmEOdgEqOG3xrVyZtn5afGTqlQew7poLKG4uhBLX3wkhZiUguejErh/Va5OimPyMCIJt5kYQk=
+Message-ID: <d120d5000706150552i4e1d7095p475be21d05d93e58@mail.gmail.com>
+Date: Fri, 15 Jun 2007 08:52:05 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Bernd Paysan" <bernd.paysan@gmx.de>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Paulo Marques" <pmarques@grupopie.com>, "Al Viro" <viro@ftp.linux.org.uk>,
+       "Krzysztof Halasa" <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+In-Reply-To: <200706151403.57178.bernd.paysan@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466A3EC6.6030706@netone.net.tr>
+	 <200706151014.45383.bernd.paysan@gmx.de>
+	 <46727CCF.9030905@grupopie.com>
+	 <200706151403.57178.bernd.paysan@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Why does it break them? It should just make them a little slower.
-> > Not all CPUs deliver recoverable misalignment exceptions.   
-> These CPUs are too broken to run Linux then.
+On 6/15/07, Bernd Paysan <bernd.paysan@gmx.de> wrote:
+> On Friday 15 June 2007 13:49, Paulo Marques wrote:
+>
+> > No, it is not "any version". It is the license specified in COPYING and
+> > nothing else.
+>
+> COPYING says in section 9 that there may be other versions, and if you as
+> author don't specify the version, it's "any version".
+>
 
-People fixed that up
-> 
-> > > The network code requires unaligned accesses to work anyways so if your
-> > > architecture doesn't support them it is already remotely crashable.
-> >
-> > I thought we'd fixed all that.
-> 
-> Did you audit the complete network stack?
+Please read this sentence over and over until it sinks:
 
-For the parts used by the processors in question yes people have done
-that work so using the types without unaligned.
+"If the Program specifies a version number of this License which
+applies to it and "any later version", you have the option of
+following the terms and conditions
+either of that version or of any later version published by the Free
+Software Foundation."
 
-Alan
+Pay most attention to this part "If the Program specifies xxx and "any
+later version"", especially word "specifies".
+
+-- 
+Dmitry
