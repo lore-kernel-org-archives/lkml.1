@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbXFOXzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbXFOX5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbXFOXzp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbXFOXzh
+	id S1759059AbXFOX5Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbXFOX5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:55:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:53945 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752679AbXFOXzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:55:36 -0400
-Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Arnd Bergmann <arnd@arndb.de>, David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070615134512.GG8154@parisc-linux.org>
-References: <200706150159.l5F1xNgM000459@hera.kernel.org>
-	 <200706151131.38429.arnd@arndb.de> <20070615121133.GF8154@parisc-linux.org>
-	 <200706151442.23939.arnd@arndb.de> <20070615134512.GG8154@parisc-linux.org>
-Content-Type: text/plain
-Date: Sat, 16 Jun 2007 09:54:22 +1000
-Message-Id: <1181951662.26853.97.camel@localhost.localdomain>
+	Fri, 15 Jun 2007 19:57:19 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45314 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753597AbXFOX5S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 19:57:18 -0400
+Date: Sat, 16 Jun 2007 00:57:15 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Chris Adams <cmadams@hiwaay.net>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615235715.GA21478@ftp.linux.org.uk>
+References: <fa.LW6a/JNOV4UxQSQYVUg4QmNGpVg@ifi.uio.no> <fa.CCSI/L3Wi9ZuPW2zfaUoy3r6NpM@ifi.uio.no> <fa.fKhdgnmUG47IDJmu9wnLXgnI9GA@ifi.uio.no> <20070615215334.GA1347791@hiwaay.net> <orwsy4vmj1.fsf@oliva.athome.lsd.ic.unicamp.br>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orwsy4vmj1.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 07:45 -0600, Matthew Wilcox wrote:
-
+On Fri, Jun 15, 2007 at 08:13:54PM -0300, Alexandre Oliva wrote:
+> On Jun 15, 2007, Chris Adams <cmadams@hiwaay.net> wrote:
 > 
-> $ ./test 
-> offset of foo->x is 8
-> offset of bar->x is 4
+> > Obviously Linus feels that the spirit of the GPLv2 is exactly what
+> > he wanted
+> 
+> spirit != letter.  He liked the letter.  He couldn't even tell spirit
+> from letter 2 or 3 days ago.
+> 
+> The spirit is the motivations behind the author of the license.
+> Anyone who thinks the motivations of RMS and the FSF are not defending
+> users' freedoms, as defined in the Free Software Definition, hasn't
+> been around for very long.
 
-Looks to me like bar (that is compat_s64) is doing the right thing, no ?
-
-Ben.
-
-
+Aha.  I.e. "similar in spirit" means simply "written according to
+motivations of RMS and FSF".  Which means, of course, that RMS and
+FSF are the sole judges in that area.  There is just one problem:
+it's not vague enough to be stated openly in the license.  Can't
+scare the suckers away - that would reduce the user freedoms, right?
