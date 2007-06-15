@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbXFOVTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758745AbXFOVUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbXFOVTY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756387AbXFOVTP
+	id S1758745AbXFOVUV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbXFOVUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:19:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40823
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752219AbXFOVTO (ORCPT
+	Fri, 15 Jun 2007 17:20:10 -0400
+Received: from cb2.northrockquote.com ([64.251.14.146]:2641 "EHLO
+	dejavu.debianpt.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1756212AbXFOVUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:19:14 -0400
-Date: Fri, 15 Jun 2007 14:19:17 -0700 (PDT)
-Message-Id: <20070615.141917.85409547.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org, axboe@kernel.dk,
-       James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070615171545.316dfac7@the-village.bc.nu>
-References: <1181918159.25228.543.camel@pmac.infradead.org>
-	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
-	<20070615171545.316dfac7@the-village.bc.nu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 15 Jun 2007 17:20:08 -0400
+Message-ID: <4673026F.8070406@debianpt.org>
+Date: Fri, 15 Jun 2007 22:19:43 +0100
+From: Miguel Figueiredo <elmig@debianpt.org>
+Organization: DebianPT.org
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Martin Steigerwald <Martin@lichtvoll.de>
+CC: ck@vds.kolivas.org,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: call for more SD versus CFS comparisons (was: Re: [ck] Mainline
+ plans)
+References: <466DE921.9030709@debianpt.org>	(sfid-20070612_171838_254605_20164719) <200706121852.58161.Martin@lichtvoll.de>
+In-Reply-To: <200706121852.58161.Martin@lichtvoll.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Fri, 15 Jun 2007 17:15:45 +0100
-
-> > > Any particular reason why this is done as a separate block device driver
-> > > rather than as SCSI?
-> > 
-> > Because no new fake SCSI drivers are accepted anymore.
+Martin Steigerwald wrote:
+> Am Dienstag 12 Juni 2007 schrieb Miguel Figueiredo:
+>> Hi all,
+>>
+>> some results based on massing_intr.c by Satoru, can be found on
+>> http://people.redhat.com/mingo/cfs-scheduler/tools/massive_intr.c
 > 
-> Where did drivers/ata come from ;)
+> Hi Miquel, Ingo, Con!
 > 
-> How about making it a fake ata driver if James is being fussy 8)
+[...]
 
-That sounds like a good idea for my virtual I/O case on
-Niagara too actually :-)
+> Any suggestions?
 
-Another quirk I have to deal with is that under LDOMs you
-can export full disks and also just slices.  So I'll have
-to get down into the partition machinery to support that
-somehow.
+I read somewhere in the list that X itself makes lots of hocus pocus
+that affect the behavior of programs running inside X itself (i even
+read about X's own scheduling - someone can confirm/deny it? - and evil
+behavior on drivers).
+
+If we look/test a fair/responsive scheduler isn't better to test it
+outside X?
+IMHO, X itself, it's too complex and may obscure our tests on
+fairness/interactivity.
+
+Anyone knows any good tests for interctivity?
+
+[...]
+
+-- 
+
+Com os melhores cumprimentos/Best regards,
+
+Miguel Figueiredo
+http://www.DebianPT.org
