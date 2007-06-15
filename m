@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbXFOLcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbXFOLm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbXFOLcV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 07:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXFOLcM
+	id S1753325AbXFOLm1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 07:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbXFOLmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 07:32:12 -0400
-Received: from mx.laposte.net ([81.255.54.16]:22087 "EHLO mx.laposte.net"
+	Fri, 15 Jun 2007 07:42:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42837 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751302AbXFOLcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 07:32:10 -0400
-Message-ID: <52052.192.54.193.51.1181907121.squirrel@rousalka.dyndns.org>
-In-Reply-To: <9a8748490706150353i452cf529oc5c0e8119f91e64e@mail.gmail.com>
-References: <9a8748490706150353i452cf529oc5c0e8119f91e64e@mail.gmail.com>
-Date: Fri, 15 Jun 2007 13:32:01 +0200 (CEST)
+	id S1752225AbXFOLmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 07:42:18 -0400
+Date: Fri, 15 Jun 2007 13:42:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Cc: "Daniel Hazelton" <dhazelton@enter.net>, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.10a-1.fc7
+Message-ID: <20070615114159.GB6269@elte.hu>
+References: <466A3EC6.6030706@netone.net.tr> <200706131946.15714.dhazelton@enter.net> <20070614021619.381331dc@the-village.bc.nu> <200706132129.52736.dhazelton@enter.net> <or8xanjm1c.fsf@oliva.athome.lsd.ic.unicamp.br> <9114.1181792906@turing-police.cc.vt.edu> <or7iq7hy2r.fsf@oliva.athome.lsd.ic.unicamp.br> <20019.1181843459@turing-police.cc.vt.edu> <orbqficp34.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orbqficp34.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Le Ven 15 juin 2007 12:53, Jesper Juhl a écrit :
-> On 15/06/07, Nicolas Mailhot <nicolas.mailhot@laposte.net> wrote:
->> >> > by your argument, the user has some "right to modify the
->> software", on
->> >> > that piece of hardware it bought which had free software on it,
->> correct?
->> >>
->> >> Yes.  This means the hardware distributor who put the software in
->> >> there must not place roadblocks that impede the user to get where
->> she
->> >> wants with the software, not that the vendor must offer the user
->> a
->> >> sport car to take her there.
->>
->> >Okay. That means that if I ship Linux on a ROM chip I have to
->> somehow
->> make
->> >it so that the person purchasing the chip can modify the copy of
->> Linux
->> >installed on the chip *if* I want to follow both the spirit and the
->> letter
->> >of the GPLv2.
->>
->> The key word there is "can"
->>
->> You don't have to send the buyer the hardware design, replace the
->> ROM
->> with a flash, use a rom socket that allows easy switching etc.
->>
->> But you can not add measures to your hardware specifically designed
->> to
->> stop the user from modifying the GPL software part. Especially if
->> those measures are something like DRM that do not make the tinkering
->> just technically hard, but legally forbidden.
->>
->> As long as the restrictions result from technical choices not
->> targetted at forbidding changes you're ok.
->>
-> That's simply not true.
->
-> As long as you get a copy of the source code for the software that's
-> running on the hardware it's OK. That's all the GPLv2 says.
+* Alexandre Oliva <aoliva@redhat.com> wrote:
 
-You'll note I was answering to a message about what the GPL intended,
-not the strict literal reading of the GPLv2 words.
+> > Do they have to provide a ROM burner if the ROM is socketed rather 
+> > than soldered into place?
+> 
+> Of course not.  They just can't impose restrictions on your obtaining 
+> a ROM burner and doing the work yourself.
 
-And what the GPL authors intended is obvious from the fact it all
-started with a printer driver and the need to change the software used
-to control this particular hardware (not some mythical other device
-without manufacturer restrictions
+do you realize that you have just admitted that the Tivo is perfectly 
+fine and legal?
 
--- 
-Nicolas Mailhot
+because you can solder off the ROM from the Tivo and can put in a new 
+ROM with another bootloader that does not check the SHA1 key. Tivo puts 
+no restrictions on you to obtain a ROM and a ROM burner and do this work 
+yourself. (they dont help you either, but you just conceded in another 
+thread that the hardware maker does not have to go out on his way to 
+help you in your software modification efforts.)
 
+	Ingo
