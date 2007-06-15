@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbXFOTff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbXFOTfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbXFOTff (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755526AbXFOTfW
+	id S1756007AbXFOTfs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbXFOTfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:35:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40575 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752906AbXFOTfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:35:20 -0400
-Date: Fri, 15 Jun 2007 21:35:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ludovic Vaugeois-Pepin <ludovicvp@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v17
-Message-ID: <20070615193515.GB24881@elte.hu>
-References: <20070614224908.GA9412@elte.hu> <20070615132841.5ee01f4d@localhost> <a014cde70706150952o716220e5uaafe111f5ca400fc@mail.gmail.com> <a014cde70706150958o1e684e0bme582536505b1fe48@mail.gmail.com> <a014cde70706151023l51fb03b2md01f703ad44112bf@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a014cde70706151023l51fb03b2md01f703ad44112bf@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 15 Jun 2007 15:35:30 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:54625 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757119AbXFOTf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:35:29 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: Ingo Korb <ml@akana.de>
+Subject: [PATCH 1/1] Char: stallion, fix oops during init with ISA cards
+In-reply-to: <utzt99jv9.fsf@dragon.akana.de>
+Message-id: <32189297761566511950@wsc.cz>
+Date: Fri, 15 Jun 2007 21:35:20 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thanks, seems good to me. Next time, feel free Cc Andrew directly.
 
-* Ludovic Vaugeois-Pepin <ludovicvp@gmail.com> wrote:
+--
 
-> >kernel/built-in.o:sched.c:(.text+0x407b): more undefined references to
-> >`cpu_of' follow
-> >make: *** [.tmp_vmlinux1] Error 1
-> >
-> >I attached the .config file (config-2.6.22-rc4-cfs17)
-> >
-> >--
-> >Ludovic Vaugeois-Pepin
-> >
-> >
-> 
-> Here is the config :
+From: Ingo Korb <ml@akana.de>
 
-thx - this too has !CONFIG_SMP - please apply the fix below or 
-re-download the v17 patch.
+stallion, fix oops during init with ISA cards
 
-	Ingo
+The stallion driver oopses while initializing ISA cards due to an
+uninitialized variable. This patch changes the initialisation order to
+match the PCI code path.
 
-Index: linux-cfs-2.6.22-rc4.q/kernel/sched.c
-===================================================================
---- linux-cfs-2.6.22-rc4.q.orig/kernel/sched.c
-+++ linux-cfs-2.6.22-rc4.q/kernel/sched.c
-@@ -248,6 +249,15 @@ static unsigned int static_prio_timeslic
- 		return SCALE_PRIO(DEF_TIMESLICE, static_prio);
- }
- 
-+static inline int cpu_of(struct rq *rq)
-+{
-+#ifdef CONFIG_SMP
-+	return rq->cpu;
-+#else
-+	return 0;
-+#endif
-+}
-+
- #ifdef CONFIG_SMP
- /*
-  * Divide a load by a sched group cpu_power : (load / sg->__cpu_power)
-@@ -258,15 +268,6 @@ static inline u32 sg_div_cpu_power(const
- 	return reciprocal_divide(load, sg->reciprocal_cpu_power);
- }
- 
--static inline int cpu_of(struct rq *rq)
--{
--#ifdef CONFIG_SMP
--	return rq->cpu;
--#else
--	return 0;
--#endif
--}
--
- /*
-  * Each time a sched group cpu_power is changed,
-  * we must compute its reciprocal value
+Signed-off-by: Ingo Korb <ml@akana.de>
+Acked-by: Jiri Slaby <jirislaby@gmail.com>
+---
+diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
+index 45bf2a2..8c73ccb 100644
+--- a/drivers/char/stallion.c
++++ b/drivers/char/stallion.c
+@@ -4753,13 +4753,14 @@ static int __init stallion_module_init(void)
+ 		brdp->ioaddr2 = conf.ioaddr2;
+ 		brdp->irq = conf.irq;
+ 		brdp->irqtype = conf.irqtype;
+-		if (stl_brdinit(brdp))
++		stl_brds[brdp->brdnr] = brdp;
++		if (stl_brdinit(brdp)) {
++			stl_brds[brdp->brdnr] = NULL;
+ 			kfree(brdp);
+-		else {
++		} else {
+ 			for (j = 0; j < brdp->nrports; j++)
+ 				tty_register_device(stl_serial,
+ 					brdp->brdnr * STL_MAXPORTS + j, NULL);
+-			stl_brds[brdp->brdnr] = brdp;
+ 			stl_nrbrds = i + 1;
+ 		}
+ 	}
+
