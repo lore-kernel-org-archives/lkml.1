@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbXFORtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbXFORwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752296AbXFORtw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:49:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbXFORto
+	id S1752687AbXFORwP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbXFORwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:49:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:30789 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbXFORto convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jun 2007 13:52:01 -0400
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4931 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750891AbXFORwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:49:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=uthBUYwOE4DvU9FnJX+p/TJtPoXH7myzG/P7zXHP+MH6LAz8X+eCel6GDQdwTLB1ZytR4qbH55V2ps4R8sKfABnTGRlsMB+pixNqUGYlM66rDpjBxKCrK5UyllcOizeNHv+sjEw4lO0SnrGdNOJhNq5Rv1318xPdgNcmndemiLw=
-From: Miguel =?iso-8859-1?q?Bot=F3n?= <mboton@gmail.com>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Subject: Re: [patch] CFS scheduler, -v17
-Date: Fri, 15 Jun 2007 19:47:14 +0200
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-References: <20070614224908.GA9412@elte.hu> <20070615132841.5ee01f4d@localhost>
-In-Reply-To: <20070615132841.5ee01f4d@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200706151947.14266.mboton@gmail.com>
+	Fri, 15 Jun 2007 13:52:00 -0400
+Date: Fri, 15 Jun 2007 19:52:24 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Greg KH <greg@kroah.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, i2c@lm-sensors.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [i2c] i2c module aliases
+Message-ID: <20070615195224.4968dcbb@hyperion.delvare>
+In-Reply-To: <20070614191424.GA13850@kroah.com>
+References: <Pine.LNX.4.64.0706062325270.30244@anakin>
+	<20070607175342.3006e872@hyperion.delvare>
+	<20070607160214.GB17800@kroah.com>
+	<20070608153516.28fd9eb5@hyperion.delvare>
+	<Pine.LNX.4.64.0706081647310.9505@anakin>
+	<20070609125221.2a64ba48@hyperion.delvare>
+	<20070614191424.GA13850@kroah.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007 18:28, Luiz Fernando N. Capitulino wrote:
->  Hmm, I'm getting this while compiling:
->
-> """
->   LD      .tmp_vmlinux1
-> kernel/built-in.o: In function `rq_clock':
-> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
-> undefined reference to `cpu_of'
-> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
-> undefined reference to `cpu_of'
-> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
-> undefined reference to `cpu_of'
-> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
-> undefined reference to `cpu_of'
-> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321:
-> undefined reference to `cpu_of'
-> kernel/built-in.o:/home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kern
->el/sched.c:321: more undefined references to `cpu_of' follow make: ***
-> [.tmp_vmlinux1] Error 1
-> """
->
->  The code in question is really strange:
->
-> #ifdef CONFIG_SMP
-> ...
-> static inline int cpu_of(struct rq *rq)
-> #ifdef CONFIG_SMP
-> 	return rq->cpu;
-> #else
-> 	return 0;
-> #endif
-> }
-> ...
-> #endif
+On Thu, 14 Jun 2007 12:14:24 -0700, Greg KH wrote:
+> On Sat, Jun 09, 2007 at 12:52:21PM +0200, Jean Delvare wrote:
+> > OK, no problem. I gave it a try myself. Greg, is it OK or did I miss
+> > other parts which can be removed?
+> 
+> Looks good to me.  Want me to take this through my tree or through
+> yours?
 
-I patched kernel 2.6.21.5 with CFS v17 and I didn't experience this problem (I 
-checked that piece of code and I didn't see something wrong).
-Looks like it only appears in kernel 2.6.22-rc4.
+It's already in my i2c tree.
 
+Thanks,
 -- 
-	Miguel Botón
+Jean Delvare
