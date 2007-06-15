@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbXFOTLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXFOTT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbXFOTLq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbXFOTLi
+	id S1753931AbXFOTT6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXFOTTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:11:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56884 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752875AbXFOTLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:11:36 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Rob Landley <rob@landley.net>, Bernd Paysan <bernd.paysan@gmx.de>,
-       "Alan Milnes" <alan@itfoundation.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<b200add30706140708p41e943dbm5d14ba52a6e0ae75@mail.gmail.com>
-	<200706141744.08408.bernd.paysan@gmx.de>
-	<200706141917.58824.rob@landley.net>
-	<orr6oe6luz.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615102331.35934956@the-village.bc.nu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 16:10:50 -0300
-In-Reply-To: <20070615102331.35934956@the-village.bc.nu> (Alan Cox's message of "Fri\, 15 Jun 2007 10\:23\:31 +0100")
-Message-ID: <ormyz111ad.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 15:19:50 -0400
+Received: from wx-out-0506.google.com ([66.249.82.225]:52469 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbXFOTTt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:19:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=kh13tyU0MmBK1TzpchPaoy5I8+2nmOGUQyfydhjn7XckgmBL/OUCscMkdqmD7T8GNMzx60qP69k49P74UN2UU+Yi2eAEEA5jFxpeyH0d8X5cXbwfkFU13RBVkxDSYAGYRrzGwPYWV7uWRUiUGaifmommMP6SejnZCTvrbR5l7e0=
+Date: Fri, 15 Jun 2007 23:18:04 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       dave young <hidave.darkstar@gmail.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Willy Tarreau <w@1wt.eu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: coding style
+Message-ID: <20070615191804.GC8151@cvg>
+References: <20070614184836.GA6520@cvg> <20070615045111.GU943@1wt.eu> <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com> <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr> <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com> <20070615110326.b0762b7a.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+[Jan Engelhardt - Fri, Jun 15, 2007 at 09:10:49PM +0200]
+| 
+| On Jun 15 2007 11:03, Randy Dunlap wrote:
+| >> 
+| >> "use tabs for indents and spaces for alignment"
+| >> 
+| >> If that means you need to use two dozen spaces, then so be it.
+| >
+| >I don't think that's what that rule means, but I didn't write it,
+| >so I'm not absolutely sure about it.
+| >
+| >but we know that tab stops are every 8th character, not 4 :)
+| 
+| Hardly.
+| 
+| 
+| 
+| 
+| 	Jan
+| -- 
+| 
 
->> 3) Another thing I've tried to do was to try to figure out why Linux
->> developers seem to consider v2 better than v3 for their own goals.  I
->> must admit I failed.  The presented reasons don't seem to distinguish
->> v2 from v3 to me, or rather make v3 sound better.
+Jan, as I see from CodingStyle:
 
-> What right does Linus or anyone else have to change the rules
+	"Tabs are 8 characters, and thus indentations are also 8 characters."
 
-None.  It would have to be an agreement between all parties involved.
-A difficult one, everyone knows.
+Actually it would be perfect to get strict rules also for math. and log.
+operators being splitted on several lines:
 
-But see, this is a distraction.  It doesn't even begin to address the
-relevant (to me) question: why Linux developers seem to consider v2
-better than v3 for their own goals.
+	if (long_name_a || long_name_b ||
+	    long_name_c)
 
-I can appreciate the difficulties that there would be for switching
-from v2 to v3.  This in itself might be a reason to not even try to
-switch to another license, no matter how much better it could possibly
-be.
+		or
 
-But it doesn't give any hint whatsoever as to why v2 is better than
-v3.  In fact, it simply avoids addressing that point.
+	if (long_name_a || long_name_b
+	    || long_name_c)
+	
+	
+	a = b + c + d + e +
+	    f;
+
+		or
+
+	a = b + c + d + e
+	    + f;
 
 
-Now, of course, each individual contributor may have different reasons
-to be part of the Linux community, and each individual contributor may
-have chosen v2 or v2+ or any other v2-compatible set of licensing
-terms for different reasons.
+		Cyrill
 
-I'd very much like to hear (err read), from those who think v2 serves
-their reasons to contribute to Linux better than v3, why that is so.
-
-Thanks,
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
