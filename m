@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbXFOEEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbXFOEHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbXFOEEj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 00:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbXFOEEa
+	id S1756160AbXFOEHo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 00:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbXFOEHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 00:04:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41340 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750729AbXFOEEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 00:04:30 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rob Landley <rob@landley.net>, Bernd Paysan <bernd.paysan@gmx.de>,
-       Alan Milnes <alan@itfoundation.org.uk>, linux-kernel@vger.kernel.org
+	Fri, 15 Jun 2007 00:07:37 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:41737
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbXFOEHh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 00:07:37 -0400
+Date: Thu, 14 Jun 2007 20:50:09 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Florin Malita <fmalita@gmail.com>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<b200add30706140708p41e943dbm5d14ba52a6e0ae75@mail.gmail.com>
-	<200706141744.08408.bernd.paysan@gmx.de>
-	<200706141917.58824.rob@landley.net>
-	<orr6oe6luz.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141855480.14121@woody.linux-foundation.org>
-	<ord4zx6hk6.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706142033070.14121@woody.linux-foundation.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 01:04:06 -0300
-In-Reply-To: <alpine.LFD.0.98.0706142033070.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 14 Jun 2007 20\:34\:09 -0700 \(PDT\)")
-Message-ID: <orhcp950eh.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+In-Reply-To: <ortzt951av.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706142047070.29630@asgard.lang.hm>
+References: <alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
+ <ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br> <200706140305.50095.dhazelton@enter.net>
+ <orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br> <46717C58.8050501@gmail.com>
+ <ord4zye6iv.fsf@oliva.athome.lsd.ic.unicamp.br> <4671A528.5040300@gmail.com>
+ <or1wge9pwr.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614234507.GA3860@nostromo.devel.redhat.com>
+ <or1wge6jii.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615023944.GC3760@nostromo.devel.redhat.com>
+ <ortzt951av.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Fri, 15 Jun 2007, Alexandre Oliva wrote:
 
-> On Fri, 15 Jun 2007, Alexandre Oliva wrote:
->> 
->> Yes.  They'd have to give up the ability to update the software, or
->> pass it on to the user.  If they can't do the latter, they could still
->> do the former.  How bad would this be for them, do you know?
+> Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+> 
+> On Jun 14, 2007, Bill Nottingham <notting@redhat.com> wrote:
+>
+>> OK. Let's take this to the simple and logical conclusion. A signed
+>> filesystem image containing both GPL and non-GPL code. From your
+>> point A, this is a derived work.
+>
+> I claim the signature is derived from the GPLed bits, yes.  Whether
+> that's a derived work, in the legal sense, I'm not qualified to say.
 
-> In other words, you advocate license for technical programs that causes 
-> people to make bad technical choices?
+it's also derived from the non-GPLed bits as well.
 
-I do place ethical issues over technical ones, if that's what you're
-asking.
+so if it were a derived work in a legal sense (nessasary for your 
+argument to have any legal meaning) then it's now illegal to make and 
+distribute a checksum of a CD that contains software with incompatible 
+licenses.
 
+> And I claim that, in the case of TiVO, it is not only a functional
+> piece of the system that's derived from GPLed code and missing the
+> corresponding sources, but also it's being used to impose restrictions
+> on the exercise of the freedoms that the GPL is designed to protect.
+> And these conditions are what make it a bad thing, and that deviate,
+> if not from the legal conditions, at least from the spirit of the
+> license.
 
-And then, why should the vendor have any say on the software that runs
-on the hardware I purchased from them, after the purchase?
+you keep claiming this, but other people claim you are wrong. what good do 
+your claims do (why are your claims about what's in the spirit of the 
+license and what's not any more valid than anyone else's?)
 
-Heck, I'd feel *safer* if I knew they couldn't modify the code in my
-box without my permission.  Do you support WGA or the Sony Rootkit?
-How is this any different?
-
-But if they want to keep the ability to change the software in my box,
-I want that for myself as well.  If for no other reason, in case they
-mess things up.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+David Lang
