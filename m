@@ -1,56 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbXFOUnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758654AbXFOUnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbXFOUnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXFOUnK
+	id S1758654AbXFOUnp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756041AbXFOUne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:43:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56134 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753354AbXFOUnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:43:09 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Michael Poole <mdpoole@troilus.org>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706142246.57583.dhazelton@enter.net>
-	<878xal2a0q.fsf@graviton.dyn.troilus.org>
-	<200706150127.18069.dhazelton@enter.net>
-	<87sl8tzaj1.fsf@graviton.dyn.troilus.org>
-	<20070615124039.GB21120@elte.hu>
-	<87fy4tz8dc.fsf@graviton.dyn.troilus.org>
-	<20070615143003.GA8775@elte.hu>
-	<87zm31xo3q.fsf@graviton.dyn.troilus.org>
-	<20070615154200.GA17172@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 17:42:35 -0300
-In-Reply-To: <20070615154200.GA17172@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 17\:42\:00 +0200")
-Message-ID: <orps3xx83o.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 16:43:34 -0400
+Received: from web36611.mail.mud.yahoo.com ([209.191.85.28]:26217 "HELO
+	web36611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754977AbXFOUnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:43:32 -0400
+X-YMail-OSG: 44d.85sVM1moNbZRFlmqh_MWuiN8ev9HaOLgJ43ref.Y1_Gp
+X-RocketYMMF: rancidfat
+Date: Fri, 15 Jun 2007 13:43:31 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
+To: Stephen Smalley <sds@tycho.nsa.gov>, casey@schaufler-ca.com
+Cc: Greg KH <greg@kroah.com>, Crispin Cowan <crispin@novell.com>,
+       Andreas Gruenbacher <agruen@suse.de>, Pavel Machek <pavel@ucw.cz>,
+       jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <1181931330.17547.866.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <44036.5340.qm@web36611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
 
-> it is a false statement on your part that the executable "does not 
-> function properly" if it lacks that part. Try it: take out the harddisk 
-> from the Tivo (it's a bog standard IDE harddisk), put into a nice Linux 
-> PC, mount it, modify a bit in the kernel image header and it will likely 
-> still boot just fine on that PC.
+--- Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-Ok, try this: take the disk out, remove/replace/modify the signature,
-put the disk back in, and tell me what it is that fail to run.
+> On Fri, 2007-06-15 at 11:01 -0700, Casey Schaufler wrote:
+> > --- Greg KH <greg@kroah.com> wrote:
+> > 
+> > 
+> > > A daemon using inotify can "instantly"[1] detect this and label the file
+> > > properly if it shows up.
+> > 
+> > In our 1995 B1 evaluation of Trusted Irix we were told in no
+> > uncertain terms that such a solution was not acceptable under
+> > the TCSEC requirements. Detection and relabel on an unlocked
+> > object creates an obvious window for exploitation. We were told
+> > that such a scheme would be considered a design flaw.
+> > 
+> > I understand that some of the Common Criteria labs are less
+> > aggressive regarding chasing down these issues than the NCSC
+> > teams were. It might not prevent an evaluation from completing
+> > today. It is still hard to explain why it's ok to have a file
+> > that's labeled incorrectly _even briefly_. It is the systems
+> > job to ensure that that does not happen.
+> 
+> Um, Casey, he is talking about how to emulate AppArmor behavior on a
+> label-based system like SELinux,
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Yes. What I'm saying (or trying to) is that such an implementation
+would be flawed by design.
+
+> not meeting B1 or LSPP or anything like that
+> (which AppArmor can't do regardless).
+
+We're not talking about an implementation based on AppArmor. As
+you point out, we're talking about implementing name based access
+control as an extension of SELinux.
+
+> As far as general issue
+> goes, if your policy is configured such that the new file gets the most
+> restrictive label possible at creation time and then the daemon relabels
+> it to a less restrictive label if appropriate, then there is no actual
+> window of exposure.
+
+Is it general practice to configure policy such that "the new file gets
+the most restrictive label possible at creation time"? I confess that
+my understanding of the current practice in policy generation is based
+primarily on a shouted conversation in a crowded Irish pub.
+
+> Also, there is such a daemon, restorecond, in SELinux (policycoreutils)
+> although we avoid relying on it for anything security-critical
+> naturally.
+
+Yes, I am aware of restorecond. I find the need for restorecond troubling.
+
+> And one could introduce the named type transition concept
+> that has been discussed in this thread without much difficulty to
+> selinux.
+
+Yup, I see that once you accept the notion that it is OK for a
+file to be misslabeled for a bit and that having a fixxerupperd
+is sufficient it all falls out.
+
+My point is that there is a segment of the security community
+that had not found this acceptable, even under the conditions
+outlined. If it meets your needs, I say run with it.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
