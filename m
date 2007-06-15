@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbXFOOp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbXFOOrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbXFOOp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 10:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbXFOOpU
+	id S1755413AbXFOOrQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 10:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbXFOOrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 10:45:20 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:19622 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751050AbXFOOpT (ORCPT
+	Fri, 15 Jun 2007 10:47:04 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:56587 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753543AbXFOOrC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 10:45:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CMJ9pmcWviIO2gQiobEIJ0NIpwzb3KWs2cFoj4CRxjXZ/ou7YavUuhXrqaor2clXCkfmuI7STE68pZCYGuEUMex1G8PNThSpEZg+AzMr/YmYSRvuOl5AGRKDO1Jctvh4BqTmNol3MARNHBR/+dxujnACSHepR5MQjOJ3NpC12LM=
-Message-ID: <5d6222a80706150745m694a15c6n1ae2d15845a848b2@mail.gmail.com>
-Date: Fri, 15 Jun 2007 11:45:16 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Bernd Paysan" <bernd.paysan@gmx.de>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Paulo Marques" <pmarques@grupopie.com>, "Al Viro" <viro@ftp.linux.org.uk>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "Krzysztof Halasa" <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <200706151403.57178.bernd.paysan@gmx.de>
+	Fri, 15 Jun 2007 10:47:02 -0400
+Message-ID: <4672A65E.6010607@grupopie.com>
+Date: Fri, 15 Jun 2007 15:46:54 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Bernd Paysan <bernd.paysan@gmx.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>	<200706151014.45383.bernd.paysan@gmx.de>	<46727CCF.9030905@grupopie.com>	<200706151403.57178.bernd.paysan@gmx.de>	<4672A231.9000800@grupopie.com> <20070615154522.2a161884@the-village.bc.nu>
+In-Reply-To: <20070615154522.2a161884@the-village.bc.nu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466A3EC6.6030706@netone.net.tr>
-	 <200706151014.45383.bernd.paysan@gmx.de>
-	 <46727CCF.9030905@grupopie.com>
-	 <200706151403.57178.bernd.paysan@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > And the basics are: "people who write the code decide the license to
-> > give it". And that's just it.
->
-> Yo, then fucking do it! Write it in the files you contribute! If you don't,
-> you haven't! You decide, not Linus Torvalds. Make it clear you have
-> decided.
->
-> > And people who write kernel code are perfectly aware that the kernel
-> > license is GPL v2 only, and always has been (except for the initial
-> > linus license).
->
-> Wrong.
->
-> > Putting a license statement in _every_ file in the kernel tree would
-> > just be idiotic when there is such a clear COPYING file in the root of
-> > the kernel tree.
->
-> It's a personal comment from Linus, and not clear in any way. Do it the way
-> the file COPYING itself suggests. It's not "idiotic", it's the most obvious
-> way to do it.
+Alan Cox wrote:
+>> But COPYING *is* the entire text and starts with: "
+>> 		    GNU GENERAL PUBLIC LICENSE
+>> 		       Version 2, June 1991"
+>>
+>> so there is no confusion about the version.
+> 
+> The version of the COPYING file (and the licence document), not of the
+> licence on the code.
+> 
+>>> Wrong.
+>> Why do you say "Wrong"? Have you contributed some code to the kernel 
+>> thinking that the kernel was "v2 or later", only to find out later that 
+>> it wasn't?
+> 
+> A fair bit of the kernel is probably v2 or later but not all of it and
+> that shouldn't really matter as regards the kernel anyway, the GPLv2 only
+> bits (if v2 only is a valid status) anchor it.
 
-If it wasn't clear someday, it seems to be utterly clear now, after
-all this discussion (that is not the first related, AFAIK). Why is the
-"spirit" so important for the GPLv{2,3} understanding, and not
-important at all here? The intention that the kernel is gplv2 is very
-clearly stated.
+So we are violently agreeing, then?
+
+This sub-thread started by me showing that:
+
+> $ find -name "*.c" | xargs grep "any later version" | wc -l
+> 3138
+> $ find -name "*.c" | wc -l
+> 9482
+
+This is a somewhat crude measure but it shows that only about 30% of the 
+kernel is "v2 or later" and those pieces could be used on some other "v2 
+or later" project (including v3). But the kernel as a whole is v2 and my 
+point was that the claim that there are just a few "v2 only" files was 
+bogus.
 
 -- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+Paulo Marques - www.grupopie.com
 
-"The less confident you are, the more serious you have to act."
+"As far as we know, our computer has never had an undetected error."
+Weisert
