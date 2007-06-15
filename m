@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbXFOOvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbXFOOv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbXFOOvE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 10:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbXFOOtM
+	id S1756190AbXFOOv1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 10:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbXFOOtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 10:49:12 -0400
-Received: from gw.goop.org ([64.81.55.164]:34377 "EHLO mail.goop.org"
+	Fri, 15 Jun 2007 10:49:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:34382 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754054AbXFOOtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754043AbXFOOtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Jun 2007 10:49:07 -0400
-Message-Id: <20070615005012.806180753@goop.org>
+Message-Id: <20070615005012.686376332@goop.org>
 References: <20070615004818.424726597@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 17:48:20 -0700
+Date: Thu, 14 Jun 2007 17:48:19 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "Eric W. Biederman" <ebiederm@xmission.com>,
        "H. Peter Anvin" <hpa@zytor.com>
@@ -22,146 +22,151 @@ Cc: Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        lkml <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Xen-Devel <xen-devel@lists.xensource.com>
-Subject: [PATCH 02/10] allow linux/elf.h to be included in assembler
-Content-Disposition: inline; filename=asm-elf_h.patch
+Subject: [PATCH 01/10] update boot spec to 2.07
+Content-Disposition: inline; filename=update-boot-spec.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Proposed updates for version 2.07 of the boot protocol.  This includes:
+
+load_flags.KEEP_SEGMENTS- flag to request/inhibit segment reloads
+hardware_subarch	- what subarchitecture we're booting under
+hardware_subarch_data	- per-architecture data
+
+The intention of these changes is to make booting a paravirtualized
+kernel work via the normal Linux boot protocol.  The intention is that
+the bzImage payload can be a properly formed ELF file, so that the
+bootloader can use its ELF notes and Phdrs to get more metadata about
+the kernel and its requirements.
+
+The ELF file could be the uncompressed kernel vmlinux itself; it would
+only take small buildsystem changes to implement this.
+
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 
 ---
- include/linux/elf.h |   24 +++++++++++++++++++-----
- 1 file changed, 19 insertions(+), 5 deletions(-)
+ Documentation/i386/boot.txt    |   34 +++++++++++++++++++++++++++++++++-
+ arch/i386/kernel/asm-offsets.c |    7 +++++++
+ include/asm-i386/bootparam.h   |    9 +++++++--
+ 3 files changed, 47 insertions(+), 3 deletions(-)
 
 ===================================================================
---- a/include/linux/elf.h
-+++ b/include/linux/elf.h
-@@ -1,9 +1,10 @@
- #ifndef _LINUX_ELF_H
- #define _LINUX_ELF_H
+--- a/Documentation/i386/boot.txt
++++ b/Documentation/i386/boot.txt
+@@ -168,6 +168,8 @@ 0234/1	2.05+	relocatable_kernel Whether 
+ 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
+ 0235/3	N/A	pad2		Unused
+ 0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
++023C/4	2.07+	hardware_subarch Hardware subarchitecture
++0240/8	2.07+	hardware_subarch_data Subarchitecture-specific data
  
-+#include <linux/elf-em.h>
-+#ifndef __ASSEMBLY__
- #include <linux/types.h>
- #include <linux/auxvec.h>
--#include <linux/elf-em.h>
- #include <asm/elf.h>
+ (1) For backwards compatibility, if the setup_sects field contains 0, the
+     real value is 4.
+@@ -204,7 +206,7 @@ boot loaders can ignore those fields.
  
- struct file;
-@@ -31,6 +32,7 @@ typedef __u32	Elf64_Word;
- typedef __u32	Elf64_Word;
- typedef __u64	Elf64_Xword;
- typedef __s64	Elf64_Sxword;
-+#endif	/* __ASSEMBLY__ */
+ The byte order of all fields is littleendian (this is x86, after all.)
  
- /* These constants are for the segment types stored in the image headers */
- #define PT_NULL    0
-@@ -123,6 +125,7 @@ typedef __s64	Elf64_Sxword;
- #define ELF64_ST_BIND(x)	ELF_ST_BIND(x)
- #define ELF64_ST_TYPE(x)	ELF_ST_TYPE(x)
+-Field name:	setup_secs
++Field name:	setup_sects
+ Type:		read
+ Offset/size:	0x1f1/1
+ Protocol:	ALL
+@@ -356,6 +358,13 @@ Protocol:	2.00+
+ 	- If 0, the protected-mode code is loaded at 0x10000.
+ 	- If 1, the protected-mode code is loaded at 0x100000.
  
-+#ifndef __ASSEMBLY__
- typedef struct dynamic{
-   Elf32_Sword d_tag;
-   union{
-@@ -138,6 +141,7 @@ typedef struct {
-     Elf64_Addr d_ptr;
-   } d_un;
- } Elf64_Dyn;
-+#endif	/* __ASSEMBLY__ */
- 
- /* The following are used with relocations */
- #define ELF32_R_SYM(x) ((x) >> 8)
-@@ -146,6 +150,7 @@ typedef struct {
- #define ELF64_R_SYM(i)			((i) >> 32)
- #define ELF64_R_TYPE(i)			((i) & 0xffffffff)
- 
-+#ifndef __ASSEMBLY__
- typedef struct elf32_rel {
-   Elf32_Addr	r_offset;
-   Elf32_Word	r_info;
-@@ -185,11 +190,12 @@ typedef struct elf64_sym {
-   Elf64_Addr st_value;		/* Value of the symbol */
-   Elf64_Xword st_size;		/* Associated symbol size */
- } Elf64_Sym;
--
-+#endif	/* __ASSEMBLY__ */
- 
- #define EI_NIDENT	16
- 
--typedef struct elf32_hdr{
-+#ifndef __ASSEMBLY__
-+typedef struct elf32_hdr {
-   unsigned char	e_ident[EI_NIDENT];
-   Elf32_Half	e_type;
-   Elf32_Half	e_machine;
-@@ -222,6 +228,7 @@ typedef struct elf64_hdr {
-   Elf64_Half e_shnum;
-   Elf64_Half e_shstrndx;
- } Elf64_Ehdr;
-+#endif	/* __ASSEMBLY__ */
- 
- /* These constants define the permissions on sections in the program
-    header, p_flags. */
-@@ -229,7 +236,8 @@ typedef struct elf64_hdr {
- #define PF_W		0x2
- #define PF_X		0x1
- 
--typedef struct elf32_phdr{
-+#ifndef __ASSEMBLY__
-+typedef struct elf32_phdr {
-   Elf32_Word	p_type;
-   Elf32_Off	p_offset;
-   Elf32_Addr	p_vaddr;
-@@ -250,6 +258,7 @@ typedef struct elf64_phdr {
-   Elf64_Xword p_memsz;		/* Segment size in memory */
-   Elf64_Xword p_align;		/* Segment alignment, file & memory */
- } Elf64_Phdr;
-+#endif	/* __ASSEMBLY__ */
- 
- /* sh_type */
- #define SHT_NULL	0
-@@ -284,7 +293,8 @@ typedef struct elf64_phdr {
- #define SHN_ABS		0xfff1
- #define SHN_COMMON	0xfff2
- #define SHN_HIRESERVE	0xffff
-- 
++  Bit 6 (write): KEEP_SEGMENTS
++	Protocol: 2.07+
++	- if 0, reload the segment registers in the 32bit entry point.
++	- if 1, do not reload the segment registers in the 32bit entry point.
++		Assume that %cs %ds %ss %es are all set to flat segments with
++		a base of 0 (or the equivalent for their environment).
 +
-+#ifndef __ASSEMBLY__
- typedef struct {
-   Elf32_Word	sh_name;
-   Elf32_Word	sh_type;
-@@ -310,6 +320,7 @@ typedef struct elf64_shdr {
-   Elf64_Xword sh_addralign;	/* Section alignment */
-   Elf64_Xword sh_entsize;	/* Entry size if section holds table */
- } Elf64_Shdr;
-+#endif	/* __ASSEMBLY__ */
+   Bit 7 (write): CAN_USE_HEAP
+ 	Set this bit to 1 to indicate that the value entered in the
+ 	heap_end_ptr is valid.  If this field is clear, some setup code
+@@ -479,6 +488,29 @@ Protocol:	2.06+
+   zero. This means that the command line can contain at most
+   cmdline_size characters. With protocol version 2.05 and earlier, the
+   maximum size was 255.
++
++Field name:	hardware_subarch
++Type:		write
++Offset/size:	0x23c/4
++Protocol:	2.07+
++
++  In a paravirtualized environment the hardware low level architectural
++  pieces such as interrupt handling, page table handling, and
++  accessing process control registers needs to be done differently.
++
++  This field allows the bootloader to inform the kernel we are in one
++  one of those environments.
++
++  0x00000000	The default x86/PC environment
++  0x00000001	lguest
++  0x00000002	Xen
++
++Field name:	hardware_subarch_data
++Type:		write
++Offset/size:	0x240/8
++Protocol:	2.07+
++
++  A pointer to data that is specific to hardware subarch
  
- #define	EI_MAG0		0		/* e_ident[] indexes */
- #define	EI_MAG1		1
-@@ -343,6 +354,7 @@ typedef struct elf64_shdr {
  
- #define ELFOSABI_NONE	0
- #define ELFOSABI_LINUX	3
-+#define ELFOSABI_STANDALONE	255
+ **** THE KERNEL COMMAND LINE
+===================================================================
+--- a/arch/i386/kernel/asm-offsets.c
++++ b/arch/i386/kernel/asm-offsets.c
+@@ -15,6 +15,7 @@
+ #include <asm/fixmap.h>
+ #include <asm/processor.h>
+ #include <asm/thread_info.h>
++#include <asm/bootparam.h>
+ #include <asm/elf.h>
+ #include <xen/interface/xen.h>
  
- #ifndef ELF_OSABI
- #define ELF_OSABI ELFOSABI_NONE
-@@ -357,6 +369,7 @@ typedef struct elf64_shdr {
- #define NT_PRXFPREG     0x46e62b7f      /* copied from gdb5.1/include/elf/common.h */
+@@ -143,4 +144,10 @@ void foo(void)
+ 	OFFSET(LGUEST_PAGES_regs_errcode, lguest_pages, regs.errcode);
+ 	OFFSET(LGUEST_PAGES_regs, lguest_pages, regs);
+ #endif
++
++	BLANK();
++	OFFSET(BP_scratch, boot_params, scratch);
++	OFFSET(BP_loadflags, boot_params, hdr.loadflags);
++	OFFSET(BP_hardware_subarch, boot_params, hdr.hardware_subarch);
++	OFFSET(BP_version, boot_params, hdr.version);
+ }
+===================================================================
+--- a/include/asm-i386/bootparam.h
++++ b/include/asm-i386/bootparam.h
+@@ -24,8 +24,9 @@ struct setup_header {
+ 	u16	kernel_version;
+ 	u8	type_of_loader;
+ 	u8	loadflags;
+-#define LOADED_HIGH	0x01
+-#define CAN_USE_HEAP	0x80
++#define LOADED_HIGH	(1<<0)
++#define KEEP_SEGMENTS	(1<<6)
++#define CAN_USE_HEAP	(1<<7)
+ 	u16	setup_move_size;
+ 	u32	code32_start;
+ 	u32	ramdisk_image;
+@@ -37,6 +38,10 @@ struct setup_header {
+ 	u32	initrd_addr_max;
+ 	u32	kernel_alignment;
+ 	u8	relocatable_kernel;
++	u8	_pad2[3];
++	u32	cmdline_size;
++	u32	hardware_subarch;
++	u64	hardware_subarch_data;
+ } __attribute__((packed));
  
- 
-+#ifndef __ASSEMBLY__
- /* Note header in a PT_NOTE section */
- typedef struct elf32_note {
-   Elf32_Word	n_namesz;	/* Name size */
-@@ -396,5 +409,6 @@ static inline void arch_write_notes(stru
- #define ELF_CORE_EXTRA_NOTES_SIZE arch_notes_size()
- #define ELF_CORE_WRITE_EXTRA_NOTES arch_write_notes(file)
- #endif /* ARCH_HAVE_EXTRA_ELF_NOTES */
-+#endif	/* __ASSEMBLY__ */
- 
- #endif /* _LINUX_ELF_H */
+ struct sys_desc_table {
 
 -- 
 
