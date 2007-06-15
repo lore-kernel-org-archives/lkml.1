@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbXFOVvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbXFOVv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759265AbXFOVvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbXFOVvD
+	id S1757783AbXFOVv6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759434AbXFOVvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:51:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57168 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758754AbXFOVvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:51:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH -mm 6/7] PM: Remove power_state.event checks from suspend core code
-Date: Fri, 15 Jun 2007 23:57:57 +0200
-User-Agent: KMail/1.9.5
-Cc: David Brownell <david-b@pacbell.net>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <Pine.LNX.4.44L0.0706142157420.30954-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0706142157420.30954-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 15 Jun 2007 17:51:43 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:58619 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759426AbXFOVvl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:51:41 -0400
+Subject: Re: [PATCH -rt] Fix TASKLET_STATE_SCHED WARN_ON()
+From: john stultz <johnstul@us.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070615155231.GA345@tv-sign.ru>
+References: <20070615155231.GA345@tv-sign.ru>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 14:51:11 -0700
+Message-Id: <1181944271.5998.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706152357.58613.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 15 June 2007 04:00, Alan Stern wrote:
-> On Fri, 15 Jun 2007, Rafael J. Wysocki wrote:
+On Fri, 2007-06-15 at 19:52 +0400, Oleg Nesterov wrote:
+> john stultz wrote:
+> >
+> > The following additional patch should correct this issue. Although since
+> > we weren't actually hitting it, the issue is a bit theoretical, so I've
+> > not been able to prove it really fixes anything.
 > 
-> > On Thursday, 14 June 2007 16:21, David Brownell wrote:
-> > > On Wednesday 13 June 2007, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > The suspend routines should be called for every device during a system sleep
-> > > > transition, regardless of the device's state, so that drivers can regard these
-> > > > method calls as notifications that the system is about to go to sleep, rather
-> > > > than as directives to put their devices into the 'off' state.
-> > > 
-> > > Did you audit all the drivers to make sure this won't break things?
-> > > Like for example through inappropriate pci_save_state() calls?
-> > 
-> > I did, but not very carefully.
-> > 
-> > > I'd really expect this patch would break things...
-> > 
-> > Well, in that case I'll have a closer look at them.
+> Could you please look at the message below? I sent it privately near a month
+> ago, but I think these problems are not fixed yet.
+
+Hmm. Maybe you sent it to others on the cc list, as I can't find it in
+my box. But apologies anyway.
+
+
+> ---------------------------------------------------------------------------
 > 
-> It might not be all that bad.  One would expect problems to occur only 
-> in cases where devices were already suspended at the time of a system 
-> sleep transition.  Since relatively few drivers currently implement 
-> runtime PM -- and those that do are likely to be more careful about 
-> not blindly making state changes -- there might not be too much 
-> trouble.
+> > +__tasklet_action(struct softirq_action *a, struct tasklet_struct *list)
+> > +{
+> > +	int loops = 1000000;
+> >  
+> >  	while (list) {
+> >  		struct tasklet_struct *t = list;
+> >  
+> >  		list = list->next;
+> > +		/*
+> > +		 * Should always succeed - after a tasklist got on the
+> > +		 * list (after getting the SCHED bit set from 0 to 1),
+> > +		 * nothing but the tasklet softirq it got queued to can
+> > +		 * lock it:
+> > +		 */
+> > +		if (!tasklet_trylock(t)) {
+> > +			WARN_ON(1);
+> > +			continue;
+> > +		}
+> > +
+> > +		t->next = NULL;
+> > +
+> > +		/*
+> > +		 * If we cannot handle the tasklet because it's disabled,
+> > +		 * mark it as pending. tasklet_enable() will later
+> > +		 * re-schedule the tasklet.
+> > +		 */
+> > +		if (unlikely(atomic_read(&t->count))) {
+> > +out_disabled:
+> > +			/* implicit unlock: */
+> > +			wmb();
+> > +			t->state = TASKLET_STATEF_PENDING;
+> 
+> What if tasklet_enable() happens just before this line ?
+> 
+> After the next schedule_tasklet() we have all bits set: SCHED, RUN, PENDING.
+> The next invocation of __tasklet_action() clears SCHED, but tasklet_tryunlock()
+> below can never succeed because of PENDING.
 
-Yes, in fact I've had no problems related to that so far (tested the patch on
-four different machines).
+Yep. I've only been focusing on races in schedule/action, as I've been
+hunting issues w/ rcu. But I'll agree that the other state changes look
+problematic. I know Paul McKenney was looking at some of the other state
+changes and was seeing some potential problems as well.
 
-Greetings,
-Rafael
+thanks
+-john
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
