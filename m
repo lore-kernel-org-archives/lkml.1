@@ -1,86 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbXFOXkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbXFOXlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbXFOXkr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbXFOXkj
+	id S1758934AbXFOXlj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbXFOXlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:40:39 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:38230 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754169AbXFOXki (ORCPT
+	Fri, 15 Jun 2007 19:41:32 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:38953 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753437AbXFOXlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:40:38 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Sat, 16 Jun 2007 01:39:57 +0200
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706160006.26428.mgd@technosis.de> <20070615222229.GA20176@elte.hu>
-In-Reply-To: <20070615222229.GA20176@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4790886.KUfdW1PzXA";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 15 Jun 2007 19:41:31 -0400
+Subject: Re: [PATCH] ext4:fix unexpected error from ext4_reserve_global
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Dmitriy Monakhov <dmonakhov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <20070614152927.GC6517@localhost.sw.ru>
+References: <20070614152927.GC6517@localhost.sw.ru>
+Content-Type: text/plain
+Organization: IBM LTC
+Date: Fri, 15 Jun 2007 16:41:24 -0700
+Message-Id: <1181950884.3808.16.camel@dyn9047017103.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706160140.24017.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181950838;49465f61;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4790886.KUfdW1PzXA
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-> > > What matters is *my* intent in *choosing* the GPLv2, not *his*=20
-> > > intent in writing it.
-> >=20
-> > I beg to differ. By adopting _his_ license you adopted his view. [...]
->=20
-> ianal, but fortunately that's not what the law is. The license says what=
-=20
-> it says, and that is what controls. The intent of the author (of Linus=20
-> and other copyright holders) is a secondary source of information /if=20
-> and only if/ any ambiguity of meaning arises (as determined by a judge,=20
-> not by you or me). But the opinion and intent of RMS (unless adopted by=20
-> Linus) is quite immaterial.
+On Thu, 2007-06-14 at 19:29 +0400, Dmitriy Monakhov wrote:
+> I just cant belive my eyes then i saw this at the first time...
+> simple test: strace dd if=/dev/zero of=/mnt/file
+> 
+Thanks for reporting it. 
 
-I agree with the "/if and only if/ any ambiguity of meaning arises" part.
-I'm sorry I didn't make that clear before.
+> open("/dev/zero", O_RDONLY)             = 0
+> close(1)                                = 0
+> open("/mnt/test/file", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 1
+> read(0, "\0\0\0\0\0\0\0\0\0"..., 512) = 512
+> write(1, "\0\0\0\0\0\0\0\0"..., 512) = 512
+> read(0, "\0\0\0\0\0\0\0\0\0"..., 512) = 512
+> write(1, "\0\0\0\0\0\0\0\0"..., 512) = -1 ENOENT (No such fil
+> e or directory)
+> 
+> This strange error returned from ext4_reserve_global().
+> It's just typo because:
+> a) In fact this is 100% ENOSPC situation
+> b) simular function ext4_reserve_local() returns -ENOSPC
+> 
+I agree.
 
-However if that situation arises (i.e. the judge decides there is an
-ambiguity) then as far as my experience tells me it is the intention of
-the author (RMS et al in this case) that counts. But I erred before...
+Patch is put in ext4 patch queue. Alex if you can Ack, that would be
+great.
 
-Best wishes,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
 
---nextPart4790886.KUfdW1PzXA
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Mingming
+> Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
+> ---
+>  fs/ext4/balloc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
+> index 4d7bfd2..43ae8f8 100644
+> --- a/fs/ext4/balloc.c
+> +++ b/fs/ext4/balloc.c
+> @@ -1920,7 +1920,7 @@ int ext4_reserve_global(struct super_block *sb, int blocks)
+>  {
+>  	struct ext4_sb_info *sbi = EXT4_SB(sb);
+>  	struct ext4_reservation_slot *rs;
+> -	int i, rc = -ENOENT;
+> +	int i, rc = -ENOSPC;
+>  	__u64 free = 0;
+> 
+>  	rs = sbi->s_reservation_slots;
 
-iD8DBQBGcyNnUYYhyuxDQc4RAuFwAJ9N3Y6rbZdVcnRoP/Sz9GTgyLV0cACgphi5
-hd5PUTkjziNUv0jfDK4Jy2Y=
-=wIKi
------END PGP SIGNATURE-----
-
---nextPart4790886.KUfdW1PzXA--
