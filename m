@@ -1,101 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbXFOIHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbXFOIPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753184AbXFOIHZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 04:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbXFOIHM
+	id S1753050AbXFOIPD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 04:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbXFOIOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 04:07:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42665 "HELO mail.gmx.net"
+	Fri, 15 Jun 2007 04:14:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50090 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751461AbXFOIHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 04:07:09 -0400
+	id S1750787AbXFOIOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 04:14:47 -0400
 X-Authenticated: #153925
-X-Provags-ID: V01U2FsdGVkX18rL1Ude9kr3+E2pXO4ryPedLWtTCmbe6YJiKpYVG
-	8o2JqhbhCXDZPG
+X-Provags-ID: V01U2FsdGVkX18fzNBpTXUfwGjI5bZA4WNKk70aOZ3jOCDP8ls8s9
+	ZuFByMcBzxbDn2
 From: Bernd Paysan <bernd.paysan@gmx.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Paulo Marques <pmarques@grupopie.com>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 10:07:05 +0200
+Date: Fri, 15 Jun 2007 10:14:44 +0200
 User-Agent: KMail/1.9.5
-Cc: Alexandre Oliva <aoliva@redhat.com>, Rob Landley <rob@landley.net>,
-       Alan Milnes <alan@itfoundation.org.uk>, linux-kernel@vger.kernel.org
-References: <466A3EC6.6030706@netone.net.tr> <orr6oe6luz.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141855480.14121@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706141855480.14121@woody.linux-foundation.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <20070614170902.GQ21478@ftp.linux.org.uk> <467178D3.6010204@grupopie.com>
+In-Reply-To: <467178D3.6010204@grupopie.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed;
-  boundary="nextPart1317823.MrAXn0spfS";
+  boundary="nextPart1987136.IJfHaWp53u";
   protocol="application/pgp-signature";
   micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706151007.06885.bernd.paysan@gmx.de>
+Message-Id: <200706151014.45383.bernd.paysan@gmx.de>
 X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1317823.MrAXn0spfS
+--nextPart1987136.IJfHaWp53u
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-On Friday 15 June 2007 04:19, Linus Torvalds wrote:
-> I will state one more time: I think that what Tivo did was and is:
+On Thursday 14 June 2007 19:20, Paulo Marques wrote:
+> Watching the output of the first grep without "wc -l" shows that,
+> although it is not 100% accurate, it is still ok just to get a rough
+> estimate.
 >
-> =A0(a) perfectly legal wrt the GPLv2 (and I have shown multiple times why
-> =A0 =A0 =A0your arguments don't hold logical water - if you actually foll=
-owed
-> =A0 =A0 =A0them yourself, you wouldn't be using a redhat.com email addres=
-s!)
+> So yes, ~6300 files are definitely more than a couple ;)
 
-Linus, Harald Welte managed to get the keys from Siemens, which sold=20
-a "tivoized" Linux router. As typical for German courts, he got the key in=
+Most of them don't say anything, so they are "any GPL" by the author. When=
 =20
-a settlement, so there's no citable court verdict (totally, he AFAIK got=20
-two court verdicts up to now). But the way settlements work in Germany=20
-suggests that it's likely that the court would have decided that way*.
+do you people accept that Linus can't change the GPL, he can only add=20
+comments of what he thinks is the case! His interpretation of the GPLv2=20
+might be that not saying anything about the version means "v2 only", but if=
+=20
+he does so, he's simply wrong. He was wrong in the module case, as well,=20
+and dropped this comment a while ago. He might drop this comment in future,=
+=20
+as well. In fact, anybody can drop this comment, as it's just a comment.
 
-So there is no verdict on this question, but a strong hint that you are=20
-wrong, at least under German law (which is not the best money can buy ;-).=
+The kernel *as a whole* is clearly under GPLv2 only from Linus' comment,=20
+which is in fact true, since the common subset of GPL versions from all=20
+authors is indeed GPLv2 (by virtue of some files from Al Viro, and maybe=20
+some other explicit GPL v2 files). The author must specify the version=20
+himself, there simply is no other way. If you don't specify any, it's "any=
 =20
-And as Tivo doesn't sell their crap into Germany, we can't test it with=20
-them.
-
-It's you who think the GPLv2 is tit-for-tat, not the FSF, and it's not in=20
-the text of the GPLv2; this is your private misinterpretation. The GPLv2=20
-is "transitive", i.e. everybody receives the same rights, nobody is=20
-entitled to take rights from others (the only person to choose is the=20
-author), and this certainly includes technical means (even if it does not=20
-explicitely say so), and the GPLv3 is just the same (it's just more=20
-readable). All arguments from your side put up are straw men like "hardware=
+version", because I can license all patches straight from the authors. The=
 =20
-vs. software" and such.
-
-BTW: Hardware as it is done today (chips, printed circuit boards, etc.) is=
+way the GPLv2 allows you to explicitely specify "any version" is by not=20
+saying anything about the version at all. Linus isn't in the positition to=
 =20
-copyrighted as well, as it is much cheaper to copy hardware than to develop=
+change that unless he does a substantial change to the file, and also adds=
 =20
-it.
-
-*) German judges want to resolve civil cases by settlements. They let the=20
-parties pass a few arguments, and indicate which way the judge possibly=20
-would decide to help them settle fast. Settlement is way cheaper than a=20
-court verdict, so most sane people choose to settle (unfortunately it's=20
-often the insane people who go to court ;-).
+a comment that this file is now GPLv2 only.
 
 =2D-=20
 Bernd Paysan
 "If you want it done right, you have to do it yourself"
 http://www.jwdt.com/~paysan/
 
---nextPart1317823.MrAXn0spfS
+--nextPart1987136.IJfHaWp53u
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
-iD8DBQBGckiqi4ILt2cAfDARAsEaAJ9W5S0uldT/CySNk1SX3FlIfLmhZQCfSvNl
-xf/H+hGUWG8H/6KXjM5agJA=
-=Fu9i
+iD8DBQBGckp1i4ILt2cAfDARArBPAJ9ZSGDpLxPQqdBV+doQxgKfHx37EwCglETv
+SlQg/RWoGDnBMoFgqeKYD34=
+=k1zO
 -----END PGP SIGNATURE-----
 
---nextPart1317823.MrAXn0spfS--
+--nextPart1987136.IJfHaWp53u--
