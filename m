@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbXFOQzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbXFOQ4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbXFOQzh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 12:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXFOQza
+	id S1756740AbXFOQ4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 12:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbXFOQ4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 12:55:30 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36153 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753607AbXFOQz3 (ORCPT
+	Fri, 15 Jun 2007 12:56:18 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:54142 "EHLO
+	outbound1-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753177AbXFOQ4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 12:55:29 -0400
-Date: Fri, 15 Jun 2007 18:55:42 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Linux Servers comparison with Windows 2003 servers for Gaming
-Message-ID: <20070615165542.GH3588@stusta.de>
-References: <8d6898730706150712u182f5af1h2d92030adf16d022@mail.gmail.com> <20070615152313.3638b4d5@the-village.bc.nu> <4672A3AA.6010705@mandic.com.br>
+	Fri, 15 Jun 2007 12:56:17 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Date: Fri, 15 Jun 2007 18:56:50 +0200
+From: "Robert Richter" <robert.richter@amd.com>
+To: "Stephane Eranian" <eranian@hpl.hp.com>
+cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: [patch 0/8] 2.6.22-rc3 perfmon2 : IBS implementation for AMD64
+Message-ID: <20070614215818.509851000@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 15 Jun 2007 16:56:03.0893 (UTC)
+ FILETIME=[0F289650:01C7AF6E]
+X-WSS-ID: 6A6C1B2C23K500707-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4672A3AA.6010705@mandic.com.br>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 11:35:22AM -0300, Renato S. Yamane wrote:
-> Alan Cox wrote:
->> On Fri, 15 Jun 2007 19:42:50 +0530
->>> How much better performance i will get?
->> How long is a piece of string. Given you don't give any hardware info,
->> any info on the applications run or on the network and capacity expected
->> its a bit hard to guess really.
->
-> Detail: I think that is a good idea if hard-users (as kernel developers) 
-> had a local to host yours .config file, specifying hadware.
->
-> E.g. I have a laptop Toshiba M45-S355 (with ReiserFS) and don't have 
-> experience to choose what I can remove from kernel (or compile as 
-> module/built-in).
->
-> So, is a great idea use pre-config file to compile a new kernel with best 
-> options.
->
-> My .config file (2.6.21.1) and lspci is attached.
+Hello,
 
-CONFIG_DEBUG_KERNEL=n (as set in your .config) should be the one setting 
-that is important for performance - enabling it offers debug options, 
-and some of them can significantly influence the performance.
+the following series of patches adds support for Instruction Based
+Sampling (IBS) of Barcelona CPUs. IBS is a code profiling mechanism
+that enables the processor to select a random instruction fetch or
+micro-op after a programmed time interval has expired and record
+specific performance information about the operation.
 
-Other options might influence the size and very slightly the speed of 
-the kernel, but not in any noticable way (except when you disable a 
-driver required for your hardware).
+The patches also include a new AMD64 PMU description that dynamically
+detects the availability of PMU features of the CPU during
+configuration. Thus, there is only one description needed for all AMD
+CPU families and models (includes K8, families 10h and above).
 
-E.g. it even wouldn't matter if your kernel would be smaller by 1 MB and 
-faster by 1%.
+The patches are relative to Stephane's 22 patches for 2.6.22-rc3.
 
-The best solution for users like you is to use a distribution kernel and 
-the distribution autodetecting all hardware and automatically loading 
-all drivers you might need.
+Regards,
+Robert
 
-> Best regards,
-> Renato S. Yamane
+--
+AMD Saxony, Dresden, Germany
+Operating System Research Center
+email: robert.richter@amd.com
 
-cu
-Adrian
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
