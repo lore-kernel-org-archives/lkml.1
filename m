@@ -1,94 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbXFOBBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbXFOBCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbXFOBBQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 21:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbXFOBAt
+	id S1755656AbXFOBCI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 21:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXFOBBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 21:00:49 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50073 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754270AbXFOBAs (ORCPT
+	Thu, 14 Jun 2007 21:01:49 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:27958 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbXFOBBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 21:00:48 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 21:00:33 -0400
-User-Agent: KMail/1.9.6
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706141617.46734.dhazelton@enter.net> <or645q9qgw.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or645q9qgw.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Thu, 14 Jun 2007 21:01:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vf5qFRavZ3HIln5uPV0jPebKblBeAj60+mdBaCKszQENFc7m9YQhO6d1pt6KieuchP4konFk0eyiO9b2pGBrdgUAS9NjTrwLfjjSGfrdD7dtiS48tAs4dyoDRvtor33/hRsc19G5bwqDI8kf/0ukvuefzbbRr+r8xccu4r7a12w=
+Message-ID: <170fa0d20706141801u6d6effd9ub362f3ae397f3d32@mail.gmail.com>
+Date: Thu, 14 Jun 2007 21:01:19 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Paul Clements" <paul.clements@steeleye.com>
+Subject: Re: raid1 with nbd member hangs MD on SLES10 and RHEL5
+Cc: "Bill Davidsen" <davidsen@tmr.com>, "Neil Brown" <neilb@suse.de>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       nbd-general@lists.sourceforge.net,
+       "Herbert Xu" <herbert@gondor.apana.org.au>
+In-Reply-To: <4671E018.4090105@steeleye.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706142100.33478.dhazelton@enter.net>
+References: <170fa0d20706121930g3b89ddeex8b31c8923d2a0ff6@mail.gmail.com>
+	 <18031.22930.243723.550238@notabene.brown>
+	 <170fa0d20706121959w480213bcvaba1b6881710379f@mail.gmail.com>
+	 <170fa0d20706122009h5e3db54ek7487be4940a3d780@mail.gmail.com>
+	 <18031.25581.353761.802283@notabene.brown>
+	 <170fa0d20706122130q2c77d365tbe9261bab1a5b1b@mail.gmail.com>
+	 <170fa0d20706131123q17e4fb9ehe6be25a07462cc30@mail.gmail.com>
+	 <170fa0d20706131630p6cd29aa5i8f51856780a9c691@mail.gmail.com>
+	 <4671AD7C.4010109@tmr.com> <4671E018.4090105@steeleye.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 17:27:27 Alexandre Oliva wrote:
-> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > <somewhat sarcastic>
-> > And the companies that produce devices that come with Linux and/or
-> > other GPL'd software installed and place limits such that only
-> > people that have purchased that hardware have access to the
-> > "modified" source running on the device are following the letter,
-> > and the spirit, of the GPL.
+On 6/14/07, Paul Clements <paul.clements@steeleye.com> wrote:
+> Bill Davidsen wrote:
 >
-> WAIT, WAIT, THAT'S... :-)
+> > Second, AFAIK nbd hasn't working in a while. I haven't tried it in ages,
+> > but was told it wouldn't work with smp and I kind of lost interest. If
+> > Neil thinks it should work in 2.6.21 or later I'll test it, since I have
+> > a machine which wants a fresh install soon, and is both backed up and
+> > available.
 >
-> > Before you start yelling I'm wrong, think about it this way: they
-> > make the source available to the people that they've given binary
-> > versions to, and there is nothing stopping one of those people from
-> > making the source available to the rest of the world.
->
-> The *only* in your sentence betrayed you.
->
-> If they place the limits such that nobody else can access the sources,
-> they're in violation of the license.
+> Please stop this. nbd is working perfectly fine, AFAIK. I use it every
+> day, and so do 100s of our customers. What exactly is it that not's
+> working? If there's a problem, please send the bug report.
 
-Nope. There is *NO* requirement *ANYWHERE* in the GPL, no matter the version, 
-that says you have to *DISTRIBUTE* the source to *ANYONE* except those that 
-you have given a binary to. Go read the licenses.
+Paul,
 
->
-> If they merely refrain from distributing the sources to others, but
-> still enable the recipients to do so, this is not a violation of the
-> license.
+This thread details what I've experienced using MD (raid1) with 2
+devices; one being a local scsi device and the other is an NBD device.
+ I've yet to put effort to pinpointing the problem in a kernel.org
+kernel; however both SLES10 and RHEL5 kernels appear to be hanging in
+either 1) nbd or 2) the socket layer.
 
-Exactly what I said. "only the people that have purchased the hardware have 
-access to the modified sources"
+Here are the steps to reproduce reliably on SLES10 SP1:
+1) establish a raid1 mirror (md0) using one local member (sdc1) and
+one remote member (nbd0)
+2) power off the remote machine, whereby severing nbd0's connection
+3) perform IO to the filesystem that is on the md0 device to enduce
+the MD layer to mark the nbd device as "faulty"
+4) cat /proc/mdstat hangs, sysrq trace was collected
 
-That is *EXACTLY* what a number of companies have done - Acer (yes, the laptop 
-company) has done that. They sell laptops running Linux, but unless you have 
-purchased one of them you can't download the sources (or even replacement 
-binaries) for the version of linux they put on their machines. (From Acer, 
-that is)
+To be clear, the MD superblock update hangs indefinitely on RHEL5.
+But with SLES10 it eventually succeeds after ~5min (and MD marks the
+nbd0 member faulty); and the other tasks that were blocking waiting
+for the MD lock (e.g. 'cat /proc/mdstat') then complete immediately.
 
-However, as I also said, there is nothing stopping one of those people from 
-making those "modified sources" available to the rest of the world. (I have 
-yet to find someone that has done that with the Acer specific stuff, but...) 
+If you look back in this thread you'll see traces for md0_raid1 for
+both SLES10 and RHEL5.  I hope to try to reproduce this issue on
+kernel.org 2.6.16.46 (the basis for SLES10).  If I can I'll then git
+bisect back to try to pinpoint the regression; I obviously need to
+verify that 2.6.16 works in this situation on SMP.
 
-> But then IANAL.
->
-> > *AND* the GPL has never been about making the source available to
-> > everyone - just to those that get the binaries.
->
-> Exactly.  Not even to the upstream distributor.  That's where Linus'
-> theory of tit-for-tat falls apart.
-
-Yes, it does. However, the practicality is that there is nothing *stopping* 
-the person upstream from getting a copy of the source and incorporating the 
-modifications they contain in a new version.
-
-DRH
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Mike
