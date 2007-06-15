@@ -1,190 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbXFOKtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbXFOKvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753912AbXFOKtf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 06:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXFOKt1
+	id S1754039AbXFOKvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 06:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXFOKvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 06:49:27 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:60087 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbXFOKt0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 06:49:26 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: David Woodhouse <dwmw2@infradead.org>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-In-Reply-To: <200706150604.00086.dhazelton@enter.net>
-References: <466A3EC6.6030706@netone.net.tr>
-	 <200706150458.29943.dhazelton@enter.net>
-	 <1181899064.25228.342.camel@pmac.infradead.org>
-	 <200706150604.00086.dhazelton@enter.net>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 11:49:05 +0100
-Message-Id: <1181904545.25228.413.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 15 Jun 2007 06:51:10 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:35732 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752457AbXFOKvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 06:51:09 -0400
+Date: Fri, 15 Jun 2007 12:51:05 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Islam Amer <pharon@gmail.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: USB remote control missing keycodes
+In-Reply-To: <Pine.LNX.4.64.0706151211210.23280@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.64.0706151249520.23280@twin.jikos.cz>
+References: <20070611101319.GA14284@DervishD> <466D2DF7.9020709@aladin.ro> 
+ <1181563063.19258.11.camel@iamer-laptop>  <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
+  <1181743734.6163.1.camel@iamer-laptop>  <Pine.LNX.4.64.0706131654180.23280@twin.jikos.cz>
+  <d120d5000706130817v5b9291d4h8653ade63882d2bc@mail.gmail.com> 
+ <Pine.LNX.4.64.0706131741420.23280@twin.jikos.cz>  <1181750326.6163.6.camel@iamer-laptop>
+  <Pine.LNX.4.64.0706131809530.23280@twin.jikos.cz> <1181823597.6136.8.camel@iamer-laptop>
+ <Pine.LNX.4.64.0706141425180.23280@twin.jikos.cz>
+ <Pine.LNX.4.64.0706151211210.23280@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 06:03 -0400, Daniel Hazelton wrote:
-> In other words, it applies to *SECTIONS* of the code, not to individual object 
-> code files. This is why kernel modules can have their own, separate license 
-> from the kernel. It isn't until the code is shipped as a *standard* part of 
-> the kernel that it has to be GPLv2. (Dynamic Linking, being a totally 
-> mechanical process, cannot create a derivative work under US copyright law, 
-> so please, don't try that old saw)
-> 
-> What this means is that it doesn't matter that a non-GPL module is shipped, 
-> in "object code" form with the "object code" form of the linux kernel it is 
-> designed to interface with - it *still* doesn't become automatically covered 
-> by the GPL.
+On Fri, 15 Jun 2007, Jiri Kosina wrote:
 
-You're interpreting 'sections' to mean individual linker sections? And
-you think it's talking about distributing those 'sections' "as separate
-works"? Despite the fact that all the rest of the language in the
-document is high-level and doesn't even mention _linking_? 
+> please try the patch below (against 2.6.22-rc4) and send me the result.
 
-That's... an interesting interpretation.
+Now I see in the logs that there are also messages about the 
+report initialization failing, so we should also specify NOGET for this 
+device.
 
-> > If I grant you a licence on the condition that you give me money, would
-> > you object on the basis that the money is not a 'derived work' of my
-> > code? No. It's just a condition of the licence, and you're not allowed
-> > to use my code unless you give me money.
-> 
-> But you obviously are. After all, what does this have to do with whether the 
-> GPLv2 can "magically" change the law? 
+Could you please try the patch below instead, which does just that? 
+Thanks.
 
-The GPLv2 doesn't "magically" change the law, and has no need to. The
-above is just a demonstration that a licence can have conditions which
-involve things _other_ than derived works.
-
-I can release code under a 'viral' licence which requires you to release
-_everything_ you write for a whole year under that same licence. You
-don't _have_ to obey, and there's no suggestion that your own code would
-be 'derived' from mine -- but if you don't follow the conditions of the
-licence, then you don't get permission to use my code. There's no
-"magical" change to the law required.
-
-> > If I grant you a licence on the condition that you sacrifice your
-> > first-born son to Satan, would you object on the basis that your son is
-> > not a 'derived work' of my code? No. It's just a condition of the
-> > licence. If you don't do it, you don't have the right to use my code.
-> > (You may be able to get me locked up, but you still don't get to use my
-> > code without a licence).
-> >
-> > If I grant you a licence on the condition that you release _everything_
-> > you write this year under the GPLv2, would you object on the basis that
-> > your code is not a 'derived work' of my own? No. It's just a condition
-> > of the licence, which you choose to accept or not.
-> 
-> Again, what does this have to do with your apparent belief that me putting a 
-> binary of a kernel module that isn't GPL'd on a disc with the Linux kernel 
-> causes that module to become covered by the GPL?
-
-It's just a demonstration that a licence _can_ make requirements about
-non-derived code. You seemed to be making two bogus claims -- first that
-it _can_ not, and then that the GPL _does_ not.
-
-I've dealt with the first; let's look at the second, leaving aside your
-weird digression about bison... (hint: it's about the code stubs in the
-output which weren't _produced_ mechanically in the first place; they
-were only _put_ there mechanically by the software).
-
-> > Talking about how your code can't possibly be a derived work is just a
-> > red herring. The GPL explicitly talks about works which are 'independent
-> > and separate works in themselves', to which the GPL does not apply 'when
-> > you distribute them as separate works'.
-> 
-> And it also says:
-> In addition, mere aggregation of another work not based on the Program
-> with the Program (or with a work based on the Program) on a volume of
-> a storage or distribution medium does not bring the other work under
-> the scope of this License.
-> 
-> In other words, even though I've built a program that isn't GPL'd, I can still 
-> put it on the same "volume of storage or distribution medium" as a GPL'd work 
-> and not have to put it under the GPL. Imagine that.
-
-Yes. That's why I said 'not necessarily' rather than 'no'. If it just
-happens to be on the same hard drive / tape / CD-ROM that's not
-important. The important question is whether it's distributed 'as a
-separate work' or whether it's part of a larger, coherent whole.
-
-> > But when you distribute the same sections as part of a whole which is a
-> > work based on the Program, the distribution of the whole must be on the
-> > terms of this License, whose permissions for other licensees extend to
-> > the entire whole, and thus to each and every part regardless of who
-> > wrote it.
-> 
-> Hrm... I see, you've included the section unmolested here - but you still seem 
-> unable to read it correctly. Perhaps I'm wrong though.
-
-If by 'correctly' you mean I should interpret 'sections' to mean linker
-sections, then you're right -- I really can't bring myself to read it
-that way. Of course, you're not actually _wrong_ until/unless it's
-interpreted in court. But I'm willing to place bets :)
-
-> > It's your choice -- you're not _forced_ to use the kernel, and you're
-> > not _forced_ to distribute a product which combines it with other code
-> > of your own. But if you do, you're bound by the licence. And whether
-> > your code is a 'derived work' has nothing to do with it.
-> 
-> And is this what the process of making a module does? Because that *IS* what I 
-> had mentioned. If the mail I'm responding to was a response to that mail then 
-> you are sadly confused as to what I was talking about. 
-
-I'm certainly confused as to what you're talking about _now_; it seems
-to make little sense. What do you mean by 'this' in the context of 'is
-this what the process of making a module does?'? And how is it relevant?
-
-You said that modules aren't derivative works. I said 'Who cares?'
-because there are far more obvious reasons why the module would be under
-GPL, because of the GPL's requirements about collective works. What part
-of that confuses you? You seem to _keep_ going back to talking about
-derived works.
-
-> > Yes, there are exceptions for mere aggregation onto a storage medium --
-> > if the kernel and your own work are next to each other on a backup tape
-> > or your laptop's hard drive, or even both burned to a 'Gratis Software'
-> > CD as _separate_ works, then that doesn't count. But we're talking about
-> > a product which has a Linux kernel, a module built specifically for that
-> > kernel, and cannot function unless both of them are present. That ain't
-> > "mere aggregation on a storage medium".
-> 
-> Yet it still doesn't make them a "combined work". If it did then the simple 
-> act of me installing a copy of the ATI or NVidia modules makes them GPL'd. 
-> But it doesn't - if it did I'm sure that somebody would have filed a lawsuit 
-> over this already.
-
-The GPL applies if you _distribute_ a work which combines such modules
-and the kernel into a larger whole. You can do what you like if you
-don't distribute it.
-
-The 'mere aggregation' thing means you can even distribute them together
-if they just happen to be side-by-side on a storage medium as if by
-coincidence. But putting them together into a product which actually
-uses and requires both of them is not 'mere aggregation'. Some people
-_were_ bundling the ATI and nVidia modules together with the kernel in a
-'product', and they stopped under threat of legal action.
-
-The module on its own is questionable -- it is a matter of opinion
-whether that's a derived work or not. But when you ship a product which
-combines both kernel and module into a coherent whole, it doesn't
-_matter_ if the module is a derived work or not. You are not permitted
-to distribute the kernel unless your module is also licensed under the
-GPL. Not because it's a derived work, but because the licence of the
-kernel says that's the price you pay if you want to distribute the
-kernel.
-
--- 
-dwmw2
-
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index 7f81789..a112da2 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -566,6 +566,10 @@ static void hidinput_configure_usage(str
+ 				case 0x0e5: map_key_clear(KEY_BASSBOOST);	break;
+ 				case 0x0e9: map_key_clear(KEY_VOLUMEUP);	break;
+ 				case 0x0ea: map_key_clear(KEY_VOLUMEDOWN);	break;
++
++				/* reserved in HUT 1.12. Reported on Petalynx remote */
++				case 0x0fa: map_key_clear(KEY_BACK);		break;
++
+ 				case 0x183: map_key_clear(KEY_CONFIG);		break;
+ 				case 0x184: map_key_clear(KEY_WORDPROCESSOR);	break;
+ 				case 0x185: map_key_clear(KEY_EDITOR);		break;
+@@ -704,10 +708,10 @@ static void hidinput_configure_usage(str
+ 			}
+ 			break;
+ 
+-		case HID_UP_LOGIVENDOR: /* Reported on Logitech Ultra X Media Remote */
+-
++		case HID_UP_LOGIVENDOR:
+ 			set_bit(EV_REP, input->evbit);
+ 			switch(usage->hid & HID_USAGE) {
++				/* Reported on Logitech Ultra X Media Remote */
+ 				case 0x004: map_key_clear(KEY_AGAIN);		break;
+ 				case 0x00d: map_key_clear(KEY_HOME);		break;
+ 				case 0x024: map_key_clear(KEY_SHUFFLE);		break;
+@@ -725,6 +729,14 @@ static void hidinput_configure_usage(str
+ 				case 0x04d: map_key_clear(KEY_SUBTITLE);	break;
+ 				case 0x051: map_key_clear(KEY_RED);		break;
+ 				case 0x052: map_key_clear(KEY_CLOSE);		break;
++
++				/* Reported on Petalynx Maxter remote */
++				case 0x05a: map_key_clear(KEY_TEXT);		break;
++				case 0x05b: map_key_clear(KEY_RED);		break;
++				case 0x05c: map_key_clear(KEY_GREEN);		break;
++				case 0x05d: map_key_clear(KEY_YELLOW);		break;
++				case 0x05e: map_key_clear(KEY_BLUE);		break;
++
+ 				default:    goto ignore;
+ 			}
+ 			break;
+diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+index d91b9da..b575a07 100644
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -688,6 +688,22 @@ static void hid_fixup_logitech_descripto
+ 	}
+ }
+ 
++/* Petalynx Maxter Remote has maximum for consumer page set too low */
++static void hid_fixup_petalynx_descriptor(unsigned char *rdesc, int rsize)
++{
++	if (rsize >= 60 && rdesc[39] == 0x2a
++			&& rdesc[40] == 0xf5
++			&& rdesc[41] == 0x00
++			&& rdesc[59] == 0x26
++			&& rdesc[60] == 0xf9
++			&& rdesc[61] == 0x00) {
++		info("Fixing up Petalynx Maxter Remote report descriptor");
++		rdesc[60] = 0xfa;
++		rdesc[40] = 0xfa;
++	} else
++		info("Not fixing up Petalynx Maxter Remote report descriptor");
++}
++
+ /*
+  * Some USB barcode readers from cypress have usage min and usage max in
+  * the wrong order
+@@ -781,6 +797,9 @@ static struct hid_device *usb_hid_config
+ 	if (quirks & HID_QUIRK_SWAPPED_MIN_MAX)
+ 		hid_fixup_cypress_descriptor(rdesc, rsize);
+ 
++	if (quirks & HID_QUIRK_PETALYNX_DESCRIPTOR)
++		hid_fixup_petalynx_descriptor(rdesc, rsize);
++
+ #ifdef CONFIG_HID_DEBUG
+ 	printk(KERN_DEBUG __FILE__ ": report descriptor (size %u, read %d) = ", rsize, n);
+ 	for (n = 0; n < rsize; n++)
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index f6c4145..bb34e90 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -220,6 +220,9 @@
+ #define USB_VENDOR_ID_PANTHERLORD	0x0810
+ #define USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK	0x0001
+ 
++#define USB_VENDOR_ID_PETALYNX		0x18b1
++#define USB_DEVICE_ID_PETALYNX_MAXTER_REMOTE	0x0037
++
+ #define USB_VENDOR_ID_PLAYDOTCOM	0x0b43
+ #define USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII	0x0003
+ 
+@@ -418,6 +421,8 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_PANTHERLORD, USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK, HID_QUIRK_MULTI_INPUT | HID_QUIRK_SKIP_OUTPUT_REPORTS },
+ 	{ USB_VENDOR_ID_PLAYDOTCOM, USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII, HID_QUIRK_MULTI_INPUT },
+ 
++	{ USB_VENDOR_ID_PETALYNX, USB_DEVICE_ID_PETALYNX_MAXTER_REMOTE, HID_QUIRK_PETALYNX_DESCRIPTOR | HID_QUIRK_NOGET },
++
+ 	{ USB_VENDOR_ID_SONY, USB_DEVICE_ID_SONY_PS3_CONTROLLER, HID_QUIRK_SONY_PS3_CONTROLLER },
+ 
+ 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_UC100KM, HID_QUIRK_NOGET },
+diff --git a/include/linux/hid.h b/include/linux/hid.h
+index 827ee74..3b1d638 100644
+--- a/include/linux/hid.h
++++ b/include/linux/hid.h
+@@ -276,6 +276,7 @@ struct hid_item {
+ #define HID_QUIRK_DUPLICATE_USAGES		0x00200000
+ #define HID_QUIRK_RESET_LEDS			0x00400000
+ #define HID_QUIRK_SWAPPED_MIN_MAX		0x00800000
++#define HID_QUIRK_PETALYNX_DESCRIPTOR		0x01000000
+ 
+ /*
+  * This is the global environment of the parser. This information is
