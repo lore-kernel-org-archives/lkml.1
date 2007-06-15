@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbXFOX17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759707AbXFOX2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759874AbXFOX17 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbXFOX1j
+	id S1759707AbXFOX2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759090AbXFOX2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:27:39 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43253 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759758AbXFOX1h (ORCPT
+	Fri, 15 Jun 2007 19:28:08 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:51275 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759660AbXFOX2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:27:37 -0400
-Date: Fri, 15 Jun 2007 16:26:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Dan Aloni <da-x@monatomic.org>,
-       Chad Tindel <ctindel@users.sourceforge.net>,
-       Jay Vosburgh <fubar@us.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
-       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
-       Ioan Ionita <opslynx@gmail.com>
-Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
-In-Reply-To: <46704C44.8020602@googlemail.com>
-Message-ID: <alpine.LFD.0.98.0706151624340.14121@woody.linux-foundation.org>
-References: <46704923.1010009@googlemail.com>
- <46704C44.8020602@googlemail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 15 Jun 2007 19:28:07 -0400
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: David Miller <davem@davemloft.net>
+Cc: alan@lxorguk.ukuu.org.uk, Geert.Uytterhoeven@sonycom.com,
+       dwmw2@infradead.org, axboe@kernel.dk, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <20070615.160858.26276547.davem@davemloft.net>
+References: <20070615171545.316dfac7@the-village.bc.nu>
+	 <20070615.141917.85409547.davem@davemloft.net>
+	 <1181947242.3600.8.camel@mulgrave.il.steeleye.com>
+	 <20070615.160858.26276547.davem@davemloft.net>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 16:28:03 -0700
+Message-Id: <1181950083.3600.18.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 13 Jun 2007, Michal Piotrowski wrote:
+On Fri, 2007-06-15 at 16:08 -0700, David Miller wrote:
+> From: James Bottomley <James.Bottomley@SteelEye.com>
+> Date: Fri, 15 Jun 2007 15:40:42 -0700
 > 
-> Subject    : hibernate(?) fails totally - regression
-> References : http://lkml.org/lkml/2007/6/1/401
-> Submitter  : David Greaves <david@dgreaves.com>
-> Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
-> Caused-By  : Tejun Heo <htejun@gmail.com>
->             commit 9666f4009c22f6520ac3fb8a19c9e32ab973e828
-> Status     : problem is being debugged
+> > On Fri, 2007-06-15 at 14:19 -0700, David Miller wrote:
+> > > Another quirk I have to deal with is that under LDOMs you
+> > > can export full disks and also just slices.  So I'll have
+> > > to get down into the partition machinery to support that
+> > > somehow.
+> > 
+> > For this, it sounds like you might find nbd a more enticing
+> > proposition ... it already is partition independent and is basically a
+> > block to net socket exporter.
+> 
+> That's not gonna work, it's a totally different model.
+> 
+> I have a predefined protocol over hypervisor provided "channels" and
+> page flipping also done by the hypervisor for the bulk data transfer.
+> For the client side I cannot change the hypervisor nor the server
+> speaking on the other end.  And when I do write a server I do want
+> it to be able to speak to all of the existing clients.
+> 
+> There's SCSI command pass through as well, as I keep mentioning as
+> it's an important reason I don't want to go with any of the non-SCSI
+> solutions (other than perhaps ATA) being suggested.
 
-Ahh. This is fixed (fix by Tejun, confirmed by David), and the fix has 
-been merged. It's commit bc90ba093a, in case anybody cares.
+Then sure, use SCSI ... the ibmvscsi client originally talked to some
+type of hypervisor interface too before IBM extracted it and open
+sourced the server.  If actual SCSI commands are going in somewhere ...
+be it a real device, a RAID firmware emulation or a hypervisor input,
+then I'm happy with the driver being in SCSI.
 
-		Linus
+James
+
+
