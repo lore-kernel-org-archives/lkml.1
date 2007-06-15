@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbXFOV6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758162AbXFOV6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759067AbXFOV6B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbXFOV5v
+	id S1758162AbXFOV6Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758427AbXFOV5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:57:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41645 "EHLO mx2.mail.elte.hu"
+	Fri, 15 Jun 2007 17:57:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57206 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752370AbXFOV5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:57:50 -0400
-Date: Fri, 15 Jun 2007 23:57:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615215734.GB16371@elte.hu>
-References: <466A3EC6.6030706@netone.net.tr> <200706150308.20148.dhazelton@enter.net> <or1wgd102n.fsf@oliva.athome.lsd.ic.unicamp.br> <200706151715.55218.dhazelton@enter.net> <orfy4sx577.fsf@oliva.athome.lsd.ic.unicamp.br>
+	id S1758037AbXFOV5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:57:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Greaves <david@dgreaves.com>
+Subject: Re: 2.6.22-rc4 hibernate disables skge wol
+Date: Sat, 16 Jun 2007 00:04:30 +0200
+User-Agent: KMail/1.9.5
+Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-pm <linux-pm@lists.osdl.org>
+References: <467309B8.2060001@dgreaves.com>
+In-Reply-To: <467309B8.2060001@dgreaves.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <orfy4sx577.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200706160004.30932.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alexandre Oliva <aoliva@redhat.com> wrote:
-
-> >> You're again confusing legal terms with the intent.  The legal 
-> >> terms provide an indication of the intent, but the preamble, along 
-> >> with the free software definition it alludes to, do an even better 
-> >> job at that.
+On Friday, 15 June 2007 23:50, David Greaves wrote:
+> I've started a new thread here since the old one got somewhat hijacked.
 > 
-> > And the preamble, not being part of the active portion of the 
-> > license, has absolutely *ZERO* bearing. Just as it is not the 
-> > *intent* of RMS, the FSF or *ANY* person (or legal entity) that had 
-> > a hand in crafting the GPLv2 or GPLv3 which is looked at when 
-> > determining the "intent" of the license. It is the intent of the 
-> > person and/or "legal entity" that has placed their work under said 
-> > license.
+> Rafael J. Wysocki wrote:
+>  > On Friday, 1 June 2007 23:23, David Greaves wrote:
+>  >> Not a regression though, it does it in 2.6.21
+>  >>
+>  >> If I cause the system to save state to disk then whilst off it no longer
+>  >> responds to g-wol.
+>  >
+>  > Can you please try with the hibernation and suspend patch series from
+>  >
+>  > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc3/patches/
+>  >
+>  > applied?
+>  >
+>  > Greetings,
+>  > Rafael
+>  >
+>  >
+> Now, IIRC, some time ago you asked me to try some patches :)
 > 
-> No disagreement.  You keep forgetting that I'm not here to say what 
-> Linux licensing means or doesn't mean.
+> So I applied them (and Tejun's fixes as per the old thread) to rc4 (which seems 
+> to include a couple already).
+> 
+> Hibernate/resume works but although WOL works on an init 0, it doesn't work on a 
+> hibernated system :(
 
-it is _you_ forgetting to read what you wrote just 1 mail ago above. 
-_Read_ it:
+Well, I have one idea, but I'd like the recent paches currently in -mm to
+settle down before trying it. ;-)
 
-  "The legal terms provide an indication of the intent, but the 
-   preamble, along with the free software definition it alludes to, do 
-   an even better job at that.".
+In the meantime, you may want to open a bugzilla entry related to this issue
+(please add my address to the CC list if you do that).
 
-Your point was totally bogus, and you have been pointed out that your 
-point was bogus. And your answer - instead of admitting that you were 
-wrong once again (i'm not even asking you to apologize for wasting our 
-time) - to pretend that there is "no disagreement" and to patronize your 
-discussion partner with a "you keep forgetting ..." phrase and a 
-non-sequitor statement? How low can this discussion get? I'm truly 
-amazed ...
+Greetings,
+Rafael
 
-	Ingo
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
