@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbXFOQkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbXFOQlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756035AbXFOQkj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 12:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbXFOQkb
+	id S1756705AbXFOQlY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 12:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbXFOQlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 12:40:31 -0400
-Received: from gw.goop.org ([64.81.55.164]:56341 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbXFOQka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 12:40:30 -0400
-Message-ID: <4672C0FF.9080209@goop.org>
-Date: Fri, 15 Jun 2007 09:40:31 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <ak@suse.de>,
-       v12n <virtualization@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Xen-Devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH 03/10] define ELF notes for adding to a boot image
-References: <20070615004818.424726597@goop.org> <20070615005012.882738673@goop.org> <4672BC5B.1040502@zytor.com>
-In-Reply-To: <4672BC5B.1040502@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jun 2007 12:41:16 -0400
+Received: from [212.112.238.170] ([212.112.238.170]:35577 "EHLO
+	longford.lazybastard.org" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751016AbXFOQlQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 12:41:16 -0400
+Date: Fri, 15 Jun 2007 18:36:25 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext2 on flash memory
+Message-ID: <20070615163625.GC7747@lazybastard.org>
+References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org> <20070614201714.GC1928@DervishD> <20070614203800.GG31984@lazybastard.org> <20070615161644.GB2373@DervishD>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070615161644.GB2373@DervishD>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> +#define EIN_PROGRAM_CHECKSUM	3 /* ip style checksum of the memory image. */
->>     
->
-> Why on earth use one of the weakest verificants in common use?
+On Fri, 15 June 2007 18:16:44 +0200, DervishD wrote:
+> 
+>     Yes, I understand. That's worse than I thought. I was right now
+> thinking about "PortableApps", a set of free software applications that
+> are a little bit modified to work from a pendrive in Windows. Very
+> useful, because you can carry your OpenOffice (or AbiWord) and Firefox,
+> for example, to any Windows you're doomed to use. This applications
+> write repeteadly to the pendrive (specially Firefox...), and I think
+> they may wear the drive prematurely if used extensively.
 
-I don't know.  I copied this stuff from the original relocatable kernel
-patches; I think this is from Vivek.  Eric, Vivek: is there a specific
-use for these notes?
+Possibly, yes.  Estimates based on unknown numbers are hard, though.
 
-    J
+>     So you have a zone which is unusable. Decent filesystems allow you
+> to mark some blocks as "dontuse" (ext2, for example). Does FAT allow
+> this?
+
+I don't know.  If things get bad enough that you experience
+uncorrectable errors, I'd just trash the stick and get a new one
+instead.  Trouble is - with a controller chip doing the error
+correction, you have no means of knowing when this happens.
+
+>     I think I will be writing the pendrive, almost fully, once a week
+> (enough for an image of my home directory). That means less than 1GiB
+> written each week. That means 50-100 (in the worst case, making two
+> backups a week instead of one) writings each year in each block.
+
+Writing everything once a week is harmless.  Filling the whole device is
+best-case behaviour.  Local hot spots are the problem.
+
+Jörn
+
+-- 
+Anything that can go wrong, will.
+-- Finagle's Law
