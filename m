@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbXFOOv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbXFOOvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756190AbXFOOv1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 10:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbXFOOtO
+	id S1756296AbXFOOvm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 10:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbXFOOtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 10:49:14 -0400
-Received: from gw.goop.org ([64.81.55.164]:34382 "EHLO mail.goop.org"
+	Fri, 15 Jun 2007 10:49:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:34391 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754043AbXFOOtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 10:49:07 -0400
-Message-Id: <20070615005012.686376332@goop.org>
+	id S1754176AbXFOOtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 10:49:08 -0400
+Message-Id: <20070615005013.299061098@goop.org>
 References: <20070615004818.424726597@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 14 Jun 2007 17:48:19 -0700
+Date: Thu, 14 Jun 2007 17:48:25 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "Eric W. Biederman" <ebiederm@xmission.com>,
        "H. Peter Anvin" <hpa@zytor.com>
@@ -22,151 +22,142 @@ Cc: Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        lkml <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Xen-Devel <xen-devel@lists.xensource.com>
-Subject: [PATCH 01/10] update boot spec to 2.07
-Content-Disposition: inline; filename=update-boot-spec.patch
+Subject: [PATCH 07/10] always allocate space for notes
+Content-Disposition: inline; filename=elfnote-alloc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Proposed updates for version 2.07 of the boot protocol.  This includes:
+This patch makes .note segments always allocated; that is, they are
+loaded as part of the binary and appear in the :data segment.  This is
+not always necessary, but certain users - such as vsyscalls and notes
+in boot images - require the notes to be allocated.  Rather than
+having two ways of creating notes, just have one which suits
+everyone.  The only downside is that the notes will actually consume
+space at runtime.  This isn't a big deal, since a typical kernel
+doesn't have very many, if any.
 
-load_flags.KEEP_SEGMENTS- flag to request/inhibit segment reloads
-hardware_subarch	- what subarchitecture we're booting under
-hardware_subarch_data	- per-architecture data
-
-The intention of these changes is to make booting a paravirtualized
-kernel work via the normal Linux boot protocol.  The intention is that
-the bzImage payload can be a properly formed ELF file, so that the
-bootloader can use its ELF notes and Phdrs to get more metadata about
-the kernel and its requirements.
-
-The ELF file could be the uncompressed kernel vmlinux itself; it would
-only take small buildsystem changes to implement this.
+Also, make the ELFNOTE() macro do the right thing in 32/64 bit
+environments.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
 
 ---
- Documentation/i386/boot.txt    |   34 +++++++++++++++++++++++++++++++++-
- arch/i386/kernel/asm-offsets.c |    7 +++++++
- include/asm-i386/bootparam.h   |    9 +++++++--
- 3 files changed, 47 insertions(+), 3 deletions(-)
+ arch/i386/kernel/vmlinux.lds.S    |    9 ++++-----
+ arch/i386/kernel/vsyscall-note.S  |    4 +---
+ include/asm-generic/vmlinux.lds.h |    7 ++++++-
+ include/linux/elfnote.h           |   21 ++++++++++++++-------
+ 4 files changed, 25 insertions(+), 16 deletions(-)
 
 ===================================================================
---- a/Documentation/i386/boot.txt
-+++ b/Documentation/i386/boot.txt
-@@ -168,6 +168,8 @@ 0234/1	2.05+	relocatable_kernel Whether 
- 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
- 0235/3	N/A	pad2		Unused
- 0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
-+023C/4	2.07+	hardware_subarch Hardware subarchitecture
-+0240/8	2.07+	hardware_subarch_data Subarchitecture-specific data
+--- a/arch/i386/kernel/vmlinux.lds.S
++++ b/arch/i386/kernel/vmlinux.lds.S
+@@ -28,10 +28,9 @@ jiffies = jiffies_64;
+ jiffies = jiffies_64;
  
- (1) For backwards compatibility, if the setup_sects field contains 0, the
-     real value is 4.
-@@ -204,7 +206,7 @@ boot loaders can ignore those fields.
+ PHDRS {
+-	text PT_LOAD FLAGS(5);	/* R_E */
+-	data PT_LOAD FLAGS(7);	/* RWE */
+-	note PT_NOTE FLAGS(0);	/* ___ */
++	STD_PHDRS
+ }
++
+ SECTIONS
+ {
+   . = LOAD_OFFSET + LOAD_PHYSICAL_ADDR;
+@@ -72,6 +71,8 @@ SECTIONS
+   _sdata = .;			/* End of text section */
  
- The byte order of all fields is littleendian (this is x86, after all.)
+   RODATA
++
++  NOTES
  
--Field name:	setup_secs
-+Field name:	setup_sects
- Type:		read
- Offset/size:	0x1f1/1
- Protocol:	ALL
-@@ -356,6 +358,13 @@ Protocol:	2.00+
- 	- If 0, the protected-mode code is loaded at 0x10000.
- 	- If 1, the protected-mode code is loaded at 0x100000.
+   /* writeable */
+   . = ALIGN(4096);
+@@ -210,6 +211,4 @@ SECTIONS
+   STABS_DEBUG
  
-+  Bit 6 (write): KEEP_SEGMENTS
-+	Protocol: 2.07+
-+	- if 0, reload the segment registers in the 32bit entry point.
-+	- if 1, do not reload the segment registers in the 32bit entry point.
-+		Assume that %cs %ds %ss %es are all set to flat segments with
-+		a base of 0 (or the equivalent for their environment).
-+
-   Bit 7 (write): CAN_USE_HEAP
- 	Set this bit to 1 to indicate that the value entered in the
- 	heap_end_ptr is valid.  If this field is clear, some setup code
-@@ -479,6 +488,29 @@ Protocol:	2.06+
-   zero. This means that the command line can contain at most
-   cmdline_size characters. With protocol version 2.05 and earlier, the
-   maximum size was 255.
-+
-+Field name:	hardware_subarch
-+Type:		write
-+Offset/size:	0x23c/4
-+Protocol:	2.07+
-+
-+  In a paravirtualized environment the hardware low level architectural
-+  pieces such as interrupt handling, page table handling, and
-+  accessing process control registers needs to be done differently.
-+
-+  This field allows the bootloader to inform the kernel we are in one
-+  one of those environments.
-+
-+  0x00000000	The default x86/PC environment
-+  0x00000001	lguest
-+  0x00000002	Xen
-+
-+Field name:	hardware_subarch_data
-+Type:		write
-+Offset/size:	0x240/8
-+Protocol:	2.07+
-+
-+  A pointer to data that is specific to hardware subarch
- 
- 
- **** THE KERNEL COMMAND LINE
-===================================================================
---- a/arch/i386/kernel/asm-offsets.c
-+++ b/arch/i386/kernel/asm-offsets.c
-@@ -15,6 +15,7 @@
- #include <asm/fixmap.h>
- #include <asm/processor.h>
- #include <asm/thread_info.h>
-+#include <asm/bootparam.h>
- #include <asm/elf.h>
- #include <xen/interface/xen.h>
- 
-@@ -143,4 +144,10 @@ void foo(void)
- 	OFFSET(LGUEST_PAGES_regs_errcode, lguest_pages, regs.errcode);
- 	OFFSET(LGUEST_PAGES_regs, lguest_pages, regs);
- #endif
-+
-+	BLANK();
-+	OFFSET(BP_scratch, boot_params, scratch);
-+	OFFSET(BP_loadflags, boot_params, hdr.loadflags);
-+	OFFSET(BP_hardware_subarch, boot_params, hdr.hardware_subarch);
-+	OFFSET(BP_version, boot_params, hdr.version);
+   DWARF_DEBUG
+-
+-  NOTES
  }
 ===================================================================
---- a/include/asm-i386/bootparam.h
-+++ b/include/asm-i386/bootparam.h
-@@ -24,8 +24,9 @@ struct setup_header {
- 	u16	kernel_version;
- 	u8	type_of_loader;
- 	u8	loadflags;
--#define LOADED_HIGH	0x01
--#define CAN_USE_HEAP	0x80
-+#define LOADED_HIGH	(1<<0)
-+#define KEEP_SEGMENTS	(1<<6)
-+#define CAN_USE_HEAP	(1<<7)
- 	u16	setup_move_size;
- 	u32	code32_start;
- 	u32	ramdisk_image;
-@@ -37,6 +38,10 @@ struct setup_header {
- 	u32	initrd_addr_max;
- 	u32	kernel_alignment;
- 	u8	relocatable_kernel;
-+	u8	_pad2[3];
-+	u32	cmdline_size;
-+	u32	hardware_subarch;
-+	u64	hardware_subarch_data;
- } __attribute__((packed));
+--- a/arch/i386/kernel/vsyscall-note.S
++++ b/arch/i386/kernel/vsyscall-note.S
+@@ -9,9 +9,7 @@
+ /* Ideally this would use UTS_NAME, but using a quoted string here
+    doesn't work. Remember to change this when changing the
+    kernel's name. */
+-ELFNOTE_START(Linux, 0, "a")
+-	.long LINUX_VERSION_CODE
+-ELFNOTE_END
++ELFNOTE(Linux, 0, .long LINUX_VERSION_CODE)
  
- struct sys_desc_table {
+ #ifdef CONFIG_XEN
+ 
+===================================================================
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -245,8 +245,13 @@
+ 		__stop___bug_table = .;					\
+ 	}
+ 
++#define STD_PHDRS							\
++	text PT_LOAD FILEHDR PHDRS FLAGS(5);	/* R_E */		\
++	data PT_LOAD FLAGS(7);			/* RWE */		\
++	note PT_NOTE FLAGS(0);			/* ___ */
++
+ #define NOTES								\
+-	.notes : { *(.note.*) } :note
++	.notes : { *(.note.*) } :data :note
+ 
+ #define INITCALLS							\
+   	*(.initcall0.init)						\
+===================================================================
+--- a/include/linux/elfnote.h
++++ b/include/linux/elfnote.h
+@@ -53,7 +53,7 @@ 4484:.balign 4				;	\
+ .popsection				;
+ 
+ #define ELFNOTE(name, type, desc)		\
+-	ELFNOTE_START(name, type, "")		\
++	ELFNOTE_START(name, type, "a")		\
+ 		desc			;	\
+ 	ELFNOTE_END
+ 
+@@ -67,8 +67,8 @@ 4484:.balign 4				;	\
+  * only define one note per line, since __LINE__ is used to generate
+  * unique symbols.
+  */
+-#define _ELFNOTE_PASTE(a,b)	a##b
+-#define _ELFNOTE(size, name, unique, type, desc)			\
++#define __ELFNOTE_PASTE(a,b)	a##b
++#define __ELFNOTE(size, name, unique, type, desc)			\
+ 	static const struct {						\
+ 		struct elf##size##_note _nhdr;				\
+ 		unsigned char _name[sizeof(name)]			\
+@@ -88,11 +88,18 @@ 4484:.balign 4				;	\
+ 		name,							\
+ 		desc							\
+ 	}
+-#define ELFNOTE(size, name, type, desc)		\
+-	_ELFNOTE(size, name, __LINE__, type, desc)
+ 
+-#define ELFNOTE32(name, type, desc) ELFNOTE(32, name, type, desc)
+-#define ELFNOTE64(name, type, desc) ELFNOTE(64, name, type, desc)
++#define ELFNOTE32(name, type, desc) __ELFNOTE(32, name, __LINE__, type, desc)
++#define ELFNOTE64(name, type, desc) __ELFNOTE(64, name, __LINE__, type, desc)
++
++#ifdef BITS_PER_LONG == 32
++#define ELFNOTE(name, type, desc)	ELFNOTE32(name, type, desc)
++#elif BITS_PER_LONG == 64
++#define ELFNOTE(name, type, desc)	ELFNOTE64(name, type, desc)
++#else
++#error Define ELFNOTE for this BITS_PER_LONG
++#endif
++
+ #endif	/* __ASSEMBLER__ */
+ 
+ #endif /* _LINUX_ELFNOTE_H */
 
 -- 
 
