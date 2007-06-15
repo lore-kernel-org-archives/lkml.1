@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbXFOSFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbXFOSFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754320AbXFOSFR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbXFOSEt
+	id S1756985AbXFOSFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbXFOSFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:04:49 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46075
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbXFOSEs (ORCPT
+	Fri, 15 Jun 2007 14:05:11 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:52785 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756755AbXFOSFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:04:48 -0400
-Date: Fri, 15 Jun 2007 11:02:43 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: David Greaves <david@dgreaves.com>, Daniel Hazelton <dhazelton@enter.net>,
-       Michael Gerdau <mgd@technosis.de>, Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706151101240.12349@asgard.lang.hm>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
- <200706142049.41819.dhazelton@enter.net> <200706150825.15491.mgd@technosis.de>
- <200706150520.15086.dhazelton@enter.net> <46726793.1020206@dgreaves.com>
- <alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>
+	Fri, 15 Jun 2007 14:05:08 -0400
+Date: Fri, 15 Jun 2007 20:05:05 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+In-Reply-To: <20070615171545.316dfac7@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.62.0706152004090.15507@pademelon.sonytel.be>
+References: <20070615113919.142332000@pademelon.sonytel.be>
+ <20070615120848.352093000@pademelon.sonytel.be> <1181918159.25228.543.camel@pmac.infradead.org>
+ <Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+ <20070615171545.316dfac7@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1688040106-1181930705=:15507"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, Linus Torvalds wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->
-> Now, by your own logic, let's look at what that means for the license.
-> Should we write into our copyright license that you cannot try to find
-> security holes? Would that be a good addition to the GPLv2?
->
-> Now, I stated that in a way where the answer is obvious: that would be a
-> *horrible* addition to the GPLv2. I think everybody can agree on that. It
-> would be really stupid to say "you cannot look for security holes" just
-> because *some* people who do it are bad.
->
-> Now, think about that for a moment, and then go back to your question
-> about whether Tivo is bad for the community, and whether being bad for the
-> community should mean that the license should be written to say "go away
-> and don't use future improvements to our software".
->
-> See where I'm trying to take you?
->
-> I think that even people who *do* think that what Tivo did was "bad",
-> should think very deeply about the issue whether you should try to lock
-> out "bad uses" in your license. Yes, the answer may be "yes, you should".
-> But I'm arguing that the answer _may_ also be: "No, you shouldn't, becasue
-> it turns out that you might lock out _good_ people too".
->
-> So in my cracker/spammer example, by trying to lock out the bad people,
-> the obvious (and _stupid_ - don't get me wrong, I'm not at *all*
-> suggesting anything like that should ever be done) license addition of
-> "don't expose security problems" actually just causes more problems than
-> it solves (if it solves anything at all - really bad people don't actually
-> tend to even care about the license!).
->
-> It makes it harder for *valid* uses of security problem discovery. It
-> makes it potentially illegal to try to do security research. And don't
-> tell me stupid licenses and laws like that don't happen: people really
-> *do* make these kinds of shortsighted decisions, to "protect" themselves
-> from bad people.
+---584337861-1688040106-1181930705=:15507
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-in fact there was news in the last week or two about a law in Germany that 
-does exactly this. it outlaws all programs that can be used for hacking 
-systems.
+On Fri, 15 Jun 2007, Alan Cox wrote:
+> > > Any particular reason why this is done as a separate block device driver
+> > > rather than as SCSI?
+> > 
+> > Because no new fake SCSI drivers are accepted anymore.
+> 
+> Where did drivers/ata come from ;)
 
-David Lang
+I was told that one got in just before the moratorium on fake SCSI.
 
+> How about making it a fake ata driver if James is being fussy 8)
+
+I don't think Christoph likes fake ATA drivers neither ;-)
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1688040106-1181930705=:15507--
