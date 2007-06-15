@@ -1,81 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbXFOVqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbXFOVqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758961AbXFOVqh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758329AbXFOVqF
+	id S1759174AbXFOVqy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758397AbXFOVqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:46:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46181 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756954AbXFOVqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:46:03 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Chris Friesen" <cfriesen@nortel.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
-       david@lang.hm, "Tarkan Erimer" <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706150308.20148.dhazelton@enter.net>
-	<or1wgd102n.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706151715.55218.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 18:45:16 -0300
-In-Reply-To: <200706151715.55218.dhazelton@enter.net> (Daniel Hazelton's message of "Fri\, 15 Jun 2007 17\:15\:54 -0400")
-Message-ID: <orfy4sx577.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 17:46:10 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:28293 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758347AbXFOVqI (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:46:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qT4x8cVZ9jj+6YRC6triRJyBwygBPRDKjhqshKkMwMBA06AAOCJIQ3Pb1Y9op7JV1DwoHs8hGzJF6UX+hZMvmL9XpF49UxC0saoFnoM2FL8b+sBk0UrG4LvXQsxPL60aTPGGEVXKEDQJYyg2qtMHCCNP3uaCDhry+P42zOIlRqM=
+Message-ID: <6934efce0706151446o44526edbn9e2ef993e2c1d3be@mail.gmail.com>
+Date: Fri, 15 Jun 2007 14:46:07 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: carsteno@de.ibm.com
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       richard.griffiths@windriver.com,
+       "Richard Griffiths" <res07ml0@verizon.net>,
+       Linux-kernel@vger.kernel.org
+In-Reply-To: <467299F5.3070704@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1179871779.24163.11.camel@localhost.localdomain>
+	 <20070522154905.1d7e8a2e.akpm@linux-foundation.org>
+	 <4653F264.1030807@de.ibm.com> <465BB5BA.3050900@yahoo.com.au>
+	 <467299F5.3070704@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+On 6/15/07, Carsten Otte <cotte@de.ibm.com> wrote:
+> Nick Piggin wrote:
+> > Carsten Otte wrote:
+> >> The current xip stack relies on having struct page behind the memory
+> >> segment. This causes few impact on memory management, but occupies
+> >> some more memory. The cramfs patch chose to modify copy on write in
+> >> order to deal with vmas that don't have struct page behind.
+> >> So far, Hugh and Linus have shown strong opposition against copy on
+> >> write with no struct page behind. If this implementation is acceptable
+> >> to the them, it seems preferable to me over wasting memory. The xip
+> >> stack should be modified to use this vma flag in that case.
+> >
+> > I would rather not :P
+> >
+> > We can copy on write without a struct page behind the source today, no?
+> > What is insufficient for the XIP code with the current COW?
+>
+> I've looked at the -mm version of mm/memory.c today, with intend to
+> try out VM_PFNMAP for our xip mappings and replace nopage() with fault().
+> The thing is, I believe it does'nt work for us:
+>   * The way we recognize those mappings is through the rules set up
+>   * by "remap_pfn_range()": the vma will have the VM_PFNMAP bit set,
+>   * and the vm_pgoff will point to the first PFN mapped: thus every
+>   * page that is a raw mapping will always honor the rule
+>   *
+>   *      pfn_of_page == vma->vm_pgoff + ((addr - vma->vm_start) >>
+> PAGE_SHIFT)
+>
+> This is, as far as I can tell, not true for our xip mappings. Ext2 may
+> spread the physical pages behind a given file all over its media. That
+> means, that the pfns of the pages that form a vma may be more or less
+> random rather than contiguous. The common memory management code
+> cannot tell whether or not a given page has been COW'ed.
+> Did I miss something?
 
-> On Friday 15 June 2007 15:37:04 Alexandre Oliva wrote:
->> On Jun 15, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
->> > On Friday 15 June 2007 02:59:31 Jesper Juhl wrote:
->> >> it doesn't say anything about being able to run a compiled version
->> >> of that source on any specific hardware.
->> >
->> > And you are correct. It is also clear, thanks to language directly
->> > in the GPLv2 itself, that there is no "intent" of the license to
->> > cover that situation.
->> 
->> You're again confusing legal terms with the intent.  The legal terms
->> provide an indication of the intent, but the preamble, along with the
->> free software definition it alludes to, do an even better job at that.
-
-> And the preamble, not being part of the active portion of the license, has 
-> absolutely *ZERO* bearing. Just as it is not the *intent* of RMS, the FSF or 
-> *ANY* person (or legal entity) that had a hand in crafting the GPLv2 or GPLv3 
-> which is looked at when determining the "intent" of the license. It is the 
-> intent of the person and/or "legal entity" that has placed their work under 
-> said license.
-
-No disagreement.  You keep forgetting that I'm not here to say what
-Linux licensing means or doesn't mean.
-
-I'm here to point out that GPLv3 does not break the spirit of the GPL.
-
-> What is so hard to understand about that ?
-
-/echo
-
-> (Note that, since the "signing" of the TiVO kernel is part of the
-> installation they *should* be including the script that does the
-> signing. However, since the SHA1 key that is part of the signing
-> process is *not* a "script" (even in the loosest possible definition
-> of the term) they do not have to provide it.)
-
-It's not build script, it's just regular source code, indeed.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+I agree, the conditions imposed by the remap_pfn_range() don't work.
