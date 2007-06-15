@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXFOWh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXFOWiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbXFOWh7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 18:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbXFOWhu
+	id S1758090AbXFOWiw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 18:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXFOWin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 18:37:50 -0400
-Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:47517 "HELO
-	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751015AbXFOWht (ORCPT
+	Fri, 15 Jun 2007 18:38:43 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45049 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755789AbXFOWil (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 18:37:49 -0400
-X-YMail-OSG: H8YVrV0VM1ls0r_Lz8d0_C87E1jBbTjVwwzXyMGy0rtWxqmQMD3ETLAQgfHOFrrWDg--
-X-RocketYMMF: rancidfat
-Date: Fri, 15 Jun 2007 15:37:48 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Crispin Cowan <crispin@novell.com>,
-       Andreas Gruenbacher <agruen@suse.de>, Pavel Machek <pavel@ucw.cz>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070615211414.GC7337@kroah.com>
+	Fri, 15 Jun 2007 18:38:41 -0400
+Message-ID: <467314E2.9010306@zytor.com>
+Date: Fri, 15 Jun 2007 15:38:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <539355.82720.qm@web36612.mail.mud.yahoo.com>
+To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+References: <46731169.2090002@hawkeye.stone.uk.eu.org>
+In-Reply-To: <46731169.2090002@hawkeye.stone.uk.eu.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Greg KH <greg@kroah.com> wrote:
-
-> On Fri, Jun 15, 2007 at 01:43:31PM -0700, Casey Schaufler wrote:
-> > 
-> > Yup, I see that once you accept the notion that it is OK for a
-> > file to be misslabeled for a bit and that having a fixxerupperd
-> > is sufficient it all falls out.
-> > 
-> > My point is that there is a segment of the security community
-> > that had not found this acceptable, even under the conditions
-> > outlined. If it meets your needs, I say run with it.
+Jack Stone wrote:
+> I hope I got the CC list right. Apologies to anyone in didn't include
+> and anyone I shouldn't have included.
 > 
-> If that segment feels that way, then I imagine AA would not meet their
-> requirements today due to file handles and other ways of passing around
-> open files, right?
+> The basic idea is to include an idea from VMS that seems to be quite
+> useful: version numbers for files.
+> 
+> The idea is that whenever you modify a file the system saves it to na
+> new copy leaving the old file intact. This could be a great advantage
+> from many view points:
+> 	1) it would be much easier to do package management as the old
+> 		version would be automatically saved for a package
+> 		management system to deal with.
+> 
+> 	2) backups would also be easier as all versions of a file
+> 		are automatically saved so it could be potentially very
+> 		useful for a company or the like.
+> 
 
-That segment is itself divided (think the "Judean Peoples Front"
-and the "Peoples Front of Judea") on many issues, but as it has
-always put correctness over ease of use I would expect AppArmor to
-have a tough roe to hoe. There are other segments for which AppArmor
-may well be appealing, and those segments have always been much
-larger than Judea.
+This is one of those things that seems like a good idea, but frequently
+ends up short.  Part of the problem is that "whenever you modify a file"
+is ill-defined, or rather, if you were to take the literal meaning of it
+you'd end up with an unmanageable number of revisions.
 
-> So, would SELinux today (without this AA-like daemon) fit the
-> requirements of this segment?
+Furthermore, it turns out that often relationships between files are
+more important.
 
-The JPF is head over heels in love with SELinux, restorecond and all.
-The PFJ has some issues, but will most likely go along with the JPF
-in part because the JPF is bringing the beer and besides, what are
-their alternatives today? The PJF ("that's him, over there") is still
-stunned by some of what SELinux accepts as normal (restorecond, 400,000
-line "policy" definitions with embedded wildcards) and spends a lot
-of time chanting the TCB Principle in hopes that it will help, but
-no lightning strikes from above to date.
+Thus, in the end it turns out that this stuff is better handled by
+explicit version-control systems (which require explicit operations to
+manage revisions) and atomic snapshots (for backup.)
 
-But you knew that. I'm an advocate of making a variety of alternates
-available which is why I had originally proposed the authoritative
-hooks version of the LSM and why I don't believe in rolling every
-possible security facility into SELinux. I also believe in warning
-people of pitfalls before they've impaled themselves on the spikes,
-but some people gotta have the experience. Just trying to help.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+	-hpa
