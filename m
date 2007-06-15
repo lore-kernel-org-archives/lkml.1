@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbXFOMt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbXFOMtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbXFOMt0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbXFOMtT
+	id S1754662AbXFOMtj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 08:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbXFOMt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:49:19 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:19567 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753607AbXFOMtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:49:18 -0400
-Message-ID: <46728A15.5050905@sw.ru>
-Date: Fri, 15 Jun 2007 16:46:13 +0400
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de,
-       kernel@kolivas.org, containers@lists.osdl.org,
-       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
-       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
-       dmitry.adamushko@gmail.com, balbir@in.ibm.com
-Subject: Re: [RFC][PATCH 0/6] Add group fairness to CFS - v1
-References: <20070611154724.GA32435@in.ibm.com> <20070611193735.GA22152@elte.hu> <20070612055024.GA26957@in.ibm.com> <20070612062612.GA19637@elte.hu>
-In-Reply-To: <20070612062612.GA19637@elte.hu>
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Jun 2007 08:49:29 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58691 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756206AbXFOMt1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 08:49:27 -0400
+Date: Fri, 15 Jun 2007 13:54:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <ak@suse.de>
+Cc: David Howells <dhowells@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+Message-ID: <20070615135420.7fe2e4c1@the-village.bc.nu>
+In-Reply-To: <200706151443.13511.ak@suse.de>
+References: <200706151355.57464.ak@suse.de>
+	<200706151131.38429.arnd@arndb.de>
+	<5717.1181909357@redhat.com>
+	<200706151443.13511.ak@suse.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+> > > Why does it break them? It should just make them a little slower.
+> > Not all CPUs deliver recoverable misalignment exceptions.   
+> These CPUs are too broken to run Linux then.
 
-> i'd still like to hear back from Kirill & co whether this framework is 
-> flexible enough for their work (OpenVZ, etc.) too.
+People fixed that up
+> 
+> > > The network code requires unaligned accesses to work anyways so if your
+> > > architecture doesn't support them it is already remotely crashable.
+> >
+> > I thought we'd fixed all that.
+> 
+> Did you audit the complete network stack?
 
-My IMHO is that so far the proposed group scheduler doesn't look ready/suitable.
-We need to have a working SMP version before it will be clear
-whether the whole approach is good and works correct on variety of load patterns.
+For the parts used by the processors in question yes people have done
+that work so using the types without unaligned.
 
-Thanks,
-Kirill
-
+Alan
