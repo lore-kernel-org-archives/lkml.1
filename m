@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbXFONA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbXFONA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965AbXFONA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbXFONAO
+	id S1755834AbXFONA7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbXFONAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:00:14 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4343 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752846AbXFONAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:00:12 -0400
-Date: Fri, 15 Jun 2007 13:00:01 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       takedakn@nttdata.co.jp, hch@infradead.org
-Subject: Re: [TOMOYO 5/9] Memory and pathname management functions.
-Message-ID: <20070615130000.GI9442@ucw.cz>
-References: <787b0d920706150016n3e941a4fj4fc2e864a7e6f7d7@mail.gmail.com>
+	Fri, 15 Jun 2007 09:00:50 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:36760 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752965AbXFONAt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:00:49 -0400
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <ak@suse.de>, David Howells <dhowells@redhat.com>,
+       Arnd Bergmann <arnd@arndb.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070615135420.7fe2e4c1@the-village.bc.nu>
+References: <200706151355.57464.ak@suse.de>
+	 <200706151131.38429.arnd@arndb.de> <5717.1181909357@redhat.com>
+	 <200706151443.13511.ak@suse.de> <20070615135420.7fe2e4c1@the-village.bc.nu>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 14:00:06 +0100
+Message-Id: <1181912406.25228.491.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <787b0d920706150016n3e941a4fj4fc2e864a7e6f7d7@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 2007-06-15 at 13:54 +0100, Alan Cox wrote:
+> For the parts used by the processors in question yes people have done
+> that work so using the types without unaligned.
 
-> >>We limit the maximum length of any string data (such as
-> >>domainname and pathnames) to TOMOYO_MAX_PATHNAME_LEN
-> >>(which is 4000) bytes to fit within a single page.
-> >>
-> >>Userland programs can obtain the amount of RAM 
-> >>currently
-> >>used by TOMOYO from /proc interface.
-> >
-> >Same NACK for this as for AppArmor, on exactly the same 
-> >grounds.
-> >Please stop wasting your time on pathname-based 
-> >non-solutions.
-> 
-> This issue is a very very small wart on an otherwise 
-> fine idea.
-> It's really not worth getting bothered by. Truth is, big 
-> giant
-> pathnames break lots of stuff already, both kernel and 
-> userspace.
+I still think we could use a 'get_maybe_but_probably_not_unaligned()',
+although it could have a better name.
 
-> Just look in /proc for some nice juicy kernel breakage:
-> cwd, exe, fd/*, maps, mounts, mountstats, root, smaps
+People now use get_unaligned() for two reasons -- firstly because we
+_expect_ something to be unaligned, and we get a performance improvement
+if we just emit code to directly handle that instead of taking the trap.
+And more recently we've also started to use it because there's a
+_slight_ chance it could be unaligned, and some architectures can't
+cope.
 
-Well, but we should be fixing that, not adding more. And /proc is
-info-only, while this is security related code.
+Where the unalignment is possible but unlikely, many architectures
+probably shouldn't be emitting code to cope with it; they should just
+take the trap in the rare case.
 
-							Pavel
+In fact, the probability threshold at which it makes sense to just take
+the trap will vary from architecture to architecture. We should probably
+just have a get_probably_unaligned(...) macro which has its first arg as
+an _estimated_ constant probability. Then the architecture code could
+emit what it likes according to the probability.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+dwmw2
+
