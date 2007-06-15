@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbXFOVnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbXFOVnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbXFOVnS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXFOVnB
+	id S1758218AbXFOVnb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbXFOVnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:43:01 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40415 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751422AbXFOVnA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:43:00 -0400
-Date: Fri, 15 Jun 2007 14:44:41 -0700
-From: Greg KH <greg@kroah.com>
-To: Karl MacMillan <kmacmill@redhat.com>
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Crispin Cowan <crispin@novell.com>,
-       Andreas Gruenbacher <agruen@suse.de>, Pavel Machek <pavel@ucw.cz>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
-	pathname matching
-Message-ID: <20070615214441.GB18039@kroah.com>
-References: <1181931330.17547.866.camel@moss-spartans.epoch.ncsc.mil> <44036.5340.qm@web36611.mail.mud.yahoo.com> <20070615211414.GC7337@kroah.com> <1181942915.9809.35.camel@localhost.localdomain>
+	Fri, 15 Jun 2007 17:43:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45463 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756986AbXFOVnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:43:17 -0400
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Bernd Paysan <bernd.paysan@gmx.de>, Paulo Marques <pmarques@grupopie.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706151014.45383.bernd.paysan@gmx.de>
+	<46727CCF.9030905@grupopie.com>
+	<200706151403.57178.bernd.paysan@gmx.de>
+	<20070615144301.GV21478@ftp.linux.org.uk>
+	<or8xal2ia7.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615185208.GX21478@ftp.linux.org.uk>
+	<ord4zxx732.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615213232.GZ21478@ftp.linux.org.uk>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 18:42:39 -0300
+In-Reply-To: <20070615213232.GZ21478@ftp.linux.org.uk> (Al Viro's message of "Fri\, 15 Jun 2007 22\:32\:32 +0100")
+Message-ID: <ork5u4x5bk.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181942915.9809.35.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 05:28:35PM -0400, Karl MacMillan wrote:
-> On Fri, 2007-06-15 at 14:14 -0700, Greg KH wrote:
-> > On Fri, Jun 15, 2007 at 01:43:31PM -0700, Casey Schaufler wrote:
-> > > 
-> > > Yup, I see that once you accept the notion that it is OK for a
-> > > file to be misslabeled for a bit and that having a fixxerupperd
-> > > is sufficient it all falls out.
-> > > 
-> > > My point is that there is a segment of the security community
-> > > that had not found this acceptable, even under the conditions
-> > > outlined. If it meets your needs, I say run with it.
-> > 
-> > If that segment feels that way, then I imagine AA would not meet their
-> > requirements today due to file handles and other ways of passing around
-> > open files, right?
-> > 
-> > So, would SELinux today (without this AA-like daemon) fit the
-> > requirements of this segment?
-> > 
-> 
-> Yes - RHEL 5 is going through CC evaluations for LSPP, CAPP, and RBAC
-> using the features of SELinux where appropriate.
+On Jun 15, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
 
-Great, but is there the requirement in the CC stuff such that this type
-of "delayed re-label" that an AA-like daemon would need to do cause that
-model to not be able to be certified like your SELinux implementation
-is?
+> On Fri, Jun 15, 2007 at 06:04:33PM -0300, Alexandre Oliva wrote:
+>> > No specific case law, but I'd expect serious [eventual] trouble for
+>> > somebody trying to slap some different license in such case.
+>> 
+>> Consider this (to make the freeing-the-lion story short):
+>> 
+>> Jar file with .class files, with a copy of LGPL in the root of the
+>> tree.  No other license anywhere to be seen.  Is it safe to assume
+>> the whole thing is under the LGPL?
 
-As I'm guessing the default "label" for things like this already work
-properly for SELinux, I figure we should be safe, but I don't know those
-requirements at all.
+> It certainly sounds like a reasonable first assumption; unless you are
+> aware of couterexamples, you probably would be able at least to prove
+> that you've acted in good faith if somebody starts to complain.  IANAL,
+> obviously, so ask FSF lawyers.  Really.  Especially if you are doing that
+> for a text associated with FSF-LA in any way.  That's what they are for.
 
-thanks,
+I've covered my grounds and talked to lawyers in Brazil, where this
+all happened.  But it wouldn't hurt me to have cases of law abroad,
+which is why I asked.
 
-greg k-h
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
