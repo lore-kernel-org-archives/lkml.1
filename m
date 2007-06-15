@@ -1,92 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753015AbXFOIDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbXFOIHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753015AbXFOIDb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 04:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXFOIDS
+	id S1753184AbXFOIHZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 04:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbXFOIHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 04:03:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44567 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751461AbXFOIDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 04:03:14 -0400
-Date: Fri, 15 Jun 2007 10:02:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	Fri, 15 Jun 2007 04:07:12 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42665 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751461AbXFOIHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 04:07:09 -0400
+X-Authenticated: #153925
+X-Provags-ID: V01U2FsdGVkX18rL1Ude9kr3+E2pXO4ryPedLWtTCmbe6YJiKpYVG
+	8o2JqhbhCXDZPG
+From: Bernd Paysan <bernd.paysan@gmx.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michael Poole <mdpoole@troilus.org>, Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615080252.GA28281@elte.hu>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706142049.41819.dhazelton@enter.net> <87fy4u0xty.fsf@graviton.dyn.troilus.org> <200706142246.57583.dhazelton@enter.net> <878xal2a0q.fsf@graviton.dyn.troilus.org> <alpine.LFD.0.98.0706142013120.14121@woody.linux-foundation.org>
+Date: Fri, 15 Jun 2007 10:07:05 +0200
+User-Agent: KMail/1.9.5
+Cc: Alexandre Oliva <aoliva@redhat.com>, Rob Landley <rob@landley.net>,
+       Alan Milnes <alan@itfoundation.org.uk>, linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <orr6oe6luz.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141855480.14121@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706141855480.14121@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706142013120.14121@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart1317823.MrAXn0spfS";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706151007.06885.bernd.paysan@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1317823.MrAXn0spfS
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Friday 15 June 2007 04:19, Linus Torvalds wrote:
+> I will state one more time: I think that what Tivo did was and is:
+>
+> =A0(a) perfectly legal wrt the GPLv2 (and I have shown multiple times why
+> =A0 =A0 =A0your arguments don't hold logical water - if you actually foll=
+owed
+> =A0 =A0 =A0them yourself, you wouldn't be using a redhat.com email addres=
+s!)
 
-> On Thu, 14 Jun 2007, Michael Poole wrote:
-> >
-> > If the DRM signature and program executable are coupled such that 
-> > they are not useful when separated, the implication to me is that 
-> > they form one work that is based on the original Program.  This is 
-> > beyond the GPL's permission for "mere aggregation".
-> 
-> So you want to make things like a 160-bit SHA1 hash of a binary be a 
-> "derived work" of that software?
-> 
-> Trust me, you *really* don't want to go there. It's an insane legal 
-> standpoint, and if you were right, we'd be in a *world* of trouble.
-> 
-> Think about something as simple as security software that creates 
-> filesystem checksums for verifying the integrity of the filesystem, 
-> and protects against tampering.
-> 
-> Do you *really* want to claim that the SHA1 checksum of your "oracle" 
-> binary is owned by Oracle, and you need to have a special license to 
-> copy that checksum around and verify it?
+Linus, Harald Welte managed to get the keys from Siemens, which sold=20
+a "tivoized" Linux router. As typical for German courts, he got the key in=
+=20
+a settlement, so there's no citable court verdict (totally, he AFAIK got=20
+two court verdicts up to now). But the way settlements work in Germany=20
+suggests that it's likely that the court would have decided that way*.
 
-not only that, but it would instantly turn everyone who owns a hard 
-drive or a CD-ROM into a copyright violator: the disks checksums the 
-content of the disk _in a reversible way_. Same for RAID5 and RAID6 
-techniques. By installing Quake3 on a Windows box one sure does not have 
-permission to create a derived work of Windows and Quake3, right? =B-)
+So there is no verdict on this question, but a strong hint that you are=20
+wrong, at least under German law (which is not the best money can buy ;-).=
+=20
+And as Tivo doesn't sell their crap into Germany, we can't test it with=20
+them.
 
-a checksum, a one-way hash, or even reversible parity bit(s) that 
-'mixes' the copies of multiple works together clearly cannot be new work 
-that falls under copyright protection.
+It's you who think the GPLv2 is tit-for-tat, not the FSF, and it's not in=20
+the text of the GPLv2; this is your private misinterpretation. The GPLv2=20
+is "transitive", i.e. everybody receives the same rights, nobody is=20
+entitled to take rights from others (the only person to choose is the=20
+author), and this certainly includes technical means (even if it does not=20
+explicitely say so), and the GPLv3 is just the same (it's just more=20
+readable). All arguments from your side put up are straw men like "hardware=
+=20
+vs. software" and such.
 
-Firstly, it is not a new work, because a 'work' has to be created by a 
-human - and here the new content was created by a machine. Copyright 
-protection only applies to sufficiently original works created by 
-humans.
+BTW: Hardware as it is done today (chips, printed circuit boards, etc.) is=
+=20
+copyrighted as well, as it is much cheaper to copy hardware than to develop=
+=20
+it.
 
-Secondly, it is _at most_ a new, partial copy of existing works and 
-hence you need the permission to copy all the works in question. (but 
-you needed that permission to create the harddisk anyway)
+*) German judges want to resolve civil cases by settlements. They let the=20
+parties pass a few arguments, and indicate which way the judge possibly=20
+would decide to help them settle fast. Settlement is way cheaper than a=20
+court verdict, so most sane people choose to settle (unfortunately it's=20
+often the insane people who go to court ;-).
 
-Thirdly, it could be argued that the sha1 is not even a copy, because it 
-is irreversible and hence not even a single bit of the original work can 
-be reconstructed from it hence it cannot even be a 'partial copy of the 
-original'.
+=2D-=20
+Bernd Paysan
+"If you want it done right, you have to do it yourself"
+http://www.jwdt.com/~paysan/
 
-that's at least 3 robust levels of argument against the insane and 
-absurd notion that the SHA1 key is somehow a derived work of the copy it 
-checksums.
+--nextPart1317823.MrAXn0spfS
+Content-Type: application/pgp-signature
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGckiqi4ILt2cAfDARAsEaAJ9W5S0uldT/CySNk1SX3FlIfLmhZQCfSvNl
+xf/H+hGUWG8H/6KXjM5agJA=
+=Fu9i
+-----END PGP SIGNATURE-----
+
+--nextPart1317823.MrAXn0spfS--
