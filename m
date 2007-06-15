@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbXFON6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbXFON70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182AbXFON6v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbXFON6o
+	id S1754685AbXFON70 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXFON7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:58:44 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:34466 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbXFON6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:58:43 -0400
-Date: Fri, 15 Jun 2007 19:36:45 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Kirill Korotaev <dev@sw.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       wli@holomorphy.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, efault@gmx.de, kernel@kolivas.org,
-       pwil3058@bigpond.net.au, dmitry.adamushko@gmail.com, tingy@cs.umass.edu,
-       tong.n.li@intel.com, containers@lists.osdl.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [RFC][PATCH 0/6] Add group fairness to CFS - v1
-Message-ID: <20070615140645.GD11272@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070611154724.GA32435@in.ibm.com> <20070611193735.GA22152@elte.hu> <20070612055024.GA26957@in.ibm.com> <20070612062612.GA19637@elte.hu> <46728A15.5050905@sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46728A15.5050905@sw.ru>
-User-Agent: Mutt/1.5.11
+	Fri, 15 Jun 2007 09:59:18 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:54075 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752598AbXFON7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:59:16 -0400
+Message-ID: <46729B20.309@dgreaves.com>
+Date: Fri, 15 Jun 2007 14:58:56 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
+       Jeff Garzik <jgarzik@pobox.com>, jens.axboe@oracle.com
+Subject: Re: [PATCH] block: always requeue !fs requests at the front
+References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org>
+In-Reply-To: <20070615094246.GN29122@htj.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 04:46:13PM +0400, Kirill Korotaev wrote:
-> Ingo Molnar wrote:
-> 
-> > i'd still like to hear back from Kirill & co whether this framework is 
-> > flexible enough for their work (OpenVZ, etc.) too.
-> 
-> My IMHO is that so far the proposed group scheduler doesn't look ready/suitable.
+> David, please test this.  Jens, does it look okay?
 
-Hi Kirill,
-	Yes its work-in-progress and hence is not ready/fully-functional
-(yet). The patches I posted last gives an idea of the direction it is
-heading. For ex: http://lkml.org/lkml/2007/6/11/162 and
-http://lkml.org/lkml/2007/5/25/146 gives an idea of how SMP load balance will 
-works.
+Phew!
 
-IMHO the nice thing about this approach is it (re)uses lot of code in
-scheduler which is there already to achieve fairness between tasks and
-higher schedulable elements (users/containers etc).
+Works for me.
 
-Also with CFS engine's precise nanosecond accurate accounting and time-sorted 
-list of tasks/entities, I feel we will get much tighter control over 
-distribution of CPU between tasks/users/containers.
+I applied it to 2.6.22-rc4 (along with 
+sata_promise_use_TF_interface_for_polling_NODATA_commands.patch) hibernate and 
+resume worked.
 
-> We need to have a working SMP version before it will be clear
-> whether the whole approach is good and works correct on variety of load patterns.
+Thanks for digging it out Tejun (and everyone else!) :)
 
-If you have any headsup thoughts on areas/workloads where this may pose problems
-for container/user scheduling, I would be glad to hear them. Otherwise I would 
-greatly wellcome any help in developing/reviewing these patches which meets 
-both our goals!
-
--- 
-Regards,
-vatsa
+David
