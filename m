@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbXFOB6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbXFOB7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbXFOB6w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 21:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbXFOB6p
+	id S1758246AbXFOB7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 21:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbXFOB7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 21:58:45 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:49884
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752354AbXFOB6o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 21:58:44 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Daniel Hazelton <dhazelton@enter.net>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 21:58:45 -0400
-User-Agent: KMail/1.9.6
-Cc: Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <466A3EC6.6030706@netone.net.tr> <20070614152034.GS3588@stusta.de> <200706141549.13442.dhazelton@enter.net>
-In-Reply-To: <200706141549.13442.dhazelton@enter.net>
+	Thu, 14 Jun 2007 21:59:04 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:45205 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752400AbXFOB7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 21:59:01 -0400
+Date: Fri, 15 Jun 2007 10:57:35 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Kaz Kojima <kkojima@rr.iij4u.or.jp>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull for 2.6.22-rc4 - resend] kbuild: fix sh64 section mismatch problems
+Message-ID: <20070615015735.GA28189@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Kaz Kojima <kkojima@rr.iij4u.or.jp>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20070611195552.GB7238@uranus.ravnborg.org> <20070613061507.GB20648@uranus.ravnborg.org> <20070615014618.GA28164@linux-sh.org> <alpine.LFD.0.98.0706141853050.14121@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706142158.46952.rob@landley.net>
+In-Reply-To: <alpine.LFD.0.98.0706141853050.14121@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 15:49:13 Daniel Hazelton wrote:
-> > I'm not saying it legally clear the other way round, my statement was
-> > an answer to Daniel's emails claiming it was clear what such companies
-> > do was legal.
->
-> I'm sorry if I gave anyone that impression. My point was that it would be
-> pointless to argue the case in the US because here it really is,
-> usually , "buy the best justice for the money".
+On Thu, Jun 14, 2007 at 06:53:40PM -0700, Linus Torvalds wrote:
+> On Fri, 15 Jun 2007, Paul Mundt wrote:
+> > > > 
+> > > > Please pull this single patch from:
+> > > > 	git://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fix.git
+> > > > 
+> > And another re-request.
+> 
+> I get irritated when people send me multiple requests with bogus URL's.
+> 
+> At least get the URL right.
+> 
+> 		Linus
 
-Or do what BusyBox and uClibc did (on the advice of Pamela Jones of Groklaw) 
-and sign up with the the Software Freedom Law Center so they can enforce your 
-copyrights for you.
+Oops, that should be:
 
-Didn't cost us a dime, and they were ok with GPLv2 without the "or later" 
-clause...
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+	master.kernel.org:/pub/scm/linux/kernel/git/sam/kbuild-fix.git
