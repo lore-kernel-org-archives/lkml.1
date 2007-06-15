@@ -1,36 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbXFOU3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbXFOU3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbXFOU3j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbXFOU3b
+	id S1758236AbXFOU3x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbXFOU3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:29:31 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54892 "EHLO smtp.polymtl.ca"
+	Fri, 15 Jun 2007 16:29:32 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54893 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754604AbXFOU3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:29:30 -0400
-Message-Id: <20070615202310.178466032@polymtl.ca>
+	id S1753985AbXFOU3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:29:31 -0400
+Message-Id: <20070615202925.532802922@polymtl.ca>
+References: <20070615202310.178466032@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 15 Jun 2007 16:23:10 -0400
+Date: Fri, 15 Jun 2007 16:23:12 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 0/8] Immediate values for fast branches
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 2/8] Immediate Values - Non Optimized Architectures
+Content-Disposition: inline; filename=immediate-values-non-optimized-architectures.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 15 Jun 2007 20:29:40 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Architecture agnostic, generic, version of the immediate values. It uses a
+global variable to mimic the immediate values.
 
-This is the latest release of the previously called "Conditional Calls"
-infrastructure, turned into a static variable synchronized with the load
-immediate instructions whenever it is changed. Important changes were made
-following the advice received (more details in the specific changelogs). Please
-feel free to have a look at this improved version.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/asm-alpha/immediate.h     |    1 +
+ include/asm-arm/immediate.h       |    1 +
+ include/asm-arm26/immediate.h     |    1 +
+ include/asm-cris/immediate.h      |    1 +
+ include/asm-frv/immediate.h       |    1 +
+ include/asm-generic/immediate.h   |   14 ++++++++++++++
+ include/asm-h8300/immediate.h     |    1 +
+ include/asm-i386/immediate.h      |    1 +
+ include/asm-ia64/immediate.h      |    1 +
+ include/asm-m32r/immediate.h      |    1 +
+ include/asm-m68k/immediate.h      |    1 +
+ include/asm-m68knommu/immediate.h |    1 +
+ include/asm-mips/immediate.h      |    1 +
+ include/asm-parisc/immediate.h    |    1 +
+ include/asm-powerpc/immediate.h   |    1 +
+ include/asm-ppc/immediate.h       |    1 +
+ include/asm-s390/immediate.h      |    1 +
+ include/asm-sh/immediate.h        |    1 +
+ include/asm-sh64/immediate.h      |    1 +
+ include/asm-sparc/immediate.h     |    1 +
+ include/asm-sparc64/immediate.h   |    1 +
+ include/asm-um/immediate.h        |    1 +
+ include/asm-v850/immediate.h      |    1 +
+ include/asm-x86_64/immediate.h    |    1 +
+ include/asm-xtensa/immediate.h    |    1 +
+ 25 files changed, 38 insertions(+)
 
-It applies at the end of the 2.6.22-rc4-mm2 patch series.
-
-Mathieu
-
+Index: linux-2.6-lttng/include/asm-generic/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-generic/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1,14 @@
++#ifndef _ASM_GENERIC_IMMEDIATE_H
++#define _ASM_GENERIC_IMMEDIATE_H
++
++/* Default flags, used by _immediate() */
++#define IF_DEFAULT			0
++
++/* Fallback on the generic immediate, since no optimized version is available */
++#define immediate_optimized		immediate_generic
++#define _immediate(flags, var)		immediate_generic(flags, var)
++
++/* immediate with default behavior */
++#define immediate(var)		_immediate(IF_DEFAULT, var)
++
++#endif /* _ASM_GENERIC_IMMEDIATE_H */
+Index: linux-2.6-lttng/include/asm-alpha/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-alpha/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-arm/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-arm/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-arm26/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-arm26/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-cris/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-cris/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-frv/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-frv/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-h8300/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-h8300/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-ia64/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-ia64/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-m32r/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-m32r/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-m68k/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-m68k/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-m68knommu/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-m68knommu/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-mips/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-mips/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-parisc/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-parisc/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-ppc/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-ppc/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-s390/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-s390/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-sh/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-sh/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-sh64/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-sh64/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-sparc/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-sparc/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-sparc64/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-sparc64/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-um/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-um/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-v850/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-v850/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-x86_64/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-x86_64/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-xtensa/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-xtensa/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-i386/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-i386/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
+Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2007-06-15 16:13:55.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/immediate.h>
 
 -- 
 Mathieu Desnoyers
