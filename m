@@ -1,114 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbXFOXGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759309AbXFOXHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758961AbXFOXGq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758152AbXFOXGg
+	id S1759309AbXFOXHF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758252AbXFOXGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:06:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37328 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758048AbXFOXGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:06:34 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706150308.20148.dhazelton@enter.net>
-	<or1wgd102n.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706151715.55218.dhazelton@enter.net>
-	<orfy4sx577.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615215734.GB16371@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 20:06:06 -0300
-In-Reply-To: <20070615215734.GB16371@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 23\:57\:34 +0200")
-Message-ID: <orabv0x1gh.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 19:06:37 -0400
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:44916 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758145AbXFOXGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 19:06:35 -0400
+Date: Fri, 15 Jun 2007 16:06:34 -0700 (PDT)
+From: alan <alan@clueserver.org>
+X-X-Sender: alan@blackbox.fnordora.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+In-Reply-To: <467319C3.9020703@zytor.com>
+Message-ID: <Pine.LNX.4.64.0706151601320.27993@blackbox.fnordora.org>
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com>
+ <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org> <467319C3.9020703@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 15 Jun 2007, H. Peter Anvin wrote:
 
-> * Alexandre Oliva <aoliva@redhat.com> wrote:
+> alan wrote:
+>>
+>> ZFS is the cool new thing in that space.  Too bad the license makes it
+>> hard to incorporate it into the kernel.  (I am one of those people that
+>> believe that Linux should support EVERY file system, no matter how old
+>> or obscure.)
+>>
+>
+> I have details on the Luxor UFD-DOS filesystem, if you'd care to
+> implement it.
 
->> >> You're again confusing legal terms with the intent.  The legal 
->> >> terms provide an indication of the intent, but the preamble, along 
->> >> with the free software definition it alludes to, do an even better 
->> >> job at that.
+Do you have example discs that can be mounted to test it?  If you do, I 
+will consider doing it.
 
->> > And the preamble, not being part of the active portion of the 
->> > license, has absolutely *ZERO* bearing. Just as it is not the 
->> > *intent* of RMS, the FSF or *ANY* person (or legal entity) that had 
->> > a hand in crafting the GPLv2 or GPLv3 which is looked at when 
->> > determining the "intent" of the license. It is the intent of the 
->> > person and/or "legal entity" that has placed their work under said 
->> > license.
+I have a couple of older DOS filesystems that got dropped out years ago 
+that I actually need to mount disks that i may rewrite for 2.6.x.
 
->> No disagreement.  You keep forgetting that I'm not here to say what 
->> Linux licensing means or doesn't mean.
+Now all i need is the time.
 
-> it is _you_ forgetting to read what you wrote just 1 mail ago above. 
-> _Read_ it:
+And speaking of obscure information...
 
->   "The legal terms provide an indication of the intent, but the 
->    preamble, along with the free software definition it alludes to, do 
->    an even better job at that.".
-
-You still don't seem to get the difference between spirit and letter,
-and the difference between author of the license and licensor of the
-software (I guess I wasn't clear about this).
-
-When I talk about the spirit of the GPL, I'm talking about how its
-authors designed it, how they described their motivations in the
-preamble, in the Free Software Definition, in speeches explaining it,
-etc.
-
-When I talked about the meaning of the Linux licensing above, I'm
-talking about the intent of the Linux authors when choosing the GPLv2.
-
-They aren't necessarily the same.
-
-Some Linux authors may have read the preamble and understood something
-else.  Some may have simply skipped it, and focused in the legal
-terms.  Some even understood the legal terms in different senses.  But
-they have all agreed to license their code under GPLv2, whatever the
-motivations each one of them had, and none of them has to match the
-spirit of the GPL.
-
-
-Now, the spirit of the GPL, the intent behind its design, is something
-that may be entirely different.  And when I say that GPLv3 didn't
-change the spirit of the GPL, I'm saying that from the perspective of
-someone who understands very deeply the philosphy and motivations
-behind it.
-
-
-Please understand that these are two separate issues.  That the spirit
-doesn't change, and that you don't share that spirit, or that you
-didn't think that was the spirit, doesn't justify a claim that the
-revision is changing the spirit.  It's not.  The spirit is, and has
-always been, to defend users' freedoms (the 4 freedoms of the Free
-Software definition), such that Free Software remains Free.
-
-
-The fact that they can be different means that GPLv3 may not match the
-goals you had when you chose GPLv2 for your contributions.  That's
-unfortunate.  But this doesn't mean that GPLv3 is changing the spirit
-of the GPL.  It's merely exposing that your goals don't match the
-spirit of the GPL.  There's nothing wrong about this, GPLv2 is not a
-bad license, just like the LGPLv2 is not a bad license.  They just
-don't defend users' freedoms as well as GPLv3 will do.
+I have a bunch of PCMCIA spec documents from the PCMCIA standards 
+association from the late 90s.  Would anyone involved in maintaining the 
+PCMCIA code be interested in it?  (Especially if they are in Portland.) 
+It has been a while since I have even needed to look at it and I hate for 
+it to go to waste if it can be of any use.  (Bit late now, I know...)
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+"ANSI C says access to the padding fields of a struct is undefined.
+ANSI C also says that struct assignment is a memcpy. Therefore struct
+assignment in ANSI C is a violation of ANSI C..."
+                                   - Alan Cox
