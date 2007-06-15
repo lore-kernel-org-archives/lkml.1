@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbXFOA3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbXFOA3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbXFOA3Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 20:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbXFOA3R
+	id S1757417AbXFOA3x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 20:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbXFOA3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 20:29:17 -0400
-Received: from smtpout.mac.com ([17.250.248.186]:64621 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbXFOA3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 20:29:17 -0400
-In-Reply-To: <12c511ca0706111038j37e188b6n2677b1789d14de23@mail.gmail.com>
-References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <466C3B64.4070806@citd.de> <20070611060759.GB914@suse.de> <20070611134326.GH11166@waste.org> <12c511ca0706111038j37e188b6n2677b1789d14de23@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <29741172-099F-499B-8A73-A85C6360129D@mac.com>
-Cc: Matt Mackall <mpm@selenic.com>, Greg KH <gregkh@suse.de>,
-       Matthias Schniedermeyer <ms@citd.de>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
-       LKML Kernel <linux-kernel@vger.kernel.org>, m-ikeda@ds.jp.nec.com,
-       git@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
-Date: Thu, 14 Jun 2007 20:29:09 -0400
-To: Tony Luck <tony.luck@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Thu, 14 Jun 2007 20:29:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42909 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751868AbXFOA3n (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 20:29:43 -0400
+Date: Fri, 15 Jun 2007 10:29:31 +1000
+From: David Chinner <dgc@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Chinner <dgc@sgi.com>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large Blocksize support
+Message-ID: <20070615002931.GI86004887@sgi.com>
+References: <20070614193839.878721298@sgi.com> <20070614130645.cabdff1b.akpm@linux-foundation.org> <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com> <20070614143248.736312f8.akpm@linux-foundation.org> <Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com> <20070614150417.c73fb6b9.akpm@linux-foundation.org> <20070614233002.GG86004887@sgi.com> <20070614164118.cbd48e53.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070614164118.cbd48e53.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 11, 2007, at 13:38:10, Tony Luck wrote:
->> I'd rather have a single file, marked "Japanese" (in Japanese),  
->> that had pointers to current translations. These will always be at  
->> least as current as whatever we have in the tree, if not more so.  
->> Especially when someone is trying to figure out how to work based  
->> on the year-old kernel their embedded vendor gave them.
->
-> Knowing whether a translation is current or not would be useful ...  
-> perhaps the translated files could include the GIT blob SHA1 of the  
-> version they were translated from (and some human readable version  
-> string too :-) This would allow someone reading the documentation  
-> to know whether is really was current.  If it isn't, it provides an  
-> easy path to see what changed in the source document since the  
-> translation was made. This same diff should lighten the load for  
-> people maintaining the translation.
+On Thu, Jun 14, 2007 at 04:41:18PM -0700, Andrew Morton wrote:
+> > On Fri, 15 Jun 2007 09:30:02 +1000 David Chinner <dgc@sgi.com> wrote:
+> > xfs_repair also uses direct I/O and does it's own userspace block
+> > caching and so avoids the problems involved with low memory, context
+> > unaware cache reclaim and blockdev cache thrashing.
+> 
+> umm, that sounds like a mistake to me.  fscks tend to get run when there's
+> no swap online.  A small system with a large disk risks going oom and can
+> no longer be booted. 
 
-Well, actually, if you're going that route then extend GIT to have  
-support for "related" files.  Essentially you should be able to add  
-metadata to a git tree which says: "files $SHA1-$PATH1, $SHA2-$PATH2,  
-[...], are related".  Then there would be a "git list-related"  
-command with a "--mismatch" option which would list paths for which  
-$SHA1 doesn't correspond to $PATH1 or $SHA2 doesn't correspond to  
-$PATH2, etc.  Some clever updating of related-status during commit/ 
-clone/pull/etc could store information in the index about whether or  
-not any given file is up-to-date with respect to its co-related files.
-
-For translations, when the English version of a document is updated  
-it will automatically result in a "mismatch", allowing translators to  
-do a simple git-diff and see what happened.  Likewise, if the  
-Japanese document is updated without changing the relationship then  
-it might mean that somebody should see what changed and update the  
-English version as well.  If you determine that the change was  
-irrelevant for the other language (spelling/grammar fixes, etc), then  
-you just update the relationship and commit that change.
-
-It would probably be pretty trivial to implement a prototype using a  
-'.gitrelated' file in the root of the git tree, although better  
-integration with the index would really speed handling with lots of  
-related files; instead of linear searching just iterate over the  
-prepared-during-checkout "out-of-date" list.
+xfs_repair is never run at boot time - we don't force periodic
+boot time checks like ext3/4 does so this isn't a problem.
 
 Cheers,
-Kyle Moffett
 
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
