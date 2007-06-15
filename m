@@ -1,102 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbXFOCrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbXFOCsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756921AbXFOCrT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXFOCrL
+	id S1757759AbXFOCsy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXFOCsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:47:11 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50657 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbXFOCrK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:47:10 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Michael Poole <mdpoole@troilus.org>
+	Thu, 14 Jun 2007 22:48:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55109 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752050AbXFOCsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 22:48:46 -0400
+To: Rob Landley <rob@landley.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 22:46:57 -0400
-User-Agent: KMail/1.9.6
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706142049.41819.dhazelton@enter.net> <87fy4u0xty.fsf@graviton.dyn.troilus.org>
-In-Reply-To: <87fy4u0xty.fsf@graviton.dyn.troilus.org>
+References: <466A3EC6.6030706@netone.net.tr>
+	<alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org>
+	<orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706142120.36902.rob@landley.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 14 Jun 2007 23:46:48 -0300
+In-Reply-To: <200706142120.36902.rob@landley.net> (Rob Landley's message of "Thu\, 14 Jun 2007 21\:20\:35 -0400")
+Message-ID: <ork5u653zb.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706142246.57583.dhazelton@enter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 22:13:13 Michael Poole wrote:
-> Daniel Hazelton writes:
-> > What rights did they give to "downstream" recipients of the "object code"
-> > version? *EXACTLY* those they received from the GPLv2.
->
-> Doing the e-mail equivalent of yelling about this will not change the
+On Jun 14, 2007, Rob Landley <rob@landley.net> wrote:
 
-Sorry, I wasn't trying to "yell" - just provide a note that at that point I 
-would be providing verbal stress.
+> On Thursday 14 June 2007 19:20:19 Alexandre Oliva wrote:
 
-> fact that people who think Tivo did something wrong -- legally and/or
-> morally -- consider DRM locks on a piece of software to be part of the
-> "work based on the Program" that is governed by the GPL.
+>> I understand this very well.  You'd have to get the kernel upgraded to
+>> GPLv3 in order to accept the contribution.
 
-All I've done is get a little annoyed that, despite evidence that it isn't 
-legally wrong - at least under the laws I am most familiar with - people 
-continue repeat that it is.
+> Why do you keep saying "upgraded" to GPLv3?
 
-I can't argue that it isn't "morally" wrong. While it may not be against my 
-morals, it could be against those of another person. It has never been my 
-intent to try and convince people that their morals are wrong.
+Just because it has a higher version number.  Honest, no other
+reason was implied.
 
-> The fundamental reason for this is that neither the executable code
-> nor the digital signature serves the desired function alone.  The user
-> received a copy of the executable for a particular purpose: to run the
-> program on a particular platform.  With DRM signatures, only the
-> combination of program and signature will perform that function, and
-> separating the two based on strictly read legal definitions is risky.
+I'm seriously not trying to push v3 here.  I got into this to try to
+dispell myths and get a better grasp of the situation.
 
-I agree.
+> Bumping a version number is not in indicator of quality,
 
-> The question of whether DRM signatures are covered by the license must
-> be resolved before one can determine whether Tivo gave "*EXACTLY*" the
-> same rights to object-code recipients as Tivo received.  GPLv2 is
-> worded such that the answer to this does not depend on whether one is
-> in file A and the other in file B, or whether one is on hard drive C
-> and the other is in flash device D, as long as they are delivered as
-> part of one unit; it *might* matter if, say, one is received on
-> physical media and the other is downloaded on demand.
+Agreed.  Still, some people talk about upgrading from XP to Vista (ok,
+no numbers here, but you get the idea), just like they talk about
+upgrading from linux 2.4 to 2.6.
 
-I have read the GPLv2 at least three times since it was pointed out that I had 
-forgotten part of it. At no point can I find a point where Tivo broke the 
-GPLv2 requirement that they give the recipients of the object code the same 
-rights they received when they acquired a copy of the object or source code.
+> So far, you haven't brought up a single reason to use v3
 
-> (Linus likes to say that FSF counsel thinks that Tivo did not violate
-> GPLv2.  I suspect the actual situation is that FSF counsel believes
-> that there is no case law on point, and that it could go either way,
-> making it improper to publicly claim that Tivo violated any copyright.
-> Until a court rules on a close-enough case, the question of whether
-> GPLv2 covers DRM signatures remains open.  In the mean time, it makes
-> more sense for the FSF to issue a new license that squarely addresses
-> this -- such as the GPLv3 -- and persuade as many developers as
-> possible that using it is the best way to protect free software.)
+Sure, that was not my goal.  I wasn't even trying.
 
-In examining the GPLv2 and the situation from a strictly factual basis I can 
-believe Linus' statement fully. The facts are as I stated them in a previous 
-mail.
+Would you like me to?
 
-DRH
+> You've just tried to argue that it isn't WORSE than the existing
+> license.
 
-> Michael Poole
-
-
+Good, it's nice when people get the idea of what I'm trying to
+accomplish.  I feared this had been lost in the noise.
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
