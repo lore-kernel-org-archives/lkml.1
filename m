@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbXFOUjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbXFOUjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759002AbXFOUjT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758875AbXFOUjA
+	id S1759246AbXFOUjx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758465AbXFOUjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:39:00 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50418 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758460AbXFOUi7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:38:59 -0400
-Date: Fri, 15 Jun 2007 21:38:46 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Mundt <lethal@linux-sh.org>,
+	Fri, 15 Jun 2007 16:39:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55153 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758410AbXFOUjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:39:43 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Michael Poole <mdpoole@troilus.org>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615203846.GY21478@ftp.linux.org.uk>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <4671B734.1040401@nortel.com> <orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br> <200706142155.34298.dhazelton@enter.net> <or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org> <ord4zx4zwm.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615050830.GT21478@ftp.linux.org.uk> <orbqfhyo8b.fsf@oliva.athome.lsd.ic.unicamp.br>
-Mime-Version: 1.0
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<200706142246.57583.dhazelton@enter.net>
+	<878xal2a0q.fsf@graviton.dyn.troilus.org>
+	<200706150127.18069.dhazelton@enter.net>
+	<87sl8tzaj1.fsf@graviton.dyn.troilus.org>
+	<20070615124039.GB21120@elte.hu>
+	<87fy4tz8dc.fsf@graviton.dyn.troilus.org>
+	<20070615143003.GA8775@elte.hu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 17:38:47 -0300
+In-Reply-To: <20070615143003.GA8775@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 16\:30\:03 +0200")
+Message-ID: <ortzt9x8a0.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <orbqfhyo8b.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 05:08:52PM -0300, Alexandre Oliva wrote:
-> You point out reasons you dislike the particular wording (good, can
-> you relay them to gplv3.fsf.org, please?), but nowhere do you show
-> where such provisions hamper the tit-for-tat goal that Linus likes
-> about GPLv2 and claims to be the reason he chose v2.  In fact, I've
-> shown evidence that anti-Tivoization increases this tit-for-tat.
-> Still, v2 is preferred over v3 under these grounds.  How can it be?
+On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
 
-It's not about particular wording.  It's about disgust at that kind of
-games in general.  Now bugger off and stop deliberately misparsing what
-I said.
+> that's exactly what the GPLv3 does: it creatively defines the
+> hardware's key into the 'source code' of the software and then asks
+> for that to be provided _not_ because somehow the key derives from
+> the software
 
-Oh, and could you please lose the "Free Software Evangelist" bit in your
-sig when posting on l-k?  Unless you want to get the treatment normally
-reserved for evangelist pests, that is...  Your personal kinks are your
-personal kinks; kindly keep your religion to consenting partners.
+Dude, you're 3 drafts behind.  And some people already read GPLv2 like
+that.
+
+> (it clearly does not), but as a "compensation" for the right to
+> redistribute! I.e. it's trying to extend its scope to some item that
+> is not part of the software. See?
+
+The "compensation" is and has always been "respecting others'
+freedoms".  If the key is used to disrespect others freedoms, as it is
+by TiVO, then TiVO is failing to keep its part in the deal.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
