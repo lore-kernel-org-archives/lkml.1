@@ -1,100 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbXFOUfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbXFOUfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbXFOUfO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:35:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbXFOUe6
+	id S1758663AbXFOUfk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbXFOUfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:34:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60769 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757442AbXFOUe5 (ORCPT
+	Fri, 15 Jun 2007 16:35:04 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:4166 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758428AbXFOUfC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:34:57 -0400
-Date: Fri, 15 Jun 2007 13:34:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <1181936955.5211.62.camel@shinybook.infradead.org>
-Message-ID: <alpine.LFD.0.98.0706151322070.14121@woody.linux-foundation.org>
-References: <466A3EC6.6030706@netone.net.tr>  <200706142144.15695.dhazelton@enter.net>
-  <1181895924.25228.319.camel@pmac.infradead.org>  <200706150458.29943.dhazelton@enter.net>
-  <1181899064.25228.342.camel@pmac.infradead.org> 
- <alpine.LFD.0.98.0706150846370.14121@woody.linux-foundation.org> 
- <1181930204.25228.590.camel@pmac.infradead.org> 
- <alpine.LFD.0.98.0706151118150.14121@woody.linux-foundation.org>
- <1181936955.5211.62.camel@shinybook.infradead.org>
+	Fri, 15 Jun 2007 16:35:02 -0400
+Date: Fri, 15 Jun 2007 22:35:01 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: coding style
+In-Reply-To: <alpine.LFD.0.98.0706151319430.14121@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706152228400.32724@fbirervta.pbzchgretzou.qr>
+References: <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com>
+ <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr>
+ <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com>
+ <20070615110326.b0762b7a.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr>
+ <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com>
+ <Pine.LNX.4.64.0706152122050.32724@fbirervta.pbzchgretzou.qr>
+ <20070615194140.GE8151@cvg> <alpine.LFD.0.98.0706151319430.14121@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Fri, 15 Jun 2007, David Woodhouse wrote:
-> > 
-> > What is a DVD? It's just a "blob" of a UDF image, potentially containing 
-> > the Linux kernel.
-> > 
-> > How is that different from a "blob" of some other kind of image (say, a 
-> > cramfs or similar image) on a rom?
-> > 
-> > What makes UDF so different from cramfs? What makes a DVD so different 
-> > from a ROM chip? Why would copyright law care about one and not the other?
-> 
-> The differences are subtle, but they do exist. They're not really about
-> whether it's iso9660 or cramfs; it's about whether what you put on them
-> is a coherent work in its own right or just a bunch of bits which happen
-> to be thrown together onto the same medium.
+On Jun 15 2007 13:21, Linus Torvalds wrote:
+>On Fri, 15 Jun 2007, Cyrill Gorcunov wrote:
+>> | 
+>> | 	from CodingStyle:
+>> | 	Tabs are 8 characters, and thus indentations are also 8
+>> | 	characters.  There are heretic movements that try to make
+>> | 	indentations 4 (or even 2!) characters deep, and that is akin
+>> | 	to trying to define the value of PI to be 3.
+>> | 
+>> | Linus (did he wrote that part?) and the heretics both can have their fun 
+>> | without impacting each other. If we wanted to force the user to have 
+>> | exactly 8 screen blanks, we should use spaces throughout.
+>
+>I did indeed write that.
+>
+>Tabs are 8 characters in the kernel coding style.
 
-I think that's a somewhat valid argument, although I'm not really sure 
-whether there is any difference between, say, a Fedora 7 "livecd", and a 
-router with a cramfs filesystem in rom.
+That clarification ("in the kernel coding style") should end up in 
+CodingStyle. (Since tabs *are not* just 8 everywhere, which current 
+CodingStyle seems to imply. But maybe I'm just to blunt.)
 
-Both really work the same way, and both really are very much targeted 
-towards a specific hardware platform.
+>And yes, I also wrote the other quote:
+>
+>> 	Now, some people will claim that having 8-character indentations makes
+>> 	the code move too far to the right, and makes it hard to read on a
+>> 	80-character terminal screen.  The answer to that is that if you need
+>> 	more than 3 levels of indentation, you're screwed anyway, and should fix
+>> 	your program.
+>
+>In the kernel, we try to split functions up, and perhaps use inline 
+>functions etc, and really really avoid deep indentation.
 
-Yes, it's true that a small router migth be a more *coherent* hardware 
-platform than the Fedora 7 livecd is, but that's more a factor of the wild 
-and crazy PC hardware culture than of the small router.
+This rule is also very helpful outside the kernel.
 
-For example, what about a livecd for PPC-based hardware? Those tend to be 
-much more uniform (read: I think the livecd's generally work on mac 
-clones).
 
-So it's a question of degrees of separation. Does it make a difference 
-that some of these embedded images work across a whole range of (rather 
-similar, but still.. not identical) routers? 
 
-I don't really have any point, except that there is no real *technical* 
-difference, and in many respects the only difference in the end really 
-seems to be about "intended target device or audience" rather than 
-anything else.
-
-How can you make hard licensing decisions in situations like that? I don't 
-think you really can. In fact, the OSI rules even forbid making licensing 
-decisions based on things that get rather close to the differences you are 
-describing (both the "not specific to a product" and "license must not 
-discriminate against fields of endeavor").
-
-It's also really really *hard* to make a choice based on a gradual scale. 
-Where do you put the limit? Wherever you put it, it's going to be 
-arbitrary. Is that really a good thing?
-
-So I would at least *personally* suggest that people not look into the 
-license for these kinds of things, and also that you really need to have a 
-very specific case, and just basically put it in front of a judge.
-
-At some point, *somebody* has to decide in a gray area, and I'm not saying 
-that a judge is really _technically_ any better really to decide the 
-issue, but at least he is hopefully _independent_ of both parties, so when 
-a judge makes an arbitrary decision, the "arbitrariness" is hopefully at 
-least somewhat "fair".
-
-Hmm? 
-
-			Linus
+	Jan
+-- 
+(And IMHO, GNU code, e.g. coreutils, is the best counter-example.)
