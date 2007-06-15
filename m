@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbXFOX1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbXFOX1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757633AbXFOX1J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbXFOX0x
+	id S1759565AbXFOX1Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbXFOX04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:26:53 -0400
+	Fri, 15 Jun 2007 19:26:56 -0400
 Received: from ug-out-1314.google.com ([66.249.92.174]:63885 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756931AbXFOX0v (ORCPT
+	with ESMTP id S1757667AbXFOX0y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:26:51 -0400
+	Fri, 15 Jun 2007 19:26:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=puRAc8GBfnnr0o0RCZ2wv8pM04tT7Lxz6++D5Ld6pPYQE0C+LZhJYIlqLejFSYJMjHlzvr7hhP/tqjaELT2SdeCPVoDw1aZBYM0O8FXyRIfmF62562nnNVS8/zGXNYu/qpd3B3LnjcQ3cMzr6z3KN8CBdiOiLlHdudK6VV3xVbI=
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Tf7ePUjQcIJTA+sgTJZOTywKSVLpEGR5IbFf/NCL/tTVLOsGZ+rxVDU0CuIWM4Bkpy1Na/nfEf0DZ7xpXR3zppNbmnvTZojupFb6IumK+0VRYY3KyLFX6koo+nuk5j0HncThGqdaDBwDhgEzBjWSbqp9GMyUoH/3EDgBRkqN9Hs=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Masatake YAMATO <jet@gyve.org>
-Subject: Re: [PATCH] never called printk statement in ide-taskfile.c::wait_drive_not_busy
-Date: Sat, 16 Jun 2007 00:45:36 +0200
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 1/3] Make the IDE DMA timeout modifiable
+Date: Sat, 16 Jun 2007 01:23:55 +0200
 User-Agent: KMail/1.9.6
-Cc: cebbert@redhat.com, linux-kernel@vger.kernel.org
-References: <20070605.112124.28713903.jet@gyve.org> <4665988A.5060902@redhat.com> <20070606.023558.230059723.jet@gyve.org>
-In-Reply-To: <20070606.023558.230059723.jet@gyve.org>
+Cc: Suleiman Souhlal <ssouhlal@freebsd.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20070221011922.GA1777@freefall.freebsd.org> <200702210342.20775.bzolnier@gmail.com> <466EEFD6.9030001@ru.mvista.com>
+In-Reply-To: <466EEFD6.9030001@ru.mvista.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200706160045.36638.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706160123.55636.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 12 June 2007, Sergei Shtylyov wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> >>On Feb 20, 2007, at 5:44 PM, Bartlomiej Zolnierkiewicz wrote:
+> 
+> >>>On Wednesday 21 February 2007 02:19, Suleiman Souhlal wrote:
+> 
+> >>>>It can be changed via /proc/ide/hd?/settings.
+> 
+> >>>Why do we need to change IDE DMA timeout dynamically?
+> 
+> >>I've used it to test error recovery (for example).
+> 
+> > Seems quite useable for developers but I would prefer not to
+> > expose it in production kernels for end users.
+> 
+>     It seems that I have counter example of a customer asking if this timeout 
+> can be done configurable. :-)
 
-Hi,
+May I ask what was the rationale for this request?
 
-On Tuesday 05 June 2007, Masatake YAMATO wrote:
-> > On 06/04/2007 10:21 PM, Masatake YAMATO wrote:
-> > > diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-> > > index 30175c7..5e05311 100644
-> > > --- a/drivers/ide/ide-taskfile.c
-> > > +++ b/drivers/ide/ide-taskfile.c
-> > > @@ -249,7 +249,7 @@ static u8 wait_drive_not_busy(ide_drive_t *drive)
-> > >  	while (((stat = hwif->INB(IDE_STATUS_REG)) & BUSY_STAT) && retries--)
-> > >  		udelay(10);
-> > >  
-> > > -	if (!retries)
-> > > +	if (retries < 0)
-> > 
-> > 	if (stat & BUSY_STAT)
-> > 
-> > >  		printk(KERN_ERR "%s: drive still BUSY!\n", drive->name);
-> > >  
-> 
-> Oh, yes.
-> Giving `retries' both roles: loop counter and condition flag for logging
-> may not good.
-> 
-> 
->     for (retries = 0; retries < 100; retries++)
->     {
-> 	    if ((stat = hwif->INB(IDE_STATUS_REG)) & BUSY_STAT)
-> 	       break;
-> 
-> 	    udelay(10);
->     }
-> 
-> 
->     if (stat & BUSY_STAT)
-> 	    printk(KERN_ERR "%s: drive still BUSY!\n", drive->name);
+I have no strong feelings about adding this /proc/ide/ setting but I worry
+that it could be (mis)used just to (unreliably) work-around problems...
 
-Please re-submit this fix in the form of a patch so I can merge it.
+>     BTW, why the timeout is so damn long? 2*WAIT_CMD is 20 secs, and if DMA is 
+> not complete or interrupt pending, it may wait 10 more secs...
+
+I really don't remember... :)
+
+Maybe Mark or Alan could help with figuring this out.
 
 Thanks,
 Bart
