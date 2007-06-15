@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbXFOKfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbXFOKm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbXFOKfF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 06:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbXFOKez
+	id S1752819AbXFOKm7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 06:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbXFOKmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 06:34:55 -0400
-Received: from lucidpixels.com ([75.144.35.66]:44620 "EHLO lucidpixels.com"
+	Fri, 15 Jun 2007 06:42:50 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:42479 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751276AbXFOKez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 06:34:55 -0400
-Date: Fri, 15 Jun 2007 06:34:54 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Pim Zandbergen <P.Zandbergen@macroscoop.nl>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-In-Reply-To: <46726727.5090003@macroscoop.nl>
-Message-ID: <Pine.LNX.4.64.0706150634320.26433@p34.internal.lan>
-References: <200706071530.51552.jesse.barnes@intel.com> <4671992D.7060400@macroscoop.nl>
- <Pine.LNX.4.64.0706141625260.26236@p34.internal.lan> <46726727.5090003@macroscoop.nl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1751074AbXFOKmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 06:42:50 -0400
+Subject: Re: [PATCH] diskquota: 32bit quota tools on 64bit architectures
+From: Vasily Tarasov <vtaras@openvz.org>
+Reply-To: vtaras@openvz.org
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: akpm@linux-foundation.org, dev@sw.ru, devel@openvz.org, jack@suse.cz,
+       linux-kernel@vger.kernel.org, nataliep@google.com, vvs@sw.ru
+In-Reply-To: <200706151003.l5FA3vd6008194@harpo.it.uu.se>
+References: <200706151003.l5FA3vd6008194@harpo.it.uu.se>
+Content-Type: text/plain
+Organization: OpenVZ community
+Date: Fri, 15 Jun 2007 14:41:49 +0400
+Message-Id: <1181904109.3241.35.camel@dhcp0-149.sw.ru>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.0.1.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+You can find a half-year back discussions of this patch:
+
+First attempt: http://lkml.org/lkml/2006/10/19/123
+Second attempt: http://lkml.org/lkml/2006/10/25/57
+
+I think they will answer your questions.
+
+Thank you,
+Vasily
 
 
-On Fri, 15 Jun 2007, Pim Zandbergen wrote:
+On Fri, 2007-06-15 at 12:03 +0200, Mikael Pettersson wrote:
+> On Fri, 15 Jun 2007 13:01:48 +0400, Vasily Tarasov wrote:
+> > OpenVZ Linux kernel team has discovered the problem 
+> > with 32bit quota tools working on 64bit architectures.
+> > In 2.6.10 kernel sys32_quotactl() function was replaced by sys_quotactl() with
+> > the comment "sys_quotactl seems to be 32/64bit clean, enable it for 32bit"
+> > However this isn't right. Look at if_dqblk structure:
+> 
+> Your patch only converts ia32 on x86-64 or ia64.
+> What about ppc32-on-ppc64 and sparc32-on-sparc64?
+> And, I guess, mips32-on-mips64?
+> 
+> > --- linux-2.6.22-rc4-fixed/fs/quota.c.orig	2007-06-14 15:55:26.000000000 +0400
+> > +++ linux-2.6.22-rc4-fixed/fs/quota.c	2007-06-14 19:50:13.000000000 +0400
+> ...
+> > +#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
+> > +/*
+> > + * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
+> > + * and is necessary due to alignment problems.
+> > + */
+> 
+> The #ifdef looks way too arch-specific. And isn't there a shared
+> compat.c module somewhere that this should go into?
+> 
+> /Mikael
 
-> Justin Piszcz wrote:
->> That's strange, I guess different chipsets 'chew' up different amounts of 
->> memory OR you have your DVT(?) (video-card memory/aperature) set to 256MB? 
->> I have mine set to 128MB, in top:
->> 
->> Mem:   8039576k total,  6187304k used,  1852272k free,      696k buffers
-> Me:
-> Mem:   7416672k total,   378988k used,  7037684k free,    13592k buffers
->
->> What type of memory are you using 
-> 2x Kingston KVR667D2N5K2/4G
->> and what is your DVT set to?
-> GigaByte's BIOS config options of the onboard graphics controller are
-> very limited compared to those on your Intel motherboard.
->
-> I can only choose the graphics buffer size, between
-> "1MB+1~2MB for GTT" or "8MB+1~2MB for GTT".
-> I chose the latter. The POST says 9MB are taken for video.
->
-> Not that it matters much, as the current i810/intel xorg driver does
-> not yet support the GMA3100, so I'm using the vesa driver.
->
-> Thanks,
-> Pim
->
-
-I use the exact same memory model.  So it must be the difference in BIOS 
-MTRR/E820 memory mappings.
-
-Justin.
