@@ -1,129 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXFOHdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752983AbXFOHfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbXFOHdY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 03:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbXFOHdQ
+	id S1752983AbXFOHfQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 03:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbXFOHfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 03:33:16 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:42195 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750787AbXFOHdP (ORCPT
+	Fri, 15 Jun 2007 03:35:05 -0400
+Received: from mfo32.po.2iij.NET ([210.128.50.15]:12705 "EHLO
+	mfo32.po.2iij.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751241AbXFOHfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 03:33:15 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Daniel Hazelton <dhazelton@enter.net>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 08:24:37 +0200
-User-Agent: KMail/1.9.7
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <orabv29qtk.fsf@oliva.athome.lsd.ic.unicamp.br> <200706142049.41819.dhazelton@enter.net>
-In-Reply-To: <200706142049.41819.dhazelton@enter.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1624964.mgZZBDExKT";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 15 Jun 2007 03:35:04 -0400
+X-Greylist: delayed 2151 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jun 2007 03:35:03 EDT
+Date: Fri, 15 Jun 2007 15:59:04 +0900
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+To: Tino Keitel <tino.keitel@gmx.de>
+Cc: yoichi_yuasa@tripeaks.co.jp, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com
+Subject: Re: rtc_cmos: error after first write to wakealarm
+Message-Id: <20070615155904.1d1da892.yoichi_yuasa@tripeaks.co.jp>
+In-Reply-To: <20070615063308.GA18089@dose.home.local>
+References: <20070615063308.GA18089@dose.home.local>
+Organization: TriPeaks Corporation
+X-Mailer: Sylpheed version 1.0.4 (GTK+ 1.2.10; i386-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706150825.15491.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181892794;0404cbac;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1624964.mgZZBDExKT
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 15 Jun 2007 08:33:08 +0200
+Tino Keitel <tino.keitel@gmx.de> wrote:
 
-> Because GPLv2 doesn't enforce limitations on the hardware a GPL'd work ca=
-n be=20
-> put on. It doesn't make artificial distinctions between "Commercial",=20
-> "Industrial" and "User". What it does is *ATTEMPT* to ensure that nobody=
-=20
-> receiving a copy of a GPL'd work has the same rights as any other person =
-that=20
-> gets a copy. GPLv3 gives people *additional* rights beyond those.
+> Hi,
+> 
+> I have the following strange behaviour with rtc_cmos:
+> 
+> $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> bash: echo: write error: Device or resource busy
+> $ rmmod rtc_cmos
+> $ modprobe rtc_cmos
+> $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> bash: echo: write error: Device or resource busy
+> $
 
-IMO this statement expressedly exposes the different viewpoints as used
-in various factions in this discussion.
+If the alarm has already been enabled, you cannot set the next alarm. 
+You should disable first.
 
-Without adopting all the details I think I can agree to the above stmt.
-However I don't agree with the implied msg as I perceive it.
+Yoichi
 
-In the following I'll try to explain what I mean by the above.
-
-I don't know whether what TiVo did actually was allowed by the legal
-phrases of the GPLv2. I can image it was legally valid but I don't know.
-But then I'm convinced it was one of the things the inventors of the
-GPL wanted to make illegal by it -- they may have failed to do so when
-wording the legal part.
-
-I like to remind you of the story with the broken closed source printer
-driver RMS tried to fix at MIT (if I recall correctly) and the frustration
-that he couldn't do so that finally made him start the FSF.
-
-No customer can fix his TiVo box without the cooperation of the HW
-vendor. If they refuse there is nothing that can be done. For me this
-is very much like printer story above.
-
-Assuming you (the reader) agree so far:
-I find it obvious that the GPL was meant to prevent such to be possible.
-This is what I mean by the "the spirit of the GPL".
-
-Living in germany I'm also used to the courts valueing the intention over
-the exact wording of a contract (a licence after all is a contract). So
-I _think_ in germany TiVo would have lost a lawsuit if they had tried it.
-
-
-Now for a different PoV:
-Do I think Tivoisation is bad for the community ?
-Of course I think it is but your mileage may vary.
-
-Anyway, if one considers Tivoisation acceptable then there is no reason
-to stop using GPLv2.
-
-If one wishes to prevent it there are two related questions:
-=2D does GPLv2 prevent it ?
-=2D if GPLv2 does not prevent it then how can we change it to achieve that ?
-
-To me it seems as if the FSF tends to answer the first question with 'no'
-and consequently answers the second question with 'GPLv3'.
-
-Whether or not the GPLv3 is truely an acceptable answer to prevent
-Tivoisation is a completely different issue that I can't really judge.
-
-Last not least:
-Nothing of the above has to do with ethics, moral or any such cathegories.
-This is by intention.
-
-Thank you for reading thus far -- I hope I made myself clear.
-
-Best wishes,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
-
---nextPart1624964.mgZZBDExKT
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGcjDLUYYhyuxDQc4RAuO8AKCmBZ/RiQ3uevEUVPdRewedyX7xOQCfZGBN
-npWeGlrLMS5wwlXvLPWBvy8=
-=sKMW
------END PGP SIGNATURE-----
-
---nextPart1624964.mgZZBDExKT--
