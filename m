@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbXFORwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbXFORyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752687AbXFORwP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbXFORwB
+	id S1753194AbXFORyq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbXFORyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:52:01 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4931 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750891AbXFORwA (ORCPT
+	Fri, 15 Jun 2007 13:54:39 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:44642 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbXFORyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:52:00 -0400
-Date: Fri, 15 Jun 2007 19:52:24 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg KH <greg@kroah.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, i2c@lm-sensors.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [i2c] i2c module aliases
-Message-ID: <20070615195224.4968dcbb@hyperion.delvare>
-In-Reply-To: <20070614191424.GA13850@kroah.com>
-References: <Pine.LNX.4.64.0706062325270.30244@anakin>
-	<20070607175342.3006e872@hyperion.delvare>
-	<20070607160214.GB17800@kroah.com>
-	<20070608153516.28fd9eb5@hyperion.delvare>
-	<Pine.LNX.4.64.0706081647310.9505@anakin>
-	<20070609125221.2a64ba48@hyperion.delvare>
-	<20070614191424.GA13850@kroah.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 15 Jun 2007 13:54:38 -0400
+Message-ID: <4672D246.2040306@nortel.com>
+Date: Fri, 15 Jun 2007 11:54:14 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Jan Engelhardt <jengelh@computergmbh.de>,
+       dave young <hidave.darkstar@gmail.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Willy Tarreau <w@1wt.eu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: coding style
+References: <20070614184836.GA6520@cvg> <20070615045111.GU943@1wt.eu> <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com> <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr> <20070615173206.GA8151@cvg>
+In-Reply-To: <20070615173206.GA8151@cvg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jun 2007 17:54:18.0350 (UTC) FILETIME=[320468E0:01C7AF76]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jun 2007 12:14:24 -0700, Greg KH wrote:
-> On Sat, Jun 09, 2007 at 12:52:21PM +0200, Jean Delvare wrote:
-> > OK, no problem. I gave it a try myself. Greg, is it OK or did I miss
-> > other parts which can be removed?
-> 
-> Looks good to me.  Want me to take this through my tree or through
-> yours?
+Cyrill Gorcunov wrote:
 
-It's already in my i2c tree.
+> Thanks to all of you for answering. Actually I was concerning about function
+> arguments' alignment (on separated lines) not about indentation. So as I see
+> it's a question of bent ;) And a simple rule exist - use tabs for indents
+> and spaces for alignment (when amount of spaces are < 8).
 
-Thanks,
--- 
-Jean Delvare
+That rule doesn't actually work though, an is imposed by tools limitations.
+
+Consider two people, one with tabs as 8 characters and one with tabs as 
+4 characters.  If person A aligns using a tab plus a space (giving 9 
+characters), then the alignmnet will be all screwed up for person B (who 
+will see 5 characters of alignment).
+
+The only rule that works (setting aside bad tools) is:
+
+"use tabs for indents and spaces for alignment"
+
+If that means you need to use two dozen spaces, then so be it.
+
+Chris
