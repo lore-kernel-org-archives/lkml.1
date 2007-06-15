@@ -1,100 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbXFOTbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbXFOTbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbXFOTbZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXFOTbO
+	id S1756876AbXFOTbi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbXFOTbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:31:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38501 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753245AbXFOTbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:31:12 -0400
-Date: Fri, 15 Jun 2007 21:30:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v17
-Message-ID: <20070615193028.GA22187@elte.hu>
-References: <20070614224908.GA9412@elte.hu> <20070615132841.5ee01f4d@localhost>
+	Fri, 15 Jun 2007 15:31:22 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:58060 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756126AbXFOTbU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:31:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=fcM7bWK6KLZ9hWjXyhZsTztasdApwQvYme/sr/+DcY7Bi6tpII06YXdNmYF1QbZj6e8+gThH46Dks2x72FCvQQs5XkKCZ/FCna7hpqWzywKNBNxGjCu7eeq7Ej7/9iZxSfRe+UtgkdfoBWzUAfdgY0S+HLIzR2reXeALUs0kJ7s=
+Date: Fri, 15 Jun 2007 23:29:36 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: coding style
+Message-ID: <20070615192936.GD8151@cvg>
+References: <20070615045111.GU943@1wt.eu> <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com> <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr> <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com> <20070615110326.b0762b7a.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr> <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070615132841.5ee01f4d@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4672E6B3.1080205@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Kok, Auke - Fri, Jun 15, 2007 at 12:21:23PM -0700]
+| Cyrill Gorcunov wrote:
+| >[Jan Engelhardt - Fri, Jun 15, 2007 at 09:10:49PM +0200]
+| >| 
+| >| On Jun 15 2007 11:03, Randy Dunlap wrote:
+| >| >> 
+| >| >> "use tabs for indents and spaces for alignment"
+| >| >> 
+| >| >> If that means you need to use two dozen spaces, then so be it.
+| >| >
+| >| >I don't think that's what that rule means, but I didn't write it,
+| >| >so I'm not absolutely sure about it.
+| >| >
+| >| >but we know that tab stops are every 8th character, not 4 :)
+| >| 
+| >| Hardly.
+| >| 
+| >| 
+| >| 
+| >| 
+| >| 	Jan
+| >| -- 
+| >| 
+| >
+| >Jan, as I see from CodingStyle:
+| >
+| >	"Tabs are 8 characters, and thus indentations are also 8 characters."
+| >
+| >Actually it would be perfect to get strict rules also for math. and log.
+| >operators being splitted on several lines:
+| 
+| this doesn't say anything about alignment, which was his point :)
+| 
+| Auke
+| 
 
-* Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br> wrote:
+Yep... ;)
 
->  Hmm, I'm getting this while compiling:
-> 
-> """
->   LD      .tmp_vmlinux1
-> kernel/built-in.o: In function `rq_clock':
-> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321: undefined reference to `cpu_of'
-> /home/lcapitulino/src/kernels/upstream/linux-2.6-cfs/kernel/sched.c:321: undefined reference to `cpu_of'
+		Cyrill
 
-oops :-) That was due to !CONFIG_SMP.
-
->  Patch follows, only compile tested, hope it helps.
-
-Thanks! I fixed it in a slightly different way: moved the cpu_of() thing 
-outside of the #ifdef CONFIG_SMP section, as per the patch below. I've 
-updated the -v17 patches with this minimal fix and have verified that 
-the !CONFIG_SMP kernel boots and works fine.
-
-	Ingo
-
---------------->
-Index: linux-cfs-2.6.22-rc4.q/kernel/sched.c
-===================================================================
---- linux-cfs-2.6.22-rc4.q.orig/kernel/sched.c
-+++ linux-cfs-2.6.22-rc4.q/kernel/sched.c
-@@ -248,6 +249,15 @@ static unsigned int static_prio_timeslic
- 		return SCALE_PRIO(DEF_TIMESLICE, static_prio);
- }
- 
-+static inline int cpu_of(struct rq *rq)
-+{
-+#ifdef CONFIG_SMP
-+	return rq->cpu;
-+#else
-+	return 0;
-+#endif
-+}
-+
- #ifdef CONFIG_SMP
- /*
-  * Divide a load by a sched group cpu_power : (load / sg->__cpu_power)
-@@ -258,15 +268,6 @@ static inline u32 sg_div_cpu_power(const
- 	return reciprocal_divide(load, sg->reciprocal_cpu_power);
- }
- 
--static inline int cpu_of(struct rq *rq)
--{
--#ifdef CONFIG_SMP
--	return rq->cpu;
--#else
--	return 0;
--#endif
--}
--
- /*
-  * Each time a sched group cpu_power is changed,
-  * we must compute its reciprocal value
