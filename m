@@ -1,36 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbXFOMhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbXFOMir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbXFOMhS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755106AbXFOMg6
+	id S1755283AbXFOMir (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 08:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbXFOMik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:36:58 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:41617 "EHLO
+	Fri, 15 Jun 2007 08:38:40 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:41634 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917AbXFOMg5 (ORCPT
+	with ESMTP id S1752612AbXFOMii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:36:57 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+	Fri, 15 Jun 2007 08:38:38 -0400
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
 From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070615122921.GA21120@elte.hu>
-References: <466A3EC6.6030706@netone.net.tr>
-	 <200706131946.15714.dhazelton@enter.net>
-	 <20070614021619.381331dc@the-village.bc.nu>
-	 <200706132129.52736.dhazelton@enter.net>
-	 <1181859896.5211.38.camel@shinybook.infradead.org>
-	 <20070615114921.GC6269@elte.hu>
-	 <1181908678.25228.448.camel@pmac.infradead.org>
-	 <20070615122921.GA21120@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070615121133.GF8154@parisc-linux.org>
+References: <200706150159.l5F1xNgM000459@hera.kernel.org>
+	 <1181897905.26853.66.camel@localhost.localdomain>
+	 <200706151128.39566.arnd@arndb.de> <200706151131.38429.arnd@arndb.de>
+	 <20070615121133.GF8154@parisc-linux.org>
 Content-Type: text/plain
-Date: Fri, 15 Jun 2007 13:36:34 +0100
-Message-Id: <1181910994.25228.468.camel@pmac.infradead.org>
+Date: Fri, 15 Jun 2007 13:38:32 +0100
+Message-Id: <1181911112.25228.472.camel@pmac.infradead.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
@@ -39,30 +34,21 @@ X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 14:29 +0200, Ingo Molnar wrote:
-> the argument is quite strong that the linking of two independent works 
-> is "mere aggregation" as well. (as long as they are truly separate 
-> works) 
+On Fri, 2007-06-15 at 06:11 -0600, Matthew Wilcox wrote:
+> You're relying on compat_[us]64 being only used in structures which are
+> already packed. 
 
-You think so?
+In which case the whole exercise is pointless, on account of the
+structure being already packed. It was _already_ laid out the same on
+32-bit and 64-bit builds.
 
-If even linking was considered 'mere aggregation on a volume of a
-storage or distribution medium', then when would the 'But when you
-distribute those same sections as part of a whole...' bit _ever_ apply?
-It _explicitly_ talks of sections which are independent and separate
-works in their own right, but which must be licensed under the GPL when
-they're distributed as part of a larger whole.
+>  If someone uses them in a non-packed struct, they won't
+> decrease the alignment.  I think it would be more effective to specify
+> it as:
+> __attribute__((aligned(4), packed))
 
-I don't see how we could hold the view that _even_ linking is 'mere
-aggregation on a volume of a storage or distribution medium', without
-conveniently either ignoring entire paragraphs of the GPL or declaring
-them to be entirely meaningless.
-
-Of course, that doesn't mean that a court _wouldn't_ do that. Given
-enough money, I'm sure you could get US court to declare that the world
-is flat. But it doesn't seem to be a reasonable viewpoint, to me. Or a
-likely outcome.
-
+Good point. Yes, it looks like we need the additional 'packed' in order
+for the aligned(4) to be anything other than a no-op.
 
 -- 
 dwmw2
