@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbXFOQc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbXFOQeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757220AbXFOQc4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 12:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXFOQcr
+	id S1757938AbXFOQeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 12:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXFOQeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 12:32:47 -0400
-Received: from [212.112.238.170] ([212.112.238.170]:57313 "EHLO
-	longford.lazybastard.org" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753908AbXFOQcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 12:32:47 -0400
-Date: Fri, 15 Jun 2007 18:27:56 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext2 on flash memory
-Message-ID: <20070615162756.GB7747@lazybastard.org>
-References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org> <20070614182201.GD31984@lazybastard.org> <20070614202047.GD1928@DervishD> <20070614204345.GH31984@lazybastard.org> <20070615162001.GC2373@DervishD>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070615162001.GC2373@DervishD>
-User-Agent: Mutt/1.5.9i
+	Fri, 15 Jun 2007 12:34:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:52091 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750932AbXFOQeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 12:34:10 -0400
+Message-ID: <4672BF82.9050101@goop.org>
+Date: Fri, 15 Jun 2007 09:34:10 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Xen-Devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH 04/10] i386: clean up bzImage generation
+References: <20070615004818.424726597@goop.org> <20070615005012.962196819@goop.org> <4672BC3E.6080308@zytor.com>
+In-Reply-To: <4672BC3E.6080308@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 June 2007 18:20:01 +0200, DervishD wrote:
-> 
-> > >     Now seriously, I will take a look at LogFS from time to time, and if
-> > > you want me to, I can do tests on my Kingston DT.
-> > 
-> > That would be appreciated.  I am always happy about bug reports.  The
-> > more you test the faster I can fix things.
-> 
->     I'm going to upgrade to 2.6.20.x next week, probably, but I'm not
-> fully sure. Can your patch be applied to 2.6.19.5 or different versions
-> are needed for each and every latest kernel release? I've seen the code
-> in your web and looked like it will work in any 2.6.x kernel as long as
-> it is not very old, am I wrong?.
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> -setup_move_size: .word  0x8000		# size to move, when setup is not
+>> +setup_move_size: .word  _setup_size	# size to move, when setup is not
+>>  					# loaded at 0x90000. We will move setup
+>>  					# to 0x90000 then just before jumping
+>>  					# into the kernel. However, only the
+>>     
+>
+> This is WRONG and will break 2.00 protocol bootloaders, if any still
+> exist, and quite possibly some 2.01 protocol bootloaders.  There are
+> definitiely bootloaders in the field that rely on this implicit value.
+>   
 
-It should, I just haven't tested it.  Same for the I_SYNC patch.
+Ah, I see.  I didn't see any documentation saying that this must be
+0x8000.  Or does _setup_size just have to be <= 0x8000?
 
->     If it can be used with 2.6.19.5, I can test ASAP even if I don't
-> upgrade to 2.6.20.x. I cannot reboot my machine until Monday (except if
-> a power shortage does the job for me, of course), but then I'll patch my
-> kernel and test LogFS. I'm impatient!
+>> @@ -246,7 +246,6 @@ setup2:
+>>  	jnz	1f
+>>  	movw	$0xfffc, %sp	# Make sure we're not zero
+>>  1:	movzwl	%sp, %esp	# Clear upper half of %esp
+>> -	sti
+>>     
+>
+> Motivation, please?
+>   
 
-Just try the patches.  If both apply without rejects, things should be
-fine.  Otherwise I'll have to take a look.
+We talked about this, and you said it was a mistake.  It needn't be in
+this patch; it could be separate, or just dropped as far as I'm concerned.
 
-Jörn
-
--- 
-The competent programmer is fully aware of the strictly limited size of
-his own skull; therefore he approaches the programming task in full
-humility, and among other things he avoids clever tricks like the plague.
--- Edsger W. Dijkstra
+    J
