@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbXFOO3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbXFOOa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbXFOO3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 10:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXFOO3J
+	id S1754389AbXFOOa3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 10:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbXFOOaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 10:29:09 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:57702 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751289AbXFOO3I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 10:29:08 -0400
-Message-ID: <4672A231.9000800@grupopie.com>
-Date: Fri, 15 Jun 2007 15:29:05 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Bernd Paysan <bernd.paysan@gmx.de>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+	Fri, 15 Jun 2007 10:30:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45319 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751079AbXFOOaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 10:30:21 -0400
+Date: Fri, 15 Jun 2007 16:30:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Poole <mdpoole@troilus.org>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr> <200706151014.45383.bernd.paysan@gmx.de> <46727CCF.9030905@grupopie.com> <200706151403.57178.bernd.paysan@gmx.de>
-In-Reply-To: <200706151403.57178.bernd.paysan@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070615143003.GA8775@elte.hu>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706142246.57583.dhazelton@enter.net> <878xal2a0q.fsf@graviton.dyn.troilus.org> <200706150127.18069.dhazelton@enter.net> <87sl8tzaj1.fsf@graviton.dyn.troilus.org> <20070615124039.GB21120@elte.hu> <87fy4tz8dc.fsf@graviton.dyn.troilus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87fy4tz8dc.fsf@graviton.dyn.troilus.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Paysan wrote:
-> On Friday 15 June 2007 13:49, Paulo Marques wrote:
->> I've contributed some code for the kernel (unlike yourself, AFAICT), and
->> believe me, I did so under GPL v2. The COPYING file is pretty much self
->> explanatory, so I didn't need to add any explicit license statement to
->> my code.
+
+* Michael Poole <mdpoole@troilus.org> wrote:
+
+> >> I do not suggest that copyright subsists in the signature or in the 
+> >> signing key.  Whether it does is irrelevant to the signing key 
+> >> being part of the source code (when the signature is needed for the 
+> >> binary to work properly).
+> >
+> > it is very much relevant. By admitting that the key is not part of 
+> > the "work", you have lost all moral basis to claim control over it.
 > 
-> It's not, it's a personal comment from a misunderstanding of the GPL text. 
-> It's as valid as the "closed source kernel modules are legal" comment that 
-> was there some years ago.
+> I have not admitted any such thing.  I have said the key and signature 
+> do not have separate copyright protection.  Variables named "i" in a 
+> file are not protected by copyright, but they are very much part of 
+> the source code in that file.
 
-These are not changes to the license text. These are just clarifications 
-to help people understand the license. They don't change what the 
-license already said.
+the problem with your argument is that the definition of what 
+constitutes "work" is up to copyright law, _not_ the license writer. 
+I.e. you cannot just cleverly define "source code" to include something 
+unrelated and then pretend that it's all in one work. And that's exactly 
+what the GPLv3 does: it creatively defines the hardware's key into the 
+'source code' of the software and then asks for that to be provided 
+_not_ because somehow the key derives from the software (it clearly does 
+not), but as a "compensation" for the right to redistribute! I.e. it's 
+trying to extend its scope to some item that is not part of the 
+software. See?
 
->> People seem to forget that the kernel license in COPYING *never had* the
->> "v2 or later" clause. Never. Period.
-> 
-> It's there in section 9.
-
-The section 9 is meant to explain how you select one version of the 
-license in a program without having to copy the entire license text to 
-it, i.e., in simple programs you can just put the small text, suggested 
-by FSF at the bottom of the gpl, and have the version number there, and 
-that should be enough to reference the entire text.
-
-But COPYING *is* the entire text and starts with: "
-		    GNU GENERAL PUBLIC LICENSE
-		       Version 2, June 1991"
-
-so there is no confusion about the version.
-
->>[...]
->> And people who write kernel code are perfectly aware that the kernel
->> license is GPL v2 only, and always has been (except for the initial
->> linus license).
-> 
-> Wrong.
-
-Why do you say "Wrong"? Have you contributed some code to the kernel 
-thinking that the kernel was "v2 or later", only to find out later that 
-it wasn't?
-
-In case you haven't followed previous discussions, here's a pointer:
-
-http://lkml.org/lkml/2006/9/22/176
-
-The major kernel developers (and probably most of the total number of 
-developers) are perfectly aware of the kernel license and chose GPL v2.
-
-I'm getting pretty tired of listening to people that just _know_ what I 
-should do with _my_ code. And people who treat kernel developers as 
-morons who can't read a license.
-
-We definitely need more Al Viro style comments on this thread ;)
-
--- 
-Paulo Marques - www.grupopie.com
-
-"The Mexicans have the Chupacabra. We have Al Viro. If you hear him 
-roar, just _pray_ he's about to dissect somebody elses code than yours.. 
-There is no point in running."
-
-Linus Torvalds
+	Ingo
