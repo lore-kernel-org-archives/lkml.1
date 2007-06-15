@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbXFOUcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbXFOUea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758704AbXFOUcA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758281AbXFOUa6
+	id S1758565AbXFOUea (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbXFOUeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:30:58 -0400
-Received: from keil-draco.com ([216.193.185.50]:50244 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756607AbXFOUa4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:30:56 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Adrian Bunk <bunk@stusta.de>
+	Fri, 15 Jun 2007 16:34:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53617 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753859AbXFOUeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:34:20 -0400
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Cc: "Nicolas Mailhot" <nicolas.mailhot@gmail.com>,
+       "Daniel Hazelton" <dhazelton@enter.net>, linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 16:30:42 -0400
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Carlo Wood <carlo@alinoe.com>, Bernd Paysan <bernd.paysan@gmx.de>,
-       Theodore Tso <tytso@mit.edu>, Alexandre Oliva <aoliva@redhat.com>,
-       Sean <seanlkml@sympatico.ca>, Valdis.Kletnieks@vt.edu,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org> <alpine.LFD.0.98.0706150830020.14121@woody.linux-foundation.org> <20070615162216.GG3588@stusta.de>
-In-Reply-To: <20070615162216.GG3588@stusta.de>
+References: <9a8748490706150353i452cf529oc5c0e8119f91e64e@mail.gmail.com>
+	<52052.192.54.193.51.1181907121.squirrel@rousalka.dyndns.org>
+	<9a8748490706150641s4669c7ffrb64e1f0b92e5c931@mail.gmail.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 17:34:13 -0300
+In-Reply-To: <9a8748490706150641s4669c7ffrb64e1f0b92e5c931@mail.gmail.com> (Jesper Juhl's message of "Fri\, 15 Jun 2007 15\:41\:04 +0200")
+Message-ID: <or3b0tyn22.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706151630.43499.dhazelton@enter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007 12:22:16 Adrian Bunk wrote:
-> On Fri, Jun 15, 2007 at 08:45:43AM -0700, Linus Torvalds wrote:
-> > On Fri, 15 Jun 2007, Carlo Wood wrote:
-<snip>
-> > The way "collective works" work, there are two separate copyrights: there
-> > is the copyright in the "separate contribution", which is vests
-> > ininitally in the author of that contribution (unless he signs over his
-> > copyrights, often by virtue of working for somebody else).
-> >
-> > And then there is the copyright in the "collective work", which would be
-> > me.
-> >
-> > Of course, owning coyright in the "collective work" doesn't actually give
-> > me complete control anyway. I cannot relicense things in ways that go
-> > against the rules of the individual works. But in a very real sense, yes,
-> > I actually do own a certain (*limited*) copyright over even the parts
-> > that have not been explicitly signed over to me.
-> >...
->
-> Does this include GPLv2'ed code not intended to be used in the Linux
-> kernel submitted by people other than the copyright holder for inclusion
-> in the Linux kernel?
->
-> If yes, the FSF has exactly the same rights if taking a GPLv2 driver
-> from the Linux kernel and including it in GNU Hurd.
+On Jun 15, 2007, "Jesper Juhl" <jesper.juhl@gmail.com> wrote:
 
-Of course they do. That is defined by the license. They can include it with 
-HURD, but that doesn't give them copyright to it, just the right to exercise 
-the rights granted by the license.
+> But the only thing that *actually* matters is what the license text
+> *says*.
 
+Not when the discussion is about whether GPLv3 changed the *spirit* of
+the license.
 
-DRH
+> You can talk all you want about the spirit of the license but that
+> will never change the fact that it's the actual text of the license
+> that matters in the end.
 
->
-> > 				Linus
->
-> cu
-> Adrian
-
-
+Depends, matters for what? ;-)
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
