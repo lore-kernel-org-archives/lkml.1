@@ -1,92 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbXFOVv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbXFOVxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757783AbXFOVv6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759434AbXFOVvn
+	id S1759352AbXFOVxp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbXFOVxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:51:43 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:58619 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759426AbXFOVvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:51:41 -0400
-Subject: Re: [PATCH -rt] Fix TASKLET_STATE_SCHED WARN_ON()
-From: john stultz <johnstul@us.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070615155231.GA345@tv-sign.ru>
-References: <20070615155231.GA345@tv-sign.ru>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 14:51:11 -0700
-Message-Id: <1181944271.5998.15.camel@localhost.localdomain>
+	Fri, 15 Jun 2007 17:53:38 -0400
+Received: from bee.hiwaay.net ([216.180.54.11]:34471 "EHLO bee.hiwaay.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751414AbXFOVxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:53:37 -0400
+Date: Fri, 15 Jun 2007 16:53:34 -0500
+From: Chris Adams <cmadams@hiwaay.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615215334.GA1347791@hiwaay.net>
+References: <fa.LW6a/JNOV4UxQSQYVUg4QmNGpVg@ifi.uio.no> <fa.CCSI/L3Wi9ZuPW2zfaUoy3r6NpM@ifi.uio.no> <fa.fKhdgnmUG47IDJmu9wnLXgnI9GA@ifi.uio.no>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orr6ocx635.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 19:52 +0400, Oleg Nesterov wrote:
-> john stultz wrote:
-> >
-> > The following additional patch should correct this issue. Although since
-> > we weren't actually hitting it, the issue is a bit theoretical, so I've
-> > not been able to prove it really fixes anything.
-> 
-> Could you please look at the message below? I sent it privately near a month
-> ago, but I think these problems are not fixed yet.
+Once upon a time, Alexandre Oliva  <aoliva@redhat.com> said:
+>But at least my participation in this thread was to show that GPLv3
+>does not indeed change the spirit, unlike others who missed or
+>misunderstood the spirit claimed.
 
-Hmm. Maybe you sent it to others on the cc list, as I can't find it in
-my box. But apologies anyway.
+What you continue to miss is that "the spirit of the GPL" is some
+mystical thing that is not well-defined.  You have one iterpretation,
+and this thread has shown that others have other interpretation.
 
+>It is not fair to claim that GPLv3 changes the spirit of the GPL.
 
-> ---------------------------------------------------------------------------
-> 
-> > +__tasklet_action(struct softirq_action *a, struct tasklet_struct *list)
-> > +{
-> > +	int loops = 1000000;
-> >  
-> >  	while (list) {
-> >  		struct tasklet_struct *t = list;
-> >  
-> >  		list = list->next;
-> > +		/*
-> > +		 * Should always succeed - after a tasklist got on the
-> > +		 * list (after getting the SCHED bit set from 0 to 1),
-> > +		 * nothing but the tasklet softirq it got queued to can
-> > +		 * lock it:
-> > +		 */
-> > +		if (!tasklet_trylock(t)) {
-> > +			WARN_ON(1);
-> > +			continue;
-> > +		}
-> > +
-> > +		t->next = NULL;
-> > +
-> > +		/*
-> > +		 * If we cannot handle the tasklet because it's disabled,
-> > +		 * mark it as pending. tasklet_enable() will later
-> > +		 * re-schedule the tasklet.
-> > +		 */
-> > +		if (unlikely(atomic_read(&t->count))) {
-> > +out_disabled:
-> > +			/* implicit unlock: */
-> > +			wmb();
-> > +			t->state = TASKLET_STATEF_PENDING;
-> 
-> What if tasklet_enable() happens just before this line ?
-> 
-> After the next schedule_tasklet() we have all bits set: SCHED, RUN, PENDING.
-> The next invocation of __tasklet_action() clears SCHED, but tasklet_tryunlock()
-> below can never succeed because of PENDING.
+For some people it is fair, because they have interpreted the GPLv2
+differently than others for 15 years now.  Obviously Linus feels that
+the spirit of the GPLv2 is exactly what he wanted and that it allows
+TiVo to lock down their hardware.  You obviously disagree.
 
-Yep. I've only been focusing on races in schedule/action, as I've been
-hunting issues w/ rcu. But I'll agree that the other state changes look
-problematic. I know Paul McKenney was looking at some of the other state
-changes and was seeing some potential problems as well.
-
-thanks
--john
-
+Stop telling everyone else they are wrong and you are right when they
+disagree with your intepretation.  The GPLv2 never defines "the spirit
+of the GPL" so others are free to get different meanings from it.
