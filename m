@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbXFOTXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbXFOT1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520AbXFOTXg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXFOTX3
+	id S1754810AbXFOT1D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXFOT0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:23:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60234 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751864AbXFOTX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:23:28 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Poole <mdpoole@troilus.org>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706142049.41819.dhazelton@enter.net>
-	<87fy4u0xty.fsf@graviton.dyn.troilus.org>
-	<200706142246.57583.dhazelton@enter.net>
-	<878xal2a0q.fsf@graviton.dyn.troilus.org>
-	<alpine.LFD.0.98.0706142013120.14121@woody.linux-foundation.org>
-	<20070615080252.GA28281@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 16:22:49 -0300
-In-Reply-To: <20070615080252.GA28281@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 10\:02\:52 +0200")
-Message-ID: <orejkd10qe.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 15:26:55 -0400
+Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:21669 "EHLO
+	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752436AbXFOT0y convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:26:54 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch] CFS scheduler, -v17
+Date: Fri, 15 Jun 2007 15:26:21 -0400
+Message-ID: <F1D642E5A91BC94D9504EC83AE19E6B0128A0A@ecqcmtlmail3.quebec.int.ec.gc.ca>
+In-Reply-To: <20070614224908.GA9412@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] CFS scheduler, -v17
+Thread-Index: Aceu1lIpu0Kwv3qBSCi2j53UbHmLEwArHE3w
+References: <20070614224908.GA9412@elte.hu>
+From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+To: <linux-kernel@vger.kernel.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>
+X-OriginalArrivalTime: 15 Jun 2007 19:26:22.0193 (UTC) FILETIME=[0E7BF610:01C7AF83]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+> -----Message d'origine-----
+> De : linux-kernel-owner@vger.kernel.org 
+> [mailto:linux-kernel-owner@vger.kernel.org] De la part de Ingo Molnar
+> Envoyé : 14 juin 2007 18:49
+> 
+> i'm pleased to announce release -v17 of the CFS scheduler patchset.
+>  
+> The rolled-up CFS patch against v2.6.22-rc4, v2.6.22-rc4-mm2, 
+> v2.6.21.5 or v2.6.20.13 can be downloaded from the usual place:
+> 
+>    http://people.redhat.com/mingo/cfs-scheduler/
+>  
+> -v17 includes a bigger change: the CFS-core changes in 
+> preparation of the group-scheduling feature, written Srivatsa 
+> Vaddagiri. Dmitry Adamushko provided cleanups and further 
+> generalizations to this code and the modularization of CFS 
+> has been further enhanced as a result. To users, these 
+> changes are mostly invisible.
+> 
+> Changes since -v16:
+> 
+>  - lots of core updates to support group scheduling, and related 
+>    cleanups. (Srivatsa Vaddagiri, Dmitry Adamushko)
+> 
+>  - tuned the runtime-limit up a bit, based on relentless 
+> testing done by
+>    Tobias Gerschner.
+> 
+>  - the new, precise load-calculation method for SMP balancing has been
+>    further enhanced, and is now active by default. (Dmitry Adamushko)
+> 
+>  - fix SCHED_IDLEPRIO support (based on feedback from Thomas Sattler)
+> 
+>  - further updates to /proc/sched_debug and /proc/PID/sched
+> 
+>  - more cleanups
+> 
+> As usual, any sort of feedback, bugreport, fix and suggestion 
+> is more than welcome!
 
-> Secondly, it is _at most_ a new, partial copy of existing works and 
-> hence you need the permission to copy all the works in question.
+Fedora 7 & Debian Sarge 3.1 kernels using latest CFS v17 available at http://linux-dev.qc.ec.gc.ca/
+YUM users: http://linux-dev.qc.ec.gc.ca/kernel/fedora/alt-sched.repo
 
-Wouldn't you consider the signing key as one of these existing works?
+Thnx Ingo & cie.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+> 	Ingo
+
+- vin
