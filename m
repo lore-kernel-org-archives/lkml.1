@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbXFOPGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbXFOPJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbXFOPGV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbXFOPGI
+	id S1755643AbXFOPJa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbXFOPJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:06:08 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40497 "EHLO e4.ny.us.ibm.com"
+	Fri, 15 Jun 2007 11:09:22 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56784 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755683AbXFOPGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:06:06 -0400
-Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
-	Blocksize support
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       hch@infradead.org
-In-Reply-To: <20070614150417.c73fb6b9.akpm@linux-foundation.org>
-References: <20070614193839.878721298@sgi.com>
-	 <20070614130645.cabdff1b.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
-	 <20070614143248.736312f8.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com>
-	 <20070614150417.c73fb6b9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 10:05:59 -0500
-Message-Id: <1181919959.10658.9.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
+	id S1750852AbXFOPJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:09:21 -0400
+Message-ID: <4672AB7F.7030702@garzik.org>
+Date: Fri, 15 Jun 2007 11:08:47 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, David Greaves <david@dgreaves.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH] block: always requeue !fs requests at the front
+References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org> <20070615110544.GR6149@kernel.dk> <20070615111728.GO29122@htj.dyndns.org>
+In-Reply-To: <20070615111728.GO29122@htj.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-14 at 15:04 -0700, Andrew Morton wrote:
-> > On Thu, 14 Jun 2007 14:37:33 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
-> > On Thu, 14 Jun 2007, Andrew Morton wrote:
-> > 
-> > > We want the 100% case.
-> > 
-> > Yes that is what we intend to do. Universal support for larger blocksize. 
-> > I.e. your desktop filesystem will use 64k page size and server platforms 
-> > likely much larger.
+Tejun Heo wrote:
+> SCSI marks internal commands with REQ_PREEMPT and push it at the front
+> of the request queue using blk_execute_rq().  When entering suspended
+> or frozen state, SCSI devices are quiesced using
+> scsi_device_quiesce().  In quiesced state, only REQ_PREEMPT requests
+> are processed.  This is how SCSI blocks other requests out while
+> suspending and resuming.  As all internal commands are pushed at the
+> front of the queue, this usually works.
 > 
-> With 64k pagesize the amount of memory required to hold a kernel tree (say)
-> will go from 270MB to 1400MB.   This is not an optimisation.
+> Unfortunately, this interacts badly with ordered requeueing.  To
+> preserve request order on requeueing (due to busy device, active EH or
+> other failures), requests are sorted according to ordered sequence on
+> requeue if IO barrier is in progress.
 > 
-> Several 64k pagesize people have already spent time looking at various
-> tail-packing schemes to get around this serious problem.  And that's on
-> _server_ class machines.  Large ones.  I don't think
-> laptop/desktop/samll-server machines would want to go anywhere near this.
+> The following sequence deadlocks.
+> 
+> 1. IO barrier sequence issues.
+> 
+> 2. Suspend requested.  Queue is quiesced with part or all of IO
+>    barrier sequence at the front.
+> 
+> 3. During suspending or resuming, SCSI issues internal command which
+>    gets deferred and requeued for some reason.  As the command is
+>    issued after the IO barrier in #1, ordered requeueing code puts the
+>    request after IO barrier sequence.
+> 
+> 4. The device is ready to process requests again but still is in
+>    quiesced state and the first request of the queue isn't
+>    REQ_PREEMPT, so command processing is deadlocked -
+>    suspending/resuming waits for the issued request to complete while
+>    the request can't be processed till device is put back into
+>    running state by resuming.
+> 
+> This can be fixed by always putting !fs requests at the front when
+> requeueing.
+> 
+> The following thread reports this deadlock.
+> 
+>   http://thread.gmane.org/gmane.linux.kernel/537473
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> Cc: Jenn Axboe <jens.axboe@oracle.com>
+> Cc: David Greaves <david@dgreaves.com>
 
-I'm one of the ones investigating 64 KB pagesize tail-packing schemes,
-and I believe Christoph's cleanups will reduce the intrusiveness and
-improve the readability of a tail-packing solution.  I'll add my vote in
-support of these patches.
+Acked-by: Jeff Garzik <jeff@garzik.org>
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+Thanks Tejun, you kick ass as usual.
+
+	Jeff
+
+
 
