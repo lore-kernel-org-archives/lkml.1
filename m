@@ -1,180 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbXFOGK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbXFOGMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142AbXFOGK3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 02:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbXFOGKV
+	id S1754919AbXFOGMz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 02:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXFOGMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 02:10:21 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:54480 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbXFOGKU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 02:10:20 -0400
-Message-ID: <46722D39.2040008@nttdata.co.jp>
-Date: Fri, 15 Jun 2007 15:10:01 +0900
-From: Toshiharu Harada <haradats@nttdata.co.jp>
-Organization: NTT DATA CORPORATION
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Stephen Smalley <sds@tycho.nsa.gov>
-CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [RFC] TOMOYO Linux
-References: <466FA71C.1020309@nttdata.co.jp> <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
-In-Reply-To: <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Jun 2007 06:10:03.0503 (UTC) FILETIME=[D02A6FF0:01C7AF13]
+	Fri, 15 Jun 2007 02:12:48 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:1157 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752162AbXFOGMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 02:12:47 -0400
+Date: Fri, 15 Jun 2007 08:12:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Carsten Otte <cotte@de.ibm.com>
+Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       jaredeh@gmail.com, Christian Borntraeger <cborntra@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch] xip sendfile removal
+Message-ID: <20070615061258.GL6149@kernel.dk>
+References: <1181835707.7222.13.camel@cotte.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181835707.7222.13.camel@cotte.boeblingen.de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+On Thu, Jun 14 2007, Carsten Otte wrote:
+> This patch removes xip_file_sendfile, the sendfile implementation for
+> xip without replacement. Those customers that use xip on s390 are not
+> using sendfile() as far as we know, and so far s390 is the only platform
+> this could potentially be used on so far.
+> Having sendfile is not a popular feature for execute in place file
+> systems, however we have a working implementation of splice_read() based
+> on fs/splice.c if anyone asks for it.
+> At this point in time, it does not seem preferable to merge
+> splice_read() for xip because it causes extra maintenence effort due to
+> code duplication and it requires struct page behind the xip memory
+> segment. We'd like to get rid of that in favor of supporting flash based
+> embedded platforms (Monta Vista work) soon.
 
-Thank you for your interests and comment.
-I'm beginning to feel that you might be misunderstanding
-my message. Let me explain.
+Thanks Carsten, as discussed in private I will fold this in with the
+splice series that removes sendfile. I'll post the splice ext2 xip patch
+here for reference, so that it'll at least always be in the archives :-)
 
-Stephen Smalley wrote:
-> On Wed, 2007-06-13 at 17:13 +0900, Toshiharu Harada wrote:
->> A couple of years ago, we tried to build a tool to generate
->> SELinux policy (*1). To do that, we had to gather the access
->> requests information. So we researched a profiling method and
->> got to the idea of having a process to store its invocation
->> history information (or ancestors).
->>
->> Here are examples:
->> /bin/bash process invoked from mingetty: /sbin/mingetty /bin/bash
->> /bin/bash process invoked from sshd: /usr/sbin/sshd /bin/bash
->> /bin/bash process invoked from /bin/bash which was invoked from sshd: /usr/sbin/sshd /bin/bash /bin/bash
+>From 7bb62072ffde311a9efd730fb9e004f016e776e5 Mon Sep 17 00:00:00 2001
+From: Carsten Otte <cotte@de.ibm.com>
+Date: Tue, 12 Jun 2007 08:48:48 +0200
+Subject: [PATCH] ext2 xip: replace sendfile with splice
 
-"The idea":
-If we let process to inherit the name of its ancestors (usualy starts
-from /sbin/init), then Linux kernel will be able to know ancestors
-for each process.
+This patch removes xip_file_sendfile, and replaces it with
+xip_file_splice_read. It passes the ltp testcase on a ext2 filesystem
+that is mounted -o xip,rw.
+I am not exactly happy with this patch, because it introduces waaaay too
+much code duplication from fs/splice.c. I want to dig into making
+generic_file_splice_read able to deal with xip files aswell. That would
+allow to do the same for splice write.
+If I cannot find a nicer solution, I'd vote for removing sendfile from
+filemap_xip without replacement: a xip filesystem is intended to be used
+for executables and libraries. This content is very rarely subject to
+splice.
 
-"Above examples" are:
-examples of how we can distinguish the same /bin/bash processes.
+Signed-off-by: Carsten Otte <cotte@de.ibm.com>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ fs/ext2/file.c     |    2 +-
+ include/linux/fs.h |    4 +-
+ mm/filemap_xip.c   |  206 ++++++++++++++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 192 insertions(+), 20 deletions(-)
 
-> Why can't you do this via SELinux domain transitions?  That lets you do
+diff --git a/fs/ext2/file.c b/fs/ext2/file.c
+index 072a190..5f4a17c 100644
+--- a/fs/ext2/file.c
++++ b/fs/ext2/file.c
+@@ -70,7 +70,7 @@ const struct file_operations ext2_xip_file_operations = {
+ 	.open		= generic_file_open,
+ 	.release	= ext2_release_file,
+ 	.fsync		= ext2_sync_file,
+-	.sendfile	= xip_file_sendfile,
++	.splice_read	= xip_file_splice_read,
+ };
+ #endif
+ 
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 61ebf32..a5bf63e 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1764,13 +1764,11 @@ extern int nonseekable_open(struct inode * inode, struct file * filp);
+ #ifdef CONFIG_FS_XIP
+ extern ssize_t xip_file_read(struct file *filp, char __user *buf, size_t len,
+ 			     loff_t *ppos);
+-extern ssize_t xip_file_sendfile(struct file *in_file, loff_t *ppos,
+-				 size_t count, read_actor_t actor,
+-				 void *target);
+ extern int xip_file_mmap(struct file * file, struct vm_area_struct * vma);
+ extern ssize_t xip_file_write(struct file *filp, const char __user *buf,
+ 			      size_t len, loff_t *ppos);
+ extern int xip_truncate_page(struct address_space *mapping, loff_t from);
++extern ssize_t xip_file_splice_read(struct file *, loff_t *, struct pipe_inode_info *, size_t, unsigned int);
+ #else
+ static inline int xip_truncate_page(struct address_space *mapping, loff_t from)
+ {
+diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
+index fa360e5..f1f3134 100644
+--- a/mm/filemap_xip.c
++++ b/mm/filemap_xip.c
+@@ -14,6 +14,7 @@
+ #include <linux/uio.h>
+ #include <linux/rmap.h>
+ #include <linux/sched.h>
++#include <linux/splice.h>
+ #include <asm/tlbflush.h>
+ #include "filemap.h"
+ 
+@@ -92,7 +93,11 @@ do_xip_mapping_read(struct address_space *mapping,
+ 		if (unlikely(IS_ERR(page))) {
+ 			if (PTR_ERR(page) == -ENODATA) {
+ 				/* sparse */
+-				page = ZERO_PAGE(0);
++				page = xip_sparse_page();
++				if (!page) {
++					desc->error = -ENOMEM;
++					goto out;
++				}
+ 			} else {
+ 				desc->error = PTR_ERR(page);
+ 				goto out;
+@@ -159,27 +164,196 @@ xip_file_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
+ }
+ EXPORT_SYMBOL_GPL(xip_file_read);
+ 
+-ssize_t
+-xip_file_sendfile(struct file *in_file, loff_t *ppos,
+-	     size_t count, read_actor_t actor, void *target)
++static int xip_pipe_buf_steal(struct pipe_inode_info *pipe,
++				   struct pipe_buffer *buf)
+ {
+-	read_descriptor_t desc;
++	return 1;
++}
+ 
+-	if (!count)
++static void xip_pipe_buf_release(struct pipe_inode_info *pipe,
++					struct pipe_buffer *buf)
++{
++	page_cache_release(buf->page);
++}
++
++static const struct pipe_buf_operations xip_pipe_buf_ops = {
++	.can_merge = 0,
++	.pin = generic_pipe_buf_pin,
++	.get = generic_pipe_buf_get,
++	.map = generic_pipe_buf_map,
++	.unmap = generic_pipe_buf_unmap,
++	.release = xip_pipe_buf_release,
++	.steal = xip_pipe_buf_steal,
++};
++
++static int
++__xip_file_splice_read(struct file *in, loff_t *ppos,
++			   struct pipe_inode_info *pipe, size_t len,
++			   unsigned int flags)
++{
++	struct address_space *mapping = in->f_mapping;
++	unsigned int loff, nr_pages;
++	struct page *pages[PIPE_BUFFERS];
++	struct partial_page partial[PIPE_BUFFERS];
++	struct page *page;
++	pgoff_t index, end_index;
++	loff_t isize;
++	size_t total_len;
++	int error, page_nr;
++	struct splice_pipe_desc spd = {
++		.pages = pages,
++		.partial = partial,
++		.flags = flags,
++		.ops = &xip_pipe_buf_ops,
++	};
++
++	index = *ppos >> PAGE_CACHE_SHIFT;
++	loff = *ppos & ~PAGE_CACHE_MASK;
++	nr_pages = (len + loff + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++
++	if (nr_pages > PIPE_BUFFERS)
++		nr_pages = PIPE_BUFFERS;
++
++	error = 0;
++	total_len = 0;
++
++	spd.nr_pages = 0;
++	while (spd.nr_pages < nr_pages) {
++		page = mapping->a_ops->get_xip_page(mapping,
++			index*(PAGE_SIZE/512), 0);
++		if (!page) {
++			error = -EIO;
++			break;
++		}
++		if (unlikely(IS_ERR(page))) {
++			if (PTR_ERR(page) == -ENODATA) {
++				/* sparse */
++				page = xip_sparse_page();
++				if (!page) {
++					error = -ENOMEM;
++					break;
++				}
++			} else {
++				error = PTR_ERR(page);
++				break;
++			}
++		}
++		page_cache_get(page);
++		pages[spd.nr_pages++] = page;
++		index++;
++	}
++
++	/*
++	 * Now loop over the map and fill in the partial map
++	 */
++	index = *ppos >> PAGE_CACHE_SHIFT;
++	nr_pages = spd.nr_pages;
++	spd.nr_pages = 0;
++	for (page_nr = 0; page_nr < nr_pages; page_nr++) {
++		unsigned int this_len;
++
++		if (!len)
++			break;
++
++		/*
++		 * this_len is the max we'll use from this page
++		 */
++		this_len = min_t(unsigned long, len, PAGE_CACHE_SIZE - loff);
++		page = pages[page_nr];
++		isize = i_size_read(mapping->host);
++		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++		if (unlikely(!isize || index > end_index))
++			break;
++
++		/*
++		 * if this is the last page, see if we need to shrink
++		 * the length and stop
++		 */
++		if (end_index == index) {
++			unsigned int plen;
++
++			/*
++			 * max good bytes in this page
++			 */
++			plen = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
++			if (plen <= loff)
++				break;
++
++			/*
++			 * force quit after adding this page
++			 */
++			this_len = min(this_len, plen - loff);
++			len = this_len;
++		}
++
++		partial[page_nr].offset = loff;
++		partial[page_nr].len = this_len;
++		len -= this_len;
++		loff = 0;
++		spd.nr_pages++;
++		index++;
++	}
++
++	if (spd.nr_pages)
++		return splice_to_pipe(pipe, &spd);
++
++	return error;
++}
++
++/**
++ * xip_file_splice_read - splice data from file to a pipe
++ * @in:		file to splice from
++ * @pipe:	pipe to splice to
++ * @len:	number of bytes to splice
++ * @flags:	splice modifier flags
++ *
++ * derived from generic_file_splice_read in fs/splice_read.c
++ */
++ssize_t xip_file_splice_read(struct file *in, loff_t *ppos,
++				 struct pipe_inode_info *pipe, size_t len,
++				 unsigned int flags)
++{
++	ssize_t spliced;
++	int ret;
++	loff_t isize, left;
++
++	BUG_ON(!in->f_mapping->a_ops->get_xip_page);
++
++	isize = i_size_read(in->f_mapping->host);
++	if (unlikely(*ppos >= isize))
+ 		return 0;
+ 
+-	desc.written = 0;
+-	desc.count = count;
+-	desc.arg.data = target;
+-	desc.error = 0;
++	left = isize - *ppos;
++	if (unlikely(left < len))
++		len = left;
+ 
+-	do_xip_mapping_read(in_file->f_mapping, &in_file->f_ra, in_file,
+-			    ppos, &desc, actor);
+-	if (desc.written)
+-		return desc.written;
+-	return desc.error;
++	ret = 0;
++	spliced = 0;
++	while (len) {
++		ret = __xip_file_splice_read(in, ppos, pipe, len, flags);
++
++		if (ret < 0)
++			break;
++		else if (!ret) {
++			if (spliced)
++				break;
++			if (flags & SPLICE_F_NONBLOCK) {
++				ret = -EAGAIN;
++				break;
++			}
++		}
++
++		*ppos += ret;
++		len -= ret;
++		spliced += ret;
++	}
++
++	if (spliced)
++		return spliced;
++
++	return ret;
+ }
+-EXPORT_SYMBOL_GPL(xip_file_sendfile);
++EXPORT_SYMBOL(xip_file_splice_read);
+ 
+ /*
+  * __xip_unmap is invoked from xip_unmap and
+-- 
+1.5.2.1.174.gcd03
 
-What do you mean by "this" here?
-I was not talking about MAC nor policy definitions.
 
-> it by equivalence class rather than per-binary, and let's you just
-> encode the security-relevant parts of the "invocation history" aka call
-> chain.  For example, the above could be expressed in SELinux policy
-> already as:
-
-I might have confused you and I am sorry for that.
-The above three lines are not TOMOYO Linux plicy.
-
-> 	domain_auto_trans(getty_t, shell_exec_t, local_shell_t)
-> 	domain_auto_trans(sshd_t, shell_exec_t, remote_shell_t)
-> 	domain_auto_trans(remote_shell_t, shell_exec_t, remote_subshell_t)
-> or whatever you like.  But you don't have to keep extending it
-> indefinitely when you don't need to distinguish in policy, so you might
-> choose to entirely omit the last one, and just have it stay in
-> remote_shell_t.
-
-In your SELinux policy examples, someone must write down them.
-To do that someone must know what will happen beforehands.
-But if you use TOMOYO Linux, you'll get domain transition
-information easily. The example of the result can be found here:
-
-http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/?v=policy-sample
-(choose whatever distribution and open the link for
-"domain_policy.txt")
-
-For example, from http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/centos4.4/domain_policy.txt?v=policy-sample#L4564
-you will know:
-
-/bin/cp which was invoked from
-   /usr/bin/makewhatis which was invoked from
-     /etc/cron.weekly/00-makewhatis.cron which was invoked from
-       /usr/bin/run-parts which was invoked from
-         /bin/bash which was invoked from
-           /usr/sbin/crond
-
-that /bin/cp process needs to
-
-read /dev/null, /etc/selinux/config, /proc/filesystems, and
-write /var/cache/man/whatis, and truncate /var/cache/man/whatis.
-
-We implemnted the above mentioned idea and TOMOYO Linux is a
-sample system which use distinguished process as a "domain".
-In some sense it is a system analyzing tool.
-
-Again, we intended to share the idea to people on the lkml.
-MAC (TOMOYO Linux) is just a sample.
-Any feedback will be appreciated.
-
->> It seemed to us that this clarification would be familiar to
->> users/administrators and could be used for various purposes.
->> We did implement this by making use of the Linux's traditional
->> fork & exec mechanisms, and built a pathname-based MAC using
->> this implementation. We named the result as "TOMOYO Linux"
->> and made it open source at SourceForge.jp (*2).
->>
->> TOMOYO Linux kernel keeps track of process invocation and
->> distinguishes every different process invocation history as a "domain".
->> TOMOYO Linux can accumulate the accesses requests for each domain.
->>
->> TOMOYO Linux has a utility called "ccstree". It prints the invocation
->> history for each process in addition to the output of "pstree" command:
->>
->> [root@tomoyo ~]# ccstree
->> init (1) <kernel> /sbin/init
->>    +- udevd (388) <kernel> /sbin/udevd
->>    ...
->>    +- automount (1970) <kernel> /etc/rc.d/init.d/autofs /usr/sbin/automount
->>    +- acpid (1993) <kernel> /etc/rc.d/init.d/acpid /bin/bash /usr/sbin/acpid
->>    +- cupsd (2008) <kernel> /etc/rc.d/init.d/cups /bin/bash /usr/sbin/cupsd
->>    +- sshd (2026) <kernel> /usr/sbin/sshd
->>    +- sshd (2269) <kernel> /usr/sbin/sshd
->>      +- bash (2271) <kernel> /usr/sbin/sshd /bin/bash
->>        +- ccstree (15125) <kernel> /usr/sbin/sshd /bin/bash /root/ccstools/ccstree
->>
->>    (symbol, "<kernel>" indicates a virtual base.)
->>
->> We had a presentation and a tutorial session of TOMOYO Linux
->> version 1.4 at the ELC2007 (*3). Version 1.4.1 is the latest and
->> has a rich set of MAC functions for files, networking, and
->> capabilities and so on. For historical reasons, it is not using
->> LSM or auditd. We decided to share this idea with the Linux community
->> and totally rewrote the code. The result was TOMOYO Linux 2.0,
->> which is now using LSM and auditd. To make discussion smooth,
->> we cut off MAC functions other than for files.
->>
->> We are posting this message because we believe that this process
->> invocation history idea might be a useful addition to Linux.
->> Please take some time to see what this small piece of software can do
->> with your own eyes. Your feedback will be greatly appreciated.
->>
->> If some of you are interested in TOMOYO Linux as a method for
->> access control, please be advised to try full-featured version 1.4.1 (*4).
->> It is quite easy to install and maintain TOMOYO Linux, but it should
->> not be considered as a replacement of SELinux.
->>
->> All right, that's almost everything. Please visit the following
->> URL for the code and documents:
->>    http://tomoyo.sourceforge.jp/wiki-e/
->> If you want to see the code first, then:
->>    http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/security/tomoyo/?v=linux-2.6.21.3-tomoyo-2.0
->>
->> We will have a TOMOYO Linux BOF session at the OLS2007 (*5).
->> Please come along and let's talk.
->>
->> Thank you.
->>
->> Toshiharu Harada (project manager)
->> Tetsuo Handa (main architect, version 1 author)
->> Kentaro Takeda (version 2.0 author)
->> NTT DATA CORPORATION
->> http://www.nttdata.co.jp/en/index.html
->>
->> *1) http://sourceforge.jp/projects/tomoyo/document/nsf2003-en.pdf
->> *2) http://tomoyo.sourceforge.jp/
->> *3) http://www.celinux.org/elc2007/
->>      http://tree.celinuxforum.org/CelfPubWiki/ELC2007Presentations
->> *4) http://tomoyo.sourceforge.jp/en/1.4.1/
->> *5) http://www.linuxsymposium.org/2007/
+-- 
+Jens Axboe
 
