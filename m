@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbXFOSLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbXFOSQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbXFOSLc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXFOSLY
+	id S1753579AbXFOSQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbXFOSP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:11:24 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:44032 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbXFOSLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:11:23 -0400
-Message-ID: <4672D648.7020700@dgreaves.com>
-Date: Fri, 15 Jun 2007 19:11:20 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Michael Gerdau <mgd@technosis.de>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706142049.41819.dhazelton@enter.net> <200706150825.15491.mgd@technosis.de> <200706150520.15086.dhazelton@enter.net> <46726793.1020206@dgreaves.com> <alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 15 Jun 2007 14:15:56 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:43976 "EHLO jazzdrum.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751204AbXFOSPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 14:15:55 -0400
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+	pathname matching
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: Greg KH <greg@kroah.com>, Crispin Cowan <crispin@novell.com>,
+       Andreas Gruenbacher <agruen@suse.de>, Pavel Machek <pavel@ucw.cz>,
+       jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <230452.63481.qm@web36604.mail.mud.yahoo.com>
+References: <230452.63481.qm@web36604.mail.mud.yahoo.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Fri, 15 Jun 2007 14:15:30 -0400
+Message-Id: <1181931330.17547.866.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Fri, 2007-06-15 at 11:01 -0700, Casey Schaufler wrote:
+> --- Greg KH <greg@kroah.com> wrote:
 > 
-> On Fri, 15 Jun 2007, David Greaves wrote:
->> Surely it's more:
->>   bad == go away and don't use future improvements to our software anymore
->> please.
->> ??
 > 
-> Well, with the understanding that I don't think that what Tivo did was bad 
-> in the first place, let me tackle that question *anyway*.
+> > A daemon using inotify can "instantly"[1] detect this and label the file
+> > properly if it shows up.
 > 
-> The answer is: Not necessarily.
-I do agree with what you say here. Maybe a summary:
-Babies, bathwater...
-When you have a hammer (license) everything looks like a nail...
+> In our 1995 B1 evaluation of Trusted Irix we were told in no
+> uncertain terms that such a solution was not acceptable under
+> the TCSEC requirements. Detection and relabel on an unlocked
+> object creates an obvious window for exploitation. We were told
+> that such a scheme would be considered a design flaw.
+> 
+> I understand that some of the Common Criteria labs are less
+> aggressive regarding chasing down these issues than the NCSC
+> teams were. It might not prevent an evaluation from completing
+> today. It is still hard to explain why it's ok to have a file
+> that's labeled incorrectly _even briefly_. It is the systems
+> job to ensure that that does not happen.
 
-> See? You don't actually have to like Tivo to see downsides to trying to 
-> stop them. Because these kinds of things have consequences *outside* of 
-> just stopping Tivo.
+Um, Casey, he is talking about how to emulate AppArmor behavior on a
+label-based system like SELinux, not meeting B1 or LSPP or anything like
+that (which AppArmor can't do regardless).  As far as general issue
+goes, if your policy is configured such that the new file gets the most
+restrictive label possible at creation time and then the daemon relabels
+it to a less restrictive label if appropriate, then there is no actual
+window of exposure.
 
-My concern is around embedded type systems and maybe even the 'trusted' 
-frameworks etc.
+Also, there is such a daemon, restorecond, in SELinux (policycoreutils)
+although we avoid relying on it for anything security-critical
+naturally.  And one could introduce the named type transition concept
+that has been discussed in this thread without much difficulty to
+selinux.
 
-I _think_ I can see a completely opensource system that the end user cannot 
-modify _in any way_. Which kinda defeats the point (to me) of opensource.
-
-This 5 minute design undoubtedly has flaws but it shows a direction:
-A basically standard 'De11' PC with some flash.
-A Tivoised boot system so only signed kernels boot.
-A modified kernel that only runs (FOSS) executables whose signed hash lives in 
-the flash.
-
-Do we (you) _want_ to prevent this?
-
-Do we trust in 'the market' to prevent this?
-
-Do we use license tools?
-
-David
+-- 
+Stephen Smalley
+National Security Agency
 
