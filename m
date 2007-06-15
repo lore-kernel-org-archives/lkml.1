@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbXFOPGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbXFOPGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbXFOPGE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbXFOPFy
+	id S1756654AbXFOPGp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXFOPGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:05:54 -0400
-Received: from mx.laposte.net ([81.255.54.16]:45924 "EHLO mx.laposte.net"
+	Fri, 15 Jun 2007 11:06:34 -0400
+Received: from saeurebad.de ([85.214.36.134]:48559 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165AbXFOPFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:05:53 -0400
-Message-ID: <49716.192.54.193.51.1181907922.squirrel@rousalka.dyndns.org>
-In-Reply-To: <64689.192.54.193.51.1181901773.squirrel@rousalka.dyndns.org>
-References: <64689.192.54.193.51.1181901773.squirrel@rousalka.dyndns.org>
-Date: Fri, 15 Jun 2007 13:45:22 +0200 (CEST)
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
-To: "Daniel Hazelton" <dhazelton@enter.net>
-Cc: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.10a-1.fc7
+	id S1753134AbXFOPGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:06:33 -0400
+Date: Fri, 15 Jun 2007 17:06:18 +0200
+From: Johannes Weiner <hannes-kernel@saeurebad.de>
+To: linux-kernel@vger.kernel.org
+Cc: Tom Robinson <thomas.robinson@gmail.com>, linux-mm@kvack.org,
+       Stephen Tweedie <sct@redhat.com>
+Subject: Re: PROBLEM: kernel BUG at mm/swap_state.c:78! (v2.6.21 under vmware)
+Message-ID: <20070615150618.GA19912@saeurebad.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	Tom Robinson <thomas.robinson@gmail.com>, linux-mm@kvack.org,
+	Stephen Tweedie <sct@redhat.com>
+References: <745af2c30706140842w5eabdf1bjdcc5fd7c2a92b77e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: multipart/mixed; boundary="vtzGhvizbBRQ85DL"
+Content-Disposition: inline
+In-Reply-To: <745af2c30706140842w5eabdf1bjdcc5fd7c2a92b77e@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> And, as I've taken the time to explain to you, lacking any clear
-> statement, written at the exact same time as the license, a
-statement of
-> intent or spirit cannot have any real legal weight when the text of a
-> license is finally decided upon.
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Fortunately the Law recognizes humans are not computers, natural
-langage is not unambiguous binary code, so statements of intent *have*
-legal value when a legal text is open to interpretations.
+Hi,
 
-That's why ten-line law paragraphs are published with the hundreds of
-pages of parliamentary discussions on them, which the judge will
-consider if there's any doubt in his mind.
+I am not sure if this patch is a fix or a hiding (or leads to more trouble at
+all), so, could PLEASE anyone with knowledge about the code see over it?
+Thanks :)
 
--- 
-Nicolas Mailhot
+shrink_page_list() should not pass a private page to add_to_swap().
+Is it a bug if the page is private when reaching this point? I do not think
+so, because a few lines below is a condition where private pages are handled
+legally.
 
+
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="do-not-swap-private-pages.patch"
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 1be5a63..92573b7 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -489,7 +489,8 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		 * Anonymous process memory has backing store?
+ 		 * Try to allocate it some swap space here.
+ 		 */
+-		if (PageAnon(page) && !PageSwapCache(page))
++		if (PageAnon(page) && !PageSwapCache(page) &&
++		    !PagePrivate(page))
+ 			if (!add_to_swap(page, GFP_ATOMIC))
+ 				goto activate_locked;
+ #endif /* CONFIG_SWAP */
+
+--vtzGhvizbBRQ85DL--
