@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbXFOHQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbXFOHR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970AbXFOHQm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 03:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXFOHQd
+	id S1754611AbXFOHR5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 03:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbXFOHRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 03:16:33 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:28909 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbXFOHQc (ORCPT
+	Fri, 15 Jun 2007 03:17:50 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:60680
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752333AbXFOHRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 03:16:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=il1EppkBV5rtZbP0VupL8Ywy1tPdJPIz6vpPybSpV9IZi4ZslokLyAAvhX+Qe+sdX7TslpGx8QOtqoN9HZ2eBkl1US9L5ePL+kn0FCIm02CSweZLs5ziEBlSmOeFRMGKXDrF9bVwqi/1mm31CVMK/FynV8v2XqYi4Due8qq15PA=
-Message-ID: <787b0d920706150016n3e941a4fj4fc2e864a7e6f7d7@mail.gmail.com>
-Date: Fri, 15 Jun 2007 03:16:26 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       takedakn@nttdata.co.jp, hch@infradead.org
-Subject: Re: [TOMOYO 5/9] Memory and pathname management functions.
+	Fri, 15 Jun 2007 03:17:49 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Alexandre Oliva <aoliva@redhat.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 03:16:52 -0400
+User-Agent: KMail/1.9.6
+Cc: Florin Malita <fmalita@gmail.com>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <466A3EC6.6030706@netone.net.tr> <20070614234507.GA3860@nostromo.devel.redhat.com> <or1wge6jii.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or1wge6jii.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200706150316.56556.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig writes:
-> On Thu, Jun 14, 2007 at 04:36:09PM +0900, Kentaro Takeda wrote:
-
->> We limit the maximum length of any string data (such as
->> domainname and pathnames) to TOMOYO_MAX_PATHNAME_LEN
->> (which is 4000) bytes to fit within a single page.
->>
->> Userland programs can obtain the amount of RAM currently
->> used by TOMOYO from /proc interface.
+On Thursday 14 June 2007 22:25:57 Alexandre Oliva wrote:
+> On Jun 14, 2007, Bill Nottingham <notting@redhat.com> wrote:
+> > Alexandre Oliva (aoliva@redhat.com) said:
+> >> And since the specific implementation involves creating a derived work
+> >> of the GPLed kernel (the signature, or the signed image, or what have
+> >> you)
+> >
+> > Wait, a signed filesystem image that happens to contain GPL code
+> > is now a derived work? Under what sort of interpretation does *that*
+> > occur?
 >
-> Same NACK for this as for AppArmor, on exactly the same grounds.
-> Please stop wasting your time on pathname-based non-solutions.
+> Is the signature not derived from the bits in the GPLed component, as
+> much as it is derived from the key?
 
-This issue is a very very small wart on an otherwise fine idea.
-It's really not worth getting bothered by. Truth is, big giant
-pathnames break lots of stuff already, both kernel and userspace.
+Actually, you can't copyright, trademark, or patent a number.  In order to 
+copyright something it has to have some creative element.  You also can't 
+copyright (or trademark) book titles.  So no, last I checked you can't 
+copyright an MD5sum or SHA1sum.
 
-Just look in /proc for some nice juicy kernel breakage:
-cwd, exe, fd/*, maps, mounts, mountstats, root, smaps
+I vaguely recall somebody dredging around for the smallest thing there was a 
+legal precedent explicitly affirming you could copyright it, and it was a 
+haiku.  So they put an uncompressed ascii haiku in their protocol...
 
-So, is that a NACK for the /proc filesystem too? :-)
+Now if you sign the executable binary, then the binary (as a whole) is a 
+derivative work of your copyrighted code etc. ad nauseum pluribus unum and so 
+on.  And THAT is due to Apple vs Franklin in 1983:
+  http://www.internetlegal.com/impactof.htm
+Before which copyright was only guaranteed to apply to source code, not to 
+binaries (which are basically big numbers).  That's why everybody distributed 
+source code before then: it was the only thing they knew you could enforce a 
+copyright on...
 
-We even limit filenames to 255 chars; just the other day
-a Russian guy was complaining that his monstrous filenames
-on a vfat filesystem could not be represented in UTF-8 mode.
+IBM's "Object code only" initiative happened around the same time...
+  http://landley.net/history/mirror/ibm/oco.html
+Along with the AT&T breakup commercializing Unix, the launch of the GNU 
+project, and the general rise of "shrinkwrap" software.
 
-Both TOMOYO and AppArmor are good ideas. At minimum, one of
-them ought to be accepted. My preference would be TOMOYO,
-having origins untainted by Novell's Microsoft dealings.
+(There's this marvelous book called "Legal battles that shaped the computer 
+industry" by Lawrence D. Graham, devotes a few pages to Apple vs Franklin.  
+Franklin honestly didn't think Apple's binary ROMs were copyrightable.  Just 
+as in a 1980 interview with Bill Gates, he couldn't stop somebody from 
+printing a book with an annotated printout of the TRS-80 ROMs Microsoft had a 
+copyright to.  He sounded kind of pissed about it, actually.  Also young and 
+whiny:
+Transcript:
+  http://slashdot.org/features/00/01/20/1316236.shtml
+Audio:
+  http://landley.net/history/mirror/ms/gates.mp3
+)
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
