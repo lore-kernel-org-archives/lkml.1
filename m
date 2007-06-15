@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbXFONOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbXFONS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756251AbXFONOp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbXFONOi
+	id S1755246AbXFONS3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXFONSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:14:38 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41885 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753450AbXFONOi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:14:38 -0400
-Date: Fri, 15 Jun 2007 14:19:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Bernd Paysan" <bernd.paysan@gmx.de>,
-       "Alexandre Oliva" <aoliva@redhat.com>,
-       "Paulo Marques" <pmarques@grupopie.com>,
-       "Al Viro" <viro@ftp.linux.org.uk>, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615141923.63fd5cdd@the-village.bc.nu>
-In-Reply-To: <d120d5000706150603w2f70431ei5a2ae461ac3d0ff4@mail.gmail.com>
-References: <466A3EC6.6030706@netone.net.tr>
-	<or4plae61r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<d120d5000706141155s4e9caceci6958ceceebad6c73@mail.gmail.com>
-	<200706151048.57762.bernd.paysan@gmx.de>
-	<d120d5000706150546k6a31f831tb496bc73bbaa553@mail.gmail.com>
-	<20070615135739.14862d6d@the-village.bc.nu>
-	<d120d5000706150603w2f70431ei5a2ae461ac3d0ff4@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 15 Jun 2007 09:18:22 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47618 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752654AbXFONSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:18:21 -0400
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200706151131.38429.arnd@arndb.de>
+References: <200706150159.l5F1xNgM000459@hera.kernel.org>
+	 <1181897905.26853.66.camel@localhost.localdomain>
+	 <200706151128.39566.arnd@arndb.de>  <200706151131.38429.arnd@arndb.de>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 23:16:43 +1000
+Message-Id: <1181913403.26853.76.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> GPL itself does not. But the author(s) may when they specify "any
-> later version", "dual GPL/BSD", etc. In this case (IMHO) distributor
-> in fact relicenses the code and may reduce license to sipmply BSD or
-> simply GPL, or "GPL v3 from now on". To "restore" license you would
-> need to go upstream and get the code from there.
+On Fri, 2007-06-15 at 11:31 +0200, Arnd Bergmann wrote:
+> One common problem with 32 bit system call and ioctl emulation
+> is the different alignment rules between i386 and 64 bit machines.
+> A number of drivers work around this by marking the compat
+> structures as 'attribute((packed))', which is not the right
+> solution because it breaks all the non-x86 architectures that
+> want to use the same compat code.
+> 
+> Hopefully, this patch improves the situation, it introduces two
+> new types, compat_u64 and compat_s64. These are defined on all
+> architectures to have the same size and alignment as the 32 bit
+> version of u64 and s64.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-I don't see anything in the GPL that permits a redistributor to change
-the licence a piece of code is distributed under. If my code is GPL v2 or
-later you cannot take away the "or later" unless explicitly granted
-powers by the author to vary the licence.
+Sounds good
 
-What you most certainly can do is modify it and decide your modifications
-are GPLv3 only thus creating a derived work which is GPLv3 only. However
-anyone receiving your modified version and reverting the modifications is
-back at v2 or later.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Alan
+
