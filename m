@@ -1,254 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbXFOREt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbXFORFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752246AbXFOREt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXFOREj
+	id S1752653AbXFORFb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXFORFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:04:39 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48257 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750930AbXFOREi (ORCPT
+	Fri, 15 Jun 2007 13:05:19 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:48074 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbXFORFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:04:38 -0400
-Date: Fri, 15 Jun 2007 10:03:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michael Gerdau <mgd@technosis.de>
-cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <200706150825.15491.mgd@technosis.de>
-Message-ID: <alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
- <orabv29qtk.fsf@oliva.athome.lsd.ic.unicamp.br> <200706142049.41819.dhazelton@enter.net>
- <200706150825.15491.mgd@technosis.de>
+	Fri, 15 Jun 2007 13:05:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=j+nzLdG/U+M6z/2isNr5nSV2cXkyaH26Ziqvx0p30LpaSh4UshVX6zeUuouJN6ZGf+sBXXfJLqGjmeuQPCd/zw0LzXWiiv/zzLyfGQAv7ZseKt29epvyccxyZQk4xVKfqap5Z+8iGA99J9zaD3vl4tooewcIZaOyg1FX7CRNckM=
+Message-ID: <4672C6BA.6020702@gmail.com>
+Date: Fri, 15 Jun 2007 13:04:58 -0400
+From: Florin Malita <fmalita@gmail.com>
+User-Agent: Thunderbird 2.0b2 (X11/20070116)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Michael Poole <mdpoole@troilus.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>	<200706142246.57583.dhazelton@enter.net>	<878xal2a0q.fsf@graviton.dyn.troilus.org>	<200706150127.18069.dhazelton@enter.net>	<87sl8tzaj1.fsf@graviton.dyn.troilus.org>	<20070615124039.GB21120@elte.hu>	<87fy4tz8dc.fsf@graviton.dyn.troilus.org>	<20070615143003.GA8775@elte.hu>	<87zm31xo3q.fsf@graviton.dyn.troilus.org> <4672B5F6.706@gmail.com> <87r6odxkbc.fsf@graviton.dyn.troilus.org>
+In-Reply-To: <87r6odxkbc.fsf@graviton.dyn.troilus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/15/2007 12:18 PM, Michael Poole wrote:
+> Florin Malita writes:
+>
+>   
+>> On 06/15/2007 10:56 AM, Michael Poole wrote:
+>>     
+>>> The GPL cares about the key
+>>> used to generate an integral part of the executable form of the GPLed
+>>> work.  
+>>>       
+>> GLPv2 doesn't: why do you think the digital signature is an integral
+>> part of the executable? It can be a totally separate blob, distributed
+>> via a separate channel and even stored at a different location than
+>> the executable. Does it still look like an integral part of the
+>> executable to you then?
+>>     
+>
+> Yes.  If I cut a book in half and store the halves separately, does
+> the second half become an independent work?  
 
+Except in this case you're not touching the book at all. If you write a 
+review for a book (much better analogy methinks), then your review is 
+obviously not an integral part of the book even though it's based on its 
+content.
 
-On Fri, 15 Jun 2007, Michael Gerdau wrote:
-> 
-> I find it obvious that the GPL was meant to prevent such to be possible.
-> This is what I mean by the "the spirit of the GPL".
+> The integral-ness is a
+> function of how the thing is created and how it functions, not how it
+> is stored.  If you need part B for part A to execute as intended, then
+> part A is not a complete work in itself.
 
-Umm. It may well have been meant by *rms*. But your argument fatally falls 
-down on the fact that rms has had *nothing* to do with the Linux kernel.
+Being an integral part (as in combined or derived work) has nothing to 
+do with usability. There are many other bits and pieces your executable 
+needs in order to function properly (or at all) but that doesn't make 
+your CPU microcode & electricity provider an integral part of the 
+program, does it?
 
-> Living in germany I'm also used to the courts valueing the intention over
-> the exact wording of a contract (a licence after all is a contract). So
-> I _think_ in germany TiVo would have lost a lawsuit if they had tried it.
+Luckily, it doesn't really matter what you or I think that 
+"integral-ness" means, all it matters is how copyright law defines a 
+"derivative work" and whether a cryptographic hash is such a thing. Now 
+are you seriously arguing that a hash is a derivative work?
 
-Ehh. The intent that matters is not the intent of the person who authored 
-the license, but the intent of the person who *chose* the license.
+>   On top of this, in the Tivo
+> case the two are distributed together, and even part of the same file.
+>   
 
-In other words, rms has *no* input on the kernel.
+It's mere aggregation, but it's totally irrelevant because they could 
+just as easily change their approach.
 
-What matters is *my* intent in *choosing* the GPLv2, not *his* intent in 
-writing it. 
-
-But to make it even less relevant: intent really only legally matters when 
-the legal issues are unclear.
-
-And they really aren't that unclear here.
-
-> Anyway, if one considers Tivoisation acceptable then there is no reason
-> to stop using GPLv2.
-
-Indeed.
-
-> If one wishes to prevent it there are two related questions:
-> - does GPLv2 prevent it ?
-> - if GPLv2 does not prevent it then how can we change it to achieve that ?
-
-Well, I think it's fairly unquestionable that the GPLv3 does prevent it. 
-
-So your second question isn't even really interesting. We know the answer. 
-So the only question that is even remotely interesting is the first one.
-
-> To me it seems as if the FSF tends to answer the first question with 'no'
-> and consequently answers the second question with 'GPLv3'.
-
-Yes, I do agree with that reasoning, but there are *other*, and more 
-direct, reasons than just the FSF's answer to say that the answer to your 
-first question is "no".
-
-The fact is, plain reading of the license (which *always* takes precedence 
-over "intent", even in Europe) simply doesn't make what Tivo did illegal.
-
-You literally have to read the GPLv2 in ways that are obviously not true 
-to get to any other situation.
-
-For example, Alexandre made the same two mistakes over and over in his 
-reading when he tried to argue that the GPLv2 disallows what Tivo did:
-
- (a) The right to modify means "modify in place"
-
-     This was a point that Alexandre (and others) have tried to make, but 
-     it really is *not* supported by any reality.
-
-     First off, the GPLv2 simply never *ever* says "in place". That
-     wording (or anything equivalent) simply does not exist! So you really 
-     have to add it by "reading" it some special way, and quite frankly, 
-     no such reading is sensible.
-
-     I can logically *prove* that such a reading is not sensible by the 
-     two examples I already made clear to Alexandre multiple times:
-
-	- Red Hat sends out DVD's with GPL'd software, and thus 
-	  distributes copies that CANNOT be "modified in place". So 
-	  thinking that "modified in place" is made illegal by the GPLv2 
-	  is simply untenable, unless you think that what Red Hat does is 
-	  against the GPLv2.
-
-	  Do you really believe that what Red Hat does is against the GPL? 
-	  Does Alexandre? Judging by his email address, I don't think he 
-	  does.
-
-	- I myself distribute Linux by making it available for download 
-	  publicly, and no, I do *not* allow people to modify it in place, 
-	  even though I do distribute Linux.
-
-	  Alexandre tried to argue against this point by saying that I'm 
-	  not really "distributing" Linux, and that the actual copying is 
-	  being done by people who download it, and that they *can* modify 
-	  their downloads "in place", but that only shows a lack of 
-	  knowledge about what "distribution" means in copyright law.
-
-	  The US courts have made it very clear that you "distribute" 
-	  things not by downloading them, but by making them *available* 
-	  for public download. So from a purely *legal* standpoint, I do 
-	  actually *distribute* Linux by making it available! And no, I 
-	  don't allow people to modify it in place!
-
-	  Again, do you *really* think that I am in violation of the GPL 
-	  by making the kernel available for download (== distributing 
-	  it), but not letting others modify it in place?
-
-So clearly, the whole "modify in place" argument is simply *wrong*.
-
-It cannot *possibly* be a valid reading of the GPLv2! When the GPLv2 talks 
-about "legal permissions to copy, distribute and/or modify" the software, 
-it does *not* mean that you have to have the ability to modify it in 
-place!
-
-The other argument Alexandre made was different, but equally invalid from 
-a legal standpoint:
-
- (b) The language in the preamble: "must give the recipients all the 
-     rights that you have" means really *all* the rights and abilities!
-
-     This too is a totally flawed reading of the license, for a few 
-     reasons:
-
-	- It's not actually in the *conditions* section. It's part of the 
-	  explanation of the conditions, and while it's part of the 
-	  license, it actually *is* different in the sense that it's not 
-	  even meant to specify the "precise terms and conditions". Those 
-	  are explicitly laid out _elsewhere_ (look for that term: 
-	  "precise terms and conditions").
-
-	- However, I don't dispute that the language exists, I just 
-	  dispute Alexandres _reading_ of it, and I offer an alternate 
-	  meaning for it. I do not guarantee that *my* reading is the 
-	  correct one (although practically speaking, I pretty much can 
-	  guarantee that too), but I *do* guarantee that Alexandre's 
-	  reading is wrong, because it is nonsensical and impossible.
-
-	  It is nonsensical and impossible in the exact same way I
-	  showed that he was trying to claim something nonsensical 
-	  and impossible in adding the "in place" reading to "right to 
-	  modify".
-
-	- So the reason I want to mention the fact that it is in the 
-	  "preamble" is exactly because the preamble is *not* meant to be 
-	  the "exact terms and conditions", it's meant to be a much softer 
-	  thing - something that _explains_ the exact terms and 
-	  conditions.
-
-	  In particular, in this case, it explains "Section 6" (and 
-	  you could also say that it explains section 7 too, but the 
-	  preamble actually talks about patents separately, so you should 
-	  probably see "section 6" as just the most obvious example of 
-	  what the preamble is talking about).
-
-	- In other words, the preamble is just a preliminary and inexact 
-	  explanation for the _real_ requirements, which are spelled out 
-	  elsewhere, in places like section 6 of the license. And *that* 
-	  section actually makes it clear that "all rights" only concerns 
-	  the rights SPELLED OUT IN THE LICENSE ITSELF.
-
-	  Section 6 explicitly says:
-
-		"You may not impose any further restrictions on the 
-		 recipients' exercise of the rights granted herein."
-
-	  and that is what I claim is the *correct* and exact reading of 
-	  the explanatory language in the preamble. Yes, it is "all 
-	  rights", but it is "all rights" ONLY AS FAR AS THE GPLv2 itself 
-	  is concerned! It's not about any _other_ additional rights you 
-	  may have outside the GPLv2!
-
-	- To finish that point, let me just point out that Alexandre's 
-	  reading *cannot* possibly work!
-
-	  In particular, reading the preamble to mean that you give the 
-	  recipient *all* rights you have (even outside the actual 
-	  requirements of the license itself) that Alexandre tried to 
-	  argue, is actually legally simply impossible. The copyright 
-	  owner *fundamentally* has more rights than any licensee, and no 
-	  license can *ever* transfer all those legal rights!
-
-	  In other words, Alexandre's reading of the preamble is simply 
-	  not legally tenable, because it assumes that the license says 
-	  something that simply is not legally possible. And obviously the 
-	  license doesn't say anything like that at all: it's a legal 
-	  document, it can only state legally valid things!
-
-	  I'll use the *exact* same examples as previously to show how 
-	  Alexandre's reading of "all the rights that you have" can not 
-	  possibly be correct:
-
-	  (a) Again, Red Hat makes DVD's that contain GPLv2'd programs on 
-	      them. Red Hat is bound by the GPL, so each work they put 
-	      on the DVD is always under the GPL, and Red Hat *must* give 
-	      you the rights that the GPL specifies.
-
-	      But does Red Hat actually give you *all* the rights they 
-	      hold on the DVD? No, they definitely do not. They hold a 
-	      compilation copyright on RHEL, and they very  much do *not* 
-	      give you the right to copy the whole distribution and sell 
-	      it as RHEL. You only get the rights to the individual 
-	      pieces, not to the whole thing!
-
-	  (b) Again, I make the Linux kernel available to you on a web 
-	      site, and thus distribute it to you. Do I actually give you 
-	      *all* the rights I have in it? Hell no. I cannot (and do 
-	      not even want to). As an author, I have special rights in my 
-	      code that you do not get. You get the rights spelled out in 
-	      the GPLv2, and *nothing* more.
-
-     In other words, Alexandre's reading of the text in the preamble is 
-     *impossible*. It absolutely *cannot* be the way the license works. 
-     It's not how Red Hat itself reads it, and it's not how it can even 
-     legally be made to work even if somebody *wanted* to read it that 
-     way.
-
-See? Both of Alexandre's arguments about why Tivo did something "against 
-the license" were actually totally bogus. Neither of them was relevant, 
-they both hinged on Alexandre reading the GPLv2 *wrong*.
-
-> Whether or not the GPLv3 is truely an acceptable answer to prevent
-> Tivoisation is a completely different issue that I can't really judge.
-
-Absolutely. I do think it prevents Tivoisation, but I personally think 
-it's unacceptable in even *trying* to prevent it, and as I've tried to 
-make clear, the GPLv2 definitely did *not* prevent Tivo from doing what 
-they did.
-
-			Linus
+---
+fm
