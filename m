@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbXFOMjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbXFOMky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbXFOMjd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbXFOMjY
+	id S1755445AbXFOMky (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 08:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXFOMks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:39:24 -0400
-Received: from ns2.suse.de ([195.135.220.15]:44848 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbXFOMjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:39:23 -0400
-From: Andi Kleen <ak@suse.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
-Date: Fri, 15 Jun 2007 14:38:51 +0200
-User-Agent: KMail/1.9.1
-Cc: Arnd Bergmann <arnd@arndb.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200706150159.l5F1xNgM000459@hera.kernel.org> <200706151355.57464.ak@suse.de> <1181908836.25228.452.camel@pmac.infradead.org>
-In-Reply-To: <1181908836.25228.452.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jun 2007 08:40:48 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3398 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752256AbXFOMkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 08:40:47 -0400
+Date: Fri, 15 Jun 2007 12:40:35 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, holzheu@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, gregkh@suse.de,
+       mtk-manpages@gmx.net, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       "lf_kernel_messages@linux-foundation.org" 
+	<lf_kernel_messages@linux-foundation.org>
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+Message-ID: <20070615124034.GH9442@ucw.cz>
+References: <1181747217.29512.9.camel@localhost.localdomain> <20070613111549.db1fa4d9.akpm@linux-foundation.org> <20070614094128.GF17819@atrey.karlin.mff.cuni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706151438.51803.ak@suse.de>
+In-Reply-To: <20070614094128.GF17819@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-> It's the _location_ which is wrong;
+> > Your proposal is similar to one I made to some Japanese developers
+> > earlier this year.  I was more modest, proposing that we
+> > 
+> > - add an enhanced printk
+> > 
+> > 	xxprintk(msgid, KERN_ERR "some text %d\n", some_number);
+>   Maybe a stupid idea but why do we want to assign these numbers by hand?
+> I can imagine it could introduce collisions when merging tons of patches
+> with new messages... Wouldn't it be better to compute say, 8-byte hash
+> from the message and use it as it's identifier? We could do this
 
-As long as everybody using it sees the attribute packed it is not wrong at 
-all. ABIs are just a convention, not a law.
+Why hashes? Just key it off full message, and treat it like normal
+translation problem.
 
--Andi
+'lp%d: on fire' -> 'your printer failed basic tests, you should check
+cabling'.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
