@@ -1,44 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbXFON70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbXFOOCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbXFON70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXFON7S
+	id S1754135AbXFOOCl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 10:02:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbXFOOCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:59:18 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:54075 "EHLO mail.ukfsn.org"
+	Fri, 15 Jun 2007 10:02:34 -0400
+Received: from saeurebad.de ([85.214.36.134]:48229 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752598AbXFON7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:59:16 -0400
-Message-ID: <46729B20.309@dgreaves.com>
-Date: Fri, 15 Jun 2007 14:58:56 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+	id S1751015AbXFOOCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 10:02:33 -0400
+X-Greylist: delayed 953 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jun 2007 10:02:33 EDT
+Date: Fri, 15 Jun 2007 15:46:32 +0200
+From: Johannes Weiner <hannes-kernel@saeurebad.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Replace obscure constructs in fs/block_dev.c
+Message-ID: <20070615134632.GA11666@saeurebad.de>
+Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
-       Jeff Garzik <jgarzik@pobox.com>, jens.axboe@oracle.com
-Subject: Re: [PATCH] block: always requeue !fs requests at the front
-References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org>
-In-Reply-To: <20070615094246.GN29122@htj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="vkogqOf2sHV7VnPd"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> David, please test this.  Jens, does it look okay?
 
-Phew!
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Works for me.
+Hi,
 
-I applied it to 2.6.22-rc4 (along with 
-sata_promise_use_TF_interface_for_polling_NODATA_commands.patch) hibernate and 
-resume worked.
+Andrew, I promised it [1], here goes. Patched against Linus' git-tree.
 
-Thanks for digging it out Tejun (and everyone else!) :)
+[1] http://lkml.org/lkml/2007/3/22/226
 
-David
+This patch replaces some obscure code-paths in fs/block_dev.c with more
+readable versions.
+
+Signed-off-by: Johannes Weiner <hannes-kernel@saeurebad.de>
+
+
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="block_dev-anti-obscurity.patch"
+
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index ea1480a..1ffbb6d 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -660,26 +660,16 @@ void bd_forget(struct inode *inode)
+ 
+ int bd_claim(struct block_device *bdev, void *holder)
+ {
+-	int res;
++	int res = 0;
+ 	spin_lock(&bdev_lock);
+ 
+-	/* first decide result */
+-	if (bdev->bd_holder == holder)
+-		res = 0;	 /* already a holder */
+-	else if (bdev->bd_holder != NULL)
+-		res = -EBUSY; 	 /* held by someone else */
+-	else if (bdev->bd_contains == bdev)
+-		res = 0;  	 /* is a whole device which isn't held */
+-
+-	else if (bdev->bd_contains->bd_holder == bd_claim)
+-		res = 0; 	 /* is a partition of a device that is being partitioned */
+-	else if (bdev->bd_contains->bd_holder != NULL)
+-		res = -EBUSY;	 /* is a partition of a held device */
+-	else
+-		res = 0;	 /* is a partition of an un-held device */
++	/* If already held by someone else or we have a
++	 * partition of a held device, we do nothing. */
+ 
+-	/* now impose change */
+-	if (res==0) {
++	if (bdev->bd_holder || bdev->bd_contains->bd_holder)
++		res = -EBUSY;
++
++	if (!res) {
+ 		/* note that for a whole device bd_holders
+ 		 * will be incremented twice, and bd_holder will
+ 		 * be set to bd_claim before being set to holder
+@@ -874,7 +864,7 @@ static struct bd_holder *find_bd_holder(struct block_device *bdev,
+  */
+ static int add_bd_holder(struct block_device *bdev, struct bd_holder *bo)
+ {
+-	int ret;
++	int err;
+ 
+ 	if (!bo)
+ 		return -EINVAL;
+@@ -882,15 +872,18 @@ static int add_bd_holder(struct block_device *bdev, struct bd_holder *bo)
+ 	if (!bd_holder_grab_dirs(bdev, bo))
+ 		return -EBUSY;
+ 
+-	ret = add_symlink(bo->sdir, bo->sdev);
+-	if (ret == 0) {
+-		ret = add_symlink(bo->hdir, bo->hdev);
+-		if (ret)
+-			del_symlink(bo->sdir, bo->sdev);
++	err = add_symlink(bo->sdir, bo->sdev);
++	if (err)
++		return err;
++
++	err = add_symlink(bo->hdir, bo->hdev);
++	if (err) {
++		del_symlink(bo->sdir, bo->sdev);
++		return err;
+ 	}
+-	if (ret == 0)
+-		list_add_tail(&bo->list, &bdev->bd_holder_list);
+-	return ret;
++		
++	list_add_tail(&bo->list, &bdev->bd_holder_list);
++	return 0;
+ }
+ 
+ /**
+@@ -948,7 +941,7 @@ static struct bd_holder *del_bd_holder(struct block_device *bdev,
+ static int bd_claim_by_kobject(struct block_device *bdev, void *holder,
+ 				struct kobject *kobj)
+ {
+-	int res;
++	int err;
+ 	struct bd_holder *bo, *found;
+ 
+ 	if (!kobj)
+@@ -959,21 +952,25 @@ static int bd_claim_by_kobject(struct block_device *bdev, void *holder,
+ 		return -ENOMEM;
+ 
+ 	mutex_lock(&bdev->bd_mutex);
+-	res = bd_claim(bdev, holder);
+-	if (res == 0) {
+-		found = find_bd_holder(bdev, bo);
+-		if (found == NULL) {
+-			res = add_bd_holder(bdev, bo);
+-			if (res)
+-				bd_release(bdev);
+-		}
+-	}
+ 
+-	if (res || found)
++	err = bd_claim(bdev, holder);
++	if (err)
++		goto out;
++
++	found = find_bd_holder(bdev, bo);
++	if (found)
++		goto out;
++
++	err = add_bd_holder(bdev, bo);
++	if (err)
++		bd_release(bdev);
++
++out:
++	if (err || found)
+ 		free_bd_holder(bo);
+-	mutex_unlock(&bdev->bd_mutex);
+ 
+-	return res;
++	mutex_unlock(&bdev->bd_mutex);
++	return err;
+ }
+ 
+ /**
+
+--vkogqOf2sHV7VnPd--
