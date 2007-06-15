@@ -1,95 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbXFOQcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbXFOQc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbXFOQcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 12:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbXFOQcI
+	id S1757220AbXFOQc4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 12:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXFOQcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 12:32:08 -0400
-Received: from srv1.netkinetics.net ([206.71.148.180]:55009 "EHLO
-	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755194AbXFOQcG (ORCPT
+	Fri, 15 Jun 2007 12:32:47 -0400
+Received: from [212.112.238.170] ([212.112.238.170]:57313 "EHLO
+	longford.lazybastard.org" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753908AbXFOQcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 12:32:06 -0400
-Subject: Re: Dual-Licensing Linux And Medical Devices
-From: Tim Post <tim.post@netkinetics.net>
-Reply-To: tim.post@netkinetics.net
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michael Poole <mdpoole@troilus.org>, Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-In-Reply-To: <alpine.LFD.0.98.0706142118410.14121@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	 <200706142049.41819.dhazelton@enter.net>
-	 <87fy4u0xty.fsf@graviton.dyn.troilus.org>
-	 <200706142246.57583.dhazelton@enter.net>
-	 <878xal2a0q.fsf@graviton.dyn.troilus.org>
-	 <alpine.LFD.0.98.0706142013120.14121@woody.linux-foundation.org>
-	 <874pl928r6.fsf@graviton.dyn.troilus.org>
-	 <alpine.LFD.0.98.0706142118410.14121@woody.linux-foundation.org>
-Content-Type: text/plain
-Organization: Net Kinetics
-Date: Sat, 16 Jun 2007 00:27:41 +0800
-Message-Id: <1181924861.21797.240.camel@localhost.localdomain>
+	Fri, 15 Jun 2007 12:32:47 -0400
+Date: Fri, 15 Jun 2007 18:27:56 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ext2 on flash memory
+Message-ID: <20070615162756.GB7747@lazybastard.org>
+References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org> <20070614182201.GD31984@lazybastard.org> <20070614202047.GD1928@DervishD> <20070614204345.GH31984@lazybastard.org> <20070615162001.GC2373@DervishD>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.1 
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - netkinetics.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070615162001.GC2373@DervishD>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-14 at 21:23 -0700, Linus Torvalds wrote:
+On Fri, 15 June 2007 18:20:01 +0200, DervishD wrote:
 > 
-> On Thu, 14 Jun 2007, Michael Poole wrote:
+> > >     Now seriously, I will take a look at LogFS from time to time, and if
+> > > you want me to, I can do tests on my Kingston DT.
 > > 
-> > If the signature is one that serves to indicate origin, to detect
-> > tampering, or the other things you mentioned, the program's binary is
-> > useful when separated from the signature.  My objection arises when a
-> > functionally equivalent binary -- including advertised functions such
-> > as "runs on platform XYZ" -- cannot be produced from the distributed
-> > source code.
+> > That would be appreciated.  I am always happy about bug reports.  The
+> > more you test the faster I can fix things.
 > 
-> Ahh.
-> 
-> Ok, that's a totally different issue, and is one where I heartily agree 
-> with you. I would actually *love* for the GPL (any version) to have a 
-> "guarantee of authenticity", where if you distribute a binary, there has 
-> to be some documented way to get *exactly* that binary out of the source 
-> code that got distributed.
+>     I'm going to upgrade to 2.6.20.x next week, probably, but I'm not
+> fully sure. Can your patch be applied to 2.6.19.5 or different versions
+> are needed for each and every latest kernel release? I've seen the code
+> in your web and looked like it will work in any 2.6.x kernel as long as
+> it is not very old, am I wrong?.
 
-I would hope that this is *required*, somehow, when dealing with medical
-equipment. I don't think those appliances even have the capacity to
-build every upgrade from source. None that I've tinkered with do. These
-things almost need a license of their own.
+It should, I just haven't tested it.  Same for the I_SYNC patch.
 
-As long as the signing mechanism can't be used to force clinics to pay
-for the privilege of upgrading free software, that is. It would truly
-suck if an ultrasound loaded with free software sat in a corner useless
-because a free clinic could not afford to pay for what they already paid
-for.
+>     If it can be used with 2.6.19.5, I can test ASAP even if I don't
+> upgrade to 2.6.20.x. I cannot reboot my machine until Monday (except if
+> a power shortage does the job for me, of course), but then I'll patch my
+> kernel and test LogFS. I'm impatient!
 
-If you guys can find a way to make that practical given my above
-concerns, that would be entirely useful. I hate the fact that this kind
-of trust is needed because it is so very easily mis-used, but people
-dying due to hacked IV regulators really wouldn't much care about those
-politics.
+Just try the patches.  If both apply without rejects, things should be
+fine.  Otherwise I'll have to take a look.
 
-I think, also privacy implications for patients. A rootkit in a MRI
-would be very bad.
+Jörn
 
-Regardless, like it or not, kernel code is in or headed for medical
-devices, so I hope some more brain power is burned on this. 
-
-Best,
---Tim
-
+-- 
+The competent programmer is fully aware of the strictly limited size of
+his own skull; therefore he approaches the programming task in full
+humility, and among other things he avoids clever tricks like the plague.
+-- Edsger W. Dijkstra
