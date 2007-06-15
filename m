@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbXFOP5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbXFOP6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbXFOP5w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXFOP5p
+	id S1756784AbXFOP6y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbXFOP6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:57:45 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48451 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbXFOP5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:57:44 -0400
-Date: Fri, 15 Jun 2007 21:27:15 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org,
-       "Natalie.Protasevich@unisys.com" <Natalie.Protasevich@unisys.com>,
-       akpm@linux-foundation.org
-Subject: Re: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y build broken
-Message-ID: <20070615155715.GB9230@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <adad5017zpt.fsf@cisco.com> <20070613173741.GA23618@in.ibm.com> <adamyz34mim.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adamyz34mim.fsf@cisco.com>
-User-Agent: Mutt/1.5.11
+	Fri, 15 Jun 2007 11:58:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60350 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753828AbXFOP6q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:58:46 -0400
+Date: Fri, 15 Jun 2007 08:58:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <1181899064.25228.342.camel@pmac.infradead.org>
+Message-ID: <alpine.LFD.0.98.0706150846370.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr>  <200706142144.15695.dhazelton@enter.net>
+  <1181895924.25228.319.camel@pmac.infradead.org>  <200706150458.29943.dhazelton@enter.net>
+ <1181899064.25228.342.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 13, 2007 at 01:39:29PM -0700, Roland Dreier wrote:
->  > Can you please try the attached patch? I have compiled it with CONFIG_ES7000=y
->  > and CONFIG_X86_GENERICARCH=n. But don't have any ES7000 machine to test it.
-> 
-> I actually don't have anything remotely like ES7000 iether.  I just
-> found the problem while tracking down another randconfig failure.
-> 
->  > Subarch build procedure is not straightforward and this patch adds to the
->  > misery. Please suggest if there is a better way of handling things.
-> 
->  > +/*
->  > + * This file also gets compiled if CONFIG_X86_GENERICARCH is set. Generic
->  > + * arch already has got following function definitions (asm-generic/es7000.c)
->  > + * hence no need to define these for that case.
->  > + */
->  > +#ifndef CONFIG_X86_GENERICARCH
-> 
-> Seems it would be cleaner to figure out some way to build es7000.c for
-> if CONFIG_X86_ES7000 is set?  Or just move them here all the time?
-> 
->  > --- linux-2.6.22-rc4-git4/include/asm-i386/mach-es7000/mach_mpparse.h~i386-es7000-build-breakage-fix	2007-06-13 22:52:14.000000000 +0530
->  > +++ linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_mpparse.h	2007-06-13 22:52:14.000000000 +0530
->  > @@ -18,6 +18,12 @@ extern int parse_unisys_oem (char *oempt
->  >  extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
->  >  extern void setup_unisys(void);
->  >  
->  > +#ifndef CONFIG_X86_GENERICARCH
->  > +extern int acpi_madt_oem_check(char *oem_id, char *oem_table_id);
->  > +extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
->  > +				char *productid);
->  > +#endif
-> 
-> It seems that this #ifndef is not needed -- even if there is another
-> declaration of these functions that is visible, the signatures should
-> match so it should be OK.
-> 
 
-Compiler does throw warning as one set of functions is static and
-other is not.
 
-arch/i386/mach-generic/es7000.c:37: warning: static declaration of 'mps_oem_check' follows non-static declaration
-include/asm/mach-es7000/mach_mpparse.h:23: warning: previous declaration of 'mps_oem_check' was here
-arch/i386/mach-generic/es7000.c:50: warning: static declaration of 'acpi_madt_oem_check' follows non-static declaration
-include/asm/mach-es7000/mach_mpparse.h:21: warning: previous declaration of 'acpi_madt_oem_check' was here
+On Fri, 15 Jun 2007, David Woodhouse wrote:
 
-Thanks
-Vivek
+> On Fri, 2007-06-15 at 04:58 -0400, Daniel Hazelton wrote:
+> > >
+> > > But when you distribute the same module as part of a whole which is a
+> > > work based on the kernel, the distribution of the whole must be on the
+> > > terms of GPL, whose permissions for other licensees extend to the entire
+> > > whole, and thus to each and every part regardless of who wrote it.
+> > 
+> > -ELOGIC
+> 
+> What's logic got to do with it? It was fairly much a direct quote from
+> the licence. You have _read_ the licence, haven't you?
+
+Actually, I suspect Daniel has read it, and is probably referring to 
+another facet of the license: distribution of two things together does 
+*not* imply that those two things have to both be GPLv2's.
+
+The GPLv2 explicitly mentions "mere aggregation". Strictly speaking, it 
+doesn't even *have* to mention it, since it does mention in other places 
+that it only covers "derived work", and "derivation" has nothing to do 
+with "distributing two things together". But it's a good clarification.
+
+So you guys are *both* right, for different cases!
+
+The issue is simply what you mean by "part of the whole"? If you mean 
+"part of the whole kernel distribution", then yes, the kernel is one work, 
+and it is, in its entirety, under the GPLv2. But if the "part of the 
+whole" is about something like a DVD with the whole being a collection of 
+"mere aggregation", the licenses do not necessarily meld together.
+
+Let's say that you're a Linux vendor, and you distribute a DVD with both 
+the Linux kernel binary (and all the normal modules that go with it, that 
+obviously are "part of the whole kernel") *and* say the NVidia proprietary 
+kernel module.
+
+Is that the *only* way to read things? No. It's a matter of 
+interpretation, and which "whole" you are talking about. The whole 
+aggregation, or the whole program?
+
+And is the NVidia module a "derived work" or not? That's a gray area, and 
+that's really what it hinges on. I personally think it's not, but I know 
+others think it is.
+
+Which is why I think you're both *potentially* right. Which one of you is 
+*actually* right will depend on the exact circumstances ;)
+
+			Linus
