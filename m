@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbXFOOnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbXFOOp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755444AbXFOOnb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 10:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbXFOOnJ
+	id S1755340AbXFOOp3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 10:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbXFOOpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 10:43:09 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:51163 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753373AbXFOOnI (ORCPT
+	Fri, 15 Jun 2007 10:45:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:19622 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbXFOOpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 10:43:08 -0400
-Date: Fri, 15 Jun 2007 16:43:05 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Jens Axboe <axboe@kernel.dk>,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-In-Reply-To: <1181918159.25228.543.camel@pmac.infradead.org>
-Message-ID: <Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
-References: <20070615113919.142332000@pademelon.sonytel.be>
- <20070615120848.352093000@pademelon.sonytel.be> <1181918159.25228.543.camel@pmac.infradead.org>
+	Fri, 15 Jun 2007 10:45:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CMJ9pmcWviIO2gQiobEIJ0NIpwzb3KWs2cFoj4CRxjXZ/ou7YavUuhXrqaor2clXCkfmuI7STE68pZCYGuEUMex1G8PNThSpEZg+AzMr/YmYSRvuOl5AGRKDO1Jctvh4BqTmNol3MARNHBR/+dxujnACSHepR5MQjOJ3NpC12LM=
+Message-ID: <5d6222a80706150745m694a15c6n1ae2d15845a848b2@mail.gmail.com>
+Date: Fri, 15 Jun 2007 11:45:16 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Bernd Paysan" <bernd.paysan@gmx.de>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Paulo Marques" <pmarques@grupopie.com>, "Al Viro" <viro@ftp.linux.org.uk>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Krzysztof Halasa" <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+In-Reply-To: <200706151403.57178.bernd.paysan@gmx.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1219061913-1181918585=:8248"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466A3EC6.6030706@netone.net.tr>
+	 <200706151014.45383.bernd.paysan@gmx.de>
+	 <46727CCF.9030905@grupopie.com>
+	 <200706151403.57178.bernd.paysan@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+> > And the basics are: "people who write the code decide the license to
+> > give it". And that's just it.
+>
+> Yo, then fucking do it! Write it in the files you contribute! If you don't,
+> you haven't! You decide, not Linus Torvalds. Make it clear you have
+> decided.
+>
+> > And people who write kernel code are perfectly aware that the kernel
+> > license is GPL v2 only, and always has been (except for the initial
+> > linus license).
+>
+> Wrong.
+>
+> > Putting a license statement in _every_ file in the kernel tree would
+> > just be idiotic when there is such a clear COPYING file in the root of
+> > the kernel tree.
+>
+> It's a personal comment from Linus, and not clear in any way. Do it the way
+> the file COPYING itself suggests. It's not "idiotic", it's the most obvious
+> way to do it.
 
----584337861-1219061913-1181918585=:8248
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+If it wasn't clear someday, it seems to be utterly clear now, after
+all this discussion (that is not the first related, AFAIK). Why is the
+"spirit" so important for the GPLv{2,3} understanding, and not
+important at all here? The intention that the kernel is gplv2 is very
+clearly stated.
 
-On Fri, 15 Jun 2007, David Woodhouse wrote:
-> On Fri, 2007-06-15 at 13:39 +0200, Geert Uytterhoeven wrote:
-> > Add a Disk Storage Driver for the PS3:
-> >   - Implemented as a block device driver with a dynamic major
-> >   - Disk names (and partitions) are of the format ps3d%c(%u)
-> >   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
-> >     doesn't support scatter-gather
-> 
-> Any particular reason why this is done as a separate block device driver
-> rather than as SCSI?
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
-Because no new fake SCSI drivers are accepted anymore.
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1219061913-1181918585=:8248--
+"The less confident you are, the more serious you have to act."
