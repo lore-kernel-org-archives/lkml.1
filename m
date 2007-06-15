@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbXFOVWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXFOVXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbXFOVWB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbXFOVVx
+	id S1754887AbXFOVXU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbXFOVXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:21:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39725 "EHLO mx1.redhat.com"
+	Fri, 15 Jun 2007 17:23:06 -0400
+Received: from mail.suse.de ([195.135.220.2]:50205 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbXFOVVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:21:52 -0400
+	id S1750997AbXFOVXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:23:04 -0400
+From: Andi Kleen <ak@suse.de>
 To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: "Daniel Hazelton" <dhazelton@enter.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706141014.21574.rgetz@blackfin.uclinux.org>
-	<or1wgefmyn.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706151425.41975.rgetz@blackfin.uclinux.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 18:21:37 -0300
-In-Reply-To: <200706151425.41975.rgetz@blackfin.uclinux.org> (Robin Getz's message of "Fri\, 15 Jun 2007 14\:25\:41 -0400")
-Message-ID: <orzm30x6am.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+Date: Fri, 15 Jun 2007 23:22:06 +0200
+User-Agent: KMail/1.9.1
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "David Howells" <dhowells@redhat.com>, "Arnd Bergmann" <arnd@arndb.de>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Dave Airlie" <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       Bernd Schmidt <bernds_cb1@t-online.de>
+References: <200706151355.57464.ak@suse.de> <200706151454.28854.ak@suse.de> <200706151650.53481.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200706151650.53481.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706152322.07739.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-> On Thu 14 Jun 2007 13:46, Alexandre Oliva pondered:
->> On Jun 14, 2007, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
->> > As a person pretty familiar with the hardware in these types of
->> > devices - this just isn't practical.
->> 
->> Well, then, ok: do all that loader and hardware signature-checking
->> dancing, sign the image, store it in the machine, and throw the
->> signing key away.  This should be good for the highly-regulated areas
->> you're talking about.  And then, since you can no longer modify the
->> program, you don't have to let the user do that any more.  Problem
->> solved.
+> For the architecture we use (Blackfin), it does not support unaligned
+> accesses, and we purposely never put in the trap/fixup code - we trap, and
+> printk("fix your source");
 
-> I don't think so - the GPL3 doesn't state that you must convey the same rights 
-> to end users that you have,
+For the kernel you should fix up too in addition to the printk. Otherwise
+you risk a ping of death in the field with some more obscure protocol.
+Also the printk should be load limited.
 
-Right, this is only in the preamble.
+> > > people have done
+> > > that work so using the types without unaligned.
+> >
+> > Very brave; we're talking about around half a million lines
+> > of non trivial source code here.
+>
+> Is there something specific that you can think of that we should be
+> testing?
 
-> it says you must provide installation information, including your
-> keys, or you can not ship the product.
+A lot of protocols have variable length headers.  Normally everything
+is aligned, but an attacker could purposefully misalign some headers
+using variable length padding, causing fields in later headers to be 
+misaligned.
 
-Unless you throw the keys away:
+e.g. the original reason this was forbidden was because the TCP
+option parser could be tricked into reading time stamps unaligned.
+That code is now using get_unaligned(), but there are probably
+other culprits too (there is a lot of code in the network stack) 
 
-  this requirement does not apply if neither you nor any third party
-  retains the ability to install modified object code on the User
-  Product (for example, the work has been installed in ROM).
+Unfortunately it is hard to test all combinations, so the only safe 
+alternative would be to audit source code. Another possibility would be to
+use a tainted data scheme similar sparse's __user/__iomem annotations with
+a static code checker (or extending sparse), but that would also require a lot 
+of work to do properly and add the necessarily annotations.
 
-> I need to think a bit more of Rob's opinion of ROM's are illegal
+Also watch out for netfilter modules -- they make all this much more 
+complex. And drivers possibly too.
 
-See above ;-)
+> We have done alot of testing, and people have shipped alot of systems
+> connected to a varity of networks, and have run all kinds of protocols on
+> them.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Well behaved peers normally don't generate unaligned headers. But
+that doesn't mean it couldn't be exploited by someone malicious.
+
+-Andi
