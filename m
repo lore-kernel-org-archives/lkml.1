@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbXFOLby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbXFOLcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbXFOLby (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 07:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXFOLbo
+	id S1753897AbXFOLcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 07:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbXFOLcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 07:31:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47642 "EHLO mx2.mail.elte.hu"
+	Fri, 15 Jun 2007 07:32:12 -0400
+Received: from mx.laposte.net ([81.255.54.16]:22087 "EHLO mx.laposte.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753372AbXFOLbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 07:31:41 -0400
-Date: Fri, 15 Jun 2007 13:31:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	id S1751302AbXFOLcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 07:32:10 -0400
+Message-ID: <52052.192.54.193.51.1181907121.squirrel@rousalka.dyndns.org>
+In-Reply-To: <9a8748490706150353i452cf529oc5c0e8119f91e64e@mail.gmail.com>
+References: <9a8748490706150353i452cf529oc5c0e8119f91e64e@mail.gmail.com>
+Date: Fri, 15 Jun 2007 13:32:01 +0200 (CEST)
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615113123.GA6269@elte.hu>
-References: <200706132121.04532.dhazelton@enter.net> <orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132304.21984.dhazelton@enter.net> <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu> <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614235004.GA14952@elte.hu> <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
+From: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Cc: "Daniel Hazelton" <dhazelton@enter.net>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a-1.fc7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alexandre Oliva <aoliva@redhat.com> wrote:
+Le Ven 15 juin 2007 12:53, Jesper Juhl a écrit :
+> On 15/06/07, Nicolas Mailhot <nicolas.mailhot@laposte.net> wrote:
+>> >> > by your argument, the user has some "right to modify the
+>> software", on
+>> >> > that piece of hardware it bought which had free software on it,
+>> correct?
+>> >>
+>> >> Yes.  This means the hardware distributor who put the software in
+>> >> there must not place roadblocks that impede the user to get where
+>> she
+>> >> wants with the software, not that the vendor must offer the user
+>> a
+>> >> sport car to take her there.
+>>
+>> >Okay. That means that if I ship Linux on a ROM chip I have to
+>> somehow
+>> make
+>> >it so that the person purchasing the chip can modify the copy of
+>> Linux
+>> >installed on the chip *if* I want to follow both the spirit and the
+>> letter
+>> >of the GPLv2.
+>>
+>> The key word there is "can"
+>>
+>> You don't have to send the buyer the hardware design, replace the
+>> ROM
+>> with a flash, use a rom socket that allows easy switching etc.
+>>
+>> But you can not add measures to your hardware specifically designed
+>> to
+>> stop the user from modifying the GPL software part. Especially if
+>> those measures are something like DRM that do not make the tinkering
+>> just technically hard, but legally forbidden.
+>>
+>> As long as the restrictions result from technical choices not
+>> targetted at forbidding changes you're ok.
+>>
+> That's simply not true.
+>
+> As long as you get a copy of the source code for the software that's
+> running on the hardware it's OK. That's all the GPLv2 says.
 
-> > by your argument, the user has some "right to modify the software", 
-> > on that piece of hardware it bought which had free software on it, 
-> > correct?
-> 
-> Yes.  This means the hardware distributor who put the software in 
-> there must not place roadblocks that impede the user to get where she 
-> wants with the software, not that the vendor must offer the user a 
-> sport car to take her there.
+You'll note I was answering to a message about what the GPL intended,
+not the strict literal reading of the GPLv2 words.
 
-see the slippery slope in action? Lets just use this limited concession 
-on your part and show that _even this_ leads to absurd results:
+And what the GPL authors intended is obvious from the fact it all
+started with a printer driver and the need to change the software used
+to control this particular hardware (not some mythical other device
+without manufacturer restrictions
 
-- a "roadblock" such as a too small button?
+-- 
+Nicolas Mailhot
 
-- a "roadblock" such as a soldered-on ROM instead of flash-ROM?
-
-- a "roadblock" such as not opening up specifications to the hardware?
-
-- a "roadblock" such as not releasing the source of the BIOS? (and here
-  dont come with a "but the BIOS is not under the GPL" strawman
-  argument. The Tivo hardware is not under the GPL license either! Your 
-  whole argument was that even though the Tivo hardware's design is not 
-  GPL-ed, if it runs free software it must not restrict the user's 
-  rights and that it must offer the same rights as the hardware 
-  manufacturer has. )
-
-- a "roadblock" such as a virtual ROM implemented via an SHA1 key 
-  embedded in the hardware?
-
-each of these items limit your supposed "right to modify the software on 
-that exact hardware". Each of these items puts a "roadblock" in the way 
-and impedes the user to get where she wants with her software. So by 
-your argument each of these items would be forbidden. That is 
-nonsensical.
-
-	Ingo
