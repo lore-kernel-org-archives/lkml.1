@@ -1,26 +1,40 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760220AbXFDSe7 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 4 Jun 2007 14:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbXFDSeu
+	id S1758571AbXFOCFB (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 14 Jun 2007 22:05:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbXFOCEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jun 2007 14:34:50 -0400
-Received: from virtual114.webair.com ([209.200.17.224]:61545 "EHLO
-	virtual114.webair.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756078AbXFDSet (ORCPT
+	Thu, 14 Jun 2007 22:04:50 -0400
+Received: from mtai01.charter.net ([209.225.8.181]:42690 "EHLO
+	mtai01.charter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751785AbXFOCEt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jun 2007 14:34:49 -0400
-X-Greylist: delayed 2148 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jun 2007 14:34:49 EDT
-Date: Mon, 4 Jun 2007 13:58:58 -0400 (EDT)
-Message-Id: <200706041758.l54Hww9J096881@virtual114.webair.com>
-To: linux-kernel@vger.kernel.org
-Subject: CONTACT 
-From: Collins Mike <collinsmike11@yahoo.com>
-Reply-To: collinsmike11@yahoo.com
+	Thu, 14 Jun 2007 22:04:49 -0400
+Message-ID: <1032358354.1181873088507.JavaMail.root@fepweb04>
+Date: Thu, 14 Jun 2007 19:04:47 -0700
+From: BRITISHWEBLOTTERY6/49 <brooks317@charter.net>
+Reply-To: agentrichardparker_091@yahoo.co.uk
+Subject: ACKNOWLEDGE RECEIPT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Chzlrs: 0
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760220AbXFDSe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758571AbXFOCFB@vger.kernel.org>
 
-<<< No Message Collected >>>
+This is to notify you that you have won a total sum of =C2=A31,006,168.=
+00,to claim contact Mr. Richard Parker  Email:  agentrichardparker_091@=
+yahoo.co.uk
+Tel: +44 701 113 3273
+Sincerely
+Mr. George Scherrer
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
