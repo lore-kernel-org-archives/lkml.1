@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbXFOQUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbXFOQVO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757131AbXFOQUw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 12:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbXFOQUn
+	id S1754872AbXFOQVO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 12:21:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbXFOQU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 12:20:43 -0400
-Received: from outbound-mail-08.bluehost.com ([69.89.17.208]:50933 "HELO
-	outbound-mail-08.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752165AbXFOQUm (ORCPT
+	Fri, 15 Jun 2007 12:20:58 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:40460 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757370AbXFOQU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 12:20:42 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Pim Zandbergen <P.Zandbergen@macroscoop.nl>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Date: Fri, 15 Jun 2007 09:20:24 -0700
-User-Agent: KMail/1.9.6
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org
-References: <200706071530.51552.jesse.barnes@intel.com> <200706141418.42082.jbarnes@virtuousgeek.org> <4672681D.7020601@macroscoop.nl>
-In-Reply-To: <4672681D.7020601@macroscoop.nl>
+	Fri, 15 Jun 2007 12:20:57 -0400
+Message-ID: <4672BC3E.6080308@zytor.com>
+Date: Fri, 15 Jun 2007 09:20:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Xen-Devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH 04/10] i386: clean up bzImage generation
+References: <20070615004818.424726597@goop.org> <20070615005012.962196819@goop.org>
+In-Reply-To: <20070615005012.962196819@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706150920.24490.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, June 15, 2007 3:21:17 Pim Zandbergen wrote:
-> Jesse Barnes wrote:
-> > Thanks for testing, Pim.  Glad it works for you.
->
-> The pleasure was all on my side.
->
-> > Keep an eye out for BIOS upgrades, the next version might fix it.
->
-> What, are you going to report this to GigaByte?
+Jeremy Fitzhardinge wrote:
+> -setup_move_size: .word  0x8000		# size to move, when setup is not
+> +setup_move_size: .word  _setup_size	# size to move, when setup is not
+>  					# loaded at 0x90000. We will move setup
+>  					# to 0x90000 then just before jumping
+>  					# into the kernel. However, only the
 
-No, but you should if you haven't already.  I think GigaByte probably 
-gets its BIOS from another BIOS vendor (maybe Intel), so when that 
-vendor provides them with an update, they'll probably provide it on 
-their website.  And from what I understand, an Intel BIOS update is in 
-the works to address this issue for Intel boards, so a GigaByte version 
-may follow shortly.  I don't have an exact timeframe though...
+This is WRONG and will break 2.00 protocol bootloaders, if any still
+exist, and quite possibly some 2.01 protocol bootloaders.  There are
+definitiely bootloaders in the field that rely on this implicit value.
 
-Jesse
+> @@ -246,7 +246,6 @@ setup2:
+>  	jnz	1f
+>  	movw	$0xfffc, %sp	# Make sure we're not zero
+>  1:	movzwl	%sp, %esp	# Clear upper half of %esp
+> -	sti
+
+Motivation, please?
+
+	-hpa
 
