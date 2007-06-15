@@ -1,87 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbXFOSE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbXFOSFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756437AbXFOSE4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXFOSEr
+	id S1754320AbXFOSFR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbXFOSEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:04:47 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:57914 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752061AbXFOSEq (ORCPT
+	Fri, 15 Jun 2007 14:04:49 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46075
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752830AbXFOSEs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:04:46 -0400
-Date: Fri, 15 Jun 2007 14:04:45 -0400
-To: Bernd Paysan <bernd.paysan@gmx.de>
-Cc: Rob Landley <rob@landley.net>, Carlo Wood <carlo@alinoe.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
+	Fri, 15 Jun 2007 14:04:48 -0400
+Date: Fri, 15 Jun 2007 11:02:43 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: David Greaves <david@dgreaves.com>, Daniel Hazelton <dhazelton@enter.net>,
+       Michael Gerdau <mgd@technosis.de>, Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615180445.GN10008@csclub.uwaterloo.ca>
-References: <20070614020827.GO3588@stusta.de> <20070614231812.GA9463@alinoe.com> <200706142149.19883.rob@landley.net> <200706151357.17418.bernd.paysan@gmx.de>
+In-Reply-To: <alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706151101240.12349@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+ <200706142049.41819.dhazelton@enter.net> <200706150825.15491.mgd@technosis.de>
+ <200706150520.15086.dhazelton@enter.net> <46726793.1020206@dgreaves.com>
+ <alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706151357.17418.bernd.paysan@gmx.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 01:57:10PM +0200, Bernd Paysan wrote:
-> Have you ever signed a copyright transfer agreement to the FSF? Obviously 
-> not, because then you wouldn't utter such nonsense. The agreement reads 
-> that you transfer a non-exclusive right to the FSF to distribute the code 
-> under GPL (versions of your choice, they have this right anyway, but making 
-> it explicit is always good), and the right to enforce the license. You 
-> still have the right to relicense the work as you like. You also have the 
-> right to enforce the license yourself, or to transfer that right to 
-> somebody else like gpl-violations.org. The FSF even doesn't require to 
-> transfer copyright if you make a GNU project, but if you don't, the FSF 
-> won't help you (because they can't).
-> 
-> They make very obvious promises about what they care ("four freedoms"), and 
-> that they will be very consistent in doing so. So far, all track records 
-> have proven that they indeed are very consistent in doing so - the main 
-> controversy here is not whether the FSF protects the "four freedoms", but 
-> whether these four freedoms are the right goal, and if they really should 
-> try so hard to protect these four freedoms. This part of the discussion is 
-> fully acceptable, what's not acceptable is that the Linus-fancurve claims 
-> things the GPL sais which it doesn't (like "tit-for-tat") or doesn't say 
-> which it does (like section 6 - direct license from the licensor, and in 
-> cases like Linux where no copyright transfer agreements whatsoever exist, 
-> these are the individual contributors). Or that Linux 0.something was 
-> already under GPLv2 only, when GPLv2 clearly says that there may be 
-> updates, and when you as author don't say something, you are allowing users 
-> to update if they like.
+On Fri, 15 Jun 2007, Linus Torvalds wrote:
 
-So if Linus wasn't entirely clear to begin with that he wanted GPLv2
-only, then that is just too bad?  Well why not then say that if the
-GPLv2 didn't say that what Tivo did was bad, then too bad, you can't
-change your mind later.  The FSF can't have it both ways.
+>
+> Now, by your own logic, let's look at what that means for the license.
+> Should we write into our copyright license that you cannot try to find
+> security holes? Would that be a good addition to the GPLv2?
+>
+> Now, I stated that in a way where the answer is obvious: that would be a
+> *horrible* addition to the GPLv2. I think everybody can agree on that. It
+> would be really stupid to say "you cannot look for security holes" just
+> because *some* people who do it are bad.
+>
+> Now, think about that for a moment, and then go back to your question
+> about whether Tivo is bad for the community, and whether being bad for the
+> community should mean that the license should be written to say "go away
+> and don't use future improvements to our software".
+>
+> See where I'm trying to take you?
+>
+> I think that even people who *do* think that what Tivo did was "bad",
+> should think very deeply about the issue whether you should try to lock
+> out "bad uses" in your license. Yes, the answer may be "yes, you should".
+> But I'm arguing that the answer _may_ also be: "No, you shouldn't, becasue
+> it turns out that you might lock out _good_ people too".
+>
+> So in my cracker/spammer example, by trying to lock out the bad people,
+> the obvious (and _stupid_ - don't get me wrong, I'm not at *all*
+> suggesting anything like that should ever be done) license addition of
+> "don't expose security problems" actually just causes more problems than
+> it solves (if it solves anything at all - really bad people don't actually
+> tend to even care about the license!).
+>
+> It makes it harder for *valid* uses of security problem discovery. It
+> makes it potentially illegal to try to do security research. And don't
+> tell me stupid licenses and laws like that don't happen: people really
+> *do* make these kinds of shortsighted decisions, to "protect" themselves
+> from bad people.
 
-> The last point IMHO makes clear that my interpretation of the comment is 
-> valid: This is a commend made by Linus Torvalds, as how he understands or 
-> misunderstands the license text. It's not even something you can take as 
-> legal advice, because Linus is not a lawyer (fortunately - think how the 
-> kernel would look like if it was programmed by a lawyer ;-).
-> 
-> Sure, if you as outsider strip the kernel of obvious GPLv2-only code to 
-> relicense it as a whole under GPLv3, you need a good asbestos suite, a good 
-> lawyer, and good arguments. But let's assume Microsoft really succeeds with 
-> its patent FUD against Linux, and the only way out is GPLv3, when will 
-> opinions here change?
+in fact there was news in the last week or two about a law in Germany that 
+does exactly this. it outlaws all programs that can be used for hacking 
+systems.
 
-No the GPLv3 is not the only solution.  Perhaps a GPLv2.1 that is
-actually in the spirit of the VPLv2 with just enough changes to fix the
-real problems, that may in fact be a solution.  The GPLv3 is very much
-not the only solution.  A totally different kernel specific license may
-even be an option.  There are many options, most of them just happen to
-be pretty hard.
+David Lang
 
---
-Len Sorensen
