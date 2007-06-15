@@ -1,16 +1,16 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758571AbXFOCFB (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 14 Jun 2007 22:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbXFOCEu
+	id S1758350AbXFOCHe (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 14 Jun 2007 22:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXFOCHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:04:50 -0400
-Received: from mtai01.charter.net ([209.225.8.181]:42690 "EHLO
+	Thu, 14 Jun 2007 22:07:25 -0400
+Received: from mtai01.charter.net ([209.225.8.181]:47422 "EHLO
 	mtai01.charter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbXFOCEt convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752688AbXFOCHZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:04:49 -0400
-Message-ID: <1032358354.1181873088507.JavaMail.root@fepweb04>
-Date: Thu, 14 Jun 2007 19:04:47 -0700
+	Thu, 14 Jun 2007 22:07:25 -0400
+Message-ID: <965825347.1181873244320.JavaMail.root@fepweb04>
+Date: Thu, 14 Jun 2007 19:07:23 -0700
 From: BRITISHWEBLOTTERY6/49 <brooks317@charter.net>
 Reply-To: agentrichardparker_091@yahoo.co.uk
 Subject: ACKNOWLEDGE RECEIPT
@@ -23,7 +23,7 @@ X-Chzlrs: 0
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758571AbXFOCFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758350AbXFOCHe@vger.kernel.org>
 
 This is to notify you that you have won a total sum of =C2=A31,006,168.=
 00,to claim contact Mr. Richard Parker  Email:  agentrichardparker_091@=
