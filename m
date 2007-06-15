@@ -1,294 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbXFON05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbXFON2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755879AbXFON05 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbXFON0u
+	id S1755761AbXFON2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbXFON2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:26:50 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:27750 "EHLO kernel.dk"
+	Fri, 15 Jun 2007 09:28:00 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40288 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753444AbXFON0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:26:49 -0400
-Date: Fri, 15 Jun 2007 15:26:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cdrom_sysctl_info fix
-Message-ID: <20070615132657.GW6149@kernel.dk>
-References: <20070614142430.GA2388@darkstar.te-china.tietoenator.com>
+	id S1754380AbXFON17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:27:59 -0400
+Subject: Re: [patch 1/6] ps3: Preallocate bootmem memory for the PS3 FLASH
+	ROM storage driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070615120848.002575000@pademelon.sonytel.be>
+References: <20070615113919.142332000@pademelon.sonytel.be>
+	 <20070615120848.002575000@pademelon.sonytel.be>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 23:27:19 +1000
+Message-Id: <1181914039.26853.80.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070614142430.GA2388@darkstar.te-china.tietoenator.com>
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14 2007, Dave Young wrote:
-> Hi,
+On Fri, 2007-06-15 at 13:39 +0200, Geert Uytterhoeven wrote:
+> plain text document attachment (ps3-stable)
+> Preallocate 256 KiB of bootmem memory for the PS3 FLASH ROM storage driver.
+
+I still very much dislike the #ifdef xxx_MODULE in main kernel code.
+
+At the end of the day, is it realistic to ever use a PS3 without the
+storage driver ? I would suggest just allocating those unconditionally.
+
+Ben.
+
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> ---
+>  arch/powerpc/platforms/ps3/setup.c |   19 ++++++++++++++++++-
+>  include/asm-powerpc/ps3.h          |    1 +
+>  2 files changed, 19 insertions(+), 1 deletion(-)
 > 
-> Fix the cdrom_sysctl_info possible buffer overwrite bug. Somd
-> codingstyle fixes are included as well. 
-
-How about something like this? The current code is actually racy,
-because there's no protection against adding/removing a cdrom while it
-runs. This patch is largely based on yours, just abstracted the printing
-and looping into a function and bail when we run out of room (and print
-a message to that effect).
-
-If you could test it and verify that it does the right thing (eg prints
-the same as before), that would be great!
-
-diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-index 3625a05..ae5a475 100644
---- a/drivers/cdrom/cdrom.c
-+++ b/drivers/cdrom/cdrom.c
-@@ -302,7 +302,7 @@ module_param(lockdoor, bool, 0);
- module_param(check_media_type, bool, 0);
- module_param(mrw_format_restart, bool, 0);
- 
--static DEFINE_SPINLOCK(cdrom_lock);
-+static DEFINE_MUTEX(cdrom_mutex);
- 
- static const char *mrw_format_status[] = {
- 	"not mrw",
-@@ -438,10 +438,10 @@ int register_cdrom(struct cdrom_device_info *cdi)
- 		cdo->generic_packet = cdrom_dummy_generic_packet;
- 
- 	cdinfo(CD_REG_UNREG, "drive \"/dev/%s\" registered\n", cdi->name);
--	spin_lock(&cdrom_lock);
-+	mutex_lock(&cdrom_mutex);
- 	cdi->next = topCdromPtr; 	
- 	topCdromPtr = cdi;
--	spin_unlock(&cdrom_lock);
-+	mutex_unlock(&cdrom_mutex);
- 	return 0;
- }
- #undef ENSURE
-@@ -452,7 +452,7 @@ int unregister_cdrom(struct cdrom_device_info *unreg)
- 	cdinfo(CD_OPEN, "entering unregister_cdrom\n"); 
- 
- 	prev = NULL;
--	spin_lock(&cdrom_lock);
-+	mutex_lock(&cdrom_mutex);
- 	cdi = topCdromPtr;
- 	while (cdi && cdi != unreg) {
- 		prev = cdi;
-@@ -460,7 +460,7 @@ int unregister_cdrom(struct cdrom_device_info *unreg)
- 	}
- 
- 	if (cdi == NULL) {
--		spin_unlock(&cdrom_lock);
-+		mutex_unlock(&cdrom_mutex);
- 		return -2;
- 	}
- 	if (prev)
-@@ -468,7 +468,7 @@ int unregister_cdrom(struct cdrom_device_info *unreg)
- 	else
- 		topCdromPtr = cdi->next;
- 
--	spin_unlock(&cdrom_lock);
-+	mutex_unlock(&cdrom_mutex);
- 
- 	if (cdi->exit)
- 		cdi->exit(cdi);
-@@ -3289,103 +3289,112 @@ static struct cdrom_sysctl_settings {
- 	int	check;			/* check media type */
- } cdrom_sysctl_settings;
- 
-+static int cdrom_print_int(const char *header, int val, char *info, int *pos)
-+{
-+	const int max_size = sizeof(cdrom_sysctl_settings.info);
-+	struct cdrom_device_info *cdi;
-+	int ret;
-+
-+	ret = scnprintf(info + *pos, max_size, header);
-+	if (!ret)
-+		return 1;
-+
-+	*pos += ret;
-+
-+	for (cdi = topCdromPtr; cdi; cdi = cdi->next) {
-+		ret = scnprintf(info + *pos, max_size, "\t%d", val);
-+		if (!ret)
-+			return 1;
-+		*pos += ret;
-+	}
-+
-+	return 0;
-+}
-+
- static int cdrom_sysctl_info(ctl_table *ctl, int write, struct file * filp,
-                            void __user *buffer, size_t *lenp, loff_t *ppos)
- {
--        int pos;
-+	int pos;
- 	struct cdrom_device_info *cdi;
- 	char *info = cdrom_sysctl_settings.info;
-+	const int max_size = sizeof(cdrom_sysctl_settings.info);
- 	
- 	if (!*lenp || (*ppos && !write)) {
- 		*lenp = 0;
- 		return 0;
- 	}
- 
-+	mutex_lock(&cdrom_mutex);
-+
- 	pos = sprintf(info, "CD-ROM information, " VERSION "\n");
- 	
--	pos += sprintf(info+pos, "\ndrive name:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%s", cdi->name);
--
--	pos += sprintf(info+pos, "\ndrive speed:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", cdi->speed);
--
--	pos += sprintf(info+pos, "\ndrive # of slots:");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", cdi->capacity);
--
--	pos += sprintf(info+pos, "\nCan close tray:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_CLOSE_TRAY) != 0);
--
--	pos += sprintf(info+pos, "\nCan open tray:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_OPEN_TRAY) != 0);
--
--	pos += sprintf(info+pos, "\nCan lock tray:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_LOCK) != 0);
--
--	pos += sprintf(info+pos, "\nCan change speed:");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_SELECT_SPEED) != 0);
--
--	pos += sprintf(info+pos, "\nCan select disk:");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_SELECT_DISC) != 0);
--
--	pos += sprintf(info+pos, "\nCan read multisession:");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_MULTI_SESSION) != 0);
--
--	pos += sprintf(info+pos, "\nCan read MCN:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_MCN) != 0);
--
--	pos += sprintf(info+pos, "\nReports media changed:");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_MEDIA_CHANGED) != 0);
--
--	pos += sprintf(info+pos, "\nCan play audio:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_PLAY_AUDIO) != 0);
--
--	pos += sprintf(info+pos, "\nCan write CD-R:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_CD_R) != 0);
--
--	pos += sprintf(info+pos, "\nCan write CD-RW:");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_CD_RW) != 0);
--
--	pos += sprintf(info+pos, "\nCan read DVD:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_DVD) != 0);
--
--	pos += sprintf(info+pos, "\nCan write DVD-R:");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_DVD_R) != 0);
--
--	pos += sprintf(info+pos, "\nCan write DVD-RAM:");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_DVD_RAM) != 0);
--
--	pos += sprintf(info+pos, "\nCan read MRW:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_MRW) != 0);
--
--	pos += sprintf(info+pos, "\nCan write MRW:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_MRW_W) != 0);
--
--	pos += sprintf(info+pos, "\nCan write RAM:\t");
--	for (cdi=topCdromPtr;cdi!=NULL;cdi=cdi->next)
--	    pos += sprintf(info+pos, "\t%d", CDROM_CAN(CDC_RAM) != 0);
--
--	strcpy(info+pos,"\n\n");
--		
--        return proc_dostring(ctl, write, filp, buffer, lenp, ppos);
-+	pos += scnprintf(info + pos, max_size - pos, "\ndrive name:\t");
-+	for (cdi = topCdromPtr; cdi != NULL; cdi = cdi->next)
-+		pos += scnprintf(info + pos, max_size - pos, "\t%s", cdi->name);
-+
-+	if (cdrom_print_int("\ndrive speed:\t", cdi->speed, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\ndrive # of slots:", cdi->capacity, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan close tray:\t",
-+				CDROM_CAN(CDC_CLOSE_TRAY) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan open tray:\t",
-+				CDROM_CAN(CDC_OPEN_TRAY) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan lock tray:\t",
-+				CDROM_CAN(CDC_LOCK) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan change speed:\t",
-+				CDROM_CAN(CDC_SELECT_SPEED) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan select disk:\t",
-+				CDROM_CAN(CDC_SELECT_DISC) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan read multisession:",
-+				CDROM_CAN(CDC_MULTI_SESSION) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan read MCN:",
-+				CDROM_CAN(CDC_MCN) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nReports media changed:",
-+				CDROM_CAN(CDC_MEDIA_CHANGED) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan play audio:",
-+				CDROM_CAN(CDC_PLAY_AUDIO) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan write CD-R:\t",
-+				CDROM_CAN(CDC_CD_R) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan write CD-RW:\t",
-+				CDROM_CAN(CDC_CD_RW) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan read DVD:\t",
-+				CDROM_CAN(CDC_DVD) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan write DVD-R:\t",
-+				CDROM_CAN(CDC_DVD_R) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan write DVD-RAM:\t",
-+				CDROM_CAN(CDC_DVD_RAM) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan read MRW:\t",
-+				CDROM_CAN(CDC_MRW) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan write MRW:\t",
-+				CDROM_CAN(CDC_MRW_W) != 0, info, &pos))
-+		goto done;
-+	if (cdrom_print_int("\nCan write RAM:\t",
-+				CDROM_CAN(CDC_RAM) != 0, info, &pos))
-+		goto done;
-+	if (!scnprintf(info + pos, max_size - pos, "\n\n"))
-+		goto done;
-+doit:
-+	mutex_unlock(&cdrom_mutex);
-+	return proc_dostring(ctl, write, filp, buffer, lenp, ppos);
-+done:
-+	printk(KERN_INFO "cdrom: info buffer too small\n");
-+	goto doit;
- }
- 
- /* Unfortunately, per device settings are not implemented through
-
--- 
-Jens Axboe
+> --- a/arch/powerpc/platforms/ps3/setup.c
+> +++ b/arch/powerpc/platforms/ps3/setup.c
+> @@ -107,7 +107,8 @@ static void ps3_panic(char *str)
+>  	while(1);
+>  }
+>  
+> -#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
+> +#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE) || \
+> +    defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
+>  static void prealloc(struct ps3_prealloc *p)
+>  {
+>  	if (!p->size)
+> @@ -123,7 +124,9 @@ static void prealloc(struct ps3_prealloc
+>  	printk(KERN_INFO "%s: %lu bytes at %p\n", p->name, p->size,
+>  	       p->address);
+>  }
+> +#endif
+>  
+> +#if defined(CONFIG_FB_PS3) || defined(CONFIG_FB_PS3_MODULE)
+>  struct ps3_prealloc ps3fb_videomemory = {
+>  	.name = "ps3fb videomemory",
+>  	.size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
+> @@ -146,6 +149,18 @@ early_param("ps3fb", early_parse_ps3fb);
+>  #define prealloc_ps3fb_videomemory()	do { } while (0)
+>  #endif
+>  
+> +#if defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
+> +struct ps3_prealloc ps3flash_bounce_buffer = {
+> +	.name = "ps3flash bounce buffer",
+> +	.size = 256*1024,
+> +	.align = 256*1024
+> +};
+> +EXPORT_SYMBOL_GPL(ps3flash_bounce_buffer);
+> +#define prealloc_ps3flash_bounce_buffer()	prealloc(&ps3flash_bounce_buffer)
+> +#else
+> +#define prealloc_ps3flash_bounce_buffer()	do { } while (0)
+> +#endif
+> +
+>  static int ps3_set_dabr(u64 dabr)
+>  {
+>  	enum {DABR_USER = 1, DABR_KERNEL = 2,};
+> @@ -175,6 +190,8 @@ static void __init ps3_setup_arch(void)
+>  #endif
+>  
+>  	prealloc_ps3fb_videomemory();
+> +	prealloc_ps3flash_bounce_buffer();
+> +
+>  	ppc_md.power_save = ps3_power_save;
+>  
+>  	DBG(" <- %s:%d\n", __func__, __LINE__);
+> --- a/include/asm-powerpc/ps3.h
+> +++ b/include/asm-powerpc/ps3.h
+> @@ -427,6 +427,7 @@ struct ps3_prealloc {
+>  };
+>  
+>  extern struct ps3_prealloc ps3fb_videomemory;
+> +extern struct ps3_prealloc ps3flash_bounce_buffer;
+>  
+> 
+>  #endif
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
