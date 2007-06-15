@@ -1,93 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbXFOUHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbXFOUJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbXFOUHi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbXFOUH3
+	id S1757358AbXFOUJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXFOUJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:07:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59192 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753416AbXFOUH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:07:28 -0400
-Date: Fri, 15 Jun 2007 22:06:23 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Crispin Cowan <crispin@novell.com>, Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070615200623.GA2616@elf.ucw.cz>
-References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com>
+	Fri, 15 Jun 2007 16:09:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46393 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753295AbXFOUJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:09:50 -0400
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Mundt <lethal@linux-sh.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<4671B734.1040401@nortel.com>
+	<orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706142155.34298.dhazelton@enter.net>
+	<or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org>
+	<ord4zx4zwm.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615050830.GT21478@ftp.linux.org.uk>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 17:08:52 -0300
+In-Reply-To: <20070615050830.GT21478@ftp.linux.org.uk> (Al Viro's message of "Fri\, 15 Jun 2007 06\:08\:30 +0100")
+Message-ID: <orbqfhyo8b.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070615165054.GA11345@kroah.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Jun 15, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
 
-And before you scream "races", take a look. It does not actually add
-them:
+> On Fri, Jun 15, 2007 at 01:14:49AM -0300, Alexandre Oliva wrote:
+>> I'm not trying to impose anything.  I'm not pushing anything.  I'm
+>> defending the GPLv3 from accusations that it's departing from the GPL
+>> spirit, and I'm trying to find out in what way Tivoization promotes
+>> the goals you perceive as good for Linux, that make GPLv2
+>> advantageous.  So far, you haven't given any single reason about this.
+>> You talked about tit-for-tat, you said anti-Tivoization in GPLv3 was
+>> bad, but you don't connect the dots.  Forgive if I get the impression
+>> that you're just fooling yourself, and misguiding a *lot* of people
+>> out there in the process.
 
-> > > I agree that the in-kernel implementation could use different abstractions 
-> > > than user-space, provided that the underlying implementation details can be 
-> > > hidden well enough. The key phrase here is "if possible", and in fact "if 
-> > > possible" is much too strong: very many things in software are possible, 
-> > > including user-space drives and a stable kernel module ABI. Some things make 
-> > > sense; others are genuinely bad ideas while still possible.
-> > >   
-> > In particular, to layer AppArmor on top of SELinux, the following
-> > problems must be addressed:
-> > 
-> >     * New files: when a file is created, it is labeled according to the
-> >       type of the creating process and the type of the parent directory.
-> >       Applications can also use libselinux to use application logic to
-> >       relabel the file, but that is not 'mandatory' policy, and fails in
-> >       cases like cp and mv. AppArmor lets you create a policy that e..g
-> >       says "/home/*/.plan r" to permit fingerd to read everyone's .plan
-> >       file, should it ever exist, and you cannot emulate that with SELinux.
-> 
-> A daemon using inotify can "instantly"[1] detect this and label the file
-> properly if it shows up.
+> Give.  Me.  A.  Break.
 
-Or just create the files with restrictive labels by default. That way
-you "fail closed".
+> Section 6 is inherently broken.
 
-> >     * Renamed Files: Renaming a file changes the policy with respect to
-> >       that file in AA. To emulate this in SELinux, you would have to
-> >       have a way to instantly re-label the file upon rename.
-> 
-> Same daemon can do the re-label.
+You mean the bits against Tivoization in it, right.
 
-...and no, race there is not important. Attacker may have opened the
-file under old name and is keeping open file descriptor. So this does
-not add a new race relative to AA.
+You point out reasons you dislike the particular wording (good, can
+you relay them to gplv3.fsf.org, please?), but nowhere do you show
+where such provisions hamper the tit-for-tat goal that Linus likes
+about GPLv2 and claims to be the reason he chose v2.  In fact, I've
+shown evidence that anti-Tivoization increases this tit-for-tat.
+Still, v2 is preferred over v3 under these grounds.  How can it be?
 
-> >     * Renamed Directory trees: The above problem is compounded with
-> >       directory trees. Changing the name at the top of a large, bushy
-> >       tree can require instant relabeling of millions of files.
-> 
-> Same daemon can do this.  And yes, it might take a ammount of time, but
-> the times that this happens in "real-life" on a "production" server is
-> quite small, if at all.
+> And BTW, you've been told just that about an hour before you've sent that
+> mail.
 
-And now, if you move a tree, there will be old labels for a while. But
-this does not matter, because attacker could be keeping file
-descriptors.
+Yup.  I got your opinion.  Now I got it twice, and others got it
+once.  How about others' opinions?
 
-Only case where attacker _can't_ be keeping file descriptors is newly
-created files in recently moved tree. But as you already create files
-with restrictive permissions, that's okay.
+And, more importantly, how does that provision conflict with your
+personal goals WRT Linux?
 
-Yes, you may get some -EPERM during the tree move, but AA has that
-problem already, see that "when madly moving trees we sometimes
-construct path file never ever had".
-
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
