@@ -1,540 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbXFOUa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbXFOUbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758279AbXFOUa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbXFOUaE
+	id S1758580AbXFOUbZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758282AbXFOUaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:30:04 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55021 "EHLO smtp.polymtl.ca"
+	Fri, 15 Jun 2007 16:30:07 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55031 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756811AbXFOUaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:30:00 -0400
-Message-Id: <20070615202925.235303417@polymtl.ca>
+	id S1757094AbXFOUaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:30:04 -0400
+Message-Id: <20070615202927.555725529@polymtl.ca>
 References: <20070615202310.178466032@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 15 Jun 2007 16:23:11 -0400
+Date: Fri, 15 Jun 2007 16:23:18 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 1/8] Immediate Value - Architecture Independent Code
-Content-Disposition: inline; filename=immediate-values-architecture-independent-code.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 15 Jun 2007 20:29:40 +0000
+Subject: [patch 8/8] Scheduler profiling - Use immediate values
+Content-Disposition: inline; filename=profiling-use-immediate-values.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 15 Jun 2007 20:29:42 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Immediate values (previously known as conditional calls) are used as a
-fast condition used in an if() statement to compile in a block meant to be
-dynamically enabled at runtime. When it is disabled, it has a very small
-footprint: it loads an immediate value, fed to the branch. In the disabled
-state, the branch skips the whole block (if the block consists in a function
-call, it will skip the argument setup and the call itself).
-
-It can be used to compile code in the kernel that is seldomly meant to be
-dynamically activated. It's the case of CPU specific workarounds, profiling,
-tracing, etc.
-
-There is a generic immediate() version, which uses standard global variables,
-and optimized per architecture immediate() implementations, which use a load
-immediate to remove a data cache hit. When the immediate() functionnality is
-disabled in the kernel, it falls back to global variables.
-
-It adds a new rodata section "__immediate" to place the pointers to the enable
-value. immediate() activation functions sits in kernel/immediate.c.
-
-Immediate values refer to the memory address of a previously declared integer.
-This integer hold the information about the state of the immediate values
-associated, and must be accessed through the API found in linux/immediate.h.
-
-The module_mutex is exported from kernel/module.c so other builtin objects can
-lock it. At module load time, each immediate value is checked to see if it must
-be enabled. It would be the case if the variable they refer to is exported from
-another module and already enabled.
-
-In their current implementation, immediate values should not be used to store
-data not meant to be either 0 or !0. The goal of the optimized implementations
-is to get the smallest instruction, with lowest impact on the normal function
-behavior. Also, since the i386 architecture implementation depends on the 0 vs
-!0 variable caracteristic, it is recommended to only use these variables as a
-condition for a if() statement.
+Use immediate values with lower d-cache hit in optimized version as a
+condition for scheduler profiling call.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- include/asm-generic/vmlinux.lds.h |    8 +
- include/linux/immediate.h         |  116 ++++++++++++++++++++++
- include/linux/module.h            |   10 +
- kernel/Makefile                   |    1 
- kernel/immediate.c                |  197 ++++++++++++++++++++++++++++++++++++++
- kernel/module.c                   |   22 +++-
- 6 files changed, 351 insertions(+), 3 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/immediate.h
+---
+ drivers/kvm/svm.c       |    2 +-
+ drivers/kvm/vmx.c       |    2 +-
+ include/linux/profile.h |    9 +++------
+ kernel/profile.c        |   37 +++++++++++++++++++++++++------------
+ kernel/sched.c          |    3 ++-
+ 5 files changed, 32 insertions(+), 21 deletions(-)
+
+Index: linux-2.6-lttng/kernel/profile.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/linux/immediate.h	2007-06-15 15:58:53.000000000 -0400
-@@ -0,0 +1,116 @@
-+#ifndef _LINUX_IMMEDIATE_H
-+#define _LINUX_IMMEDIATE_H
-+
-+/*
-+ * Immediate values, can be set at runtime. Only set to 0 or 1.
-+ *
-+ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#ifdef __KERNEL__
-+
-+struct module;
-+
-+/* Always access this type with the provided functions. */
-+typedef struct { int value; } immediate_t;
-+
-+struct __immediate {
-+		/* Identifier variable (int *) of the immediate value */
-+	immediate_t *var;
-+		/*
-+		 * Pointer to the memory location that holds the value (data or
-+ 		 * immediate value within the load immediate instruction).
-+		 */
-+	void *enable;
-+		/* Immediate value flags, see the list below */
-+	int flags;
-+};
-+
-+/*
-+ * Immediate value flags : selects the mechanism used to set the immediate
-+ * value. This is primarily used at reentrancy-unfriendly sites.
-+ *
-+ * On an architecture that has optimized immediate values implemented,
-+ * the IF_OPTIMIZED flags distinguishes between optimized and non-optimized
-+ * immediate value statements: typically, reentrancy-unfriendly sites should
-+ * declare their immediate values without the IF_OPTIMIZED flag.
-+ */
-+#define IF_OPTIMIZED		(1 << 0) /* Use optimized immediate */
-+#define IF_LOCKDEP		(1 << 1) /* Can trigger lockdep at patch site */
-+#define _IF_NR			2
-+
-+/*
-+ * In order to support embedded systems with read-only memory for the text
-+ * segment, the choice to disable the "optimized" immediate values is left as a
-+ * config option even if the architecture has the optimized flavor.
-+ *
-+ * This include scheme is used to support both the generic and optimized version
-+ * at the same time : if a _immediate is declared with the IF_OPTIMIZED flags
-+ * unset, it will use the generic version. This is useful when we must place
-+ * immediates in locations that present specific reentrancy issues, such as
-+ * some trap handlers, in the lockdep code and some of the scheduler code. The
-+ * optimized version, when it uses the i386 mechanism to insure correct
-+ * cross-cpu code modification, can trigger a trap, which will call into lockdep
-+ * and might have other side-effects.
-+ */
-+
-+#ifdef CONFIG_IMMEDIATE
-+
-+#include <asm/immediate.h>		/* optimized immediate flavor */
-+
-+/*
-+ * Generic immediate flavor always available.
-+ *
-+ * Note : the empty asm volatile with read constraint is used here instead of a
-+ * "used" attribute to fix a gcc 4.1.x bug.
-+ * Quoting Jeremy Fitzhardinge <jeremy@goop.org> :
-+ * "There's a gcc bug which ignores the attribute for local-scope static
-+ * variables: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29299"
-+ */
-+#define immediate_generic(flags, var)					\
-+	({								\
-+		static const struct __immediate __immediate_info	\
-+			__attribute__((section("__immediate"))) =	\
-+			{ &(var), NULL, (flags) & ~IF_OPTIMIZED } ;	\
-+		asm volatile ( "" : : "i" (&__immediate_info));		\
-+		((var).value);						\
-+	})
-+
-+extern void immediate_arm(immediate_t *var);
-+extern void immediate_disarm(immediate_t *var);
-+extern int immediate_list(void);
-+extern void module_immediate_setup(struct module *mod);
-+extern void __immediate_update(immediate_t *var, int value);
-+#else /* !CONFIG_IMMEDIATE */
-+
-+#include <asm-generic/immediate.h>	/* fallback on generic immediate */
-+
-+#define immediate_generic(flags, var)	(unlikely((var).value))
-+
-+static inline void immediate_arm(immediate_t *var)
-+{
-+	var->value = 1;
-+}
-+
-+static inline void immediate_disarm(immediate_t *var)
-+{
-+	var->value = 0;
-+}
-+static inline void module_immediate_setup(struct module *mod) { }
-+static inline void __immediate_update(immediate_t *var, int value)
-+{
-+	var->value = value;
-+}
-+#endif /* CONFIG_IMMEDIATE */
-+
-+/* immediate_query : Returns 1 if enabled, 0 if disabled or not present */
-+static inline int immediate_query(immediate_t *var)
-+{
-+	return var->value;
-+}
-+
-+#endif /* __KERNEL__ */
-+#endif
-Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-06-15 15:58:28.000000000 -0400
-+++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-06-15 16:13:50.000000000 -0400
-@@ -122,6 +122,13 @@
- 		VMLINUX_SYMBOL(__stop___kcrctab_gpl_future) = .;	\
- 	}								\
- 									\
-+	/* Immediate values: pointers */				\
-+	__immediate : AT(ADDR(__immediate) - LOAD_OFFSET) {		\
-+		VMLINUX_SYMBOL(__start___immediate) = .;		\
-+		*(__immediate)						\
-+		VMLINUX_SYMBOL(__stop___immediate) = .;			\
-+	}								\
-+									\
- 	/* Kernel symbol table: strings */				\
-         __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
- 		*(__ksymtab_strings)					\
-@@ -266,4 +273,3 @@
-   	*(.initcall6s.init)						\
-   	*(.initcall7.init)						\
-   	*(.initcall7s.init)
+--- linux-2.6-lttng.orig/kernel/profile.c	2007-06-15 16:13:50.000000000 -0400
++++ linux-2.6-lttng/kernel/profile.c	2007-06-15 16:14:07.000000000 -0400
+@@ -23,6 +23,7 @@
+ #include <linux/profile.h>
+ #include <linux/highmem.h>
+ #include <linux/mutex.h>
++#include <linux/immediate.h>
+ #include <asm/sections.h>
+ #include <asm/semaphore.h>
+ #include <asm/irq_regs.h>
+@@ -42,9 +43,6 @@
+ static atomic_t *prof_buffer;
+ static unsigned long prof_len, prof_shift;
+ 
+-int prof_on __read_mostly;
+-EXPORT_SYMBOL_GPL(prof_on);
 -
-Index: linux-2.6-lttng/include/linux/module.h
+ static cpumask_t prof_cpu_mask = CPU_MASK_ALL;
+ #ifdef CONFIG_SMP
+ static DEFINE_PER_CPU(struct profile_hit *[2], cpu_profile_hits);
+@@ -52,6 +50,12 @@
+ static DEFINE_MUTEX(profile_flip_mutex);
+ #endif /* CONFIG_SMP */
+ 
++/* Immediate values */
++immediate_t __read_mostly sleep_profiling, sched_profiling, kvm_profiling,
++	cpu_profiling;
++EXPORT_SYMBOL_GPL(kvm_profiling);
++EXPORT_SYMBOL_GPL(cpu_profiling);
++
+ static int __init profile_setup(char * str)
+ {
+ 	static char __initdata schedstr[] = "schedule";
+@@ -60,7 +64,7 @@
+ 	int par;
+ 
+ 	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
+-		prof_on = SLEEP_PROFILING;
++		immediate_arm(&sleep_profiling);
+ 		if (str[strlen(sleepstr)] == ',')
+ 			str += strlen(sleepstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -69,7 +73,7 @@
+ 			"kernel sleep profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	} else if (!strncmp(str, schedstr, strlen(schedstr))) {
+-		prof_on = SCHED_PROFILING;
++		immediate_arm(&sched_profiling);
+ 		if (str[strlen(schedstr)] == ',')
+ 			str += strlen(schedstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -78,7 +82,7 @@
+ 			"kernel schedule profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	} else if (!strncmp(str, kvmstr, strlen(kvmstr))) {
+-		prof_on = KVM_PROFILING;
++		immediate_arm(&kvm_profiling);
+ 		if (str[strlen(kvmstr)] == ',')
+ 			str += strlen(kvmstr) + 1;
+ 		if (get_option(&str, &par))
+@@ -88,7 +92,7 @@
+ 			prof_shift);
+ 	} else if (get_option(&str, &par)) {
+ 		prof_shift = par;
+-		prof_on = CPU_PROFILING;
++		immediate_arm(&cpu_profiling);
+ 		printk(KERN_INFO "kernel profiling enabled (shift: %ld)\n",
+ 			prof_shift);
+ 	}
+@@ -99,7 +103,10 @@
+ 
+ void __init profile_init(void)
+ {
+-	if (!prof_on) 
++	if (!immediate_query(&sleep_profiling) &&
++		!immediate_query(&sched_profiling) &&
++		!immediate_query(&kvm_profiling) &&
++		!immediate_query(&cpu_profiling))
+ 		return;
+  
+ 	/* only text is profiled */
+@@ -288,7 +295,7 @@
+ 	int i, j, cpu;
+ 	struct profile_hit *hits;
+ 
+-	if (prof_on != type || !prof_buffer)
++	if (!prof_buffer)
+ 		return;
+ 	pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
+ 	i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+@@ -398,7 +405,7 @@
+ {
+ 	unsigned long pc;
+ 
+-	if (prof_on != type || !prof_buffer)
++	if (!prof_buffer)
+ 		return;
+ 	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
+ 	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
+@@ -555,7 +562,10 @@
+ 	}
+ 	return 0;
+ out_cleanup:
+-	prof_on = 0;
++	immediate_disarm(&sleep_profiling);
++	immediate_disarm(&sched_profiling);
++	immediate_disarm(&kvm_profiling);
++	immediate_disarm(&cpu_profiling);
+ 	smp_mb();
+ 	on_each_cpu(profile_nop, NULL, 0, 1);
+ 	for_each_online_cpu(cpu) {
+@@ -582,7 +592,10 @@
+ {
+ 	struct proc_dir_entry *entry;
+ 
+-	if (!prof_on)
++	if (!immediate_query(&sleep_profiling) &&
++		!immediate_query(&sched_profiling) &&
++		!immediate_query(&kvm_profiling) &&
++		!immediate_query(&cpu_profiling))
+ 		return 0;
+ 	if (create_hash_tables())
+ 		return -1;
+Index: linux-2.6-lttng/include/linux/profile.h
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/module.h	2007-06-15 15:58:28.000000000 -0400
-+++ linux-2.6-lttng/include/linux/module.h	2007-06-15 16:13:49.000000000 -0400
-@@ -15,6 +15,7 @@
- #include <linux/stringify.h>
- #include <linux/kobject.h>
- #include <linux/moduleparam.h>
-+#include <linux/immediate.h>
- #include <asm/local.h>
+--- linux-2.6-lttng.orig/include/linux/profile.h	2007-06-15 16:13:50.000000000 -0400
++++ linux-2.6-lttng/include/linux/profile.h	2007-06-15 16:14:07.000000000 -0400
+@@ -10,7 +10,8 @@
  
- #include <asm/module.h>
-@@ -67,6 +68,10 @@
- /* Archs provide a method of finding the correct exception table. */
- struct exception_table_entry;
+ #include <asm/errno.h>
  
-+/* Protects the list of modules. */
-+extern struct mutex module_mutex;
-+extern struct list_head modules;
-+
- const struct exception_table_entry *
- search_extable(const struct exception_table_entry *first,
- 	       const struct exception_table_entry *last,
-@@ -354,6 +359,11 @@
- 	/* The command line arguments (may be mangled).  People like
- 	   keeping pointers to this stuff */
- 	char *args;
-+
-+#ifdef CONFIG_IMMEDIATE
-+	const struct __immediate *immediates;
-+	unsigned int num_immediates;
-+#endif
- };
- #ifndef MODULE_ARCH_INIT
- #define MODULE_ARCH_INIT {}
-Index: linux-2.6-lttng/kernel/module.c
+-extern int prof_on __read_mostly;
++extern immediate_t __read_mostly sleep_profiling, sched_profiling, kvm_profiling,
++		cpu_profiling;
+ 
+ #define CPU_PROFILING	1
+ #define SCHED_PROFILING	2
+@@ -35,11 +36,7 @@
+  */
+ static inline void profile_hit(int type, void *ip)
+ {
+-	/*
+-	 * Speedup for the common (no profiling enabled) case:
+-	 */
+-	if (unlikely(prof_on == type))
+-		profile_hits(type, ip, 1);
++	profile_hits(type, ip, 1);
+ }
+ 
+ #ifdef CONFIG_PROC_FS
+Index: linux-2.6-lttng/kernel/sched.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-06-15 15:58:28.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2007-06-15 16:13:49.000000000 -0400
-@@ -32,6 +32,7 @@
- #include <linux/cpu.h>
- #include <linux/moduleparam.h>
- #include <linux/errno.h>
-+#include <linux/immediate.h>
- #include <linux/err.h>
- #include <linux/vermagic.h>
- #include <linux/notifier.h>
-@@ -65,8 +66,8 @@
- static DEFINE_SPINLOCK(modlist_lock);
+--- linux-2.6-lttng.orig/kernel/sched.c	2007-06-15 16:13:50.000000000 -0400
++++ linux-2.6-lttng/kernel/sched.c	2007-06-15 16:14:07.000000000 -0400
+@@ -2998,7 +2998,8 @@
+ 			print_irqtrace_events(prev);
+ 		dump_stack();
+ 	}
+-	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
++	if (unlikely(immediate(sched_profiling)))
++		profile_hit(SCHED_PROFILING, __builtin_return_address(0));
  
- /* List of modules, protected by module_mutex AND modlist_lock */
--static DEFINE_MUTEX(module_mutex);
--static LIST_HEAD(modules);
-+DEFINE_MUTEX(module_mutex);
-+LIST_HEAD(modules);
- 
- static BLOCKING_NOTIFIER_HEAD(module_notify_list);
- 
-@@ -1578,6 +1579,9 @@
- 	unsigned int unusedcrcindex;
- 	unsigned int unusedgplindex;
- 	unsigned int unusedgplcrcindex;
-+	unsigned int immediateindex = 0;
-+	unsigned int markersindex = 0;
-+	unsigned int markersstringsindex = 0;
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-@@ -1674,6 +1678,9 @@
- #ifdef ARCH_UNWIND_SECTION_NAME
- 	unwindex = find_sec(hdr, sechdrs, secstrings, ARCH_UNWIND_SECTION_NAME);
- #endif
-+#ifdef CONFIG_IMMEDIATE
-+	immediateindex = find_sec(hdr, sechdrs, secstrings, "__immediate");
-+#endif
- 
- 	/* Don't keep modinfo section */
- 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
-@@ -1684,6 +1691,8 @@
- #endif
- 	if (unwindex)
- 		sechdrs[unwindex].sh_flags |= SHF_ALLOC;
-+	if (immediateindex)
-+		sechdrs[immediateindex].sh_flags |= SHF_ALLOC;
- 
- 	/* Check module struct version now, before we try to use module. */
- 	if (!check_modstruct_version(sechdrs, versindex, mod)) {
-@@ -1824,6 +1833,13 @@
- 	mod->gpl_future_syms = (void *)sechdrs[gplfutureindex].sh_addr;
- 	if (gplfuturecrcindex)
- 		mod->gpl_future_crcs = (void *)sechdrs[gplfuturecrcindex].sh_addr;
-+#ifdef CONFIG_IMMEDIATE
-+	if (immediateindex) {
-+		mod->immediates = (void *)sechdrs[immediateindex].sh_addr;
-+		mod->num_immediates =
-+			sechdrs[immediateindex].sh_size / sizeof(*mod->immediates);
-+	}
-+#endif
- 
- 	mod->unused_syms = (void *)sechdrs[unusedindex].sh_addr;
- 	if (unusedcrcindex)
-@@ -1883,6 +1899,8 @@
- 
- 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
- 
-+	module_immediate_setup(mod);
-+
- 	err = module_finalize(hdr, sechdrs, mod);
- 	if (err < 0)
- 		goto cleanup;
-Index: linux-2.6-lttng/kernel/Makefile
+ 	/*
+ 	 * The idle thread is not allowed to schedule!
+Index: linux-2.6-lttng/drivers/kvm/svm.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/Makefile	2007-06-15 15:58:28.000000000 -0400
-+++ linux-2.6-lttng/kernel/Makefile	2007-06-15 16:13:50.000000000 -0400
-@@ -56,6 +56,7 @@
- obj-$(CONFIG_UTS_NS) += utsname.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
-+obj-$(CONFIG_IMMEDIATE) += immediate.o
+--- linux-2.6-lttng.orig/drivers/kvm/svm.c	2007-06-15 16:13:50.000000000 -0400
++++ linux-2.6-lttng/drivers/kvm/svm.c	2007-06-15 16:14:07.000000000 -0400
+@@ -1647,7 +1647,7 @@
+ 	/*
+ 	 * Profile KVM exit RIPs:
+ 	 */
+-	if (unlikely(prof_on == KVM_PROFILING))
++	if (unlikely(immediate(kvm_profiling)))
+ 		profile_hit(KVM_PROFILING,
+ 			(void *)(unsigned long)vcpu->svm->vmcb->save.rip);
  
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-Index: linux-2.6-lttng/kernel/immediate.c
+Index: linux-2.6-lttng/drivers/kvm/vmx.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/kernel/immediate.c	2007-06-15 15:58:53.000000000 -0400
-@@ -0,0 +1,197 @@
-+/*
-+ * Copyright (C) 2007 Mathieu Desnoyers
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/immediate.h>
-+
-+extern const struct __immediate __start___immediate[];
-+extern const struct __immediate __stop___immediate[];
-+
-+/*
-+ * modules_mutex nests inside immediate_mutex. immediate_mutex protects builtin
-+ * immediates and module immediates.
-+ */
-+DEFINE_MUTEX(immediate_mutex);
-+
-+/*
-+ * Sets a range of immediates to a enabled state : set the enable bit.
-+ */
-+static void _immediate_update_range(
-+	const struct __immediate *begin, const struct __immediate *end)
-+{
-+	const struct __immediate *iter;
-+	int enable;
-+
-+	for (iter = begin; iter < end; iter++) {
-+		if (!(iter->flags & IF_OPTIMIZED))
-+			continue;
-+		enable = immediate_query(iter->var);
-+		if (enable != IMMEDIATE_OPTIMIZED_ENABLE(iter->enable))
-+			immediate_optimized_set_enable(iter->enable, enable);
-+	}
-+}
-+
-+#ifdef CONFIG_MODULES
-+/*
-+ * Setup the immediate according to the variable upon which it depends.  Called
-+ * by load_module with module_mutex held. This mutex protects against concurrent
-+ * modifications to modules'immediates. Therefore, since
-+ * module_immediate_setup() does not modify builtin immediates, it does not need
-+ * to take the immediate_mutex.
-+ */
-+void module_immediate_setup(struct module *mod)
-+{
-+	_immediate_update_range(mod->immediates,
-+		mod->immediates+mod->num_immediates);
-+}
-+#endif
-+
-+/*
-+ * Provides a listing of the immediates present in the kernel with their type
-+ * (optimized or generic) and state (enabled or disabled).
-+ */
-+static int _immediate_list_range(const struct __immediate *begin,
-+	const struct __immediate *end)
-+{
-+	const struct __immediate *iter;
-+	int found = 0;
-+
-+	for (iter = begin; iter < end; iter++) {
-+		printk("variable %p \n", iter->var);
-+		if (iter->flags & IF_OPTIMIZED)
-+			printk("  enable %u optimized\n",
-+				IMMEDIATE_OPTIMIZED_ENABLE(iter->enable));
-+		else
-+			printk("  enable %u generic\n",
-+				immediate_query(iter->var));
-+		found++;
-+	}
-+	return found;
-+}
-+
-+#ifdef CONFIG_MODULES
-+static inline void __immediate_update_modules(immediate_t *var, int value)
-+{
-+	struct module *mod;
-+
-+	list_for_each_entry(mod, &modules, list) {
-+		if (mod->taints)
-+			continue;
-+		_immediate_update_range(mod->immediates,
-+			mod->immediates+mod->num_immediates);
-+	}
-+}
-+#else
-+static inline void __immediate_update_modules(immediate_t *var, int value) { }
-+#endif
-+
-+/*
-+ * Calls _immediate_update_range for the core immediates and modules immediates.
-+ */
-+void __immediate_update(immediate_t *var, int value)
-+{
-+
-+	var->value = value;
-+	/* Core kernel immediates */
-+	_immediate_update_range(__start___immediate, __stop___immediate);
-+	/* immediates in modules. */
-+	__immediate_update_modules(var, value);
-+}
-+
-+#ifdef CONFIG_MODULES
-+/*
-+ * Takes module_mutex.
-+ */
-+void _immediate_update(immediate_t *var, int value)
-+{
-+	mutex_lock(&module_mutex);
-+	__immediate_update(var, value);
-+	mutex_unlock(&module_mutex);
-+}
-+#else
-+void _immediate_update(immediate_t *var, int value)
-+{
-+	__immediate_update(var, value);
-+}
-+#endif
-+
-+/* immediate enabling/disabling use the immediate_mutex to synchronize. */
-+void immediate_arm(immediate_t *var)
-+{
-+	mutex_lock(&immediate_mutex);
-+	_immediate_update(var, 1);
-+	mutex_unlock(&immediate_mutex);
-+}
-+EXPORT_SYMBOL_GPL(immediate_arm);
-+
-+/* immediate enabling/disabling use the immediate_mutex to synchronize. */
-+void immediate_disarm(immediate_t *var)
-+{
-+	mutex_lock(&immediate_mutex);
-+	_immediate_update(var, 0);
-+	mutex_unlock(&immediate_mutex);
-+}
-+EXPORT_SYMBOL_GPL(immediate_disarm);
-+
-+#ifdef CONFIG_MODULES
-+static inline int immediate_list_modules(void)
-+{
-+	int found = 0;
-+	struct module *mod;
-+
-+	printk("Listing module immediate values\n");
-+	mutex_lock(&module_mutex);
-+	list_for_each_entry(mod, &modules, list) {
-+		if (!mod->taints) {
-+			printk("Listing immediate values for module %s\n",
-+				mod->name);
-+			found += _immediate_list_range(mod->immediates,
-+				mod->immediates+mod->num_immediates);
-+		}
-+	}
-+	mutex_unlock(&module_mutex);
-+	return found;
-+}
-+#else
-+static inline int immediate_list_modules(void)
-+{
-+	return 0;
-+}
-+#endif
-+
-+/*
-+ * Calls _immediate_list_range for the core and module immediates.
-+ * Cond call listing uses the module_mutex to synchronize.
-+ * Takes the immediate mutex to protect against builtin immediate modification
-+ * and takes the module_mutex to protect against module list modification.
-+ * TODO : should output this listing to a procfs file.
-+ */
-+int immediate_list(void)
-+{
-+	int found = 0;
-+
-+	mutex_lock(&immediate_mutex);
-+	/* Core kernel immediates */
-+	printk("Listing kernel immediate values\n");
-+	found += _immediate_list_range(__start___immediate, __stop___immediate);
-+	/* immediates in modules. */
-+	found += immediate_list_modules();
-+	mutex_unlock(&immediate_mutex);
-+	return found;
-+}
-+EXPORT_SYMBOL_GPL(immediate_list);
+--- linux-2.6-lttng.orig/drivers/kvm/vmx.c	2007-06-15 16:13:50.000000000 -0400
++++ linux-2.6-lttng/drivers/kvm/vmx.c	2007-06-15 16:14:07.000000000 -0400
+@@ -2131,7 +2131,7 @@
+ 	/*
+ 	 * Profile KVM exit RIPs:
+ 	 */
+-	if (unlikely(prof_on == KVM_PROFILING))
++	if (unlikely(immediate(kvm_profiling)))
+ 		profile_hit(KVM_PROFILING, (void *)vmcs_readl(GUEST_RIP));
+ 
+ 	vcpu->launched = 1;
 
 -- 
 Mathieu Desnoyers
