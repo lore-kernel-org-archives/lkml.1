@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbXFOSRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXFOSRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbXFOSRP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbXFOSRA
+	id S1756181AbXFOSRf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbXFOSR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:17:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49698 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751624AbXFOSQ7 (ORCPT
+	Fri, 15 Jun 2007 14:17:26 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:50821 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752128AbXFOSRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:16:59 -0400
-Date: Fri, 15 Jun 2007 11:15:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Carlo Wood <carlo@alinoe.com>
-cc: Daniel Hazelton <dhazelton@enter.net>, Bernd Paysan <bernd.paysan@gmx.de>,
-       Theodore Tso <tytso@mit.edu>, Alexandre Oliva <aoliva@redhat.com>,
-       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Fri, 15 Jun 2007 14:17:25 -0400
+Date: Fri, 15 Jun 2007 14:17:24 -0400
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <20070615164347.GA4952@alinoe.com>
-Message-ID: <alpine.LFD.0.98.0706151101020.14121@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org>
- <20070615052432.GC14911@thunk.org> <200706151202.13708.bernd.paysan@gmx.de>
- <200706150633.51857.dhazelton@enter.net> <20070615130254.GB11830@alinoe.com>
- <alpine.LFD.0.98.0706150830020.14121@woody.linux-foundation.org>
- <20070615164347.GA4952@alinoe.com>
+Message-ID: <20070615181724.GO10008@csclub.uwaterloo.ca>
+References: <200706132121.04532.dhazelton@enter.net> <orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br> <200706132304.21984.dhazelton@enter.net> <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu> <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614235004.GA14952@elte.hu> <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 15 Jun 2007, Carlo Wood wrote:
+On Thu, Jun 14, 2007 at 11:21:59PM -0300, Alexandre Oliva wrote:
+> Consider egg yolk and egg shells.
 > 
-> The point is: can you, or can't you (legally) relicense the whole kernel
-> tree under the GPLv3 (or GPLv2+GPLv3)?
+> I produce egg yolk.  I give it to you under terms that say "if you
+> pass this on, you must do so in such a way that doesn't stop anyone
+> from eating it"
+> 
+> 
+> You produce egg shells.  You carefully construct your shell around the
+> egg yolk and some white you got from a liberal third party.
+> 
+> 
+> Then you sell the egg shells, with white and yolk inside, under
+> contracts that specify "the shell must be kept intact, it can't be
+> broken or otherwise perforated".
 
-No. My special rights do not actually give me those kinds of powers, 
-exactly because I'm bound by my _other_ agreement (namely the GPLv2) to 
-follow the license of the code that other people have sent me.
+It would be more like not telling you how to change the egg yolk while
+still having a working egg.  Only the egg shell guy knows how to put a
+new egg yolk inside the shell and close the shell around it.  He isn't
+going to say you can't break the shell, just that it you break the shell
+the egg isn't going to work as a whole egg anymore, and he won't tell
+you how to put it back together with a different yolk inside.  You can
+still put the yolk inside another container that you do know how to
+assemble around the egg stuff.
 
-> At first I thought that you cannot, because too many (significant) contributors
-> have been involved (and you will never get signatures from them all).
-> Then someone surprised me by claiming that the original author had
-> copyright for everything - even files added by others.
+> Are you or are you not disrespecting the terms that apply to the yolk?
 
-Both are true facts, but the "copyright for everything" is a *separate* 
-kind of copyright, which does not include the right to relicense. It's 
-literally the "copyright in the collective".
+Very bad comparison.  
 
-For examples of the US rules, see USC 17.2.201(c) ("Ownership of 
-copyright" and " Contributions to Collective Works"), which spells out 
-some limited special rights that I have (namely the right to reproduce and 
-distribute).
+> Yes.  This means the hardware distributor who put the software in
+> there must not place roadblocks that impede the user to get where she
+> wants with the software, not that the vendor must offer the user a
+> sport car to take her there.
 
-Of course, US law being what it is, the USC is just part of the picture. 
-US law is the strange kind of British law, where "case law" is in many 
-ways more important than the written-down rules like the USC. So caveat 
-emptor!
+What if I want to run a program that takes 512MB ram and the hardware
+guys put in 128MB.  Now they are impeding me doing the change I wanted
+to do to the software.
 
-So I have limited special rights in the collective, but those rights are 
-actually in almost every way *more* limited than the rights that the GPLv2 
-gives to me (the "almost every way" is because quite frankly, I'm not 
-entirely sure about certain special cases. In particular, if somebody 
-tried to _revoke_ the rights to their code under the GPLv2, I suspect that 
-my rights in the collective would protect me from that and allow me to 
-still distribute the code in question, since _those_ rights cannot be 
-revoked, and they are _mine_).
+> The goal is not to burden the vendor.  The goal is to stop the vendor
+> from artificially burdening the user.
 
-And btw: the above paragraph is *way* more legalistic detail than I am at 
-all ready to state as "fact". It depends on too many things, and is 
-largely speculative in nature.
+Not putting in an infinite amount of resources is impeding the user too.
+"artificially burdening" seems very hard to define.  When something is
+hard to define, you are usually better of not trying because you will
+get it wrong and screw up even worse as a result.
 
-But one thing is pretty clear and nonspeculative: *nobody* has the right 
-to upgrade the kernel to GPLv3. Not me, not you, not anybody. Not without 
-clearing it with every single person whose copyright is involved and who 
-didn't already give that permission.
-
-So only in the case of some really obscure and unclear situations, I _may_ 
-have more rights than some other people, but trust me, but that is damn 
-murky, and you'd better have a good lawyer state it, not just a programmer 
-who has talked to too many lawyers..
-
-			Linus
+--
+Len Sorensen
