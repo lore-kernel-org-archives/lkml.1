@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbXFOVnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbXFOVpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758218AbXFOVnb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbXFOVnS
+	id S1758071AbXFOVpS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbXFOVpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:43:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45463 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756986AbXFOVnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:43:17 -0400
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Bernd Paysan <bernd.paysan@gmx.de>, Paulo Marques <pmarques@grupopie.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706151014.45383.bernd.paysan@gmx.de>
-	<46727CCF.9030905@grupopie.com>
-	<200706151403.57178.bernd.paysan@gmx.de>
-	<20070615144301.GV21478@ftp.linux.org.uk>
-	<or8xal2ia7.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615185208.GX21478@ftp.linux.org.uk>
-	<ord4zxx732.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615213232.GZ21478@ftp.linux.org.uk>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 18:42:39 -0300
-In-Reply-To: <20070615213232.GZ21478@ftp.linux.org.uk> (Al Viro's message of "Fri\, 15 Jun 2007 22\:32\:32 +0100")
-Message-ID: <ork5u4x5bk.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 17:45:00 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36335 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751269AbXFOVo7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:44:59 -0400
+Date: Fri, 15 Jun 2007 23:45:13 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: David Howells <dhowells@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [2.6 patch] net/rxrpc/ar-connection.c: fix NULL dereference
+Message-ID: <20070615214513.GL3588@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
+This patch fixes a NULL dereference spotted by the Coverity checker.
 
-> On Fri, Jun 15, 2007 at 06:04:33PM -0300, Alexandre Oliva wrote:
->> > No specific case law, but I'd expect serious [eventual] trouble for
->> > somebody trying to slap some different license in such case.
->> 
->> Consider this (to make the freeing-the-lion story short):
->> 
->> Jar file with .class files, with a copy of LGPL in the root of the
->> tree.  No other license anywhere to be seen.  Is it safe to assume
->> the whole thing is under the LGPL?
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-> It certainly sounds like a reasonable first assumption; unless you are
-> aware of couterexamples, you probably would be able at least to prove
-> that you've acted in good faith if somebody starts to complain.  IANAL,
-> obviously, so ask FSF lawyers.  Really.  Especially if you are doing that
-> for a text associated with FSF-LA in any way.  That's what they are for.
+---
 
-I've covered my grounds and talked to lawyers in Brazil, where this
-all happened.  But it wouldn't hurt me to have cases of law abroad,
-which is why I asked.
+ net/rxrpc/ar-connection.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+--- linux-2.6.22-rc4-mm2/net/rxrpc/ar-connection.c.old	2007-06-15 23:05:26.000000000 +0200
++++ linux-2.6.22-rc4-mm2/net/rxrpc/ar-connection.c	2007-06-15 23:06:42.000000000 +0200
+@@ -200,29 +200,29 @@ static struct rxrpc_connection *rxrpc_al
+ 	if (conn) {
+ 		INIT_WORK(&conn->processor, &rxrpc_process_connection);
+ 		INIT_LIST_HEAD(&conn->bundle_link);
+ 		conn->calls = RB_ROOT;
+ 		skb_queue_head_init(&conn->rx_queue);
+ 		rwlock_init(&conn->lock);
+ 		spin_lock_init(&conn->state_lock);
+ 		atomic_set(&conn->usage, 1);
+ 		conn->debug_id = atomic_inc_return(&rxrpc_debug_id);
+ 		conn->avail_calls = RXRPC_MAXCALLS;
+ 		conn->size_align = 4;
+ 		conn->header_size = sizeof(struct rxrpc_header);
+ 	}
+ 
+-	_leave(" = %p{%d}", conn, conn->debug_id);
++	_leave(" = %p{%d}", conn, conn ? conn->debug_id : 0);
+ 	return conn;
+ }
+ 
+ /*
+  * assign a connection ID to a connection and add it to the transport's
+  * connection lookup tree
+  * - called with transport client lock held
+  */
+ static void rxrpc_assign_connection_id(struct rxrpc_connection *conn)
+ {
+ 	struct rxrpc_connection *xconn;
+ 	struct rb_node *parent, **p;
+ 	__be32 epoch;
+ 	u32 real_conn_id;
+
