@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbXFORUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbXFORVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752649AbXFORUg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbXFORU3
+	id S1753229AbXFORVK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXFORUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:20:29 -0400
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:55805 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbXFORU2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:20:28 -0400
-Date: Fri, 15 Jun 2007 19:19:22 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: "Simon Arlott" <simon@fire.lp0.eu>
-Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "markus reichelt" <ml@mareichelt.de>, linux-kernel@vger.kernel.org
-Subject: Re: /dev/loop* devices not appearing in /dev (at least since     
- 2.6.22-rc3*)
-Message-ID: <20070615191922.4dbaba84@localhost>
-In-Reply-To: <42688.simon.1181906375@5ec7c279.invalid>
-References: <e85b9d30706140437s5f3622c3rc86c75a4f845e7a3@mail.gmail.com>
-	<20070614125224.GA4155@tatooine.rebelbase.local>
-	<Pine.LNX.4.64.0706151101070.32724@fbirervta.pbzchgretzou.qr>
-	<42688.simon.1181906375@5ec7c279.invalid>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 15 Jun 2007 13:20:54 -0400
+Received: from il.qumranet.com ([82.166.9.18]:53290 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751329AbXFORUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 13:20:53 -0400
+Message-ID: <4672CA72.1010505@argo.co.il>
+Date: Fri, 15 Jun 2007 20:20:50 +0300
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Neil Brown <neilb@suse.de>, david@lang.hm, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <467273AB.9010202@argo.co.il> <Pine.LNX.4.64.0706151823360.32724@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0706151823360.32724@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Fri, 15 Jun 2007 20:20:51 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007 12:19:35 +0100
-"Simon Arlott" <simon@fire.lp0.eu> wrote:
+Jan Engelhardt wrote:
+> On Jun 15 2007 14:10, Avi Kivity wrote:
+>   
+>> Some things are not achievable with block-level raid.  For example, with
+>> redundancy integrated into the filesystem, you can have three copies for
+>> metadata, two copies for small files, and parity blocks for large files,
+>> effectively using different raid levels for different types of data on
+>> the same filesystem.
+>>     
+>
+> Sounds like you want RAIF, not RAID.
+>
+>   
 
-> > It *is* a good idea. MD works that way too.  
-> 
-> There's a patch around somewhere to create at least 8 devices, I don't know why it's not in Linus' tree yet...
+If you mean taking a bunch of single-disk filesystems and layering
+another filesystem on top, then no.  The underlying filesystems will
+only serve as object allocators, and all the directory hierarchy,
+journalling, and other capabilities will end up as overhead.  Fairly
+significant overhead, too -- I've once worked on a similar environment. 
+Performance sucked until the underlying filesystems were removed.
 
-It is! It's just that it was applied after -rc4...
-
-commit a47653fc2643cf61bcabba8c9ff5c45517c089ba
-Author: Ken Chen <kenchen@google.com>
-Date:   Fri Jun 8 13:46:44 2007 -0700
-
-    loop: preallocate eight loop devices
-
-[...]
+Abstraction layers are good for dividing large problems, but they have
+their costs.  Consider NUMA for example: you can treat it as a large
+blob of memory, but much performance can be gained of you don't. 
+Similarly, with disks, you can put them in a big RAID and treat them as
+a large disk, but if you don't, there are large rewards.
 
 -- 
-	Paolo Ornati
-	Linux 2.6.22-rc4-cfs-v16-g47932c49 on x86_64
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
