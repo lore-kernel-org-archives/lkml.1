@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbXFONA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXFONDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbXFONA7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbXFONAu
+	id S1754887AbXFONDG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbXFONCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:00:50 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:36760 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752965AbXFONAt (ORCPT
+	Fri, 15 Jun 2007 09:02:55 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:60567 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753781AbXFONCy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:00:49 -0400
-Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <ak@suse.de>, David Howells <dhowells@redhat.com>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070615135420.7fe2e4c1@the-village.bc.nu>
-References: <200706151355.57464.ak@suse.de>
-	 <200706151131.38429.arnd@arndb.de> <5717.1181909357@redhat.com>
-	 <200706151443.13511.ak@suse.de> <20070615135420.7fe2e4c1@the-village.bc.nu>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 14:00:06 +0100
-Message-Id: <1181912406.25228.491.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 15 Jun 2007 09:02:54 -0400
+Date: Fri, 15 Jun 2007 15:02:54 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Bernd Paysan <bernd.paysan@gmx.de>, Theodore Tso <tytso@mit.edu>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615130254.GB11830@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Daniel Hazelton <dhazelton@enter.net>,
+	Bernd Paysan <bernd.paysan@gmx.de>, Theodore Tso <tytso@mit.edu>,
+	Alexandre Oliva <aoliva@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+	Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+	david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org> <20070615052432.GC14911@thunk.org> <200706151202.13708.bernd.paysan@gmx.de> <200706150633.51857.dhazelton@enter.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706150633.51857.dhazelton@enter.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 13:54 +0100, Alan Cox wrote:
-> For the parts used by the processors in question yes people have done
-> that work so using the types without unaligned.
+On Fri, Jun 15, 2007 at 06:33:51AM -0400, Daniel Hazelton wrote:
+> Incorrect. Read section 9 of the GPLv2. It's pretty clear that the "any later 
+> version" clause is optional. Whats more is that since the modern linux kernel 
+> *IS* a "composite work" composed of Linus' original code with changes 
+> contributed by other people - Linus retains copyright to the work as a whole. 
 
-I still think we could use a 'get_maybe_but_probably_not_unaligned()',
-although it could have a better name.
+Huh - surely not to files added to the kernel that were written by
+others from scratch!
 
-People now use get_unaligned() for two reasons -- firstly because we
-_expect_ something to be unaligned, and we get a performance improvement
-if we just emit code to directly handle that instead of taking the trap.
-And more recently we've also started to use it because there's a
-_slight_ chance it could be unaligned, and some architectures can't
-cope.
+> This means that he can license it in any manner he chooses, as long as it 
+> doesn't affect the copyrights (or licensing) of the people that have 
+> contributed changes. I don't have to go to the US copyright law for this - 
+> Linus released Linux under the GPL, others made changes and sent them back 
+> saying "You let me have access to your code under the GPL, I've made some 
+> changes that make it better. You can have my changes under the GPL." QED: 
+> Linus still holds copyright to Linux and can license it in any way he 
+> chooses.
 
-Where the unalignment is possible but unlikely, many architectures
-probably shouldn't be emitting code to cope with it; they should just
-take the trap in the rare case.
+This is totally new to me - if this is true - I'd really like to be sure!
+I always thought that it would be necessary to get signatures of each
+and every contributor before you can change a license of a file. Why do
+you think that the FSF demands written copyright-transfers with
+signatures before you are allowed to submit a patch to any of their
+largers projects? If they - as original copyright holder - could do
+what you claim - they wouldn't need those signatures.
 
-In fact, the probability threshold at which it makes sense to just take
-the trap will vary from architecture to architecture. We should probably
-just have a get_probably_unaligned(...) macro which has its first arg as
-an _estimated_ constant probability. Then the architecture code could
-emit what it likes according to the probability.
-
--- 
-dwmw2
-
+Having signed a copyright transfer for 'future' changes for gprof,
+libiberty, readline, zlib, gcc, gdb, libstdc++, bfd, dejagnu, gas,
+and binutils,
+Carlo Wood <carlo@alinoe.com>
