@@ -1,110 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbXFOVse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbXFOVst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758645AbXFOVse (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbXFOVsZ
+	id S1759086AbXFOVst (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758762AbXFOVsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:48:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60598 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755129AbXFOVsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:48:24 -0400
-Date: Fri, 15 Jun 2007 23:48:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
+	Fri, 15 Jun 2007 17:48:36 -0400
+Received: from keil-draco.com ([216.193.185.50]:50623 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758429AbXFOVse (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:48:34 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
 To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 17:48:18 -0400
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615214804.GC4996@elte.hu>
-References: <466A3EC6.6030706@netone.net.tr> <20070614122031.4751a52b@the-village.bc.nu> <20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net> <20070615120926.GD6269@elte.hu> <orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <466A3EC6.6030706@netone.net.tr> <200706150114.28068.dhazelton@enter.net> <orfy4tyog0.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orfy4tyog0.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200706151748.19231.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 15 June 2007 16:04:15 Alexandre Oliva wrote:
+> On Jun 15, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+> > On Thursday 14 June 2007 23:39:50 Alexandre Oliva wrote:
+> >> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+> >> > You're making an artificial distinction based on whether the
+> >> > *SOFTWARE* has a certain license or not.
+> >>
+> >> What matters to me is that, when the GPL says you can't impose further
+> >> restrictions, then you can't, no matter how convoluted your argument
+> >> is
+> >
+> > Convoluted? Not in the least.
+>
+> I didn't say your arguments were convoluted, and I know I didn't mean
+> to say that.  But I've heard enough arguments about excuses to escape
+> the obligations of the GPL (and other licenses and obligations, FWIW)
+> to know that such arguments can get very convoluted.
+>
+> That said, I was actually trying to quote Eben Moglen, who once spoke
+> about this, but the word he used was "elaborate", not "convoluted".
+> Unfortunately, the right word escaped me ATM.
 
-* Alexandre Oliva <aoliva@redhat.com> wrote:
+Thanks for the clarification.
 
-> On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > it irreversibly cuts off certain people from being to distribute
-> > GPLv3-ed software alongside with certain types of hardware that the
-> > FSF's president does not like.
-> 
-> That's not true.  They can just as well throw the key away and refrain 
-> from modifying the installed software behind the users' back.
+> >> > If the intent of a law (or license) is to do A but it doesn't say
+> >> > that, then how is the intent to be known?  Your answer: Ask the
+> >> > author.
+> >>
+> >> No, you interpret based on what the author wrote then.
+> >
+> > Really? Well I must say I'm surprised at the sudden change of heart. I
+> > have several mails here in which you have either said "You ask the
+> > author" or that line has been quoted.
+>
+> It's no change.  You interpret what's there.  If it's clear, good.  If
+> there's a dispute, you have to ask the author, only s/he knows what
+> s/he meant.  It's really that simple.
 
-uhm, so you claim that my argument is false, and your proof for that is 
-a "non-upgradeable Tivo"?? <sarcasm> That is a _great_ idea. Not being 
-able to patch security holes. Not being able to fix bugs. Not being able 
-to add new features. Makes complete sense. Will be a hit on the market! 
-Every PVR maker will flock from Windows to Linux i'm sure. </sarcasm>
+And as I have hopefully given good proof for, asking the author is not a good 
+solution. The author can change their mind about their intent at any point in 
+time - even during the process of writing the license.
 
-really, do you even _read_ what you write? All your arguments so far 
-were instantly debunkable. This is one of the lowest quality GPL 
-discussions i was ever involved in ...
+> > Show me where in the preamble that this issue of "it must run on any
+> > given piece of hardware"
+>
+> Why is the burden of the proof on me?
+>
+> You show me where it says "one may impose restrictions on what
+> particupar pieces of hardware the program can run", to override the
+> general spirit of "passing on all the rights one has".
 
-furthermore, the fact that the GPLv3 had to add carved out exceptions 
-for the anti-Tivo languge is further _proof_ that the whole idea is 
-absurd to begin with! It's like writing a nice new function to implement 
-something, and then when it shows many design flaws, you'd not just 
-admit that it's flawed and would get rid of it and redesign it, you'd 
-instead pretend that it's fine and you'd carve out a few of the more 
-common failure modes and would hack it around in that case.
+It's "pass on all rights granted under this license". If I had to pass on "all 
+rights I have" I'd have to pass on my right to change the license on my code. 
+Since that isn't a right I'm obligated to pass on - and you could never 
+convice me it is - I'm not "passing on all the rights I have" at *all*.
 
-> >   Activities other than copying, distribution and modification are 
-> >   not covered by this License; they are outside its scope.
-> 
-> > guess why this section has been completely removed from the GPLv3, 
-> > without a replacement?
-> 
-> My guess:
-> 
-> First, because it was redundant, given that the license didn't quite 
-> discuss other activities.  Unless you count say "imposing restrictions 
-> on the exercise of others' freedoms" as other activities, even though 
-> these are associated with modification and distribution.
+> > (And, by the way, if the FSF decided to release a GPLv4 that had an
+> > active section that said "You must turn over all copyright rights to a
+> > work released under this license to the FSF" it wouldn't "break spirit"
+> > with the GPL (v2 or v3).
+>
+> Can't.  These terms wouldn't apply to the copyright holder (the only
+> person who could make the transfer), only to licensees.
 
-here you prove that you cannot even read what i wrote. I wrote that this 
-section has been removed from the GPLv3. What relevance does it have 
-that in your opinion this section was redundant in the GPLv2?? It would 
-clearly not be redundant in the GPLv3: it would contradict and 
-_completely neutralize_ most of the crap from the GPLv3 that we are 
-talking about here ...
- 
-> Second, because GPLv3 does indeed talk about other activities, such as 
-> starting lawsuits on patent and pro-DRM grounds, or entering 
-> agreements for distribution of software along with limited patent 
-> licenses.  All of these are still associated, at least to some extent, 
-> with modification and distribution, but I guess it was worth 
-> clarifying that claiming that such harmful activities are outside the 
-> scope of the license isn't a valid excuse to escape the conditions 
-> determined by the license.
+It's part of the preamble, in which the "We" refers to the FSF. If the 
+preamble determines the "intent" and "spirit" of the license, then part of 
+the "intent" and "spirit" of the license is collective aggregation of all 
+copyright rights to all software released under the GPL by the FSF.
 
-dont you realize that declaring certain types of activities by hardware 
-makers as being "against freedom" is _exactly_ such an activity that the 
-GPLv2 did not attempt to control? I could tell you offhand a dozen more 
-examples of human activities that restrict the 4 GNU freedoms of users 
-_much more_ than the Tivo ever did: for example censure, opression of 
-free speech, out of control climate, dictatorship, campaign financing 
-laws, the WIN32 API and human stupidity. By your argument we'd have to 
-add prohibition against those restrictions of freedom to the license 
-too, right? Your argument still leads to absurd results, even now that 
-you've modified it a few times already ...
+> > If "tivoization" was against the spirit, then all that would have been
+> > needed was one extra clause clearly explaining that. Instead there are
+> > more than 6 extra sections in the GPLv3.
+>
+> Erhm...  How did you get the (completely flawed, BTW) impression that
+> tivoization was all GPLv3 was about?
 
-	Ingo
+I've looked through the GPLv3 and "tivoization" and DRM are the only things 
+that are functionally different. In reading the GPLv3 *again* today I got the 
+impression that there are more restrictions than grants of rights.
+
+DRH
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
