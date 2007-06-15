@@ -1,110 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbXFODoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbXFODqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758639AbXFODoq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 23:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbXFODog
+	id S1758497AbXFODqK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 23:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbXFODp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 23:44:36 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:34481 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753962AbXFODof (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 23:44:35 -0400
-Message-ID: <46720B19.5000006@linux.vnet.ibm.com>
-Date: Fri, 15 Jun 2007 09:14:25 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Thu, 14 Jun 2007 23:45:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38201 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753640AbXFODp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 23:45:56 -0400
+To: Florin Malita <fmalita@gmail.com>
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
+	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706140305.50095.dhazelton@enter.net>
+	<orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<46717C58.8050501@gmail.com>
+	<ord4zye6iv.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4671A528.5040300@gmail.com>
+	<or1wge9pwr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614234507.GA3860@nostromo.devel.redhat.com>
+	<or1wge6jii.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615023944.GC3760@nostromo.devel.redhat.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 00:44:40 -0300
+In-Reply-To: <20070615023944.GC3760@nostromo.devel.redhat.com> (Bill Nottingham's message of "Thu\, 14 Jun 2007 22\:39\:44 -0400")
+Message-ID: <ortzt951av.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-To: malc <av1474@comtv.ru>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] sched: accurate user accounting
-References: <200703251159.03616.kernel@kolivas.org> <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru> <200703260901.54943.kernel@kolivas.org> <200703260957.34798.kernel@kolivas.org> <Pine.LNX.4.64.0703261439270.2621@linmac.oyster.ru> <20070328113743.GA5615@elte.hu> <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru> <20070614204253.GA14076@elte.hu> <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru> <20070614211828.GA21243@elte.hu> <Pine.LNX.4.64.0706150129430.3526@linmac.oyster.ru>
-In-Reply-To: <Pine.LNX.4.64.0706150129430.3526@linmac.oyster.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-malc wrote:
-> On Thu, 14 Jun 2007, Ingo Molnar wrote:
-> 
->>
->> * malc <av1474@comtv.ru> wrote:
->>
->>>> the alternating balancing might be due to an uneven number of tasks
->>>> perhaps? If you have 3 tasks on 2 cores then there's no other
->>>> solution to achieve even performance of each task but to rotate them
->>>> amongst the cores.
->>>
->>> One task, one thread. I have also tried to watch fairly demanding
->>> video (Elephants Dream in 1920x1080/MPEG4) with mplayer, and CFS moves
->>> the only task between cores almost every second.
->>
->> hm, mplayer is not running alone when it does video playback: Xorg is
->> also pretty active. Furthermore, the task you are using to monitor
->> mplayer counts too. The Core2Duo has a shared L2 cache between cores, so
->> it is pretty cheap to move tasks between the cores.
->>
-> 
-> Well just to be sure i reran the test with `-vo null' (and fwiw i tried
-> few completely different output drivers) the behavior is the same. I'm
-> not running Core2Duo but X2, but guess that does not really matter here.
-> 
-> As for the task that monitors, i've written it myself (there are two
-> monitoring methods, one(the accurate) does not depend on contets of
-> `/proc/stat' at all), so it can be cheaply (for me) changed in any
-> way one wants. Sources are available at the same place where screenshot
-> was found.
-> 
->>>> well, precise/finegrained accounting patches have been available for
->>>> years, the thing with CFS is that there we get them 'for free',
->>>> because CFS needs those metrics for its own logic. That's why this
->>>> information is much closer to reality now. But note: right now what
->>>> is affected by the changes in the CFS patches is /proc/PID/stat
->>>> (i.e. the per-task information that 'top' and 'ps' displays, _not_
->>>> /proc/stat) - but more accurate /proc/stat could certainly come
->>>> later on too.
->>>
->>> Aha. I see, it's just that integral load for hog is vastly improved
->>> compared to vanilla 2.6.21 [...]
->>
->> hm, which ones are improved? Could this be due to some other property of
->> CFS? If your app relies on /proc/stat then there's no extra precision in
->> those cpustat values yet.
-> 
-> This is what it looked like before:
-> http://www.boblycat.org/~malc/apc/load-x2-hog.png
-> 
-> Now integral load matches the one obtained via the "accurate" method.
-> However the report for individual cores are of by around 20% percent.
-> 
+On Jun 14, 2007, Bill Nottingham <notting@redhat.com> wrote:
 
-I think I missed some of the context, is the accounting of individual tasks
-or cpustat values off by 20%? I'll try and reproduce this problem.
+> OK. Let's take this to the simple and logical conclusion. A signed
+> filesystem image containing both GPL and non-GPL code. From your
+> point A, this is a derived work. 
 
-Could you provide more details on the APC tool that you are using -- I
-do not understand the orange and yellow lines, do they represent system
-and user time?
+I claim the signature is derived from the GPLed bits, yes.  Whether
+that's a derived work, in the legal sense, I'm not qualified to say.
 
-NOTE: There is some inconsistency in the values reported by /usr/bin/time
-(getrusage) and values reported in /proc or through delay accounting.
-
-
-> Though i'm not quite sure what you mean by "which ones are improved".
-> 
->> i've Cc:-ed Balbir Singh and Dmitry Adamushko who are the main authors
->> of the current precise accounting code in CFS. Maybe i missed some
->> detail :-)
-> 
-> Oh, the famous "With enough eyeballs, all bugs are shallow." in action.
-> 
-
+And I claim that, in the case of TiVO, it is not only a functional
+piece of the system that's derived from GPLed code and missing the
+corresponding sources, but also it's being used to impose restrictions
+on the exercise of the freedoms that the GPL is designed to protect.
+And these conditions are what make it a bad thing, and that deviate,
+if not from the legal conditions, at least from the spirit of the
+license.
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
