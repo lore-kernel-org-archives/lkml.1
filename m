@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbXFOPzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbXFOP4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbXFOPzm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXFOPze
+	id S1756540AbXFOP4o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbXFOP4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:55:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:54516 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754021AbXFOPzd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:55:33 -0400
-From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-References: <878xb35sje.fsf@goat.bogus.local> <20070612153102.GD5986@ucw.cz>
-	<87fy4vmxva.fsf@goat.bogus.local> <20070614195659.GE9442@ucw.cz>
-Date: Fri, 15 Jun 2007 17:55:29 +0200
-In-Reply-To: <20070614195659.GE9442@ucw.cz> (Pavel Machek's message of "Thu,
-	14 Jun 2007 19:56:59 +0000")
-Message-ID: <87myz16wlq.fsf@goat.bogus.local>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Fri, 15 Jun 2007 11:56:38 -0400
+Received: from styx.suse.cz ([82.119.242.94]:50337 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751064AbXFOP4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:56:37 -0400
+Date: Fri, 15 Jun 2007 18:09:44 +0200
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rich Coe <Richard.Coe@med.ge.com>, linux-kernel@vger.kernel.org
+Subject: Re: RFC: Re: PATCH: udf fs corruption on linux-2.6
+Message-ID: <20070615160944.GA29775@duck.suse.cz>
+References: <20070613154803.a1ad874a.Richard.Coe@med.ge.com> <20070614163218.1d75dda4.Richard.Coe@med.ge.com> <alpine.LFD.0.98.0706141511110.14121@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX1+HdHdzvHXYGEYSPvrqPXxoZI6vjSeTwbKj2YQ
- a7tMCHhba83P6rSpYOcO2xPtkzHlhSkFtjmDrAJDX/8RW2W2JS
- Z5/Jjl4GUCjiknCbaXcZg==
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706141511110.14121@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
+On Thu 14-06-07 15:12:58, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 14 Jun 2007, Rich Coe wrote:
+> >
+> > I've updated the patch below to use drop_inode rather than put_inode.
+> > 
+> > drop_inode is only called when the last iput() reference to the inode is
+> > released, where put_inode is called for every iput().
+> 
+> Patch looks fine, but this late in the -rc series, I'd really like to get 
+> an ACK from Jan or somebody else, just to make sure there are no other 
+> issues with it.
+> 
+> Jan? 
+  My fix for this problem is already sitting in Andrew's patch queue
+(http://lkml.org/lkml/2007/6/11/79). Rich's patch still has a problem - you
+cannot call udf_discard_prealloc() from drop_inode() because it is called
+under inode_lock and thus you cannot call e.g. mark_inode_dirty(). I've done
+that mistake too ;). So please don't apply the patch.
 
-> noapic/nolapic will not help with video issue. try s2ram from
-> suspend.sf.net.
-
-I already tried s2ram, no improvement so far.
-
-Regards, Olaf.
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
