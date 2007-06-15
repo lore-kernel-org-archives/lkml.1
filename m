@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbXFOLTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbXFOLVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbXFOLTq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 07:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXFOLTj
+	id S1753736AbXFOLVf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 07:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbXFOLV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 07:19:39 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:38394 "EHLO proxima.lp0.eu"
+	Fri, 15 Jun 2007 07:21:28 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:5613 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751793AbXFOLTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 07:19:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
-	b=Ejr5OxruS1WAWmjcP9odmqjOUi+zMfm7Sn1fEgYKRY6aY7sDDRq3BFxcbKlNGP4X4ps1F4DNc/jvzjuGXJpLldn6NXWR2eUnSt7UwyQS6HpswQV2/Qy5vbKplJJXPnbi;
-Message-ID: <42688.simon.1181906375@5ec7c279.invalid>
-In-Reply-To: <Pine.LNX.4.64.0706151101070.32724@fbirervta.pbzchgretzou.qr>
-References: <e85b9d30706140437s5f3622c3rc86c75a4f845e7a3@mail.gmail.com>
-    <20070614125224.GA4155@tatooine.rebelbase.local>
-    <Pine.LNX.4.64.0706151101070.32724@fbirervta.pbzchgretzou.qr>
-Date: Fri, 15 Jun 2007 12:19:35 +0100
-Subject: Re: /dev/loop* devices not appearing in /dev (at least since 
-     2.6.22-rc3*)
-From: "Simon Arlott" <simon@fire.lp0.eu>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Cc: "markus reichelt" <ml@mareichelt.de>, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	id S1751360AbXFOLV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 07:21:27 -0400
+Date: Fri, 15 Jun 2007 13:21:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: David Greaves <david@dgreaves.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] block: always requeue !fs requests at the front
+Message-ID: <20070615112137.GT6149@kernel.dk>
+References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org> <20070615110544.GR6149@kernel.dk> <20070615111728.GO29122@htj.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070615111728.GO29122@htj.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, June 15, 2007 10:01, Jan Engelhardt wrote:
->
-> On Jun 14 2007 14:52, markus reichelt wrote:
->>* Matthew <jackdachef@gmail.com> wrote:
->>
->>> I read that now loop devices are being created on demand, which
->>> obviously (still) not works
->>
->>yes, someone thought this was a good idea :(
->
-> It *is* a good idea. MD works that way too.
+On Fri, Jun 15 2007, Tejun Heo wrote:
+> SCSI marks internal commands with REQ_PREEMPT and push it at the front
+> of the request queue using blk_execute_rq().  When entering suspended
+> or frozen state, SCSI devices are quiesced using
+> scsi_device_quiesce().  In quiesced state, only REQ_PREEMPT requests
+> are processed.  This is how SCSI blocks other requests out while
+> suspending and resuming.  As all internal commands are pushed at the
+> front of the queue, this usually works.
+> 
+> Unfortunately, this interacts badly with ordered requeueing.  To
+> preserve request order on requeueing (due to busy device, active EH or
+> other failures), requests are sorted according to ordered sequence on
+> requeue if IO barrier is in progress.
+> 
+> The following sequence deadlocks.
+> 
+> 1. IO barrier sequence issues.
+> 
+> 2. Suspend requested.  Queue is quiesced with part or all of IO
+>    barrier sequence at the front.
+> 
+> 3. During suspending or resuming, SCSI issues internal command which
+>    gets deferred and requeued for some reason.  As the command is
+>    issued after the IO barrier in #1, ordered requeueing code puts the
+>    request after IO barrier sequence.
+> 
+> 4. The device is ready to process requests again but still is in
+>    quiesced state and the first request of the queue isn't
+>    REQ_PREEMPT, so command processing is deadlocked -
+>    suspending/resuming waits for the issued request to complete while
+>    the request can't be processed till device is put back into
+>    running state by resuming.
+> 
+> This can be fixed by always putting !fs requests at the front when
+> requeueing.
+> 
+> The following thread reports this deadlock.
+> 
+>   http://thread.gmane.org/gmane.linux.kernel/537473
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> Cc: Jenn Axboe <jens.axboe@oracle.com>
+> Cc: David Greaves <david@dgreaves.com>
+> ---
+> > Yep looks good, except for the bad multi-line comment style, but that's
+> > minor stuff ;-)
+> 
+> That's how Jeff likes it in libata and my fingers are hardcoded to it,
+> but I do appreciate the paramount importance of each maintainer's
+> right to his/her own comment style, so here's the respinned patch.  :-)
 
-There's a patch around somewhere to create at least 8 devices, I don't know why it's not in Linus' tree yet...
+Thanks a lot! I'll pass it right on for 2.6.22.
 
 -- 
-Simon Arlott
+Jens Axboe
+
