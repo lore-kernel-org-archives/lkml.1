@@ -1,63 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbXFOFZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbXFOF1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbXFOFZV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 01:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbXFOFZK
+	id S1753891AbXFOF1l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 01:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbXFOF1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 01:25:10 -0400
-Received: from thunk.org ([69.25.196.29]:46831 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751852AbXFOFZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 01:25:08 -0400
-Date: Fri, 15 Jun 2007 01:24:32 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+	Fri, 15 Jun 2007 01:27:33 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50218 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbXFOF1c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 01:27:32 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Michael Poole <mdpoole@troilus.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615052432.GC14911@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alexandre Oliva <aoliva@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-	Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-	debian developer <debiandev@gmail.com>, david@lang.hm,
-	Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org> <orzm32cr8v.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141153550.14121@woody.linux-foundation.org> <or1wgeco9v.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141311330.14121@woody.linux-foundation.org> <orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org> <orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org> <orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Fri, 15 Jun 2007 01:27:17 -0400
+User-Agent: KMail/1.9.6
+Cc: Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706142246.57583.dhazelton@enter.net> <878xal2a0q.fsf@graviton.dyn.troilus.org>
+In-Reply-To: <878xal2a0q.fsf@graviton.dyn.troilus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200706150127.18069.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 08:20:19PM -0300, Alexandre Oliva wrote:
-> 
-> So, you see, your statement above, about wanting to be able to use
-> other people's improvements, cannot be taken without qualification.
+On Thursday 14 June 2007 23:04:37 Michael Poole wrote:
+> Daniel Hazelton writes:
+> > On Thursday 14 June 2007 22:13:13 Michael Poole wrote:
+> >> The fundamental reason for this is that neither the executable code
+> >> nor the digital signature serves the desired function alone.  The user
+> >> received a copy of the executable for a particular purpose: to run the
+> >> program on a particular platform.  With DRM signatures, only the
+> >> combination of program and signature will perform that function, and
+> >> separating the two based on strictly read legal definitions is risky.
+> >
+> > I agree.
+> >
+> >> The question of whether DRM signatures are covered by the license must
+> >> be resolved before one can determine whether Tivo gave "*EXACTLY*" the
+> >> same rights to object-code recipients as Tivo received.  GPLv2 is
+> >> worded such that the answer to this does not depend on whether one is
+> >> in file A and the other in file B, or whether one is on hard drive C
+> >> and the other is in flash device D, as long as they are delivered as
+> >> part of one unit; it *might* matter if, say, one is received on
+> >> physical media and the other is downloaded on demand.
+> >
+> > I have read the GPLv2 at least three times since it was pointed out that
+> > I had forgotten part of it. At no point can I find a point where Tivo
+> > broke the GPLv2 requirement that they give the recipients of the object
+> > code the same rights they received when they acquired a copy of the
+> > object or source code.
+>
+> I am trying to reconcile your responses to those two paragraphs.
+>
+> If the DRM signature and program executable are coupled such that they
+> are not useful when separated, the implication to me is that they form
+> one work that is based on the original Program.  This is beyond the
+> GPL's permission for "mere aggregation".
+>
+> If they are one work, and the original Program was licensed under the
+> GPLv2, the combined work must also be licensed under the terms of the
+> GPLv2.
+>
+> The input files required to generate a DRM-valid digital signature are
+> part the preferred form for modifying that work.
+>
+> If those bits are not distributed along with the rest of the GPL'ed
+> work, the distributor is either not giving the same rights to the end
+> user, not distributing the source code for the work, or both.  Which
+> is it?
 
-No.  Linus and other Linux kernels might *want* to take other people's
-improvements, but thanks to Richard Stallman's choices for GPLv3, they
-can *not* legally take other people's improvements without violating
-the GPLv3 license.  That's not their fault, it's the fault of people
-who wrote the GPLv3 license, promulgated the GPLv3 license, and who is
-attempting to convince everyone that the GPLv3 license is the only
-valid license for Right Thinking FSF automatons to use.
+Following your logic it would be a "failure to distribute the source code for 
+a work".
 
-There are plenty of things that I might *want* to do, that I am
-legally prohibited from doing.  that doesn't change the fact that I
-might want to do it.  The fact that GPLv3 is incompatible with GPLv2
-is a tragedy, in the Greek sense.
+However, since the signing is an automated process it cannot generate a "new" 
+work - at least, not under the laws of the US - so the signature itself 
+cannot have a copyright at all.
 
-						- Ted
+DRH
+PS: This is the exact same reason that the GPL cannot apply to a Bison 
+generated parser in the US. The "input" file that causes Bison to generate 
+the output can have a copyright, but not the output - no matter what RMS or 
+anyone else wants, and no matter what the GPL says about it.
+
+>
+> Michael Poole
+
+
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
