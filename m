@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759142AbXFOVUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbXFOVWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759142AbXFOVUk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbXFOVUP
+	id S1755834AbXFOVWB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbXFOVVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:20:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39290 "EHLO mx1.redhat.com"
+	Fri, 15 Jun 2007 17:21:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39725 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756992AbXFOVUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:20:12 -0400
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	id S1751144AbXFOVVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:21:52 -0400
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: "Daniel Hazelton" <dhazelton@enter.net>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Greg KH" <greg@kroah.com>,
+       "debian developer" <debiandev@gmail.com>, david@lang.hm,
+       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <200706132121.04532.dhazelton@enter.net>
-	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706132304.21984.dhazelton@enter.net>
-	<20070614112329.3645c397@the-village.bc.nu>
-	<20070614103846.GA7902@elte.hu>
-	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614195517.GA4933@elte.hu>
-	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu>
-	<or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615181724.GO10008@csclub.uwaterloo.ca>
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706141014.21574.rgetz@blackfin.uclinux.org>
+	<or1wgefmyn.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706151425.41975.rgetz@blackfin.uclinux.org>
 From: Alexandre Oliva <aoliva@redhat.com>
 Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 18:19:44 -0300
-In-Reply-To: <20070615181724.GO10008@csclub.uwaterloo.ca> (Lennart Sorensen's message of "Fri\, 15 Jun 2007 14\:17\:24 -0400")
-Message-ID: <or4pl8yky7.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Fri, 15 Jun 2007 18:21:37 -0300
+In-Reply-To: <200706151425.41975.rgetz@blackfin.uclinux.org> (Robin Getz's message of "Fri\, 15 Jun 2007 14\:25\:41 -0400")
+Message-ID: <orzm30x6am.fsf@oliva.athome.lsd.ic.unicamp.br>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+On Jun 15, 2007, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-> On Thu, Jun 14, 2007 at 11:21:59PM -0300, Alexandre Oliva wrote:
->> Consider egg yolk and egg shells.
+> On Thu 14 Jun 2007 13:46, Alexandre Oliva pondered:
+>> On Jun 14, 2007, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+>> > As a person pretty familiar with the hardware in these types of
+>> > devices - this just isn't practical.
 >> 
->> I produce egg yolk.  I give it to you under terms that say "if you
->> pass this on, you must do so in such a way that doesn't stop anyone
->> from eating it"
->> 
->> 
->> You produce egg shells.  You carefully construct your shell around the
->> egg yolk and some white you got from a liberal third party.
->> 
->> 
->> Then you sell the egg shells, with white and yolk inside, under
->> contracts that specify "the shell must be kept intact, it can't be
->> broken or otherwise perforated".
+>> Well, then, ok: do all that loader and hardware signature-checking
+>> dancing, sign the image, store it in the machine, and throw the
+>> signing key away.  This should be good for the highly-regulated areas
+>> you're talking about.  And then, since you can no longer modify the
+>> program, you don't have to let the user do that any more.  Problem
+>> solved.
 
-> It would be more like not telling you how to change the egg yolk while
-> still having a working egg.
+> I don't think so - the GPL3 doesn't state that you must convey the same rights 
+> to end users that you have,
 
-This might be more like GPLv3, or it might not.  But it still misses
-the point.
+Right, this is only in the preamble.
 
-The point is to show that the egg yolk license still is about the egg
-yolk license, even though its effects do limit what the egg shell
-manufacturer can do with that particular egg yolk.
+> it says you must provide installation information, including your
+> keys, or you can not ship the product.
 
-I.e., the GPL is still about the software, and the hardware
-manufacturer can't claim "but this is the hardware!" to escape
-obligations determined by its choice of the GPL software.
+Unless you throw the keys away:
 
->> Are you or are you not disrespecting the terms that apply to the yolk?
+  this requirement does not apply if neither you nor any third party
+  retains the ability to install modified object code on the User
+  Product (for example, the work has been installed in ROM).
 
-> Very bad comparison.  
+> I need to think a bit more of Rob's opinion of ROM's are illegal
 
-Very bad understanding of the intent of the argument, and failing to
-answer the relevant question ;-)
-
-> What if I want to run a program that takes 512MB ram and the hardware
-> guys put in 128MB.  Now they are impeding me doing the change I wanted
-> to do to the software.
-
-*Why* did they make this decision?
+See above ;-)
 
 -- 
 Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
