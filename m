@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbXFOWjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbXFOWk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758352AbXFOWjv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 18:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbXFOWjn
+	id S1758652AbXFOWk4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 18:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682AbXFOWkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 18:39:43 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47738 "EHLO mx2.suse.de"
+	Fri, 15 Jun 2007 18:40:46 -0400
+Received: from khc.piap.pl ([195.187.100.11]:33427 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755890AbXFOWjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 18:39:42 -0400
-From: Neil Brown <neilb@suse.de>
-To: Dan Williams <dan.j.williams@intel.com>
-Date: Sat, 16 Jun 2007 08:39:34 +1000
+	id S1755834AbXFOWkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 18:40:45 -0400
+To: David Greaves <david@dgreaves.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Michael Gerdau <mgd@technosis.de>, Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<200706142049.41819.dhazelton@enter.net>
+	<200706150825.15491.mgd@technosis.de>
+	<200706150520.15086.dhazelton@enter.net>
+	<46726793.1020206@dgreaves.com>
+	<alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>
+	<4672D648.7020700@dgreaves.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 16 Jun 2007 00:40:42 +0200
+In-Reply-To: <4672D648.7020700@dgreaves.com> (David Greaves's message of "Fri, 15 Jun 2007 19:11:20 +0100")
+Message-ID: <m37iq496z9.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18035.5414.680663.405523@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: raid5: coding style cleanup / refactor
-In-Reply-To: message from Dan Williams on Tuesday June 12
-References: <1181670063.12913.5.camel@dwillia2-linux.ch.intel.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Greaves <david@dgreaves.com> writes:
 
-Sorry for not getting to this soon...
+> This 5 minute design undoubtedly has flaws but it shows a direction:
+> A basically standard 'De11' PC with some flash.
+> A Tivoised boot system so only signed kernels boot.
+> A modified kernel that only runs (FOSS) executables whose signed hash
+> lives in the flash.
 
-On Tuesday June 12, dan.j.williams@intel.com wrote:
-> 
-> From: Dan Williams <dan.j.williams@intel.com>
-> 
-> Most of the raid5 code predates git so the coding style violations have
-> been present for a long time.  However, now that major new patches are
-> arriving, checkpatch.pl complains about these old violations.  Instead of
-> attempting to justify the warnings as "this is what raid5 used to do", this
-> patch brings the code in line with the current style.
-
-I general I would rather just fix things as they break.  i.e. when you
-change a line that violates the style, fix it then.
-And some of the changes you make, I don't like.  e.g. Everything
-inside parentheses should be to the right of the opening parenthesis.
-
-> 
-> Note that this is more than a simple reformatting.  The majority of the
-> 80-column violations were in the handle_stripe5 and handle_stripe6
-> routines.  By introducing the 'stripe_head_state' and 'r6_state' objects
-> large portions of the logic could be moved to sub-routines, reclaiming a
-> column's worth of indentation.
-
-This refactoring, however, is a good idea.  We have some very deep
-functions in there and breaking them out is a good idea.  So a patch
-that just does this would be very welcome.
-
-> 
-> 'stripe_head_state' consumes all of the automatic variables that previously
-> stood alone in handle_stripe.  'r6_state' contains the handle_stripe6
-> specific variables like p_failed and q_failed.  
-> 
-> One of the nice side effects of the 'stripe_head_state' change is that it
-> allows for further reductions in code duplication between raid5 and raid6
-> (note: unfortunately the other 80-column violations hide the code
-> duplication-removal effect in the diffstat).  The following new routines
-> are shared between raid5 and raid6:
-> 
-> 	handle_completed_write_requests
-> 	handle_requests_to_failed_array
-> 	handle_stripe_expansion
-> 
-> Trivia:
-> * PRINTK and RAID5_DEBUG is replaced with pr_debug
-
-Good idea...  Am I asking too much to have separate things in separate
-patches?  It makes review easier.
-
-> * struct field comments moved to the top (kernel-doc format)
-
-I guess...  though moving the documentation away from the code means
-that it is less likely to be kept up-to-date.
-
-NeilBrown
+How hard would it be to reprogramm the flash?
+-- 
+Krzysztof Halasa
