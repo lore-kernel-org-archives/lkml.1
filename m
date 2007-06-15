@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbXFOKoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbXFOKor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbXFOKoc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 06:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbXFOKoM
+	id S1754258AbXFOKor (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 06:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbXFOKo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 06:44:12 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:39414 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752494AbXFOKoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 06:44:10 -0400
-Date: Fri, 15 Jun 2007 12:37:32 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Jamie Lokier <jamie@shareable.org>,
-       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
-       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Albert Cahalan <acahalan@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Roland Dreier <rdreier@cisco.com>,
-       Ondrej Zajicek <santiago@crfreenet.org>,
-       Ulisses Furquim <ulissesf@gmail.com>
-Subject: Re: LogFS take four
-Message-ID: <20070615083732.GA20361@2ka.mipt.ru>
-References: <20070603183845.GA8952@lazybastard.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 15 Jun 2007 06:44:26 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50315 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbXFOKoZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 06:44:25 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: David Greaves <david@dgreaves.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 06:44:11 -0400
+User-Agent: KMail/1.9.6
+Cc: Michael Gerdau <mgd@technosis.de>, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706150520.15086.dhazelton@enter.net> <46726793.1020206@dgreaves.com>
+In-Reply-To: <46726793.1020206@dgreaves.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070603183845.GA8952@lazybastard.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 15 Jun 2007 12:37:56 +0400 (MSD)
+Message-Id: <200706150644.12099.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 03, 2007 at 08:38:46PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
-> This round the patch is split into file-sized hunks.  There actually
-> seem to be kernel developers not manly enough to digest 6000+ lines of
-> code at once.  An I thought I was the only wimp around.
-> 
-> Again, anyone giving comments in the last round is on Cc:.
-> 
-> I'll try to respond to comments but the next round of patches may take a
-> while longer, due to other responsibilities.
+On Friday 15 June 2007 06:18:59 David Greaves wrote:
+> Daniel Hazelton wrote:
+> >> Now for a different PoV:
+> >> Do I think Tivoisation is bad for the community ?
+> >> Of course I think it is but your mileage may vary.
+> >
+> > And I happen to agree with you. What I disagree with is taking steps to
+> > make "bad == illegal". I also have a problem with doing things that force
+> > my viewpoint on other people.
+>
+> Surely it's more:
+>    bad == go away and don't use future improvements to our software anymore
+> please. ??
 
-Hi Jorn.
+I agree. I stated it in the terms I did because Alexandre originally 
+brought "ethics and morality" into the discussion. Not that my word choice is 
+wrong at all - violating a copyright license is, after all, illegal.
 
-Sorry for late reply (and wrong non-utf latter in the name :).
-I have couple of minor nits I will answer another mails, but in general
-I think it should be included in -mm so that people could start using
-it report real bugs, but not handwaving about possible problems.
+> *If* you think it's bad (Linus doesn't as far as the kernel goes) then
+> isn't it reasonable to exclude 'bad for the community' from the community?
+
+I agree that it is "bad for the community". The impression I've gotten from 
+reading the GPLv3, reading transcripts of interviews with RMS, reading 
+transcripts of interview with Eben Moglen *and* from the FSFLA members 
+participating in this discussion the reason for the anti-tivoization language 
+in GPLv3 isn't "its bad for the community" but "we find it ethically and 
+morally wrong". That being the reason, what they are saying with the language 
+in the GPLv3 is "this is bad/evil and things that are bad/evil should be 
+illegal".
+
+> This isn't retroactive - they can continue to use any V2 software they had,
+> they wouldn't be able to use V3 developments.
+>
+> That seems to me to be a very, very reasonable thing to do (and very much
+> *not* bad == illegal IMHO)
+
+:) Same here
+
+> David
+>
+> PS well, I was just seeing if anyone had fixed my libata/md bug yet but
+> this seemed more interesting.
+
+It is. Consumed a solid six-hour stretch of my day (5PM EDT to 11PM EDT, June 
+14, 2007) (FYI: EDT is UTC - 4)
+
+> PPS and Tejun has, I'm off...
+
+Good for you!
+
+DRH
 
 -- 
-	Evgeniy Polyakov
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
