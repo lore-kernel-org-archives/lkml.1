@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbXFOCsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbXFOCxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757759AbXFOCsy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXFOCsr
+	id S1757577AbXFOCxY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbXFOCxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:48:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55109 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752050AbXFOCsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:48:46 -0400
-To: Rob Landley <rob@landley.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+	Thu, 14 Jun 2007 22:53:16 -0400
+Received: from keil-draco.com ([216.193.185.50]:50712 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbXFOCxQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 22:53:16 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alexandre Oliva <aoliva@redhat.com>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org>
-	<orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706142120.36902.rob@landley.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 23:46:48 -0300
-In-Reply-To: <200706142120.36902.rob@landley.net> (Rob Landley's message of "Thu\, 14 Jun 2007 21\:20\:35 -0400")
-Message-ID: <ork5u653zb.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+Date: Thu, 14 Jun 2007 22:52:38 -0400
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr> <20070614235004.GA14952@elte.hu> <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706142252.39315.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Rob Landley <rob@landley.net> wrote:
+On Thursday 14 June 2007 22:21:59 Alexandre Oliva wrote:
+> On Jun 14, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+> > the GPLv2 license says no such thing, and you seem to be mighty confused
+> > about how software licenses work.
+> >
+> > the GPL applies to software. It is a software license.
+> >
+> > the Tivo box is a piece of hardware.
+> >
+> > a disk is put into it with software copied to it already: a bootloader,
+> > a Linux kernel plus a handful of applications. The free software bits
+> > are available for download.
+> >
+> > the Tivo box is another (copyrighted) work, a piece of hardware.
+> >
+> > so how can, in your opinion, the hardware that Tivo produces, "take
+> > away" some right that the user has to the GPL-ed software?
+>
+> Consider egg yolk and egg shells.
+>
+> I produce egg yolk.  I give it to you under terms that say "if you
+> pass this on, you must do so in such a way that doesn't stop anyone
+> from eating it"
+>
+>
+> You produce egg shells.  You carefully construct your shell around the
+> egg yolk and some white you got from a liberal third party.
+>
+>
+> Then you sell the egg shells, with white and yolk inside, under
+> contracts that specify "the shell must be kept intact, it can't be
+> broken or otherwise perforated".
+>
+>
+> Are you or are you not disrespecting the terms that apply to the yolk?
 
-> On Thursday 14 June 2007 19:20:19 Alexandre Oliva wrote:
+Bad analogy. I've already provided all the proof needed to prove that, 
+while "tivoization" may be against the "intent" or "spirit" of the GPLv2 it 
+is not in violation of it.
 
->> I understand this very well.  You'd have to get the kernel upgraded to
->> GPLv3 in order to accept the contribution.
+> > by your argument, the user has some "right to modify the software", on
+> > that piece of hardware it bought which had free software on it, correct?
+>
+> Yes.  This means the hardware distributor who put the software in
+> there must not place roadblocks that impede the user to get where she
+> wants with the software, not that the vendor must offer the user a
+> sport car to take her there.
 
-> Why do you keep saying "upgraded" to GPLv3?
+Okay. That means that if I ship Linux on a ROM chip I have to somehow make it 
+so that the person purchasing the chip can modify the copy of Linux installed 
+on the chip *if* I want to follow both the spirit and the letter of the 
+GPLv2. And no claiming that I'm missing the point - I'm drawing a logical 
+conclusion from your statement above.
 
-Just because it has a higher version number.  Honest, no other
-reason was implied.
+> The goal is not to burden the vendor.  The goal is to stop the vendor
+> from artificially burdening the user.
 
-I'm seriously not trying to push v3 here.  I got into this to try to
-dispell myths and get a better grasp of the situation.
+I have no objection to this. What I object to is the manner in which it is 
+being done. However, I must admit that, at this point, I do not know of a 
+better method to achieve this goal.
 
-> Bumping a version number is not in indicator of quality,
-
-Agreed.  Still, some people talk about upgrading from XP to Vista (ok,
-no numbers here, but you get the idea), just like they talk about
-upgrading from linux 2.4 to 2.6.
-
-> So far, you haven't brought up a single reason to use v3
-
-Sure, that was not my goal.  I wasn't even trying.
-
-Would you like me to?
-
-> You've just tried to argue that it isn't WORSE than the existing
-> license.
-
-Good, it's nice when people get the idea of what I'm trying to
-accomplish.  I feared this had been lost in the noise.
+DRH
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
