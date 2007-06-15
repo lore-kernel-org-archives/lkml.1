@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbXFOPaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbXFOPal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbXFOPaW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXFOPaL
+	id S1756337AbXFOPal (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbXFOPab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:30:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59386 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750861AbXFOPaJ (ORCPT
+	Fri, 15 Jun 2007 11:30:31 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:51439 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbXFOPaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:30:09 -0400
-Date: Fri, 15 Jun 2007 08:29:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bernd Paysan <bernd.paysan@gmx.de>
-cc: Theodore Tso <tytso@mit.edu>, Alexandre Oliva <aoliva@redhat.com>,
-       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <200706151202.13708.bernd.paysan@gmx.de>
-Message-ID: <alpine.LFD.0.98.0706150822050.14121@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org>
- <orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615052432.GC14911@thunk.org>
- <200706151202.13708.bernd.paysan@gmx.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 15 Jun 2007 11:30:30 -0400
+Date: Fri, 15 Jun 2007 20:59:38 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Natalie Protasevich <protasnb@gmail.com>
+Cc: linux-kernel@vger.kernel.org, rdreier@cisco.com, akpm@linux-foundation.org
+Subject: Re: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y build broken
+Message-ID: <20070615152938.GA9230@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <19D0D50E9B1D0A40A9F0323DBFA04ACC023B0EB9@USRV-EXCH4.na.uis.unisys.com> <32209efe0706131522n42eff7b1hfea6a6252289e280@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <32209efe0706131522n42eff7b1hfea6a6252289e280@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 15 Jun 2007, Bernd Paysan wrote:
+On Wed, Jun 13, 2007 at 03:22:55PM -0700, Natalie Protasevich wrote:
+[..]
+> >Seems it would be cleaner to figure out some way to build es7000.c for
+> >if CONFIG_X86_ES7000 is set?  Or just move them here all the time?
+> >
+> > > ---
+> >linux-2.6.22-rc4-git4/include/asm-i386/mach-es7000/mach_mpparse.h~i386-e
+> >s7000-build-breakage-fix        2007-06-13 22:52:14.000000000 +0530
+> > > +++
+> >linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_mpparse.h
+> >2007-06-13 22:52:14.000000000 +0530
+> > > @@ -18,6 +18,12 @@ extern int parse_unisys_oem (char *oempt
+> > >  extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
+> > >  extern void setup_unisys(void);
+> > >
+> > > +#ifndef CONFIG_X86_GENERICARCH
+> > > +extern int acpi_madt_oem_check(char *oem_id, char *oem_table_id);
+> > > +extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
+> > > +                            char *productid);
+> > > +#endif
+> >
+> >It seems that this #ifndef is not needed -- even if there is another
+> >declaration of these functions that is visible, the signatures should
+> >match so it should be OK.
 > 
-> Ah no, it's their fault. The GPLv2 always was clear that there will be some 
-> future releases of the GPL, and that you should keep "upgrading" possible.
+> I just finished my test builds with and without GENERIC, so I can
+> suggest just move all functions to arch/i386/mach-es7000/es7000plat.c
+> - es7000_sw_apic() ,es7000_enable_apic_mode(),acpi_madt_oem_check(),
+> mps_oem_check() and make them non-static - from
+> arch/i386/mach-generic/es7000.c
 
-No. It is clear that you have the *option* of keep upgrading, but it is 
-also equally clear that Linux has always decided *not* to exercise that 
-option, exactly because I liked the GPLv2, not some "future upgrade".
+I think this will also break with CONFIG_X86_GENERIC=y. The moment you
+make es7000 specific acpi_madt_oem_check() non static, It will conflict
+with generic definition present in mach-generic/probe.c. That function is
+a generic function designed to probe for underlying subarch.
 
-I decided that long before I saw the GPLv3.
+Thanks
+Vivek
 
-And I'm surprised by people who wonder why I did that.
-
-I'm _intelligent_, dammit. That means that I can foresee the future to 
-some degree, at least in the limited sense of what is a likely outcome of 
-my actions.
-
-Why are people surprised by the fact that I have foresight? I may be known 
-for being an impolite bastard, but quite frankly, anybody who thinks I'm a 
-_stupid_ impolite bastard must be missing a page.
-
-You can disagree with my opinions. You can call me obstinate, impolite, 
-and opinionated. But quite frankly, very few people have ever found me 
-*stupid*.
-
-So give me that - I'm not stupid. That means that I actually *can* predict 
-the future to some fuzzy degree, and that people really should *not* be 
-surprised by the fact that I never let the FSF control my choice of 
-license.
-
-> The GPLv2 tries hard to be compatible with any further versions of the GPL 
-> as possible, by allowing people to choose which license you take, and by 
-> making sure that no man in the middle can restrict this choice. If people 
-> deliberately select to use "GPLv2 only", who's to blame?
-
-There's no "blame". There's only credit.
-
-Besides, you are wrong. The *default* for the GPLv2 in the presense of 
-license information is *not* "v2 or later"
-
-In order to get "GPLv2 or later", you actually have to explicitly specify 
-it.
-
-I just find it sad that so many people did that, often apparently just 
-because they didn't actually read or understand the license.
-
-		Linus
