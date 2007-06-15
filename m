@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbXFOT1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbXFOT1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754810AbXFOT1D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXFOT0z
+	id S1755470AbXFOT1Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbXFOT1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:26:55 -0400
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:21669 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752436AbXFOT0y convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:26:54 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 15 Jun 2007 15:27:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32990 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752569AbXFOT1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:27:12 -0400
+To: Bron Gondwana <brong@fastmail.fm>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706132304.21984.dhazelton@enter.net>
+	<20070614112329.3645c397@the-village.bc.nu>
+	<20070614103846.GA7902@elte.hu>
+	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614195517.GA4933@elte.hu>
+	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
+	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615072322.GA7594@brong.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 16:26:34 -0300
+In-Reply-To: <20070615072322.GA7594@brong.net> (Bron Gondwana's message of "Fri\, 15 Jun 2007 17\:23\:22 +1000")
+Message-ID: <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch] CFS scheduler, -v17
-Date: Fri, 15 Jun 2007 15:26:21 -0400
-Message-ID: <F1D642E5A91BC94D9504EC83AE19E6B0128A0A@ecqcmtlmail3.quebec.int.ec.gc.ca>
-In-Reply-To: <20070614224908.GA9412@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] CFS scheduler, -v17
-Thread-Index: Aceu1lIpu0Kwv3qBSCi2j53UbHmLEwArHE3w
-References: <20070614224908.GA9412@elte.hu>
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: <linux-kernel@vger.kernel.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>
-X-OriginalArrivalTime: 15 Jun 2007 19:26:22.0193 (UTC) FILETIME=[0E7BF610:01C7AF83]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Message d'origine-----
-> De : linux-kernel-owner@vger.kernel.org 
-> [mailto:linux-kernel-owner@vger.kernel.org] De la part de Ingo Molnar
-> Envoyé : 14 juin 2007 18:49
-> 
-> i'm pleased to announce release -v17 of the CFS scheduler patchset.
->  
-> The rolled-up CFS patch against v2.6.22-rc4, v2.6.22-rc4-mm2, 
-> v2.6.21.5 or v2.6.20.13 can be downloaded from the usual place:
-> 
->    http://people.redhat.com/mingo/cfs-scheduler/
->  
-> -v17 includes a bigger change: the CFS-core changes in 
-> preparation of the group-scheduling feature, written Srivatsa 
-> Vaddagiri. Dmitry Adamushko provided cleanups and further 
-> generalizations to this code and the modularization of CFS 
-> has been further enhanced as a result. To users, these 
-> changes are mostly invisible.
-> 
-> Changes since -v16:
-> 
->  - lots of core updates to support group scheduling, and related 
->    cleanups. (Srivatsa Vaddagiri, Dmitry Adamushko)
-> 
->  - tuned the runtime-limit up a bit, based on relentless 
-> testing done by
->    Tobias Gerschner.
-> 
->  - the new, precise load-calculation method for SMP balancing has been
->    further enhanced, and is now active by default. (Dmitry Adamushko)
-> 
->  - fix SCHED_IDLEPRIO support (based on feedback from Thomas Sattler)
-> 
->  - further updates to /proc/sched_debug and /proc/PID/sched
-> 
->  - more cleanups
-> 
-> As usual, any sort of feedback, bugreport, fix and suggestion 
-> is more than welcome!
+On Jun 15, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
 
-Fedora 7 & Debian Sarge 3.1 kernels using latest CFS v17 available at http://linux-dev.qc.ec.gc.ca/
-YUM users: http://linux-dev.qc.ec.gc.ca/kernel/fedora/alt-sched.repo
+> What happens if you're debugging something you think is a bug in the
+> Linux kernel and then you run bang into some interactions that make you
+> think the bug might be in the BIOS instead.
 
-Thnx Ingo & cie.
+> have denied your freedom to modify and debug the system they sold you
 
-> 	Ingo
+If the bug is in the non-GPLed BIOS, not in the GPLed code, too bad.
+One more reason to dislike non-Free Software.
 
-- vin
+The freedom the GPL defends is not the freedom to modify and debug the
+system, but rather the covered software.
+
+Now, if you find evidence that the "bug" is actually intentionally put
+there to stop you from doing what you wanted with the software, then
+there's clearly a violation of the spirit of the license, and you
+might even have a case of copyright infringement, but IANAL.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
