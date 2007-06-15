@@ -1,119 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbXFOMEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXFOME1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754718AbXFOMEO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbXFOMEA
+	id S1754860AbXFOME1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 08:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbXFOMEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:04:00 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49466 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752407AbXFOMD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:03:59 -0400
-X-Authenticated: #153925
-X-Provags-ID: V01U2FsdGVkX18SnsEZsNMSon/mHnTpRx5EWv58X6rG/aviQ8xgUv
-	/2IjyMZx81gdeG
-From: Bernd Paysan <bernd.paysan@gmx.de>
-To: Paulo Marques <pmarques@grupopie.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 14:03:55 +0200
-User-Agent: KMail/1.9.5
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
-References: <466A3EC6.6030706@netone.net.tr> <200706151014.45383.bernd.paysan@gmx.de> <46727CCF.9030905@grupopie.com>
-In-Reply-To: <46727CCF.9030905@grupopie.com>
+	Fri, 15 Jun 2007 08:04:05 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:58692 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302AbXFOMED (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 08:04:03 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+Date: Fri, 15 Jun 2007 14:03:53 +0200
+User-Agent: KMail/1.9.6
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200706150159.l5F1xNgM000459@hera.kernel.org> <200706151131.38429.arnd@arndb.de> <200706151355.57464.ak@suse.de>
+In-Reply-To: <200706151355.57464.ak@suse.de>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1382654.iUBj7BXk8p";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706151403.57178.bernd.paysan@gmx.de>
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+Message-Id: <200706151403.53855.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+OO72wech3B9bJUka/Ekm/ZGVZssZKlUCTwJl
+ xXpsMh0g7pKQvqw6aPZStCXCig/USkqVadOomBL/bSPdtO6B/p
+ CPj+yVhowBAXeAnxIabSg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1382654.iUBj7BXk8p
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Friday 15 June 2007, Andi Kleen wrote:
+> 
+> On Friday 15 June 2007 11:31:37 Arnd Bergmann wrote:
+> > One common problem with 32 bit system call and ioctl emulation
+> > is the different alignment rules between i386 and 64 bit machines.
+> > A number of drivers work around this by marking the compat
+> > structures as 'attribute((packed))', which is not the right
+> > solution because it breaks all the non-x86 architectures that
+> > want to use the same compat code.
+> 
+> Why does it break them? It should just make them a little slower.
+> 
+> The network code requires unaligned accesses to work
+> anyways so if your architecture doesn't support them it is already
+> remotely crashable.
+> 
 
-On Friday 15 June 2007 13:49, Paulo Marques wrote:
-> I've contributed some code for the kernel (unlike yourself, AFAICT), and
-> believe me, I did so under GPL v2. The COPYING file is pretty much self
-> explanatory, so I didn't need to add any explicit license statement to
-> my code.
+It doesn't break in all cases, but quite often, you have
+something like:
 
-It's not, it's a personal comment from a misunderstanding of the GPL text.=
-=20
-It's as valid as the "closed source kernel modules are legal" comment that=
-=20
-was there some years ago.
+struct foo {
+	__u32 a;
+	__u64 b;
+};
 
-> People seem to forget that the kernel license in COPYING *never had* the
-> "v2 or later" clause. Never. Period.
+If you define a
 
-It's there in section 9.
+struct compat_foo {
+	__u32 a;
+	__u64 b;
+} __attribute__((packed));
 
-> The only change in license was from the previous hand-made one from
-> Linus into GPL v2 only. And that is perfectly fine since the previous
-> license was even more permissive than GPL v2.
+That is broken on all non-x86 architectures, because it removes the
+padding that is inserted on the respective 32 bit platforms, while
 
-??? Linus changed his own less permissive license (which=20
-excluded "commercial use", and certainly the TiVO device is commercial) in=
-=20
-0.0x time-frame. He added and deleted comments on top of COPYING in later=20
-years, some simply wrong like the assertion on proprietary kernel modules.=
-=20
-He added his interpretation about the version issue in 2.4.0-test9, and he=
-=20
-may delete it any time he wants. It's *his* interpretation.
+struct compat_foo {
+	__u32 a;
+	compat_u64 b;
+};
 
-> No, it is not "any version". It is the license specified in COPYING and
-> nothing else.
+Is a correct definition on all architectures. It also produces
+somewhat better code if the architecture does not support unaligned
+data access, but that is just an unintended side-effect.
 
-COPYING says in section 9 that there may be other versions, and if you as=20
-author don't specify the version, it's "any version".
-
-> And the basics are: "people who write the code decide the license to
-> give it". And that's just it.
-
-Yo, then fucking do it! Write it in the files you contribute! If you don't,=
-=20
-you haven't! You decide, not Linus Torvalds. Make it clear you have=20
-decided.
-
-> And people who write kernel code are perfectly aware that the kernel
-> license is GPL v2 only, and always has been (except for the initial
-> linus license).
-
-Wrong.
-
-> Putting a license statement in _every_ file in the kernel tree would
-> just be idiotic when there is such a clear COPYING file in the root of
-> the kernel tree.
-
-It's a personal comment from Linus, and not clear in any way. Do it the way=
-=20
-the file COPYING itself suggests. It's not "idiotic", it's the most obvious=
-=20
-way to do it.
-
-=2D-=20
-Bernd Paysan
-"If you want it done right, you have to do it yourself"
-http://www.jwdt.com/~paysan/
-
---nextPart1382654.iUBj7BXk8p
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGcoAti4ILt2cAfDARAlYqAKC7+CK1kk2K92BFfVPbHgKO/fneqgCcCZcC
-hkeRf+TeQOBofUliMuNwsgU=
-=phqR
------END PGP SIGNATURE-----
-
---nextPart1382654.iUBj7BXk8p--
+	Arnd <><
