@@ -1,62 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXFOKoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbXFOKnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbXFOKoU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 06:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbXFOKoG
+	id S1753461AbXFOKnl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 06:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbXFOKnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 06:44:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:57199 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751152AbXFOKoF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 06:44:05 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [PATCH] diskquota: 32bit quota tools on 64bit architectures
-Date: Fri, 15 Jun 2007 12:43:01 +0200
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, vtaras@openvz.org, dev@sw.ru, devel@openvz.org,
-       jack@suse.cz, linux-kernel@vger.kernel.org, nataliep@google.com,
-       vvs@sw.ru
-References: <200706151003.l5FA3vd6008194@harpo.it.uu.se>
-In-Reply-To: <200706151003.l5FA3vd6008194@harpo.it.uu.se>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 Jun 2007 06:43:31 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:51944 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751094AbXFOKna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 06:43:30 -0400
+Date: Fri, 15 Jun 2007 12:59:27 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
+       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: [Patch 07/18] fs/logfs/dir.c
+Message-ID: <20070615085927.GB20361@2ka.mipt.ru>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184429.GH8952@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200706151243.02186.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19cS/ror81kDlJWA7u5VsS2JGyhWYrohUrQV57
- E+eQicFpn8IDmBurdjNBVUUF6Wdnm/bmxLPt2209+XiiKocQmX
- NBJQ3Ptu6n8XJPvbh3VuQ==
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070603184429.GH8952@lazybastard.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 15 Jun 2007 12:59:48 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007, Mikael Pettersson wrote:
-> > --- linux-2.6.22-rc4-fixed/fs/quota.c.orig    2007-06-14 15:55:26.000000000 +0400
-> > +++ linux-2.6.22-rc4-fixed/fs/quota.c 2007-06-14 19:50:13.000000000 +0400
-> ...
-> > +#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
-> > +/*
-> > + * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
-> > + * and is necessary due to alignment problems.
-> > + */
-> 
-> The #ifdef looks way too arch-specific. And isn't there a shared
-> compat.c module somewhere that this should go into?
-> 
+On Sun, Jun 03, 2007 at 08:44:29PM +0200, JÃ¶rn Engel (joern@lazybastard.org) wrote:
+> --- /dev/null	2007-03-13 19:15:28.862769062 +0100
+> +++ linux-2.6.21logfs/fs/logfs/dir.c	2007-06-03 19:54:55.000000000 +0200
 
-Only x86_64 and ia64 have this particular problem, the other architectures,
-and hopefully all future 64 bit platforms with 32 bit user space use
-the same alignment rules in elf32 and elf64.
+...
 
-Still, the patch should be converted to use the compat_u64 type and not
-add an 'attribute((packed))' so that you _can_ use the same code on all
-architectures. See my 'Introduce compat_u64 and compat_s64 types' patch
-that I just posted in another thread.
+> +static int __logfs_dir_walk(struct inode *dir, struct dentry *dentry,
+> +		dir_callback handler, struct logfs_disk_dentry *dd, loff_t *pos)
+> +{
+> +	struct qstr *name = dentry ? &dentry->d_name : NULL;
+> +	int ret;
+> +
+> +	for (; ; (*pos)++) {
+> +		ret = read_dir(dir, dd, *pos);
+> +		if (ret == -EOF)
+> +			return 0;
+> +		if (ret == -ENODATA) {
+> +			/* deleted dentry */
+> +			*pos = dir_seek_data(dir, *pos);
+> +			continue;
+> +		}
+> +		if (ret)
+> +			return ret;
+> +		BUG_ON(dd->namelen == 0);
 
-	Arnd <><
+This can be moved out of the loop or even to the higher layer where this
+one is called.
+There is number of such debug stuff in the tree.
+
+...
+
+> +static int logfs_lookup_handler(struct inode *dir, struct dentry *dentry,
+> +		struct logfs_disk_dentry *dd, loff_t pos)
+> +{
+> +	struct inode *inode;
+> +
+> +	inode = iget(dir->i_sb, be64_to_cpu(dd->ino));
+> +	if (!inode)
+> +		return -EIO;
+> +	return PTR_ERR(d_splice_alias(inode, dentry));
+> +}
+
+>From perfectionism point of view it should return long not int, but
+frankly it is so minor, that even does not costs time I spent writing
+this sentence. ^W^W^W
+
+> +static int __logfs_readdir(struct file *file, void *buf, filldir_t filldir)
+> +{
+> +	struct logfs_disk_dentry dd;
+> +	struct inode *dir = file->f_dentry->d_inode;
+> +	loff_t pos = file->f_pos - IMPLICIT_NODES;
+> +	int err;
+> +
+> +	BUG_ON(pos<0);
+
+Spaces run away.
+
+> +static void logfs_set_name(struct logfs_disk_dentry *dd, struct qstr *name)
+> +{
+> +	BUG_ON(name->len > LOGFS_MAX_NAMELEN);
+
+Hmmm, I would write here that user is damn wrong and his
+DNA is not interested for the humanity gene pool instead of crashing
+machine.
+
+> +	dd->namelen = cpu_to_be16(name->len);
+> +	memcpy(dd->name, name->name, name->len);
+> +}
+> +}
+
+> +static int logfs_symlink(struct inode *dir, struct dentry *dentry,
+> +		const char *target)
+> +{
+> +	struct inode *inode;
+> +	size_t destlen = strlen(target) + 1;
+> +
+> +	if (destlen > dir->i_sb->s_blocksize)
+> +		return -ENAMETOOLONG;
+
+Should it also include related to name overhead, or name is just placed
+into datablock as is?
+
+> +	inode = logfs_new_inode(dir, S_IFLNK | S_IRWXUGO);
+> +	if (IS_ERR(inode))
+> +		return PTR_ERR(inode);
+> +
+> +	inode->i_op = &logfs_symlink_iops;
+> +	inode->i_mapping->a_ops = &logfs_reg_aops;
+> +
+> +	return __logfs_create(dir, dentry, inode, target, destlen);
+> +}
+
+> +static int logfs_delete_dd(struct inode *dir, struct logfs_disk_dentry *dd,
+> +		loff_t pos)
+> +{
+> +	int err;
+> +
+> +	err = read_dir(dir, dd, pos);
+> +
+> +	/*
+> +	 * Getting called with pos somewhere beyond eof is either a goofup
+> +	 * within this file or means someone maliciously edited the
+> +	 * (crc-protected) journal.
+> +	 */
+> +	LOGFS_BUG_ON(err == -EOF, dir->i_sb);
+
+Maybe just return permanent error, remount itself read-only
+and say something insulting instead of killing itself in pain?
+
+> +	if (err)
+> +		return err;
+> +
+> +	dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+> +	if (dd->type == DT_DIR)
+> +		dir->i_nlink--;
+> +	return logfs_delete(dir, pos);
+> +}
+
+> +static int logfs_rename_target(struct inode *old_dir, struct dentry *old_dentry,
+> +		struct inode *new_dir, struct dentry *new_dentry)
+> +{
+> +	struct logfs_super *super = logfs_super(old_dir->i_sb);
+> +	struct inode *old_inode = old_dentry->d_inode;
+> +	struct inode *new_inode = new_dentry->d_inode;
+> +	int isdir = S_ISDIR(old_inode->i_mode);
+> +	struct logfs_disk_dentry dd;
+> +	loff_t pos;
+> +	int err;
+> +
+> +	BUG_ON(isdir != S_ISDIR(new_inode->i_mode));
+
+Spaces run away.
+
+> +	if (isdir) {
+> +		if (!logfs_empty_dir(new_inode))
+> +			return -ENOTEMPTY;
+> +	}
+
+One can save two lines of code if put both logical chek in on if ().
+
+> +int logfs_replay_journal(struct super_block *sb)
+> +{
+> +	struct logfs_super *super = logfs_super(sb);
+> +	struct logfs_disk_dentry dd;
+> +	struct inode *inode;
+> +	u64 ino, pos;
+> +	int err;
+> +
+> +	if (super->s_victim_ino) {
+> +		/* delete victim inode */
+> +		ino = super->s_victim_ino;
+> +		inode = iget(sb, ino);
+> +		if (!inode)
+> +			goto fail;
+> +
+> +		super->s_victim_ino = 0;
+> +		err = logfs_remove_inode(inode);
+> +		iput(inode);
+> +		if (err) {
+> +			super->s_victim_ino = ino;
+> +			goto fail;
+> +		}
+> +	}
+> +	if (super->s_rename_dir) {
+> +		/* delete old dd from rename */
+> +		ino = super->s_rename_dir;
+> +		pos = super->s_rename_pos;
+> +		inode = iget(sb, ino);
+> +		if (!inode)
+> +			goto fail;
+> +
+> +		super->s_rename_dir = 0;
+> +		super->s_rename_pos = 0;
+> +		err = logfs_delete_dd(inode, &dd, pos);
+> +		iput(inode);
+> +		if (err) {
+> +			super->s_rename_dir = ino;
+> +			super->s_rename_pos = pos;
+> +			goto fail;
+> +		}
+> +	}
+> +	return 0;
+> +fail:
+> +	LOGFS_BUG(sb);
+> +	return -EIO;
+
+:)
+
+> +}
+
+-- 
+	Evgeniy Polyakov
