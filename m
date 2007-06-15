@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbXFOAhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbXFOAlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753849AbXFOAhd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 20:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757713AbXFOAhK
+	id S1757402AbXFOAlO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 20:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbXFOAk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 20:37:10 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1259 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757562AbXFOAhI (ORCPT
+	Thu, 14 Jun 2007 20:40:58 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:43597 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751465AbXFOAk5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 20:37:08 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 17:36:34 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEJBEJAC.davids@webmaster.com>
+	Thu, 14 Jun 2007 20:40:57 -0400
+Message-ID: <4671E018.4090105@steeleye.com>
+Date: Thu, 14 Jun 2007 20:40:56 -0400
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Mike Snitzer <snitzer@gmail.com>, Neil Brown <neilb@suse.de>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       nbd-general@lists.sourceforge.net,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: raid1 with nbd member hangs MD on SLES10 and RHEL5
+References: <170fa0d20706121930g3b89ddeex8b31c8923d2a0ff6@mail.gmail.com>	 <18031.22930.243723.550238@notabene.brown>	 <170fa0d20706121959w480213bcvaba1b6881710379f@mail.gmail.com>	 <170fa0d20706122009h5e3db54ek7487be4940a3d780@mail.gmail.com>	 <18031.25581.353761.802283@notabene.brown>	 <170fa0d20706122130q2c77d365tbe9261bab1a5b1b@mail.gmail.com>	 <170fa0d20706131123q17e4fb9ehe6be25a07462cc30@mail.gmail.com> <170fa0d20706131630p6cd29aa5i8f51856780a9c691@mail.gmail.com> <4671AD7C.4010109@tmr.com>
+In-Reply-To: <4671AD7C.4010109@tmr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-In-Reply-To: <20070615005659.443fdbf5@the-village.bc.nu>
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 14 Jun 2007 17:37:12 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 14 Jun 2007 17:37:13 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bill Davidsen wrote:
 
-> Perhaps the FSF will in future remember to pack a copy of the GPL in each
-> of its md5sum files on the mirror if this is a derivative work, and
-> modify the bittorrent protocol to include a copy of the GPL in the seed
-> files 8)
->
-> Alan
+> Second, AFAIK nbd hasn't working in a while. I haven't tried it in ages, 
+> but was told it wouldn't work with smp and I kind of lost interest. If 
+> Neil thinks it should work in 2.6.21 or later I'll test it, since I have 
+> a machine which wants a fresh install soon, and is both backed up and 
+> available.
 
-I realize you're joking, but for the benefit of anyone who might not
-understand how this works:
+Please stop this. nbd is working perfectly fine, AFAIK. I use it every 
+day, and so do 100s of our customers. What exactly is it that not's 
+working? If there's a problem, please send the bug report.
 
-A derivative work must, first and foremost, be a work. If it's not a work,
-it's not a derivative work because a derivative work is a type of work.
-Aggregations of multiple works, when that aggregation is performed in an
-automated way, are not works. Even if I compile and link a bunch of source
-code, provided there is no creative input in the compile and link process,
-the result is not a work for copyright purposes. It is simply an aggregate
-of the bits of source code. The gist of a compilation or derivative work is
-the creative selection and modification process.
-
-If someone argues that a program is a derivative work of a header file it
-was compiled with, he is probably just being sloppy. The resulting
-executable contains the header file combines with other works. Of course, a
-source code file that is designed based on the contents of a header file may
-be a derivative work of that header file, but that would be because the
-human who wrote the source code file used bits of the header file in the
-source code itself. It would not be because the compiler combined them --
-such an automated combination has no creative input and so cannot produce a
-work, and so cannot produce a derivative work.
-
-This is grossly oversimplified, but should give you the idea.
-
-DS
-
-
+Thank You,
+Paul
