@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758034AbXFOU2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbXFOU2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758034AbXFOU2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbXFOU2J
+	id S1756362AbXFOU2d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbXFOU2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:28:09 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:23869 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754673AbXFOU2I (ORCPT
+	Fri, 15 Jun 2007 16:28:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40577 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755783AbXFOU2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:28:08 -0400
-Date: Fri, 15 Jun 2007 22:28:06 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chris Friesen <cfriesen@nortel.com>,
-       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: coding style
-In-Reply-To: <4672EC53.50409@intel.com>
-Message-ID: <Pine.LNX.4.64.0706152222270.32724@fbirervta.pbzchgretzou.qr>
-References: <20070614184836.GA6520@cvg> <20070615045111.GU943@1wt.eu>
- <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com>
- <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr>
- <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com>
- <20070615110326.b0762b7a.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr>
- <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com>
- <Pine.LNX.4.64.0706152122050.32724@fbirervta.pbzchgretzou.qr>
- <4672EC53.50409@intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 Jun 2007 16:28:12 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070615202054.GA590@elte.hu>
+References: <466A3EC6.6030706@netone.net.tr>
+	 <200706142144.15695.dhazelton@enter.net>
+	 <1181895924.25228.319.camel@pmac.infradead.org>
+	 <200706150458.29943.dhazelton@enter.net>
+	 <1181899064.25228.342.camel@pmac.infradead.org>
+	 <alpine.LFD.0.98.0706150846370.14121@woody.linux-foundation.org>
+	 <1181930204.25228.590.camel@pmac.infradead.org>
+	 <alpine.LFD.0.98.0706151118150.14121@woody.linux-foundation.org>
+	 <1181936955.5211.62.camel@shinybook.infradead.org>
+	 <20070615202054.GA590@elte.hu>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 21:28:32 +0100
+Message-Id: <1181939312.5211.77.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-06-15 at 22:20 +0200, Ingo Molnar wrote:
+> That boundary is indeed fuzzy, because life is fuzzy too and the 
+> possibilities are virtually unlimited. But one thing is pretty sure: as 
+> long as some component is merely put alongside of a larger body of work, 
+> even if that component has no life of its own without _some_ larger body 
+> of work, that component is not necessarily part of a collective work and 
+> does not necessarily fall under the GPL.
 
-On Jun 15 2007 12:45, Kok, Auke wrote:
->> 
->> Well tabs should _never_ be assumed to be 8, and in this regard, as I see it,
->> CodingStyle has a bug. Tabs are there so that the user can set their width
->> according to _their_ taste, simply so that both sides,
->> 
->>  from CodingStyle:
->>  Tabs are 8 characters, and thus indentations are also 8
->>  characters.  There are heretic movements that try to make
->>  indentations 4 (or even 2!) characters deep, and that is akin
->>  to trying to define the value of PI to be 3.
->
-> again, this is about *indentation* and not about alignment
->
->> Linus (did he wrote that part?) and the heretics both can have their fun
->> without impacting each other. If we wanted to force the user to have exactly
->> 8 screen blanks, we should use spaces throughout.
->
-> Linus was friendly enough to give us permission to use tabs. He forces tabs for
-> indentation, but leaves it up to everyone else to (1) set their editor to show
-> tabs as 2 or 4 or whatever, and (2) use spaces for alignment.
->
-> the bottom line here is that we encourage everyone to use tabs=8, and allow
-> some degree of freedom for some people to vary this *AND* have decent looking
-> alignment for *EVERYONE* by allowing them to use spaces for alignment.
+Not _necessarily_ a collective work. But not necessarily _not_ a
+collective work either.
 
-I'll just say "+1", because that's what I meant.
+> For driver blobs that are shared between Windows and Linux it would be 
+> hard to argue that they are derived from the Linux kernel. 
 
+You're back to the 'derived work' thing again, which wasn't relevant.
 
-Blame university for mathematical pickiness:
+> Merely linking to some larger body of work does not necessarily mean
+> that the two become a collective work. No matter how much the FSF is
+> trying to muddy the waters with the LGPL/GPL.
 
->>  Tabs are 8 characters, and thus indentations are also 8
+I think it's quite clear that the intent of the GPL _is_ to 'muddy the
+waters', as you put it, and to indicate that bundling stuff together
+_should_ put the non-derived parts under the GPL too; at least in some
+circumstances. But still, nothing's true until it's ruled by a court.
 
-is wrong ;-)   --
-
- *  Tabs _are_ 1 character (use a hex editor and see) and
- *  Tabs _are not always displayed_ as "8 characters"
-    [there exists a user for which \t != 8] [not me though]
- *  Tabs _are displayed_ as _much characters as the user specifies_.
-
-(CodingStyle could need a clarification.)
-
-
-
-	Jan
 -- 
+dwmw2
+
