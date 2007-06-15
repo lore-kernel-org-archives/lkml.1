@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbXFOMH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772AbXFOMJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbXFOMH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbXFOMHQ
+	id S1754772AbXFOMJv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 08:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbXFOMJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:07:16 -0400
-Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:55941
-	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753080AbXFOMHP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:07:15 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Alexandre Oliva <aoliva@redhat.com>,
+	Fri, 15 Jun 2007 08:09:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46508 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752864AbXFOMJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 08:09:43 -0400
+Date: Fri, 15 Jun 2007 14:09:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rob Landley <rob@landley.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
+       Alexandre Oliva <aoliva@redhat.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706142246.57583.dhazelton@enter.net>
-	<878xal2a0q.fsf@graviton.dyn.troilus.org>
-	<200706150127.18069.dhazelton@enter.net>
-From: Michael Poole <mdpoole@troilus.org>
-Date: Fri, 15 Jun 2007 08:07:14 -0400
-In-Reply-To: <200706150127.18069.dhazelton@enter.net> (Daniel Hazelton's message of "Fri\, 15 Jun 2007 01\:27\:17 -0400")
-Message-ID: <87sl8tzaj1.fsf@graviton.dyn.troilus.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
+Message-ID: <20070615120926.GD6269@elte.hu>
+References: <466A3EC6.6030706@netone.net.tr> <20070614122031.4751a52b@the-village.bc.nu> <20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706141907.11957.rob@landley.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton writes:
 
-> Following your logic it would be a "failure to distribute the source code for 
-> a work".
->
-> However, since the signing is an automated process it cannot generate a "new" 
-> work - at least, not under the laws of the US - so the signature itself 
-> cannot have a copyright at all.
->
-> DRH
-> PS: This is the exact same reason that the GPL cannot apply to a Bison 
-> generated parser in the US. The "input" file that causes Bison to generate 
-> the output can have a copyright, but not the output - no matter what RMS or 
-> anyone else wants, and no matter what the GPL says about it.
+* Rob Landley <rob@landley.net> wrote:
 
-I do not suggest that copyright subsists in the signature or in the
-signing key.  Whether it does is irrelevant to the signing key being
-part of the source code (when the signature is needed for the binary
-to work properly).
+> > uhm, so if the MPAA and the RIAA pays for another nice piece of 
+> > legislation that extends the power of copyright owners, do you find 
+> > it morally justified to use those powers, as long as it's argued to 
+> > be in favor of some long-term goal that you judge to be moral, even 
+> > if it results in some "temporary injustice"?
+> 
+> Turnabout is fair play, and unilateral disarmament is a bad strategy 
+> in a mexican standoff?
+> 
+> Finding it morally justified to _have_ powers is not the same as 
+> finding it morally justified to _use_ powers you have anyway.  Lots of 
+> companies (like Red Hat) amass defensive software patent portfolios 
+> because the patent system is so screwed up.
 
-Similarly, copyright might not subsist in a simple linker script --
-its content being determined by the operating system and perhaps the
-rest of the program's source code -- but under the GPL, the linker
-script would be part of the source code for a compiled version.
+but the GPLv3 definitely takes action against Tivo. It's not "defensive" 
+in any way. It is outright hostile, it irreversibly cuts off certain 
+people from being to distribute GPLv3-ed software alongside with certain 
+types of hardware that the FSF's president does not like. (who, 
+incidentally, is a mathematician who last wrote significant free 
+software perhaps a decade ago, and who thus must have a great and 
+thorough understanding of how hardware and software works today and who 
+must also have a deep knowledge about what makes the free software 
+community tick.)
 
-Michael Poole
+The GPLv2 never did this kind of restriction _of other works_. Yes, you 
+can use copyright law to control other works and thus (if the affected 
+work is a hardware device for example) to control the _use_ of the free 
+software, but it is _wrong_. The GPLv2 specifically said, in section 0:
+
+  Activities other than copying, distribution and modification are not
+  covered by this License; they are outside its scope.
+
+guess why this section has been completely removed from the GPLv3, 
+without a replacement?
+
+	Ingo
