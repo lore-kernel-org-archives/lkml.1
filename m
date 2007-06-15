@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXFOAT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbXFOA3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbXFOAT7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 20:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXFOATt
+	id S1755912AbXFOA3Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 20:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbXFOA3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 20:19:49 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43488
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752197AbXFOATr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 20:19:47 -0400
-Date: Thu, 14 Jun 2007 17:18:43 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-cc: greg@kroah.com, agruen@suse.de, sds@tycho.nsa.gov, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, pavel@ucw.cz
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-In-Reply-To: <467193FD.3010803@hawkeye.stone.uk.eu.org>
-Message-ID: <Pine.LNX.4.64.0706141717320.29630@asgard.lang.hm>
-References: <20070514110607.549397248@suse.de> <200706042303.28785.agruen@suse.de>
- <1181136386.3699.70.camel@moss-spartans.epoch.ncsc.mil> <200706090003.57722.agruen@suse.de>
- <20070609001703.GA17644@kroah.com> <Pine.LNX.4.64.0706081757070.18969@asgard.lang.hm>
- <20070610083427.GA24808@elf.ucw.cz> <Pine.LNX.4.64.0706100201540.6675@asgard.lang.hm>
- <20070610210547.GC25138@elf.ucw.cz> <Pine.LNX.4.64.0706102322490.6675@asgard.lang.hm>
- <467193FD.3010803@hawkeye.stone.uk.eu.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 14 Jun 2007 20:29:17 -0400
+Received: from smtpout.mac.com ([17.250.248.186]:64621 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751465AbXFOA3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 20:29:17 -0400
+In-Reply-To: <12c511ca0706111038j37e188b6n2677b1789d14de23@mail.gmail.com>
+References: <20070610.204845.115909592.tshibata@ab.jp.nec.com> <9a8748490706100524o2dff1954ja7406f9303d8499f@mail.gmail.com> <20070610162221.GA12830@suse.de> <466C3B64.4070806@citd.de> <20070611060759.GB914@suse.de> <20070611134326.GH11166@waste.org> <12c511ca0706111038j37e188b6n2677b1789d14de23@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <29741172-099F-499B-8A73-A85C6360129D@mac.com>
+Cc: Matt Mackall <mpm@selenic.com>, Greg KH <gregkh@suse.de>,
+       Matthias Schniedermeyer <ms@citd.de>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
+       LKML Kernel <linux-kernel@vger.kernel.org>, m-ikeda@ds.jp.nec.com,
+       git@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [RFD] Documentation/HOWTO translated into Japanese
+Date: Thu, 14 Jun 2007 20:29:09 -0400
+To: Tony Luck <tony.luck@gmail.com>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jun 2007, Jack Stone wrote:
-
-> david@lang.hm wrote:
->> On Sun, 10 Jun 2007, Pavel Machek wrote:
->>> But you have that regex in _user_ space, in a place where policy
->>> is loaded into kernel.
->>
->> then the kernel is going to have to call out to userspace every time a
->> file is created or renamed and the policy is going to be enforced
->> incorrectly until userspace finished labeling/relabeling whatever is
->> moved. building this sort of race condigion for security into the kernel
->> is highly questionable at best.
->>
->>> AA has regex parser in _kernel_ space, which is very wrong.
->>
->> see Linus' rants about why it's not automaticaly the best thing to move
->> functionality into userspace.
->>
->> remember that the files covered by an AA policy can change as files are
->> renamed. this isn't the case with SELinux so it doesn't have this sort
->> of problem.
+On Jun 11, 2007, at 13:38:10, Tony Luck wrote:
+>> I'd rather have a single file, marked "Japanese" (in Japanese),  
+>> that had pointers to current translations. These will always be at  
+>> least as current as whatever we have in the tree, if not more so.  
+>> Especially when someone is trying to figure out how to work based  
+>> on the year-old kernel their embedded vendor gave them.
 >
-> How about using the inotify interface on / to watch for file changes and
-> updating the SELinux policies on the fly. This could be done from a
-> userspace daemon and should require minimal SELinux changes.
->
-> The only possible problems I can see are the (hopefully) small gap
-> between the file change and updating the policy and the performance
-> problems of watching the whole system for changes.
+> Knowing whether a translation is current or not would be useful ...  
+> perhaps the translated files could include the GIT blob SHA1 of the  
+> version they were translated from (and some human readable version  
+> string too :-) This would allow someone reading the documentation  
+> to know whether is really was current.  If it isn't, it provides an  
+> easy path to see what changed in the source document since the  
+> translation was made. This same diff should lighten the load for  
+> people maintaining the translation.
 
-as was mentioned by someone else, if you rename a directory this can 
-result in millions of files that need to be relabeled (or otherwise have 
-the policy changed for them)
+Well, actually, if you're going that route then extend GIT to have  
+support for "related" files.  Essentially you should be able to add  
+metadata to a git tree which says: "files $SHA1-$PATH1, $SHA2-$PATH2,  
+[...], are related".  Then there would be a "git list-related"  
+command with a "--mismatch" option which would list paths for which  
+$SHA1 doesn't correspond to $PATH1 or $SHA2 doesn't correspond to  
+$PATH2, etc.  Some clever updating of related-status during commit/ 
+clone/pull/etc could store information in the index about whether or  
+not any given file is up-to-date with respect to its co-related files.
 
-that can take a significant amount of time to do.
+For translations, when the English version of a document is updated  
+it will automatically result in a "mismatch", allowing translators to  
+do a simple git-diff and see what happened.  Likewise, if the  
+Japanese document is updated without changing the relationship then  
+it might mean that somebody should see what changed and update the  
+English version as well.  If you determine that the change was  
+irrelevant for the other language (spelling/grammar fixes, etc), then  
+you just update the relationship and commit that change.
 
-David Lang
+It would probably be pretty trivial to implement a prototype using a  
+'.gitrelated' file in the root of the git tree, although better  
+integration with the index would really speed handling with lots of  
+related files; instead of linear searching just iterate over the  
+prepared-during-checkout "out-of-date" list.
+
+Cheers,
+Kyle Moffett
+
