@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbXFOXhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbXFOXhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757309AbXFOXhR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbXFOXhE
+	id S1758170AbXFOXhh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbXFOXhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:37:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55842
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751557AbXFOXhA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:37:00 -0400
-Date: Fri, 15 Jun 2007 16:37:18 -0700 (PDT)
-Message-Id: <20070615.163718.55726640.davem@davemloft.net>
-To: James.Bottomley@SteelEye.com
-Cc: alan@lxorguk.ukuu.org.uk, Geert.Uytterhoeven@sonycom.com,
-       dwmw2@infradead.org, axboe@kernel.dk, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1181950083.3600.18.camel@mulgrave.il.steeleye.com>
-References: <1181947242.3600.8.camel@mulgrave.il.steeleye.com>
-	<20070615.160858.26276547.davem@davemloft.net>
-	<1181950083.3600.18.camel@mulgrave.il.steeleye.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 15 Jun 2007 19:37:23 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:52268 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757582AbXFOXhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 19:37:21 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Interesting race between cpufreq_ondemand and snd_atiixp
+Date: Sat, 16 Jun 2007 02:36:18 +0300
+User-Agent: KMail/1.9.7
+Cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk, tiwai@suse.de
+References: <200706160233.47659.caglar@pardus.org.tr>
+In-Reply-To: <200706160233.47659.caglar@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1760366.UEGl4Iu3Rm";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200706160236.18841.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Bottomley <James.Bottomley@SteelEye.com>
-Date: Fri, 15 Jun 2007 16:28:03 -0700
+--nextPart1760366.UEGl4Iu3Rm
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On Fri, 2007-06-15 at 16:08 -0700, David Miller wrote:
-> > From: James Bottomley <James.Bottomley@SteelEye.com>
-> > Date: Fri, 15 Jun 2007 15:40:42 -0700
-> > 
-> > > On Fri, 2007-06-15 at 14:19 -0700, David Miller wrote:
-> > > > Another quirk I have to deal with is that under LDOMs you
-> > > > can export full disks and also just slices.  So I'll have
-> > > > to get down into the partition machinery to support that
-> > > > somehow.
-> > > 
-> > > For this, it sounds like you might find nbd a more enticing
-> > > proposition ... it already is partition independent and is basically a
-> > > block to net socket exporter.
-> > 
-> > That's not gonna work, it's a totally different model.
-> > 
-> > I have a predefined protocol over hypervisor provided "channels" and
-> > page flipping also done by the hypervisor for the bulk data transfer.
-> > For the client side I cannot change the hypervisor nor the server
-> > speaking on the other end.  And when I do write a server I do want
-> > it to be able to speak to all of the existing clients.
-> > 
-> > There's SCSI command pass through as well, as I keep mentioning as
-> > it's an important reason I don't want to go with any of the non-SCSI
-> > solutions (other than perhaps ATA) being suggested.
-> 
-> Then sure, use SCSI ... the ibmvscsi client originally talked to some
-> type of hypervisor interface too before IBM extracted it and open
-> sourced the server.  If actual SCSI commands are going in somewhere ...
-> be it a real device, a RAID firmware emulation or a hypervisor input,
-> then I'm happy with the driver being in SCSI.
+16 Haz 2007 Cts tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 yazm=
+=C4=B1=C5=9Ft=C4=B1:=20
+=2E..
+> 3. echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+		^^^ performance
 
-For normal block I/O it's just raw copies over the provided protocol.
+Sorry for typo!
 
-But the service exports a service by which raw SCSI commands can be
-sent, for things like disk fault probing and stuff like that.  It's
-not for block I/O, it's for "all the funny stuff" scsi comands are
-used for outside of actual data transfers.
+>    strace -o log -f -tttTTT mpg123 some.mp3
+>
+> works without a problem [full log @ 3]
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart1760366.UEGl4Iu3Rm
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGcyJyy7E6i0LKo6YRAlRUAKCfLMmTSiBw/rDGh8yZ0keQYacqMwCbBEvc
+8/O/x7a89jzy2ZC8kgcxjHo=
+=bp19
+-----END PGP SIGNATURE-----
+
+--nextPart1760366.UEGl4Iu3Rm--
