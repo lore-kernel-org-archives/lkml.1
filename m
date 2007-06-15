@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbXFOU0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758034AbXFOU2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758071AbXFOU0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbXFOU0M
+	id S1758034AbXFOU2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbXFOU2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:26:12 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:38959 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754023AbXFOU0L (ORCPT
+	Fri, 15 Jun 2007 16:28:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:23869 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673AbXFOU2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:26:11 -0400
-Message-ID: <4672F5DF.7070506@zytor.com>
-Date: Fri, 15 Jun 2007 13:26:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 15 Jun 2007 16:28:08 -0400
+Date: Fri, 15 Jun 2007 22:28:06 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: coding style
+In-Reply-To: <4672EC53.50409@intel.com>
+Message-ID: <Pine.LNX.4.64.0706152222270.32724@fbirervta.pbzchgretzou.qr>
+References: <20070614184836.GA6520@cvg> <20070615045111.GU943@1wt.eu>
+ <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com>
+ <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr>
+ <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com>
+ <20070615110326.b0762b7a.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr>
+ <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com>
+ <Pine.LNX.4.64.0706152122050.32724@fbirervta.pbzchgretzou.qr>
+ <4672EC53.50409@intel.com>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Optimize is_power_of_2().
-References: <1181926602.25193.5.camel@grianne> <4672D89D.7010801@zytor.com> <Pine.LNX.4.64.0706151427370.12949@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0706151427370.12949@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Fri, 15 Jun 2007, H. Peter Anvin wrote:
-> 
->> Vegard Nossum wrote:
->>> From: Vegard Nossum <vegard@peltkore.net>
->>> Date: Fri, 15 Jun 2007 18:35:49 +0200
->>> Subject: [PATCH] Optimize is_power_of_2().
->>>
->>> Rationale: Removes one conditional branch and reduces icache
->>> footprint. Proof: If n is false, the product of n and any value is
->>> false. If n is true, the truth of (n * x) is the truth of x.
->> You realize that on a lot of platforms, multiplication is done by an
->> out-of-line subroutine, and that even on those that aren't, it's
->> generally a long-pipeline operation, right?
-> 
-> i was *just* about to mention somthing of the sort, but probably not
-> as succinctly.
-> 
 
-You also realize, I hope, that obfuscating this for the compiler just
-hurts.  As has already been described, there are versions involving
-jumps, selects, multiplication, tables, ffs, and popcount.  All of those
-operations are hideously expensive on some architectures and cheap on
-others.
+On Jun 15 2007 12:45, Kok, Auke wrote:
+>> 
+>> Well tabs should _never_ be assumed to be 8, and in this regard, as I see it,
+>> CodingStyle has a bug. Tabs are there so that the user can set their width
+>> according to _their_ taste, simply so that both sides,
+>> 
+>>  from CodingStyle:
+>>  Tabs are 8 characters, and thus indentations are also 8
+>>  characters.  There are heretic movements that try to make
+>>  indentations 4 (or even 2!) characters deep, and that is akin
+>>  to trying to define the value of PI to be 3.
+>
+> again, this is about *indentation* and not about alignment
+>
+>> Linus (did he wrote that part?) and the heretics both can have their fun
+>> without impacting each other. If we wanted to force the user to have exactly
+>> 8 screen blanks, we should use spaces throughout.
+>
+> Linus was friendly enough to give us permission to use tabs. He forces tabs for
+> indentation, but leaves it up to everyone else to (1) set their editor to show
+> tabs as 2 or 4 or whatever, and (2) use spaces for alignment.
+>
+> the bottom line here is that we encourage everyone to use tabs=8, and allow
+> some degree of freedom for some people to vary this *AND* have decent looking
+> alignment for *EVERYONE* by allowing them to use spaces for alignment.
 
-Personally, I would bet that the version as originally written is
-probably best, since select (conditional move) is a fairly commonly
-supported operation, especially on architectures where jumps are expensive.
+I'll just say "+1", because that's what I meant.
 
-Just to confuse the situation further, here is yet another version:
 
-bool is_power_of_2(unsigned long n)
-{
-	return !!n & !(n & (n-1));
-}
+Blame university for mathematical pickiness:
 
-... which, on i686 compiles to:
-00000000 <is_power_of_2>:
-   0:   85 c0                   test   %eax,%eax
-   2:   8d 50 ff                lea    0xffffffff(%eax),%edx
-   5:   0f 95 c1                setne  %cl
-   8:   85 d0                   test   %edx,%eax
-   a:   0f 94 c0                sete   %al
-   d:   0f b6 c0                movzbl %al,%eax
-  10:   21 c8                   and    %ecx,%eax
-  12:   c3                      ret
+>>  Tabs are 8 characters, and thus indentations are also 8
 
-In the current version, gcc does generate a jump on i686 and x86-64:
+is wrong ;-)   --
 
-00000000 <is_power_of_2>:
-   0:   89 c2                   mov    %eax,%edx
-   2:   31 c0                   xor    %eax,%eax
-   4:   85 d2                   test   %edx,%edx
-   6:   74 0b                   je     13 <is_power_of_2+0x13>
-   8:   8d 42 ff                lea    0xffffffff(%edx),%eax
-   b:   85 c2                   test   %eax,%edx
-   d:   0f 94 c0                sete   %al
-  10:   83 e0 01                and    $0x1,%eax
-  13:   f3 c3                   repz ret
+ *  Tabs _are_ 1 character (use a hex editor and see) and
+ *  Tabs _are not always displayed_ as "8 characters"
+    [there exists a user for which \t != 8] [not me though]
+ *  Tabs _are displayed_ as _much characters as the user specifies_.
 
-	-hpa
+(CodingStyle could need a clarification.)
 
+
+
+	Jan
+-- 
