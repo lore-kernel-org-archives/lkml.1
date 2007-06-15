@@ -1,39 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbXFOPEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbXFOPGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbXFOPEQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXFOPEB
+	id S1755469AbXFOPGE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbXFOPFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:04:01 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:45153 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbXFOPEA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:04:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D/BVYHcByOaIWkSTsuygMrLkh8OHRUp8g3ol3aBgrAst4igoiu2HRaoohpHnK/e+5u8Yg1VDH81WwHiAhX/h0nPw90L1EMMLTZ4LnOrb6BpXzKy98Y2GkWPne7sWkMSmH8gpI8iWQxMHJxA9d9e4aotzDN71jgvd5pfXw0zzjdM=
-Message-ID: <19f34abd0706150804w69ce36c0i9e7f9a015895ac0c@mail.gmail.com>
-Date: Fri, 15 Jun 2007 17:04:00 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "jidong xiao" <jidong.xiao@gmail.com>
-Subject: Re: How to printk unsigned long long variable?
+	Fri, 15 Jun 2007 11:05:54 -0400
+Received: from mx.laposte.net ([81.255.54.16]:45924 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752165AbXFOPFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:05:53 -0400
+Message-ID: <49716.192.54.193.51.1181907922.squirrel@rousalka.dyndns.org>
+In-Reply-To: <64689.192.54.193.51.1181901773.squirrel@rousalka.dyndns.org>
+References: <64689.192.54.193.51.1181901773.squirrel@rousalka.dyndns.org>
+Date: Fri, 15 Jun 2007 13:45:22 +0200 (CEST)
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
+To: "Daniel Hazelton" <dhazelton@enter.net>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4104961b0706150759l66fd713boac1a747637e73ee@mail.gmail.com>
+User-Agent: SquirrelMail/1.4.10a-1.fc7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4104961b0706150759l66fd713boac1a747637e73ee@mail.gmail.com>
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/15/07, jidong xiao <jidong.xiao@gmail.com> wrote:
-> typedef unsigned long long u64;
-> u64             *dma_mask;
-> Then how to use printk() to print out a dma_mask variable?
 
-In regular printf(), this would be specified by the format "%llu". Try that?
+> And, as I've taken the time to explain to you, lacking any clear
+> statement, written at the exact same time as the license, a
+statement of
+> intent or spirit cannot have any real legal weight when the text of a
+> license is finally decided upon.
 
-Vegard
+Fortunately the Law recognizes humans are not computers, natural
+langage is not unambiguous binary code, so statements of intent *have*
+legal value when a legal text is open to interpretations.
+
+That's why ten-line law paragraphs are published with the hundreds of
+pages of parliamentary discussions on them, which the judge will
+consider if there's any doubt in his mind.
+
+-- 
+Nicolas Mailhot
+
