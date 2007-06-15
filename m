@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbXFOS2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbXFOSaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbXFOS2Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXFOS2E
+	id S1757188AbXFOSaY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXFOSaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:28:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44755 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753407AbXFOS2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:28:03 -0400
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Bernd Paysan" <bernd.paysan@gmx.de>,
-       "Paulo Marques" <pmarques@grupopie.com>,
-       "Al Viro" <viro@ftp.linux.org.uk>, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706151014.45383.bernd.paysan@gmx.de>
-	<46727CCF.9030905@grupopie.com>
-	<200706151403.57178.bernd.paysan@gmx.de>
-	<d120d5000706150552i4e1d7095p475be21d05d93e58@mail.gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 15:27:26 -0300
-In-Reply-To: <d120d5000706150552i4e1d7095p475be21d05d93e58@mail.gmail.com> (Dmitry Torokhov's message of "Fri\, 15 Jun 2007 08\:52\:05 -0400")
-Message-ID: <or4pl92hv5.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 14:30:11 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:48938 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752614AbXFOSaK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 14:30:10 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 15 Jun 2007 14:28:16 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Optimize is_power_of_2().
+In-Reply-To: <4672D89D.7010801@zytor.com>
+Message-ID: <Pine.LNX.4.64.0706151427370.12949@localhost.localdomain>
+References: <1181926602.25193.5.camel@grianne> <4672D89D.7010801@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+On Fri, 15 Jun 2007, H. Peter Anvin wrote:
 
-> On 6/15/07, Bernd Paysan <bernd.paysan@gmx.de> wrote:
->> On Friday 15 June 2007 13:49, Paulo Marques wrote:
->> 
->> > No, it is not "any version". It is the license specified in COPYING and
->> > nothing else.
->> 
->> COPYING says in section 9 that there may be other versions, and if you as
->> author don't specify the version, it's "any version".
+> Vegard Nossum wrote:
+> > From: Vegard Nossum <vegard@peltkore.net>
+> > Date: Fri, 15 Jun 2007 18:35:49 +0200
+> > Subject: [PATCH] Optimize is_power_of_2().
+> >
+> > Rationale: Removes one conditional branch and reduces icache
+> > footprint. Proof: If n is false, the product of n and any value is
+> > false. If n is true, the truth of (n * x) is the truth of x.
+>
+> You realize that on a lot of platforms, multiplication is done by an
+> out-of-line subroutine, and that even on those that aren't, it's
+> generally a long-pipeline operation, right?
 
-> Please read this sentence over and over until it sinks:
+i was *just* about to mention somthing of the sort, but probably not
+as succinctly.
 
-I believe he was talking about the sentence just after the one you
-quoted:
-
-  If the Program does not specify a version number of this License,
-  you may choose any version ever published by the Free Software
-  Foundation.
-
-Linux files don't all specify version 2, but Linus, Al Viro and other
-authors very clearly mean their contributions to be version 2 only,
-while others very clearly mean their contributions to be v2+.
-
-The moment anyone makes copyrightable changes to any such files, and
-offers them under GPLv2 only (if that's at all possible; I used to
-believe so, but I've read interesting, even if surprising, arguments
-indicating it might not be), the result of the modification is GPLv2
-only.
-
-So there's no doubt that the whole of the kernel is meant to be under
-GPLv2 only, even if some individual authors may choose to make their
-contributions available under other licenses, and be willing to make
-such offers when they are legally entitled to do so.
-
-
-I don't quite understand what this fuss is all about.  Even if a
-majority of the Linux authors had chosen GPLv2+, or GPLvany, if any
-single author makes a contribution under GPLv2 only, and that
-contribution is integrated, that's a veto for distributing the whole
-under any other license.  This single contributor could dictate his
-choice upon others, as long as his contribution was present.
-
-IANAL, but I believe that's how it works.  And this means Linux is
-under GPLv2, no matter how much of the code in it is available under
-any other versions of the GPL, or even different (but compatible)
-licenses.
-
+rday
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
