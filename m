@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbXFONNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbXFONOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbXFONNK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbXFONM6
+	id S1756251AbXFONOp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbXFONOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:12:58 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:53458 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753670AbXFONM5 (ORCPT
+	Fri, 15 Jun 2007 09:14:38 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41885 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753450AbXFONOi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:12:57 -0400
+	Fri, 15 Jun 2007 09:14:38 -0400
+Date: Fri, 15 Jun 2007 14:19:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: "Bernd Paysan" <bernd.paysan@gmx.de>,
+       "Alexandre Oliva" <aoliva@redhat.com>,
+       "Paulo Marques" <pmarques@grupopie.com>,
+       "Al Viro" <viro@ftp.linux.org.uk>, "Krzysztof Halasa" <khc@pm.waw.pl>,
+       linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070615125837.GA25654@elte.hu>
+Message-ID: <20070615141923.63fd5cdd@the-village.bc.nu>
+In-Reply-To: <d120d5000706150603w2f70431ei5a2ae461ac3d0ff4@mail.gmail.com>
 References: <466A3EC6.6030706@netone.net.tr>
-	 <200706131946.15714.dhazelton@enter.net>
-	 <20070614021619.381331dc@the-village.bc.nu>
-	 <200706132129.52736.dhazelton@enter.net>
-	 <1181859896.5211.38.camel@shinybook.infradead.org>
-	 <20070615114921.GC6269@elte.hu>
-	 <1181908678.25228.448.camel@pmac.infradead.org>
-	 <20070615122921.GA21120@elte.hu>
-	 <1181910994.25228.468.camel@pmac.infradead.org>
-	 <20070615125837.GA25654@elte.hu>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 14:12:43 +0100
-Message-Id: <1181913163.25228.507.camel@pmac.infradead.org>
+	<or4plae61r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<d120d5000706141155s4e9caceci6958ceceebad6c73@mail.gmail.com>
+	<200706151048.57762.bernd.paysan@gmx.de>
+	<d120d5000706150546k6a31f831tb496bc73bbaa553@mail.gmail.com>
+	<20070615135739.14862d6d@the-village.bc.nu>
+	<d120d5000706150603w2f70431ei5a2ae461ac3d0ff4@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 14:58 +0200, Ingo Molnar wrote:
-> * David Woodhouse <dwmw2@infradead.org> wrote:
-> 
-> > If even linking was considered 'mere aggregation on a volume of a 
-> > storage or distribution medium', then when would the 'But when you 
-> > distribute those same sections as part of a whole...' bit _ever_ 
-> > apply? It _explicitly_ talks of sections which are independent and 
-> > separate works in their own right, but which must be licensed under 
-> > the GPL when they're distributed as part of a larger whole.
-> >
-> > I don't see how we could hold the view that _even_ linking is 'mere 
-> > aggregation on a volume of a storage or distribution medium', without 
-> > conveniently either ignoring entire paragraphs of the GPL or declaring 
-> > them to be entirely meaningless.
-> 
-> as long as it's not distributed in one collective work, where is the 
-> problem?
+O> GPL itself does not. But the author(s) may when they specify "any
+> later version", "dual GPL/BSD", etc. In this case (IMHO) distributor
+> in fact relicenses the code and may reduce license to sipmply BSD or
+> simply GPL, or "GPL v3 from now on". To "restore" license you would
+> need to go upstream and get the code from there.
 
-As long as it's not distributed "as part of a whole which is a work
-based on the Program", there's no problem.
+I don't see anything in the GPL that permits a redistributor to change
+the licence a piece of code is distributed under. If my code is GPL v2 or
+later you cannot take away the "or later" unless explicitly granted
+powers by the author to vary the licence.
 
-You seem to be suggesting that even linking the Program together with
-other stuff doesn't create a 'work based on the Program'. You seem claim
-it's "mere aggregation on a volume of a storage or distribution medium".
-Am I understanding you correctly?
+What you most certainly can do is modify it and decide your modifications
+are GPLv3 only thus creating a derived work which is GPLv3 only. However
+anyone receiving your modified version and reverting the modifications is
+back at v2 or later.
 
-Is there _anything_ which you admit would actually constitute a 'work
-based on the Program', when that work wouldn't have been be a derived
-work anyway? Or do you claim that those whole paragraphs of the GPL are
-just meaningless drivel, when they explicitly make reference to applying
-the GPL to works which would _normally_ be 'considered independent and
-separate works in themselves'?
-
-If your interpretation of the GPL means that those paragraphs don't make
-any sense at all, then I feel your interpretation may be suspect.
-
--- 
-dwmw2
-
+Alan
