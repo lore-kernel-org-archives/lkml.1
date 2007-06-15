@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbXFOHD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbXFOHHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755300AbXFOHD2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 03:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbXFOHDU
+	id S1754918AbXFOHHh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 03:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbXFOHH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 03:03:20 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:47352 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752844AbXFOHDU (ORCPT
+	Fri, 15 Jun 2007 03:07:29 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:4904 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbXFOHH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 03:03:20 -0400
-Date: Fri, 15 Jun 2007 09:03:19 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Cc: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-Subject: Re: rtc_cmos: error after first write to wakealarm
-Message-ID: <20070615070319.GA19455@dose.home.local>
-Mail-Followup-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-References: <20070615063308.GA18089@dose.home.local> <20070615155904.1d1da892.yoichi_yuasa@tripeaks.co.jp>
+	Fri, 15 Jun 2007 03:07:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZGt1cJ2mstc88V19jMXnIK+SKwUh/nUXqHde0HpAjLYCoXdQf0QP2iSkLRr7rYcN1Y2X65lPEKCHhXCfSbgnZhBxZWQR8uJ3VOdZ+/oUZ93VigAousC2P+tEF5YRMpMp4Jf2BXkuw27q8nQ22PlBS/CwmHjQl+g1W4oGr5OexK8=
+Message-ID: <9a8748490706150007v71292f5drf6f4e78200eac703@mail.gmail.com>
+Date: Fri, 15 Jun 2007 09:07:28 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Alexandre Oliva" <aoliva@redhat.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Daniel Hazelton" <dhazelton@enter.net>,
+       "Chris Friesen" <cfriesen@nortel.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, "Tarkan Erimer" <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
+In-Reply-To: <or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070615155904.1d1da892.yoichi_yuasa@tripeaks.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	 <4671B734.1040401@nortel.com>
+	 <orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <200706142155.34298.dhazelton@enter.net>
+	 <or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 15:59:04 +0900, Yoichi Yuasa wrote:
-> On Fri, 15 Jun 2007 08:33:08 +0200
-> Tino Keitel <tino.keitel@gmx.de> wrote:
-> 
-> > Hi,
-> > 
-> > I have the following strange behaviour with rtc_cmos:
-> > 
-> > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
-> > bash: echo: write error: Device or resource busy
-> > $ rmmod rtc_cmos
-> > $ modprobe rtc_cmos
-> > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
-> > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
-> > bash: echo: write error: Device or resource busy
-> > $
-> 
-> If the alarm has already been enabled, you cannot set the next alarm. 
-> You should disable first.
+On 15/06/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+>
+> > Faulty logic. The hardware doesn't *restrict* you from *MODIFYING*
+> > any fscking thing.
+>
+> Ok, lemme try again:
+>
+> case 2'': tivo provides source, end user tries to improve it, realizes
+> the hardware won't let him use the result of his efforts, and gives up
+>
+So?  The user still has the source and is free to use that in other
+GPLv2 projects, that's the point. The point is not being able to run
+it on any specific hardware, the point is having the source with the
+same rights to modify it and distribute it.   And no, the right to
+modify your copy of the source does not also mean you *have to* be
+able to install it on the hardware it was originally designed for - it
+only means you have the right to modify it and redistribute it.
 
-Ah, ok.
-  
-Where is the documentation that describes that I have to disable it
-first, and how to do this? A migration document for /proc/acpi/alarm   
-users would be nice, too.
-
-Regards,
-Tino
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
