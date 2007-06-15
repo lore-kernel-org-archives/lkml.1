@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbXFOR1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969AbXFOR2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752572AbXFOR1w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXFOR1o
+	id S1753969AbXFOR2M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXFOR14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:27:44 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36666
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbXFOR1n (ORCPT
+	Fri, 15 Jun 2007 13:27:56 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:56785 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751886AbXFOR1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:27:43 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 13:27:45 -0400
-User-Agent: KMail/1.9.6
-Cc: "David Schwartz" <davids@webmaster.com>, linux-kernel@vger.kernel.org
-References: <46063.192.54.193.51.1181897652.squirrel@rousalka.dyndns.org>
-In-Reply-To: <46063.192.54.193.51.1181897652.squirrel@rousalka.dyndns.org>
+	Fri, 15 Jun 2007 13:27:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gOKqVqlvtkRc6usUmkqbe/c48avDCb+esqXoepNe5UqN/Y3hO9VFqGKIVxFzf29pDyKKu0Pt4H1Kx5afRxb5gGFnJxhqGRInSL1bdp16FAyYwXAW3RchKRUmtPiG4pRL9IKyhVPTGJVXZUUNbHqINZUmHkHqblFMAVV2UPAVC3Q=
+Message-ID: <32209efe0706151027v45719185w4463556c31df5632@mail.gmail.com>
+Date: Fri, 15 Jun 2007 10:27:52 -0700
+From: "Natalie Protasevich" <protasnb@gmail.com>
+To: vgoyal@in.ibm.com
+Subject: Re: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y build broken
+Cc: linux-kernel@vger.kernel.org, rdreier@cisco.com, akpm@linux-foundation.org
+In-Reply-To: <20070615152938.GA9230@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706151327.45881.rob@landley.net>
+References: <19D0D50E9B1D0A40A9F0323DBFA04ACC023B0EB9@USRV-EXCH4.na.uis.unisys.com>
+	 <32209efe0706131522n42eff7b1hfea6a6252289e280@mail.gmail.com>
+	 <20070615152938.GA9230@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007 04:54:12 Nicolas Mailhot wrote:
-> David Schwartz wrote :
-> > The GPL is about having the legal right to modify the software and
-> being
-> > able to put other people's distributed improvements back into the
-> > original code base. It does not guarantee that you will actually be
-> able
-> > to modify the software and get it to work on some particular hardware.
+On 6/15/07, Vivek Goyal <vgoyal@in.ibm.com> wrote:
+> On Wed, Jun 13, 2007 at 03:22:55PM -0700, Natalie Protasevich wrote:
+> [..]
+> > >Seems it would be cleaner to figure out some way to build es7000.c for
+> > >if CONFIG_X86_ES7000 is set?  Or just move them here all the time?
+> > >
+> > > > ---
+> > >linux-2.6.22-rc4-git4/include/asm-i386/mach-es7000/mach_mpparse.h~i386-e
+> > >s7000-build-breakage-fix        2007-06-13 22:52:14.000000000 +0530
+> > > > +++
+> > >linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_mpparse.h
+> > >2007-06-13 22:52:14.000000000 +0530
+> > > > @@ -18,6 +18,12 @@ extern int parse_unisys_oem (char *oempt
+> > > >  extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
+> > > >  extern void setup_unisys(void);
+> > > >
+> > > > +#ifndef CONFIG_X86_GENERICARCH
+> > > > +extern int acpi_madt_oem_check(char *oem_id, char *oem_table_id);
+> > > > +extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
+> > > > +                            char *productid);
+> > > > +#endif
+> > >
+> > >It seems that this #ifndef is not needed -- even if there is another
+> > >declaration of these functions that is visible, the signatures should
+> > >match so it should be OK.
+> >
+> > I just finished my test builds with and without GENERIC, so I can
+> > suggest just move all functions to arch/i386/mach-es7000/es7000plat.c
+> > - es7000_sw_apic() ,es7000_enable_apic_mode(),acpi_madt_oem_check(),
+> > mps_oem_check() and make them non-static - from
+> > arch/i386/mach-generic/es7000.c
 >
-> This is obviously wrong.
->
-> Need I remind everyone the "origin" of the GNU movement is RMS getting
-> a buggy printer driver from its manufacturer, and finding out he had
-> no way to fix it? What use would RMS have had for putting other
-> people's distributed improvements back into the original code base and
-> not being allowed to get his printer to work?   (And yes driver was 
-> os-side but only because devices had little computing capabilities
-> then. Nowadays a lot of this very same stuff happens on the
-> DRM-protected flashable firmware)
+> I think this will also break with CONFIG_X86_GENERIC=y. The moment you
+> make es7000 specific acpi_madt_oem_check() non static, It will conflict
+> with generic definition present in mach-generic/probe.c. That function is
+> a generic function designed to probe for underlying subarch.
 
-Er, yes and no.
+I am not sure why it needs to be static, since the genapic structure
+in include/asm-i386/ just being a switch table for the corresponding
+functions of the right type. It compiles for me, and i just need to
+extern those in include/asm/mach-es7000/mach_apic.h:
 
-The GPL evolved from the "Emacs License", and _that_ was heavily influenced by 
-Stallman's fight with James Gosling over Gosling revoking permission to use 
-Gosmacs code in GNU Emacs after Gosling sold his codebase to a commercial 
-entity.
+...
+extern void es7000_sw_apic(void);
+extern void __init enable_apic_mode(void);
 
-http://www.free-soft.org/gpl_history/
+extern __init int mps_oem_check(struct mp_config_table *mpc, char
+*oem, char *productid);
+extern int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id);
+...
 
-The GNU project and the GPL are two separate things, as are the GNU project 
-and GCC.  (You can use GCC on MacOS X, AIX, and Windows.  It doesn't make the 
-existence of those operating systems the result of the GNU project.  Neither 
-is Linux, although there's a case for Linux being the result of the ABSENCE 
-of an actual operating system coming out of the Gnu project after a decade of 
-work...)
+or do this in mach_mpparse.h - wherever I removed them from. I
+apologize again, will make a descent patch shortly just so we can look
+closer and evaluate possible approach.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Regards,
+--Natalie
