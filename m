@@ -1,53 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbXFOXGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbXFOXGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757805AbXFOXGc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbXFOXGX
+	id S1758961AbXFOXGq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758152AbXFOXGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:06:23 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47191 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753534AbXFOXGW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:06:22 -0400
-Date: Sat, 16 Jun 2007 00:11:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org, axboe@kernel.dk,
-       James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-Message-ID: <20070616001102.3d2fa850@the-village.bc.nu>
-In-Reply-To: <20070615.141917.85409547.davem@davemloft.net>
-References: <1181918159.25228.543.camel@pmac.infradead.org>
-	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
-	<20070615171545.316dfac7@the-village.bc.nu>
-	<20070615.141917.85409547.davem@davemloft.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jun 2007 19:06:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37328 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758048AbXFOXGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 19:06:34 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706150308.20148.dhazelton@enter.net>
+	<or1wgd102n.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706151715.55218.dhazelton@enter.net>
+	<orfy4sx577.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615215734.GB16371@elte.hu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 20:06:06 -0300
+In-Reply-To: <20070615215734.GB16371@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 23\:57\:34 +0200")
+Message-ID: <orabv0x1gh.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That sounds like a good idea for my virtual I/O case on
-> Niagara too actually :-)
+On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
 
-It was actually meant semi-seriously in that drivers/ata sits on top of
-the abstract parts of drivers/scsi which James keeps asking for someone to
-get split properly off and which would sort all these out.
+> * Alexandre Oliva <aoliva@redhat.com> wrote:
 
-> Another quirk I have to deal with is that under LDOMs you
-> can export full disks and also just slices.  So I'll have
-> to get down into the partition machinery to support that
-> somehow.
+>> >> You're again confusing legal terms with the intent.  The legal 
+>> >> terms provide an indication of the intent, but the preamble, along 
+>> >> with the free software definition it alludes to, do an even better 
+>> >> job at that.
 
-If your slices don't fit the PC worldview you might want to look at
-dmraid and just use device mapper to handle them. It is a lot more
-flexible and we could actually bin all our partition code and use this
-but for back compatibility.
+>> > And the preamble, not being part of the active portion of the 
+>> > license, has absolutely *ZERO* bearing. Just as it is not the 
+>> > *intent* of RMS, the FSF or *ANY* person (or legal entity) that had 
+>> > a hand in crafting the GPLv2 or GPLv3 which is looked at when 
+>> > determining the "intent" of the license. It is the intent of the 
+>> > person and/or "legal entity" that has placed their work under said 
+>> > license.
 
-Alan
+>> No disagreement.  You keep forgetting that I'm not here to say what 
+>> Linux licensing means or doesn't mean.
+
+> it is _you_ forgetting to read what you wrote just 1 mail ago above. 
+> _Read_ it:
+
+>   "The legal terms provide an indication of the intent, but the 
+>    preamble, along with the free software definition it alludes to, do 
+>    an even better job at that.".
+
+You still don't seem to get the difference between spirit and letter,
+and the difference between author of the license and licensor of the
+software (I guess I wasn't clear about this).
+
+When I talk about the spirit of the GPL, I'm talking about how its
+authors designed it, how they described their motivations in the
+preamble, in the Free Software Definition, in speeches explaining it,
+etc.
+
+When I talked about the meaning of the Linux licensing above, I'm
+talking about the intent of the Linux authors when choosing the GPLv2.
+
+They aren't necessarily the same.
+
+Some Linux authors may have read the preamble and understood something
+else.  Some may have simply skipped it, and focused in the legal
+terms.  Some even understood the legal terms in different senses.  But
+they have all agreed to license their code under GPLv2, whatever the
+motivations each one of them had, and none of them has to match the
+spirit of the GPL.
+
+
+Now, the spirit of the GPL, the intent behind its design, is something
+that may be entirely different.  And when I say that GPLv3 didn't
+change the spirit of the GPL, I'm saying that from the perspective of
+someone who understands very deeply the philosphy and motivations
+behind it.
+
+
+Please understand that these are two separate issues.  That the spirit
+doesn't change, and that you don't share that spirit, or that you
+didn't think that was the spirit, doesn't justify a claim that the
+revision is changing the spirit.  It's not.  The spirit is, and has
+always been, to defend users' freedoms (the 4 freedoms of the Free
+Software definition), such that Free Software remains Free.
+
+
+The fact that they can be different means that GPLv3 may not match the
+goals you had when you chose GPLv2 for your contributions.  That's
+unfortunate.  But this doesn't mean that GPLv3 is changing the spirit
+of the GPL.  It's merely exposing that your goals don't match the
+spirit of the GPL.  There's nothing wrong about this, GPLv2 is not a
+bad license, just like the LGPLv2 is not a bad license.  They just
+don't defend users' freedoms as well as GPLv3 will do.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
