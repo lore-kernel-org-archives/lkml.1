@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbXFOXAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbXFOXBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757269AbXFOXAR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758946AbXFOW77
+	id S1759181AbXFOXBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756954AbXFOXBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 18:59:59 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:36615 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758936AbXFOW76 (ORCPT
+	Fri, 15 Jun 2007 19:01:09 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:8255 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756900AbXFOXBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 18:59:58 -0400
-Message-ID: <467319C3.9020703@zytor.com>
-Date: Fri, 15 Jun 2007 15:59:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 15 Jun 2007 19:01:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=A6YZOVPZUewynAGwwuZkTyR95QgxGNGkeLVwD1Pbgfr3hmPUpemoFiaz7tV+nKJ+Dmf1NgcYySPCXfgJ6J+UsengBHd3z2VbfdAHWzKXSIvx4ufIL26/0zV+C2480BphEVATZvBQ/7WegjIPRv6EIU2t5blNHswFfAnc/lUad2I=
+Message-ID: <5cc017590706151601w6233e32bs25a162ddf96d7e2f@mail.gmail.com>
+Date: Fri, 15 Jun 2007 19:01:07 -0400
+From: Jate <jate.sujj@gmail.com>
+To: linux-kernel@vger.kernel.org, jate.sujj@gmail.com
+Subject: RAID1 iowait slow writes
 MIME-Version: 1.0
-To: alan <alan@clueserver.org>
-CC: Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
-In-Reply-To: <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alan wrote:
-> 
-> ZFS is the cool new thing in that space.  Too bad the license makes it
-> hard to incorporate it into the kernel.  (I am one of those people that
-> believe that Linux should support EVERY file system, no matter how old
-> or obscure.)
-> 
+I have six identical ATA6 drives in my linux 2.6.17.9 kernel machine.
+It is an AMD64 3500 with 2 GB of RAM. There are 3 IDE controllers
+(onboard nForce3 IDE, PCI HPT370, and PCI PDC20269). All drives are
+masters on lone cables. There are three RAID1 arrays, one on the
+drives attached to the NFORCE3 controller, and two staggered across
+the HPT370 and PDC20269. DMA is on.
 
-I have details on the Luxor UFD-DOS filesystem, if you'd care to
-implement it.
+For comparison, I can copy a 1.5GB file in 2 minutes across a single
+disk on a different machine. This takes ~3-4 minutes on the software
+RAID system. I am expecting 40MB/s on my six ATA6 drives (guessed from
+hdparm -t).
 
-	-hpa
+I did this while monitoring using iostat. First, a read runs at around
+50MB/s on md1 with half on component drives hda & hdc. While this
+happens, sporadic writes to the destination occur at a much lower
+throughput (no staggered writes on RAID1). After the 1.5GB entire file
+is read (cached) into memory, md2 (the destination RAID) shows a very
+high kB_wrtn/s for a few seconds. Then, the destination drives in md2
+show a low speed write at ~16MB/s for a long time. The top command
+shows a high iowait during all these reads and writes.
+
+This characterizes what I've been seeing during long chains of file
+i/o operations on the system. Doing stuff like copying a source tree
+and checking CVS out to the local disk causes similar slowdowns.
+Should the kernel be caching the entire file during the read, and then
+slowly writing it out? I believe the whole thing is cached because a
+second cp on a large file immediately exits while the RAID subsystem
+writes it at slow speed with no reads.
+
+Do you think this has to do with PCI bus saturation?
+
+- Jate Sujjavanich
+Please cc me on reply
