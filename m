@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbXFOLxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbXFOL4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753929AbXFOLxr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 07:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXFOLxi
+	id S1753878AbXFOL4v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 07:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXFOL4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 07:53:38 -0400
-Received: from il.qumranet.com ([82.166.9.18]:44231 "EHLO il.qumranet.com"
+	Fri, 15 Jun 2007 07:56:43 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42087 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751650AbXFOLxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 07:53:37 -0400
-X-Greylist: delayed 1168 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jun 2007 07:53:37 EDT
-Message-ID: <467273AB.9010202@argo.co.il>
-Date: Fri, 15 Jun 2007 14:10:35 +0300
-From: Avi Kivity <avi@argo.co.il>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1752407AbXFOL4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 07:56:42 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+Date: Fri, 15 Jun 2007 13:55:57 +0200
+User-Agent: KMail/1.9.6
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200706150159.l5F1xNgM000459@hera.kernel.org> <200706151128.39566.arnd@arndb.de> <200706151131.38429.arnd@arndb.de>
+In-Reply-To: <200706151131.38429.arnd@arndb.de>
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: david@lang.hm, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>	<18034.479.256870.600360@notabene.brown>	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown>
-In-Reply-To: <18034.3676.477575.490448@notabene.brown>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Fri, 15 Jun 2007 14:10:36 +0300 (IDT)
+Content-Disposition: inline
+Message-Id: <200706151355.57464.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
->   
->> while I consider zfs to be ~80% hype, one advantage it could have (but I 
->> don't know if it has) is that since the filesystem an raid are integrated 
->> into one layer they can optimize the case where files are being written 
->> onto unallocated space and instead of reading blocks from disk to 
->> calculate the parity they could just put zeros in the unallocated space, 
->> potentially speeding up the system by reducing the amount of disk I/O.
->>     
->
-> Certainly.  But the raid doesn't need to be tightly integrated
-> into the filesystem to achieve this.  The filesystem need only know
-> the geometry of the RAID and when it comes to write, it tries to write
-> full stripes at a time.  If that means writing some extra blocks full
-> of zeros, it can try to do that.  This would require a little bit
-> better communication between filesystem and raid, but not much.  If
-> anyone has a filesystem that they want to be able to talk to raid
-> better, they need only ask...
->   
+On Friday 15 June 2007 11:31:37 Arnd Bergmann wrote:
+> One common problem with 32 bit system call and ioctl emulation
+> is the different alignment rules between i386 and 64 bit machines.
+> A number of drivers work around this by marking the compat
+> structures as 'attribute((packed))', which is not the right
+> solution because it breaks all the non-x86 architectures that
+> want to use the same compat code.
 
-Some things are not achievable with block-level raid.  For example, with
-redundancy integrated into the filesystem, you can have three copies for
-metadata, two copies for small files, and parity blocks for large files,
-effectively using different raid levels for different types of data on
-the same filesystem.
+Why does it break them? It should just make them a little slower.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+The network code requires unaligned accesses to work
+anyways so if your architecture doesn't support them it is already
+remotely crashable.
+
+-Andi
 
