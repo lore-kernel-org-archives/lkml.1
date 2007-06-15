@@ -1,121 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbXFOACp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbXFOAF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756094AbXFOACp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 20:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbXFOACg
+	id S1755558AbXFOAF0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 20:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXFOAFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 20:02:36 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:25876 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750861AbXFOACf (ORCPT
+	Thu, 14 Jun 2007 20:05:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41433 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751099AbXFOAFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 20:02:35 -0400
-Date: Fri, 15 Jun 2007 02:02:32 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+	Thu, 14 Jun 2007 20:05:14 -0400
+Date: Fri, 15 Jun 2007 01:10:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexandre Oliva <aoliva@redhat.com>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615000232.GB9463@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
-	Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-	Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-	david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu> <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org> <orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141100390.14121@woody.linux-foundation.org> <ork5u6cpc2.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org> <20070614231812.GA9463@alinoe.com> <20070615003919.1abfb155@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070615003919.1abfb155@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-ID: <20070615011012.6c09066e@the-village.bc.nu>
+In-Reply-To: <20070614235004.GA14952@elte.hu>
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706132121.04532.dhazelton@enter.net>
+	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706132304.21984.dhazelton@enter.net>
+	<20070614112329.3645c397@the-village.bc.nu>
+	<20070614103846.GA7902@elte.hu>
+	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614195517.GA4933@elte.hu>
+	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 12:39:19AM +0100, Alan Cox wrote:
-> > This is the main reason I dislike GPLwhatever: there is no notion
-> > of "orginal author". You might have written 99% of the code, that
-> 
-> Every literary work (including thus software) has an author, and that
-> author has certain rights which are implicit in them being author.
+> the GPLv2 license says no such thing, and you seem to be mighty confused 
+> about how software licenses work.
 
-Like, they can release/sell the whole thing under some arbitrary
-other license at their choice. But once you license it with the GPLv2,
-then you can't stop anyone else (who got it under that license) from
-using the code under that license anymore, as such it doesn't matter that
-you are the original author.
+There is no such thing as a software licence. It is a copyright licence.
 
-> > doesn't matter. You have no rights whatsoever once you release
-> > something under the GPL (no more than ANYOne else).
-> 
-> Wrong. The author has a collection of rights which vary by jurisdiction
-> but which are primarily governed by the Berne Convention and its sequels
-> notably TRIPS.
-> 
-> > The GPL is nice for the community, and for the users - but very,
-> > very bad towards it's authors (taking all and every right you might
-> > have). If John Doe wants to re-release the whole kernel under
-> 
-> You must be using a different GPL to the rest of us.
+> the GPL applies to software. It is a software license.
 
-You actually had me check the license of the linux kernel :p
-But really - it has this paragraph that I was refering to in most of it's
-source files:
+You can GPL a new graphical logo you painted on your toilet seat, you can
+GPL hardware designs. It might not be a good licence for either but it is
+a valid licence.
 
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
+> the Tivo box is a piece of hardware.
 
-I might be wrong, but I always thought that that meant that John Doe
-is free to redistribute the software under version 3 of the License,
-as published by the FSF.
+A Tivo box is a collection of literary works protected by copyright,
+designs protected by design patents and copyright, names and logos
+protected by trademarks, functionalities protected by patents and many
+more things. These are the things that restrict what I may do with it and
+how I may treat it. The collection of bits of metal and sand aren't
+really of relevance in terms of licencing.
 
-There are source files in the kernel without this phrase, ie - they
-just say: * This file is released under the GPL.
+If it was a generic housebrick with none of these things attached then
+within the law I can do what I like with it including copying it. A book
+is a copyright work but the copyright is about the literary work and the
+fact it is on paper is largely irrelevant. What determines your usage
+rights for those pieces of paper are the literary work it carries not the
+pieces of paper (unless made of a new patented paper material or similar)
 
-But then the paragraph from COPYING kicks in, reading:
+> a disk is put into it with software copied to it already: a bootloader, 
+> a Linux kernel plus a handful of applications. The free software bits 
+> are available for download.
 
-Each version is given a distinguishing version number.  If the Program
-specifies a version number of this License which applies to it and "any
-later version", you have the option of following the terms and conditions
-either of that version or of any later version published by the Free
-Software Foundation.  If the Program does not specify a version number of
-this License, you may choose any version ever published by the Free Software
-Foundation.
+Except the keys - which may nor may not be required depending upon how a
+court (not a mailing list) interprets the phrases
 
-Any, 'any version' probably includes version 3 as well.
+"The source code for a work means the preferred form of the work for
+making modifications to it"
 
-Finally, there are file that don't mention the GPL at all, for example
-kernel/sys.c just says:
+and
 
- *  Copyright (C) 1991, 1992  Linus Torvalds
+"For an executable work, complete source code means all the source code
+for all modules it contains, plus any associated interface definition
+files, plus the scripts used to control compilation and installation of
+the executable."
 
-But - if it weren't GPL-ed then that would be a violation of the GPL-ed
-of the rest (Nevertheless, I think the license header should be added
-to those files).
+If you ask the legal profession about this seriously the answer you get
+is bluntly "There is no caselaw I am aware of", which means that nobody
+knows. Obviously Tivo and their legal counsel have formed an opinion and
+have based their actions upon that opinion.
 
-> > GPLv3, then all he needs is a website and some bandwidth.
-> 
-> And a very good lawyer (oh and a GPL3 as there isn't one yet...)
+> the Tivo box is another (copyrighted) work, a piece of hardware.
 
-I really don't like license discussions - and after reading in the
-mailinglist FAQ that license posts are taboo here - I was partly annoyed,
-partly amazed to see this HUGE flood of mails with as subject line
-"Dual-Licensing Linux Kernel with GPL V2 and GPL V3"
+You can't copyright hardware. Sorry but if you are going to try and have
+a detailed logical argument you need to start from a rigorous base point.
 
-I am sorry that I drew the apparently wrong conclusion that GPL V3
-is a pressing reality.
-
-> Alan
-
--- 
-Carlo Wood <carlo@alinoe.com>
+Alan
