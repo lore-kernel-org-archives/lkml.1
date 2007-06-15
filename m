@@ -1,83 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbXFOBCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXFOBEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656AbXFOBCI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 21:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbXFOBBt
+	id S1752083AbXFOBEZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 21:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbXFOBER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 21:01:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:27958 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbXFOBBr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 21:01:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Vf5qFRavZ3HIln5uPV0jPebKblBeAj60+mdBaCKszQENFc7m9YQhO6d1pt6KieuchP4konFk0eyiO9b2pGBrdgUAS9NjTrwLfjjSGfrdD7dtiS48tAs4dyoDRvtor33/hRsc19G5bwqDI8kf/0ukvuefzbbRr+r8xccu4r7a12w=
-Message-ID: <170fa0d20706141801u6d6effd9ub362f3ae397f3d32@mail.gmail.com>
-Date: Thu, 14 Jun 2007 21:01:19 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Paul Clements" <paul.clements@steeleye.com>
-Subject: Re: raid1 with nbd member hangs MD on SLES10 and RHEL5
-Cc: "Bill Davidsen" <davidsen@tmr.com>, "Neil Brown" <neilb@suse.de>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       nbd-general@lists.sourceforge.net,
-       "Herbert Xu" <herbert@gondor.apana.org.au>
-In-Reply-To: <4671E018.4090105@steeleye.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <170fa0d20706121930g3b89ddeex8b31c8923d2a0ff6@mail.gmail.com>
-	 <18031.22930.243723.550238@notabene.brown>
-	 <170fa0d20706121959w480213bcvaba1b6881710379f@mail.gmail.com>
-	 <170fa0d20706122009h5e3db54ek7487be4940a3d780@mail.gmail.com>
-	 <18031.25581.353761.802283@notabene.brown>
-	 <170fa0d20706122130q2c77d365tbe9261bab1a5b1b@mail.gmail.com>
-	 <170fa0d20706131123q17e4fb9ehe6be25a07462cc30@mail.gmail.com>
-	 <170fa0d20706131630p6cd29aa5i8f51856780a9c691@mail.gmail.com>
-	 <4671AD7C.4010109@tmr.com> <4671E018.4090105@steeleye.com>
+	Thu, 14 Jun 2007 21:04:17 -0400
+Received: from mx1.aecom.yu.edu ([129.98.1.51]:53464 "EHLO mx1.aecom.yu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751013AbXFOBEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 21:04:16 -0400
+X-AuditID: 816201a0-9f7cabb000001801-7e-4671e3e83020 
+Mime-Version: 1.0
+Message-Id: <a06240407c29791f67edd@[129.98.90.227]>
+Date: Thu, 14 Jun 2007 21:03:39 -0400
+To: linux-kernel@vger.kernel.org
+From: Maurice Volaski <mvolaski@aecom.yu.edu>
+Subject: What do the errors Invalid Phase Change and SYNC Offset Error mean
+Cc: Eric.Moore@lsil.com, mpt_linux_developer@lsil.com
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/14/07, Paul Clements <paul.clements@steeleye.com> wrote:
-> Bill Davidsen wrote:
->
-> > Second, AFAIK nbd hasn't working in a while. I haven't tried it in ages,
-> > but was told it wouldn't work with smp and I kind of lost interest. If
-> > Neil thinks it should work in 2.6.21 or later I'll test it, since I have
-> > a machine which wants a fresh install soon, and is both backed up and
-> > available.
->
-> Please stop this. nbd is working perfectly fine, AFAIK. I use it every
-> day, and so do 100s of our customers. What exactly is it that not's
-> working? If there's a problem, please send the bug report.
+I have an LSI Logic card attached to a RAID. The RAID occasionally 
+reports SCSI bus resets,although that might be unrelated because I 
+have other units of this RAID with the same complaint, but then this 
+just recently was reported by the card:
 
-Paul,
+Jun 14 19:19:51 [kernel] [86189.359115] mptbase: ioc0: 
+LogInfo(0x110b0000): F/W: Invalid Phase Change
+which repeated many times
 
-This thread details what I've experienced using MD (raid1) with 2
-devices; one being a local scsi device and the other is an NBD device.
- I've yet to put effort to pinpointing the problem in a kernel.org
-kernel; however both SLES10 and RHEL5 kernels appear to be hanging in
-either 1) nbd or 2) the socket layer.
+and then
 
-Here are the steps to reproduce reliably on SLES10 SP1:
-1) establish a raid1 mirror (md0) using one local member (sdc1) and
-one remote member (nbd0)
-2) power off the remote machine, whereby severing nbd0's connection
-3) perform IO to the filesystem that is on the md0 device to enduce
-the MD layer to mark the nbd device as "faulty"
-4) cat /proc/mdstat hangs, sysrq trace was collected
+Jun 14 19:19:53 [kernel] [86191.654386] mptbase: ioc0: 
+LogInfo(0x11040000): F/W: SYNC Offset Error
+which repeated many times
 
-To be clear, the MD superblock update hangs indefinitely on RHEL5.
-But with SLES10 it eventually succeeds after ~5min (and MD marks the
-nbd0 member faulty); and the other tasks that were blocking waiting
-for the MD lock (e.g. 'cat /proc/mdstat') then complete immediately.
+There is also some white crud on the card surface, pictured here: 
+http://www.fluxsoft.com/images/lsicrud.jpg
 
-If you look back in this thread you'll see traces for md0_raid1 for
-both SLES10 and RHEL5.  I hope to try to reproduce this issue on
-kernel.org 2.6.16.46 (the basis for SLES10).  If I can I'll then git
-bisect back to try to pinpoint the regression; I obviously need to
-verify that 2.6.16 works in this situation on SMP.
+Any comments on what might be going on?
+-- 
 
-Mike
+Maurice Volaski, mvolaski@aecom.yu.edu
+Computing Support, Rose F. Kennedy Center
+Albert Einstein College of Medicine of Yeshiva University
