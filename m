@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbXFOOnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbXFOOnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbXFOOnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 10:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbXFOOnG
+	id S1755444AbXFOOnb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 10:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbXFOOnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 10:43:06 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33216 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbXFOOnF (ORCPT
+	Fri, 15 Jun 2007 10:43:09 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:51163 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753373AbXFOOnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 10:43:05 -0400
-Date: Fri, 15 Jun 2007 15:43:01 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Bernd Paysan <bernd.paysan@gmx.de>
-Cc: Paulo Marques <pmarques@grupopie.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615144301.GV21478@ftp.linux.org.uk>
-References: <466A3EC6.6030706@netone.net.tr> <200706151014.45383.bernd.paysan@gmx.de> <46727CCF.9030905@grupopie.com> <200706151403.57178.bernd.paysan@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706151403.57178.bernd.paysan@gmx.de>
-User-Agent: Mutt/1.4.1i
+	Fri, 15 Jun 2007 10:43:08 -0400
+Date: Fri, 15 Jun 2007 16:43:05 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+In-Reply-To: <1181918159.25228.543.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+References: <20070615113919.142332000@pademelon.sonytel.be>
+ <20070615120848.352093000@pademelon.sonytel.be> <1181918159.25228.543.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1219061913-1181918585=:8248"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 02:03:55PM +0200, Bernd Paysan wrote:
-> > I've contributed some code for the kernel (unlike yourself, AFAICT), and
-> > believe me, I did so under GPL v2. The COPYING file is pretty much self
-> > explanatory, so I didn't need to add any explicit license statement to
-> > my code.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584337861-1219061913-1181918585=:8248
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Fri, 15 Jun 2007, David Woodhouse wrote:
+> On Fri, 2007-06-15 at 13:39 +0200, Geert Uytterhoeven wrote:
+> > Add a Disk Storage Driver for the PS3:
+> >   - Implemented as a block device driver with a dynamic major
+> >   - Disk names (and partitions) are of the format ps3d%c(%u)
+> >   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
+> >     doesn't support scatter-gather
 > 
-> It's not, it's a personal comment from a misunderstanding of the GPL text. 
-> It's as valid as the "closed source kernel modules are legal" comment that 
-> was there some years ago.
+> Any particular reason why this is done as a separate block device driver
+> rather than as SCSI?
 
-You forgot something.  Namely, that file *without* any mentioning of
-GPL or other license is either illegal to distribute at all, under
-any license, *OR* inherits the default license of the project.  Which
-is to say, what is stated in COPYING.
+Because no new fake SCSI drivers are accepted anymore.
 
-Take your pick.  For what it's worth, it would be interesting to hear
-the opinion of RMS - both on how much of the kernel is possible to
-distribute under v3 according to him and on the morality of your position.
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1219061913-1181918585=:8248--
