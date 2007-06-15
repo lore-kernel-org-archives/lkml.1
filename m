@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbXFOJGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbXFOJHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbXFOJGv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 05:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbXFOJGm
+	id S1754675AbXFOJHK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 05:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXFOJGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 05:06:42 -0400
-Received: from ns.firmix.at ([62.141.48.66]:58274 "EHLO ns.firmix.at"
+	Fri, 15 Jun 2007 05:06:46 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:38237 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbXFOJGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 05:06:41 -0400
-Subject: Mailing style (was Re: coding style)
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: debian developer <debiandev@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <f24d23310706142347r1f02b551u6aa9a5eb33072193@mail.gmail.com>
-References: <20070614184836.GA6520@cvg> <20070615045111.GU943@1wt.eu>
-	 <46721F18.8090303@intel.com>
-	 <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com>
-	 <f24d23310706142347r1f02b551u6aa9a5eb33072193@mail.gmail.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Fri, 15 Jun 2007 11:06:35 +0200
-Message-Id: <1181898395.22802.38.camel@tara.firmix.at>
+	id S1752623AbXFOJGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 05:06:44 -0400
+Date: Fri, 15 Jun 2007 13:03:57 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
+       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: [Patch 09/18] fs/logfs/gc.c
+Message-ID: <20070615090357.GC20361@2ka.mipt.ru>
+References: <20070603183845.GA8952@lazybastard.org> <20070603184604.GJ8952@lazybastard.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -1.122 () AWL
-X-Firmix-Spam-Status: No, hits=-1.122 required=5
-X-Spam-Score: -1.122 () AWL
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070603184604.GJ8952@lazybastard.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 15 Jun 2007 13:04:15 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 12:17 +0530, debian developer wrote:
-[...]
-> And *Please* do not top-post!
+On Sun, Jun 03, 2007 at 08:46:04PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
+> --- /dev/null	2007-03-13 19:15:28.862769062 +0100
+> +++ linux-2.6.21logfs/fs/logfs/gc.c	2007-06-03 19:18:57.000000000 +0200
 
-Says the one without real name who is full quoting including even the
-mailing list footers.
+Number of bugs in case of error looks quite sad...
 
-SCNR,
-	Bernd
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+	Evgeniy Polyakov
