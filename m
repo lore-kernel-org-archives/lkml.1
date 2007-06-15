@@ -1,69 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbXFORp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbXFORq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752598AbXFORp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbXFORpT
+	id S1753249AbXFORq0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbXFORqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:45:19 -0400
-Received: from mx.laposte.net ([81.255.54.16]:48342 "EHLO mx.laposte.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbXFORpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:45:18 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: Rob Landley <rob@landley.net>
-Cc: David Schwartz <davids@webmaster.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200706151327.45881.rob@landley.net>
-References: <46063.192.54.193.51.1181897652.squirrel@rousalka.dyndns.org>
-	 <200706151327.45881.rob@landley.net>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WCrrQQA8TtTErm7J+qyp"
-Organization: Adresse perso
-Date: Fri, 15 Jun 2007 19:44:59 +0200
-Message-Id: <1181929499.4388.12.camel@rousalka.dyndns.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.3 (2.11.3-4.fc8) 
+	Fri, 15 Jun 2007 13:46:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59002 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751770AbXFORqQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 13:46:16 -0400
+Date: Fri, 15 Jun 2007 10:46:15 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+cc: linux-ia64@vger.kernel.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ia64: Scalability improvement of gettimeofday with jitter
+ compensation
+In-Reply-To: <466E0FA4.2040405@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0706151040180.9132@schroedinger.engr.sgi.com>
+References: <466E0FA4.2040405@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Jun 2007, Hidetoshi Seto wrote:
 
---=-WCrrQQA8TtTErm7J+qyp
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+> 
+> [arch/ia64/kernel/time.c]
+> > #ifdef CONFIG_SMP
+> >   /* On IA64 in an SMP configuration ITCs are never accurately synchronized.
+> >    * Jitter compensation requires a cmpxchg which may limit
+> >    * the scalability of the syscalls for retrieving time.
+> >    * The ITC synchronization is usually successful to within a few
+> >    * ITC ticks but this is not a sure thing. If you need to improve
+> >    * timer performance in SMP situations then boot the kernel with the
+> >    * "nojitter" option. However, doing so may result in time fluctuating (maybe
+> >    * even going backward) if the ITC offsets between the individual CPUs
+> >    * are too large.
+> >    */
+> >   if (!nojitter) itc_interpolator.jitter = 1;
+> > #endif
+> 
+> ia64 uses jitter compensation to prevent time from going backward.
+> 
+> This jitter compensation logic which keep track of cycle value
+> recently returned is provided as generic code (and copied to
+> arch/ia64/kernel/fsys.S).
+> It seems that there is no user (setting jitter = 1) other than ia64.
 
-Le vendredi 15 juin 2007 =C3=A0 13:27 -0400, Rob Landley a =C3=A9crit :
+Yes there are only two users of time interpolators. The generic 
+gettimeofday work by John Stultz will make time interpolators obsolete 
+soon. I already saw a patch to remove them.
 
-> Er, yes and no.
->=20
-> The GPL evolved from the "Emacs License", and _that_ was heavily influenc=
-ed by=20
-> Stallman's fight with James Gosling over Gosling revoking permission to u=
-se=20
-> Gosmacs code in GNU Emacs after Gosling sold his codebase to a commercial=
-=20
-> entity.
->=20
-> http://www.free-soft.org/gpl_history/
+> The cmpxchg is known to take long time in an SMP environment but
+> it is easy way to guarantee atomic operation.
+> I think this is acceptable while there are no better alternatives.
+> 
+> OTOH, the do-while forces retry if cmpxchg fails (no exchanges).
+> This means that if there are N threads trying to do cmpxchg at
+> same time, only 1 can out from this loop and N-1 others will be
+> trapped in the loop. This also means that a thread could loop
+> N times in worst case.
 
-no and yes :)
+Right.
 
-The second paragraph of this page makes the GNU philosophy the other
-source of the GPL, and that was definitively influenced by the printer
-incident
+> Obviously this is a scalability issue.
+> To avoid this retry loop, I'd like to propose new logic that
+> removes do-while here.
 
---=20
-Nicolas Mailhot
+Booting with nojitter is the easiest way to solve this if one is willing 
+to accept slightly inaccurate clocks.
 
---=-WCrrQQA8TtTErm7J+qyp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+> The basic idea is "use winner's cycle instead of retrying."
+> Assuming that there are N threads trying to do cmpxchg, it also
+> be assumed that they are trying to update last_cycle by its own
+> new value while all values are almost same.
+> Therefore, it will work that treating threads as a group and
+> deciding a group's return value by picking up one from the group.
+> 
+> Fortunately, cmpxchg mechanism can help this logic. Only first
+> one in group can exchange the last_cycle successfully, so this
+> "winner" gets previous last_cycle as the return value of cmpxchg.
+> The rests in group will fail to exchange since last_cycle is
+> already updated by winner, so these "loser" gets current
+> last_cycle on cmpxchg's return. This means that all thread in
+> the group can know the winner's cycle.
+> 
+>   ret = cmpxchg(&last_cycle, last, new);
+>   if (ret == last)
+>     return new; /* you win! */
+>   else
+>     return ret; /* you lose. ret is winner's new */
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+Interesting solution. But there may be multiple updates of last happening. 
+Which of the winners is the real winner?
 
-iEYEABECAAYFAkZy0BsACgkQI2bVKDsp8g3BoQCgj6CBY3KCId+d9l4q4XnAFcDq
-BNMAn2wz5JJ5SJic0FnVpHk//LI6Acvr
-=WcCO
------END PGP SIGNATURE-----
+> 
+> I had a test running gettimeofday() processes at 1.5GHz*4way box.
+> It shows followings:
+> 
+>  - x1 process:
+>     0.15us / 1 gettimeofday() call
+>     0.15us / 1 gettimeofday() call with patch
+>  - x2 process:
+>     0.31us / 1 gettimeofday() call
+>     0.24us / 1 gettimeofday() call with patch
+>  - x3 process:
+>     1.59us / 1 gettimeofday() call
+>     1.11us / 1 gettimeofday() call with patch
+>  - x4 process:
+>     2.34us / 1 gettimeofday() call
+>     1.29us / 1 gettimeofday() call with patch
+> 
+> I know that this patch could not help quite huge system since
+> such system like having 1024CPUs should have better clocksource
+> instead of doing cmpxchg. Even though this patch will work good
+> on middle-sized box (4~8way, possibly 16~64way?).
 
---=-WCrrQQA8TtTErm7J+qyp--
+Our SGI machines have their own clock that is hardware replicated to all 
+nodes.
+
+This would certainly a nice improvement for SMP machines. It certainly 
+works nicely for 2 way systems.
