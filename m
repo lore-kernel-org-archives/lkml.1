@@ -1,81 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877AbXFOU4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbXFOU4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757877AbXFOU4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbXFOU4I
+	id S1758625AbXFOU4e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbXFOU4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:56:08 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:55671 "EHLO e1.ny.us.ibm.com"
+	Fri, 15 Jun 2007 16:56:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53802 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753535AbXFOU4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:56:06 -0400
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: holzheu@linux.vnet.ibm.com, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, mtk-manpages@gmx.net, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com,
-       "lf_kernel_messages@linux-foundation.org" 
-	<lf_kernel_messages@linux-foundation.org>
-Reply-To: Gerrit Huizenga <gh@us.ibm.com>
-From: Gerrit Huizenga <gh@us.ibm.com>
-Subject: Re: [RFC/PATCH] Documentation of kernel messages 
-In-reply-to: Your message of Fri, 15 Jun 2007 11:51:51 PDT.
-             <4672DFC7.20801@oracle.com> 
-Date: Fri, 15 Jun 2007 12:27:25 -0700
-Message-Id: <E1HzHSA-0006Dg-3a@w-gerrit.beaverton.ibm.com>
+	id S1755780AbXFOU4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:56:23 -0400
+Date: Fri, 15 Jun 2007 22:56:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615205607.GA4996@elte.hu>
+References: <200706142144.15695.dhazelton@enter.net> <1181895924.25228.319.camel@pmac.infradead.org> <200706150458.29943.dhazelton@enter.net> <1181899064.25228.342.camel@pmac.infradead.org> <alpine.LFD.0.98.0706150846370.14121@woody.linux-foundation.org> <1181930204.25228.590.camel@pmac.infradead.org> <alpine.LFD.0.98.0706151118150.14121@woody.linux-foundation.org> <1181936955.5211.62.camel@shinybook.infradead.org> <20070615202054.GA590@elte.hu> <1181939312.5211.77.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181939312.5211.77.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 15 Jun 2007 11:51:51 PDT, Randy Dunlap wrote:
+* David Woodhouse <dwmw2@infradead.org> wrote:
+
+> On Fri, 2007-06-15 at 22:20 +0200, Ingo Molnar wrote:
+> > That boundary is indeed fuzzy, because life is fuzzy too and the 
+> > possibilities are virtually unlimited. But one thing is pretty sure: as 
+> > long as some component is merely put alongside of a larger body of work, 
+> > even if that component has no life of its own without _some_ larger body 
+> > of work, that component is not necessarily part of a collective work and 
+> > does not necessarily fall under the GPL.
 > 
-> For those of us who have not been in on these meetings, I think that
-> some serious justifications are needed.  The last paragraph began to
-> go in that direction, but it needs to be more detailed and convincing.
-> And "for debugging" doesn't cut it IMO.
+> Not _necessarily_ a collective work. But not necessarily _not_ a
+> collective work either.
 > 
-> -- 
-> ~Randy
+> > For driver blobs that are shared between Windows and Linux it would be 
+> > hard to argue that they are derived from the Linux kernel. 
+> 
+> You're back to the 'derived work' thing again, which wasn't relevant.
 
-Fair point, Randy.
+yeah - i keep interchanging the two because they are so closely related. 
+(the same goes for modification and derivation - for software the two 
+are quite similar.) Depending on how deeply a distributor integrates a 
+binary blob, it might or might not fall under the umbrella of a 
+collective work, and the GPL (covering other components of the 
+collective work) might or might not apply.
 
-This came up this time because people in Japan supporting Linux customers
-are not always familiar with Linux kernel internals and thus debugging
-problems based on a terse, English language message is just painful.  Also,
-any given message doesn't really provide any input about what *really*
-failed, what should be done about it, how to correct this issue, or what
-parts to pull out of your machine and replace with properly working parts.
+> > Merely linking to some larger body of work does not necessarily mean 
+> > that the two become a collective work. No matter how much the FSF is 
+> > trying to muddy the waters with the LGPL/GPL.
+> 
+> I think it's quite clear that the intent of the GPL _is_ to 'muddy the 
+> waters', as you put it, and to indicate that bundling stuff together 
+> _should_ put the non-derived parts under the GPL too; at least in some 
+> circumstances. But still, nothing's true until it's ruled by a court.
 
-So, the Message Pedia is basically a Japanese language wiki today where
-people doing support can annotate the messages with real life experience on
-what to *do* about the error.
+but it's not up to the GPL to define that! Whether something is a 
+collective work is a matter of law (which operates on the specific facts 
+of the case), not a matter of licensing.
 
-Part of the problem is that the error messages when extracted don't
-stand alone and don't easily allow tracing back to the real source.  When
-the problem is handed from the second line support folks deeper into the
-support or development organization, the message has to be found in the
-source tree in some non-ambiguous fashion.
+and that's where the GPLv3 errs: it arbitrarily attempts to "define" 
+some work that can _easily_ be completely separate from the GPL-ed work 
+to be under the scope of "source code". Yes, it can do that legally 
+because its framers knew what they were doing and they did not attempt 
+to implement it as a 'this work belongs to us' thing (which would be 
+misuse of copyright) but as a 'you got to pay with your work for our 
+permission' - but the external communications about this is all false: 
+the pretense that the key in the Tivo case somehow belongs to the GPL-ed 
+work is just bogus. A key _can_ belong to a GPL-ed work, but it does not 
+automatically so. The GPLv3 automatically and unconditionally moves it 
+under the scope of the license and that aspect of the GPLv3 is just 
+wrong and moves the license closer to a Microsoft EULA contract than 
+towards a pure and just copyright license.
 
-The other problem that comes up in other, non-English locales is that
-debugging your Linux box when you are a non-native English speaker is
-just plain impossible.  Providing a means for getting localized kernel
-messages allows more end users to at least reasonably debug their own
-machine.  Most every user level project today allows localization directly
-but the kernel has never had any reasonable mechanism for localisation.
-
-Now, the proposal here doesn't make the kernel "as good as" user level
-application, but it would at least provide a searchable key to help
-people get localized guidance on problems.
-
-I'm sure there are other benefits that most can see based on just simple
-debuggability.  But the Japanese goal is really to construct a database
-of debugging info & context based on their experiences.
-
-And, I'm sure that others can speak for themselves.  I'm mostly playing
-scribe on this one - we abandoned our error and event subsystem work years
-ago, even though this was one of the biggest weaknesses we saw in customer
-support 3-5 years ago, simply because our changes were still viewed as
-too invasive for mainline kernel.  These proposed changes help a lot, while
-remaining almost completely invisible to most developers.
-
-gerrit
+	Ingo
