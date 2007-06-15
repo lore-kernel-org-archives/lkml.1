@@ -1,88 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbXFOVJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbXFOVJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbXFOVJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXFOVJa
+	id S1758904AbXFOVJz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbXFOVJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:09:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35871 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754856AbXFOVJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:09:29 -0400
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Bernd Paysan" <bernd.paysan@gmx.de>,
-       "Paulo Marques" <pmarques@grupopie.com>,
-       "Al Viro" <viro@ftp.linux.org.uk>, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706151014.45383.bernd.paysan@gmx.de>
-	<46727CCF.9030905@grupopie.com>
-	<200706151403.57178.bernd.paysan@gmx.de>
-	<d120d5000706150552i4e1d7095p475be21d05d93e58@mail.gmail.com>
-	<or4pl92hv5.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<d120d5000706151146u6f69667eodd2ff3f5e857a917@mail.gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 18:08:53 -0300
-In-Reply-To: <d120d5000706151146u6f69667eodd2ff3f5e857a917@mail.gmail.com> (Dmitry Torokhov's message of "Fri\, 15 Jun 2007 14\:46\:35 -0400")
-Message-ID: <or8xalx6vu.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 17:09:45 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:11555 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754856AbXFOVJo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:09:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=A0K69DfEOScj+QTmb2iczHbzLsvKqaHr6vr2ZDcT+xxbg911KlnSXpak2VXqXIFd75QMfa1eSBl9+oRO1q4qzNozLEgE2ZYJm9YGDTHlmE/fhCM3TgQI5D9hiCulDXuP0lyDiwyg4pEqDvoRUSEeZI+hNwl55Kcgmo6qCDberXE=
+Message-ID: <d120d5000706151409g4ed461daib5c6b858758b912e@mail.gmail.com>
+Date: Fri, 15 Jun 2007 17:09:43 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: Using RCU with rcu_read_lock()?
+Cc: "Dipankar Sarma" <dipankar@in.ibm.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070615210443.GF9301@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d120d5000706151200u34bd6728n7fca0983d6175f29@mail.gmail.com>
+	 <1181934259.11113.6.camel@lappy> <20070615192940.GA2996@in.ibm.com>
+	 <20070615201238.GE9301@linux.vnet.ibm.com>
+	 <d120d5000706151325i5c84f00ft9a33175d8e3f9097@mail.gmail.com>
+	 <20070615210443.GF9301@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+On 6/15/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> On Fri, Jun 15, 2007 at 04:25:02PM -0400, Dmitry Torokhov wrote:
+> > On 6/15/07, Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > >On Sat, Jun 16, 2007 at 12:59:40AM +0530, Dipankar Sarma wrote:
+> > >> On Fri, Jun 15, 2007 at 09:04:19PM +0200, Peter Zijlstra wrote:
+> > >> > On Fri, 2007-06-15 at 15:00 -0400, Dmitry Torokhov wrote:
+> > >> > > Hi,
+> > >> > >
+> > >> > > I have a piece of code that is always called under a spinlock with
+> > >> > > interrups disabled. Within that piece of code I iterate through a
+> > >> > > list. I have another piece of code that wants to modify that list. I
+> > >> > > have 2 options:
+> > >> > >
+> > >> > > I don't want to do 1) because the otheir piece of code does not
+> > >really
+> > >> > > care about object owning the spinlock and so acquiring the spinlock
+> > >is
+> > >> > > "not nice". However it is guaranteed that the piece of code that
+> > >> > > accesses lock runs atomically with interrupts disabled. So
+> > >> > > rcu_read_lock() would be superfluos there.
+> > >> > >
+> > >> > > Is it possible to still use list_for_each_rcu() and friends to access
+> > >> > > that list without rcu_read_lock()? Or it is betteruse complete RCU
+> > >> > > interface and eat cost of couple of extra instrctions?
+> > >> >
+> > >> > Yes, preemptible rcu requires that you use the full interface, also, it
+> > >> > more clearly documents the code. Trying to find code that breaks these
+> > >> > assumptions is very tedious work after the fact.
+> > >> >
+> > >> > Please do use the RCU interface in full.
+> > >>
+> > >> As Peter said, you should use the strict RCU APIs and not rely
+> > >> on the current implementation of RCU to optimize. Things change.
+> > >> Plus static/dynamic checking becomes easier that way.
+> > >
+> > >What they said!!!
+> > >
+> > >There are a couple of other options, however:
+> > >
+> > >1.      Use preempt_disable() and preempt_enable() on the read side,
+> > >       and synchronize_sched() on the update side.
+> > >
+> > >2.      Use local_irq_save() and local_irq_restore() on the read side,
+> > >       and synchronize_sched() on the update side.  Usually not
+> > >       competitive -- unless interrupts needed to be disabled for some
+> > >       other reason anyway.  Which you in fact say that you do.
+> >
+> > Right. The callsite that iterates through the list is essentially
+> > protected by spin_lock_irqsave()/spin_unlock_irqrestore() - needed for
+> > other reasons (such as updating internal state of a device - and that
+> > can happen from different contexts).
+>
+> That will work!
+>
+> > >I believe that #2 might do what you want.  But please, PLEASE carefully
+> > >comment this usage!!!
+> >
+> > Would there be a reson not to use #2 but rather full RCU with
+> > rcu_read_lock()/synchronize_rcu()?
+>
+> Probably not, but here are a couple of situations where the full RCU
+> might be preferred:
+>
+> 1.      If you were relying on interrupts being disabled within an
+>        interrupt handler (which they are -not- in -rt), then you would
+>        either need to add some form of local_irq_save() or, as you say,
+>        go to the rcu_read_lock() and synchronize_rcu() interfaces.
+>
+> 2.      If updates needed to use callbacks rather than synchronous waits
+>        for grace periods, in other words, if you needed call_rcu()
+>        instead of synchronize_rcu().  Of course, a callback API for
+>        _sched (call_rcu_sched() or some such) could be added if needed,
+>        though it would be better to avoid the API proliferation unless
+>        really badly needed.
+>
 
-> On 6/15/07, Alexandre Oliva <aoliva@redhat.com> wrote:
->> On Jun 15, 2007, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
->> 
->> > On 6/15/07, Bernd Paysan <bernd.paysan@gmx.de> wrote:
->> >> On Friday 15 June 2007 13:49, Paulo Marques wrote:
->> >>
->> >> > No, it is not "any version". It is the license specified in COPYING and
->> >> > nothing else.
->> >>
->> >> COPYING says in section 9 that there may be other versions, and if you as
->> >> author don't specify the version, it's "any version".
->> 
->> > Please read this sentence over and over until it sinks:
->> 
->> I believe he was talking about the sentence just after the one you
->> quoted:
->> 
->> If the Program does not specify a version number of this License,
->> you may choose any version ever published by the Free Software
->> Foundation.
+OK, then I will got with route #2 and just comment it properly.
 
-> My response to this is that by including an entire copy of specific
-> version of GPL in the release the version number was specified.
-
-It's not that simple.  Including a copy of the license is a license
-requirement for any redistributor, yes.
-
-But if you, a sole copyright holder, were to distribute your program,
-without any copy of the GPL, claiming "it's under the GPL", you're not
-a violator.
-
-Then, any redistributor adds a copy of any version of the GPL (because
-you didn't specify a version number).  At this point, is the program
-licensed by *you* only under this specific license?
-
-Now, if you picked one of the various versions of the license, to make
-things easier for redistributors, does it mean you're choosing that
-particular version of the license, even though the license itself
-says otherwise?
-
-> You can't say that inclusion of copy of GPL is enough to specify
-> class of licenses (all GPL) but not specific version.
-
-I can't say either of these, indeed.  Or rather, I can, but I wouldn't
-know whether I was right ;-)
+Thank you for your answers.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dmitry
