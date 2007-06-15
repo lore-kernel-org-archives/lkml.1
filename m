@@ -1,111 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbXFOJnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbXFOJnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbXFOJnB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 05:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXFOJmx
+	id S1754043AbXFOJnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 05:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbXFOJnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 05:42:53 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:29838 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbXFOJmw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 05:42:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=oT6/PkG0+Tb4zLLnA6RxmOXTFlwFUE2JV/66OYM9bdq0oEu66Xa5uBON0wp9hKcnfCqrXNFxl2iVCUyWgbhHIBKRsECOU1cGqgBGdUsY3ISpJ7FBelmo9jxGYIGYTeKZFtvMqaWi4zBzik0se08v0H2mZAdpWeuNM5XW8+44w+E=
-Date: Fri, 15 Jun 2007 18:42:46 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: David Greaves <david@dgreaves.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
-       Jeff Garzik <jgarzik@pobox.com>, jens.axboe@oracle.com
-Subject: [PATCH] block: always requeue !fs requests at the front
-Message-ID: <20070615094246.GN29122@htj.dyndns.org>
-References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46715A66.8030806@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 15 Jun 2007 05:43:40 -0400
+Received: from il.qumranet.com ([82.166.9.18]:52510 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750930AbXFOJnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 05:43:39 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] KVM fix for 2.6.22
+Date: Fri, 15 Jun 2007 12:43:33 +0300
+Message-Id: <11819006133865-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SCSI marks internal commands with REQ_PREEMPT and push it at the front
-of the request queue using blk_execute_rq().  When entering suspended
-or frozen state, SCSI devices are quiesced using
-scsi_device_quiesce().  In quiesced state, only REQ_PREEMPT requests
-are processed.  This is how SCSI blocks other requests out while
-suspending and resuming.  As all internal commands are pushed at the
-front of the queue, this usually works.
+Linus,
 
-Unfortunately, this interacts badly with ordered requeueing.  To
-preserve request order on requeueing (due to busy device, active EH or
-other failures), requests are sorted according to ordered sequence on
-requeue if IO barrier is in progress.
+Please pull from the repository and branch at
 
-The following sequence deadlocks.
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
 
-1. IO barrier sequence issues.
+to get a fix for a fairly critical bug which allows, under certain conditions,
+guest fpu state to find its way into the host fpu.
 
-2. Suspend requested.  Queue is quiesced with part of all of IO
-   barrier sequence at the front.
+Avi Kivity (1):
+      KVM: Prevent guest fpu state from leaking into the host
 
-3. During suspending or resuming, SCSI issues internal command which
-   gets deferred and requeued for some reason.  As the command is
-   issued after the IO barrier in #1, ordered requeueing code puts the
-   request after IO barrier sequence.
+ drivers/kvm/kvm.h      |    3 +++
+ drivers/kvm/kvm_main.c |   22 ++++++++++++++++++++++
+ drivers/kvm/vmx.c      |   12 +++---------
+ 3 files changed, 28 insertions(+), 9 deletions(-)
 
-4. The device is ready to process requests again but still is in
-   quiesced state and the first request of the queue isn't
-   REQ_PREEMPT, so command processing is deadlocked -
-   suspending/resuming waits for the issued request to complete while
-   the request can't be processed till device is put back into
-   running state by resuming.
-
-This can be fixed by always putting !fs requests at the front when
-requeueing.
-
-The following thread reports this deadlock.
-
-  http://thread.gmane.org/gmane.linux.kernel/537473
-
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Jenn Axboe <jens.axboe@oracle.com>
-Cc: David Greaves <david@dgreaves.com>
----
-Okay, it took a lot of hours of debugging but boiled down to two liner
-fix.  I feel so empty. :-) RAID6 triggers this reliably because it
-uses BIO_BARRIER heavily to update its superblock.  The recent ATA
-suspend/resume rewrite is hit by this because it uses SCSI internal
-commands to spin down and up the drives for suspending and resuming.
-
-David, please test this.  Jens, does it look okay?
-
-Thanks.
-
- block/ll_rw_blk.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 6b5173a..a2fe2e5 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -340,6 +340,14 @@ unsigned blk_ordered_req_seq(struct request *rq)
- 	if (rq == &q->post_flush_rq)
- 		return QUEUE_ORDSEQ_POSTFLUSH;
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index 1c040d8..152312c 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -304,6 +304,7 @@ struct kvm_vcpu {
+ 	char *host_fx_image;
+ 	char *guest_fx_image;
+ 	int fpu_active;
++	int guest_fpu_loaded;
  
-+	/* !fs requests don't need to follow barrier ordering.  Always
-+	 * put them at the front.  This fixes the following deadlock.
-+	 *
-+	 * http://thread.gmane.org/gmane.linux.kernel/537473
-+	 */
-+	if (!blk_fs_request(rq))
-+		return QUEUE_ORDSEQ_DRAIN;
+ 	int mmio_needed;
+ 	int mmio_read_completed;
+@@ -508,6 +509,8 @@ void fx_init(struct kvm_vcpu *vcpu);
+ void load_msrs(struct vmx_msr_entry *e, int n);
+ void save_msrs(struct vmx_msr_entry *e, int n);
+ void kvm_resched(struct kvm_vcpu *vcpu);
++void kvm_load_guest_fpu(struct kvm_vcpu *vcpu);
++void kvm_put_guest_fpu(struct kvm_vcpu *vcpu);
+ 
+ int kvm_read_guest(struct kvm_vcpu *vcpu,
+ 	       gva_t addr,
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index da985b3..8f1f07a 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -253,6 +253,28 @@ int kvm_write_guest(struct kvm_vcpu *vcpu, gva_t addr, unsigned long size,
+ }
+ EXPORT_SYMBOL_GPL(kvm_write_guest);
+ 
++void kvm_load_guest_fpu(struct kvm_vcpu *vcpu)
++{
++	if (!vcpu->fpu_active || vcpu->guest_fpu_loaded)
++		return;
 +
- 	if ((rq->cmd_flags & REQ_ORDERED_COLOR) ==
- 	    (q->orig_bar_rq->cmd_flags & REQ_ORDERED_COLOR))
- 		return QUEUE_ORDSEQ_DRAIN;
++	vcpu->guest_fpu_loaded = 1;
++	fx_save(vcpu->host_fx_image);
++	fx_restore(vcpu->guest_fx_image);
++}
++EXPORT_SYMBOL_GPL(kvm_load_guest_fpu);
++
++void kvm_put_guest_fpu(struct kvm_vcpu *vcpu)
++{
++	if (!vcpu->guest_fpu_loaded)
++		return;
++
++	vcpu->guest_fpu_loaded = 0;
++	fx_save(vcpu->guest_fx_image);
++	fx_restore(vcpu->host_fx_image);
++}
++EXPORT_SYMBOL_GPL(kvm_put_guest_fpu);
++
+ /*
+  * Switches to specified vcpu, until a matching vcpu_put()
+  */
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index 184238e..c1ac106 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -280,6 +280,7 @@ static void vmx_vcpu_load(struct kvm_vcpu *vcpu)
+ 
+ static void vmx_vcpu_put(struct kvm_vcpu *vcpu)
+ {
++	kvm_put_guest_fpu(vcpu);
+ 	put_cpu();
+ }
+ 
+@@ -1847,10 +1848,8 @@ again:
+ 	if (vcpu->guest_debug.enabled)
+ 		kvm_guest_debug_pre(vcpu);
+ 
+-	if (vcpu->fpu_active) {
+-		fx_save(vcpu->host_fx_image);
+-		fx_restore(vcpu->guest_fx_image);
+-	}
++	kvm_load_guest_fpu(vcpu);
++
+ 	/*
+ 	 * Loading guest fpu may have cleared host cr0.ts
+ 	 */
+@@ -2012,11 +2011,6 @@ again:
+ 	}
+ #endif
+ 
+-	if (vcpu->fpu_active) {
+-		fx_save(vcpu->guest_fx_image);
+-		fx_restore(vcpu->host_fx_image);
+-	}
+-
+ 	vcpu->interrupt_window_open = (vmcs_read32(GUEST_INTERRUPTIBILITY_INFO) & 3) == 0;
+ 
+ 	asm ("mov %0, %%ds; mov %0, %%es" : : "r"(__USER_DS));
