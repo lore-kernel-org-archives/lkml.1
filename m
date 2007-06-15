@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbXFOPGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbXFOPGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756654AbXFOPGp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXFOPGe
+	id S1755989AbXFOPGV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbXFOPGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:06:34 -0400
-Received: from saeurebad.de ([85.214.36.134]:48559 "EHLO saeurebad.de"
+	Fri, 15 Jun 2007 11:06:08 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40497 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753134AbXFOPGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:06:33 -0400
-Date: Fri, 15 Jun 2007 17:06:18 +0200
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: linux-kernel@vger.kernel.org
-Cc: Tom Robinson <thomas.robinson@gmail.com>, linux-mm@kvack.org,
-       Stephen Tweedie <sct@redhat.com>
-Subject: Re: PROBLEM: kernel BUG at mm/swap_state.c:78! (v2.6.21 under vmware)
-Message-ID: <20070615150618.GA19912@saeurebad.de>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	Tom Robinson <thomas.robinson@gmail.com>, linux-mm@kvack.org,
-	Stephen Tweedie <sct@redhat.com>
-References: <745af2c30706140842w5eabdf1bjdcc5fd7c2a92b77e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="vtzGhvizbBRQ85DL"
-Content-Disposition: inline
-In-Reply-To: <745af2c30706140842w5eabdf1bjdcc5fd7c2a92b77e@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1755683AbXFOPGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:06:06 -0400
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
+	Blocksize support
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       hch@infradead.org
+In-Reply-To: <20070614150417.c73fb6b9.akpm@linux-foundation.org>
+References: <20070614193839.878721298@sgi.com>
+	 <20070614130645.cabdff1b.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
+	 <20070614143248.736312f8.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com>
+	 <20070614150417.c73fb6b9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 10:05:59 -0500
+Message-Id: <1181919959.10658.9.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2007-06-14 at 15:04 -0700, Andrew Morton wrote:
+> > On Thu, 14 Jun 2007 14:37:33 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> > On Thu, 14 Jun 2007, Andrew Morton wrote:
+> > 
+> > > We want the 100% case.
+> > 
+> > Yes that is what we intend to do. Universal support for larger blocksize. 
+> > I.e. your desktop filesystem will use 64k page size and server platforms 
+> > likely much larger.
+> 
+> With 64k pagesize the amount of memory required to hold a kernel tree (say)
+> will go from 270MB to 1400MB.   This is not an optimisation.
+> 
+> Several 64k pagesize people have already spent time looking at various
+> tail-packing schemes to get around this serious problem.  And that's on
+> _server_ class machines.  Large ones.  I don't think
+> laptop/desktop/samll-server machines would want to go anywhere near this.
 
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I'm one of the ones investigating 64 KB pagesize tail-packing schemes,
+and I believe Christoph's cleanups will reduce the intrusiveness and
+improve the readability of a tail-packing solution.  I'll add my vote in
+support of these patches.
 
-Hi,
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
-I am not sure if this patch is a fix or a hiding (or leads to more trouble at
-all), so, could PLEASE anyone with knowledge about the code see over it?
-Thanks :)
-
-shrink_page_list() should not pass a private page to add_to_swap().
-Is it a bug if the page is private when reaching this point? I do not think
-so, because a few lines below is a condition where private pages are handled
-legally.
-
-
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="do-not-swap-private-pages.patch"
-
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 1be5a63..92573b7 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -489,7 +489,8 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		 * Anonymous process memory has backing store?
- 		 * Try to allocate it some swap space here.
- 		 */
--		if (PageAnon(page) && !PageSwapCache(page))
-+		if (PageAnon(page) && !PageSwapCache(page) &&
-+		    !PagePrivate(page))
- 			if (!add_to_swap(page, GFP_ATOMIC))
- 				goto activate_locked;
- #endif /* CONFIG_SWAP */
-
---vtzGhvizbBRQ85DL--
