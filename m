@@ -1,71 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbXFODoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbXFODoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757631AbXFODoU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 23:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbXFODoJ
+	id S1758639AbXFODoq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 23:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbXFODog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 23:44:09 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:39619
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753640AbXFODoH (ORCPT
+	Thu, 14 Jun 2007 23:44:36 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:34481 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753962AbXFODof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 23:44:07 -0400
-Date: Thu, 14 Jun 2007 20:43:18 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Neil Brown <neilb@suse.de>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-In-Reply-To: <18034.479.256870.600360@notabene.brown>
-Message-ID: <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
- <18034.479.256870.600360@notabene.brown>
+	Thu, 14 Jun 2007 23:44:35 -0400
+Message-ID: <46720B19.5000006@linux.vnet.ibm.com>
+Date: Fri, 15 Jun 2007 09:14:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: malc <av1474@comtv.ru>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [patch] sched: accurate user accounting
+References: <200703251159.03616.kernel@kolivas.org> <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru> <200703260901.54943.kernel@kolivas.org> <200703260957.34798.kernel@kolivas.org> <Pine.LNX.4.64.0703261439270.2621@linmac.oyster.ru> <20070328113743.GA5615@elte.hu> <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru> <20070614204253.GA14076@elte.hu> <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru> <20070614211828.GA21243@elte.hu> <Pine.LNX.4.64.0706150129430.3526@linmac.oyster.ru>
+In-Reply-To: <Pine.LNX.4.64.0706150129430.3526@linmac.oyster.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, Neil Brown wrote:
-
-> On Thursday June 14, david@lang.hm wrote:
->> what is the limit for the number of devices that can be in a single array?
+malc wrote:
+> On Thu, 14 Jun 2007, Ingo Molnar wrote:
+> 
 >>
->> I'm trying to build a 45x750G array and want to experiment with the
->> different configurations. I'm trying to start with raid6, but mdadm is
->> complaining about an invalid number of drives
+>> * malc <av1474@comtv.ru> wrote:
 >>
->> David Lang
->
-> "man mdadm"  search for "limits".  (forgive typos).
+>>>> the alternating balancing might be due to an uneven number of tasks
+>>>> perhaps? If you have 3 tasks on 2 cores then there's no other
+>>>> solution to achieve even performance of each task but to rotate them
+>>>> amongst the cores.
+>>>
+>>> One task, one thread. I have also tried to watch fairly demanding
+>>> video (Elephants Dream in 1920x1080/MPEG4) with mplayer, and CFS moves
+>>> the only task between cores almost every second.
+>>
+>> hm, mplayer is not running alone when it does video playback: Xorg is
+>> also pretty active. Furthermore, the task you are using to monitor
+>> mplayer counts too. The Core2Duo has a shared L2 cache between cores, so
+>> it is pretty cheap to move tasks between the cores.
+>>
+> 
+> Well just to be sure i reran the test with `-vo null' (and fwiw i tried
+> few completely different output drivers) the behavior is the same. I'm
+> not running Core2Duo but X2, but guess that does not really matter here.
+> 
+> As for the task that monitors, i've written it myself (there are two
+> monitoring methods, one(the accurate) does not depend on contets of
+> `/proc/stat' at all), so it can be cheaply (for me) changed in any
+> way one wants. Sources are available at the same place where screenshot
+> was found.
+> 
+>>>> well, precise/finegrained accounting patches have been available for
+>>>> years, the thing with CFS is that there we get them 'for free',
+>>>> because CFS needs those metrics for its own logic. That's why this
+>>>> information is much closer to reality now. But note: right now what
+>>>> is affected by the changes in the CFS patches is /proc/PID/stat
+>>>> (i.e. the per-task information that 'top' and 'ps' displays, _not_
+>>>> /proc/stat) - but more accurate /proc/stat could certainly come
+>>>> later on too.
+>>>
+>>> Aha. I see, it's just that integral load for hog is vastly improved
+>>> compared to vanilla 2.6.21 [...]
+>>
+>> hm, which ones are improved? Could this be due to some other property of
+>> CFS? If your app relies on /proc/stat then there's no extra precision in
+>> those cpustat values yet.
+> 
+> This is what it looked like before:
+> http://www.boblycat.org/~malc/apc/load-x2-hog.png
+> 
+> Now integral load matches the one obtained via the "accurate" method.
+> However the report for individual cores are of by around 20% percent.
+> 
 
-thanks.
+I think I missed some of the context, is the accounting of individual tasks
+or cpustat values off by 20%? I'll try and reproduce this problem.
 
-why does it still default to the old format after so many new versions? 
-(by the way, the documetnation said 28 devices, but I couldn't get it to 
-accept more then 27)
+Could you provide more details on the APC tool that you are using -- I
+do not understand the orange and yellow lines, do they represent system
+and user time?
 
-it's now churning away 'rebuilding' the brand new array.
+NOTE: There is some inconsistency in the values reported by /usr/bin/time
+(getrusage) and values reported in /proc or through delay accounting.
 
-a few questions/thoughts.
 
-why does it need to do a rebuild when makeing a new array? couldn't it 
-just zero all the drives instead? (or better still just record most of the 
-space as 'unused' and initialize it as it starts useing it?)
+> Though i'm not quite sure what you mean by "which ones are improved".
+> 
+>> i've Cc:-ed Balbir Singh and Dmitry Adamushko who are the main authors
+>> of the current precise accounting code in CFS. Maybe i missed some
+>> detail :-)
+> 
+> Oh, the famous "With enough eyeballs, all bugs are shallow." in action.
+> 
 
-while I consider zfs to be ~80% hype, one advantage it could have (but I 
-don't know if it has) is that since the filesystem an raid are integrated 
-into one layer they can optimize the case where files are being written 
-onto unallocated space and instead of reading blocks from disk to 
-calculate the parity they could just put zeros in the unallocated space, 
-potentially speeding up the system by reducing the amount of disk I/O.
 
-.this wouldn't work if the filesystem is crowded, but a lot of large 
-arrays are used for storing large files (i.e. sequential writes of large 
-amounts of data) and it would seem that this could be a substantial win in 
-these cases.
-
-is there any way that linux would be able to do this sort of thing? or is 
-it impossible due to the layering preventing the nessasary knowledge from 
-being in the right place?
-
-David Lang
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
