@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXFONGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbXFONLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbXFONGK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbXFONF4
+	id S1755296AbXFONLA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXFONKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:05:56 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:40901 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbXFONFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:05:55 -0400
-Date: Fri, 15 Jun 2007 17:03:43 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+	Fri, 15 Jun 2007 09:10:51 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41877 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753987AbXFONKu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:10:50 -0400
+Date: Fri, 15 Jun 2007 14:15:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <ak@suse.de>
+Cc: David Howells <dhowells@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        David Woodhouse <dwmw2@infradead.org>,
-       Jamie Lokier <jamie@shareable.org>,
-       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
-       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
-       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Albert Cahalan <acahalan@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Roland Dreier <rdreier@cisco.com>,
-       Ondrej Zajicek <santiago@crfreenet.org>,
-       Ulisses Furquim <ulissesf@gmail.com>
-Subject: Re: [Patch 09/18] fs/logfs/gc.c
-Message-ID: <20070615130342.GA19569@2ka.mipt.ru>
-References: <20070603183845.GA8952@lazybastard.org> <20070603184604.GJ8952@lazybastard.org> <20070615090357.GC20361@2ka.mipt.ru> <20070615111404.GB6791@lazybastard.org>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+Message-ID: <20070615141544.5a8e234e@the-village.bc.nu>
+In-Reply-To: <200706151454.28854.ak@suse.de>
+References: <200706151355.57464.ak@suse.de>
+	<200706151443.13511.ak@suse.de>
+	<20070615135420.7fe2e4c1@the-village.bc.nu>
+	<200706151454.28854.ak@suse.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070615111404.GB6791@lazybastard.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 15 Jun 2007 17:04:09 +0400 (MSD)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 01:14:04PM +0200, Jörn Engel (joern@logfs.org) wrote:
-> On Fri, 15 June 2007 13:03:57 +0400, Evgeniy Polyakov wrote:
-> > On Sun, Jun 03, 2007 at 08:46:04PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
-> > > --- /dev/null	2007-03-13 19:15:28.862769062 +0100
-> > > +++ linux-2.6.21logfs/fs/logfs/gc.c	2007-06-03 19:18:57.000000000 +0200
-> > 
-> > Number of bugs in case of error looks quite sad...
+> > For the parts used by the processors in question yes 
 > 
-> Agreed.  I've started working on error handling.  Most erase errors are
-> dealt with.  Write errors still need some infrastructure.
+> That means? They're expected to run only a subset of the network stack?
+> Is that expressed in Kconfig? Is it documented that the rest is dangerous?
+
+Have you audited every other line of code for every other kind of bug ? 
+
+> > people have done 
+> > that work so using the types without unaligned.
 > 
-> If you like I can send another round of patches for review.
+> Very brave; we're talking about around half a million lines
+> of non trivial source code here.
 
-Yep, send them, when thinks they are ready.
+And debug simulators that can be made to trap such accesses, and in most
+cases processors which fault such an access (so you find it) but don't
+provide enough information to restart.
 
-> Jörn
-> 
-> -- 
-> Joern's library part 12:
-> http://physics.nist.gov/cuu/Units/binary.html
+The testing isn't that hard for a given embedded system and having done
+work Linux does not need other changes re-breaking things.
 
--- 
-	Evgeniy Polyakov
+Alan
