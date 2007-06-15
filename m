@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbXFOVpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbXFOVpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbXFOVpl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbXFOVpI
+	id S1758675AbXFOVpy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757999AbXFOVpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:45:08 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36339 "EHLO
+	Fri, 15 Jun 2007 17:45:13 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36341 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755907AbXFOVpF (ORCPT
+	with ESMTP id S1757410AbXFOVpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:45:05 -0400
-Date: Fri, 15 Jun 2007 23:45:20 +0200
+	Fri, 15 Jun 2007 17:45:11 -0400
+Date: Fri, 15 Jun 2007 23:45:25 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: David Howells <dhowells@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [RFC: 2.6 patch] net/rxrpc/ar-output.c: remove dead code
-Message-ID: <20070615214520.GM3588@stusta.de>
+To: Vladimir Lebedev <vladimir.p.lebedev@intel.com>,
+       Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [RFC: 2.6 patch] drivers/acpi/sbs.c: remove dead code
+Message-ID: <20070615214525.GN3588@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -30,60 +30,29 @@ Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- net/rxrpc/ar-output.c |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ drivers/acpi/sbs.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
---- linux-2.6.22-rc4-mm2/net/rxrpc/ar-output.c.old	2007-06-15 21:38:02.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/net/rxrpc/ar-output.c	2007-06-15 21:38:47.000000000 +0200
-@@ -530,7 +530,7 @@ static int rxrpc_send_data(struct kiocb 
- 	struct sock *sk = &rx->sk;
- 	long timeo;
- 	bool more;
--	int ret, ioc, segment, copied;
-+	int ret, ioc, segment;
+--- linux-2.6.22-rc4-mm2/drivers/acpi/sbs.c.old	2007-06-15 22:44:17.000000000 +0200
++++ linux-2.6.22-rc4-mm2/drivers/acpi/sbs.c	2007-06-15 22:46:26.000000000 +0200
+@@ -1411,7 +1411,7 @@ static int acpi_sbs_update_run(struct ac
+ 	char dir_name[32];
+ 	int do_battery_init = 0, do_ac_init = 0;
+ 	int old_remaining_capacity = 0;
+-	int update_ac = 1, update_battery = 1;
++	int update_battery = 1;
+ 	int up_tm = update_time;
  
- 	_enter(",,,{%zu},%zu", msg->msg_iovlen, len);
+ 	if (sbs_zombie(sbs)) {
+@@ -1431,10 +1431,6 @@ static int acpi_sbs_update_run(struct ac
  
-@@ -552,7 +552,6 @@ static int rxrpc_send_data(struct kiocb 
- 	skb = call->tx_pending;
- 	call->tx_pending = NULL;
+ 	sbs->run_cnt++;
  
--	copied = 0;
- 	do {
- 		int copy;
- 
-@@ -570,11 +569,11 @@ static int rxrpc_send_data(struct kiocb 
- 				       call->acks_winsz) <= 0) {
- 				ret = -EAGAIN;
- 				if (msg->msg_flags & MSG_DONTWAIT)
--					goto maybe_error;
-+					goto out;
- 				ret = rxrpc_wait_for_tx_window(rx, call,
- 							       &timeo);
- 				if (ret < 0)
--					goto maybe_error;
-+					goto out;
- 			}
- 
- 			max = call->conn->trans->peer->maxdata;
-@@ -596,7 +595,7 @@ static int rxrpc_send_data(struct kiocb 
- 			skb = sock_alloc_send_skb(
- 				sk, size, msg->msg_flags & MSG_DONTWAIT, &ret);
- 			if (!skb)
--				goto maybe_error;
-+				goto out;
- 
- 			rxrpc_new_skb(skb);
- 
-@@ -723,11 +722,6 @@ call_aborted:
- 	_leave(" = %d", ret);
- 	return ret;
- 
--maybe_error:
--	if (copied)
--		ret = copied;
--	goto out;
+-	if (!update_ac && !update_battery) {
+-		goto end;
+-	}
 -
- efault:
- 	ret = -EFAULT;
- 	goto out;
+ 	old_ac_present = sbs->ac.ac_present;
+ 
+ 	result = acpi_ac_get_present(sbs);
+
