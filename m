@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbXFOTtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbXFOTuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757887AbXFOTtu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbXFOTtj
+	id S1757954AbXFOTuM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbXFOTt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:49:39 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:58445 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbXFOTti convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jun 2007 15:49:57 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2502 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757800AbXFOTtx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:49:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=HwTb/53O4HQvQgpuTJYBNhf7Xdhia6+nKZTn8FqFbtkL74lok0QN+1bylObNvGGql7jIARm0R9oqnJ3fc82CPhPdCWYOHVsuzrE7xd6OcG6e2MlCiS3WhW3GUApDlLw9QvpJw//qf2z0JXnQpCN3w1KJMRP4iFnm0F3nfKbe244=
-Date: Fri, 15 Jun 2007 21:48:11 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-Id: <20070615214811.ba498cd0.diegocg@gmail.com>
-In-Reply-To: <orodjib9b6.fsf@oliva.athome.lsd.ic.unicamp.br>
-References: <466A3EC6.6030706@netone.net.tr>
-	<200706132140.13490.dhazelton@enter.net>
-	<20070614020827.GO3588@stusta.de>
-	<200706132243.14651.dhazelton@enter.net>
-	<20070614025640.GQ3588@stusta.de>
-	<9578.1181793617@turing-police.cc.vt.edu>
-	<20070614152034.GS3588@stusta.de>
-	<alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
-	<orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614204725.cdf790a7.diegocg@gmail.com>
-	<alpine.LFD.0.98.0706141204330.14121@woody.linux-foundation.org>
-	<orodjib9b6.fsf@oliva.athome.lsd.ic.unicamp.br>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.10.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 Jun 2007 15:49:53 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 12:49:08 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEPOEJAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <1181913163.25228.507.camel@pmac.infradead.org>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 15 Jun 2007 12:49:39 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 15 Jun 2007 12:49:40 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Thu, 14 Jun 2007 16:55:09 -0300, Alexandre Oliva <aoliva@redhat.com> escribió:
 
-> > On Thu, 14 Jun 2007, Diego Calleja wrote:
-> 
-> >> And the FSF is trying to control the design and licensing of
-> >> hardware throught the influence of their software.
-> 
-> It's not.  It's only working to ensure recipients of the Free Software
-> can modify and share the software.
+> As long as it's not distributed "as part of a whole which is a work
+> based on the Program", there's no problem.
+>
+> You seem to be suggesting that even linking the Program together with
+> other stuff doesn't create a 'work based on the Program'. You seem claim
+> it's "mere aggregation on a volume of a storage or distribution medium".
+> Am I understanding you correctly?
 
-Those may be the intentions, but I claim that your statement is false. The
-anti-tivoisation FSF movement is not "working to ensure recipients of the
-Free Software can modify and share the software". 
+Correct. Linking does not create a "work based on the program" because
+linking does not create a work. Only a creative process can create a work.
+Anything else is mere aggregation.
 
-They can't, because the fact is that hardware vendors can NOT stop you
-from "modifing and sharing the software". They only can stop you from
-running your modifications, which is very different. So this is a 
-_hardware_ limitation. It's pointless to try to address this problem
-with software licenses.
+> Is there _anything_ which you admit would actually constitute a 'work
+> based on the Program', when that work wouldn't have been be a derived
+> work anyway?
 
-What the anti-tivoisation movement is trying to do: "If you are a vendor
-of tivoized hardware you must give your users whatever information is
-needed to run modifications of their software"
+These terms are synonymous. And neither of them can apply to something that
+is not a work.
 
-How it works in the real world: "You can't run this software in hardware
-that doesn't allow to run code modifications of this software"
+> Or do you claim that those whole paragraphs of the GPL are
+> just meaningless drivel, when they explicitly make reference to applying
+> the GPL to works which would _normally_ be 'considered independent and
+> separate works in themselves'?
 
-So while the anti-tivoisation movement is trying to limit hardware
-design/licensing, the fact is that what you are restricting is not the
-hardware, but the _software_, in a way very different from the 'restrictions'
-that the GPL has when compared with the BSD ie: in a way that doesn't
-benefit freedom or contribution of code. Because your users already
-can modify and share their code regardless of what hardware they're
-using (even if they can't run their modifications), you're just adding
-pointless prohibitions.
+The license is just clarifying copyright law. Even if it intended to do
+something else, it can't. The license cannot set its own scope.
+
+> If your interpretation of the GPL means that those paragraphs don't make
+> any sense at all, then I feel your interpretation may be suspect.
+
+They make perfect sense. They're clarifications of copyright law to help
+people who might not be familiar with the law understand what their
+obligations under the license are. All of those sections are reasonable
+explanations of what a "derivative work" is. It would be extremely strange
+to try to parse them for subtle differences.
+
+In any event, even if the GPL said "if you ever look at any source code to a
+GPL'd work, the FSF owns everything you code after that", it wouldn't
+matter. The GPL can't set its own scope. Copyright law, and the definition
+of a derivative work, set the GPL's scope anyway.
+
+The GPL only makes sense if you understand "mere aggregation" to mean 'as
+opposed to creative combination'.
+
+DS
+
+
