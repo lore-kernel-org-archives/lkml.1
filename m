@@ -1,491 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758635AbXFOUbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbXFOUcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758635AbXFOUbn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbXFOUa2
+	id S1758704AbXFOUcA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758281AbXFOUa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:30:28 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:55124 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758352AbXFOUaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:30:25 -0400
-Message-Id: <20070615202925.894294663@polymtl.ca>
-References: <20070615202310.178466032@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Fri, 15 Jun 2007 16:23:13 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>
-Subject: [patch 3/8] Immediate Value - Add kconfig menus
-Content-Disposition: inline; filename=immediate-values-kconfig-menus.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 15 Jun 2007 20:29:40 +0000
+	Fri, 15 Jun 2007 16:30:58 -0400
+Received: from keil-draco.com ([216.193.185.50]:50244 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756607AbXFOUa4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:30:56 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 16:30:42 -0400
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Carlo Wood <carlo@alinoe.com>, Bernd Paysan <bernd.paysan@gmx.de>,
+       Theodore Tso <tytso@mit.edu>, Alexandre Oliva <aoliva@redhat.com>,
+       Sean <seanlkml@sympatico.ca>, Valdis.Kletnieks@vt.edu,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org> <alpine.LFD.0.98.0706150830020.14121@woody.linux-foundation.org> <20070615162216.GG3588@stusta.de>
+In-Reply-To: <20070615162216.GG3588@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706151630.43499.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Immediate values provide a way to compile in kernels features that can be
-enabled dynamically, with a very small footprint when disabled.
+On Friday 15 June 2007 12:22:16 Adrian Bunk wrote:
+> On Fri, Jun 15, 2007 at 08:45:43AM -0700, Linus Torvalds wrote:
+> > On Fri, 15 Jun 2007, Carlo Wood wrote:
+<snip>
+> > The way "collective works" work, there are two separate copyrights: there
+> > is the copyright in the "separate contribution", which is vests
+> > ininitally in the author of that contribution (unless he signs over his
+> > copyrights, often by virtue of working for somebody else).
+> >
+> > And then there is the copyright in the "collective work", which would be
+> > me.
+> >
+> > Of course, owning coyright in the "collective work" doesn't actually give
+> > me complete control anyway. I cannot relicense things in ways that go
+> > against the rules of the individual works. But in a very real sense, yes,
+> > I actually do own a certain (*limited*) copyright over even the parts
+> > that have not been explicitly signed over to me.
+> >...
+>
+> Does this include GPLv2'ed code not intended to be used in the Linux
+> kernel submitted by people other than the copyright holder for inclusion
+> in the Linux kernel?
+>
+> If yes, the FSF has exactly the same rights if taking a GPLv2 driver
+> from the Linux kernel and including it in GNU Hurd.
 
-This patch:
+Of course they do. That is defined by the license. They can include it with 
+HURD, but that doesn't give them copyright to it, just the right to exercise 
+the rights granted by the license.
 
-Add Kconfig menus for the marker code.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Adrian Bunk <bunk@stusta.de>
-CC: Andi Kleen <andi@firstfloor.org>
----
+DRH
 
- arch/alpha/Kconfig       |    6 ++++++
- arch/arm/Kconfig         |    6 ++++++
- arch/arm26/Kconfig       |    6 ++++++
- arch/avr32/Kconfig.debug |    7 +++++++
- arch/cris/Kconfig        |    6 ++++++
- arch/frv/Kconfig         |    6 ++++++
- arch/h8300/Kconfig       |    6 ++++++
- arch/i386/Kconfig        |    2 ++
- arch/ia64/Kconfig        |    3 +++
- arch/m32r/Kconfig        |    6 ++++++
- arch/m68k/Kconfig        |    6 ++++++
- arch/m68knommu/Kconfig   |    6 ++++++
- arch/mips/Kconfig        |    6 ++++++
- arch/parisc/Kconfig      |    6 ++++++
- arch/powerpc/Kconfig     |    3 +++
- arch/ppc/Kconfig         |    6 ++++++
- arch/s390/Kconfig        |    2 ++
- arch/sh/Kconfig          |    6 ++++++
- arch/sh64/Kconfig        |    6 ++++++
- arch/sparc/Kconfig       |    2 ++
- arch/sparc64/Kconfig     |    3 +++
- arch/um/Kconfig          |    6 ++++++
- arch/v850/Kconfig        |    6 ++++++
- arch/x86_64/Kconfig      |    3 +++
- arch/xtensa/Kconfig      |    6 ++++++
- kernel/Kconfig.immediate |    9 +++++++++
- 26 files changed, 136 insertions(+)
+>
+> > 				Linus
+>
+> cu
+> Adrian
 
-Index: linux-2.6-lttng/arch/alpha/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/alpha/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/alpha/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -653,6 +653,12 @@
- 
- source "arch/alpha/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/alpha/Kconfig.debug"
- 
- # DUMMY_CONSOLE may be defined in drivers/video/console/Kconfig
-Index: linux-2.6-lttng/arch/arm/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/arm/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/arm/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -1046,6 +1046,12 @@
- 
- source "arch/arm/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/arm/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/arm26/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/arm26/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/arm26/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -244,6 +244,12 @@
- 
- source "drivers/usb/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/arm26/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/cris/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/cris/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/cris/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -198,6 +198,12 @@
- 
- source "drivers/usb/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/cris/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/frv/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/frv/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/frv/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -375,6 +375,12 @@
- 
- source "fs/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/frv/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/h8300/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/h8300/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/h8300/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -223,6 +223,12 @@
- 
- source "fs/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/h8300/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/i386/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -1235,6 +1235,8 @@
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
- 
-+source "kernel/Kconfig.immediate"
-+
- endif # INSTRUMENTATION
- 
- source "arch/i386/Kconfig.debug"
-Index: linux-2.6-lttng/arch/ia64/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/ia64/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/ia64/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -593,6 +593,9 @@
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.immediate"
-+
- endmenu
- 
- source "arch/ia64/Kconfig.debug"
-Index: linux-2.6-lttng/arch/m32r/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/m32r/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/m32r/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -408,6 +408,12 @@
- 
- source "arch/m32r/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/m32r/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/m68k/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/m68k/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -679,6 +679,12 @@
- 
- source "fs/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/m68k/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/m68knommu/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/m68knommu/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/m68knommu/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -668,6 +668,12 @@
- 
- source "fs/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/m68knommu/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/mips/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/mips/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/mips/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -1957,6 +1957,12 @@
- 
- source "arch/mips/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/mips/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/parisc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/parisc/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/parisc/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -269,6 +269,12 @@
- 
- source "arch/parisc/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/parisc/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -905,6 +905,9 @@
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.immediate"
-+
- endmenu
- 
- source "arch/powerpc/Kconfig.debug"
-Index: linux-2.6-lttng/arch/ppc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/ppc/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/ppc/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -1451,8 +1451,14 @@
- 
- source "lib/Kconfig"
- 
-+menu "Instrumentation Support"
-+
- source "arch/powerpc/oprofile/Kconfig"
- 
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/ppc/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/s390/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/s390/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -547,6 +547,8 @@
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
- 
-+source "kernel/Kconfig.immediate"
-+
- endmenu
- 
- source "arch/s390/Kconfig.debug"
-Index: linux-2.6-lttng/arch/sh/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/sh/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/sh/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -721,6 +721,12 @@
- 
- source "arch/sh/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/sh/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/sh64/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/sh64/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/sh64/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -284,6 +284,12 @@
- 
- source "arch/sh64/oprofile/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/sh64/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/sparc/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -313,6 +313,8 @@
- 
- source "arch/sparc/oprofile/Kconfig"
- 
-+source "kernel/Kconfig.immediate"
-+
- endmenu
- 
- source "arch/sparc/Kconfig.debug"
-Index: linux-2.6-lttng/arch/sparc64/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc64/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc64/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -438,6 +438,9 @@
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.immediate"
-+
- endmenu
- 
- source "arch/sparc64/Kconfig.debug"
-Index: linux-2.6-lttng/arch/um/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/um/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/um/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -335,4 +335,10 @@
- 	bool
- 	default n
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/um/Kconfig.debug"
-Index: linux-2.6-lttng/arch/v850/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/v850/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/v850/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -331,6 +331,12 @@
- 
- source "drivers/usb/Kconfig"
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/v850/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/arch/x86_64/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -792,6 +792,9 @@
- 	  a probepoint and specifies the callback.  Kprobes is useful
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
-+
-+source "kernel/Kconfig.immediate"
-+
- endmenu
- 
- source "arch/x86_64/Kconfig.debug"
-Index: linux-2.6-lttng/arch/xtensa/Kconfig
-===================================================================
---- linux-2.6-lttng.orig/arch/xtensa/Kconfig	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/xtensa/Kconfig	2007-06-15 16:14:02.000000000 -0400
-@@ -251,6 +251,12 @@
- 	  provide one yourself.
- endmenu
- 
-+menu "Instrumentation Support"
-+
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- source "arch/xtensa/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-lttng/kernel/Kconfig.immediate
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/kernel/Kconfig.immediate	2007-06-15 16:14:02.000000000 -0400
-@@ -0,0 +1,9 @@
-+# Immediate values configuration
-+
-+config IMMEDIATE
-+	bool "Use self-modifying code to provide fast immediate values"
-+	help
-+	  Provides a way to use immediate values acting as global values to
-+	  dynamically enable kernel features while having a very small
-+	  footprint when disabled. You may want to disable this feature if you
-+	  run your kernel code on a read-only rom/flash.
-Index: linux-2.6-lttng/arch/avr32/Kconfig.debug
-===================================================================
---- linux-2.6-lttng.orig/arch/avr32/Kconfig.debug	2007-06-15 16:13:51.000000000 -0400
-+++ linux-2.6-lttng/arch/avr32/Kconfig.debug	2007-06-15 16:14:02.000000000 -0400
-@@ -6,6 +6,9 @@
- 
- source "lib/Kconfig.debug"
- 
-+menu "Instrumentation Support"
-+	depends on EXPERIMENTAL
-+
- config KPROBES
- 	bool "Kprobes"
- 	depends on DEBUG_KERNEL
-@@ -16,4 +19,8 @@
-           for kernel debugging, non-intrusive instrumentation and testing.
-           If in doubt, say "N".
- 
-+source "kernel/Kconfig.immediate"
-+
-+endmenu
-+
- endmenu
+
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
