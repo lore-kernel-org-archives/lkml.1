@@ -1,66 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbXFOVKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbXFOVLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756532AbXFOVKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXFOVK1
+	id S1757322AbXFOVLN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbXFOVK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:10:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36134 "EHLO mx1.redhat.com"
+	Fri, 15 Jun 2007 17:10:57 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:36034 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751438AbXFOVK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:10:26 -0400
-To: Theodore Tso <tytso@mit.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org>
-	<orzm32cr8v.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141153550.14121@woody.linux-foundation.org>
-	<or1wgeco9v.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141311330.14121@woody.linux-foundation.org>
-	<orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org>
-	<orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org>
-	<orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615052432.GC14911@thunk.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 17:44:40 -0300
-In-Reply-To: <20070615052432.GC14911@thunk.org> (Theodore Tso's message of "Fri\, 15 Jun 2007 01\:24\:32 -0400")
-Message-ID: <orlkelx807.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752584AbXFOVK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 17:10:56 -0400
+Message-Id: <20070615202926.152087904@polymtl.ca>
+References: <20070615202310.178466032@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Fri, 15 Jun 2007 16:23:14 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 4/8] Immediate Value - i386 Optimization
+Content-Disposition: inline; filename=immediate-values-i386-optimization.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Fri, 15 Jun 2007 21:11:04 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Theodore Tso <tytso@mit.edu> wrote:
+i386 optimization of the immediate values which uses a movl with code patching
+to set/unset the value used to populate the register used for the branch test.
 
-> On Thu, Jun 14, 2007 at 08:20:19PM -0300, Alexandre Oliva wrote:
->> 
->> So, you see, your statement above, about wanting to be able to use
->> other people's improvements, cannot be taken without qualification.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/i386/kernel/Makefile    |    1 
+ arch/i386/kernel/immediate.c |  177 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/immediate.h |   72 +++++++++++++++++
+ 3 files changed, 249 insertions(+), 1 deletion(-)
 
-> No.  Linus and other Linux kernels might *want* to take other people's
-> improvements, but thanks to Richard Stallman's choices for GPLv3, they
-> can *not* legally take other people's improvements without violating
-> the GPLv3 license.
-
-This argument is backwards.  It's because of Linus' choice for GPLv2
-that he can't take improvements under the GPLv3.
-
-Had he chosen any other GPLv3-compatible license, he could.
-
-And the same applies to any other incompatible pair of licenses.
+Index: linux-2.6-lttng/include/asm-i386/immediate.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/immediate.h	2007-06-15 16:13:55.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/immediate.h	2007-06-15 16:14:04.000000000 -0400
+@@ -1 +1,71 @@
+-#include <asm-generic/immediate.h>
++#ifndef _ASM_I386_IMMEDIATE_H
++#define _ASM_I386_IMMEDIATE_H
++
++/*
++ * Immediate values. i386 architecture optimizations.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#define IF_DEFAULT (IF_OPTIMIZED | IF_LOCKDEP)
++
++/*
++ * Optimized version of the immediate. Passing the flags as a pointer to
++ * the inline assembly to trick it into putting the flags value as third
++ * parameter in the structure.
++ */
++#define immediate_optimized(flags, var)					\
++	({								\
++		int condition;						\
++		asm (	".section __immediate, \"a\", @progbits;\n\t"	\
++					".long %1, 0f, %2;\n\t"		\
++					".previous;\n\t"		\
++					"0:\n\t"			\
++					"movl %3,%0;\n\t"		\
++				: "=r" (condition)			\
++				: "m" (var),				\
++				  "m" (*(char*)flags),			\
++				  "i" (0));				\
++		(condition);						\
++	})
++
++/*
++ * immediate macro selecting the generic or optimized version of immediate,
++ * depending on the flags specified. It is a macro because we need to pass the
++ * name to immediate_optimized() and immediate_generic() so they can declare a
++ * static variable with it.
++ */
++#define _immediate(flags, var)						\
++({									\
++	(((flags) & IF_LOCKDEP) && ((flags) & IF_OPTIMIZED)) ?		\
++		immediate_optimized(flags, var) :			\
++		immediate_generic(flags, var);				\
++})
++
++/* immediate with default behavior */
++#define immediate(var)	_immediate(IF_DEFAULT, var)
++
++/*
++ * Architecture dependant immediate information, used internally for immediate
++ * activation.
++ */
++
++/*
++ * Offset of the immediate value from the start of the movl instruction, in
++ * bytes. We point to the first lower byte of the 4 bytes immediate value. Only
++ * changing one byte makes sure we do an atomic memory write, independently of
++ * the alignment of the 4 bytes in the load immediate instruction.
++ */
++#define IMMEDIATE_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET 1
++#define IMMEDIATE_OPTIMIZED_ENABLE_TYPE unsigned char
++/* Dereference enable as lvalue from a pointer to its instruction */
++#define IMMEDIATE_OPTIMIZED_ENABLE(a)					\
++	(*(IMMEDIATE_OPTIMIZED_ENABLE_TYPE*)				\
++		((char*)(a)+IMMEDIATE_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET))
++
++extern int immediate_optimized_set_enable(void *address, char enable);
++
++#endif /* _ASM_I386_IMMEDIATE_H */
+Index: linux-2.6-lttng/arch/i386/kernel/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/kernel/Makefile	2007-06-15 16:13:51.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/Makefile	2007-06-15 16:14:04.000000000 -0400
+@@ -35,6 +35,7 @@
+ obj-y				+= sysenter.o vsyscall.o
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat.o
+ obj-$(CONFIG_EFI) 		+= efi.o efi_stub.o
++obj-$(CONFIG_IMMEDIATE)		+= immediate.o
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault.o
+ obj-$(CONFIG_SERIAL_8250)	+= legacy_serial.o
+ obj-$(CONFIG_VM86)		+= vm86.o
+Index: linux-2.6-lttng/arch/i386/kernel/immediate.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/arch/i386/kernel/immediate.c	2007-06-15 16:14:04.000000000 -0400
+@@ -0,0 +1,177 @@
++/*
++ * Immediate Value - i386 architecture specific code.
++ *
++ * Rationale
++ *
++ * Required because of :
++ * - Erratum 49 fix for Intel PIII.
++ * - Still present on newer processors : Intel Core 2 Duo Processor for Intel
++ *   Centrino Duo Processor Technology Specification Update, AH33.
++ *   Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
++ *   Instruction Execution Results.
++ *
++ * Permits immediate value modification by XMC with correct serialization.
++ *
++ * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
++ * location that has preemption enabled because it involves no temporary or
++ * reused data structure.
++ *
++ * Quoting Richard J Moore, source of the information motivating this
++ * implementation which differs from the one proposed by Intel which is not
++ * suitable for kernel context (does not support NMI and would require disabling
++ * interrupts on every CPU for a long period) :
++ *
++ * "There is another issue to consider when looking into using probes other
++ * then int3:
++ *
++ * Intel erratum 54 - Unsynchronized Cross-modifying code - refers to the
++ * practice of modifying code on one processor where another has prefetched
++ * the unmodified version of the code. Intel states that unpredictable general
++ * protection faults may result if a synchronizing instruction (iret, int,
++ * int3, cpuid, etc ) is not executed on the second processor before it
++ * executes the pre-fetched out-of-date copy of the instruction.
++ *
++ * When we became aware of this I had a long discussion with Intel's
++ * microarchitecture guys. It turns out that the reason for this erratum
++ * (which incidentally Intel does not intend to fix) is because the trace
++ * cache - the stream of micorops resulting from instruction interpretation -
++ * cannot guaranteed to be valid. Reading between the lines I assume this
++ * issue arises because of optimization done in the trace cache, where it is
++ * no longer possible to identify the original instruction boundaries. If the
++ * CPU discoverers that the trace cache has been invalidated because of
++ * unsynchronized cross-modification then instruction execution will be
++ * aborted with a GPF. Further discussion with Intel revealed that replacing
++ * the first opcode byte with an int3 would not be subject to this erratum.
++ *
++ * So, is cmpxchg reliable? One has to guarantee more than mere atomicity."
++ *
++ * Overall design
++ *
++ * The algorithm proposed by Intel applies not so well in kernel context: it
++ * would imply disabling interrupts and looping on every CPUs while modifying
++ * the code and would not support instrumentation of code called from interrupt
++ * sources that cannot be disabled.
++ *
++ * Therefore, we use a different algorithm to respect Intel's erratum (see the
++ * quoted discussion above). We make sure that no CPU sees an out-of-date copy
++ * of a pre-fetched instruction by 1 - using a breakpoint, which skips the
++ * instruction that is going to be modified, 2 - issuing an IPI to every CPU to
++ * execute a sync_core(), to make sure that even when the breakpoint is removed,
++ * no cpu could possibly still have the out-of-date copy of the instruction,
++ * modify the now unused 2nd byte of the instruction, and then put back the
++ * original 1st byte of the instruction.
++ *
++ * It has exactly the same intent as the algorithm proposed by Intel, but
++ * it has less side-effects, scales better and supports NMI, SMI and MCE.
++ *
++ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ */
++
++#include <linux/notifier.h>
++#include <linux/preempt.h>
++#include <linux/smp.h>
++#include <linux/notifier.h>
++#include <linux/module.h>
++#include <linux/immediate.h>
++#include <linux/kdebug.h>
++
++#include <asm/cacheflush.h>
++
++#define BREAKPOINT_INSTRUCTION  0xcc
++#define BREAKPOINT_INS_LEN 1
++
++static long target_eip;
++
++static void immediate_synchronize_core(void *info)
++{
++	sync_core();	/* use cpuid to stop speculative execution */
++}
++
++/*
++ * The eip value points right after the breakpoint instruction, in the second
++ * byte of the movb. Incrementing it of 1 byte makes the code resume right after
++ * the movb instruction, effectively skipping this instruction.
++ *
++ * We simply skip the 2 bytes load immediate here, leaving the register in an
++ * undefined state. We don't care about the content (0 or !0), because we are
++ * changing the value 0->1 or 1->0. This small window of undefined value
++ * doesn't matter.
++ */
++static int immediate_notifier(struct notifier_block *nb,
++	unsigned long val, void *data)
++{
++	enum die_val die_val = (enum die_val) val;
++	struct die_args *args = data;
++
++	if (!args->regs || user_mode_vm(args->regs))
++		return NOTIFY_DONE;
++
++	if (die_val == DIE_INT3	&& args->regs->eip == target_eip) {
++		args->regs->eip += 1; /* Skip the next byte of load immediate */
++		return NOTIFY_STOP;
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block immediate_notify = {
++	.notifier_call = immediate_notifier,
++	.priority = 0x7fffffff,	/* we need to be notified first */
++};
++
++/*
++ * The address is not aligned. We can only change 1 byte of the value
++ * atomically.
++ * Must be called with immediate_mutex held.
++ */
++int immediate_optimized_set_enable(void *address, char enable)
++{
++	char saved_byte;
++	int ret;
++	char *dest = address;
++
++	if (!(enable ^ dest[1])) /* Must be a state change 0<->1 to execute */
++		return 0;
++
++#if defined(CONFIG_DEBUG_RODATA) || defined(CONFIG_DEBUG_PAGEALLOC)
++	/* Make sure this page is writable */
++	change_page_attr(virt_to_page(address), 1, PAGE_KERNEL_EXEC);
++	global_flush_tlb();
++#endif
++	target_eip = (long)address + BREAKPOINT_INS_LEN;
++	/* register_die_notifier has memory barriers */
++	register_die_notifier(&immediate_notify);
++	saved_byte = *dest;
++	*dest = BREAKPOINT_INSTRUCTION;
++	wmb();
++	/*
++	 * Execute serializing instruction on each CPU.
++	 * Acts as a memory barrier.
++	 */
++	ret = on_each_cpu(immediate_synchronize_core, NULL, 1, 1);
++	BUG_ON(ret != 0);
++
++	dest[1] = enable;
++	wmb();
++	*dest = saved_byte;
++		/*
++		 * Wait for all int3 handlers to end
++		 * (interrupts are disabled in int3).
++		 * This CPU is clearly not in a int3 handler,
++		 * because int3 handler is not preemptible and
++		 * there cannot be any more int3 handler called
++		 * for this site, because we placed the original
++		 * instruction back.
++		 * synchronize_sched has memory barriers.
++		 */
++	synchronize_sched();
++	unregister_die_notifier(&immediate_notify);
++	/* unregister_die_notifier has memory barriers */
++	target_eip = 0;
++#if defined(CONFIG_DEBUG_RODATA)
++	/* Set this page back to RX */
++	change_page_attr(virt_to_page(address), 1, PAGE_KERNEL_RX);
++	global_flush_tlb();
++#endif
++	return 0;
++}
++EXPORT_SYMBOL_GPL(immediate_optimized_set_enable);
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
