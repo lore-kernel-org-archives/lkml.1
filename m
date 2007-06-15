@@ -1,205 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbXFOASN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbXFOATD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757938AbXFOASN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 20:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbXFOAR7
+	id S1754002AbXFOATD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 20:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbXFOASy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 20:17:59 -0400
-Received: from smtp-01b.mandic.com.br ([200.225.81.136]:58888 "EHLO
-	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750878AbXFOAR6 (ORCPT
+	Thu, 14 Jun 2007 20:18:54 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43445 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752197AbXFOASx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 20:17:58 -0400
-Message-ID: <4671DAAF.8000008@mandic.com.br>
-Date: Thu, 14 Jun 2007 21:17:51 -0300
-From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [Test_Module] Changing brightness in Toshiba notebooks with Phoenix
- Bios
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 14 Jun 2007 20:18:53 -0400
+Date: Fri, 15 Jun 2007 01:22:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Carlo Wood <carlo@alinoe.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexandre Oliva <aoliva@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615012201.19415e8b@the-village.bc.nu>
+In-Reply-To: <20070615000232.GB9463@alinoe.com>
+References: <20070614025640.GQ3588@stusta.de>
+	<9578.1181793617@turing-police.cc.vt.edu>
+	<20070614152034.GS3588@stusta.de>
+	<alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
+	<orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141100390.14121@woody.linux-foundation.org>
+	<ork5u6cpc2.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org>
+	<20070614231812.GA9463@alinoe.com>
+	<20070615003919.1abfb155@the-village.bc.nu>
+	<20070615000232.GB9463@alinoe.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forwarding from: Toshiba_Linux-Users (tlinux-users@linux.toshiba-dme.co.jp)
+> Like, they can release/sell the whole thing under some arbitrary
+> other license at their choice. But once you license it with the GPLv2,
+> then you can't stop anyone else (who got it under that license) from
+> using the code under that license anymore, as such it doesn't matter that
+> you are the original author.
 
-=============
-I only tested on my Toshiba Satellite Pro A100 and it works.
+This is true of most licences. Ask musicians about trying to get their
+music back from a record company. 
 
-To compile:
-Edit a Makefile and add:
-   obj-m := test.o
+> * This program is free software; you can redistribute it and/or modify
+> * it under the terms of the GNU General Public License as published by
+> * the Free Software Foundation; either version 2 of the License, or
+> * (at your option) any later version.
+> 
+> I might be wrong, but I always thought that that meant that John Doe
+> is free to redistribute the software under version 3 of the License,
+> as published by the FSF.
 
-then run in the same directory:
+For those marked parts yes - thats the authors choice. Some of the kernel
+is dual licensed BSD even so you can use that bit for all sorts of stuff.
+Again authors choice, some authors wanted to share code between Linux and
+other projects. I believe you can buy proprietary licenses to reiserfs
+too.
 
-  make -C /usr/src/linux SUBDIRS=`pwd` modules
+Some authors like GPLv2 or later, some don't trust the FSF, some will
+decide once GPLv3 is out, some couldn't care etc.. as the kernel doesn't
+do copyright assignment all these wishes are respected and that is how it
+should be.
 
-Then make the file for the new device:
-
-  mknod test_file c 181 0
-
-Load de module:
-
-  insmod test.ko
-
-And now, if you are very very lucky, maybe it will work:
-
-   echo 3 > test_file
-
-But I warn: THE MOST PROBABLY THING WILL HAPPEN IS THE FREEZE OF THE
-LAPTOP IF YOUR MODEL DOESN'T MATCH EXACTLY WITH THE MODEL I TESTED. If
-you don't have a Phoenix BIOS don't try this, and if you have.. well..
-it's your election x)
-
-Here is the driver
-
-test.c
-=================== CUT HERE ===================
-/*
-* Module for Toshiba lcd bright change.
-* I only made it for my Toshiba Satellite Pro A100 with Phoenix BIOS
-* I don't know under which models it works (I suppose very few)
-* The asm code I inserted I took it from a disass of the windows
-* driver provided by Toshiba.
-* WARNING:
-* The driver does NOT make any tests if the model is valid or not
-* so, the MOST probably effect of running this will be the hang of
-* the laptop, or something worse.
-* PLEASE DON'T USE THIS unless you really know what you are doing
-* This module isn't made for give support to any Toshiba model,
-* only for tests purpouses , sorry about it.
-*
-* Jaime F. <jaimeff@gmail.com>
-* License: GNU/GPL
-*/
-
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/fs.h>
-#include <linux/io.h>
-
-#define DEVICE_NAME "lcd_bright"
-#define MAJOR_NUM 181
-
-char *ptr;
-
-static ssize_t
-device_write(struct file *file,
-             const char __user * buffer, size_t length, loff_t * offset)
-{
-  char *addr;
-  addr=(char *)__pa(ptr);
-  addr+=0x10;
-
-  strcpy(ptr, "INVTOS");
-  //ptr+=10;
-  *(ptr+16)=(char) buffer[0]-0x30;
-  //printk("escribiendo %x\n", *ptr);
-/*
-  inb( 0x2e);
-  inb( 0x2f);
-  outb(7, 0x2e);
-  outb(9, 0x2f);
-  v3=inb(0x2f);
-  outb2(0x2e, 0x55);
-  outb2(0x2e, 7);
-  outb2(0x2f,0x10);
-  outb2(0x2e,0xe0);
-  v4=inb(0x2f);
-  outb2(0x2f,2);
-  v5=inb(0x2f);
-  outb2(0x2f,3);
-
-  outb2(0x2e, 7);
-  outb2(0x2f,9);
-  outb2(0x2e,0x60);
-  v1=inb(0x2f);
-  outb2(0x2e,7);
-  outb2(0x2f,0x10);
-  outb2(0x2e,0xe0);
-  outb2(0x2f,0);
-  outb2(0x2e, 7);
-  outb2(0x2f, 9);
-  outb2 ( 0x2e, 0xaa);
-  outb2 ( 0x400, 0xAF);
-  v2=inb( 0x401);
-  outb2( 0x400, 0xAF);
-*/
-
-  __asm__("cli\n"
-        /*        "mov $0x01E4, %%eax\n"
-                  "mov $0x00b0, %%dx\n"
-                  "movb $0x02, 0xEF\n"
-                  "out %%eax, %%dx\n"
-*/
-                "mov %0, %%edx\n"
-                "mov %%edx, %%edi\n"
-                "mov $0x20, %%ecx\n"
-                "mov $0x8000f840, %%eax\n mov $0xcf8, %%edx\n out %%eax, 
-%%dx\n"
-                "mov $0xcfc, %%dx\n"
-                "in %%dx, %%eax\n"
-                "and $0x0000ff80, %%eax\n"
-                "add $0x2c, %%eax\n"
-                "mov %%ax, %%dx\n"
-                "in %%dx, %%eax\n"
-                "push %%eax\n"
-//              "mov %%ax, %%dx\n"
-                "xor %%eax, %%eax\n"
-                "out %%eax, %%dx\n"
-                "mov $0xA2E4, %%eax\n"
-                "mov $0xb2, %%dx\n"
-                "out %%eax, %%dx\n"
-                "pop %%eax\n"
-                "mov $0x102c, %%dx\n"
-                "out %%eax, %%dx\n"
-/*              "movl $0x10, %%edx\n\t"
-                "movl %%edx, %%edi\n\t"
-                "movl $0x20, %%ecx\n"
-                "movw  $0x00E4, %%ax\n"
-                "movb  $0x5, %%ah\n"
-                "outw  %%ax, $0xb2\n"
-                "movl %%eax, %0\n sti\n"
-                */
-        :
-        :"r"(addr): "%eax", "%edx", "%ecx","%edi", "%esi");
-  return length;
-}
-
-struct file_operations Fops = {
-  .write = device_write,
-};
-
-int init_module()
-{
-  int ret_val;
-  ptr=(char *)kmalloc(100, GFP_KERNEL);
-  ptr+=10;
-  ret_val = register_chrdev(MAJOR_NUM, DEVICE_NAME, &Fops);
-
-  if (ret_val < 0)
-  {
-    printk(KERN_ALERT "El registro del dispositivo falló (%d)\n", ret_val);
-    return ret_val;
-  }
-
-return 0;
-}
-
-void cleanup_module()
-{
-  int ret;
-
-  ret = unregister_chrdev(MAJOR_NUM, DEVICE_NAME);
-
-  if (ret < 0)
-    printk(KERN_ALERT "Error: unregister_chrdev: %d\n", ret);
-}
-
-===================== CUT HERE ====================
-
-Best Regards,
-Renato S. Yamane
+Alan
