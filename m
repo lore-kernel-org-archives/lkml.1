@@ -1,117 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbXFOWVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXFOWWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757799AbXFOWVr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 18:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbXFOWVi
+	id S1758090AbXFOWWv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 18:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbXFOWWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 18:21:38 -0400
-Received: from mx2.suse.de ([195.135.220.15]:46668 "EHLO mx2.suse.de"
+	Fri, 15 Jun 2007 18:22:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39238 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752267AbXFOWVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 18:21:36 -0400
-From: Neil Brown <neilb@suse.de>
-To: David Chinner <dgc@sgi.com>
-Date: Sat, 16 Jun 2007 08:21:26 +1000
+	id S1751601AbXFOWWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 18:22:43 -0400
+Date: Sat, 16 Jun 2007 00:22:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Gerdau <mgd@technosis.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615222229.GA20176@elte.hu>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706150825.15491.mgd@technosis.de> <alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org> <200706160006.26428.mgd@technosis.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18035.4326.900551.657370@notabene.brown>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-In-Reply-To: message from David Chinner on Friday June 15
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
-	<18034.479.256870.600360@notabene.brown>
-	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
-	<18034.3676.477575.490448@notabene.brown>
-	<20070615091318.GQ86004887@sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <200706160006.26428.mgd@technosis.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday June 15, dgc@sgi.com wrote:
-> On Fri, Jun 15, 2007 at 01:58:20PM +1000, Neil Brown wrote:
-> > Certainly.  But the raid doesn't need to be tightly integrated
-> > into the filesystem to achieve this.  The filesystem need only know
-> > the geometry of the RAID and when it comes to write, it tries to write
-> > full stripes at a time.
+
+* Michael Gerdau <mgd@technosis.de> wrote:
+
+> > What matters is *my* intent in *choosing* the GPLv2, not *his* 
+> > intent in writing it.
 > 
-> XFS already knows this (stripe unit, stripe width) and already
-> does stripe unit sized and aligned allocation where it can.
+> I beg to differ. By adopting _his_ license you adopted his view. [...]
 
-What happens if the device gets restriped (e.g. add a drive to raid5)?
-Is it possible to tell XFS about the new shape, or is it a mkfs only
-thing?
+ianal, but fortunately that's not what the law is. The license says what 
+it says, and that is what controls. The intent of the author (of Linus 
+and other copyright holders) is a secondary source of information /if 
+and only if/ any ambiguity of meaning arises (as determined by a judge, 
+not by you or me). But the opinion and intent of RMS (unless adopted by 
+Linus) is quite immaterial.
 
-I think it would be nice if the filesystem could query the device to
-find out this geometry, and even that the device could tell the
-filesystem that the geometry has changed.  But we don't have well
-defined interfaces for that (yet).
+( there is a legalistic special-case. If any dispute arises over
+  what license the COPYING file in Linux itself (and only that file) is 
+  under, then the intent of RMS matters too, but only for that limited
+  matter for that single file. Btw., the COPYING file itself is not 
+  licensed under the GPL. )
 
-> 
-> > If that means writing some extra blocks full
-> > of zeros, it can try to do that.  This would require a little bit
-> > better communication between filesystem and raid, but not much.  If
-> > anyone has a filesystem that they want to be able to talk to raid
-> > better, they need only ask...
-> 
-> I'm interested in what you think is necessary here, Neil.
-
-I see it more as "What does the filesystem think is necessary".
-Some possibilities I see:
- - if the filesystem keeps checksums of some blocks, and finds that a
-   block looks wrong, it might want to ask the RAID system "Do you
-   have another copy of that I could try".
- - If the filesystem uses a journal, it might benefit from always
-   doing strip-wide(*) writes.  With a journal, read speed is not a big
-   issue, and padding is quite possible.  So the filesystem might want
-   to find out the exact geometry so it can write a full strip each
-   time, and it might want an interface so it can say "I am writing a
-   full strip - don't start processing until I say 'go'".
-
-> 
-> But I think there's more to it than this - the filesystem only
-> writes back what the generic writeback code passes it (i.e. a page
-> at a time). XFs writes back extra adjacent pages in each I/O
-> if they are in the same state, but it might take multiple
-> I/Os to write out a full stripe units if we are doing things
-> like writing across a hole.
-
-I think the suggestion was that if the filesystem knows the contents
-of other blocks in the stripe, then it might be more efficient to
-write them out as well, even if they aren't dirty. e.g. if we know a
-neighbouring block is unallocated, write zeros.  If we have a
-neighbouring block in the page cache that is clean, write it out as
-well as doing so will reduce the pre-reading required for a full
-write.
-
-> 
-> Also, there is no guarantee that the first page the filesystem
-> receives lies at the start of a stripe boundary, so that
-> sort of information really needs to be propagated into
-> the generic writeback code above the filesystem as well....
-> 
-> IOWs, the files can easily end I/Os on stripe boundaries
-> but it is much harder to start them there because that is
-> not in the control of the filesystem.
-
-This of course depends on the layout used by the filesystem.
-For a traditional layout where files are allocated to locations on
-storage and stay there, you are absolutely correct.
-For copy-on-write filesystems,  there is a lot more room to choose
-size and alignment for all writes.  We seem to have a growth spurt in
-this style of filesystem at the moment.  It will be interesting to see
-if they can deliver equal performance (copy-on-write tends to risk
-fragmented reads).   I suspect these new filesystems will have more
-interest in closer integration with RAID.
-
-NeilBrown
-
-(*) A 'strip-wide' write is different from a 'stripe-wide' write.   It
-is one block from each device, rather than one chunk.  These blocks
-will likely not be consecutive in device-space, but writing them as a
-group will be faster than writing a similar number of blocks that are
-consecutive.  Laying out a journal so that consecutive blocks follow
-strips might make writes faster.
+	Ingo
