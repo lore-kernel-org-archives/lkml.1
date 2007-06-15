@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbXFOMce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbXFOMea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbXFOMce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 08:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbXFOMcP
+	id S1754734AbXFOMea (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 08:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXFOMeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 08:32:15 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1832 "EHLO spitz.ucw.cz"
+	Fri, 15 Jun 2007 08:34:23 -0400
+Received: from echo.digadd.de ([195.47.195.234]:41203 "EHLO mx2.digadd.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752294AbXFOMcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 08:32:13 -0400
-Date: Thu, 14 Jun 2007 19:56:59 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
-Message-ID: <20070614195659.GE9442@ucw.cz>
-References: <878xb35sje.fsf@goat.bogus.local> <20070612153102.GD5986@ucw.cz> <87fy4vmxva.fsf@goat.bogus.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87fy4vmxva.fsf@goat.bogus.local>
-User-Agent: Mutt/1.5.9i
+	id S1751324AbXFOMeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 08:34:23 -0400
+X-Greylist: delayed 2257 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jun 2007 08:34:23 EDT
+Message-ID: <46727E7C.8060102@digadd.de>
+Date: Fri, 15 Jun 2007 13:56:44 +0200
+From: Christian Schmidt <lkml@digadd.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070425)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Help needed: Partitioned software raid > 2TB
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi everyone,
 
-> >> resume from suspend to ram doesn't work for my laptop and never
-> >> has. So, this is not a regression.
-> [...]
-> > Beeping patch? It is in -mm now. noapic nolapic and nosmp are useful,
-> > too.
-> 
-> With the proprietary nvidia module, the laptop resumes, but the screen
-> stays black. Meanwhile I tested the nvidiafb module, with identical
-> results: machine comes back from suspend, but with a black screen. Now
-> I cann ssh into it and do a proper shutdown or whatever. This is of
-> course nonsatisfying and I'm still playing around.
-> 
-> I haven't tested noapic, nolapic so far. This is a UP kernel.
+I added a drive to a linux software RAID-5 last night. Now that worked
+fine... until I changed the partition table.
 
-noapic/nolapic will not help with video issue. try s2ram from
-suspend.sf.net.
+Disk /dev/md_d5: 2499.9 GB, 2499990978560 bytes
+2 heads, 4 sectors/track, 610349360 cylinders
+Units = cylinders of 8 * 512 = 4096 bytes
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+      Device Boot      Start         End      Blocks   Id  System
+/dev/md_d5p1               1      244142      976566   83  Linux
+/dev/md_d5p2          244143     5126956    19531256   8e  Linux LVM
+/dev/md_d5p3         5126957   488279488  1932610128   8e  Linux LVM
+
+This is how the layout looked before the changes.
+
+      Device Boot      Start         End      Blocks   Id  System
+/dev/md_d5p1               1      244142      976566   83  Linux
+/dev/md_d5p2          244143     5126956    19531256   8e  Linux LVM
+/dev/md_d5p3         5126957    73478448   273405968   8e  Linux LVM
+
+This is how it looks now - the fdisk tools (fdisk/cfdisk) are unable to
+crate a single partition > 2TB. Of course now LVM complains that the PV
+is too small:
+
+  WARNING: Physical Volume /dev/md_d5p3 is too large for underlying device
+  PV Size               260.74 GB / not usable 8192.00 EB
+
+I was able to restore a somewhat close partition table now... Close
+enough for the LVM to work correctly.
+
+      Device Boot      Start         End      Blocks   Id  System
+/dev/md_d5p1               1      244142      976566   83  Linux
+/dev/md_d5p2          244143     5126956    19531256   8e  Linux LVM
+/dev/md_d5p3         5126957   488279495  1932610156   8e  Linux LVM
+/dev/md_d5p4       488279496    73478448   488279460   8e  Linux LVM
+
+Where is the inherent limit? The partitioning software, or partitioning
+all by itself?
+
+Regards,
+Christian
