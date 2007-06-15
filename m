@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbXFOC1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbXFOCcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755299AbXFOC1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbXFOC1Q
+	id S1755004AbXFOCcr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXFOCcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:27:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49888 "EHLO mx1.redhat.com"
+	Thu, 14 Jun 2007 22:32:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51185 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbXFOC1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:27:15 -0400
-To: Florin Malita <fmalita@gmail.com>
-Cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+	id S1751064AbXFOCci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 22:32:38 -0400
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
 References: <466A3EC6.6030706@netone.net.tr>
-	<alpine.LFD.0.98.0706131957440.14121@woody.linux-foundation.org>
-	<ortztbgi03.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706140305.50095.dhazelton@enter.net>
-	<orr6oefpg4.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<46717C58.8050501@gmail.com>
-	<ord4zye6iv.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4671A528.5040300@gmail.com>
-	<or1wge9pwr.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614234507.GA3860@nostromo.devel.redhat.com>
+	<200706132140.13490.dhazelton@enter.net>
+	<20070614020827.GO3588@stusta.de>
+	<200706132243.14651.dhazelton@enter.net>
+	<20070614025640.GQ3588@stusta.de>
+	<9578.1181793617@turing-police.cc.vt.edu>
+	<20070614152034.GS3588@stusta.de>
+	<alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
+	<20070614131409.9a5800dc.seanlkml@sympatico.ca>
+	<alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org>
+	<orzm32cr8v.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141153550.14121@woody.linux-foundation.org>
+	<or1wgeco9v.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141311330.14121@woody.linux-foundation.org>
+	<orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org>
+	<orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org>
+	<orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<87r6oeytin.fsf@jbms.ath.cx>
 From: Alexandre Oliva <aoliva@redhat.com>
 Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 23:25:57 -0300
-In-Reply-To: <20070614234507.GA3860@nostromo.devel.redhat.com> (Bill Nottingham's message of "Thu\, 14 Jun 2007 19\:45\:08 -0400")
-Message-ID: <or1wge6jii.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Thu, 14 Jun 2007 23:31:13 -0300
+In-Reply-To: <87r6oeytin.fsf@jbms.ath.cx> (Jeremy Maitin-Shepard's message of "Thu\, 14 Jun 2007 20\:02\:24 -0400")
+Message-ID: <orsl8u54pa.fsf@oliva.athome.lsd.ic.unicamp.br>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Bill Nottingham <notting@redhat.com> wrote:
+On Jun 14, 2007, Jeremy Maitin-Shepard <jbms@cmu.edu> wrote:
 
-> Alexandre Oliva (aoliva@redhat.com) said: 
->> And since the specific implementation involves creating a derived work
->> of the GPLed kernel (the signature, or the signed image, or what have
->> you)
+> Alexandre Oliva <aoliva@redhat.com> writes:
+>> On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>> On Thu, 14 Jun 2007, Alexandre Oliva wrote:
+>>>> 
+>>>> Hmm...  So, if someone takes one of the many GPLv2+ contributions and
+>>>> makes improvements under GPLv3+, you're going to make an effort to
+>>>> accept them, rather than rejecting them because they're under the
+>>>> GPLv3?
 
-> Wait, a signed filesystem image that happens to contain GPL code
-> is now a derived work? Under what sort of interpretation does *that*
-> occur?
+>>> You *cannot* make GPLv3-only contributions to the kernel.
 
-Is the signature not derived from the bits in the GPLed component, as
-much as it is derived from the key?
+>> I can make improvements to GPLv2+ files under GPLv3 (or rather will,
+>> after GPLv3 is published).
 
-Isn't the signature is a functional portion of the image, i.e., if I
-take it out from the system, it won't work any more?
+> You can do that, but you won't be able to distribute those changes along
+> with the rest of the kernel.
 
-> (This pretty much throws the 'aggregation' premise in GPLv2 completely
-> out.)
-
-Not really.  It could take some explicit distinguishing between
-functional and non-functional signatures, but that's about it.
-
-GPLv3 chose a different path to make this clarification.
+I know.  Neither will Linus.  But he says he chose GPLv2 such that he
+could, and the v2 is better than v3 in this regard.  What's wrong with
+this picture?
 
 -- 
 Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
