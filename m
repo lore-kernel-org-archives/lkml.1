@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbXFOFgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbXFOFjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753453AbXFOFgr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 01:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXFOFgi
+	id S1753715AbXFOFjR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 01:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXFOFjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 01:36:38 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50257 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbXFOFgi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 01:36:38 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 01:36:24 -0400
-User-Agent: KMail/1.9.6
+	Fri, 15 Jun 2007 01:39:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34138 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751677AbXFOFjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 01:39:06 -0400
+To: Bron Gondwana <brong@fastmail.fm>
 Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <466A3EC6.6030706@netone.net.tr> <200706142252.39315.dhazelton@enter.net> <orlkel50ug.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orlkel50ug.fsf@oliva.athome.lsd.ic.unicamp.br>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<200706132121.04532.dhazelton@enter.net>
+	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706132304.21984.dhazelton@enter.net>
+	<20070614112329.3645c397@the-village.bc.nu>
+	<20070614103846.GA7902@elte.hu>
+	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614195517.GA4933@elte.hu>
+	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 02:38:41 -0300
+In-Reply-To: <20070615041149.GA6741@brong.net> (Bron Gondwana's message of "Fri\, 15 Jun 2007 14\:11\:49 +1000")
+Message-ID: <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706150136.25186.dhazelton@enter.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 23:54:31 Alexandre Oliva wrote:
-> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Thursday 14 June 2007 22:21:59 Alexandre Oliva wrote:
-> >> Consider egg yolk and egg shells.
-> >>
-> >> I produce egg yolk.  I give it to you under terms that say "if you
-> >> pass this on, you must do so in such a way that doesn't stop anyone
-> >> from eating it"
-> >>
-> >> You produce egg shells.  You carefully construct your shell around the
-> >> egg yolk and some white you got from a liberal third party.
-> >>
-> >> Then you sell the egg shells, with white and yolk inside, under
-> >> contracts that specify "the shell must be kept intact, it can't be
-> >> broken or otherwise perforated".
-> >>
-> >> Are you or are you not disrespecting the terms that apply to the yolk?
-> >
-> > Bad analogy.
->
-> It's just a very simple case in which an enclosure is being used to
-> disrespect the terms of something enclosed in it.
->
-> It's meant to show that the argument that "it's a software license, it
-> can't affect the hardware" is nonsense.
->
-> It's not meant to show whether TiVO is right or wrong.  This would
-> depend on agreement that the GPL requirements are similar to the
-> requirements of the egg yolk manufacturer.
->
-> >> > by your argument, the user has some "right to modify the
-> >> > software", on that piece of hardware it bought which had free
-> >> > software on it, correct?
-> >>
-> >> Yes.  This means the hardware distributor who put the software in
-> >> there must not place roadblocks that impede the user to get where she
-> >> wants with the software, not that the vendor must offer the user a
-> >> sport car to take her there.
-> >
-> > Okay. That means that if I ship Linux on a ROM chip I have to
-> > somehow make it so that the person purchasing the chip can modify
-> > the copy of Linux installed on the chip *if* I want to follow both
-> > the spirit and the letter of the GPLv2.
->
-> I thought we'd already cleared up the issue about ROMs, and why
-> they're different.  Do I have to quote it again?  Must I allude to
-> "passing on the rights" every time I mention "imposing further
-> restrictions"? :-(
+On Jun 15, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
 
-I wasn't referring to anything that had already been "cleared up". I was 
-applying the logic of the statement of yours I quoted. The "cleared up" 
-things all were in reference to the GPLv3 - my example was in reference to 
-the "spirit" of the GPLv2 that you were stating. By simple extension of the 
-logic you provided I came to the conclusion stated above.
+> #define Dell CFG_FAVOURITE_VENDOR
 
-The fact that you've claimed I'm wrong shows how flawed your logic is.
+> A Dell desktop machine is a piece of hardware.  The manufacturer has the
+> source code (hypothetically) to the BIOS.  The BIOS is required for the
+> machine to boot and run Linux.
 
-DRH
+> Riddle me this (especially Alexandre, I'm just latching on to Ingo's
+> post because it has the right hook to grab) - are Dell required to give
+> out the source to the bios to enable people to have the same rights Dell
+> engineers do to modify the behaviour of the system?
+
+What is the license for the bios?  Does it say anything about 'no
+further restrictions on the freedoms to modify and share the
+software'?
+
+Does it include any mechanisms to stop people from booting modified
+versions of the Linux that ships with the machine?
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
