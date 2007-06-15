@@ -1,129 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbXFORzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbXFOR5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbXFORzw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 13:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXFORzp
+	id S1754069AbXFOR5T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 13:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXFOR5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 13:55:45 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:48974 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751133AbXFORzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 13:55:45 -0400
-Message-ID: <4672D2A8.6030407@cfl.rr.com>
-Date: Fri, 15 Jun 2007 13:55:52 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: pharon@gmail.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: USB remote control missing keycodes
-References: <20070611101319.GA14284@DervishD>  <466D2DF7.9020709@aladin.ro> <1181563063.19258.11.camel@iamer-laptop>
-In-Reply-To: <1181563063.19258.11.camel@iamer-laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Jun 2007 17:55:56.0668 (UTC) FILETIME=[6C9E8BC0:01C7AF76]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15240.000
-X-TM-AS-Result: No--15.033000-5.000000-1
+	Fri, 15 Jun 2007 13:57:08 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:59484 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbXFOR5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 13:57:07 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+In-Reply-To: <alpine.LFD.0.98.0706150846370.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr>
+	 <200706142144.15695.dhazelton@enter.net>
+	 <1181895924.25228.319.camel@pmac.infradead.org>
+	 <200706150458.29943.dhazelton@enter.net>
+	 <1181899064.25228.342.camel@pmac.infradead.org>
+	 <alpine.LFD.0.98.0706150846370.14121@woody.linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 15 Jun 2007 18:56:44 +0100
+Message-Id: <1181930204.25228.590.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please do not hit reply and change the subject when you really want to 
-create a new message.  You apparently replied to to a message in the 
-thread "ext2 on flash memory".  This causes your message to show up 
-under that thread, which is confusing to people reading that thread, and 
-will cause those ignoring that thread to never see your message.
+On Fri, 2007-06-15 at 08:58 -0700, Linus Torvalds wrote:
+> The GPLv2 explicitly mentions "mere aggregation". Strictly speaking, it 
+> doesn't even *have* to mention it, since it does mention in other places 
+> that it only covers "derived work", and "derivation" has nothing to do 
+> with "distributing two things together". But it's a good clarification.
 
-Islam Amer wrote:
-> Hello all.
+Actually, I don't see where it explicitly states that it only covers
+derived work.
+
+On the other hand, I _do_ see where it explicitly states that in some
+cases it _does_ 'infect' non-derived works. That's §2, which goes along
+the lines of ... 'sections...not derived from Program' ...
+'License...does...not apply...when...distribute...as separate works'.
+'But..same sections as part of whole... License...extend...to each and
+every part regardless of who wrote it'.
+
+As you say, it goes on to _clarify_ that 'mere aggregation on a volume
+of a storage or distribution medium' isn't what it's talking about here.
+
+But there is _some_ class of collective work which combines entirely
+non-derived work with the original GPL'd Program, and for which the GPL
+requires that you release your non-derived code under the terms of the
+GPL. You could argue till the cows come home about precisely what falls
+into that category and what doesn't.
+
+> So you guys are *both* right, for different cases!
 > 
-> I have a remote control device, with an IR transciever that plugs into a
-> USB port and registers as an input device. 
-> 
-> All the buttons on the remote work fine except for the back , text , and
-> three grey buttons at the top.
-> 
-> Here is the relevant /proc/bus/input/devices entry :
-> 
-> 
-> I: Bus=0003 Vendor=18b1 Product=0037 Version=0100
-> N: Name="ELMAK.pl irMAKbd pl"
-> P: Phys=usb-0000:00:03.1-2/input0
-> S: Sysfs=/class/input/input4
-> H: Handlers=kbd mouse1 event4 ts1 
-> B: EV=12000f
-> B: KEY=f 42c53b7 bf0d4400 0 0 70001 10004 3c007 ff8763fa c140dfff
-> febeffdf ffefffff ffffffff fffffffe
-> B: REL=103
-> B: ABS=7ff01 0
-> B: LED=1f
-> 
-> I did a little investigation using evbug and inputlircd and it seems
-> that these buttons generate codes that get dropped somewhere in the
-> input layer. They work fine on windows.
-> 
-> I used a modified inputlircd to get all the raw keycodes using irw :
-> 
-> Here's what I get for the down key :
-> 
-> 6c 0 KEY_DOWN event4
-> 0 0 KEY_RESERVED event4
-> 29 0 KEY_GRAVE event4
-> 0 0 KEY_RESERVED event4
-> 6c 0 KEY_DOWN event4
-> 0 0 KEY_RESERVED event4
-> 
-> and volume+
-> 
-> 73 0 KEY_VOLUMEUP event4 
-> 0 0 KEY_RESERVED event4 
-> 29 0 KEY_GRAVE event4 
-> 0 0 KEY_RESERVED event4 
-> 73 0 KEY_VOLUMEUP event4 
-> 0 0 KEY_RESERVED event4
-> 
-> As compared to the non-functional keys like back :
-> 
-> 29 0 KEY_GRAVE event4
-> 0 0 KEY_RESERVED event4
-> 
-> As you can see it is sending only the reserved and GRAVE codes, and no
-> special codes.
-> 
-> Next point of debugging is inside the kernel, using the evbug module :
-> 
-> sudo modprobe evbug
-> 
-> pressed the Volume+ key
-> 
-> look in dmesg :
-> 
-> [ 2815.891865] evbug.c: Connected device: "Macintosh mouse button emulation", <NULL>
-> [ 2815.891874] evbug.c: Connected device: "AT Translated Set 2 keyboard", isa0060/serio0/input0
-> [ 2815.891878] evbug.c: Connected device: "cx88 IR (Hauppauge Nova-S-Plus ", pci-0000:00:05.0/ir0
-> [ 2815.891883] evbug.c: Connected device: "PC Speaker", isa0061/input0
-> [ 2815.891887] evbug.c: Connected device: "ELMAK.pl irMAKbd pl", usb-0000:00:03.1-2/input0
-> [ 2815.891892] evbug.c: Connected device: "Power Button (FF)", ACPI_FPB/button/input0
-> [ 2815.891896] evbug.c: Connected device: "Power Button (CM)", PNP0C0C/button/input0
-> [ 2820.988865] evbug.c: Event. Dev: usb-0000:00:03.1-2/input0, Type: 1, Code: 115, Value: 1
-> [ 2820.988875] evbug.c: Event. Dev: usb-0000:00:03.1-2/input0, Type: 0, Code: 0, Value: 0
-> [ 2820.996844] evbug.c: Event. Dev: usb-0000:00:03.1-2/input0, Type: 3, Code: 41, Value: 144
-> [ 2820.996854] evbug.c: Event. Dev: usb-0000:00:03.1-2/input0, Type: 0, Code: 0, Value: 0
-> [ 2821.212577] evbug.c: Event. Dev: usb-0000:00:03.1-2/input0, Type: 1, Code: 115, Value: 0
-> [ 2821.212587] evbug.c: Event. Dev: usb-0000:00:03.1-2/input0, Type: 0, Code: 0, Value: 0
-> 
-> pressed the Back button the extra lines are :
-> 
-> [ 2856.041526] evbug.c: Event. Dev: usb-0000:00:03.1-2/input0, Type: 3, Code: 41, Value: 35
-> [ 2856.041537] evbug.c: Event. Dev: usb-0000:00:03.1-2/input0, Type: 0, Code: 0, Value: 0
-> 
-> 
-> I just need a pointer to where to start looking at the problem.
-> 
-> Here's the website for the remote
-> http://www.elmak.pl/index.php?option=com_phpshop&page=shop.browse&category_id=14&ext=opis&lang=en
-> 
-> I am running ubuntu fiesty 
-> Linux ubuntu 2.6.20-15-generic #2 SMP
-> 
-> Thanks in advance.
+> The issue is simply what you mean by "part of the whole"? If you mean 
+> "part of the whole kernel distribution", then yes, the kernel is one work, 
+> and it is, in its entirety, under the GPLv2. But if the "part of the 
+> whole" is about something like a DVD with the whole being a collection of 
+> "mere aggregation", the licenses do not necessarily meld together.
+
+Yep, those are two extremes which fall either side of the grey area and
+are relatively easy to agree on... perhaps.
+
+> Let's say that you're a Linux vendor, and you distribute a DVD with both 
+> the Linux kernel binary (and all the normal modules that go with it, that 
+> obviously are "part of the whole kernel") *and* say the NVidia proprietary 
+> kernel module. 
+
+A DVD with a Linux distribution isn't _quite_ the same as an arbitrary
+bunch of gratis software which happens to be thrown together on a disc.
+A _lot_ of work goes into making that a coherent product where
+everything interoperates sanely, rather than just such an arbitrary sack
+of bits.
+
+There is at least one prominent North American Linux Vendor who has been
+observed to claim that the distribution _is_ a collective work and
+copyrightable in its own right -- which would mean that it _is_ a work
+based on the Program, and thus that including binary-only modules in it
+is not permitted. And there are other distributors who've stopped
+including binary-only modules under threat of legal action (not that
+_that_ necessarily means anything -- anyone can make baseless threats).
+
+> And is the NVidia module a "derived work" or not? That's a gray area, and 
+> that's really what it hinges on. I personally think it's not, but I know 
+> others think it is.
+
+If the DVD of the distribution is considered to be a work in itself; a
+'work based on the Program', then it doesn't actually matter whether the
+nVidia module is a derived work or not. Unless you're willing to
+disregard those two paragraphs of §2 entirely?
+
+The case which interests me most is when someone makes an embedded
+device, for example a router -- and they  distribute a 'blob' of
+firmware for it, containing both the kernel a binary-only network driver
+module. Again we have to ask ourselves "is this a work based on the
+kernel?". Obviously there isn't a 'right' answer outside a court of law,
+but personally I reckon it's a fairly safe bet that it _is_ going to be
+considered to be a work based on Linux. Especially as the thing would be
+totally useless if you took away either part. They're both fundamental
+to its operation.
+
+> Which is why I think you're both *potentially* right. Which one of you
+> is *actually* right will depend on the exact circumstances ;)
+
+True.
+
+-- 
+dwmw2
 
