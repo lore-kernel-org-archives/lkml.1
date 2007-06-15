@@ -1,52 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbXFOPsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbXFOPwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415AbXFOPsP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbXFOPsA
+	id S1755196AbXFOPwj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXFOPwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:48:00 -0400
-Received: from smtp-03.mandic.com.br ([200.225.81.143]:57161 "EHLO
-	smtp-03.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbXFOPsA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:48:00 -0400
-Message-ID: <4672B4A6.8020909@mandic.com.br>
-Date: Fri, 15 Jun 2007 12:47:50 -0300
-From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: =?UTF-8?B?TWloYWkgRG9uyJt1?= <mihai.dontu@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux Servers comparison with Windows 2003 servers for Gaming
-References: <8d6898730706150712u182f5af1h2d92030adf16d022@mail.gmail.com> <20070615152313.3638b4d5@the-village.bc.nu> <4672A3AA.6010705@mandic.com.br> <200706151753.14721.mihai.dontu@gmail.com>
-In-Reply-To: <200706151753.14721.mihai.dontu@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Fri, 15 Jun 2007 11:52:31 -0400
+Received: from mail.screens.ru ([213.234.233.54]:57759 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751064AbXFOPwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:52:30 -0400
+Date: Fri, 15 Jun 2007 19:52:31 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -rt] Fix TASKLET_STATE_SCHED WARN_ON()
+Message-ID: <20070615155231.GA345@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mihai Donțu wrote:
-> On Friday 15 June 2007 17:35, you wrote:
->> E.g. I have a laptop Toshiba M45-S355 (with ReiserFS) and don't have 
->> experience to choose what I can remove from kernel (or compile as 
->> module/built-in).
-> 
->   Well, here are some steps:
->   1. boot an Ubuntu livecd
->   2. lspci && lsmod and see what it has detected/loaded
->   3. cd /usr/src/linux && make menuconfig
->   4. read the help for each "set" option and see what it does (like many
-> people did in the early days). If you don't find it useful, press N.
+john stultz wrote:
+>
+> The following additional patch should correct this issue. Although since
+> we weren't actually hitting it, the issue is a bit theoretical, so I've
+> not been able to prove it really fixes anything.
 
-One more detail: Is better put this modules listed in lsmod as "built-in"?
+Could you please look at the message below? I sent it privately near a month
+ago, but I think these problems are not fixed yet.
 
-One doubt, in my lsmod I see sd_mod, cdrom, intel_agp, sg, pcmci_core, 
-agppart, snd_page_alloc, and some others, but they didn't listed in 
-.config file
+Oleg.
 
-E.g.
-#cat config_2.6.21.1.txt | grep -i sd_mod
-Result is empty!
+---------------------------------------------------------------------------
 
-Best regards,
-Renato
+> +__tasklet_action(struct softirq_action *a, struct tasklet_struct *list)
+> +{
+> +	int loops = 1000000;
+>  
+>  	while (list) {
+>  		struct tasklet_struct *t = list;
+>  
+>  		list = list->next;
+> +		/*
+> +		 * Should always succeed - after a tasklist got on the
+> +		 * list (after getting the SCHED bit set from 0 to 1),
+> +		 * nothing but the tasklet softirq it got queued to can
+> +		 * lock it:
+> +		 */
+> +		if (!tasklet_trylock(t)) {
+> +			WARN_ON(1);
+> +			continue;
+> +		}
+> +
+> +		t->next = NULL;
+> +
+> +		/*
+> +		 * If we cannot handle the tasklet because it's disabled,
+> +		 * mark it as pending. tasklet_enable() will later
+> +		 * re-schedule the tasklet.
+> +		 */
+> +		if (unlikely(atomic_read(&t->count))) {
+> +out_disabled:
+> +			/* implicit unlock: */
+> +			wmb();
+> +			t->state = TASKLET_STATEF_PENDING;
+
+What if tasklet_enable() happens just before this line ?
+
+After the next schedule_tasklet() we have all bits set: SCHED, RUN, PENDING.
+The next invocation of __tasklet_action() clears SCHED, but tasklet_tryunlock()
+below can never succeed because of PENDING.
+
+> +again:
+> +		t->func(t->data);
+> +
+> +		/*
+> +		 * Try to unlock the tasklet. We must use cmpxchg, because
+> +		 * another CPU might have scheduled or disabled the tasklet.
+> +		 * We only allow the STATE_RUN -> 0 transition here.
+> +		 */
+> +		while (!tasklet_tryunlock(t)) {
+> +			/*
+> +			 * If it got disabled meanwhile, bail out:
+> +			 */
+> +			if (atomic_read(&t->count))
+> +				goto out_disabled;
+> +			/*
+> +			 * If it got scheduled meanwhile, re-execute
+> +			 * the tasklet function:
+> +			 */
+> +			if (test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
+> +				goto again;
+
+TASKLET_STATE_SCHED could be set by tasklet_kill(), in this case it is not nice
+to call t->func() again (but probably harmless).
+
