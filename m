@@ -1,214 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbXFOI6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXFOI6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbXFOI6V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 04:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbXFOI5z
+	id S1753922AbXFOI6x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 04:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbXFOI6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 04:57:55 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:55571 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbXFOI5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 04:57:53 -0400
-X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jun 2007 04:57:46 EDT
-Message-ID: <467252C4.50203@rfo.atmel.com>
-Date: Fri, 15 Jun 2007 10:50:12 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Fri, 15 Jun 2007 04:58:44 -0400
+Received: from keil-draco.com ([216.193.185.50]:50890 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088AbXFOI6n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 04:58:43 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 04:58:29 -0400
+User-Agent: KMail/1.9.6
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <466A3EC6.6030706@netone.net.tr> <200706142144.15695.dhazelton@enter.net> <1181895924.25228.319.camel@pmac.infradead.org>
+In-Reply-To: <1181895924.25228.319.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-fbdev-devel@lists.sourceforge.net
-CC: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Andrew Victor <andrew@sanpeople.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-Subject: [PATCH] atmel_lcdfb: Fix STN LCD support
 Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: 
+Content-Disposition: inline
+Message-Id: <200706150458.29943.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+On Friday 15 June 2007 04:25:24 David Woodhouse wrote:
+> On Thu, 2007-06-14 at 21:44 -0400, Daniel Hazelton wrote:
+> > Agreed. I said I wasn't going to argue about it because there *ARE*
+> > distinctions that the law makes and the GPL ignores. You can't have it
+> > both ways. If the module is distributed *with* the kernel *SOURCE* then
+> > it doesn't matter if it's a derivative work or not, because it becomes
+> > covered by the kernels license.
+>
+> Yes.
+>
+> > If it's distributed with the kernel *binaries* then it is
+> > covered by its own license. In that case the only reason you'd have a
+> > right to the source is if the module is considered a "derivative work".
+>
+> Not necessarily. I'm not entirely sure where you got that idea from.
+>
+> If the module is distributed 'as a separate work', _then_ what you say
+> is true: the only reason you'd have a right to the source is if the
+> module is considered a 'derivative work'.
+>
+> But when you distribute the same module as part of a whole which is a
+> work based on the kernel, the distribution of the whole must be on the
+> terms of GPL, whose permissions for other licensees extend to the entire
+> whole, and thus to each and every part regardless of who wrote it.
 
-Fixes STN LCD support for the atmel_lcdfb framebuffer driver.
+-ELOGIC
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
----
+> The words you used were 'with the kernel', which could actually mean
+> either of the above. In the case of embedded Linux-based firmware
+> though, it's definitely the latter. It's a coherent whole, and it
+> contains both the kernel and the module. Thus the GPL extends to each
+> and every part, regardless of who wrote it. Including the module.
 
-This patch is the result of a work from Jan Altenberg and has 
-been tested on a Hitachi SP06Q002 on at91sam9261ek.
+Just because two things are bundled together doesn't put them under the same 
+license or copyright. Take a look at the GPL, which specifically mentions 
+that "mere aggregation" does not cause something to fall under the GPL. Not 
+that the GPL can even change the law - in the US copyright law specifically 
+states that "mechanical translation" and "mechanical processes" *CANNOT* 
+create a "new" work. Since the process of compiling source into a binary is, 
+by definition, a *mechanical* process then the binary can't suddenly become 
+covered by a different copyright license than the source code merely because 
+of the medium on which its distributed or the manner in which it is 
+distributed.
 
-It adds a Kconfig switch that enables the proper LCD in the 
-board configuration file (STN or TFT).
-
-This patch includes the "Fix wrong line_length calculation" 
-little one from Jan and Haavard (submitted earlier).
-
-AT91 platform informations are directly submitted trough
-the at91 maintainer and follow in a [RFC] message.
-
-drivers/video/Kconfig       |   10 +++++
-drivers/video/atmel_lcdfb.c |   62 +++++++++++++++++++++++++++++-----
-2 files changed, 64 insertions(+), 8 deletions(-)
-
-Index: b/drivers/video/atmel_lcdfb.c
-===================================================================
---- a/drivers/video/atmel_lcdfb.c	2007-06-13 10:55:42.000000000 +0200
-+++ b/drivers/video/atmel_lcdfb.c	2007-06-15 10:25:06.000000000 +0200
-@@ -79,6 +79,29 @@
- 	.accel		= FB_ACCEL_NONE,
- };
- 
-+static unsigned long compute_hozval(unsigned long xres, unsigned long lcdcon2)
-+{
-+	unsigned long value;
-+
-+	if (!(cpu_is_at91sam9261() || cpu_is_at32ap7000()))
-+		return xres;
-+
-+	value = xres;
-+	if ((lcdcon2 & ATMEL_LCDC_DISTYPE) != ATMEL_LCDC_DISTYPE_TFT) {
-+		/* STN display */
-+		if ((lcdcon2 & ATMEL_LCDC_DISTYPE) == ATMEL_LCDC_DISTYPE_STNCOLOR) {
-+			value *= 3;
-+		}
-+		if ( (lcdcon2 & ATMEL_LCDC_IFWIDTH) == ATMEL_LCDC_IFWIDTH_4
-+		   || ( (lcdcon2 & ATMEL_LCDC_IFWIDTH) == ATMEL_LCDC_IFWIDTH_8
-+		      && (lcdcon2 & ATMEL_LCDC_SCANMOD) == ATMEL_LCDC_SCANMOD_DUAL ))
-+			value = DIV_ROUND_UP(value, 4);
-+		else
-+			value = DIV_ROUND_UP(value, 8);
-+	}
-+
-+	return value;
-+}
- 
- static void atmel_lcdfb_update_dma(struct fb_info *info,
- 			       struct fb_var_screeninfo *var)
-@@ -181,6 +204,7 @@
- 	var->xoffset = var->yoffset = 0;
- 
- 	switch (var->bits_per_pixel) {
-+	case 1:
- 	case 2:
- 	case 4:
- 	case 8:
-@@ -228,8 +252,10 @@
- static int atmel_lcdfb_set_par(struct fb_info *info)
- {
- 	struct atmel_lcdfb_info *sinfo = info->par;
-+	unsigned long hozval_linesz;
- 	unsigned long value;
- 	unsigned long clk_value_khz;
-+	unsigned long bits_per_line;
- 
- 	dev_dbg(info->device, "%s:\n", __func__);
- 	dev_dbg(info->device, "  * resolution: %ux%u (%ux%u virtual)\n",
-@@ -241,12 +267,15 @@
- 
- 	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, 0);
- 
--	if (info->var.bits_per_pixel <= 8)
-+	if (info->var.bits_per_pixel == 1)
-+		info->fix.visual = FB_VISUAL_MONO01;
-+	else if (info->var.bits_per_pixel <= 8)
- 		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
- 	else
- 		info->fix.visual = FB_VISUAL_TRUECOLOR;
- 
--	info->fix.line_length = info->var.xres_virtual * (info->var.bits_per_pixel / 8);
-+	bits_per_line = info->var.xres_virtual * info->var.bits_per_pixel;
-+	info->fix.line_length = DIV_ROUND_UP(bits_per_line, 8);
- 
- 	/* Re-initialize the DMA engine... */
- 	dev_dbg(info->device, "  * update DMA engine\n");
-@@ -262,18 +291,21 @@
- 	/* Set pixel clock */
- 	clk_value_khz = clk_get_rate(sinfo->lcdc_clk) / 1000;
- 
--	value = clk_value_khz / PICOS2KHZ(info->var.pixclock);
--
--	if (clk_value_khz % PICOS2KHZ(info->var.pixclock))
--		value++;
-+	value = DIV_ROUND_UP(clk_value_khz, PICOS2KHZ(info->var.pixclock));
- 
- 	value = (value / 2) - 1;
-+	dev_dbg(info->device, "  * programming CLKVAL = 0x%08lx\n", value);
- 
- 	if (value <= 0) {
- 		dev_notice(info->device, "Bypassing pixel clock divider\n");
- 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, ATMEL_LCDC_BYPASS);
--	} else
-+	} else {
- 		lcdc_writel(sinfo, ATMEL_LCDC_LCDCON1, value << ATMEL_LCDC_CLKVAL_OFFSET);
-+		info->var.pixclock = KHZ2PICOS(clk_value_khz / (2 * (value + 1)));
-+		dev_dbg(info->device, "  updated pixclk:     %lu KHz\n",
-+					PICOS2KHZ(info->var.pixclock));
-+	}
-+
- 
- 	/* Initialize control register 2 */
- 	value = sinfo->default_lcdcon2;
-@@ -311,9 +343,14 @@
- 	dev_dbg(info->device, "  * LCDTIM2 = %08lx\n", value);
- 	lcdc_writel(sinfo, ATMEL_LCDC_TIM2, value);
- 
-+	/* Horizontal value (aka line size) */
-+	hozval_linesz = compute_hozval(info->var.xres,
-+					lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2));
-+
- 	/* Display size */
--	value = (info->var.xres - 1) << ATMEL_LCDC_HOZVAL_OFFSET;
-+	value = (hozval_linesz - 1) << ATMEL_LCDC_HOZVAL_OFFSET;
- 	value |= info->var.yres - 1;
-+	dev_dbg(info->device, "  * LCDFRMCFG = %08lx\n", value);
- 	lcdc_writel(sinfo, ATMEL_LCDC_LCDFRMCFG, value);
- 
- 	/* FIFO Threshold: Use formula from data sheet */
-@@ -421,6 +458,15 @@
- 			ret = 0;
- 		}
- 		break;
-+
-+	case FB_VISUAL_MONO01:
-+		if (regno < 2) {
-+			val = (regno == 0) ? 0x00 : 0x1F;
-+			lcdc_writel(sinfo, ATMEL_LCDC_LUT(regno), val);
-+			ret = 0;
-+		}
-+		break;
-+
- 	}
- 
- 	return ret;
-Index: b/drivers/video/Kconfig
-===================================================================
---- a/drivers/video/Kconfig	2007-05-14 11:02:16.000000000 +0200
-+++ b/drivers/video/Kconfig	2007-06-13 11:04:10.000000000 +0200
-@@ -701,6 +701,16 @@
- 	  Say Y if you want to map Frame Buffer in internal SRAM. Say N if you want
- 	  to let frame buffer in external SDRAM.
- 
-+config FB_ATMEL_STN
-+	bool "Use a STN display with AT91/AT32 LCD Controller"
-+	depends on FB_ATMEL && ARCH_AT91SAM9261
-+	default n
-+	help
-+	  Say Y if you want to connect a STN LCD display to the AT91/AT32 LCD
-+	  Controller. Say N if you want to connect a TFT.
-+
-+	  If unsure, say N.
-+
- config FB_NVIDIA
- 	tristate "nVidia Framebuffer Support"
- 	depends on FB && PCI
+DRH
 
 -- 
-Nicolas Ferre
-
-
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
