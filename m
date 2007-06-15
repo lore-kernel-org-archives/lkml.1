@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbXFOAgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbXFOAhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbXFOAgU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 20:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbXFOAgM
+	id S1757618AbXFOAhI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 20:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbXFOAg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 20:36:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57870 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751465AbXFOAgL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 20:36:11 -0400
-Date: Thu, 14 Jun 2007 17:34:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Carlo Wood <carlo@alinoe.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alexandre Oliva <aoliva@redhat.com>,
-       Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <20070615000232.GB9463@alinoe.com>
-Message-ID: <alpine.LFD.0.98.0706141731120.14121@woody.linux-foundation.org>
-References: <20070614025640.GQ3588@stusta.de> <9578.1181793617@turing-police.cc.vt.edu>
- <20070614152034.GS3588@stusta.de> <alpine.LFD.0.98.0706140850470.14121@woody.linux-foundation.org>
- <orwsy6e89s.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706141100390.14121@woody.linux-foundation.org>
- <ork5u6cpc2.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706141304210.14121@woody.linux-foundation.org>
- <20070614231812.GA9463@alinoe.com> <20070615003919.1abfb155@the-village.bc.nu>
- <20070615000232.GB9463@alinoe.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 14 Jun 2007 20:36:57 -0400
+Received: from smtpout.mac.com ([17.250.248.184]:65428 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753849AbXFOAg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 20:36:56 -0400
+In-Reply-To: <20070613195329.GC8273@ucw.cz>
+References: <20070612161951.69e54751@the-village.bc.nu> <MDEHLPKNGKAHNMBLJOLKKEHOEIAC.davids@webmaster.com> <20070613195329.GC8273@ucw.cz>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5B4A5F89-935F-48DA-941D-54F7B0FC2FAA@mac.com>
+Cc: David Schwartz <davids@webmaster.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: PC speaker
+Date: Thu, 14 Jun 2007 20:36:49 -0400
+To: Pavel Machek <pavel@ucw.cz>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 13, 2007, at 15:53:30, Pavel Machek wrote:
+>> Other great examples are hardware that allows you to control  
+>> voltages, fan speeds, and operating frequencies. Sometimes you can  
+>> overvoltage it directly and blow it immediately. Other times, you  
+>> can increase the voltage and operating frequency and decrease the  
+>> fan speed to the point where it stops spinning. This is possible  
+>> on many modern graphics cards and CPUs.
+>
+> Not true for cpus; try it before spreading FUD. Thermal protection  
+> will kill the machine when cpu goes over 95C or so.
 
+Well, sorta.  Things tend to die early heat deaths if you repeatedly  
+spike the temperature (different rates of thermal expansion and all  
+that jazz).  If you alternated repeatedly between max-CPU/no-fan and  
+no-CPU/max-fan, staying just within the thermal kill limits and  
+spending 3/4 of the time at near max temp, you'd probably have a 30%  
+chance to kill an average CPU within a couple weeks.
 
-On Fri, 15 Jun 2007, Carlo Wood wrote:
-> 
-> But then the paragraph from COPYING kicks in, reading:
+I know when designing the G5 CPU, IBM had to be _really_ careful  
+about the variably high operating temperature.  Their first few  
+designs ended up having BGA breakdown well before the desired  
+lifetime due to thermal creep (long-duration at high temp) and  
+fatigue shear failure (alternation between high and low temp).   
+There's a paper somewhere on the web about the whole deal.
 
-Read the COPYING file more closely, and realize that "the Program" has 
-always specified a version number of this license.
+Cheers,
+Kyle Moffett
 
-It used to include it just by virtue of having the COPYING file *itself* 
-be included (and that's v2), but since some people felt that was unclear, 
-the COPYING file has this language pretty visibly at the top:
-
- Also note that the only valid version of the GPL as far as the kernel
- is concerned is _this_ particular version of the license (ie v2, not
- v2.2 or v3.x or whatever), unless explicitly otherwise stated.
-
-> Any, 'any version' probably includes version 3 as well.
-
-Not for the kernel. Exactly because the kernel _does_ specify the version. 
-So the sequence you quoted is a non-issue.
-
-In other words: any file that does not *explicitly* say that it's "v2 or 
-later" is v2 only.
-
-		Linus
