@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbXFOFIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbXFOFJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbXFOFIw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 01:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbXFOFIp
+	id S1753706AbXFOFJz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 01:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbXFOFJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 01:08:45 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34269 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbXFOFIo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 01:08:44 -0400
-Date: Fri, 15 Jun 2007 06:08:30 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Mundt <lethal@linux-sh.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615050830.GT21478@ftp.linux.org.uk>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <4671B734.1040401@nortel.com> <orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br> <200706142155.34298.dhazelton@enter.net> <or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org> <ord4zx4zwm.fsf@oliva.athome.lsd.ic.unicamp.br>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ord4zx4zwm.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.4.1i
+	Fri, 15 Jun 2007 01:09:48 -0400
+Received: from mga03.intel.com ([143.182.124.21]:33958 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750946AbXFOFJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 01:09:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,422,1175497200"; 
+   d="scan'208";a="239414230"
+Message-ID: <46721F18.8090303@intel.com>
+Date: Thu, 14 Jun 2007 22:09:44 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: coding style
+References: <20070614184836.GA6520@cvg> <20070615045111.GU943@1wt.eu>
+In-Reply-To: <20070615045111.GU943@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 01:14:49AM -0300, Alexandre Oliva wrote:
-> I'm not trying to impose anything.  I'm not pushing anything.  I'm
-> defending the GPLv3 from accusations that it's departing from the GPL
-> spirit, and I'm trying to find out in what way Tivoization promotes
-> the goals you perceive as good for Linux, that make GPLv2
-> advantageous.  So far, you haven't given any single reason about this.
-> You talked about tit-for-tat, you said anti-Tivoization in GPLv3 was
-> bad, but you don't connect the dots.  Forgive if I get the impression
-> that you're just fooling yourself, and misguiding a *lot* of people
-> out there in the process.
+Willy Tarreau wrote:
+> On Thu, Jun 14, 2007 at 10:48:36PM +0400, Cyrill Gorcunov wrote:
+>> Hi to all,
+>>
+>> a simple question the answer to witch I didn't find in CodingStyle.
+>> Look for a code snip:
+>>
+>> 	err = foo(arg_a, arg_b, arg_c,
+>> 		arg_d);
+>>
+>> the second line contains 'd' arg aligned with tabs only
+>> but it could be rewritten with more elegant style (by adding
+>> a few spaces) like this
+>>
+>> 	err = foo(arg_a, arg_b, arg_c,
+>> 		  arg_d);
+>>
+>> so which one is preferred for the kernel?
+> 
+> There is no "preferred", just one good and one bad :-)
+> 
+> Ideally, you should use tabs only for indentation, and spaces only for
+> alignment. Keep in mind that there are people using different tab sizes
+> and that your tabs should not make it harder for them to read your code.
+> In your example above, you should use tabs from left up to "err", then
+> spaces to go from "err" to "arg_d".
+> 
+> However, we know that some editors such as emacs are stupid in this regard,
+> because they fill with tabs then complete with spaces, so it's not always
+> easy.
 
-Give.  Me.  A.  Break.
+the current "checkpatch.pl" script rejects this notion and requires that you use 
+tabs whenever you can (you can still align code within the length of one tab).
 
-Section 6 is inherently broken.  It tries to gerrymander the "bad"
-cases and ends up with a huge mess.  Definition of user device is
-arbitrary and reeks with discrimination against the field of use.
-Trying to be more explicit about installation instructions walks
-straight into a minefield:
-	* is it enough to give some installation methods?  If so,
-should they be as cheap as the rest?  As efficient as the rest in
-some sense?  Representative in some sense?  The same as what
-manufacturer ever uses?
-	* if all installation methods should be given, where does
-one stop?  Should one describe unsupported ones?  All of them?
-Is that a violation of license to omit some?  How does one prove
-that omission hadn't been malicious violation in face of complaint?
+Since in the example part (2) above there are 9 spaces needed to go from err to 
+arg_d, it complains if you had used 9 spaces here. It only allows you to use 
+tabs + n spaces (where n < 8)
 
-Trying to be explicit enough to get a rope on the TiVo neck ends
-up with not just clumsy rules; it opens a can of worms worse than
-what we have in matching part of v2.
+I personally prefer spaces, but the checkpatch.pl script does not agree, much to 
+my dismay :(
 
-It looks like trying to be tight enough to be sure to catch the cases FSF
-doesn't like and trying to avoid getting the stuff that really shouldn't
-be caught.  And looks like these requirements conflict.
 
-So in the end you get an ugliness that satisfies neither those who think
-that TiVo case is not a problem nor those who agree that it is a problem
-and consider v2 sufficient in that area.
-
-And BTW, you've been told just that about an hour before you've sent that
-mail.  I don't mind repeating that on l-k, but please don't pretend to be
-unaware of the problems in that area.  I've no idea which problems Linus
-has with that turd, but there's certainly enough in there.
+Auke
