@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbXFOXzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbXFOXzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758479AbXFOXzV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbXFOXzJ
+	id S1759281AbXFOXzp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbXFOXzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:55:09 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:61478 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbXFOXzG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:55:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YvoGmdx5dle+OiX7KM22SwIWUgIp8KunqsoEaL7C7pKnkcTrkcj6d7u1LbO+H57M1fjHgMMcPP1CZ+TP8N761OkXWaRmKbn+3YcryYYScp8oK1dbjB9hkDhvc0Apq01Lbx1BmsafNF8kB/gS7lD/djoiG9+1sBSrQ8566MAaZpc=
-Message-ID: <e9c3a7c20706151655j6cdc5307qe544b8a3a2f156a4@mail.gmail.com>
-Date: Fri, 15 Jun 2007 16:55:05 -0700
-From: "Dan Williams" <dan.j.williams@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: raid5: coding style cleanup / refactor
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-In-Reply-To: <18035.5414.680663.405523@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 15 Jun 2007 19:55:37 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53945 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752679AbXFOXzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 19:55:36 -0400
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Arnd Bergmann <arnd@arndb.de>, David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070615134512.GG8154@parisc-linux.org>
+References: <200706150159.l5F1xNgM000459@hera.kernel.org>
+	 <200706151131.38429.arnd@arndb.de> <20070615121133.GF8154@parisc-linux.org>
+	 <200706151442.23939.arnd@arndb.de> <20070615134512.GG8154@parisc-linux.org>
+Content-Type: text/plain
+Date: Sat, 16 Jun 2007 09:54:22 +1000
+Message-Id: <1181951662.26853.97.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1181670063.12913.5.camel@dwillia2-linux.ch.intel.com>
-	 <18035.5414.680663.405523@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/15/07, Neil Brown <neilb@suse.de> wrote:
-> Good idea...  Am I asking too much to have separate things in separate
-> patches?  It makes review easier.
->
-...yeah I got a little bit carried away after the refactoring.  I will
-spin the refactoring out into a separate patch and handle the coding
-style violations as you suggested.
+On Fri, 2007-06-15 at 07:45 -0600, Matthew Wilcox wrote:
 
-> NeilBrown
+> 
+> $ ./test 
+> offset of foo->x is 8
+> offset of bar->x is 4
 
-Thanks,
-Dan
+Looks to me like bar (that is compat_s64) is doing the right thing, no ?
+
+Ben.
+
+
