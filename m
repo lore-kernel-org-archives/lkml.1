@@ -1,72 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbXFOFxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbXFOF5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbXFOFxT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 01:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXFOFxK
+	id S1754121AbXFOF5f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 01:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbXFOF52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 01:53:10 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:37307 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752063AbXFOFxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 01:53:09 -0400
-Date: Fri, 15 Jun 2007 09:52:53 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: w1_therm_read_bin: suspicious usage of flush_signals()
-Message-ID: <20070615055253.GA12796@2ka.mipt.ru>
-References: <20070615042856.GA22786@2ka.mipt.ru> <20070615051007.524434D059F@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+	Fri, 15 Jun 2007 01:57:28 -0400
+Received: from keil-draco.com ([216.193.185.50]:50356 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbXFOF51 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 01:57:27 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alexandre Oliva <aoliva@redhat.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 01:57:13 -0400
+User-Agent: KMail/1.9.6
+Cc: Florin Malita <fmalita@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <466A3EC6.6030706@netone.net.tr> <4671F127.40000@gmail.com> <or8xal6h1f.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or8xal6h1f.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070615051007.524434D059F@magilla.localdomain>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Fri, 15 Jun 2007 09:52:58 +0400 (MSD)
+Message-Id: <200706150157.13631.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 10:10:07PM -0700, Roland McGrath (roland@redhat.com) wrote:
-> > Well, it can be uninterruptible sleep, but why?
-> > It is not allowed to return to userspace until transaction is completed,
-> > so having uninterruptible sleep will result in exactly same lost of
-> > signals.
-> 
-> Delay, not loss.
+On Thursday 14 June 2007 23:19:24 Alexandre Oliva wrote:
+> On Jun 14, 2007, Florin Malita <fmalita@gmail.com> wrote:
+> > On 06/14/2007 05:39 PM, Alexandre Oliva wrote:
+> >> Back when GPLv2 was written, the right to run was never considered an
+> >> issue.  It was taken for granted, because copyright didn't control
+> >> that in the US (it does in Brazil), and nobody had thought of
+> >> technical measures to stop people from running modified copies of
+> >> software.  At least nobody involved in GPLv2, AFAIK.
+> >>
+> >> The landscape has changed, and GPLv3 is meant to defend this
+> >> freedom that was taken for granted.
+> >
+> > Then you agree that GPLv2 does not protect your freedom (taken for
+> > granted) to run a modified copy on any particular device, or am I
+> > misreading?
+>
+> IANAL, but AFAICT it doesn't.  Still, encoded in the spirit (that
+> refers to free software, bringing in the free software definition), is
+> the notion of protecting users' freedoms, among them the freeom #0, to
+> run the software for any purpose.
 
-Yep, you are right. I missed that state checks are performed after
-signal was queued.
+And where in GPLv2 is "Freedom #0"?
 
-I've chcked other usage of signals in w1 and they are only related to
-the control thread and unloading time when signals are used only to 
-indicate that another check must be performed.
-This patch resolves the issue with reading from temperature sensor.
+As a simple matter of fact, the *only* activities covered by the GPLv2 
+are "copying, distributing and modifying". It says so in the license itself.
 
-Thanks for pointing to that issue.
+> That's why I believe it's in the spirit of the license to defend this
+> freedom.
+>
+> And that's why lawyers in Brazil believe that, even though the GPL
+> does not affirm the right to run the software, it fits the bill,
+> because, under the light of the preamble, the free software
+> definition, and the US copyright law, it should be interpreted as an
+> intent to grant permission to run the software.
 
-Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Then they have made a bad decision. While it can be argued that "the right to 
+run the software" is guaranteed, the truth is that the license is very clear 
+about what it covers. That's *DIRECTLY* in section 0 of the license. If 
+someone has interpreted it to cover something besides what it explicitly 
+states then it has been badly interpreted.
 
-diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
-index 732db47..1a6937d 100644
---- a/drivers/w1/slaves/w1_therm.c
-+++ b/drivers/w1/slaves/w1_therm.c
-@@ -191,11 +191,7 @@ static ssize_t w1_therm_read_bin(struct kobject *kobj, char *buf, loff_t off, si
- 
- 			w1_write_8(dev, W1_CONVERT_TEMP);
- 
--			while (tm) {
--				tm = msleep_interruptible(tm);
--				if (signal_pending(current))
--					flush_signals(current);
--			}
-+			msleep(tm);
- 
- 			if (!w1_reset_select_slave(sl)) {
- 
+In case you don't remember, GPLv2, section 2, paragraph 2:
+
+"Activities other than copying, distribution and modification are not
+covered by this License; they are outside its scope.  The act of
+running the Program is not restricted, and the output from the Program
+is covered only if its contents constitute a work based on the
+Program (independent of having been made by running the Program).
+Whether that is true depends on what the Program does."
+
+In other words, the license cannot be sanely interpreted to cover *execution* 
+of the program. Yes, it says that the *license* doesn't restrict you from 
+running the program, but that *DOESN'T* matter, because the opening sentence 
+says: "Activities other than copying, distribution and modification are not 
+covered by this License; they are outside its scope." QED: The intent of the 
+license is clear and it is to guarantee those three stated rights.
+
+DRH
+
+> > Hence, Tivo is not really *modifying* the copies it distributes with
+> > the device - they're *installing* brand new copies instead. They
+> > also choose not to offer everybody the same privilege :-|
+>
+> Got it.  That's bad.  :-(
 
 
-Signed-
 
 -- 
-	Evgeniy Polyakov
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
