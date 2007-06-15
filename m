@@ -1,77 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbXFOWvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbXFOWxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758177AbXFOWvS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 18:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbXFOWvK
+	id S1758303AbXFOWxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 18:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbXFOWxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 18:51:10 -0400
-Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:51452 "EHLO
-	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756766AbXFOWvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 18:51:08 -0400
-Date: Fri, 15 Jun 2007 15:51:07 -0700 (PDT)
-From: alan <alan@clueserver.org>
-X-X-Sender: alan@blackbox.fnordora.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-In-Reply-To: <467314E2.9010306@zytor.com>
-Message-ID: <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com>
+	Fri, 15 Jun 2007 18:53:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34208 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755567AbXFOWxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 18:53:04 -0400
+Message-ID: <4673182B.4090800@redhat.com>
+Date: Fri, 15 Jun 2007 18:52:27 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+References: <46731169.2090002@hawkeye.stone.uk.eu.org>
+In-Reply-To: <46731169.2090002@hawkeye.stone.uk.eu.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, H. Peter Anvin wrote:
+Jack Stone wrote:
+> I hope I got the CC list right. Apologies to anyone in didn't include
+> and anyone I shouldn't have included.
+> 
+> The basic idea is to include an idea from VMS that seems to be quite
+> useful: version numbers for files.
+> 
+> The idea is that whenever you modify a file the system saves it to na
+> new copy leaving the old file intact. This could be a great advantage
+> from many view points:
+> 	1) it would be much easier to do package management as the old
+> 		version would be automatically saved for a package
+> 		management system to deal with.
+> 
+> 	2) backups would also be easier as all versions of a file
+> 		are automatically saved so it could be potentially very
+> 		useful for a company or the like.
+> 
+> There are probably many others but these were the two that I liked best.
+> 
+> Revision numbers could be specified as follows:
+> 	/path/to/file:revision_number
+> 
+> 
+> I think that this can be done without breaking userspace if the default
+> was to open the highest revision file if no revision number is
+> specified. The userspace tools would need to be updated to take full
+> advantage of the new system but if the delimiter between the path and
+> revision number were chosen sensibly then the changes to most of
+> userspace would be minimal to non-existant.
+> 
+> Personally, I think that the bulk of the implementation could be in the
+> core fs code and the modifications to individual filesystems would be
+> minimal. The main implementation ideas I have (however, I am no kernel
+> expert =) are adding an extra field to struct file and struct inode
+> called int revision (as version is already taken) that would hold the
+> number of the file revision being accessed.
+> 
+> Another problem could be the increased usage of disk space. However if
+> only deltas from the first version were stored then this could cut down
+> on space, or if this were too slow to open a file then the deltas could
+> be off every tenth revision (ie 0,10,20,30... where 0,10,20... are full
+> copies of the file).
+> 
+> There would need to be a tool of some describtion to remove old
+> revisions but this should not be a major undertaking as it may be
+> something as simple as a new system call. This would have to be careful
+> to update any deltas that were affected by the removal of previous
+> revisions but that could be taken care of in kernel space.
+> 
+> Thanks to anyone who stuck with me this far =). I don't know how widely
+> useful this may be but that's the reason I posted before trying to code
+> anything. I would very much value any contributions even a reasoned NAK
+> as I'm still learning how kernel development works (and I would love any
+> implementation directions)
+> 
+> Jack
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> Jack Stone wrote:
->> I hope I got the CC list right. Apologies to anyone in didn't include
->> and anyone I shouldn't have included.
->>
->> The basic idea is to include an idea from VMS that seems to be quite
->> useful: version numbers for files.
->>
->> The idea is that whenever you modify a file the system saves it to na
->> new copy leaving the old file intact. This could be a great advantage
->> from many view points:
->> 	1) it would be much easier to do package management as the old
->> 		version would be automatically saved for a package
->> 		management system to deal with.
->>
->> 	2) backups would also be easier as all versions of a file
->> 		are automatically saved so it could be potentially very
->> 		useful for a company or the like.
->>
->
-> This is one of those things that seems like a good idea, but frequently
-> ends up short.  Part of the problem is that "whenever you modify a file"
-> is ill-defined, or rather, if you were to take the literal meaning of it
-> you'd end up with an unmanageable number of revisions.
+The underlying internal implementation of something like this wouldn't be all 
+that hard on many filesystems, but it's the interface that's the problem.  The 
+':' character is a perfectly legal filename character, so doing it that way 
+would break things.  I think NetApp more or less got the interface right by 
+putting a .snapshot directory in each directory, with time-versioned 
+subdirectories each containing snapshots of that directory's contents at those 
+points in time.  It keeps the backups under the same hierarchy as the original 
+files, to avoid permissions headaches, it's accessible over NFS without 
+modifying the client at all, and it's hidden just enough to make it hard for 
+users to do something stupid.
 
-And no drive space.
+If you want to do something like this (and it's generally not a bad idea), make 
+sure you do it in a way that's not going to change the behavior seen by existing 
+applications, and that is accessible to unmodified remote clients.  Hidden 
+.snapshot directories are one way, a parallel /backup filesystem could be 
+another, whatever.  If you break existing apps, I won't touch it with a ten foot 
+pole.
 
-> Furthermore, it turns out that often relationships between files are
-> more important.
-
-And there are files that are not important at all.
-
-Would you save every temp file?  To be meaningful you would need to know 
-the process they were tied to in many cases.
-
-> Thus, in the end it turns out that this stuff is better handled by
-> explicit version-control systems (which require explicit operations to
-> manage revisions) and atomic snapshots (for backup.)
-
-ZFS is the cool new thing in that space.  Too bad the license makes it 
-hard to incorporate it into the kernel.  (I am one of those people that 
-believe that Linux should support EVERY file system, no matter how old or 
-obscure.)
-
--- 
-"ANSI C says access to the padding fields of a struct is undefined.
-ANSI C also says that struct assignment is a memcpy. Therefore struct
-assignment in ANSI C is a violation of ANSI C..."
-                                   - Alan Cox
+	-- Chris
