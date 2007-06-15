@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbXFOSXC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbXFOSY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbXFOSXC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:23:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751744AbXFOSWy
+	id S1756762AbXFOSY2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbXFOSYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:22:54 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:16186 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751614AbXFOSWx (ORCPT
+	Fri, 15 Jun 2007 14:24:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47917 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752012AbXFOSYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:22:53 -0400
-X-IronPort-AV: i="4.16,425,1175486400"; 
-   d="scan'208"; a="32538825:sNHT29696639"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Alexandre Oliva" <aoliva@redhat.com>
+	Fri, 15 Jun 2007 14:24:19 -0400
+Date: Fri, 15 Jun 2007 11:23:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 14:25:41 -0400
-User-Agent: KMail/1.9.5
-Cc: "Daniel Hazelton" <dhazelton@enter.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
-References: <466A3EC6.6030706@netone.net.tr> <200706141014.21574.rgetz@blackfin.uclinux.org> <or1wgefmyn.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or1wgefmyn.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <1181930204.25228.590.camel@pmac.infradead.org>
+Message-ID: <alpine.LFD.0.98.0706151118150.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr>  <200706142144.15695.dhazelton@enter.net>
+  <1181895924.25228.319.camel@pmac.infradead.org>  <200706150458.29943.dhazelton@enter.net>
+  <1181899064.25228.342.camel@pmac.infradead.org> 
+ <alpine.LFD.0.98.0706150846370.14121@woody.linux-foundation.org>
+ <1181930204.25228.590.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706151425.41975.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 15 Jun 2007 18:22:51.0437 (UTC) FILETIME=[2F18BDD0:01C7AF7A]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 14 Jun 2007 13:46, Alexandre Oliva pondered:
-> On Jun 14, 2007, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> > As a person pretty familiar with the hardware in these types of
-> > devices - this just isn't practical.
+
+
+On Fri, 15 Jun 2007, David Woodhouse wrote:
 > 
-> Well, then, ok: do all that loader and hardware signature-checking
-> dancing, sign the image, store it in the machine, and throw the
-> signing key away.  This should be good for the highly-regulated areas
-> you're talking about.  And then, since you can no longer modify the
-> program, you don't have to let the user do that any more.  Problem
-> solved.
+> Actually, I don't see where it explicitly states that it only covers
+> derived work.
 
-I don't think so - the GPL3 doesn't state that you must convey the same rights 
-to end users that you have, it says you must provide installation 
-information, including your keys, or you can not ship the product.
+See "Section 0":
 
-That is the way I read the following sections (let me know if I mis-read 
-anything):
+	The "Program", below, refers to any such program or work, and a 
+	"work based on the Program" means either the Program or any 
+	derivative work under copyright law:
 
-======================
-"Installation Information" for a User Product means any methods, procedures, 
-authorization keys, or other information required to install and execute 
-modified versions of a covered work in that User Product from a modified 
-version of its Corresponding Source. 
+so yes, if you grepped for "derived work", you wouldn't have found it. The 
+exact wording used in the license is "derivative work under copyright 
+law".
 
-The information must suffice to ensure that the continued functioning of the 
-modified object code is in no case prevented or interfered with solely 
-because modification has been made.
+So the very *definition* of the word "Program" is indeed limited by the 
+notion of "derived work" - as defined by copyright law, and NOT the GPLv2.
 
-If conditions are imposed on you (whether by court order, agreement or 
-otherwise) that contradict the conditions of this License, they do not excuse 
-you from the conditions of this License. 
+> The case which interests me most is when someone makes an embedded
+> device, for example a router -- and they  distribute a 'blob' of
+> firmware for it, containing both the kernel a binary-only network driver
+> module. Again we have to ask ourselves "is this a work based on the
+> kernel?". Obviously there isn't a 'right' answer outside a court of law,
+> but personally I reckon it's a fairly safe bet that it _is_ going to be
+> considered to be a work based on Linux.
 
-If you cannot convey the Program, or other covered work, so as to satisfy 
-simultaneously your obligations under this License and any other pertinent 
-obligations, then as a consequence you may not convey it at all.
+Hey, I kind of disagree.
 
-===================
+What is a DVD? It's just a "blob" of a UDF image, potentially containing 
+the Linux kernel.
 
-I read "are imposed on you (or otherwise)" to mean "by you" as well. If so, 
-you throwing away the private keys are not an option.
+How is that different from a "blob" of some other kind of image (say, a 
+cramfs or similar image) on a rom?
 
-I need to think a bit more of Rob's opinion of ROM's are illegal - but 
-providing the installation information of "send $1M NRE and object code to 
-xxx ROM vendor, and wait 16 weeks for 500k units, take one to a board shop, 
-pay $1k for them to re-work your BGA - if the xray says it is screwed up, you 
-have 499,999 other units to try." - may meet the language, but doesn't meet 
-the spirit of the GPL either...
+What makes UDF so different from cramfs? What makes a DVD so different 
+from a ROM chip? Why would copyright law care about one and not the other?
 
--Robin
+So I really do _not_ think it's at all obvious. Personally, I think it's 
+exactly the same case. Others disagree, but I've never really seen a good 
+*reason* for them disagreeing.
+
+		Linus
