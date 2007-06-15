@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbXFOQT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbXFOQUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbXFOQT4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 12:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbXFOQTr
+	id S1757064AbXFOQUa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 12:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbXFOQUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 12:19:47 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:64548 "EHLO smtp01.cdmon.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754978AbXFOQTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 12:19:46 -0400
-Date: Fri, 15 Jun 2007 18:20:01 +0200
-From: DervishD <lkml@dervishd.net>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext2 on flash memory
-Message-ID: <20070615162001.GC2373@DervishD>
-Mail-Followup-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-	Linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org> <20070614182201.GD31984@lazybastard.org> <20070614202047.GD1928@DervishD> <20070614204345.GH31984@lazybastard.org>
+	Fri, 15 Jun 2007 12:20:20 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36616 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755324AbXFOQUS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 12:20:18 -0400
+Date: Fri, 15 Jun 2007 17:25:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Forrest <forrest@lmcg.wisc.edu>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Bernd Paysan <bernd.paysan@gmx.de>, Alexandre Oliva <aoliva@redhat.com>,
+       Paulo Marques <pmarques@grupopie.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615172512.6bdc8418@the-village.bc.nu>
+In-Reply-To: <20070615100915.A24218@yoda.lmcg.wisc.edu>
+References: <466A3EC6.6030706@netone.net.tr>
+	<or4plae61r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<d120d5000706141155s4e9caceci6958ceceebad6c73@mail.gmail.com>
+	<200706151048.57762.bernd.paysan@gmx.de>
+	<d120d5000706150546k6a31f831tb496bc73bbaa553@mail.gmail.com>
+	<20070615135739.14862d6d@the-village.bc.nu>
+	<d120d5000706150603w2f70431ei5a2ae461ac3d0ff4@mail.gmail.com>
+	<20070615141923.63fd5cdd@the-village.bc.nu>
+	<20070615100915.A24218@yoda.lmcg.wisc.edu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070614204345.GH31984@lazybastard.org>
-User-Agent: Mutt/1.4.2.3i
-Organization: DervishD
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Jörn :)
+> But that begs the question: How do you know what has been modified so
+> you can revert the modifications?  There won't necessarily be any
+> indication of which files have been modified.
 
- * Jörn Engel <joern@logfs.org> dixit:
-> On Thu, 14 June 2007 22:20:47 +0200, DervishD wrote:
-> >     I'm with you in that. So stop emailing and go working on it XD
-> 
-> :)
+There will
 
-    No. Seriously. Go! XDD
- 
-> >     Now seriously, I will take a look at LogFS from time to time, and if
-> > you want me to, I can do tests on my Kingston DT.
-> 
-> That would be appreciated.  I am always happy about bug reports.  The
-> more you test the faster I can fix things.
+2a) You must cause the modified files to carry prominent notices
+    stating that you changed the files and the date of any change.
 
-    I'm going to upgrade to 2.6.20.x next week, probably, but I'm not
-fully sure. Can your patch be applied to 2.6.19.5 or different versions
-are needed for each and every latest kernel release? I've seen the code
-in your web and looked like it will work in any 2.6.x kernel as long as
-it is not very old, am I wrong?.
-
-    If it can be used with 2.6.19.5, I can test ASAP even if I don't
-upgrade to 2.6.20.x. I cannot reboot my machine until Monday (except if
-a power shortage does the job for me, of course), but then I'll patch my
-kernel and test LogFS. I'm impatient!
-
-    Raúl Núñez de Arenas Coronado
-
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
