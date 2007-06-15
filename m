@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbXFOTVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbXFOTXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbXFOTVc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXFOTVZ
+	id S1754520AbXFOTXg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXFOTX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:21:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:61807 "EHLO mga01.intel.com"
+	Fri, 15 Jun 2007 15:23:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60234 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750979AbXFOTVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:21:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,426,1175497200"; 
-   d="scan'208";a="257386026"
-Message-ID: <4672E6B3.1080205@intel.com>
-Date: Fri, 15 Jun 2007 12:21:23 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	id S1751864AbXFOTX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:23:28 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Poole <mdpoole@troilus.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<200706142049.41819.dhazelton@enter.net>
+	<87fy4u0xty.fsf@graviton.dyn.troilus.org>
+	<200706142246.57583.dhazelton@enter.net>
+	<878xal2a0q.fsf@graviton.dyn.troilus.org>
+	<alpine.LFD.0.98.0706142013120.14121@woody.linux-foundation.org>
+	<20070615080252.GA28281@elte.hu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 16:22:49 -0300
+In-Reply-To: <20070615080252.GA28281@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 10\:02\:52 +0200")
+Message-ID: <orejkd10qe.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chris Friesen <cfriesen@nortel.com>,
-       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: coding style
-References: <20070614184836.GA6520@cvg> <20070615045111.GU943@1wt.eu> <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com> <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr> <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com> <20070615110326.b0762b7a.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr> <20070615191804.GC8151@cvg>
-In-Reply-To: <20070615191804.GC8151@cvg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Jun 2007 19:21:24.0159 (UTC) FILETIME=[5CD794F0:01C7AF82]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> [Jan Engelhardt - Fri, Jun 15, 2007 at 09:10:49PM +0200]
-> | 
-> | On Jun 15 2007 11:03, Randy Dunlap wrote:
-> | >> 
-> | >> "use tabs for indents and spaces for alignment"
-> | >> 
-> | >> If that means you need to use two dozen spaces, then so be it.
-> | >
-> | >I don't think that's what that rule means, but I didn't write it,
-> | >so I'm not absolutely sure about it.
-> | >
-> | >but we know that tab stops are every 8th character, not 4 :)
-> | 
-> | Hardly.
-> | 
-> | 
-> | 
-> | 
-> | 	Jan
-> | -- 
-> | 
-> 
-> Jan, as I see from CodingStyle:
-> 
-> 	"Tabs are 8 characters, and thus indentations are also 8 characters."
-> 
-> Actually it would be perfect to get strict rules also for math. and log.
-> operators being splitted on several lines:
+On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
 
-this doesn't say anything about alignment, which was his point :)
+> Secondly, it is _at most_ a new, partial copy of existing works and 
+> hence you need the permission to copy all the works in question.
 
-Auke
+Wouldn't you consider the signing key as one of these existing works?
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
