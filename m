@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbXFOSzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbXFOSzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbXFOSzS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXFOSzG
+	id S1757199AbXFOSzv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbXFOSzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:55:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52055 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbXFOSzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:55:04 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<20070614122031.4751a52b@the-village.bc.nu>
-	<20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
-	<20070615120926.GD6269@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 15:54:26 -0300
-In-Reply-To: <20070615120926.GD6269@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 14\:09\:26 +0200")
-Message-ID: <orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 14:55:43 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:39777 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbXFOSzm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 14:55:42 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=eVcNTegf60I6gV2Q9HMt87qF3vVlDrLFwKKjwejvxQW8CFiW2iisPlv3bkIP3wKsO
+	Z4l5x8LrzE4F6BwSz0amg==
+Date: Fri, 15 Jun 2007 11:52:21 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Robert Richter <robert.richter@amd.com>
+cc: Stephane Eranian <eranian@hpl.hp.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/8] 2.6.22-rc3 perfmon2 : IBS implementation for AMD64
+In-Reply-To: <20070615093331.168842000@localhost>
+Message-ID: <alpine.DEB.0.99.0706151149480.10812@chino.kir.corp.google.com>
+References: <20070614215818.509851000@localhost>
+ <20070615093331.168842000@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 15 Jun 2007, Robert Richter wrote:
 
-> it irreversibly cuts off certain people from being to distribute
-> GPLv3-ed software alongside with certain types of hardware that the
-> FSF's president does not like.
+> Index: linux-2.6.22-rc3/include/asm-i386/msr-index.h
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/include/asm-i386/msr-index.h
+> +++ linux-2.6.22-rc3/include/asm-i386/msr-index.h
+> @@ -75,6 +75,18 @@
+>  
+>  /* K7/K8 MSRs. Not complete. See the architecture manual for a more
+>     complete list. */
+> +
+> +/* K8 MSRs */
+> +#define MSR_K8_TOP_MEM1			0xC001001A
+> +#define MSR_K8_TOP_MEM2			0xC001001D
+> +#define MSR_K8_SYSCFG			0xC0010010
+> +#define MSR_K8_HWCR			0xC0010015
+> +#define MSR_K8_ENABLE_C1E		0xc0010055
 
-That's not true.  They can just as well throw the key away and refrain
-from modifying the installed software behind the users' back.
+Please don't include mixed cases of hex digits.  This entire file has all 
+hex digits in lowercase type, so please conform to that.
 
-> The GPLv2 never did this kind of restriction _of other works_.
+> +#define K8_MTRRFIXRANGE_DRAM_ENABLE	0x00040000 /* MtrrFixDramEn bit    */
+> +#define K8_MTRRFIXRANGE_DRAM_MODIFY	0x00080000 /* MtrrFixDramModEn bit */
+> +#define K8_MTRR_RDMEM_WRMEM_MASK	0x18181818 /* Mask: RdMem|WrMem    */
 
-How about other works in which GPLed software is distributed?
-
-I think your interpretation is mistaken or at least incomplete.
-
->   Activities other than copying, distribution and modification are not
->   covered by this License; they are outside its scope.
-
-> guess why this section has been completely removed from the GPLv3, 
-> without a replacement?
-
-My guess:
-
-First, because it was redundant, given that the license didn't quite
-discuss other activities.  Unless you count say "imposing restrictions
-on the exercise of others' freedoms" as other activities, even though
-these are associated with modification and distribution.
-
-Second, because GPLv3 does indeed talk about other activities, such as
-starting lawsuits on patent and pro-DRM grounds, or entering
-agreements for distribution of software along with limited patent
-licenses.  All of these are still associated, at least to some extent,
-with modification and distribution, but I guess it was worth
-clarifying that claiming that such harmful activities are outside the
-scope of the license isn't a valid excuse to escape the conditions
-determined by the license.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Masks like K8_MTRR_RDMEM_WRMEM_MASK are prone to bugs when the values they 
+are testing change and somebody forgets to update the mask.  Can you make 
+K8_MTRR_RDMEM_WRMEM_MASK defined to be the result of another preprocessor 
+macro expression?  Or, even better, get rid of it completely and modify 
+set_fixed_range()?
