@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757651AbXFOTFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXFOTGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757651AbXFOTFL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbXFOTE6
+	id S1757594AbXFOTGf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbXFOTG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:04:58 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:11459 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754600AbXFOTE5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:04:57 -0400
-Subject: Re: Using RCU with rcu_read_lock()?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <d120d5000706151200u34bd6728n7fca0983d6175f29@mail.gmail.com>
-References: <d120d5000706151200u34bd6728n7fca0983d6175f29@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 21:04:19 +0200
-Message-Id: <1181934259.11113.6.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 15 Jun 2007 15:06:28 -0400
+Received: from smtp1.libero.it ([193.70.192.51]:58676 "EHLO smtp1.libero.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753195AbXFOTG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:06:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAALN/ckaXSMuO/2dsb2JhbAAN
+Message-ID: <4672E35D.1060303@gmail.com>
+Date: Fri, 15 Jun 2007 21:07:09 +0200
+From: Davide Nitti <davidenitti@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+MIME-Version: 1.0
+To: Carlo Wood <carlo@alinoe.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Random X lockup
+References: <4671AF64.9050201@gmail.com> <9a8748490706141552l6d112c16tc306784664c6504d@mail.gmail.com> <46728BB6.4040704@gmail.com> <20070615142809.GD11830@alinoe.com>
+In-Reply-To: <20070615142809.GD11830@alinoe.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 15:00 -0400, Dmitry Torokhov wrote:
-> Hi,
-> 
-> I have a piece of code that is always called under a spinlock with
-> interrups disabled. Within that piece of code I iterate through a
-> list. I have another piece of code that wants to modify that list. I
-> have 2 options:
-> 
-> 1) Have the other piece of code acquire the same spinlock
-> 2) Use RCU
-> 
-> I don't want to do 1) because the otheir piece of code does not really
-> care about object owning the spinlock and so acquiring the spinlock is
-> "not nice". However it is guaranteed that the piece of code that
-> accesses lock runs atomically with interrupts disabled. So
-> rcu_read_lock() would be superfluos there.
-> 
-> Is it possible to still use list_for_each_rcu() and friends to access
-> that list without rcu_read_lock()? Or it is betteruse complete RCU
-> interface and eat cost of couple of extra instrctions?
+I will try to compile X in debug mode, so I will have more info while debug.
+(how I read in 
+http://xorg.freedesktop.org/wiki/Development/Documentation/ServerDebugging)
 
-Yes, preemptible rcu requires that you use the full interface, also, it
-more clearly documents the code. Trying to find code that breaks these
-assumptions is very tedious work after the fact.
+I have this problem only with a pc in others pc i haven't this problem,
+but windows don't crash, so I guess that isn't a bad hardware problem.
 
-Please do use the RCU interface in full.
+> On the other hand - if you had this 'freeze' with
+> with many different kernel versions, and different xorg
+> versions and different video cards etc etc - then realize
 
+I tried only 1 hardware configuration, trying several software configuration
+others people have my problem with different hardware configuration
+
+I have read many forums related to the problem
+(such as 
+http://forums.gentoo.org/viewtopic-t-198023-postdays-0-postorder-asc-highlight-lockups-start-0.html)
+I have this problem since years such as many others people in the world 
+(reading in internet)
+
+Carlo Wood ha scritto:
+> On Fri, Jun 15, 2007 at 02:53:10PM +0200, davide wrote:
+>   
+>> (gdb) bt
+>> #0  0xb7fa9800 in firegl_PM4WaitForIdle ()
+>>    from /usr/lib/xorg/modules/linux//libfglrxdrm.so
+>> #1  0xb799ee11 in atiddxAccelCPWaitForIdle ()
+>>    from /usr/lib/xorg/modules//drivers/fglrx_drv.so
+>> #2  0xb7726452 in XAACopyAreaFallback () from
+>> /usr/lib/xorg/modules//libxaa.so
+>> #3  0xb77276a7 in XAACopyArea () from /usr/lib/xorg/modules//libxaa.so
+>> #4  0x0808460a in ProcCopyArea ()
+>> #5  0x0813d621 in XaceCatchDispatchProc ()
+>> #6  0x0808643f in Dispatch ()
+>> #7  0x0806e885 in main ()
+>> (gdb) cont
+>> Continuing.
+>>     
+>
+> Is there only one thread running?
+> I guess that if you want to debug this, you'll have to
+> compile xorg from source - so you can actually see what
+> it's doing in that function.
+>
+> On the other hand - if you had this 'freeze' with
+> with many different kernel versions, and different xorg
+> versions and different video cards etc etc - then realize
+> that for MOST people it all works perfectly; therefore
+> it's a large chance that whatever is constant in your
+> setup is the problem: your hardware. Or, maybe you didn't
+> try a different videocard (still hardware), or it's
+> closed source driver...
+>
+> After reading your first post I thought: man replace your
+> hardware already. But if the machine doesn't lock up - just
+> X - then it could certainly be a software problem, I guess.
+>
+> I doubt this is related to the kernel however.
+>
+>   
