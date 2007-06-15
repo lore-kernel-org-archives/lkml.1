@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbXFOSBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbXFOSB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755591AbXFOSBa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbXFOSBU
+	id S1755938AbXFOSB5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbXFOSBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:01:20 -0400
-Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:45254 "HELO
-	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750755AbXFOSBS (ORCPT
+	Fri, 15 Jun 2007 14:01:47 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:11680 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752349AbXFOSBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:01:18 -0400
-X-YMail-OSG: QiDbOnEVM1nTce7gI67.2XjABZyCGWOEQNYmESsjqxrl5W0qJPw_Hta7tvj4xjgCfzZuUcE_fg--
-X-RocketYMMF: rancidfat
-Date: Fri, 15 Jun 2007 11:01:18 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-To: Greg KH <greg@kroah.com>, Crispin Cowan <crispin@novell.com>
-Cc: Andreas Gruenbacher <agruen@suse.de>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Pavel Machek <pavel@ucw.cz>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070615165054.GA11345@kroah.com>
+	Fri, 15 Jun 2007 14:01:46 -0400
+Date: Fri, 15 Jun 2007 20:01:49 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Paulo Marques <pmarques@grupopie.com>,
+       Bernd Paysan <bernd.paysan@gmx.de>, Al Viro <viro@ftp.linux.org.uk>,
+       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615180149.GB4952@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Paulo Marques <pmarques@grupopie.com>,
+	Bernd Paysan <bernd.paysan@gmx.de>, Al Viro <viro@ftp.linux.org.uk>,
+	Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <200706151014.45383.bernd.paysan@gmx.de> <46727CCF.9030905@grupopie.com> <200706151403.57178.bernd.paysan@gmx.de> <4672A231.9000800@grupopie.com> <20070615154522.2a161884@the-village.bc.nu> <d120d5000706150752n72668be2qf5b56b43cb253174@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <230452.63481.qm@web36604.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d120d5000706150752n72668be2qf5b56b43cb253174@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This was actually a part of a larger reply - but I decided not to sent
+that. Didn't want to throw away the work I did to get accurate numbers
+though ;)
 
---- Greg KH <greg@kroah.com> wrote:
+   I investigated:
 
+   find -name "*.c" | wc --lines
+   11100
+   find -name "*.c" | xargs egrep "(version 2.*([Ll]icense|redistribute|released|GNU|GPL|any later version|Foundation))|(([Ll]icense|redistribute|released|GNU|GPL|any later version|Foundation).*version 2)" | sed -e 's/:.*//' | sort -u | wc --lines
+   4042
+   find -name "*.c" | xargs egrep "(version 2.*([Ll]icense|redistribute|released|GNU|GPL|any later version|Foundation))|(([Ll]icense|redistribute|released|GNU|GPL|any later version|Foundation).*version 2)" | egrep -v '(either version 2(\.[0-9])*|version 2(\.[0-9])*( of the License)*,* or)' | sed -e 's/:.*//' | sort -u | wc --lines
+   1377
+   find -name "*.c" | xargs egrep "(version 2.*([Ll]icense|redistribute|released|GNU|GPL|any later version|Foundation))|(([Ll]icense|redistribute|released|GNU|GPL|any later version|Foundation).*version 2)" | egrep -v '(either version 2(\.[0-9])*|version 2(\.[0-9])*( of the License)*,* or)' | sed -e 's/:.*//' | sort -u | xargs grep 'any later version' | wc --lines
+   4
 
-> A daemon using inotify can "instantly"[1] detect this and label the file
-> properly if it shows up.
+   Hence there are 1377 - 4 = 1373 .c files that explicitely say 'version 2',
+   and 4042 - 1373 = 2669 .c files that say 'version 2 or later'.
+   There are 11100 - 1373 - 2669 = 7058 files that do not say anything.
 
-In our 1995 B1 evaluation of Trusted Irix we were told in no
-uncertain terms that such a solution was not acceptable under
-the TCSEC requirements. Detection and relabel on an unlocked
-object creates an obvious window for exploitation. We were told
-that such a scheme would be considered a design flaw.
-
-I understand that some of the Common Criteria labs are less
-aggressive regarding chasing down these issues than the NCSC
-teams were. It might not prevent an evaluation from completing
-today. It is still hard to explain why it's ok to have a file
-that's labeled incorrectly _even briefly_. It is the systems
-job to ensure that that does not happen.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
