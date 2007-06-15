@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbXFOEi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbXFOEv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbXFOEi0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 00:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbXFOEiT
+	id S1752380AbXFOEv1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 00:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbXFOEvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 00:38:19 -0400
-Received: from ozlabs.org ([203.10.76.45]:50555 "EHLO ozlabs.org"
+	Fri, 15 Jun 2007 00:51:18 -0400
+Received: from 1wt.eu ([62.212.114.60]:3009 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbXFOEiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 00:38:18 -0400
-Subject: Re: [PATCH 2/2] readahead: sanify file_ra_state names
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Fengguang Wu <wfg@mail.ustc.edu.cn>
-In-Reply-To: <20070614062816.085421580@mail.ustc.edu.cn>
-References: <20070614062447.058708836@mail.ustc.edu.cn>
-	 <20070614062816.085421580@mail.ustc.edu.cn>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 14:38:07 +1000
-Message-Id: <1181882288.6237.205.camel@localhost.localdomain>
+	id S1750805AbXFOEvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 00:51:18 -0400
+Date: Fri, 15 Jun 2007 06:51:13 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: coding style
+Message-ID: <20070615045111.GU943@1wt.eu>
+References: <20070614184836.GA6520@cvg>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070614184836.GA6520@cvg>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-14 at 14:21 +0800, Fengguang Wu wrote:
-> plain text document attachment (readahead-rename.patch)
-> Rename some file_ra_state variables and remove some accessors.
+On Thu, Jun 14, 2007 at 10:48:36PM +0400, Cyrill Gorcunov wrote:
 > 
-> It results in much simpler code.
-> Kudos to Rusty!
+> Hi to all,
 > 
-> Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> a simple question the answer to witch I didn't find in CodingStyle.
+> Look for a code snip:
+> 
+> 	err = foo(arg_a, arg_b, arg_c,
+> 		arg_d);
+> 
+> the second line contains 'd' arg aligned with tabs only
+> but it could be rewritten with more elegant style (by adding
+> a few spaces) like this
+> 
+> 	err = foo(arg_a, arg_b, arg_c,
+> 		  arg_d);
+> 
+> so which one is preferred for the kernel?
 
-Needless to say, I'm now very satisfied with the new readahead code.  
+There is no "preferred", just one good and one bad :-)
 
-That's not to say there won't be corner cases where the old code did
-better, but given the replacement's simplicity and Fengguang's positive
-benchmark results I really like it.
+Ideally, you should use tabs only for indentation, and spaces only for
+alignment. Keep in mind that there are people using different tab sizes
+and that your tabs should not make it harder for them to read your code.
+In your example above, you should use tabs from left up to "err", then
+spaces to go from "err" to "arg_d".
 
-Thanks for Fengguang for coding and pushing this!
-Rusty.
+However, we know that some editors such as emacs are stupid in this regard,
+because they fill with tabs then complete with spaces, so it's not always
+easy.
 
+Regards,
+Willy
 
