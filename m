@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbXFOLMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbXFOLPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753067AbXFOLMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 07:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbXFOLMJ
+	id S1753087AbXFOLPw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 07:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXFOLPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 07:12:09 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:7614 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbXFOLMH (ORCPT
+	Fri, 15 Jun 2007 07:15:45 -0400
+Received: from [212.112.238.170] ([212.112.238.170]:55667 "EHLO
+	longford.lazybastard.org" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751677AbXFOLPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 07:12:07 -0400
-Date: Fri, 15 Jun 2007 13:12:05 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Steve Fox <drfickle@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] move the kernel to 16MB for NUMA-Q
-In-Reply-To: <466DB5B8.80005@zytor.com>
-Message-ID: <Pine.LNX.4.64.0706151311520.32724@fbirervta.pbzchgretzou.qr>
-References: <466D550C.4030600@shadowen.org> <63a08cc7547f14065becdf9a94d0d529@pinky>
- <20070611091558.f468f205.akpm@linux-foundation.org> <20070611172006.GI9174@redhat.com>
- <466D882D.70001@zytor.com> <Pine.LNX.4.64.0706112019310.19578@fbirervta.pbzchgretzou.qr>
- <466D9C00.6030608@zytor.com> <Pine.LNX.4.64.0706112239080.19578@fbirervta.pbzchgretzou.qr>
- <466DB5B8.80005@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 Jun 2007 07:15:44 -0400
+Date: Fri, 15 Jun 2007 13:10:42 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Sam Ravnborg <sam@ravnborg.org>, John Stoffel <john@stoffel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jamie Lokier <jamie@shareable.org>,
+       Artem Bityutskiy <dedekind@infradead.org>, CaT <cat@zip.com.au>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       David Weinehall <tao@acc.umu.se>, Arnd Bergmann <arnd@arndb.de>,
+       Willy Tarreau <w@1wt.eu>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Bill Davidsen <davidsen@tmr.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Albert Cahalan <acahalan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Roland Dreier <rdreier@cisco.com>,
+       Ondrej Zajicek <santiago@crfreenet.org>,
+       Ulisses Furquim <ulissesf@gmail.com>
+Subject: Re: LogFS take four
+Message-ID: <20070615111041.GA6791@lazybastard.org>
+References: <20070603183845.GA8952@lazybastard.org> <20070615083732.GA20361@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070615083732.GA20361@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 15 June 2007 12:37:32 +0400, Evgeniy Polyakov wrote:
+> On Sun, Jun 03, 2007 at 08:38:46PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
+> > This round the patch is split into file-sized hunks.  There actually
+> > seem to be kernel developers not manly enough to digest 6000+ lines of
+> > code at once.  An I thought I was the only wimp around.
+> > 
+> > Again, anyone giving comments in the last round is on Cc:.
+> > 
+> > I'll try to respond to comments but the next round of patches may take a
+> > while longer, due to other responsibilities.
+> 
+> Hi Jorn.
+> 
+> Sorry for late reply (and wrong non-utf latter in the name :).
 
-On Jun 11 2007 13:51, H. Peter Anvin wrote:
->Jan Engelhardt wrote:
->> (yay, 3.09 bogomips and a totally incapable processor :p)
->> Have not tried more recent kernels yet though.
->
->Too bad I don't still have access to the 0.59 bogomips "double sigma"
->386 machine that had the dubious honor of being the slowest Linux
->machine in the world for quite a while.  That machine had 3 MB of RAM.
->
->However, to tie it back to the original discussion, these
->extremely-low-memory machines need nonstandard kernel options anyay.
+I have been called worse. :)
 
-Not really. Want a .config?
+> I have couple of minor nits I will answer another mails, but in general
+> I think it should be included in -mm so that people could start using
+> it report real bugs, but not handwaving about possible problems.
 
+Thank you for the confidence.
 
-	Jan
+Jörn
+
 -- 
+Mundie uses a textbook tactic of manipulation: start with some
+reasonable talk, and lead the audience to an unreasonable conclusion.
+-- Bruce Perens
