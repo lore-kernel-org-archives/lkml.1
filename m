@@ -1,85 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbXFOKO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbXFOKPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbXFOKO6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 06:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbXFOKOt
+	id S1753300AbXFOKPn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 06:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbXFOKPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 06:14:49 -0400
-Received: from keil-draco.com ([216.193.185.50]:50185 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbXFOKOs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 06:14:48 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Bernd Paysan <bernd.paysan@gmx.de>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 06:14:33 -0400
-User-Agent: KMail/1.9.6
-Cc: david@lang.hm, Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kevin Fox <Kevin.Fox@pnl.gov>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <Pine.LNX.4.64.0706141643120.29630@asgard.lang.hm> <200706151130.11184.bernd.paysan@gmx.de>
-In-Reply-To: <200706151130.11184.bernd.paysan@gmx.de>
+	Fri, 15 Jun 2007 06:15:35 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:33982 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750783AbXFOKPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 06:15:34 -0400
+Date: Fri, 15 Jun 2007 12:15:27 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Islam Amer <pharon@gmail.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: USB remote control missing keycodes
+In-Reply-To: <Pine.LNX.4.64.0706141425180.23280@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.64.0706151211210.23280@twin.jikos.cz>
+References: <20070611101319.GA14284@DervishD> <466D2DF7.9020709@aladin.ro> 
+ <1181563063.19258.11.camel@iamer-laptop>  <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
+  <1181743734.6163.1.camel@iamer-laptop>  <Pine.LNX.4.64.0706131654180.23280@twin.jikos.cz>
+  <d120d5000706130817v5b9291d4h8653ade63882d2bc@mail.gmail.com> 
+ <Pine.LNX.4.64.0706131741420.23280@twin.jikos.cz>  <1181750326.6163.6.camel@iamer-laptop>
+  <Pine.LNX.4.64.0706131809530.23280@twin.jikos.cz> <1181823597.6136.8.camel@iamer-laptop>
+ <Pine.LNX.4.64.0706141425180.23280@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706150614.33558.dhazelton@enter.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007 05:30:09 Bernd Paysan wrote:
-> On Friday 15 June 2007 01:46, david@lang.hm wrote:
-> > if you cannot modify the software that runs on your Tivo hardware you
-> > haven't tried very hard.
->
-> Yes, but the GPLv2 clearly says that you don't have to try very hard. The
-> preferred form of modification has to be distributed. I can run a
-> decompiler or disassembler on a program, and I can even modify it in place
-> with a hex editor (I have even modified programs in embedded ROMs by using
-> focussed ion beam, so I know you can modify every program if you try hard
-> enough). It's certainly possible to crack Tivo's firmware to accept my own
-> signature, but it's *not* the preferred form of modification, the source
-> code and Tivo's key for the signature.
+On Thu, 14 Jun 2007, Jiri Kosina wrote:
 
-How is a signing key part of the "preferred form for modification"? It isn't a 
-requirement to *modify* anything, just to *replace* something. (And I am 
-*NOT* going to explain why "replace != modify" again)
+> I have met such devices already, we are fixing their report descriptors 
+> on the fly before they enter the HID parser. I will prepare a patch for 
+> you to test (probably tomorrow, sorry).
 
-> Since Tivo's firmware only accepts a signed kernel, the combination of
-> kernel+signature is the binary they ship. The kernel itself is useless, the
-> signature as well. Therefore, you can imply that Tivo's key is part of
-> the "other stuff" the GPLv2 mentions, because you need it to recreate the
-> same code as Tivo did and shipped (compilers insert timestamps and such),
-> and to modify that code. The source code is just a mean, the thing they
-> shipped is the end (the binary), and they have to comply with the GPL for
-> that binary - which by all means of practical understanding includes the
-> signature.
+Islam,
 
-I can find no such requirement in the GPLv2. In fact, it actually says that 
-you don't even have to be able to *USE* the program. See section 12 of the 
-GPL if you don't believe me.
+please try the patch below (against 2.6.22-rc4) and send me the result.
 
-> "You can imply" means: It depends on court and legal system. I'm quite
-> confident that in Germany, the legal system might favor the "GPLv2 does not
-> allow tivoization" point of view, and in the USA, the legal sysem might do
-> the opposite.
 
-In light of the d-link case, I'm pretty certain that the German Courts 
-interpretation of the GPLv2 makes "Tivoization" a violation. In the US I can 
-say that the result would be "GPLv2 does not disallow tivoization". As I've 
-pointed out in other posts, the GPLv2 actually *limits* itself to three 
-specific "activities". Whether it was intended to "incidentally" cover other 
-things or not, it does *clearly* state what it's scope is. If that scope *IS* 
-*NOT* the intent of the person and/or person who authored the license, that 
-text *SHOULD* *NOT* exist.
-
-DRH
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index 7f81789..a112da2 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -566,6 +566,10 @@ static void hidinput_configure_usage(str
+ 				case 0x0e5: map_key_clear(KEY_BASSBOOST);	break;
+ 				case 0x0e9: map_key_clear(KEY_VOLUMEUP);	break;
+ 				case 0x0ea: map_key_clear(KEY_VOLUMEDOWN);	break;
++
++				/* reserved in HUT 1.12. Reported on Petalynx remote */
++				case 0x0fa: map_key_clear(KEY_BACK);		break;
++
+ 				case 0x183: map_key_clear(KEY_CONFIG);		break;
+ 				case 0x184: map_key_clear(KEY_WORDPROCESSOR);	break;
+ 				case 0x185: map_key_clear(KEY_EDITOR);		break;
+@@ -704,10 +708,10 @@ static void hidinput_configure_usage(str
+ 			}
+ 			break;
+ 
+-		case HID_UP_LOGIVENDOR: /* Reported on Logitech Ultra X Media Remote */
+-
++		case HID_UP_LOGIVENDOR:
+ 			set_bit(EV_REP, input->evbit);
+ 			switch(usage->hid & HID_USAGE) {
++				/* Reported on Logitech Ultra X Media Remote */
+ 				case 0x004: map_key_clear(KEY_AGAIN);		break;
+ 				case 0x00d: map_key_clear(KEY_HOME);		break;
+ 				case 0x024: map_key_clear(KEY_SHUFFLE);		break;
+@@ -725,6 +729,14 @@ static void hidinput_configure_usage(str
+ 				case 0x04d: map_key_clear(KEY_SUBTITLE);	break;
+ 				case 0x051: map_key_clear(KEY_RED);		break;
+ 				case 0x052: map_key_clear(KEY_CLOSE);		break;
++
++				/* Reported on Petalynx Maxter remote */
++				case 0x05a: map_key_clear(KEY_TEXT);		break;
++				case 0x05b: map_key_clear(KEY_RED);		break;
++				case 0x05c: map_key_clear(KEY_GREEN);		break;
++				case 0x05d: map_key_clear(KEY_YELLOW);		break;
++				case 0x05e: map_key_clear(KEY_BLUE);		break;
++
+ 				default:    goto ignore;
+ 			}
+ 			break;
+diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+index d91b9da..b575a07 100644
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -688,6 +688,22 @@ static void hid_fixup_logitech_descripto
+ 	}
+ }
+ 
++/* Petalynx Maxter Remote has maximum for consumer page set too low */
++static void hid_fixup_petalynx_descriptor(unsigned char *rdesc, int rsize)
++{
++	if (rsize >= 60 && rdesc[39] == 0x2a
++			&& rdesc[40] == 0xf5
++			&& rdesc[41] == 0x00
++			&& rdesc[59] == 0x26
++			&& rdesc[60] == 0xf9
++			&& rdesc[61] == 0x00) {
++		info("Fixing up Petalynx Maxter Remote report descriptor");
++		rdesc[60] = 0xfa;
++		rdesc[40] = 0xfa;
++	} else
++		info("Not fixing up Petalynx Maxter Remote report descriptor");
++}
++
+ /*
+  * Some USB barcode readers from cypress have usage min and usage max in
+  * the wrong order
+@@ -781,6 +797,9 @@ static struct hid_device *usb_hid_config
+ 	if (quirks & HID_QUIRK_SWAPPED_MIN_MAX)
+ 		hid_fixup_cypress_descriptor(rdesc, rsize);
+ 
++	if (quirks & HID_QUIRK_PETALYNX_DESCRIPTOR)
++		hid_fixup_petalynx_descriptor(rdesc, rsize);
++
+ #ifdef CONFIG_HID_DEBUG
+ 	printk(KERN_DEBUG __FILE__ ": report descriptor (size %u, read %d) = ", rsize, n);
+ 	for (n = 0; n < rsize; n++)
+diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+index f6c4145..4001e47 100644
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -220,6 +220,9 @@
+ #define USB_VENDOR_ID_PANTHERLORD	0x0810
+ #define USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK	0x0001
+ 
++#define USB_VENDOR_ID_PETALYNX		0x18b1
++#define USB_DEVICE_ID_PETALYNX_MAXTER_REMOTE	0x0037
++
+ #define USB_VENDOR_ID_PLAYDOTCOM	0x0b43
+ #define USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII	0x0003
+ 
+@@ -418,6 +421,8 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_PANTHERLORD, USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK, HID_QUIRK_MULTI_INPUT | HID_QUIRK_SKIP_OUTPUT_REPORTS },
+ 	{ USB_VENDOR_ID_PLAYDOTCOM, USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII, HID_QUIRK_MULTI_INPUT },
+ 
++	{ USB_VENDOR_ID_PETALYNX, USB_DEVICE_ID_PETALYNX_MAXTER_REMOTE, HID_QUIRK_PETALYNX_DESCRIPTOR },
++
+ 	{ USB_VENDOR_ID_SONY, USB_DEVICE_ID_SONY_PS3_CONTROLLER, HID_QUIRK_SONY_PS3_CONTROLLER },
+ 
+ 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_UC100KM, HID_QUIRK_NOGET },
+diff --git a/include/linux/hid.h b/include/linux/hid.h
+index 827ee74..3b1d638 100644
+--- a/include/linux/hid.h
++++ b/include/linux/hid.h
+@@ -276,6 +276,7 @@ struct hid_item {
+ #define HID_QUIRK_DUPLICATE_USAGES		0x00200000
+ #define HID_QUIRK_RESET_LEDS			0x00400000
+ #define HID_QUIRK_SWAPPED_MIN_MAX		0x00800000
++#define HID_QUIRK_PETALYNX_DESCRIPTOR		0x01000000
+ 
+ /*
+  * This is the global environment of the parser. This information is
