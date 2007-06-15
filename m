@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbXFOI7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbXFOJBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754165AbXFOI7j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 04:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbXFOI73
+	id S1754071AbXFOJBO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 05:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbXFOJBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 04:59:29 -0400
-Received: from gate.crashing.org ([63.228.1.57]:52453 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752457AbXFOI73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 04:59:29 -0400
-Subject: Re: drm: fix radeon setparam on 32/64 bit systems.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>
-In-Reply-To: <1181897060.25228.323.camel@pmac.infradead.org>
-References: <200706150159.l5F1xNgM000459@hera.kernel.org>
-	 <1181897060.25228.323.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 18:58:25 +1000
-Message-Id: <1181897905.26853.66.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Jun 2007 05:01:00 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:20155 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbXFOJA7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 05:00:59 -0400
+Date: Fri, 15 Jun 2007 11:00:59 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Matthias Schniedermeyer <ms@citd.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: /dev/loop* devices not appearing in /dev (at least since
+ 2.6.22-rc3*)
+In-Reply-To: <46716D8E.2050007@citd.de>
+Message-ID: <Pine.LNX.4.64.0706151100320.32724@fbirervta.pbzchgretzou.qr>
+References: <e85b9d30706140437s5f3622c3rc86c75a4f845e7a3@mail.gmail.com>
+ <20070614145206.58fdec91@localhost> <e85b9d30706140710x5671fa12n5845172d4ce32a10@mail.gmail.com>
+ <20070614172234.7f636307@localhost> <20070614154448.GC4155@tatooine.rebelbase.local>
+ <46716D8E.2050007@citd.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 09:44 +0100, David Woodhouse wrote:
-> On Fri, 2007-06-15 at 01:59 +0000, Linux Kernel Mailing List wrote:
-> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9b01bd5b284bbf519b726b39f1352023cb5e9e69
-> > Commit:     9b01bd5b284bbf519b726b39f1352023cb5e9e69
-> > Parent:     dc7a93190c21edbf3ed23e678ad04f852b9cff28
-> > Author:     Dave Airlie <airlied@linux.ie>
-> > AuthorDate: Sun Jun 10 16:00:27 2007 +1000
-> > Committer:  Dave Airlie <airlied@linux.ie>
-> > CommitDate: Sun Jun 10 16:00:27 2007 +1000
-> > 
-> >     drm: fix radeon setparam on 32/64 bit systems.
-> >     
-> >     The alignment on 64-bit is different for 64-bit values.
-> 
-> Only on i386. I think you just broke ppc32-on-ppc64.
 
-Indeed... I'm pretty sure the 64 bits quantity will be naturally aligned
-on ppc32 (and possibly others).
+On Jun 14 2007 18:32, Matthias Schniedermeyer wrote:
+> markus reichelt wrote:
+>
+>> PS: Just wondering: Who came up with this "on-demand" hype?
+>
+> I don't remember the names, but i remember the root causes. Here we go:
 
-Ben.
+http://lkml.org/lkml/2007/3/22/86
 
 
+
+	Jan
+-- 
