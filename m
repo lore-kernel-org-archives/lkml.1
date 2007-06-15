@@ -1,99 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758432AbXFOD6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbXFOEEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758432AbXFOD6i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 23:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbXFOD62
+	id S1755547AbXFOEEj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 00:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbXFOEEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 23:58:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51830 "EHLO mx1.suse.de"
+	Fri, 15 Jun 2007 00:04:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41340 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752400AbXFOD61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 23:58:27 -0400
-From: Neil Brown <neilb@suse.de>
-To: david@lang.hm
-Date: Fri, 15 Jun 2007 13:58:20 +1000
+	id S1750729AbXFOEEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 00:04:30 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rob Landley <rob@landley.net>, Bernd Paysan <bernd.paysan@gmx.de>,
+       Alan Milnes <alan@itfoundation.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<b200add30706140708p41e943dbm5d14ba52a6e0ae75@mail.gmail.com>
+	<200706141744.08408.bernd.paysan@gmx.de>
+	<200706141917.58824.rob@landley.net>
+	<orr6oe6luz.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141855480.14121@woody.linux-foundation.org>
+	<ord4zx6hk6.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706142033070.14121@woody.linux-foundation.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 01:04:06 -0300
+In-Reply-To: <alpine.LFD.0.98.0706142033070.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 14 Jun 2007 20\:34\:09 -0700 \(PDT\)")
+Message-ID: <orhcp950eh.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18034.3676.477575.490448@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-In-Reply-To: message from david@lang.hm on Thursday June 14
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
-	<18034.479.256870.600360@notabene.brown>
-	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday June 14, david@lang.hm wrote:
-> On Fri, 15 Jun 2007, Neil Brown wrote:
-> 
-> > On Thursday June 14, david@lang.hm wrote:
-> >> what is the limit for the number of devices that can be in a single array?
-> >>
-> >> I'm trying to build a 45x750G array and want to experiment with the
-> >> different configurations. I'm trying to start with raid6, but mdadm is
-> >> complaining about an invalid number of drives
-> >>
-> >> David Lang
-> >
-> > "man mdadm"  search for "limits".  (forgive typos).
-> 
-> thanks.
-> 
-> why does it still default to the old format after so many new versions? 
-> (by the way, the documetnation said 28 devices, but I couldn't get it to 
-> accept more then 27)
+On Jun 15, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Dunno - maybe I can't count...
+> On Fri, 15 Jun 2007, Alexandre Oliva wrote:
+>> 
+>> Yes.  They'd have to give up the ability to update the software, or
+>> pass it on to the user.  If they can't do the latter, they could still
+>> do the former.  How bad would this be for them, do you know?
 
-> 
-> it's now churning away 'rebuilding' the brand new array.
-> 
-> a few questions/thoughts.
-> 
-> why does it need to do a rebuild when makeing a new array? couldn't it 
-> just zero all the drives instead? (or better still just record most of the 
-> space as 'unused' and initialize it as it starts useing it?)
+> In other words, you advocate license for technical programs that causes 
+> people to make bad technical choices?
 
-Yes, it could zero all the drives first.  But that would take the same
-length of time (unless p/q generation was very very slow), and you
-wouldn't be able to start writing data until it had finished.
-You can "dd" /dev/zero onto all drives and then create the array with
---assume-clean if you want to.  You could even write a shell script to
-do it for you.
+I do place ethical issues over technical ones, if that's what you're
+asking.
 
-Yes, you could record which space is used vs unused, but I really
-don't think the complexity is worth it.
 
-> 
-> while I consider zfs to be ~80% hype, one advantage it could have (but I 
-> don't know if it has) is that since the filesystem an raid are integrated 
-> into one layer they can optimize the case where files are being written 
-> onto unallocated space and instead of reading blocks from disk to 
-> calculate the parity they could just put zeros in the unallocated space, 
-> potentially speeding up the system by reducing the amount of disk I/O.
+And then, why should the vendor have any say on the software that runs
+on the hardware I purchased from them, after the purchase?
 
-Certainly.  But the raid doesn't need to be tightly integrated
-into the filesystem to achieve this.  The filesystem need only know
-the geometry of the RAID and when it comes to write, it tries to write
-full stripes at a time.  If that means writing some extra blocks full
-of zeros, it can try to do that.  This would require a little bit
-better communication between filesystem and raid, but not much.  If
-anyone has a filesystem that they want to be able to talk to raid
-better, they need only ask...
- 
-> is there any way that linux would be able to do this sort of thing? or is 
-> it impossible due to the layering preventing the nessasary knowledge from 
-> being in the right place?
+Heck, I'd feel *safer* if I knew they couldn't modify the code in my
+box without my permission.  Do you support WGA or the Sony Rootkit?
+How is this any different?
 
-Linux can do anything we want it to.  Interfaces can be changed.  All
-it takes is a fairly well defined requirement, and the will to make it
-happen (and some technical expertise, and lots of time .... and
-coffee?).
+But if they want to keep the ability to change the software in my box,
+I want that for myself as well.  If for no other reason, in case they
+mess things up.
 
-NeilBrown
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
