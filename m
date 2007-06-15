@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbXFOTuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbXFOTvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbXFOTuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 15:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbXFOTua
+	id S1754777AbXFOTvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbXFOTvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 15:50:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39663 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755198AbXFOTu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 15:50:28 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Florin Malita <fmalita@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr> <4671F127.40000@gmail.com>
-	<or8xal6h1f.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706150157.13631.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 16:49:00 -0300
-In-Reply-To: <200706150157.13631.dhazelton@enter.net> (Daniel Hazelton's message of "Fri\, 15 Jun 2007 01\:57\:13 -0400")
-Message-ID: <orsl8typ5f.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 15:51:00 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:3006 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754742AbXFOTu7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 15:50:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ghhgMfZXKU3PQcrkqcixKaBzOlXfk502180l1v/TlXmSi+J6Mtb7o8HP3ysUvoocYv9u9DnxaVCVcEr5Wbh9ccKyix9nIpGw44h7eFqwSpmMmiNUUNpKcMK1l65ylaBwr0uudOLx0h6iPRqYp7RJZDLbgE8PTEUIlRB+VBjvhLY=
+Date: Fri, 15 Jun 2007 23:49:14 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: coding style
+Message-ID: <20070615194914.GF8151@cvg>
+References: <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com> <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr> <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com> <20070615110326.b0762b7a.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr> <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com> <Pine.LNX.4.64.0706152122050.32724@fbirervta.pbzchgretzou.qr> <4672EC53.50409@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4672EC53.50409@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+[Kok, Auke - Fri, Jun 15, 2007 at 12:45:23PM -0700]
+| Jan Engelhardt wrote:
+| >On Jun 15 2007 12:21, Kok, Auke wrote:
+| >>Cyrill Gorcunov wrote:
+| >>>[Jan Engelhardt - Fri, Jun 15, 2007 at 09:10:49PM +0200]
+| >>>| On Jun 15 2007 11:03, Randy Dunlap wrote:
+| >>>| > > 
+| >>>| > > "use tabs for indents and spaces for alignment"
+| >>>| > > 
+| >>>| > > If that means you need to use two dozen spaces, then so be it.
+| >>>| >
+| >>>| >I don't think that's what that rule means, but I didn't write it,
+| >>>| >so I'm not absolutely sure about it.
+| >>>| >
+| >>>| >but we know that tab stops are every 8th character, not 4 :)
+| >>>| 
+| >>>| Hardly.
+| >>>| 
+| >>>Jan, as I see from CodingStyle:
+| >>>
+| >>> "Tabs are 8 characters, and thus indentations are also 8 characters."
+| >>>
+| >>>Actually it would be perfect to get strict rules also for math. and log.
+| >>>operators being splitted on several lines:
+| >>this doesn't say anything about alignment, which was his point :)
+| >
+| >Well tabs should _never_ be assumed to be 8, and in this regard, as I 
+| >see it, CodingStyle has a bug. Tabs are there so that the user can set 
+| >their width according to _their_ taste, simply so that both sides,
+| >
+| >	from CodingStyle:
+| >	Tabs are 8 characters, and thus indentations are also 8
+| >	characters.  There are heretic movements that try to make
+| >	indentations 4 (or even 2!) characters deep, and that is akin
+| >	to trying to define the value of PI to be 3.
+| 
+| again, this is about *indentation* and not about alignment
+| 
+| >Linus (did he wrote that part?) and the heretics both can have their fun 
+| >without impacting each other. If we wanted to force the user to have 
+| >exactly 8 screen blanks, we should use spaces throughout.
+| 
+| Linus was friendly enough to give us permission to use tabs. He forces tabs 
+| for indentation, but leaves it up to everyone else to (1) set their editor 
+| to show tabs as 2 or 4 or whatever, and (2) use spaces for alignment.
+| 
+| the bottom line here is that we encourage everyone to use tabs=8, and allow 
+| some degree of freedom for some people to vary this *AND* have decent 
+| looking alignment for *EVERYONE* by allowing them to use spaces for 
+| alignment.
+| 
+| Nothing in the codingstyle document confirms or denies this, so I will 
+| assume that it is _allowed_ to use spaces for alignment.
+		^^^^^^^^^^^^^^^
+Actually that is exactly what I was expecting to see. Thanks a lot.
 
-> On Thursday 14 June 2007 23:19:24 Alexandre Oliva wrote:
+| 
+| the checkpatch.pl script doesn't disallow spaces for alignment - it is dumb 
+| enough to complain about more than 8 spaces for alignment.
+| 
+| That is and was the whole point... and worth the addition to CodingStyle 
+| for me
+| 
+| 
+| Auke
+| 
 
->> IANAL, but AFAICT it doesn't.  Still, encoded in the spirit (that
->> refers to free software, bringing in the free software definition), is
->> the notion of protecting users' freedoms, among them the freeom #0, to
->> run the software for any purpose.
 
-> And where in GPLv2 is "Freedom #0"?
+		Cyrill
 
-It may sound like thin evidence for someone arriving from Venus today,
-but the preamble talks about "free software", some passages clearly
-imply that software under this license is "free software", the license
-is published by the Free Software Foundation, and the Free Software
-Foundation has a published definition of Free Software that
-establishes the 4 freedoms.
-
-The freedoms defined there resonate very strongly with the
-freedoms/rights that the license talks about.  I hope this is enough
-evidence to convince you that this is the intent.
-
-The only of the freedoms that's not explicitly mentioned in the
-preamble, the freedom to run the software for any purpose, is
-mentioned in the legal terms as unrestricted, which is very much in
-line with freedom #0, but is outside the scope of a copyright license
-because running the program does not require copyright permission.
-
-I'll give you that the preamble doesn't make it clear that the license
-is purported to defend freedom #0 too.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
