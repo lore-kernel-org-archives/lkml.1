@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbXFOXYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbXFOX1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759406AbXFOXYV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbXFOXYO
+	id S1757633AbXFOX1J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbXFOX0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:24:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36645 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754098AbXFOXYN (ORCPT
+	Fri, 15 Jun 2007 19:26:53 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:63885 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756931AbXFOX0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:24:13 -0400
-Date: Fri, 15 Jun 2007 16:23:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jan Kara <jack@suse.cz>
-cc: Rich Coe <Richard.Coe@med.ge.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: RFC: Re: PATCH: udf fs corruption on linux-2.6
-In-Reply-To: <20070615160944.GA29775@duck.suse.cz>
-Message-ID: <alpine.LFD.0.98.0706151622010.14121@woody.linux-foundation.org>
-References: <20070613154803.a1ad874a.Richard.Coe@med.ge.com>
- <20070614163218.1d75dda4.Richard.Coe@med.ge.com>
- <alpine.LFD.0.98.0706141511110.14121@woody.linux-foundation.org>
- <20070615160944.GA29775@duck.suse.cz>
+	Fri, 15 Jun 2007 19:26:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=puRAc8GBfnnr0o0RCZ2wv8pM04tT7Lxz6++D5Ld6pPYQE0C+LZhJYIlqLejFSYJMjHlzvr7hhP/tqjaELT2SdeCPVoDw1aZBYM0O8FXyRIfmF62562nnNVS8/zGXNYu/qpd3B3LnjcQ3cMzr6z3KN8CBdiOiLlHdudK6VV3xVbI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Masatake YAMATO <jet@gyve.org>
+Subject: Re: [PATCH] never called printk statement in ide-taskfile.c::wait_drive_not_busy
+Date: Sat, 16 Jun 2007 00:45:36 +0200
+User-Agent: KMail/1.9.6
+Cc: cebbert@redhat.com, linux-kernel@vger.kernel.org
+References: <20070605.112124.28713903.jet@gyve.org> <4665988A.5060902@redhat.com> <20070606.023558.230059723.jet@gyve.org>
+In-Reply-To: <20070606.023558.230059723.jet@gyve.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200706160045.36638.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Hi,
 
-On Fri, 15 Jun 2007, Jan Kara wrote:
->
->   My fix for this problem is already sitting in Andrew's patch queue
-> (http://lkml.org/lkml/2007/6/11/79). Rich's patch still has a problem - you
-> cannot call udf_discard_prealloc() from drop_inode() because it is called
-> under inode_lock and thus you cannot call e.g. mark_inode_dirty(). I've done
-> that mistake too ;). So please don't apply the patch.
+On Tuesday 05 June 2007, Masatake YAMATO wrote:
+> > On 06/04/2007 10:21 PM, Masatake YAMATO wrote:
+> > > diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
+> > > index 30175c7..5e05311 100644
+> > > --- a/drivers/ide/ide-taskfile.c
+> > > +++ b/drivers/ide/ide-taskfile.c
+> > > @@ -249,7 +249,7 @@ static u8 wait_drive_not_busy(ide_drive_t *drive)
+> > >  	while (((stat = hwif->INB(IDE_STATUS_REG)) & BUSY_STAT) && retries--)
+> > >  		udelay(10);
+> > >  
+> > > -	if (!retries)
+> > > +	if (retries < 0)
+> > 
+> > 	if (stat & BUSY_STAT)
+> > 
+> > >  		printk(KERN_ERR "%s: drive still BUSY!\n", drive->name);
+> > >  
+> 
+> Oh, yes.
+> Giving `retries' both roles: loop counter and condition flag for logging
+> may not good.
+> 
+> 
+>     for (retries = 0; retries < 100; retries++)
+>     {
+> 	    if ((stat = hwif->INB(IDE_STATUS_REG)) & BUSY_STAT)
+> 	       break;
+> 
+> 	    udelay(10);
+>     }
+> 
+> 
+>     if (stat & BUSY_STAT)
+> 	    printk(KERN_ERR "%s: drive still BUSY!\n", drive->name);
 
-Ok, dropped, will depend on Andrew to forward it to me. It may miss the 
-(already late) -rc5 I was hoping to release today, but I'll cc Andrew on 
-this, and maybe I'll get disorganized and just end up delaying -rc5 even 
-more ;)
+Please re-submit this fix in the form of a patch so I can merge it.
 
-		Linus
+Thanks,
+Bart
