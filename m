@@ -1,127 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbXFOUen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbXFOUfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758740AbXFOUen (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbXFOUe1
+	id S1758776AbXFOUfO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbXFOUe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:34:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53681 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758392AbXFOUe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:34:26 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michael Gerdau <mgd@technosis.de>, Daniel Hazelton <dhazelton@enter.net>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+	Fri, 15 Jun 2007 16:34:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60769 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757442AbXFOUe5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:34:57 -0400
+Date: Fri, 15 Jun 2007 13:34:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexandre Oliva <aoliva@redhat.com>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<orabv29qtk.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706142049.41819.dhazelton@enter.net>
-	<200706150825.15491.mgd@technosis.de>
-	<alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 17:32:43 -0300
-In-Reply-To: <alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Fri\, 15 Jun 2007 10\:03\:53 -0700 \(PDT\)")
-Message-ID: <or7iq5yn4k.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+In-Reply-To: <1181936955.5211.62.camel@shinybook.infradead.org>
+Message-ID: <alpine.LFD.0.98.0706151322070.14121@woody.linux-foundation.org>
+References: <466A3EC6.6030706@netone.net.tr>  <200706142144.15695.dhazelton@enter.net>
+  <1181895924.25228.319.camel@pmac.infradead.org>  <200706150458.29943.dhazelton@enter.net>
+  <1181899064.25228.342.camel@pmac.infradead.org> 
+ <alpine.LFD.0.98.0706150846370.14121@woody.linux-foundation.org> 
+ <1181930204.25228.590.camel@pmac.infradead.org> 
+ <alpine.LFD.0.98.0706151118150.14121@woody.linux-foundation.org>
+ <1181936955.5211.62.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Fri, 15 Jun 2007, Michael Gerdau wrote:
->> 
->> I find it obvious that the GPL was meant to prevent such to be possible.
->> This is what I mean by the "the spirit of the GPL".
-
-> Umm. It may well have been meant by *rms*. But your argument fatally falls 
-> down on the fact that rms has had *nothing* to do with the Linux kernel.
-
-You're mixing two separate issues:
-
-1- does GPLv3 change the spirit of the GPL?
-
-2- is GPLv3 better than GPLv2 for Linux?
-
-The answers may be different, and the reason I got into this debate
-was to set the record straight on 1.  As the discussion evolved (if
-developing into a flamewar can be characterized as evolving ;-), I
-realized the motivations for preferring v2 over v3 were not clear to
-me (and they still appear contradictory to me), so I started
-investigating that, which is indeed 2., but is not about 3:
-
-3- is Linux going to switch to v3?
-
->> Living in germany I'm also used to the courts valueing the
->> intention over the exact wording of a contract (a licence after all
->> is a contract). So I _think_ in germany TiVo would have lost a
->> lawsuit if they had tried it.
-
-> Ehh. The intent that matters is not the intent of the person who
-> authored the license, but the intent of the person who *chose* the
-> license.
-
-+1
-
-> So clearly, the whole "modify in place" argument is simply *wrong*.
-
-When you leave an essential portion of the reasoning out, which you
-repeatedly did, this conclusion is obvious.  But it's also obviously
-wrong to try to apply this conclusion to the argument that I phrased.
-
-> It cannot *possibly* be a valid reading of the GPLv2! When the GPLv2
-> talks about "legal permissions to copy, distribute and/or modify"
-> the software, it does *not* mean that you have to have the ability
-> to modify it in place!
-
-Isn't a restriction on in-place modification a further restriction on
-the permission to modify granted by the license?  A further
-restriction that is not permitted by the license?
-
-Again, this is not about ROM, CD-ROMs and other unmodifiable media.
-In this case, the distributor is not imposing this restriction, it's
-not selecting the media with the strict purpose of forbidding
-modification.  It doesn't retain the ability to modify without failing
-to pass it on.  This is the key distiction that you repeatedly
-dropped.  And then, presented it as if it were a separate argument.
-
-> 	  rights", but it is "all rights" ONLY AS FAR AS THE GPLv2 itself 
-> 	  is concerned! It's not about any _other_ additional rights you 
-> 	  may have outside the GPLv2!
-
-I agree, and I don't think I've ever claimed otherwise.  It's rights
-as far as the software is concerned, and even this might be pushing it
-a bit too far.  That's why the spirit gives the intuition, but the
-legal terms are precise in turning that into "no further
-restrictions", as I'd already explained long before you did.
-
-But then, again, the license grants the right to modify, and prohibits
-further restrictions to it, so I claim that saying "you can modify,
-just not in place, because I won't let you do it" (rather than because
-it's impossible), that's a further restriction of a freedom granted by
-the license, which turns into a license violation.
 
 
-Now we can turn into the debate on whether replacing is modifying, and
-the conclusion is quite possibly that, in legal terms, it isn't.  I
-don't care.  I'm not here to debate the legal terms.  I'm in this
-debate to set the record straight on whether GPLv3 changes the spirit
-of the GPL.
+On Fri, 15 Jun 2007, David Woodhouse wrote:
+> > 
+> > What is a DVD? It's just a "blob" of a UDF image, potentially containing 
+> > the Linux kernel.
+> > 
+> > How is that different from a "blob" of some other kind of image (say, a 
+> > cramfs or similar image) on a rom?
+> > 
+> > What makes UDF so different from cramfs? What makes a DVD so different 
+> > from a ROM chip? Why would copyright law care about one and not the other?
+> 
+> The differences are subtle, but they do exist. They're not really about
+> whether it's iso9660 or cramfs; it's about whether what you put on them
+> is a coherent work in its own right or just a bunch of bits which happen
+> to be thrown together onto the same medium.
 
-> See? Both of Alexandre's arguments about why Tivo did something "against 
-> the license" were actually totally bogus.
+I think that's a somewhat valid argument, although I'm not really sure 
+whether there is any difference between, say, a Fedora 7 "livecd", and a 
+router with a cramfs filesystem in rom.
 
-Actually...  What you name as two separate arguments were two parts of
-*one* of the 3 arguments I've raised so far.
+Both really work the same way, and both really are very much targeted 
+towards a specific hardware platform.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Yes, it's true that a small router migth be a more *coherent* hardware 
+platform than the Fedora 7 livecd is, but that's more a factor of the wild 
+and crazy PC hardware culture than of the small router.
+
+For example, what about a livecd for PPC-based hardware? Those tend to be 
+much more uniform (read: I think the livecd's generally work on mac 
+clones).
+
+So it's a question of degrees of separation. Does it make a difference 
+that some of these embedded images work across a whole range of (rather 
+similar, but still.. not identical) routers? 
+
+I don't really have any point, except that there is no real *technical* 
+difference, and in many respects the only difference in the end really 
+seems to be about "intended target device or audience" rather than 
+anything else.
+
+How can you make hard licensing decisions in situations like that? I don't 
+think you really can. In fact, the OSI rules even forbid making licensing 
+decisions based on things that get rather close to the differences you are 
+describing (both the "not specific to a product" and "license must not 
+discriminate against fields of endeavor").
+
+It's also really really *hard* to make a choice based on a gradual scale. 
+Where do you put the limit? Wherever you put it, it's going to be 
+arbitrary. Is that really a good thing?
+
+So I would at least *personally* suggest that people not look into the 
+license for these kinds of things, and also that you really need to have a 
+very specific case, and just basically put it in front of a judge.
+
+At some point, *somebody* has to decide in a gray area, and I'm not saying 
+that a judge is really _technically_ any better really to decide the 
+issue, but at least he is hopefully _independent_ of both parties, so when 
+a judge makes an arbitrary decision, the "arbitrariness" is hopefully at 
+least somewhat "fair".
+
+Hmm? 
+
+			Linus
