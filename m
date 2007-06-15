@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbXFOUjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbXFOUk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759246AbXFOUjx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 16:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758465AbXFOUjo
+	id S1759281AbXFOUk3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 16:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755874AbXFOUkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 16:39:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55153 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758410AbXFOUjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 16:39:43 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Michael Poole <mdpoole@troilus.org>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706142246.57583.dhazelton@enter.net>
-	<878xal2a0q.fsf@graviton.dyn.troilus.org>
-	<200706150127.18069.dhazelton@enter.net>
-	<87sl8tzaj1.fsf@graviton.dyn.troilus.org>
-	<20070615124039.GB21120@elte.hu>
-	<87fy4tz8dc.fsf@graviton.dyn.troilus.org>
-	<20070615143003.GA8775@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 17:38:47 -0300
-In-Reply-To: <20070615143003.GA8775@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 16\:30\:03 +0200")
-Message-ID: <ortzt9x8a0.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 16:40:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38472 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758379AbXFOUkL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 16:40:11 -0400
+Date: Fri, 15 Jun 2007 13:39:23 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: coding style
+In-Reply-To: <Pine.LNX.4.64.0706152210150.32724@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.0.98.0706151335240.14121@woody.linux-foundation.org>
+References: <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com>
+ <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr>
+ <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com>
+ <20070615110326.b0762b7a.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr>
+ <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com>
+ <Pine.LNX.4.64.0706152122050.32724@fbirervta.pbzchgretzou.qr>
+ <20070615194140.GE8151@cvg>
+ <Pine.LNX.4.64.0706152210150.32724@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
 
-> that's exactly what the GPLv3 does: it creatively defines the
-> hardware's key into the 'source code' of the software and then asks
-> for that to be provided _not_ because somehow the key derives from
-> the software
 
-Dude, you're 3 drafts behind.  And some people already read GPLv2 like
-that.
+On Fri, 15 Jun 2007, Jan Engelhardt wrote:
+> 
+> Linux maintainers will enforce \t "being"[1] 8, and will also enforce
+> the 80-column limit[2].
 
-> (it clearly does not), but as a "compensation" for the right to
-> redistribute! I.e. it's trying to extend its scope to some item that
-> is not part of the software. See?
+Heh. Actually, Linux maintainers have generally very consciously _avoided_ 
+trying to "enforce" coding style issues.
 
-The "compensation" is and has always been "respecting others'
-freedoms".  If the key is used to disrespect others freedoms, as it is
-by TiVO, then TiVO is failing to keep its part in the deal.
+We encourage. Sometimes people actually end up running "lindent" on code 
+and enforce the rules through that, but that is actually fairly rare, and 
+most of the time that happens only when somebody decides to tackle some 
+subsystem that hasn't effectively been maintained in a while, and in order 
+to do cleanups, the person needs to just make it readable first.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Is that the _onbly_ case when we do that? No. There's the occasional 
+Lindent run done randomly, usually brought on by something _really_ 
+atrocious, but I would say that generally we try to keep code churn due to 
+_just_ coding style issues to a minimum.
+
+I do sometimes end up not taking *new* code if it is really really ugly. 
+So it definitely happens. But...
+
+			Linus
+
