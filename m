@@ -1,134 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbXFOQQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756963AbXFOQRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbXFOQQq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 12:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbXFOQQj
+	id S1756963AbXFOQRs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 12:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbXFOQRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 12:16:39 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:61306 "EHLO smtp01.cdmon.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165AbXFOQQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 12:16:38 -0400
-Date: Fri, 15 Jun 2007 18:16:44 +0200
-From: DervishD <lkml@dervishd.net>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext2 on flash memory
-Message-ID: <20070615161644.GB2373@DervishD>
-Mail-Followup-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-	Linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org> <20070614201714.GC1928@DervishD> <20070614203800.GG31984@lazybastard.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 15 Jun 2007 12:17:41 -0400
+Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:45759 "EHLO
+	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165AbXFOQRj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 12:17:39 -0400
+Date: Fri, 15 Jun 2007 12:17:12 -0400
+To: Bernd Paysan <bernd.paysan@gmx.de>
+Cc: Theodore Tso <tytso@mit.edu>, Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615161712.GA29094@delft.aura.cs.cmu.edu>
+Mail-Followup-To: Bernd Paysan <bernd.paysan@gmx.de>,
+	Theodore Tso <tytso@mit.edu>, Alexandre Oliva <aoliva@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+	Valdis.Kletnieks@vt.edu, Daniel Hazelton <dhazelton@enter.net>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+	debian developer <debiandev@gmail.com>, david@lang.hm,
+	Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org> <orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615052432.GC14911@thunk.org> <200706151202.13708.bernd.paysan@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070614203800.GG31984@lazybastard.org>
-User-Agent: Mutt/1.4.2.3i
-Organization: DervishD
+In-Reply-To: <200706151202.13708.bernd.paysan@gmx.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Jan Harkes <jaharkes@cs.cmu.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Jörn :)
-
- * Jörn Engel <joern@logfs.org> dixit:
-> On Thu, 14 June 2007 22:17:14 +0200, DervishD wrote:
-> >  * Jörn Engel <joern@logfs.org> dixit:
-> > > 2. Wear leveling
-> > > 
-> > > Wear leveling happens implicitly by picking a different physical block
-> > > from the spares on each write.  However, some blocks are never used.  If
-> > > a physical block is mapped to a logical block that never gets written,
-> > > it is out of the rotation.  Two seperate 1024-block areas have their
-> > > internal wear leveling each, but nothing is spreading high wear from one
-> > > area to another.
-> > 
-> >     I thought that wear leveling wasn't local to a group of blocks. This
-> > means that you can destroy a flash memory by writing to the same
-> > positions... which is a very common usage pattern.
+On Fri, Jun 15, 2007 at 12:02:11PM +0200, Bernd Paysan wrote:
+> > the GPLv3 license.  That's not their fault, it's the fault of people
+> > who wrote the GPLv3 license, promulgated the GPLv3 license, and who is
+> > attempting to convince everyone that the GPLv3 license is the only
+> > valid license for Right Thinking FSF automatons to use.
 > 
-> That is correct.  Noticing this will take a while, though.  Even the
-> worst chips sold today seem to have a manufacturer guarantee of 10.000
-> erases per block.  Across a 16MB area, that means you have to write
-> 160GB of data to that one area before you enter the danger zone.
-> Significantly less with static data around, but still a lot.
+> Ah no, it's their fault. The GPLv2 always was clear that there will be some 
+> future releases of the GPL, and that you should keep "upgrading" possible.
+...
+> enough. I try to give up. I suggest everyone who has some assertions about 
+> what the GPLv2 does read it through and find the place where it says so. 
 
-    Yes, I understand. That's worse than I thought. I was right now
-thinking about "PortableApps", a set of free software applications that
-are a little bit modified to work from a pendrive in Windows. Very
-useful, because you can carry your OpenOffice (or AbiWord) and Firefox,
-for example, to any Windows you're doomed to use. This applications
-write repeteadly to the pendrive (specially Firefox...), and I think
-they may wear the drive prematurely if used extensively.
- 
-> And even when that happens, the chips doesn't suddenly explode on the
-> 10.001st erase.  Your chances of getting correctable or uncorrectable
-> errors will increase, though.
+Ok, open your local copy of the GPL (you should have a copy in
+/usr/share/common-licences/GPL if you use Debian).
 
-    So you have a zone which is unusable. Decent filesystems allow you
-to mark some blocks as "dontuse" (ext2, for example). Does FAT allow
-this?
+Now read along with me...
 
-> For the majority of use cases, such a behaviour is good enough.  It
-> beats floppies hands down.  You will never wear them out with your
-> digital camera or mp3 player.  Using it instead of a hard disk in your
-> notebook may be a little risky, though.
+|                    GNU GENERAL PUBLIC LICENSE
+|                       Version 2, June 1991
 
-    Yes, I know. I wasn't aware of the local wear leveling. Thanks a lot
-for explaining, I will be much more gentle with my pendrives O:))
+Ok, we have that settled, this license describes GPL version 2,
+specifically, no if's or later's. Bunch of legal mumbo jumbo follows
+until we reach...
 
-> 
-> > > 4. FAT requirement
-> > > 
-> > > When I claimed there was nothing more to smartmedia, I was actually
-> > > lying.  Smartmedia has the odd requirement that only FAT is supported as
-> > > a filesystem.  In fact, the specifications describe FAT in great detail.
-> > 
-> >     Right, but I've seen many people using their pendrives with ext2
-> > with no problems (e.g. for SLAX). So, what do you mean by "supported"?
-> > If a filesystem can be used with the memory, do you mean that wear
-> > leveling and other characteristics of the flash memory are tailored for
-> > FAT? or do you mean you cannot use reliably (read: you will lose data)
-> > other filesystems?
-> 
-> It doesn't matter much what I mean.  The question is how the
-> manufacturer of your device interpreted it.  Most likely ext2 will work
-> just fine within the limitations I've outlined.
-> 
-> What changes is the failure mode.  Floppies died from storing them in a
-> dark and cool place.  Some were sold brand-new and dead.  Disks die from
-> random, mostly mechanical, failures at a rate of 7% per years in a
-> Google setup.  Flash usually dies from writing to it, the more you write
-> the faster it dies.
-> 
-> So as long as you rarely write, pick any filesystem you like.  The
-> choice only matters when you write a lot.
+|                     END OF TERMS AND CONDITIONS
 
-    I think I will be writing the pendrive, almost fully, once a week
-(enough for an image of my home directory). That means less than 1GiB
-written each week. That means 50-100 (in the worst case, making two
-backups a week instead of one) writings each year in each block.
+And we've reached the end of the license. Now it it followed up by some
+helpful text for the reader...
 
-> > > a) Do wear leveling!
-> > > 
-> > > Smartmedia wear leveling is limited to within areas.  Any cross-device
-> > > wear leveling must be done by the filesystem.  FAT does that fairly
-> > > well.  The Ext family doesn't.
-> > 
-> >     Cross-device wear leveling? I don't understand, sorry O:)
-> 
-> Wear leveling across the whole device, not just one area.
+|            How to Apply These Terms to Your New Programs
+...
+|  To do so, attach the following notices to the program.  It is safest
+| to attach them to the start of each source file to most effectively
+| convey the exclusion of warranty; and each file should have at least
+| the "copyright" line and a pointer to where the full notice is found.
+|
+|    <one line to give the program's name and a brief idea of what it does.>
+|    Copyright (C) <year>  <name of author>
+|
+|    This program is free software; you can redistribute it and/or modify
+|    it under the terms of the GNU General Public License as published by
+|    the Free Software Foundation; either version 2 of the License, or
+|    (at your option) any later version.
 
-    Oh, sorry, now I understand :))
- 
-> >     Thanks for your explanation, it has been very educational :)
-> 
-> No worries!
+Look, some example boiler plate that is suggested to be placed in the
+source code _to most effectively convey_ that the code is GPL licensed.
+So clearly there must be less effective ways, one of which may just be
+to include a COPYING or LICENSE file along with the distributed source.
 
-    That's the kind of information you never want anywhere when
-investigating, so I'm very grateful for that, really :)
+And the author of this example boiler place is clearly 'talking' to the
+the copyright owner/licensor (i.e. not the licencee), giving suggestions
+about adding contact information and even possible commands that could
+be added to interactive programs. So that '(at your option)' may just be
+a suggestion to the licensor, or maybe not. But that isn't really here
+not there.
 
-    Raúl Núñez de Arenas Coronado
+Files that don't have such boiler plate do not convey the terms of the
+license as effectively, but they are still covered by the license that
+was included with the kernel, which is clearly version 2.
 
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+Now ofcourse we were looking at the official GPLv2, so I ran a diff
+against the COPYING file in the kernel tree. The only differences I can
+see are the included clarification by Linus at the top, some formatting
+differences and the fact that the FSF version seems to refer to the
+'GNU Lesser General Public License', while Linus's version has,
+'GNU Library General Public License'.
+
+> Unfortunately, I haven't seen GPL citations from the Linus-fanboy curve, 
+> only suggestions that the GPL "does not say something" which it clearly 
+> does.
+
+I hope this helps.
+
+Jan
