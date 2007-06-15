@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbXFOS6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbXFOTA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbXFOS6Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbXFOS6R
+	id S1757342AbXFOTA4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 15:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXFOTAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:58:17 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:51012 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753073AbXFOS6Q (ORCPT
+	Fri, 15 Jun 2007 15:00:48 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:9742 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbXFOTAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:58:16 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 15 Jun 2007 14:56:22 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Remove final two references to "__obsolete_setup" macro.
-Message-ID: <Pine.LNX.4.64.0706151454460.14715@localhost.localdomain>
+	Fri, 15 Jun 2007 15:00:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=UQtgyJfFHfqqbtyjmxEYGKj5svPHpOrLl200FNABIfjCCw/nOymF/VI86hHFmBH8dYZNSFeX+rn0aRlRT264b5wDtNs+mz27gqwlCiBzfIqUSxDbmk+iRhiP0zlztGlpKxPG2RzTpcjlfnrXMNyYEWEZFJj1yRIzdUv7QVv8dD4=
+Message-ID: <d120d5000706151200u34bd6728n7fca0983d6175f29@mail.gmail.com>
+Date: Fri, 15 Jun 2007 15:00:46 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Using RCU with rcu_read_lock()?
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+I have a piece of code that is always called under a spinlock with
+interrups disabled. Within that piece of code I iterate through a
+list. I have another piece of code that wants to modify that list. I
+have 2 options:
 
----
+1) Have the other piece of code acquire the same spinlock
+2) Use RCU
 
-  given that there aren't any other references to this macro anywhere
-in the tree, i'm just *guessing* it may not have any further value.
+I don't want to do 1) because the otheir piece of code does not really
+care about object owning the spinlock and so acquiring the spinlock is
+"not nice". However it is guaranteed that the piece of code that
+accesses lock runs atomically with interrupts disabled. So
+rcu_read_lock() would be superfluos there.
 
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 56ec4c6..5b52853 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -171,9 +171,6 @@ struct obs_kernel_param {
- #define __setup(str, fn)					\
- 	__setup_param(str, fn, fn, 0)
+Is it possible to still use list_for_each_rcu() and friends to access
+that list without rcu_read_lock()? Or it is betteruse complete RCU
+interface and eat cost of couple of extra instrctions?
 
--#define __obsolete_setup(str)					\
--	__setup_null_param(str, __LINE__)
--
- /* NOTE: fn is as per module_param, not __setup!  Emits warning if fn
-  * returns non-zero. */
- #define early_param(str, fn)					\
-@@ -239,7 +236,6 @@ void __init parse_early_param(void);
- #define __setup_param(str, unique_id, fn)	/* nothing */
- #define __setup_null_param(str, unique_id) 	/* nothing */
- #define __setup(str, func) 			/* nothing */
--#define __obsolete_setup(str) 			/* nothing */
- #endif
-
- /* Data marked not to be saved by software suspend */
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Dmitry
