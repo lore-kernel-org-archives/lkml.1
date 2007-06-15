@@ -1,70 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbXFOGIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbXFOGK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbXFOGIk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 02:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbXFOGId
+	id S1755142AbXFOGK3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 02:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbXFOGKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 02:08:33 -0400
-Received: from comtv.ru ([217.10.32.17]:44129 "EHLO comtv.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752197AbXFOGIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 02:08:32 -0400
-X-UCL: actv
-Date: Fri, 15 Jun 2007 10:07:50 +0400 (MSD)
-From: malc <av1474@comtv.ru>
-X-X-Sender: malc@linmac.oyster.ru
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [patch] sched: accurate user accounting
-In-Reply-To: <46720B19.5000006@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0706151002530.2175@linmac.oyster.ru>
-References: <200703251159.03616.kernel@kolivas.org>
- <Pine.LNX.4.64.0703252107590.31900@linmac.oyster.ru> <200703260901.54943.kernel@kolivas.org>
- <200703260957.34798.kernel@kolivas.org> <Pine.LNX.4.64.0703261439270.2621@linmac.oyster.ru>
- <20070328113743.GA5615@elte.hu> <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru>
- <20070614204253.GA14076@elte.hu> <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru>
- <20070614211828.GA21243@elte.hu> <Pine.LNX.4.64.0706150129430.3526@linmac.oyster.ru>
- <46720B19.5000006@linux.vnet.ibm.com>
+	Fri, 15 Jun 2007 02:10:21 -0400
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:54480 "EHLO
+	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752365AbXFOGKU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 02:10:20 -0400
+Message-ID: <46722D39.2040008@nttdata.co.jp>
+Date: Fri, 15 Jun 2007 15:10:01 +0900
+From: Toshiharu Harada <haradats@nttdata.co.jp>
+Organization: NTT DATA CORPORATION
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Stephen Smalley <sds@tycho.nsa.gov>
+CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [RFC] TOMOYO Linux
+References: <466FA71C.1020309@nttdata.co.jp> <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
+In-Reply-To: <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jun 2007 06:10:03.0503 (UTC) FILETIME=[D02A6FF0:01C7AF13]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, Balbir Singh wrote:
+Stephen,
 
-> malc wrote:
->> On Thu, 14 Jun 2007, Ingo Molnar wrote:
+Thank you for your interests and comment.
+I'm beginning to feel that you might be misunderstanding
+my message. Let me explain.
+
+Stephen Smalley wrote:
+> On Wed, 2007-06-13 at 17:13 +0900, Toshiharu Harada wrote:
+>> A couple of years ago, we tried to build a tool to generate
+>> SELinux policy (*1). To do that, we had to gather the access
+>> requests information. So we researched a profiling method and
+>> got to the idea of having a process to store its invocation
+>> history information (or ancestors).
 >>
+>> Here are examples:
+>> /bin/bash process invoked from mingetty: /sbin/mingetty /bin/bash
+>> /bin/bash process invoked from sshd: /usr/sbin/sshd /bin/bash
+>> /bin/bash process invoked from /bin/bash which was invoked from sshd: /usr/sbin/sshd /bin/bash /bin/bash
 
-[..snip..]
+"The idea":
+If we let process to inherit the name of its ancestors (usualy starts
+from /sbin/init), then Linux kernel will be able to know ancestors
+for each process.
 
+"Above examples" are:
+examples of how we can distinguish the same /bin/bash processes.
+
+> Why can't you do this via SELinux domain transitions?  That lets you do
+
+What do you mean by "this" here?
+I was not talking about MAC nor policy definitions.
+
+> it by equivalence class rather than per-binary, and let's you just
+> encode the security-relevant parts of the "invocation history" aka call
+> chain.  For example, the above could be expressed in SELinux policy
+> already as:
+
+I might have confused you and I am sorry for that.
+The above three lines are not TOMOYO Linux plicy.
+
+> 	domain_auto_trans(getty_t, shell_exec_t, local_shell_t)
+> 	domain_auto_trans(sshd_t, shell_exec_t, remote_shell_t)
+> 	domain_auto_trans(remote_shell_t, shell_exec_t, remote_subshell_t)
+> or whatever you like.  But you don't have to keep extending it
+> indefinitely when you don't need to distinguish in policy, so you might
+> choose to entirely omit the last one, and just have it stay in
+> remote_shell_t.
+
+In your SELinux policy examples, someone must write down them.
+To do that someone must know what will happen beforehands.
+But if you use TOMOYO Linux, you'll get domain transition
+information easily. The example of the result can be found here:
+
+http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/?v=policy-sample
+(choose whatever distribution and open the link for
+"domain_policy.txt")
+
+For example, from http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/centos4.4/domain_policy.txt?v=policy-sample#L4564
+you will know:
+
+/bin/cp which was invoked from
+   /usr/bin/makewhatis which was invoked from
+     /etc/cron.weekly/00-makewhatis.cron which was invoked from
+       /usr/bin/run-parts which was invoked from
+         /bin/bash which was invoked from
+           /usr/sbin/crond
+
+that /bin/cp process needs to
+
+read /dev/null, /etc/selinux/config, /proc/filesystems, and
+write /var/cache/man/whatis, and truncate /var/cache/man/whatis.
+
+We implemnted the above mentioned idea and TOMOYO Linux is a
+sample system which use distinguished process as a "domain".
+In some sense it is a system analyzing tool.
+
+Again, we intended to share the idea to people on the lkml.
+MAC (TOMOYO Linux) is just a sample.
+Any feedback will be appreciated.
+
+>> It seemed to us that this clarification would be familiar to
+>> users/administrators and could be used for various purposes.
+>> We did implement this by making use of the Linux's traditional
+>> fork & exec mechanisms, and built a pathname-based MAC using
+>> this implementation. We named the result as "TOMOYO Linux"
+>> and made it open source at SourceForge.jp (*2).
 >>
->> Now integral load matches the one obtained via the "accurate" method.
->> However the report for individual cores are of by around 20% percent.
+>> TOMOYO Linux kernel keeps track of process invocation and
+>> distinguishes every different process invocation history as a "domain".
+>> TOMOYO Linux can accumulate the accesses requests for each domain.
 >>
->
-> I think I missed some of the context, is the accounting of individual tasks
-> or cpustat values off by 20%? I'll try and reproduce this problem.
+>> TOMOYO Linux has a utility called "ccstree". It prints the invocation
+>> history for each process in addition to the output of "pstree" command:
+>>
+>> [root@tomoyo ~]# ccstree
+>> init (1) <kernel> /sbin/init
+>>    +- udevd (388) <kernel> /sbin/udevd
+>>    ...
+>>    +- automount (1970) <kernel> /etc/rc.d/init.d/autofs /usr/sbin/automount
+>>    +- acpid (1993) <kernel> /etc/rc.d/init.d/acpid /bin/bash /usr/sbin/acpid
+>>    +- cupsd (2008) <kernel> /etc/rc.d/init.d/cups /bin/bash /usr/sbin/cupsd
+>>    +- sshd (2026) <kernel> /usr/sbin/sshd
+>>    +- sshd (2269) <kernel> /usr/sbin/sshd
+>>      +- bash (2271) <kernel> /usr/sbin/sshd /bin/bash
+>>        +- ccstree (15125) <kernel> /usr/sbin/sshd /bin/bash /root/ccstools/ccstree
+>>
+>>    (symbol, "<kernel>" indicates a virtual base.)
+>>
+>> We had a presentation and a tutorial session of TOMOYO Linux
+>> version 1.4 at the ELC2007 (*3). Version 1.4.1 is the latest and
+>> has a rich set of MAC functions for files, networking, and
+>> capabilities and so on. For historical reasons, it is not using
+>> LSM or auditd. We decided to share this idea with the Linux community
+>> and totally rewrote the code. The result was TOMOYO Linux 2.0,
+>> which is now using LSM and auditd. To make discussion smooth,
+>> we cut off MAC functions other than for files.
+>>
+>> We are posting this message because we believe that this process
+>> invocation history idea might be a useful addition to Linux.
+>> Please take some time to see what this small piece of software can do
+>> with your own eyes. Your feedback will be greatly appreciated.
+>>
+>> If some of you are interested in TOMOYO Linux as a method for
+>> access control, please be advised to try full-featured version 1.4.1 (*4).
+>> It is quite easy to install and maintain TOMOYO Linux, but it should
+>> not be considered as a replacement of SELinux.
+>>
+>> All right, that's almost everything. Please visit the following
+>> URL for the code and documents:
+>>    http://tomoyo.sourceforge.jp/wiki-e/
+>> If you want to see the code first, then:
+>>    http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/security/tomoyo/?v=linux-2.6.21.3-tomoyo-2.0
+>>
+>> We will have a TOMOYO Linux BOF session at the OLS2007 (*5).
+>> Please come along and let's talk.
+>>
+>> Thank you.
+>>
+>> Toshiharu Harada (project manager)
+>> Tetsuo Handa (main architect, version 1 author)
+>> Kentaro Takeda (version 2.0 author)
+>> NTT DATA CORPORATION
+>> http://www.nttdata.co.jp/en/index.html
+>>
+>> *1) http://sourceforge.jp/projects/tomoyo/document/nsf2003-en.pdf
+>> *2) http://tomoyo.sourceforge.jp/
+>> *3) http://www.celinux.org/elc2007/
+>>      http://tree.celinuxforum.org/CelfPubWiki/ELC2007Presentations
+>> *4) http://tomoyo.sourceforge.jp/en/1.4.1/
+>> *5) http://www.linuxsymposium.org/2007/
 
-Neither actually, the individual core idle times reported via `/proc/stat'
-are off by 20 percent, one over estimates and the other under estimates
-and the sum is right on the mark.
-
->
-> Could you provide more details on the APC tool that you are using -- I
-> do not understand the orange and yellow lines, do they represent system
-> and user time?
-
-It's somewhat documented on the page: http://www.boblycat.org/~malc/apc
-Anyway the left bar is based on information from `/proc/stat' the right
-one is derived from the kernel module that just times how much time was
-spent in idle handler. The graphs: red - `/proc/stat', yellow - module.
-
-> NOTE: There is some inconsistency in the values reported by /usr/bin/time
-> (getrusage) and values reported in /proc or through delay accounting.
-
-I don't really use `getrusage'.
-
--- 
-vale
