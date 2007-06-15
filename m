@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbXFOXBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbXFOXGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759328AbXFOXBe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758973AbXFOXBQ
+	id S1757805AbXFOXGc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbXFOXGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:01:16 -0400
-Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:45882 "EHLO
-	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758859AbXFOXBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:01:15 -0400
-X-Greylist: delayed 606 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jun 2007 19:01:15 EDT
-Date: Fri, 15 Jun 2007 16:01:14 -0700 (PDT)
-From: alan <alan@clueserver.org>
-X-X-Sender: alan@blackbox.fnordora.org
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-cc: Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-In-Reply-To: <4673194D.4090500@intel.com>
-Message-ID: <Pine.LNX.4.64.0706151558180.27993@blackbox.fnordora.org>
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673194D.4090500@intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 15 Jun 2007 19:06:23 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47191 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753534AbXFOXGW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 19:06:22 -0400
+Date: Sat, 16 Jun 2007 00:11:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org, axboe@kernel.dk,
+       James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+Message-ID: <20070616001102.3d2fa850@the-village.bc.nu>
+In-Reply-To: <20070615.141917.85409547.davem@davemloft.net>
+References: <1181918159.25228.543.camel@pmac.infradead.org>
+	<Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+	<20070615171545.316dfac7@the-village.bc.nu>
+	<20070615.141917.85409547.davem@davemloft.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, Kok, Auke wrote:
+> That sounds like a good idea for my virtual I/O case on
+> Niagara too actually :-)
 
-> Jack Stone wrote:
->> I hope I got the CC list right. Apologies to anyone in didn't include
->> and anyone I shouldn't have included.
->> 
->> The basic idea is to include an idea from VMS that seems to be quite
->> useful: version numbers for files.
->
-> <snip>
->
-> have you looked into ext3cow? it allows you to take snapshots of the entire 
-> ext3 fs at a single point, and rollback / extract snapshots at any time 
-> later. This may be sufficient for you and the implementation seems to be 
-> rather stable already.
+It was actually meant semi-seriously in that drivers/ata sits on top of
+the abstract parts of drivers/scsi which James keeps asking for someone to
+get split properly off and which would sort all these out.
 
-As long as there is only one person using the file system.  Rolling back 
-the entire filesystem may work well for you, but screw up something else 
-someone else is doing.
+> Another quirk I have to deal with is that under LDOMs you
+> can export full disks and also just slices.  So I'll have
+> to get down into the partition machinery to support that
+> somehow.
 
-And what kind of rights do you have to assign to the user to do that level 
-of snapshot and rollback?  You have to assume that there are more than one 
-user and that they have less than root privileges.
+If your slices don't fit the PC worldview you might want to look at
+dmraid and just use device mapper to handle them. It is a lot more
+flexible and we could actually bin all our partition code and use this
+but for back compatibility.
 
--- 
-"ANSI C says access to the padding fields of a struct is undefined.
-ANSI C also says that struct assignment is a memcpy. Therefore struct
-assignment in ANSI C is a violation of ANSI C..."
-                                   - Alan Cox
+Alan
