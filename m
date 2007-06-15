@@ -1,89 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbXFOPm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbXFOPqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbXFOPm2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbXFOPmV
+	id S1754897AbXFOPqx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbXFOPqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:42:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34332 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750894AbXFOPmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:42:20 -0400
-Date: Fri, 15 Jun 2007 17:42:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Poole <mdpoole@troilus.org>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+	Fri, 15 Jun 2007 11:46:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39219 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751180AbXFOPqp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:46:45 -0400
+Date: Fri, 15 Jun 2007 08:45:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Carlo Wood <carlo@alinoe.com>
+cc: Daniel Hazelton <dhazelton@enter.net>, Bernd Paysan <bernd.paysan@gmx.de>,
+       Theodore Tso <tytso@mit.edu>, Alexandre Oliva <aoliva@redhat.com>,
+       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615154200.GA17172@elte.hu>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706142246.57583.dhazelton@enter.net> <878xal2a0q.fsf@graviton.dyn.troilus.org> <200706150127.18069.dhazelton@enter.net> <87sl8tzaj1.fsf@graviton.dyn.troilus.org> <20070615124039.GB21120@elte.hu> <87fy4tz8dc.fsf@graviton.dyn.troilus.org> <20070615143003.GA8775@elte.hu> <87zm31xo3q.fsf@graviton.dyn.troilus.org>
+In-Reply-To: <20070615130254.GB11830@alinoe.com>
+Message-ID: <alpine.LFD.0.98.0706150830020.14121@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org>
+ <20070615052432.GC14911@thunk.org> <200706151202.13708.bernd.paysan@gmx.de>
+ <200706150633.51857.dhazelton@enter.net>
+ <20070615130254.GB11830@alinoe.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87zm31xo3q.fsf@graviton.dyn.troilus.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Michael Poole <mdpoole@troilus.org> wrote:
 
-> > I.e. you cannot just cleverly define "source code" to include 
-> > something unrelated and then pretend that it's all in one work. And 
-> > that's exactly what the GPLv3 does: it creatively defines the 
-> > hardware's key into the 'source code' of the software and then asks 
-> > for that to be provided _not_ because somehow the key derives from 
-> > the software (it clearly does not), but as a "compensation" for the 
-> > right to redistribute! I.e. it's trying to extend its scope to some 
-> > item that is not part of the software. See?
+On Fri, 15 Jun 2007, Carlo Wood wrote:
+
+> On Fri, Jun 15, 2007 at 06:33:51AM -0400, Daniel Hazelton wrote:
+> > Incorrect. Read section 9 of the GPLv2. It's pretty clear that the "any later 
+> > version" clause is optional. Whats more is that since the modern linux kernel 
+> > *IS* a "composite work" composed of Linus' original code with changes 
+> > contributed by other people - Linus retains copyright to the work as a whole. 
 > 
-> No.  The GPL does not care about the hardware's key, as I pointed out 
-> in the part of my email that you cut out.  The GPL cares about the key 
-> used to generate an integral part of the executable form of the GPLed 
-> work.  The executable does not function properly if it lacks that 
-> part. [...]
+> Huh - surely not to files added to the kernel that were written by
+> others from scratch!
 
-it is a false statement on your part that the executable "does not 
-function properly" if it lacks that part. Try it: take out the harddisk 
-from the Tivo (it's a bog standard IDE harddisk), put into a nice Linux 
-PC, mount it, modify a bit in the kernel image header and it will likely 
-still boot just fine on that PC.
+Actually, yes. Even to those - when they are part of "the whole".
 
-now if you put the harddisk back into the Tivo, the Tivo's bootloader 
-will refuse to run that modified kernel. So will it (and any Linux 
-bootloader) refuse to load the kernel if you corrupt the compressed 
-format and the gunzip function finds a CRC error. You cannot run 
-arbitrary binaries on hardware without knowing the properties of that 
-hardware. One such property of the hardware might be: "i only run 
-applications that use at most 500 MB of RAM" - because ... the hardware 
-might only have 512 MB of RAM. Another property of the hardware might 
-be: "i will only trust and run applications that match a given 
-signature". Dont buy that hardware if you dont like its inherent 
-limitations!
+I'm sorry, but I've learnt more about copyright law, and talked to more 
+lawyers about licensing that probably most of the rest of the people 
+involved in this discussion have *combined*.
 
-The modification the GPL talks about is about modification of the SOURCE 
-CODE. But if you have a new binary, you have no expectation of being 
-able to run that on a piece of hardware. It might or might not run. (for 
-example if you modified the software to include a 1 GB static array then 
-the software might not work on a system that has only 512 MB of RAM.)
+And yes, at least under US copyright law, and at least if you see Linux as 
+a "collective work" (which is arguably the most straightforward reading og 
+copyright law, but perhaps not the only one) I am actually the sole owner 
+of copyright in the *collective* work of the Linux kernel.
 
-go download the Tivo Linux kernel from:
+The way "collective works" work, there are two separate copyrights: there 
+is the copyright in the "separate contribution", which is vests ininitally 
+in the author of that contribution (unless he signs over his copyrights, 
+often by virtue of working for somebody else).
 
-  http://dynamic.tivo.com/linux/811/linux-2.4.tar.gz
+And then there is the copyright in the "collective work", which would be 
+me.
 
-modify and build it. Boot it on your general purpose PC. It will quite 
-likely work just fine!
+Of course, owning coyright in the "collective work" doesn't actually give 
+me complete control anyway. I cannot relicense things in ways that go 
+against the rules of the individual works. But in a very real sense, yes, 
+I actually do own a certain (*limited*) copyright over even the parts that 
+have not been explicitly signed over to me.
 
-	Ingo
+And yes, there are other potential ways to describe Linux, and in the end, 
+it doesn't really matter. Because the way the GPLv2 works, it makes it 
+clear that as long as a piece is a part of the whole, it has to be 
+licensed under the GPLv2 and nothing else.
+
+And btw, just to make you feel safe - I cannot do anything about that, 
+even if I *do* own the copyright in the collective, because of the 
+limitations on what that colletive work copyright implies (it says that I 
+have the right to reproduce and distribute, but I don't have the right to 
+*modify* except as given to me by the original author!)
+
+So don't worry. I *technically* have certain special rights, but I 
+practically speaking gave up most all of those rights by accepting code 
+from others under the GPLv2 - since in order to do that, I had to agree to 
+be bound by the GPLv2 license myself.
+
+> This is totally new to me - if this is true - I'd really like to be sure!
+
+It would be generally held to be true at least in the US, but it doesn't 
+really matter.
+
+> I always thought that it would be necessary to get signatures of each
+> and every contributor before you can change a license of a file.
+
+You are mostly correct. The "mostly" comes because I would not say "every 
+contributor", but would clarify it by saying "every copyright holder". The 
+difference? Not all contributions are necessarily copyrightable. If you 
+send in trivial one-liners, we will credit you for them, but that does not 
+automatically mean that you necessarily own copyright in something.
+
+But yes, somebody who wrote an original file (that has some artistic 
+expression, and isn't just a list of PCI ID's, for example) will be the 
+copyright owner in that file. Some *very* few people have actually sent me 
+paperwork to transfer the ownership of copyrights, but they seem to have 
+done that because they were just used to doing it with the FSF, and I 
+actually don't care. 
+
+				Linus
