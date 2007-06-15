@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXFOWiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbXFOWjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758090AbXFOWiw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 18:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXFOWin
+	id S1758352AbXFOWjv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 18:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbXFOWjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 18:38:43 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:45049 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755789AbXFOWil (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 18:38:41 -0400
-Message-ID: <467314E2.9010306@zytor.com>
-Date: Fri, 15 Jun 2007 15:38:26 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 15 Jun 2007 18:39:43 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47738 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755890AbXFOWjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 18:39:42 -0400
+From: Neil Brown <neilb@suse.de>
+To: Dan Williams <dan.j.williams@intel.com>
+Date: Sat, 16 Jun 2007 08:39:34 +1000
 MIME-Version: 1.0
-To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org>
-In-Reply-To: <46731169.2090002@hawkeye.stone.uk.eu.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18035.5414.680663.405523@notabene.brown>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: raid5: coding style cleanup / refactor
+In-Reply-To: message from Dan Williams on Tuesday June 12
+References: <1181670063.12913.5.camel@dwillia2-linux.ch.intel.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jack Stone wrote:
-> I hope I got the CC list right. Apologies to anyone in didn't include
-> and anyone I shouldn't have included.
-> 
-> The basic idea is to include an idea from VMS that seems to be quite
-> useful: version numbers for files.
-> 
-> The idea is that whenever you modify a file the system saves it to na
-> new copy leaving the old file intact. This could be a great advantage
-> from many view points:
-> 	1) it would be much easier to do package management as the old
-> 		version would be automatically saved for a package
-> 		management system to deal with.
-> 
-> 	2) backups would also be easier as all versions of a file
-> 		are automatically saved so it could be potentially very
-> 		useful for a company or the like.
-> 
 
-This is one of those things that seems like a good idea, but frequently
-ends up short.  Part of the problem is that "whenever you modify a file"
-is ill-defined, or rather, if you were to take the literal meaning of it
-you'd end up with an unmanageable number of revisions.
+Sorry for not getting to this soon...
 
-Furthermore, it turns out that often relationships between files are
-more important.
+On Tuesday June 12, dan.j.williams@intel.com wrote:
+> 
+> From: Dan Williams <dan.j.williams@intel.com>
+> 
+> Most of the raid5 code predates git so the coding style violations have
+> been present for a long time.  However, now that major new patches are
+> arriving, checkpatch.pl complains about these old violations.  Instead of
+> attempting to justify the warnings as "this is what raid5 used to do", this
+> patch brings the code in line with the current style.
 
-Thus, in the end it turns out that this stuff is better handled by
-explicit version-control systems (which require explicit operations to
-manage revisions) and atomic snapshots (for backup.)
+I general I would rather just fix things as they break.  i.e. when you
+change a line that violates the style, fix it then.
+And some of the changes you make, I don't like.  e.g. Everything
+inside parentheses should be to the right of the opening parenthesis.
 
-	-hpa
+> 
+> Note that this is more than a simple reformatting.  The majority of the
+> 80-column violations were in the handle_stripe5 and handle_stripe6
+> routines.  By introducing the 'stripe_head_state' and 'r6_state' objects
+> large portions of the logic could be moved to sub-routines, reclaiming a
+> column's worth of indentation.
+
+This refactoring, however, is a good idea.  We have some very deep
+functions in there and breaking them out is a good idea.  So a patch
+that just does this would be very welcome.
+
+> 
+> 'stripe_head_state' consumes all of the automatic variables that previously
+> stood alone in handle_stripe.  'r6_state' contains the handle_stripe6
+> specific variables like p_failed and q_failed.  
+> 
+> One of the nice side effects of the 'stripe_head_state' change is that it
+> allows for further reductions in code duplication between raid5 and raid6
+> (note: unfortunately the other 80-column violations hide the code
+> duplication-removal effect in the diffstat).  The following new routines
+> are shared between raid5 and raid6:
+> 
+> 	handle_completed_write_requests
+> 	handle_requests_to_failed_array
+> 	handle_stripe_expansion
+> 
+> Trivia:
+> * PRINTK and RAID5_DEBUG is replaced with pr_debug
+
+Good idea...  Am I asking too much to have separate things in separate
+patches?  It makes review easier.
+
+> * struct field comments moved to the top (kernel-doc format)
+
+I guess...  though moving the documentation away from the code means
+that it is less likely to be kept up-to-date.
+
+NeilBrown
