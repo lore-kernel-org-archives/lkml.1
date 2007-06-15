@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbXFOBwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbXFOByE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbXFOBwj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 21:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXFOBwc
+	id S1757272AbXFOByE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 21:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXFOBxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 21:52:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41791 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751662AbXFOBwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 21:52:32 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Chris Friesen <cfriesen@nortel.com>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Thu, 14 Jun 2007 21:53:55 -0400
+Received: from keil-draco.com ([216.193.185.50]:50361 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650AbXFOBxy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jun 2007 21:53:54 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alexandre Oliva <aoliva@redhat.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Thu, 14 Jun 2007 21:53:40 -0400
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr> <46718044.1040108@nortel.com>
-	<orodjicpt0.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706141848.55378.dhazelton@enter.net>
-	<or8xam87h1.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706141616530.14121@woody.linux-foundation.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 14 Jun 2007 22:51:39 -0300
-In-Reply-To: <alpine.LFD.0.98.0706141616530.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 14 Jun 2007 16\:31\:18 -0700 \(PDT\)")
-Message-ID: <orir9q6l3o.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+References: <466A3EC6.6030706@netone.net.tr> <alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org> <orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706142153.40879.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thursday 14 June 2007 18:35:01 Alexandre Oliva wrote:
+> On Jun 14, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > I want to be able to use other peoples improvements. If they release
+> > improved versions of the software I started, I want to be able to merge
+> > those improvements if I want to.
+>
+> Hmm...  So, if someone takes one of the many GPLv2+ contributions and
+> makes improvements under GPLv3+, you're going to make an effort to
+> accept them, rather than rejecting them because they're under the
+> GPLv3?
 
-> It's an addiction. I'm not proud.
+Doesn't matter at all. GPLv3 requires that any project incorporating GPLv3 
+code be licensed under the GPLv3. Linus is, as he has shown, intelligent 
+enough to know this. The *second* he actually accepted GPLv3 code into the 
+kernel it would either be "change the license or start getting lawsuits for 
+breach of the terms of the GPLv3".
 
-I guess this makes it two of us :-(
+> > Your *IDIOTIC* suggestion is explicitly against the whole POINT! By
+> > saying that I shouldn't accept contributions like that, you just
+> > INVALIDATED the whole point of the license in the first place!
+>
+> I understand.  I assumed you had some trust that people would abide by
+> your wish to permit TiVOization, and that authors of modifications
+> were entitled to make "whatever restrictions they wanted" on their
+> code.
+>
+> Pardon me if I think your position is at least somewhat incoherent.
+> Can you help me make sense of it?
 
-> They were basically forced to add lockdown by the content vendors.
+You are making a distinction between "part" and "whole". When separate from 
+the kernel the code can have whatever restrictions the creator pleases. If he 
+has said "I want this in the "official" Linux Kernel" (ie: I want this in 
+Linus' Linux Kernel source tree) then the creator of the code has stated a 
+willingness to abide by Linus' decision about the whole work.
 
-They can do that.  They will still be able to do that with v3.
+It's a moot point, though. The Linux Kernel is licensed under GPLv2, which 
+means that *all* code in it has to be under the same license *and* that no 
+code in it can have any restrictions *NOT* in the GPLv2.
 
-All they have to do is to throw away the keys that enable themselves
-to modify the code further.
-
-> For example, I'd rather have some GPLv2'd DVD player software that does 
-> *not* come with a de-css key
-
-libdvdread and libdvdcss are separate packages.
-
-> So the GPLv3 actually _hinders_ people who might otherwise help the 
-> community from helping, by making the license so strict that those people 
-> (who are nice people, but have their options limited by stupid laws and 
-> regulations) cannot use the GPLv3.
-
-Just like v2 hinders their many customers.
-
-Are you so sure v2 is better in this regard?
+DRH
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
