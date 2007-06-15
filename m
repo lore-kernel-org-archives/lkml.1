@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbXFOStT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbXFOStf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbXFOStT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 14:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXFOStL
+	id S1754147AbXFOStf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 14:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbXFOSt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 14:49:11 -0400
-Received: from mga02.intel.com ([134.134.136.20]:63773 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751204AbXFOStJ convert rfc822-to-8bit (ORCPT
+	Fri, 15 Jun 2007 14:49:26 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50858 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753030AbXFOStZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 14:49:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,425,1175497200"; 
-   d="scan'208";a="255013831"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 15 Jun 2007 14:49:25 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 14:49:11 -0400
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <64689.192.54.193.51.1181901773.squirrel@rousalka.dyndns.org> <49716.192.54.193.51.1181907922.squirrel@rousalka.dyndns.org>
+In-Reply-To: <49716.192.54.193.51.1181907922.squirrel@rousalka.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [patch 0/3] no MAX_ARG_PAGES -v2
-Date: Fri, 15 Jun 2007 11:49:04 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A01B3467D@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <65dd6fd50706151107v784a252aw89a128f255304ef6@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 0/3] no MAX_ARG_PAGES -v2
-Thread-Index: AceveAn0dHynRu3bQ0iyVcC4/WynGwABSwPg
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Ollie Wild" <aaw@google.com>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Cc: <linux-kernel@vger.kernel.org>, <parisc-linux@lists.parisc-linux.org>,
-       <linux-mm@kvack.org>, <linux-arch@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>
-X-OriginalArrivalTime: 15 Jun 2007 18:49:04.0952 (UTC) FILETIME=[D8FC1380:01C7AF7D]
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706151449.12068.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > >   A good heuristic, though, might be to limit
-> > > argument size to a percentage (say 25%) of maximum stack size and
-> > > validate this inside copy_strings().
-> >
-> > This seems to do:
+On Friday 15 June 2007 07:45:22 Nicolas Mailhot wrote:
+> > And, as I've taken the time to explain to you, lacking any clear
+> > statement, written at the exact same time as the license, a
 >
-> Looks good.
+> statement of
+>
+> > intent or spirit cannot have any real legal weight when the text of a
+> > license is finally decided upon.
+>
+> Fortunately the Law recognizes humans are not computers, natural
+> langage is not unambiguous binary code, so statements of intent *have*
+> legal value when a legal text is open to interpretations.
+>
+> That's why ten-line law paragraphs are published with the hundreds of
+> pages of parliamentary discussions on them, which the judge will
+> consider if there's any doubt in his mind.
 
-Me too.  As I increase the number of arguments, I now have
-a smooth cutover from "works" to "Arg list too long", without
-the in between zone where the process is killed.
+You've just made my point for me.
 
-The IA-32 compatability exec path is now working too (I didn't
-stress it too hard, but I did try argument lists up to a megabyte).
+Those "Hundreds of pages of parliamentary discussions" are *exactly* because 
+the intent of the law is being made *clear* at the same time the law is being 
+written. If the GPL is intended to cover situation like tivoization it isn't 
+made clear by the preamble at all - and the fact that the GPL, in version 2, 
+at least, *specifically* limits its scope to *THREE* "activities" also 
+creates a problem for your argument.
 
-Acked-by: Tony Luck <tony.luck@intel.com>
+To quote: "Activities other than copying, distribution and modification are 
+not covered by this License; they are outside its scope."
+
+To try and claim that it is the *INTENT* or the *SPIRIT* of a piece of legal 
+text that contains such specific limiting text is idiotic. I may not be a 
+lawyer - hell, I may not have a degree of any kind - but I do know that a 
+clear and unambiguous statement like that can't be argued to mean anything 
+different *without* twisting the meaning of - or giving extra meaning to - 
+some of the words.
+
+DRH
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
