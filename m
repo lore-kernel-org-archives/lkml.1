@@ -1,88 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbXFOOur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbXFOOvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbXFOOur (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 10:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbXFOOtL
+	id S1756097AbXFOOvE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 10:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbXFOOtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 10:49:11 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:40999 "EHLO relay.sw.ru"
+	Fri, 15 Jun 2007 10:49:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:34377 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753596AbXFOOtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 10:49:04 -0400
-Subject: Re: [PATCH] diskquota: 32bit quota tools on 64bit architectures
-From: Vasily Tarasov <vtaras@openvz.org>
-Reply-To: vtaras@openvz.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, akpm@linux-foundation.org, dev@sw.ru,
-       devel@openvz.org, jack@suse.cz, linux-kernel@vger.kernel.org,
-       nataliep@google.com, vvs@sw.ru
-In-Reply-To: <200706151243.02186.arnd@arndb.de>
-References: <200706151003.l5FA3vd6008194@harpo.it.uu.se>
-	 <200706151243.02186.arnd@arndb.de>
-Content-Type: text/plain
-Organization: OpenVZ community
-Date: Fri, 15 Jun 2007 18:48:02 +0400
-Message-Id: <1181918882.3241.48.camel@dhcp0-149.sw.ru>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.0.1.el5) 
-Content-Transfer-Encoding: 7bit
+	id S1754054AbXFOOtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 10:49:07 -0400
+Message-Id: <20070615005012.806180753@goop.org>
+References: <20070615004818.424726597@goop.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 14 Jun 2007 17:48:20 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>,
+       v12n <virtualization@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Xen-Devel <xen-devel@lists.xensource.com>
+Subject: [PATCH 02/10] allow linux/elf.h to be included in assembler
+Content-Disposition: inline; filename=asm-elf_h.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 12:43 +0200, Arnd Bergmann wrote:
-> On Friday 15 June 2007, Mikael Pettersson wrote:
-> > > --- linux-2.6.22-rc4-fixed/fs/quota.c.orig    2007-06-14 15:55:26.000000000 +0400
-> > > +++ linux-2.6.22-rc4-fixed/fs/quota.c 2007-06-14 19:50:13.000000000 +0400
-> > ...
-> > > +#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
-> > > +/*
-> > > + * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
-> > > + * and is necessary due to alignment problems.
-> > > + */
-> > 
-> > The #ifdef looks way too arch-specific. And isn't there a shared
-> > compat.c module somewhere that this should go into?
-> > 
-> 
-> Only x86_64 and ia64 have this particular problem, the other architectures,
-> and hopefully all future 64 bit platforms with 32 bit user space use
-> the same alignment rules in elf32 and elf64.
-> 
-> Still, the patch should be converted to use the compat_u64 type and not
-> add an 'attribute((packed))' so that you _can_ use the same code on all
-> architectures. See my 'Introduce compat_u64 and compat_s64 types' patch
-> that I just posted in another thread.
-> 
-> 	Arnd <><
-> 
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-Hello, 
+---
+ include/linux/elf.h |   24 +++++++++++++++++++-----
+ 1 file changed, 19 insertions(+), 5 deletions(-)
 
-I just noticed that we can not avoid the addition of packed attribute.
-Look, for example:
+===================================================================
+--- a/include/linux/elf.h
++++ b/include/linux/elf.h
+@@ -1,9 +1,10 @@
+ #ifndef _LINUX_ELF_H
+ #define _LINUX_ELF_H
+ 
++#include <linux/elf-em.h>
++#ifndef __ASSEMBLY__
+ #include <linux/types.h>
+ #include <linux/auxvec.h>
+-#include <linux/elf-em.h>
+ #include <asm/elf.h>
+ 
+ struct file;
+@@ -31,6 +32,7 @@ typedef __u32	Elf64_Word;
+ typedef __u32	Elf64_Word;
+ typedef __u64	Elf64_Xword;
+ typedef __s64	Elf64_Sxword;
++#endif	/* __ASSEMBLY__ */
+ 
+ /* These constants are for the segment types stored in the image headers */
+ #define PT_NULL    0
+@@ -123,6 +125,7 @@ typedef __s64	Elf64_Sxword;
+ #define ELF64_ST_BIND(x)	ELF_ST_BIND(x)
+ #define ELF64_ST_TYPE(x)	ELF_ST_TYPE(x)
+ 
++#ifndef __ASSEMBLY__
+ typedef struct dynamic{
+   Elf32_Sword d_tag;
+   union{
+@@ -138,6 +141,7 @@ typedef struct {
+     Elf64_Addr d_ptr;
+   } d_un;
+ } Elf64_Dyn;
++#endif	/* __ASSEMBLY__ */
+ 
+ /* The following are used with relocations */
+ #define ELF32_R_SYM(x) ((x) >> 8)
+@@ -146,6 +150,7 @@ typedef struct {
+ #define ELF64_R_SYM(i)			((i) >> 32)
+ #define ELF64_R_TYPE(i)			((i) & 0xffffffff)
+ 
++#ifndef __ASSEMBLY__
+ typedef struct elf32_rel {
+   Elf32_Addr	r_offset;
+   Elf32_Word	r_info;
+@@ -185,11 +190,12 @@ typedef struct elf64_sym {
+   Elf64_Addr st_value;		/* Value of the symbol */
+   Elf64_Xword st_size;		/* Associated symbol size */
+ } Elf64_Sym;
+-
++#endif	/* __ASSEMBLY__ */
+ 
+ #define EI_NIDENT	16
+ 
+-typedef struct elf32_hdr{
++#ifndef __ASSEMBLY__
++typedef struct elf32_hdr {
+   unsigned char	e_ident[EI_NIDENT];
+   Elf32_Half	e_type;
+   Elf32_Half	e_machine;
+@@ -222,6 +228,7 @@ typedef struct elf64_hdr {
+   Elf64_Half e_shnum;
+   Elf64_Half e_shstrndx;
+ } Elf64_Ehdr;
++#endif	/* __ASSEMBLY__ */
+ 
+ /* These constants define the permissions on sections in the program
+    header, p_flags. */
+@@ -229,7 +236,8 @@ typedef struct elf64_hdr {
+ #define PF_W		0x2
+ #define PF_X		0x1
+ 
+-typedef struct elf32_phdr{
++#ifndef __ASSEMBLY__
++typedef struct elf32_phdr {
+   Elf32_Word	p_type;
+   Elf32_Off	p_offset;
+   Elf32_Addr	p_vaddr;
+@@ -250,6 +258,7 @@ typedef struct elf64_phdr {
+   Elf64_Xword p_memsz;		/* Segment size in memory */
+   Elf64_Xword p_align;		/* Segment alignment, file & memory */
+ } Elf64_Phdr;
++#endif	/* __ASSEMBLY__ */
+ 
+ /* sh_type */
+ #define SHT_NULL	0
+@@ -284,7 +293,8 @@ typedef struct elf64_phdr {
+ #define SHN_ABS		0xfff1
+ #define SHN_COMMON	0xfff2
+ #define SHN_HIRESERVE	0xffff
+- 
++
++#ifndef __ASSEMBLY__
+ typedef struct {
+   Elf32_Word	sh_name;
+   Elf32_Word	sh_type;
+@@ -310,6 +320,7 @@ typedef struct elf64_shdr {
+   Elf64_Xword sh_addralign;	/* Section alignment */
+   Elf64_Xword sh_entsize;	/* Entry size if section holds table */
+ } Elf64_Shdr;
++#endif	/* __ASSEMBLY__ */
+ 
+ #define	EI_MAG0		0		/* e_ident[] indexes */
+ #define	EI_MAG1		1
+@@ -343,6 +354,7 @@ typedef struct elf64_shdr {
+ 
+ #define ELFOSABI_NONE	0
+ #define ELFOSABI_LINUX	3
++#define ELFOSABI_STANDALONE	255
+ 
+ #ifndef ELF_OSABI
+ #define ELF_OSABI ELFOSABI_NONE
+@@ -357,6 +369,7 @@ typedef struct elf64_shdr {
+ #define NT_PRXFPREG     0x46e62b7f      /* copied from gdb5.1/include/elf/common.h */
+ 
+ 
++#ifndef __ASSEMBLY__
+ /* Note header in a PT_NOTE section */
+ typedef struct elf32_note {
+   Elf32_Word	n_namesz;	/* Name size */
+@@ -396,5 +409,6 @@ static inline void arch_write_notes(stru
+ #define ELF_CORE_EXTRA_NOTES_SIZE arch_notes_size()
+ #define ELF_CORE_WRITE_EXTRA_NOTES arch_write_notes(file)
+ #endif /* ARCH_HAVE_EXTRA_ELF_NOTES */
++#endif	/* __ASSEMBLY__ */
+ 
+ #endif /* _LINUX_ELF_H */
 
-struct if_dqblk {
-        __u64 dqb_bhardlimit; 
-        __u64 dqb_bsoftlimit;
-        __u64 dqb_curspace;
-        __u64 dqb_ihardlimit;
-        __u64 dqb_isoftlimit;
-        __u64 dqb_curinodes; 
-        __u64 dqb_btime;
-        __u64 dqb_itime;
-        __u32 dqb_valid;
-};
-
-sizeof(if_dqblk) = 0x48
-On 32 bit: 0x44
-
-If I replace __u64/__u32 with compat equivalents - it will not help!
-alligned attribute can _only_ _increase_ the size of structure, but not
-decrease it.
-
-So we should use packed or just use the array of ints: int[2].
-
-Vasily
-
-
+-- 
 
