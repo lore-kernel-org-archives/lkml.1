@@ -1,118 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbXFOVst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbXFOVtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086AbXFOVst (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 17:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758762AbXFOVsg
+	id S1758907AbXFOVtd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 17:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbXFOVtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 17:48:36 -0400
-Received: from keil-draco.com ([216.193.185.50]:50623 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758429AbXFOVse (ORCPT
+	Fri, 15 Jun 2007 17:49:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:42253 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756326AbXFOVtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 17:48:34 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 17:48:18 -0400
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <466A3EC6.6030706@netone.net.tr> <200706150114.28068.dhazelton@enter.net> <orfy4tyog0.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orfy4tyog0.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Fri, 15 Jun 2007 17:49:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=DrBkQ+akJPN/2Ot9d1c1nGRuaxLSUGA8LG4oFkqYkfE/bh/cLdFV5RFzXVpGh6KIlkoVxHTgRX23LTljsuv+IVqlWPlTxPMhtqQiwTRoNKYO2FVbNlcsecAwLQyVFg0Isznc/EuYWxqVGg7dXzZdG9YNgnnvJTSvhQ5vl05TUzM=
+Date: Fri, 15 Jun 2007 23:49:15 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [BUG] Oops with KVM-27
+Message-ID: <20070615214915.GA10536@dreamland.darkstar.lan>
+Mail-Followup-To: Avi Kivity <avi@qumranet.com>,
+	kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <68676e00706101354n5fe7e1a9y12cb690cae2924e3@mail.gmail.com> <466CFD6D.2080201@qumranet.com> <20070612175246.GA5864@dreamland.darkstar.lan> <466FB1ED.3090905@qumranet.com> <20070613204948.GA14710@dreamland.darkstar.lan> <4670FBB5.70707@qumranet.com> <20070614225324.GA4088@dreamland.darkstar.lan> <20070614231359.GA5705@dreamland.darkstar.lan> <68676e00706141627s3cb87391sa0ee6711d2f7933f@mail.gmail.com> <467256AA.1040001@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706151748.19231.dhazelton@enter.net>
+In-Reply-To: <467256AA.1040001@qumranet.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007 16:04:15 Alexandre Oliva wrote:
-> On Jun 15, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Thursday 14 June 2007 23:39:50 Alexandre Oliva wrote:
-> >> On Jun 14, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> >> > You're making an artificial distinction based on whether the
-> >> > *SOFTWARE* has a certain license or not.
-> >>
-> >> What matters to me is that, when the GPL says you can't impose further
-> >> restrictions, then you can't, no matter how convoluted your argument
-> >> is
+Il Fri, Jun 15, 2007 at 12:06:50PM +0300, Avi Kivity ha scritto: 
+> > After a bit of thinking: it's correct but removes an optimization;
+> > furthermore it may miss other instructions that write to memory mapped
+> > areas.
+> > A more proper fix should be "force the writeback if dst.ptr is in some
+> > kind of mmio area".
 > >
-> > Convoluted? Not in the least.
->
-> I didn't say your arguments were convoluted, and I know I didn't mean
-> to say that.  But I've heard enough arguments about excuses to escape
-> the obligations of the GPL (and other licenses and obligations, FWIW)
-> to know that such arguments can get very convoluted.
->
-> That said, I was actually trying to quote Eben Moglen, who once spoke
-> about this, but the word he used was "elaborate", not "convoluted".
-> Unfortunately, the right word escaped me ATM.
+> 
+> I think we can just disable the optimization, and (in a separate patch)
+> add it back in emulator_write_phys(), where we know we're modifying
+> memory and not hitting mmio.
 
-Thanks for the clarification.
+Problem is that in emulator_write_phys() we've already lost track of the
+previous (dst.orig_val) value. I moved up the decision in
+cmpxchg_emulated; unfortunately this means that the non-locked write
+path (write_emulated) can't do this optimization, unless I change its
+signature to include the old value.
 
-> >> > If the intent of a law (or license) is to do A but it doesn't say
-> >> > that, then how is the intent to be known?  Your answer: Ask the
-> >> > author.
-> >>
-> >> No, you interpret based on what the author wrote then.
-> >
-> > Really? Well I must say I'm surprised at the sudden change of heart. I
-> > have several mails here in which you have either said "You ask the
-> > author" or that line has been quoted.
->
-> It's no change.  You interpret what's there.  If it's clear, good.  If
-> there's a dispute, you have to ask the author, only s/he knows what
-> s/he meant.  It's really that simple.
+The first patch makes the writeback step uncoditional whenever we have a
+destination operand (the mov check (d & Mov) may be superfluous, yes?).
+The write-to-registry path still has the optimization that skips the
+write if possible.
 
-And as I have hopefully given good proof for, asking the author is not a good 
-solution. The author can change their mind about their intent at any point in 
-time - even during the process of writing the license.
 
-> > Show me where in the preamble that this issue of "it must run on any
-> > given piece of hardware"
->
-> Why is the burden of the proof on me?
->
-> You show me where it says "one may impose restrictions on what
-> particupar pieces of hardware the program can run", to override the
-> general spirit of "passing on all the rights one has".
+--- a/kernel/x86_emulate.c	2007-06-15 21:13:51.000000000 +0200
++++ b/kernel/x86_emulate.c	2007-06-15 22:12:15.000000000 +0200
+@@ -1057,9 +1057,8 @@
+ 	}
+ 
+ writeback:
+-	if ((d & Mov) || (dst.orig_val != dst.val)) {
+-		switch (dst.type) {
+-		case OP_REG:
++	if ((d & Mov) || (d & DstMask) == DstMem || (d & DstMask) == DstReg ) {
++		if (dst.type == OP_REG && dst.orig_val != dst.val) {
+ 			/* The 4-byte case *is* correct: in 64-bit mode we zero-extend. */
+ 			switch (dst.bytes) {
+ 			case 1:
+@@ -1075,8 +1074,10 @@
+ 				*dst.ptr = dst.val;
+ 				break;
+ 			}
+-			break;
+-		case OP_MEM:
++		} else if (dst.type == OP_MEM) {
++			/* Always dispatch the write, since it may hit a
++			 * MMIO area.
++			 */
+ 			if (lock_prefix)
+ 				rc = ops->cmpxchg_emulated((unsigned long)dst.
+ 							   ptr, &dst.orig_val,
+@@ -1088,8 +1089,6 @@
+ 							 ctxt);
+ 			if (rc != 0)
+ 				goto done;
+-		default:
+-			break;
+ 		}
+ 	}
+ 
 
-It's "pass on all rights granted under this license". If I had to pass on "all 
-rights I have" I'd have to pass on my right to change the license on my code. 
-Since that isn't a right I'm obligated to pass on - and you could never 
-convice me it is - I'm not "passing on all the rights I have" at *all*.
+Next one: I've splitted emulator_write_phys into emulator_write_phys_mem
+(for normal RAM) and emulator_write_phys_mmio (for the rest). The
+cmpxchg code path is roughly:
 
-> > (And, by the way, if the FSF decided to release a GPLv4 that had an
-> > active section that said "You must turn over all copyright rights to a
-> > work released under this license to the FSF" it wouldn't "break spirit"
-> > with the GPL (v2 or v3).
->
-> Can't.  These terms wouldn't apply to the copyright holder (the only
-> person who could make the transfer), only to licensees.
+if (!mapped)
+        page_fault();
 
-It's part of the preamble, in which the "We" refers to the FSF. If the 
-preamble determines the "intent" and "spirit" of the license, then part of 
-the "intent" and "spirit" of the license is collective aggregation of all 
-copyright rights to all software released under the GPL by the FSF.
+page = gfn_to_page(...)
+if (page) {
+        if (!memcmp(old, new))
+                return X86EMUL_CONTINUE;
 
-> > If "tivoization" was against the spirit, then all that would have been
-> > needed was one extra clause clearly explaining that. Instead there are
-> > more than 6 extra sections in the GPLv3.
->
-> Erhm...  How did you get the (completely flawed, BTW) impression that
-> tivoization was all GPLv3 was about?
+        write_mem();
+        retrun X86EMUL_CONTINUE;
+}
+/* for mmio always do the write */
+write_mmio();
 
-I've looked through the GPLv3 and "tivoization" and DRM are the only things 
-that are functionally different. In reading the GPLv3 *again* today I got the 
-impression that there are more restrictions than grants of rights.
+I'm a bit confused about this test, found in emulator_write_phys
+(original code):
 
-DRH
+if (((gpa + bytes - 1) >> PAGE_SHIFT) != (gpa >> PAGE_SHIFT))
+        return 0;
 
+AFAICT is makes the emulator skip the write if the modified area spans
+across two different (physical) pages. When this happens write_emulated
+does a MMIO write. I'd expect the function to load the 2 pages and do the
+memory write on both instead.
+I've preserved this logic in the following patch, but I don't understand
+why it's correct :|
+
+--- a/kernel/kvm_main.c	2007-06-15 21:18:08.000000000 +0200
++++ b/kernel/kvm_main.c	2007-06-15 23:34:13.000000000 +0200
+@@ -1125,26 +1125,39 @@
+ 	}
+ }
+ 
+-static int emulator_write_phys(struct kvm_vcpu *vcpu, gpa_t gpa,
+-			       const void *val, int bytes)
++static int emulator_write_phys_mem(struct kvm_vcpu *vcpu, gpa_t gpa,
++				   struct page *page, const void *val,
++				   int bytes)
+ {
+-	struct page *page;
+ 	void *virt;
+-	unsigned offset = offset_in_page(gpa);
++	unsigned int offset;
++
++	offset = offset_in_page(gpa);
+ 
+ 	if (((gpa + bytes - 1) >> PAGE_SHIFT) != (gpa >> PAGE_SHIFT))
+ 		return 0;
+-	page = gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
+-	if (!page)
+-		return 0;
++
+ 	mark_page_dirty(vcpu->kvm, gpa >> PAGE_SHIFT);
+ 	virt = kmap_atomic(page, KM_USER0);
+ 	kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
+ 	memcpy(virt + offset_in_page(gpa), val, bytes);
+ 	kunmap_atomic(virt, KM_USER0);
++
+ 	return 1;
+ }
+ 
++static int emulator_write_phys_mmio(struct kvm_vcpu *vcpu, gpa_t gpa,
++				    const void *val, int bytes)
++{
++	vcpu->mmio_needed = 1;
++	vcpu->mmio_phys_addr = gpa;
++	vcpu->mmio_size = bytes;
++	vcpu->mmio_is_write = 1;
++	memcpy(vcpu->mmio_data, val, bytes);
++
++	return 0;
++}
++
+ static int emulator_write_emulated(unsigned long addr,
+ 				   const void *val,
+ 				   unsigned int bytes,
+@@ -1152,20 +1165,18 @@
+ {
+ 	struct kvm_vcpu *vcpu = ctxt->vcpu;
+ 	gpa_t gpa = vcpu->mmu.gva_to_gpa(vcpu, addr);
++	struct page *page;
+ 
+ 	if (gpa == UNMAPPED_GVA) {
+ 		kvm_arch_ops->inject_page_fault(vcpu, addr, 2);
+ 		return X86EMUL_PROPAGATE_FAULT;
+ 	}
+ 
+-	if (emulator_write_phys(vcpu, gpa, val, bytes))
++	page = gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
++	if (page && emulator_write_phys_mem(vcpu, gpa, page, val, bytes))
+ 		return X86EMUL_CONTINUE;
+ 
+-	vcpu->mmio_needed = 1;
+-	vcpu->mmio_phys_addr = gpa;
+-	vcpu->mmio_size = bytes;
+-	vcpu->mmio_is_write = 1;
+-	memcpy(vcpu->mmio_data, val, bytes);
++	emulator_write_phys_mmio(vcpu, gpa, val, bytes);
+ 
+ 	return X86EMUL_CONTINUE;
+ }
+@@ -1177,12 +1188,37 @@
+ 				     struct x86_emulate_ctxt *ctxt)
+ {
+ 	static int reported;
++	struct kvm_vcpu *vcpu;
++	gpa_t gpa;
++	struct page *page;
+ 
+ 	if (!reported) {
+ 		reported = 1;
+ 		printk(KERN_WARNING "kvm: emulating exchange as write\n");
+ 	}
+-	return emulator_write_emulated(addr, new, bytes, ctxt);
++
++	vcpu = ctxt->vcpu;
++	gpa = vcpu->mmu.gva_to_gpa(vcpu, addr);
++
++	if (gpa == UNMAPPED_GVA) {
++		kvm_arch_ops->inject_page_fault(vcpu, addr, 2);
++		return X86EMUL_PROPAGATE_FAULT;
++	}
++
++	page = gfn_to_page(vcpu->kvm, gpa >> PAGE_SHIFT);
++	if (page) {
++		/* Regular memory */
++		if (!memcmp(old, new, bytes))
++			return X86EMUL_CONTINUE;
++
++		if (emulator_write_phys_mem(vcpu, gpa, page, new, bytes))
++			return X86EMUL_CONTINUE;
++	}
++
++	/* MMIO */
++	emulator_write_phys_mmio(vcpu, gpa, new, bytes);
++
++	return X86EMUL_CONTINUE;
+ }
+ 
+ static unsigned long get_segment_base(struct kvm_vcpu *vcpu, int seg)
+
+
+Both patches apply to kvm-28 and have been run-time tested with 32bit
+guest on 32bit host, with a VMX processor.
+
+If patches look good I'll resubmit with proper changelog and
+signed-off.
+
+Luca
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+The trouble with computers is that they do what you tell them, 
+not what you want.
+D. Cohen
