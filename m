@@ -1,69 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbXFOPxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbXFOPzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbXFOPxt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbXFOPxl
+	id S1756228AbXFOPzm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXFOPze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:53:41 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:8087 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753751AbXFOPxj (ORCPT
+	Fri, 15 Jun 2007 11:55:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:54516 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754021AbXFOPzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:53:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Luowi4rNdCw7X15pMu7S6SvGCzJS6FPHujyBpR+1s/DaPIavL+3xNj21NOi3S6dxNH35icbV/EDosiHjeZ9OIDox1XVQxD+ZsmMloMyprlWKNOo5OyFEyjDxTXlNXCktkRviuxrzsr9KWosjk7qLASAlZOP2cwimZowC9gUuKR4=
-Message-ID: <4672B5F6.706@gmail.com>
-Date: Fri, 15 Jun 2007 11:53:26 -0400
-From: Florin Malita <fmalita@gmail.com>
-User-Agent: Thunderbird 2.0b2 (X11/20070116)
+	Fri, 15 Jun 2007 11:55:33 -0400
+From: Olaf Dietsche <olaf+list.linux-acpi@olafdietsche.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22-rc3][ACPI?] Resume from s2r doesn't work.
+References: <878xb35sje.fsf@goat.bogus.local> <20070612153102.GD5986@ucw.cz>
+	<87fy4vmxva.fsf@goat.bogus.local> <20070614195659.GE9442@ucw.cz>
+Date: Fri, 15 Jun 2007 17:55:29 +0200
+In-Reply-To: <20070614195659.GE9442@ucw.cz> (Pavel Machek's message of "Thu,
+	14 Jun 2007 19:56:59 +0000")
+Message-ID: <87myz16wlq.fsf@goat.bogus.local>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-To: Michael Poole <mdpoole@troilus.org>
-CC: Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>	<200706142246.57583.dhazelton@enter.net>	<878xal2a0q.fsf@graviton.dyn.troilus.org>	<200706150127.18069.dhazelton@enter.net>	<87sl8tzaj1.fsf@graviton.dyn.troilus.org>	<20070615124039.GB21120@elte.hu>	<87fy4tz8dc.fsf@graviton.dyn.troilus.org>	<20070615143003.GA8775@elte.hu> <87zm31xo3q.fsf@graviton.dyn.troilus.org>
-In-Reply-To: <87zm31xo3q.fsf@graviton.dyn.troilus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX1+HdHdzvHXYGEYSPvrqPXxoZI6vjSeTwbKj2YQ
+ a7tMCHhba83P6rSpYOcO2xPtkzHlhSkFtjmDrAJDX/8RW2W2JS
+ Z5/Jjl4GUCjiknCbaXcZg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/15/2007 10:56 AM, Michael Poole wrote:
-> The GPL cares about the key
-> used to generate an integral part of the executable form of the GPLed
-> work.  
+Pavel Machek <pavel@ucw.cz> writes:
 
-GLPv2 doesn't: why do you think the digital signature is an integral 
-part of the executable? It can be a totally separate blob, distributed 
-via a separate channel and even stored at a different location than the 
-executable. Does it still look like an integral part of the executable 
-to you then?
+> noapic/nolapic will not help with video issue. try s2ram from
+> suspend.sf.net.
 
-(unless of course you're trying to argue that the hash itself is a 
-derivative work, but that has already been refuted many times before.)
+I already tried s2ram, no improvement so far.
 
-> The executable does not function properly if it lacks that
-> part.
-
-It works just fine given the right environment. The right environment 
-may be some other hardware (without DRM restrictions) or the DRMed 
-device + an authorized digital signature. The digital signature is not 
-part of your executable.
-
-Do you honestly believe GPLv2 requires the distributor to provide you 
-with the right environment for your modified copy to "function 
-properly"? I would say it doesn't, but feel free to point me to specific 
-sections which *state* otherwise. AFAICT, GPLv2 is specifically limited 
-to "copying, distribution and modification". How you use (or don't use, 
-or can't use) your modified copy is totally outside its scope.
-
----
-fm
-
+Regards, Olaf.
