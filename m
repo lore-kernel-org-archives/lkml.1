@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbXFONMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbXFONNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbXFONMR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 09:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXFONMD
+	id S1756143AbXFONNK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 09:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbXFONM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 09:12:03 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:40984 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754241AbXFONMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 09:12:01 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [2.6.22-rc4] kexec failed: invalid argument
-Date: Fri, 15 Jun 2007 16:10:58 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, horms@verge.net.au
-References: <200706142109.46027.caglar@pardus.org.tr> <m1hcpanlkw.fsf@ebiederm.dsl.xmission.com> <200706151150.19605.caglar@pardus.org.tr>
-In-Reply-To: <200706151150.19605.caglar@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart8044712.EHKf5oBSap";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 15 Jun 2007 09:12:58 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:53458 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753670AbXFONM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 09:12:57 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070615125837.GA25654@elte.hu>
+References: <466A3EC6.6030706@netone.net.tr>
+	 <200706131946.15714.dhazelton@enter.net>
+	 <20070614021619.381331dc@the-village.bc.nu>
+	 <200706132129.52736.dhazelton@enter.net>
+	 <1181859896.5211.38.camel@shinybook.infradead.org>
+	 <20070615114921.GC6269@elte.hu>
+	 <1181908678.25228.448.camel@pmac.infradead.org>
+	 <20070615122921.GA21120@elte.hu>
+	 <1181910994.25228.468.camel@pmac.infradead.org>
+	 <20070615125837.GA25654@elte.hu>
+Content-Type: text/plain
+Date: Fri, 15 Jun 2007 14:12:43 +0100
+Message-Id: <1181913163.25228.507.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706151611.01166.caglar@pardus.org.tr>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart8044712.EHKf5oBSap
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 2007-06-15 at 14:58 +0200, Ingo Molnar wrote:
+> * David Woodhouse <dwmw2@infradead.org> wrote:
+> 
+> > If even linking was considered 'mere aggregation on a volume of a 
+> > storage or distribution medium', then when would the 'But when you 
+> > distribute those same sections as part of a whole...' bit _ever_ 
+> > apply? It _explicitly_ talks of sections which are independent and 
+> > separate works in their own right, but which must be licensed under 
+> > the GPL when they're distributed as part of a larger whole.
+> >
+> > I don't see how we could hold the view that _even_ linking is 'mere 
+> > aggregation on a volume of a storage or distribution medium', without 
+> > conveniently either ignoring entire paragraphs of the GPL or declaring 
+> > them to be entirely meaningless.
+> 
+> as long as it's not distributed in one collective work, where is the 
+> problem?
 
-15 Haz 2007 Cum tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 yazm=
-=C4=B1=C5=9Ft=C4=B1:=20
-> 15 Haz 2007 Cum tarihinde, Eric W. Biederman =C5=9Funlar=C4=B1 yazm=C4=B1=
-=C5=9Ft=C4=B1:
-> > Sight unseen I'm guessing that you have a kexec aware distro that is
-> > doing something in the runlevel change scripts and thus unloading the
-> > kernel. What do: /sys/kernel/kexec_loaded and
-> > /sys/kernel/kexec_crash_loaded say?
->
-> Not sure, here is the pseudo output what our init system does;
->
-> - Stop running services
-> - Save random seed, sync clock
-> - Unmount mounted fs's (this includes proc/sysfs etc.)
-> - Call kexec -e
-> - Call reboot
+As long as it's not distributed "as part of a whole which is a work
+based on the Program", there's no problem.
 
-Heh, i found a problem in our init system and after solving that issue kexe=
-c=20
-starts to works fine :), thanks for the tip!
+You seem to be suggesting that even linking the Program together with
+other stuff doesn't create a 'work based on the Program'. You seem claim
+it's "mere aggregation on a volume of a storage or distribution medium".
+Am I understanding you correctly?
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+Is there _anything_ which you admit would actually constitute a 'work
+based on the Program', when that work wouldn't have been be a derived
+work anyway? Or do you claim that those whole paragraphs of the GPL are
+just meaningless drivel, when they explicitly make reference to applying
+the GPL to works which would _normally_ be 'considered independent and
+separate works in themselves'?
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
+If your interpretation of the GPL means that those paragraphs don't make
+any sense at all, then I feel your interpretation may be suspect.
 
---nextPart8044712.EHKf5oBSap
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+-- 
+dwmw2
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGco/ly7E6i0LKo6YRAmC8AJ9kAueUVEJpBAQj/FvEOH4SWNilpgCgneR7
-ufgLtfrG2r9rRPUKIT4Jtcc=
-=ELvN
------END PGP SIGNATURE-----
-
---nextPart8044712.EHKf5oBSap--
