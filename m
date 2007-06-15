@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbXFOXkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbXFOXkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbXFOXkV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 19:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbXFOXkG
+	id S1758934AbXFOXkr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 19:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbXFOXkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 19:40:06 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40953 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752686AbXFOXkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 19:40:04 -0400
-Date: Sat, 16 Jun 2007 01:39:14 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>, Crispin Cowan <crispin@novell.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070615233914.GF2616@elf.ucw.cz>
-References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615233314.GN3564@suse.de>
+	Fri, 15 Jun 2007 19:40:39 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:38230 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754169AbXFOXki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 19:40:38 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Sat, 16 Jun 2007 01:39:57 +0200
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <200706160006.26428.mgd@technosis.de> <20070615222229.GA20176@elte.hu>
+In-Reply-To: <20070615222229.GA20176@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070615233314.GN3564@suse.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: multipart/signed;
+  boundary="nextPart4790886.KUfdW1PzXA";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706160140.24017.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181950838;49465f61;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+--nextPart4790886.KUfdW1PzXA
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > Yes, you may get some -EPERM during the tree move, but AA has that
-> > problem already, see that "when madly moving trees we sometimes
-> > construct path file never ever had".
-> 
-> Pavel, please focus on the current AppArmor implementation. You're
-> remembering a flaw with a previous version of AppArmor. The pathnames
-> constructed with the current version of AppArmor are consistent and
-> correct.
+> > > What matters is *my* intent in *choosing* the GPLv2, not *his*=20
+> > > intent in writing it.
+> >=20
+> > I beg to differ. By adopting _his_ license you adopted his view. [...]
+>=20
+> ianal, but fortunately that's not what the law is. The license says what=
+=20
+> it says, and that is what controls. The intent of the author (of Linus=20
+> and other copyright holders) is a secondary source of information /if=20
+> and only if/ any ambiguity of meaning arises (as determined by a judge,=20
+> not by you or me). But the opinion and intent of RMS (unless adopted by=20
+> Linus) is quite immaterial.
 
-Ok, I did not know that this got fixed.
+I agree with the "/if and only if/ any ambiguity of meaning arises" part.
+I'm sorry I didn't make that clear before.
 
-How do you do that? Hold a lock preventing renames for a whole time
-you walk from file to the root of filesystem?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+However if that situation arises (i.e. the judge decides there is an
+ambiguity) then as far as my experience tells me it is the intention of
+the author (RMS et al in this case) that counts. But I erred before...
+
+Best wishes,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart4790886.KUfdW1PzXA
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGcyNnUYYhyuxDQc4RAuFwAJ9N3Y6rbZdVcnRoP/Sz9GTgyLV0cACgphi5
+hd5PUTkjziNUv0jfDK4Jy2Y=
+=wIKi
+-----END PGP SIGNATURE-----
+
+--nextPart4790886.KUfdW1PzXA--
