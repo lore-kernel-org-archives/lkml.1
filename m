@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751144AbXFOPJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbXFOPKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751144AbXFOPJn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbXFOPJa
+	id S1756150AbXFOPKp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXFOPKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:09:30 -0400
-Received: from mail.lmcg.wisc.edu ([144.92.101.145]:48071 "EHLO
-	mail.lmcg.wisc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755366AbXFOPJ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:09:28 -0400
-Date: Fri, 15 Jun 2007 10:09:15 -0500
-From: Daniel Forrest <forrest@lmcg.wisc.edu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Bernd Paysan <bernd.paysan@gmx.de>, Alexandre Oliva <aoliva@redhat.com>,
-       Paulo Marques <pmarques@grupopie.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
+	Fri, 15 Jun 2007 11:10:38 -0400
+Received: from mx.laposte.net ([81.255.54.16]:57589 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751992AbXFOPKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:10:37 -0400
+Message-ID: <1078.192.54.193.51.1181908112.squirrel@rousalka.dyndns.org>
+Date: Fri, 15 Jun 2007 13:48:32 +0200 (CEST)
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070615100915.A24218@yoda.lmcg.wisc.edu>
-Reply-To: Daniel Forrest <forrest@lmcg.wisc.edu>
-References: <466A3EC6.6030706@netone.net.tr> <or4plae61r.fsf@oliva.athome.lsd.ic.unicamp.br> <d120d5000706141155s4e9caceci6958ceceebad6c73@mail.gmail.com> <200706151048.57762.bernd.paysan@gmx.de> <d120d5000706150546k6a31f831tb496bc73bbaa553@mail.gmail.com> <20070615135739.14862d6d@the-village.bc.nu> <d120d5000706150603w2f70431ei5a2ae461ac3d0ff4@mail.gmail.com> <20070615141923.63fd5cdd@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5.1i
-In-Reply-To: <20070615141923.63fd5cdd@the-village.bc.nu>; from alan@lxorguk.ukuu.org.uk on Fri, Jun 15, 2007 at 02:19:23PM +0100
+From: "Nicolas Mailhot" <nicolas.mailhot@laposte.net>
+To: "Daniel Hazelton" <dhazelton@enter.net>
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a-1.fc7
+MIME-Version: 1.0
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 02:19:23PM +0100, Alan Cox wrote:
-> 
-> > GPL itself does not. But the author(s) may when they specify "any
-> > later version", "dual GPL/BSD", etc. In this case (IMHO) distributor
-> > in fact relicenses the code and may reduce license to sipmply BSD or
-> > simply GPL, or "GPL v3 from now on". To "restore" license you would
-> > need to go upstream and get the code from there.
-> > 
-> I don't see anything in the GPL that permits a redistributor to
-> change the licence a piece of code is distributed under. If my code
-> is GPL v2 or later you cannot take away the "or later" unless
-> explicitly granted powers by the author to vary the licence.
-> 
-> What you most certainly can do is modify it and decide your
-> modifications are GPLv3 only thus creating a derived work which is
-> GPLv3 only. However anyone receiving your modified version and
-> reverting the modifications is back at v2 or later.
+[Re-sending with the right subject]
 
-But that begs the question: How do you know what has been modified so
-you can revert the modifications?  There won't necessarily be any
-indication of which files have been modified.
+>> > by your argument, the user has some "right to modify the
+software", on
+>> > that piece of hardware it bought which had free software on it,
+correct?
+>>
+>> Yes.  This means the hardware distributor who put the software in
+there must not place roadblocks that impede the user to get where
+she wants with the software, not that the vendor must offer the
+user a sport car to take her there.
 
-So I think Dmitry's point is valid.  Don't you need to go upstream at
-least far enough to verify that you have unmodified code?
+>Okay. That means that if I ship Linux on a ROM chip I have to somehow
+make
+>it so that the person purchasing the chip can modify the copy of
+Linux installed on the chip *if* I want to follow both the spirit and
+the
+letter
+>of the GPLv2.
 
-And how does the copyright work for kernel patches?  Consider a dual
-licensed (i.e. anything beyond GPLv2 only) file.  Someone supplies
-patches to Linus, he applies them, the resulting file is distributed
-with the kernel as GPLv2.  What precisely has to happen for someone
-to get that same file with equivalent patches applied that can be
-distributed with the original dual license?
+The key word there is "can"
 
-Somehow it seems to me that Linus would have to take the dual licensed
-files from his kernel repository and copy them to a separate archive
-and people would have to copy from there to keep the dual license.
-Aren't the files you extract from a linux tarball only licensed to you
-under the terms of GPLv2?
+You don't have to send the buyer the hardware design, replace the ROM
+with a flash, use a rom socket that allows easy switching etc.
+
+But you can not add measures to your hardware specifically designed to
+stop the user from modifying the GPL software part. Especially if
+those measures are something like DRM that do not make the tinkering
+just technically hard, but legally forbidden.
+
+As long as the restrictions result from technical choices not
+targetted at forbidding changes you're ok.
+
+However if the restrictions are deliberately added, have a legal
+component (and legal is not "may" but absolute "can not"), that's
+another thing entirely.
+
+To take a simple example people will understand:
+- everywhere around the world judges can order newspapers to publish
+corrections after a slander trial
+- these corrections take different forms depending on the media: in
+the original article for on-line stuff, in new editions for printed
+stuff
+
+So the fact there is a legal obligation to allow judges to change
+articles does not imply newspapers are forced to forgo read-only paper
+prints. However editors can not refuse to change the online edition
+because they have the technical possibility to do so.
+
+"Software" change oblications (articles) are not dictating "hardware"
+(read-only paper prints)
+
+Now do anyone has a doubt how a judge would react if the newspaper
+told him it wouldn't change the online edition because it's protected
+by a DRM-like lock the newspaper does not want to change or share? DRM
+is not a technical limitation like paper print, it's a self-imposed
+artificial limitation.
 
 -- 
-Dan
+Nicolas Mailhot
+
