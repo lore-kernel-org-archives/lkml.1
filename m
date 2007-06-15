@@ -1,121 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbXFOJSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbXFOJSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753557AbXFOJSK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 05:18:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbXFOJR6
+	id S1754310AbXFOJSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 05:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXFOJSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 05:17:58 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:43164 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbXFOJR5 (ORCPT
+	Fri, 15 Jun 2007 05:18:41 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37344 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751097AbXFOJSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 05:17:57 -0400
+	Fri, 15 Jun 2007 05:18:40 -0400
+Date: Fri, 15 Jun 2007 10:23:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Rob Landley <rob@landley.net>, Bernd Paysan <bernd.paysan@gmx.de>,
+       "Alan Milnes" <alan@itfoundation.org.uk>, linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: David Woodhouse <dwmw2@infradead.org>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-In-Reply-To: <200706150458.29943.dhazelton@enter.net>
+Message-ID: <20070615102331.35934956@the-village.bc.nu>
+In-Reply-To: <orr6oe6luz.fsf@oliva.athome.lsd.ic.unicamp.br>
 References: <466A3EC6.6030706@netone.net.tr>
-	 <200706142144.15695.dhazelton@enter.net>
-	 <1181895924.25228.319.camel@pmac.infradead.org>
-	 <200706150458.29943.dhazelton@enter.net>
-Content-Type: text/plain
-Date: Fri, 15 Jun 2007 10:17:44 +0100
-Message-Id: <1181899064.25228.342.camel@pmac.infradead.org>
+	<b200add30706140708p41e943dbm5d14ba52a6e0ae75@mail.gmail.com>
+	<200706141744.08408.bernd.paysan@gmx.de>
+	<200706141917.58824.rob@landley.net>
+	<orr6oe6luz.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 04:58 -0400, Daniel Hazelton wrote:
-> > If the module is distributed 'as a separate work', _then_ what you say
-> > is true: the only reason you'd have a right to the source is if the
-> > module is considered a 'derivative work'.
-> >
-> > But when you distribute the same module as part of a whole which is a
-> > work based on the kernel, the distribution of the whole must be on the
-> > terms of GPL, whose permissions for other licensees extend to the entire
-> > whole, and thus to each and every part regardless of who wrote it.
+> 2) I don't know how the FSF is approaching the Linux developers, but
+> what I've been personally trying to do in this infinite thread was
+> mainly to set the record straight that v3 did not change the spirit of
+> the license, like some have claimed.
+
+The FSF have certainly tried to talk to me a bit about it - mostly about
+some product called GNU/Linux which I had to tell them I'd never heard of
+and wasn't involved in ;)
+
 > 
-> -ELOGIC
+> 3) Another thing I've tried to do was to try to figure out why Linux
+> developers seem to consider v2 better than v3 for their own goals.  I
+> must admit I failed.  The presented reasons don't seem to distinguish
+> v2 from v3 to me, or rather make v3 sound better.
 
-What's logic got to do with it? It was fairly much a direct quote from
-the licence. You have _read_ the licence, haven't you?
+At least one important one I think is this:
 
-> > The words you used were 'with the kernel', which could actually mean
-> > either of the above. In the case of embedded Linux-based firmware
-> > though, it's definitely the latter. It's a coherent whole, and it
-> > contains both the kernel and the module. Thus the GPL extends to each
-> > and every part, regardless of who wrote it. Including the module.
-> 
-> Just because two things are bundled together doesn't put them under the same 
-> license or copyright. Take a look at the GPL, which specifically mentions 
-> that "mere aggregation" does not cause something to fall under the GPL. Not 
-> that the GPL can even change the law - in the US copyright law specifically 
-> states that "mechanical translation" and "mechanical processes" *CANNOT* 
-> create a "new" work. Since the process of compiling source into a binary is, 
-> by definition, a *mechanical* process then the binary can't suddenly become 
-> covered by a different copyright license than the source code merely because 
-> of the medium on which its distributed or the manner in which it is 
-> distributed.
+A large number of people contributed to the GPLv2 kernel. They did so on
+the basis there was an agreement about how the result could and would be
+used. The GPLv3 changes that agreement, whether for good or bad depends
+on who you are and what you do.
 
-You're confused.
+What right does Linus or anyone else have to change the rules and
+unavoidably harm some of the people who contributed on the basis of the
+previous licence. Any community project is built around a set of
+expectations and beliefs encoded in culture, licences, documents and so
+on.
 
-If I grant you a licence on the condition that you give me money, would
-you object on the basis that the money is not a 'derived work' of my
-code? No. It's just a condition of the licence, and you're not allowed
-to use my code unless you give me money.
+The kernel community was built around GPLv2. A large number of the people
+involved did so for pragmatic not FSF reasons and are not part of FSF
+culture. The fact that community isn't interested in GPL3 should not be a
+suprise, nor should it be seen as it seems you see it to be a failure of
+the GPL3. 
 
-If I grant you a licence on the condition that you sacrifice your
-first-born son to Satan, would you object on the basis that your son is
-not a 'derived work' of my code? No. It's just a condition of the
-licence. If you don't do it, you don't have the right to use my code. 
-(You may be able to get me locked up, but you still don't get to use my
-code without a licence).
+GPLv2 is how we've done it, it has been for fourteen years and numerous
+people have contributed on that basis. Should we kick some of them out of
+that community because a third party says "new license good". What
+matters more to the project itself - respect for those who work on it and
+their beliefs or an FSF attempt to strengthen free software protection ?
+Thats an "ends and means" type question but I think it explains the
+fundamental question very well.
 
-If I grant you a licence on the condition that you release _everything_
-you write this year under the GPLv2, would you object on the basis that
-your code is not a 'derived work' of my own? No. It's just a condition
-of the licence, which you choose to accept or not.
-
-If I grant you a licence on the condition that anything you release in
-_combination_ with my code must also be released under the GPL, would
-you object on the basis that you code is not a 'derived work' of my own?
-No. Again, it's just a condition of the licence. If you don't want to
-obey the licence, you don't get to use the kernel in the first place.
-
-Talking about how your code can't possibly be a derived work is just a
-red herring. The GPL explicitly talks about works which are 'independent
-and separate works in themselves', to which the GPL does not apply 'when
-you distribute them as separate works'.
-
-But when you distribute the same sections as part of a whole which is a
-work based on the Program, the distribution of the whole must be on the
-terms of this License, whose permissions for other licensees extend to
-the entire whole, and thus to each and every part regardless of who
-wrote it.
-
-It's your choice -- you're not _forced_ to use the kernel, and you're
-not _forced_ to distribute a product which combines it with other code
-of your own. But if you do, you're bound by the licence. And whether
-your code is a 'derived work' has nothing to do with it.
-
-Yes, there are exceptions for mere aggregation onto a storage medium --
-if the kernel and your own work are next to each other on a backup tape
-or your laptop's hard drive, or even both burned to a 'Gratis Software'
-CD as _separate_ works, then that doesn't count. But we're talking about
-a product which has a Linux kernel, a module built specifically for that
-kernel, and cannot function unless both of them are present. That ain't
-"mere aggregation on a storage medium".
-
--- 
-dwmw2
-
+Alan
