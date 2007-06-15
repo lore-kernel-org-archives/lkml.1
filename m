@@ -1,62 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbXFOQlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbXFOQn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbXFOQlY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 12:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbXFOQlQ
+	id S1756900AbXFOQn4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 12:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbXFOQnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 12:41:16 -0400
-Received: from [212.112.238.170] ([212.112.238.170]:35577 "EHLO
-	longford.lazybastard.org" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751016AbXFOQlQ (ORCPT
+	Fri, 15 Jun 2007 12:43:49 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:4551 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751483AbXFOQns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 12:41:16 -0400
-Date: Fri, 15 Jun 2007 18:36:25 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ext2 on flash memory
-Message-ID: <20070615163625.GC7747@lazybastard.org>
-References: <20070611101319.GA14284@DervishD> <20070614174509.GB31984@lazybastard.org> <20070614201714.GC1928@DervishD> <20070614203800.GG31984@lazybastard.org> <20070615161644.GB2373@DervishD>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 15 Jun 2007 12:43:48 -0400
+Date: Fri, 15 Jun 2007 18:43:47 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Bernd Paysan <bernd.paysan@gmx.de>,
+       Theodore Tso <tytso@mit.edu>, Alexandre Oliva <aoliva@redhat.com>,
+       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
+       Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070615164347.GA4952@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Daniel Hazelton <dhazelton@enter.net>,
+	Bernd Paysan <bernd.paysan@gmx.de>, Theodore Tso <tytso@mit.edu>,
+	Alexandre Oliva <aoliva@redhat.com>, Sean <seanlkml@sympatico.ca>,
+	Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+	debian developer <debiandev@gmail.com>, david@lang.hm,
+	Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org> <20070615052432.GC14911@thunk.org> <200706151202.13708.bernd.paysan@gmx.de> <200706150633.51857.dhazelton@enter.net> <20070615130254.GB11830@alinoe.com> <alpine.LFD.0.98.0706150830020.14121@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070615161644.GB2373@DervishD>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <alpine.LFD.0.98.0706150830020.14121@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 June 2007 18:16:44 +0200, DervishD wrote:
+On Fri, Jun 15, 2007 at 08:45:43AM -0700, Linus Torvalds wrote:
+> I'm sorry, but I've learnt more about copyright law, and talked to more 
+> lawyers about licensing that probably most of the rest of the people 
+> involved in this discussion have *combined*.
+
+Which is why I have taken everything you said so far for granted
+as being a fact -- no need to try to convince me of something ;)
+In my case it suffices if you say that you are sure (and before
+anyone says: you're nuts - what I REALLY mean is 'for the purpose
+of this discussion'. For me, it makes no sense to waste more time
+on discussing such an issue; I won't bet all my money it, of course).
+
+[..snip..]
+> > I always thought that it would be necessary to get signatures of each
+> > and every contributor before you can change a license of a file.
 > 
->     Yes, I understand. That's worse than I thought. I was right now
-> thinking about "PortableApps", a set of free software applications that
-> are a little bit modified to work from a pendrive in Windows. Very
-> useful, because you can carry your OpenOffice (or AbiWord) and Firefox,
-> for example, to any Windows you're doomed to use. This applications
-> write repeteadly to the pendrive (specially Firefox...), and I think
-> they may wear the drive prematurely if used extensively.
+> You are mostly correct. The "mostly" comes because I would not say "every 
+> contributor", but would clarify it by saying "every copyright holder". The 
+> difference? Not all contributions are necessarily copyrightable. If you 
+> send in trivial one-liners, we will credit you for them, but that does not 
+> automatically mean that you necessarily own copyright in something.
 
-Possibly, yes.  Estimates based on unknown numbers are hard, though.
+I knew that.
 
->     So you have a zone which is unusable. Decent filesystems allow you
-> to mark some blocks as "dontuse" (ext2, for example). Does FAT allow
-> this?
+> But yes, somebody who wrote an original file (that has some artistic 
+> expression, and isn't just a list of PCI ID's, for example) will be the 
+> copyright owner in that file. Some *very* few people have actually sent me 
+> paperwork to transfer the ownership of copyrights, but they seem to have 
+> done that because they were just used to doing it with the FSF, and I 
+> actually don't care. 
+> 
+> 				Linus
 
-I don't know.  If things get bad enough that you experience
-uncorrectable errors, I'd just trash the stick and get a new one
-instead.  Trouble is - with a controller chip doing the error
-correction, you have no means of knowing when this happens.
+The point is: can you, or can't you (legally) relicense the whole kernel
+tree under the GPLv3 (or GPLv2+GPLv3)?
 
->     I think I will be writing the pendrive, almost fully, once a week
-> (enough for an image of my home directory). That means less than 1GiB
-> written each week. That means 50-100 (in the worst case, making two
-> backups a week instead of one) writings each year in each block.
+At first I thought that you cannot, because too many (significant) contributors
+have been involved (and you will never get signatures from them all).
+Then someone surprised me by claiming that the original author had
+copyright for everything - even files added by others. To me, this
+seemed to say: even if those contributors don't like it, the original
+author can still sell the whole to some company under a proprietary
+license (also still having the original under the GPL on the net, of
+course), as he could do when he was the sole author.
 
-Writing everything once a week is harmless.  Filling the whole device is
-best-case behaviour.  Local hot spots are the problem.
+Then you reply with:
 
-Jörn
+> Carlo> Huh - surely not to files added to the kernel that were written by
+> Carlo> others from scratch!
+>
+Linus> Actually, yes. Even to those - when they are part of "the whole".
+
+But the rest of your reply made it a bit unclear again.
+
+Assume you stopped taking your meds and next week you think that GPLv3
+is THE thing for the kernel. Then could you legally, or can't you, go
+ahead and change the license of the whole kernel to GPLv3? And if you
+can't, then roughly how many files / authors are stopping you from
+doing so?
+
+If the answer is: I can't. Then I think you're a lucky bastard, and
+have escaped years and years of discussions with people trying to
+convince you that the GPLv3 is better ;)
+
+I think that the question: can OTHERS "upgrade" the kernel to GPLv3
+has been answered clearly now: No they can't. But if you can, you're
+probably not done with dealing with people who want that to happen.
 
 -- 
-Anything that can go wrong, will.
--- Finagle's Law
+Carlo Wood <carlo@alinoe.com>
