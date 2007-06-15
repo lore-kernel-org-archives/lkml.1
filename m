@@ -1,140 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbXFOBjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbXFOBlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756386AbXFOBjb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 21:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXFOBjX
+	id S1756777AbXFOBlG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 21:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXFOBk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 21:39:23 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50263 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751503AbXFOBjX (ORCPT
+	Thu, 14 Jun 2007 21:40:56 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52737 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751338AbXFOBkz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 21:39:23 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 21:39:07 -0400
-User-Agent: KMail/1.9.6
-Cc: Florin Malita <fmalita@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <466A3EC6.6030706@netone.net.tr> <4671A528.5040300@gmail.com> <or1wge9pwr.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or1wge9pwr.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 14 Jun 2007 21:40:55 -0400
+Date: Thu, 14 Jun 2007 18:40:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
+ Blocksize support
+Message-Id: <20070614184013.1ff51d34.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706141742580.3220@schroedinger.engr.sgi.com>
+References: <20070614193839.878721298@sgi.com>
+	<20070614130645.cabdff1b.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
+	<20070614143248.736312f8.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141436030.1797@schroedinger.engr.sgi.com>
+	<20070614150417.c73fb6b9.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141517120.2240@schroedinger.engr.sgi.com>
+	<20070614154939.c94b097f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706141742580.3220@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706142139.07720.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 17:39:32 Alexandre Oliva wrote:
-<snip>
->
-> And since the specific implementation involves creating a derived work
-> of the GPLed kernel (the signature, or the signed image, or what have
-> you) and refraining from providing the corresponding sources to that
-> derived work (the key and the signature "build scripts"), I still
-> think this specific case is a violation of the letter of the GPLv2,
-> even if the FSF doesn't take this position.
+On Thu, 14 Jun 2007 17:45:43 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-Not entirely correct. If TiVO is making a change to the binary to include the 
-signature, then it *could* be considered a derivative work. If the signature 
-is stored in another place - say a bit of Flash or a separate file on the 
-disc - then there is no way for it to be considered a derivative work. (Under 
-US law, IIRC and I I've interpreted it (and the related cases) properly then 
-the change would have to be to the source of the program for it to be 
-considered a "derivative". But, as you say often and I should make clear 
-myself, IANAL) 
+> On Thu, 14 Jun 2007, Andrew Morton wrote:
+> 
+> > > I do not think that the 100% users will do kernel compiles all day like 
+> > > we do. We likely would prefer 4k page size for our small text files.
+> > 
+> > There are many, many applications which use small files.
+> 
+> There is no problem with them using 4k page size concurrently to a higher 
+> page size for other files.
 
->
-> > It seems pretty obvious that the only right Tivo is withholding is the
-> > right to install new versions on the device
->
-> Actually, no.  They withhold the right to run versions that they don't
-> authorize themselves.
+There will be files which should use 64k but which instead end up using 4k.
 
-And this is relevant to a software license in which way? In particular how is 
-this relevant to the GPL, which has always *only* guaranteed access to the 
-source if you have access to the binary, the right to distribute your own 
-versions and the right to modify the code.
+There will be files which should use 4k but which instead end up using 64k.
 
-Since the "right to run code" was never guaranteed it *cannot* be a violation. 
-It might be in conflict with what RMS intended when he wrote the first 
-version of the GPL and in conflict with the intent of the people that 
-contributed to GPLv2 but that doesn't matter. However, I will not use (or 
-recommend) the GPLv3 in its current form because I feel it makes unnecessary 
-restrictions. The fact that you have to "allow additional rights" to make it 
-equal to the GPLv2 makes a functional (and spiritual) difference to me.
+Because determining which size to use requires either operator intervention
+or kernel heuristics, both of which will be highly unreliable.
 
-(Why? Because I'm opposed to "In order to protect freedom X we have to 
-restrict freedom Y. Its happening in the US *RIGHT* *NOW* and I have been 
-doing what I can to fight that. Now the same faulty logic is being applied by 
-the FSF with GPLv3)
+It's better to just make 4k pages go faster.
 
-> Back when GPLv2 was written, the right to run was never considered an
-> issue.  It was taken for granted, because copyright didn't control
-> that in the US (it does in Brazil), and nobody had thought of
-> technical measures to stop people from running modified copies of
-> software.  At least nobody involved in GPLv2, AFAIK.
+> > > I never understood the point of that exercise. If you have variable page 
+> > > size then the 64k page size can be used specific to files that benefit 
+> > > from it. Typically usage scenarios are video audio streaming I/O, large 
+> > > picture files, large documents with embedded images. These are the major
+> > > usage scenarioes today and we suck the. Our DVD/CD subsystems are 
+> > > currently not capable of directly reading from these devices into the page 
+> > > cache since they do not do I/O in 4k chunks.
+> > 
+> > So with sufficient magical kernel heuristics or operator intervention, some
+> > people will gain some benefit from 64k pagesize.  Most people with most
+> > workloads will remain where they are: shoving zillions of physically
+> > discontiguous pages into fixed-size sg lists.
+> 
+> Magical? There is nothing magical about doing transfers in the size that 
+> is supported by a device. That is good sense.
 
-Why isn't it in the US? Because the binary form of a program does not and 
-cannot have a separate copyright than the source code. Since it is the 
-*SOURCE* that is actually copyright (mechanical translation cannot create a 
-new work, only a new form of an already copyrighted work) guaranteeing 
-the "right to run" is pointless.
+By magical heuristics I'm referring to the (required) tricks and guesses
+which the kernel will need to deploy to be able to guess which page-size it
+should use for each file.
 
-And you are wrong about that "Nobody thought of it" thing - what you mean is 
-that "Nobody that had a hand in drafting and ratifying the GPLv2 thought of 
-it". The "NSA Guidelines for Trusted Systems" (aka "The Orange Book") talks 
-about methods of preventing the execution of code.
+Because without such heuristics, none of this new stuff which you're
+proposing would ever get used by 90% of apps on 90% of machines.
 
-What you and the rest of the FSF is doing in response to "tivoization" is 
-saying "we don't care if it wasn't designed to do X, we want to be able to 
-make it do that anyway *AND* the manufacturer has to help us do it". There is 
-no legal way for you to make that demand of a hardware manufacturer. Instead 
-you've gone with the only legal recourse - saying "If you want to use my 
-copyrighted work under license X, you have to do Y".  I have no problem with 
-that, and if the FSF wants that, it's fine by me. But, as I said, I could 
-care less where and/or if something I release under the GPL is used. This 
-makes the GPLv2 perfect for me.
+> > > Every 64k block contains more information and the number of pages managed
+> > > is reduced by a factor of 16. Less seeks , less tlb pressure , less reads, 
+> > > more cpu cache and cpu cache prefetch friendly behavior.
+> > 
+> > argh.  Everything you say is just wrong.  A fsck involves zillions of
+> > discontiguous small reads.  It is largely seek-bound, so there is no
+> > benefit to be had here.  Your proposed change will introduce regressions by
+> > causing larger amounts of physical reading and large amounts of memory
+> > consumption.
+> 
+> Of course there is. The seeks are reduced since there are an factor 
+> of 16 less metadata blocks. fsck does not read files. It just reads 
+> metadata structures. And the larger contiguous areas the faster.
 
-> The landscape has changed, and GPLv3 is meant to defend this freedom
-> that was taken for granted.
->
-> > they never do (and really never could) "modify" the physical copy on
-> > your device (which is your main argument).
->
-> Qualifying it as the main argument is a bit of an exaggeration.  I
-> have a number of different arguments.  The one about incomplete
-> sources is the most solid IMHO.
+Some metadata is contiguous: inode tables, some directories (if they got
+lucky), bitmap tables.  But fsck surely reads them in a single swoop
+anyway, so there's no gain there.
 
-Yes, it is. But your argument about the TiVO is "they can modify the copy on 
-it but I can't". Hence it is your main argument. And remember, replace != 
-modify.
+Other metadata (indirect blocks) are 100% discontiguous, and reading those
+with a 64k IO into 64k of memory is completely dumb.
 
-> >> What do you think you do when you save a modified source file in your
-> >> editor?
-> >
-> > Don't skip the part where the in-memory version started as an exact
-> > copy of the original being replaced. Notice the difference? ;)
->
-> Sorry, I really don't follow.  Both versions of the kernel binary also
-> started from a common source ancestor.  Were you trying to make a
-> distinction on these grounds?
+And yes, I'm referring to the 90% case again.  The one we want to
+optimise for.
 
-No. He was making a distinction that I have seen made a number of times. That 
-is, a copy of a copyright work in a computers RAM is a *distinct* copy, 
-separate from the file on disc it started as. (And that has actually been 
-argued in a court case. I don't recall the specifics, but I do recall that 
-the argument was held as valid)
 
-DRH
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
