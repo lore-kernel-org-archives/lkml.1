@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbXFOP4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbXFOP5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540AbXFOP4o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 11:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbXFOP4i
+	id S1756730AbXFOP5w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 11:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXFOP5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 11:56:38 -0400
-Received: from styx.suse.cz ([82.119.242.94]:50337 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751064AbXFOP4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 11:56:37 -0400
-Date: Fri, 15 Jun 2007 18:09:44 +0200
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rich Coe <Richard.Coe@med.ge.com>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: Re: PATCH: udf fs corruption on linux-2.6
-Message-ID: <20070615160944.GA29775@duck.suse.cz>
-References: <20070613154803.a1ad874a.Richard.Coe@med.ge.com> <20070614163218.1d75dda4.Richard.Coe@med.ge.com> <alpine.LFD.0.98.0706141511110.14121@woody.linux-foundation.org>
-MIME-Version: 1.0
+	Fri, 15 Jun 2007 11:57:45 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:48451 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754218AbXFOP5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 11:57:44 -0400
+Date: Fri, 15 Jun 2007 21:27:15 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org,
+       "Natalie.Protasevich@unisys.com" <Natalie.Protasevich@unisys.com>,
+       akpm@linux-foundation.org
+Subject: Re: CONFIG_X86_ES7000=y, CONFIG_X86_GENERICARCH=n, CONFIG_ACPI=y build broken
+Message-ID: <20070615155715.GB9230@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <adad5017zpt.fsf@cisco.com> <20070613173741.GA23618@in.ibm.com> <adamyz34mim.fsf@cisco.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706141511110.14121@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <adamyz34mim.fsf@cisco.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 14-06-07 15:12:58, Linus Torvalds wrote:
+On Wed, Jun 13, 2007 at 01:39:29PM -0700, Roland Dreier wrote:
+>  > Can you please try the attached patch? I have compiled it with CONFIG_ES7000=y
+>  > and CONFIG_X86_GENERICARCH=n. But don't have any ES7000 machine to test it.
 > 
+> I actually don't have anything remotely like ES7000 iether.  I just
+> found the problem while tracking down another randconfig failure.
 > 
-> On Thu, 14 Jun 2007, Rich Coe wrote:
-> >
-> > I've updated the patch below to use drop_inode rather than put_inode.
-> > 
-> > drop_inode is only called when the last iput() reference to the inode is
-> > released, where put_inode is called for every iput().
+>  > Subarch build procedure is not straightforward and this patch adds to the
+>  > misery. Please suggest if there is a better way of handling things.
 > 
-> Patch looks fine, but this late in the -rc series, I'd really like to get 
-> an ACK from Jan or somebody else, just to make sure there are no other 
-> issues with it.
+>  > +/*
+>  > + * This file also gets compiled if CONFIG_X86_GENERICARCH is set. Generic
+>  > + * arch already has got following function definitions (asm-generic/es7000.c)
+>  > + * hence no need to define these for that case.
+>  > + */
+>  > +#ifndef CONFIG_X86_GENERICARCH
 > 
-> Jan? 
-  My fix for this problem is already sitting in Andrew's patch queue
-(http://lkml.org/lkml/2007/6/11/79). Rich's patch still has a problem - you
-cannot call udf_discard_prealloc() from drop_inode() because it is called
-under inode_lock and thus you cannot call e.g. mark_inode_dirty(). I've done
-that mistake too ;). So please don't apply the patch.
+> Seems it would be cleaner to figure out some way to build es7000.c for
+> if CONFIG_X86_ES7000 is set?  Or just move them here all the time?
+> 
+>  > --- linux-2.6.22-rc4-git4/include/asm-i386/mach-es7000/mach_mpparse.h~i386-es7000-build-breakage-fix	2007-06-13 22:52:14.000000000 +0530
+>  > +++ linux-2.6.22-rc4-git4-vivek/include/asm-i386/mach-es7000/mach_mpparse.h	2007-06-13 22:52:14.000000000 +0530
+>  > @@ -18,6 +18,12 @@ extern int parse_unisys_oem (char *oempt
+>  >  extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
+>  >  extern void setup_unisys(void);
+>  >  
+>  > +#ifndef CONFIG_X86_GENERICARCH
+>  > +extern int acpi_madt_oem_check(char *oem_id, char *oem_table_id);
+>  > +extern int mps_oem_check(struct mp_config_table *mpc, char *oem,
+>  > +				char *productid);
+>  > +#endif
+> 
+> It seems that this #ifndef is not needed -- even if there is another
+> declaration of these functions that is visible, the signatures should
+> match so it should be OK.
+> 
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Compiler does throw warning as one set of functions is static and
+other is not.
+
+arch/i386/mach-generic/es7000.c:37: warning: static declaration of 'mps_oem_check' follows non-static declaration
+include/asm/mach-es7000/mach_mpparse.h:23: warning: previous declaration of 'mps_oem_check' was here
+arch/i386/mach-generic/es7000.c:50: warning: static declaration of 'acpi_madt_oem_check' follows non-static declaration
+include/asm/mach-es7000/mach_mpparse.h:21: warning: previous declaration of 'acpi_madt_oem_check' was here
+
+Thanks
+Vivek
