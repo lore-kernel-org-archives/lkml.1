@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbXFOCjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbXFOClS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbXFOCjx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 22:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXFOCjn
+	id S1757438AbXFOClS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 22:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbXFOClH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 22:39:43 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:10872 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbXFOCjm (ORCPT
+	Thu, 14 Jun 2007 22:41:07 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:4346 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbXFOClG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 22:39:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=QfeS+keAu2Cu98ELMj/RretUJRk5vAjbzHFC1J3HrGFKsz6esRRIjHGJupypZIRZCX7Y6t4Hce10/UCDCZW8L7HKrSejRdhj16ei9evez8SevBGJUyaZ4UlU100YQJyltvejXO4F5Es3+AVLI8tKnL+3pzBqSqnfGH6Q0+S88xI=
-Message-ID: <e9c3a7c20706141939g12ad831gc1c49bf4887fdb12@mail.gmail.com>
-Date: Thu, 14 Jun 2007 19:39:41 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Bill Davidsen" <davidsen@tmr.com>
-Subject: Re: raid5: coding style cleanup / refactor
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-In-Reply-To: <4671AE5E.4090602@tmr.com>
+	Thu, 14 Jun 2007 22:41:06 -0400
+X-Greylist: delayed 3669 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jun 2007 22:41:05 EDT
+Message-Id: <200706150139.l5F1dgEd020323@www262.sakura.ne.jp>
+Subject: Re: [RFC] TOMOYO Linux
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: James Morris <jmorris@namei.org>
+Cc: Rik van Riel <riel@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Toshiharu Harada <haradats@nttdata.co.jp>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Toshiharu Harada <haradats@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070612142532.b45ee9bf.akpm@linux-foundation.org>
-	 <0C7297FA1D2D244A9C7F6959C0BF1E5201FDE2CB@azsmsx413.amr.corp.intel.com>
-	 <e9c3a7c20706121509x43dda6f6uc3b4d70a01c0c891@mail.gmail.com>
-	 <e9c3a7c20706131153l289490f2t60db3b5c251a362a@mail.gmail.com>
-	 <4671AE5E.4090602@tmr.com>
-X-Google-Sender-Auth: 3978773485f6f871
+Date: Fri, 15 Jun 2007 10:39:42 +0900
+References: <466FA71C.1020309@nttdata.co.jp>  <1181743635.17547.350.camel@moss-spartans.epoch.ncsc.mil> <9d732d950706130722g12a22604p223381a8e281a4a1@mail.gmail.com> <46704D49.8010308@redhat.com>  <9d732d950706131435s636b852di98026aed1d9a6ac6@mail.gmail.com> <467064B9.1080005@redhat.com> <9d732d950706131525n667587e6t59e94c5cee951c6d@mail.gmail.com> <Line.LNX.4.64.0706131835040.13360@localhost.localdomain>
+In-Reply-To: <Line.LNX.4.64.0706131835040.13360@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/14/07, Bill Davidsen <davidsen@tmr.com> wrote:
-> When you are ready for wider testing, if you have a patch against a
-> released kernel it makes testing easy, characteristics are pretty well
-> known already.
->
-Thanks I went ahead and put a separate snapshot up on SourceForge:
-http://downloads.sourceforge.net/xscaleiop/md-accel-2.6.22-rc4-20070614.patch
-[ It's actually based on current git but should apply cleanly to 2.6.22-rc4. ]
+Hello.
 
-If you are so inclined the most up-to-date version is available via git.
-git pull git://lost.foo-projects.org/~dwillia2/git/iop md-accel-linus
+James Morris wrote:
+> Note that while SELinux does also have a similar capability with the 
+> audit2allow tool, it should be considered an expert tool, the output of 
+> which needs to be understood before use (as noted in its man page).
+Yes, adding "allow" statement without understanding what the statement means
+is dangerous.
+But regarding TOMOYO Linux, "allow" statement that needs to be added
+to grant requested access is quite easy for human to understand.
+This helps administrator understand what will be allowed before allowing it.
 
-It should perform identically to vanilla 2.6.22-rc4 MD.
+For example, if "allow foo_t bin_t:execute" (sorry, I don't know proper
+SELinux's policy syntax) statement is shown to an administrator,
+he/she has to understand what programs belongs to bin_t before
+adding this statement, for some files may be exposed (if /bin/cat is bin_t)
+or some files may be deleted (if /bin/rm is bin_t).
+But if "allow execute /bin/cat" statement is shown to an administrator,
+he/she can easily understand what will happen because
+only programs that are accessible via the pathname /bin/cat can be executed.
 
-> --
-> bill davidsen <davidsen@tmr.com>
+People assumes and expects that /bin/cat is a program that prints
+the content of files, /usr/share/doc is a directory for shared documents,
+/tmp is a directory for temporaly files and so on.
+I know you worry about symlinks, chroots, bind mounts and private namespaces.
+TOMOYO Linux solves all symlinks and traverses up to namespace's root
+so that /bin/cat is exactly /bin/cat and nothing else
+(e.g. /tmp/cat or /var/chroot/bin/cat, where /tmp/cat is a malicious program).
+TOMOYO Linux restricts mount related operations to make sure
+/bin is not a bind mount of /tmp and /bin/cat is not an alias of /tmp/cat .
+TOMOYO Linux restricts modification of /bin/cat by not giving processes
+write permission to /bin/cat unless needed.
 
-Regards,
-Dan
+TOMOYO Linux's way is respect pathnames and try to keep meaning of pathnames
+unchanged as hard as possible so that the system can provide files
+which poeple assumes and expects.
+
+I know respecting pathnames will crash if the systems need complicated
+namespace manipuration like shared subtree or overlay mounts.
+For such systems, the only choice is label based access control.
+
+But I think many systems don't need complicated namespace manipuration.
+For such systems, both label based and pathname based access control
+are possible choice.
+
+> We have considered per-domain enforcing mode a couple of times in the 
+> past, but figured that it could be implemented via policy alone (e.g. run 
+> the task in a domain where all accesses are allowed and logged); and it 
+> would also be of limited usefulness because of the aforementioned problems 
+> with learning mode security policy.
+If there were only "disabled" and "enforcing" modes,
+per-domain enforcing mode would not be useful.
+The development of TOMOYO Linux's policy starts from scratch
+and builds up step by step for all domains.
+If I use "enforcing mode but allows everything" approach,
+it becomes impossible to develop policy using "learning" and "permissive" modes
+where some of domains are already in enforcing mode but the rests are not yet.
+At least, per-domain enforcing mode is useful for TOMOYO Linux.
+
+Thanks.
