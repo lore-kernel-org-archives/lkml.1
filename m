@@ -1,80 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756963AbXFOALV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbXFOALx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756963AbXFOALV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jun 2007 20:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbXFOALO
+	id S1758088AbXFOALx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jun 2007 20:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbXFOALp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jun 2007 20:11:14 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50830 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbXFOALN (ORCPT
+	Thu, 14 Jun 2007 20:11:45 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:40534 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbXFOALo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jun 2007 20:11:13 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 14 Jun 2007 20:10:58 -0400
-User-Agent: KMail/1.9.6
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sean <seanlkml@sympatico.ca>, Adrian Bunk <bunk@stusta.de>,
-       Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-References: <200706132243.14651.dhazelton@enter.net> <20070614195504.GA2258@uranus.ravnborg.org> <or4plab73v.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or4plab73v.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Thu, 14 Jun 2007 20:11:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sSc+33KFGcKIRJjrS6R8JAAWkoc41ufEo80+8L5VTxkDA8DoySDbp0pYyXhlQglcVya8q7QGUgrnpwUsxC+vjt5QuO/xmQxdLp+HOu1TcM5s1BjATqbBT+iEuJ7gsL2mjD7cx6uG3cvTqoISdTTSZd+9gSGweIj0NjV+D7+SQdg=
+Message-ID: <a8e1da0706141711o1dea5235q53f3b9f38a80cfe8@mail.gmail.com>
+Date: Fri, 15 Jun 2007 00:11:43 +0000
+From: "dave young" <hidave.darkstar@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] cdrom_sysctl_info fix
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, "Jens Axboe" <jens.axboe@oracle.com>
+In-Reply-To: <20070614084336.166b9db4.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706142010.58604.dhazelton@enter.net>
+References: <20070614142430.GA2388@darkstar.te-china.tietoenator.com>
+	 <a8e1da0706132340o6c00234fwdf223d9972d5937c@mail.gmail.com>
+	 <20070614084336.166b9db4.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 June 2007 16:42:44 Alexandre Oliva wrote:
-> On Jun 14, 2007, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > On Thu, Jun 14, 2007 at 04:46:36PM -0300, Alexandre Oliva wrote:
-> >> > Giving back "in kind" is obvious. I give you source code to do with as
-> >> > you see fit. I just expect you to give back in kind: source code for
-> >> > me to do with as I see fit, under the same license I gave you source
-> >> > code.
-> >> >
-> >> > How hard is that to accept?
-> >>
-> >> Forgive me if I find this a bit hard, because that's *not* what the
-> >> GPL says.
-> >
-> > What part of the word "expect" did you not understand?
->
-> http://lkml.org/lkml/2006/9/24/246
->
->   It asks everybody - regardless of circumstance - for the same thing.
->   It asks for the effort that was put into improving the software to
->   be given back to the common good.  You can use the end result any
->   way you want (and if you want to use it for "bad" things, be my
->   guest), but we ask the same exact thing of everybody - give your
->   modifications back.
->
-> > And whats your point here anyway?
->
-> The the GPL doesn't do that.  It encourages that.  But what it asks
-> for is respect for the freedoms it defends WRT the software licensed
-> under it.
+Hi,
+> Better to use the email address in the MAINTAINERS file than
+> the one in the driver source file.
 
-Logical fallacy. The two statements are semantically equivalent, and the draw 
-and allure of "Open Source" is that the software continually gets better at 
-doing its job, grows more features, etc... *ALL* because the modifications 
-*DO* get "given back".
+Really? I searched the list, found axboe use the address
+jens.axboe@oracle.com, same as what andrew said. does the MAINTAINERS
+file be updated?
 
-Because it is *VERY* hard to keep a modification *PRIVATE* and avoid 
-the "distribution" clauses of the GPL the belief that it "doesn't require 
-giving changes back" is technically and literally true, but is false in 
-practice.
-
-DRH
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Regards
+dave
