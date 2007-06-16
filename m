@@ -1,88 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbXFPLp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbXFPLqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896AbXFPLp2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 07:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXFPLpT
+	id S1756370AbXFPLqU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 07:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbXFPLqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 07:45:19 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:49086 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753236AbXFPLpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 07:45:17 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Dave Jones <davej@redhat.com>
-Subject: Re: [BUG] Interesting race between cpufreq_ondemand and snd_atiixp
-Date: Sat, 16 Jun 2007 14:44:08 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk, tiwai@suse.de
-References: <200706160233.47659.caglar@pardus.org.tr> <20070616005428.GG23417@redhat.com>
-In-Reply-To: <20070616005428.GG23417@redhat.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2377874.3WZIVusdfQ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706161444.08999.caglar@pardus.org.tr>
+	Sat, 16 Jun 2007 07:46:13 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:45024 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753236AbXFPLqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 07:46:12 -0400
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+From: Thierry Merle <thierry.merle@free.fr>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <6872422218943432279_1@wsc.cz>
+References: <2172422218943432279@wsc.cz>
+	 <1180364420.21547.160.camel@localhost>
+	 <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>
+	 <1180378677.21547.189.camel@localhost>
+	 <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>
+	 <1180383071.21547.230.camel@localhost> <465B49EB.4080204@free.fr>
+	 <465BBAFB.30906@free.fr> <1180448712.21547.314.camel@localhost>
+	 <465C7920.2080203@free.fr> <1180467116.9509.73.camel@localhost>
+	 <465F3361.106@free.fr> <1180739401.3904.50.camel@localhost>
+	 <466131CB.20301@free.fr> <466131CB.20301@free.fr>
+	 <6872422218943432279_1@wsc.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Sat, 16 Jun 2007 13:46:17 +0200
+Message-Id: <1181994378.22144.11.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 Dropline GNOME 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2377874.3WZIVusdfQ
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Le vendredi 15 juin 2007 à 23:08 +0200, Jiri Slaby a écrit :
+> Mauro Carvalho Chehab wrote:
+> > Em SÃ¡b, 2007-06-02 Ã s 11:00 +0200, Thierry Merle escreveu:
+> > > 
+> > > Mauro Carvalho Chehab a Ã©crit :
+> > > >>> This seems to be an interesting approach.
+> > > >>>
+> > > >>>   
+> > > >>>       
+> > > >> Interesting but impossible to do for ioctl calls.
+> > > >> When the application does a
+> ioctl(fd_of_mnt_video0,VIDIOC_G_FMT,&arg) 
+> > > >> for example, there is no way for the userspace helper to catch
+> this ioctl.
+> > > >> The application could only open/read from the userspace
+> helper's file 
+> > > >> /mnt/video0.
+> > > >> ioctl would still have to be done on the kernel device driver.
+> > > >> I thought also about a /proc interface for decompression
+> algorithms (a 
+> > > >> helper would listen on a /proc file and write on another /proc
+> file) but 
+> > > >> /proc is not designed for that kind of thing.
+> > > >> A separate library seems to be the simplest solution.
+> > > >>     
+> > > >
+> > > > There are some ways for this to work. For example, you may
+> create a
+> > > > helper device for the daemon driver to bind, even requiring it
+> to have
+> > > > root permission.
+> > > >
+> > > >   
+> > > Right, but I am afraid that complex userspace/kernelspace context 
+> > > changes breaks performance.
+> > Yes, there's a risk.
+> > 
+> > > Nevertheless, I will start to specify the framework.
+> > > The helper daemon would link to the v4l2-apps/lib.
+> > 
+> > Ok, thanks!
+> 
+> Ok, here comes updated version of stk11xx driver. Note that it's not
+> still
+> separated into more files (I'll do this as the last step) and also
+> resize
+> and bayer->rgb conversion remains. This is what I'm interested in --
+> is
+> there some embryo of library with resize and conversion? Or what was
+> the
+> decision to create?
 
-Hi;
+Hi Jiri,
+sorry I started the specification but nothing finalized (and
+consequently no code).
+Here is the start of my idea for a v4l2_extension:
+http://thierry.merle.free.fr/v4l2_extension/general.html
+My new USB tuner took me all my little time and I did not get into
+details (the spec is incomplete).
+Well, as you insist I will explain a bit more :)
+Please comment, tell me what you don't understand I will try to update
+during this week-end...
 
-16 Haz 2007 Cts tarihinde, Dave Jones =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
-=C4=B1:=20
-> On Sat, Jun 16, 2007 at 02:33:41AM +0300, S.=C3=87a=C4=9Flar Onur wrote:
->  > One of our colleagues found following problem with his old laptop while
->  > testing Linus's latest git with external alsa-driver (v1.0.14). And we
->  > can also reproduce same problem with 2.6.18.8 so it seems not a new
->  > regression (if it is a regression).
->  >
->  > As a summary "sound stops to work if cpufreq_ondemand governor is used"
->  > on that laptop. Problem occurs only if cpufreq_* modules are loaded and
->  > %100 reproducable if system configured for ondemand governor.
->
-> I'm puzzled.  The cpuinfo shows that this cpu doesn't have speedstep, so
-> why acpi-cpufreq successfully loads is a mystery.
->
-> What's in/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequenci=
-es
->  ?
+Thierry
 
-mavi ~ #=20
-cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
-2793000 1596000
-
-> Maybe the acpi implementation is faking multiple speeds using throttling
-> a la p4-clockmod, which would be a bit loopy, but possible I guess.
-
-modprobe p4-clockmod with 2.6.18.8 ends up with "Device or resource busy"
-
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart2377874.3WZIVusdfQ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGc80Iy7E6i0LKo6YRAjBLAJ9+FyoUyPNV2jPcYACp/A06x1xqxgCggVgt
-+cyf3deKroYdgxr5zsLS7nA=
-=8ER2
------END PGP SIGNATURE-----
-
---nextPart2377874.3WZIVusdfQ--
