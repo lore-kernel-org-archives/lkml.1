@@ -1,120 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbXFPLDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbXFPLUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbXFPLDz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 07:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbXFPLDr
+	id S1755016AbXFPLUU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 07:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXFPLUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 07:03:47 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48130 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbXFPLDq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 07:03:46 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 16 Jun 2007 13:03:34 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] ieee1394 fixes
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.e86449c95726ba81@s5r6.in-berlin.de>
+	Sat, 16 Jun 2007 07:20:09 -0400
+Received: from saeurebad.de ([85.214.36.134]:55487 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752547AbXFPLUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 07:20:08 -0400
+Date: Sat, 16 Jun 2007 13:20:04 +0200
+From: Johannes Weiner <hannes-kernel@saeurebad.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Versioning file system
+Message-ID: <20070616112004.GA22307@saeurebad.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673194D.4090500@intel.com> <Pine.LNX.4.64.0706151558180.27993@blackbox.fnordora.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706151558180.27993@blackbox.fnordora.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+Hi,
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+On Fri, Jun 15, 2007 at 04:01:14PM -0700, alan wrote:
+> On Fri, 15 Jun 2007, Kok, Auke wrote:
+> ><snip>
+> >
+> >have you looked into ext3cow? it allows you to take snapshots of the 
+> >entire ext3 fs at a single point, and rollback / extract snapshots at any 
+> >time later. This may be sufficient for you and the implementation seems to 
+> >be rather stable already.
+> 
+> As long as there is only one person using the file system.  Rolling back 
+> the entire filesystem may work well for you, but screw up something else 
+> someone else is doing.
+> 
+> And what kind of rights do you have to assign to the user to do that level 
+> of snapshot and rollback?  You have to assume that there are more than one 
+> user and that they have less than root privileges.
 
-to receive the following updates to the old and the new IEEE 1394 subsystem:
+Perhaps BTRFS might be of interest where you can have a subvolume for every
+user: http://lkml.org/lkml/2007/6/12/242
 
- drivers/firewire/fw-ohci.c |    2 +-
- drivers/ieee1394/eth1394.c |   21 +++++++++++++++------
- 2 files changed, 16 insertions(+), 7 deletions(-)
-
-Carlos E. Ugarte (1):
-      ieee1394: fix to ether1394_tx in ether1394.c
-
-Stefan Richter (1):
-      firewire: fix hang after card ejection
-
-
-diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
-index 0d08bf9..b72a5c1 100644
---- a/drivers/firewire/fw-ohci.c
-+++ b/drivers/firewire/fw-ohci.c
-@@ -1001,7 +1001,7 @@ static irqreturn_t irq_handler(int irq, void *data)
- 
- 	event = reg_read(ohci, OHCI1394_IntEventClear);
- 
--	if (!event)
-+	if (!event || !~event)
- 		return IRQ_NONE;
- 
- 	reg_write(ohci, OHCI1394_IntEventClear, event);
-diff --git a/drivers/ieee1394/eth1394.c b/drivers/ieee1394/eth1394.c
-index 5f026b5..7c13fb3 100644
---- a/drivers/ieee1394/eth1394.c
-+++ b/drivers/ieee1394/eth1394.c
-@@ -1565,7 +1565,7 @@ static void ether1394_complete_cb(void *__ptask)
- /* Transmit a packet (called by kernel) */
- static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
- {
--	struct eth1394hdr *eth;
-+	struct eth1394hdr hdr_buf;
- 	struct eth1394_priv *priv = netdev_priv(dev);
- 	__be16 proto;
- 	unsigned long flags;
-@@ -1595,16 +1595,17 @@ static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
- 	if (!skb)
- 		goto fail;
- 
--	/* Get rid of the fake eth1394 header, but save a pointer */
--	eth = (struct eth1394hdr *)skb->data;
-+	/* Get rid of the fake eth1394 header, but first make a copy.
-+	 * We might need to rebuild the header on tx failure. */
-+	memcpy(&hdr_buf, skb->data, sizeof(hdr_buf));
- 	skb_pull(skb, ETH1394_HLEN);
- 
--	proto = eth->h_proto;
-+	proto = hdr_buf.h_proto;
- 	dg_size = skb->len;
- 
- 	/* Set the transmission type for the packet.  ARP packets and IP
- 	 * broadcast packets are sent via GASP. */
--	if (memcmp(eth->h_dest, dev->broadcast, ETH1394_ALEN) == 0 ||
-+	if (memcmp(hdr_buf.h_dest, dev->broadcast, ETH1394_ALEN) == 0 ||
- 	    proto == htons(ETH_P_ARP) ||
- 	    (proto == htons(ETH_P_IP) &&
- 	     IN_MULTICAST(ntohl(ip_hdr(skb)->daddr)))) {
-@@ -1616,7 +1617,7 @@ static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
- 		if (max_payload < dg_size + hdr_type_len[ETH1394_HDR_LF_UF])
- 			priv->bc_dgl++;
- 	} else {
--		__be64 guid = get_unaligned((u64 *)eth->h_dest);
-+		__be64 guid = get_unaligned((u64 *)hdr_buf.h_dest);
- 
- 		node = eth1394_find_node_guid(&priv->ip_node_list,
- 					      be64_to_cpu(guid));
-@@ -1673,6 +1674,14 @@ static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
- 		if (dest_node == (LOCAL_BUS | ALL_NODES))
- 			goto fail;
- 
-+		/* At this point we want to restore the packet.  When we return
-+		 * here with NETDEV_TX_BUSY we will get another entrance in this
-+		 * routine with the same skb and we need it to look the same.
-+		 * So we pull 4 more bytes, then build the header again. */
-+		skb_pull(skb, 4);
-+		ether1394_header(skb, dev, ntohs(hdr_buf.h_proto),
-+				 hdr_buf.h_dest, NULL, 0);
-+
- 		/* Most failures of ether1394_send_packet are recoverable. */
- 		netif_stop_queue(dev);
- 		priv->wake_node = dest_node;
-
--- 
-Stefan Richter
--=====-=-=== -==- =----
-http://arcgraph.de/sr/
-
+		Hannes
