@@ -1,93 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbXFPDXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXFPDZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbXFPDXQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 23:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbXFPDXE
+	id S1753996AbXFPDZZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 23:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbXFPDZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 23:23:04 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33025
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbXFPDXD (ORCPT
+	Fri, 15 Jun 2007 23:25:17 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:34425 "EHLO
+	asav17.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbXFPDZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 23:23:03 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Linus Torvalds <torvalds@linux-foundation.org>
+	Fri, 15 Jun 2007 23:25:15 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlE4ALb0ckZKhRO4UGdsb2JhbACBToVjh3sBARsNBhEB
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Alexandre Oliva <aoliva@redhat.com>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 23:22:59 -0400
-User-Agent: KMail/1.9.6
-Cc: Carlo Wood <carlo@alinoe.com>, Daniel Hazelton <dhazelton@enter.net>,
-       Bernd Paysan <bernd.paysan@gmx.de>, Theodore Tso <tytso@mit.edu>,
-       Alexandre Oliva <aoliva@redhat.com>, Sean <seanlkml@sympatico.ca>,
-       Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-References: <alpine.LFD.0.98.0706141026150.14121@woody.linux-foundation.org> <20070615164347.GA4952@alinoe.com> <alpine.LFD.0.98.0706151101020.14121@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706151101020.14121@woody.linux-foundation.org>
+Date: Fri, 15 Jun 2007 23:25:13 -0400
+User-Agent: KMail/1.9.3
+Cc: Bernd Paysan <bernd.paysan@gmx.de>, Paulo Marques <pmarques@grupopie.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
+       linux-kernel@vger.kernel.org
+References: <466A3EC6.6030706@netone.net.tr> <d120d5000706151146u6f69667eodd2ff3f5e857a917@mail.gmail.com> <or8xalx6vu.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or8xalx6vu.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706152323.01489.rob@landley.net>
+Message-Id: <200706152325.14244.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007 14:15:58 Linus Torvalds wrote:
-> On Fri, 15 Jun 2007, Carlo Wood wrote:
-> > The point is: can you, or can't you (legally) relicense the whole kernel
-> > tree under the GPLv3 (or GPLv2+GPLv3)?
+On Friday 15 June 2007 17:08, Alexandre Oliva wrote:
+> On Jun 15, 2007, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+> 
+> > On 6/15/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+> >> On Jun 15, 2007, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+> >> 
+> >> > On 6/15/07, Bernd Paysan <bernd.paysan@gmx.de> wrote:
+> >> >> On Friday 15 June 2007 13:49, Paulo Marques wrote:
+> >> >>
+> >> >> > No, it is not "any version". It is the license specified in COPYING and
+> >> >> > nothing else.
+> >> >>
+> >> >> COPYING says in section 9 that there may be other versions, and if you as
+> >> >> author don't specify the version, it's "any version".
+> >> 
+> >> > Please read this sentence over and over until it sinks:
+> >> 
+> >> I believe he was talking about the sentence just after the one you
+> >> quoted:
+> >> 
+> >> If the Program does not specify a version number of this License,
+> >> you may choose any version ever published by the Free Software
+> >> Foundation.
+> 
+> > My response to this is that by including an entire copy of specific
+> > version of GPL in the release the version number was specified.
+> 
+> It's not that simple.  Including a copy of the license is a license
+> requirement for any redistributor, yes.
+> 
+> But if you, a sole copyright holder, were to distribute your program,
+> without any copy of the GPL, claiming "it's under the GPL", you're not
+> a violator.
 >
-> No. My special rights do not actually give me those kinds of powers,
-> exactly because I'm bound by my _other_ agreement (namely the GPLv2) to
-> follow the license of the code that other people have sent me.
+
+Distributing a copy of GPL is not a requirement for me as a licensor
+however I did chose to include a copy of a specific version of a
+specific license and did not make any other statements that is the
+license for the work.
+ 
+> Then, any redistributor adds a copy of any version of the GPL (because
+> you didn't specify a version number).  At this point, is the program
+> licensed by *you* only under this specific license?
 >
-> > At first I thought that you cannot, because too many (significant)
-> > contributors have been involved (and you will never get signatures from
-> > them all). Then someone surprised me by claiming that the original author
-> > had copyright for everything - even files added by others.
+
+If they did not make any changes then they have to include the earliest
+version of GPL that applies. If they did modifications and chose GPLv4
+they will have to include GPL v4 (if such requirement is in GPLv4) because
+what good any other license will do me?
+ 
+> Now, if you picked one of the various versions of the license, to make
+> things easier for redistributors, does it mean you're choosing that
+> particular version of the license,
+
+Yes, this is my opinion.
+
+> even though the license itself 
+> says otherwise?
 >
-> Both are true facts, but the "copyright for everything" is a *separate*
-> kind of copyright, which does not include the right to relicense. It's
-> literally the "copyright in the collective".
->
-> For examples of the US rules, see USC 17.2.201(c) ("Ownership of
-> copyright" and " Contributions to Collective Works"), which spells out
-> some limited special rights that I have (namely the right to reproduce and
-> distribute).
 
-http://www.copyright.gov/title17/92chap2.html#201
+License does not say otherwise. License says that if there is an
+_additional_ stipulation my the licensor then some other license
+(non existing yet license) may be used. They had to use this wording
+because these licensed do not exist yet. If GPL would say:
 
-There are some really interesting bits in Chapter 1 too...
+"If the Program specifies a version number of this License which
+applies to it and "or BSD license", you have the option of following
+the terms and conditions either of that version or of BSD license"
 
-http://www.copyright.gov/title17
+would you still say that BSD is allowed by default by GPL? "GPL v2
+and later versions" is not different from "GPL v2 or BSD" or
+"GPLv2 or CDDL".  
 
-> entirely sure about certain special cases. In particular, if somebody
-> tried to _revoke_ the rights to their code under the GPLv2,
+> > You can't say that inclusion of copy of GPL is enough to specify
+> > class of licenses (all GPL) but not specific version.
+> 
+> I can't say either of these, indeed.  Or rather, I can, but I wouldn't
+> know whether I was right ;-)
+> 
 
-There's no revocation clause in the license.  They can't.  (SCO would have 
-tried to revoke Caldera's license to its contributions it if it were at all 
-possible.)
-
-> I suspect that 
-> my rights in the collective would protect me from that and allow me to
-> still distribute the code in question, since _those_ rights cannot be
-> revoked, and they are _mine_).
-
-Title 17 chapter 1 section 103(a) seems to lean against this.  I think it says 
-that having rights to the collective is conditional on having had the rights 
-to the components of that collective.
-
-> So only in the case of some really obscure and unclear situations, I _may_
-> have more rights than some other people, but trust me, but that is damn
-> murky, and you'd better have a good lawyer state it, not just a programmer
-> who has talked to too many lawyers..
-
-Entirely agreed. :)
-
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Dmitry
