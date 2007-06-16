@@ -1,59 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbXFPAAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbXFPADH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759989AbXFPAAc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 20:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759111AbXFPAAW
+	id S1759451AbXFPADH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 20:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbXFPACx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 20:00:22 -0400
-Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:45472 "EHLO
-	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758249AbXFPAAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 20:00:20 -0400
-Date: Fri, 15 Jun 2007 17:00:19 -0700 (PDT)
-From: alan <alan@clueserver.org>
-X-X-Sender: alan@blackbox.fnordora.org
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: Alexandre Oliva <aoliva@redhat.com>, Chris Adams <cmadams@hiwaay.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <20070615235715.GA21478@ftp.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0706151658000.27993@blackbox.fnordora.org>
-References: <fa.LW6a/JNOV4UxQSQYVUg4QmNGpVg@ifi.uio.no>
- <fa.CCSI/L3Wi9ZuPW2zfaUoy3r6NpM@ifi.uio.no> <fa.fKhdgnmUG47IDJmu9wnLXgnI9GA@ifi.uio.no>
- <20070615215334.GA1347791@hiwaay.net> <orwsy4vmj1.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070615235715.GA21478@ftp.linux.org.uk>
+	Fri, 15 Jun 2007 20:02:53 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:45884
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754903AbXFPACw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 20:02:52 -0400
+Date: Fri, 15 Jun 2007 17:01:25 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Greg KH <greg@kroah.com>
+cc: Crispin Cowan <crispin@novell.com>, Pavel Machek <pavel@ucw.cz>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+In-Reply-To: <20070615234925.GB15056@kroah.com>
+Message-ID: <Pine.LNX.4.64.0706151656170.12349@asgard.lang.hm>
+References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de>
+ <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com>
+ <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz>
+ <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com>
+ <20070615234925.GB15056@kroah.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Jun 2007, Al Viro wrote:
+On Fri, 15 Jun 2007, Greg KH wrote:
 
-> On Fri, Jun 15, 2007 at 08:13:54PM -0300, Alexandre Oliva wrote:
->> On Jun 15, 2007, Chris Adams <cmadams@hiwaay.net> wrote:
+> On Fri, Jun 15, 2007 at 04:30:44PM -0700, Crispin Cowan wrote:
+>> Greg KH wrote:
+>>> On Fri, Jun 15, 2007 at 10:06:23PM +0200, Pavel Machek wrote:
+>>>> Only case where attacker _can't_ be keeping file descriptors is newly
+>>>> created files in recently moved tree. But as you already create files
+>>>> with restrictive permissions, that's okay.
+>>>>
+>>>> Yes, you may get some -EPERM during the tree move, but AA has that
+>>>> problem already, see that "when madly moving trees we sometimes
+>>>> construct path file never ever had".
+>>>>
+>>> Exactly.
+>>>
+>> You are remembering old behavior. The current AppArmor generates only
+>> correct and consistent paths. If a process has an open file descriptor
+>> to such a file, they will retain access to it, as we described here:
+>> http://forgeftp.novell.com//apparmor/LKML_Submission-May_07/techdoc.pdf
 >>
->>> Obviously Linus feels that the spirit of the GPLv2 is exactly what
->>> he wanted
->>
->> spirit != letter.  He liked the letter.  He couldn't even tell spirit
->> from letter 2 or 3 days ago.
->>
->> The spirit is the motivations behind the author of the license.
->> Anyone who thinks the motivations of RMS and the FSF are not defending
->> users' freedoms, as defined in the Free Software Definition, hasn't
->> been around for very long.
+>> Under the restorecon-alike proposal, you have a HUGE open race. This
+>> post http://bugs.centos.org/view.php?id=1981 describes restorecon
+>> running for 30 minutes relabeling a file system. That is so far from
+>> acceptable that it is silly.
 >
-> Aha.  I.e. "similar in spirit" means simply "written according to
-> motivations of RMS and FSF".  Which means, of course, that RMS and
-> FSF are the sole judges in that area.  There is just one problem:
-> it's not vague enough to be stated openly in the license.  Can't
-> scare the suckers away - that would reduce the user freedoms, right?
+> Ok, so we fix it.  Seriously, it shouldn't be that hard.  If that's the
+> only problem we have here, it isn't an issue.
 
-I always thought that the "Spirit of the GPL" runs around 180 proof and 
-involves Laudanum.
+how do you 'fix' the laws of physics?
 
--- 
-"ANSI C says access to the padding fields of a struct is undefined.
-ANSI C also says that struct assignment is a memcpy. Therefore struct
-assignment in ANSI C is a violation of ANSI C..."
-                                   - Alan Cox
+the problem is that with a directory that contains lots of files below it 
+you have to access all the files metadata to change the labels on it. it 
+can take significant amounts of time to walk the entire three and change 
+every file.
+
+>>> I can't think of a "real world" use of moving directory trees around
+>>> that this would come up in as a problem.
+>> Consider this case: We've been developing a new web site for a month,
+>> and testing it on the server by putting it in a different virtual
+>> domain. We want to go live at some particular instant by doing an mv of
+>> the content into our public HTML directory. We simultaneously want to
+>> take the old web site down and archive it by moving it somewhere else.
+>>
+>> Under the restorecon proposal, the web site would be horribly broken
+>> until restorecon finishes, as various random pages are or are not
+>> accessible to Apache.
+>
+> Usually you don't do that by doing a 'mv' otherwise you are almost
+> guaranteed stale and mixed up content for some period of time, not to
+> mention the issues surrounding paths that might be messed up.
+
+on the contrary, useing 'mv' is by far the cleanest way to do this.
+
+mv htdocs htdocs.old;mv htdocs.new htdocs
+
+this makes two atomic changes to the filesystem, but can generate 
+thousands to millions of permission changes as a result.
+
+David Lang
