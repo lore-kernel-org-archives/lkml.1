@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbXFPEYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbXFPEdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbXFPEYi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 00:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbXFPEY2
+	id S1753719AbXFPEdz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 00:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbXFPEdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 00:24:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58371 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbXFPEY0 (ORCPT
+	Sat, 16 Jun 2007 00:33:47 -0400
+Received: from srv1.netkinetics.net ([206.71.148.180]:38705 "EHLO
+	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750711AbXFPEdq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 00:24:26 -0400
-Date: Fri, 15 Jun 2007 21:23:59 -0700
-From: Greg KH <greg@kroah.com>
-To: James Morris <jmorris@namei.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
-	pathname matching
-Message-ID: <20070616042359.GA31560@kroah.com>
-References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <Line.LNX.4.64.0706151736030.28697@localhost.localdomain> <20070615235041.GC15056@kroah.com> <Line.LNX.4.64.0706152057390.29737@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Line.LNX.4.64.0706152057390.29737@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Sat, 16 Jun 2007 00:33:46 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Tim Post <tim.post@netkinetics.net>
+Reply-To: tim.post@netkinetics.net
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <or3b0stvgf.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <200706132304.21984.dhazelton@enter.net>
+	 <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu>
+	 <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070614195517.GA4933@elte.hu>
+	 <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070614235004.GA14952@elte.hu>
+	 <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070615113123.GA6269@elte.hu>
+	 <orr6od11lt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070615212905.GB4996@elte.hu>
+	 <1181962902.21803.513.camel@localhost.localdomain>
+	 <or3b0stvgf.fsf@oliva.athome.lsd.ic.unicamp.br>
+Content-Type: text/plain
+Organization: Net Kinetics
+Date: Sat, 16 Jun 2007 12:31:57 +0800
+Message-Id: <1181968317.21803.528.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.1 
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - netkinetics.net
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 09:21:57PM -0400, James Morris wrote:
-> On Fri, 15 Jun 2007, Greg KH wrote:
+On Sat, 2007-06-16 at 00:44 -0300, Alexandre Oliva wrote:
+> On Jun 16, 2007, Tim Post <tim.post@netkinetics.net> wrote:
 > 
-> > Oh great, then things like source code control systems would have no
-> > problems with new files being created under them, or renaming whole
-> > trees.
+> > On Fri, 2007-06-15 at 23:29 +0200, Ingo Molnar wrote:
+> >> Tivo has two choices: either it gives 
+> >> users the content they want to watch, or it goes out of business. Is 
+> >> that legitimate enough of a reason to restrict the hardware?
 > 
-> It depends -- I think we may be talking about different things.
+> > Can I submit that they could just rent the use of their machines?
 > 
-> If you're using inotify to watch for new files and kick something in 
-> userspace to relabel them, it could take a while to relabel a lot of 
-> files, although there are likely some gains to be had from parallel 
-> relabeling which we've not explored.
+> I don't think this would escape the wording of section 6 in GPLv3dd4:
 > 
-> What I was saying is that you can use traditional SELinux labeling policy 
-> underneath that to ensure that there is always a safe label on each file 
-> before it is relabeled from userspace.
+>   [...] User Product is transferred to the recipient in perpetuity or
+>   for a fixed term (regardless of how the transaction is
+>   characterized), [...]
+> 
+> and IMHO that's as it should be to defend the freedoms of the user.
+> 
 
-Ok, yes, I think we are in violent agreement here :)
+Yes, I think you're right. There may be no good solution for tivo.
 
-> > So, so much for the "it's going to be too slow re-labeling everything"
-> > issue, as it's not even required for almost all situations :)
-> 
-> You could probably get an idea of the cost by running something like:
-> 
-> $ time find /usr/src/linux | xargs setfattr -n user.foo -v bar
-> 
-> On my system, it takes about 1.2 seconds to label a fully checked out 
-> kernel source tree with ~23,000 files in this manner, on a stock standard 
-> ext3 filesystem with a SATA drive.
+I'm not yet ready to give up on middle ground! :) I'll just have to work
+harder if I'm to think of it. I refuse to accept a situation where the
+only good outcome results in people being hurt, one way or another.
 
-Yeah, that should be very reasonable.  I'll wait to see Crispin's code
-to work off of and see if I can get it to approach that kind of speed.
+You might see that as futility, it could very well be. But I feel
+obligated to keep looking and thinking because I can.
 
-thanks,
+My head hurts.
 
-greg k-h
+Best,
+--Tim
+
