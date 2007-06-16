@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbXFPQOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbXFPQPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbXFPQOI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 12:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbXFPQN4
+	id S1755811AbXFPQPo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 12:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbXFPQPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 12:13:56 -0400
-Received: from [212.112.238.170] ([212.112.238.170]:56957 "EHLO
-	longford.lazybastard.org" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753264AbXFPQN4 (ORCPT
+	Sat, 16 Jun 2007 12:15:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53725 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753753AbXFPQPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 12:13:56 -0400
-Date: Sat, 16 Jun 2007 16:53:37 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: alan <alan@clueserver.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-Message-ID: <20070616145337.GA13391@lazybastard.org>
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
+	Sat, 16 Jun 2007 12:15:36 -0400
+Date: Sat, 16 Jun 2007 09:15:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, trond.myklebust@fys.uio.no,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] NFS: Make NFS root work again
+Message-Id: <20070616091514.8e5dc1d3.akpm@linux-foundation.org>
+In-Reply-To: <20070607164003.24322.51086.stgit@warthog.cambridge.redhat.com>
+References: <20070607164003.24322.51086.stgit@warthog.cambridge.redhat.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 June 2007 15:51:07 -0700, alan wrote:
+On Thu, 07 Jun 2007 17:40:03 +0100 David Howells <dhowells@redhat.com> wrote:
+
+> Make NFS root work by creating a "/root" directory to satisfy the mount,
+> otherwise the path lookup for the mount fails with ENOENT.
 > 
-> >Thus, in the end it turns out that this stuff is better handled by
-> >explicit version-control systems (which require explicit operations to
-> >manage revisions) and atomic snapshots (for backup.)
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
 > 
-> ZFS is the cool new thing in that space.  Too bad the license makes it 
-> hard to incorporate it into the kernel.
+>  init/do_mounts.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/init/do_mounts.c b/init/do_mounts.c
+> index 46fe407..967b852 100644
+> --- a/init/do_mounts.c
+> +++ b/init/do_mounts.c
+> @@ -270,7 +270,10 @@ static void __init get_fs_names(char *page)
+>  
+>  static int __init do_mount_root(char *name, char *fs, int flags, void *data)
+>  {
+> -	int err = sys_mount(name, "/root", fs, flags, data);
+> +	int err;
+> +
+> +	sys_mkdir("/root", 0755);
+> +	err = sys_mount(name, "/root", fs, flags, data);
+>  	if (err)
+>  		return err;
 
-It may be the coolest, but there are others as well.  Btrfs looks good,
-nilfs finally has a cleaner and may be worth a try, logfs will get
-snapshots sooner or later.  Heck, even my crusty old cowlinks can be
-viewed as snapshots.
+Am still awaiting a proper description of this patch, please.
 
-If one has spare cycles to waste, working on one of those makes more
-sense than implementing file versioning.
+What is not working, and how does this patch fix it?
 
-Jörn
-
--- 
-"Security vulnerabilities are here to stay."
--- Scott Culp, Manager of the Microsoft Security Response Center, 2001
+I am unaware of any open bug reports against NFS root.
