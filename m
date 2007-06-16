@@ -1,49 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbXFPUDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbXFPUFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756800AbXFPUDi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 16:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXFPUD2
+	id S1757399AbXFPUFB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 16:05:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbXFPUEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 16:03:28 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59130 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750932AbXFPUD1 (ORCPT
+	Sat, 16 Jun 2007 16:04:54 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2430 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754888AbXFPUEx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 16:03:27 -0400
-Date: Sat, 16 Jun 2007 21:08:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-Cc: Jan Harkes <jaharkes@cs.cmu.edu>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, alan <alan@clueserver.org>,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-Message-ID: <20070616210834.3bd051b9@the-village.bc.nu>
-In-Reply-To: <46744225.7000609@wolfmountaingroup.com>
-References: <46731169.2090002@hawkeye.stone.uk.eu.org>
-	<467314E2.9010306@zytor.com>
-	<Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
-	<46739B2C.4080606@hawkeye.stone.uk.eu.org>
-	<4673B15B.2080300@wolfmountaingroup.com>
-	<4673B77E.1000803@wolfmountaingroup.com>
-	<20070616164931.GF14788@delft.aura.cs.cmu.edu>
-	<46744225.7000609@wolfmountaingroup.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 16 Jun 2007 16:04:53 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Sat, 16 Jun 2007 13:04:34 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEGPEKAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Importance: Normal
+In-Reply-To: <ortzt7pumu.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sat, 16 Jun 2007 13:05:02 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sat, 16 Jun 2007 13:05:03 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> http://www.wipo.int/pctdb/en/fetch.jsp?LANG=ENG&DBSELECT=PCT&SERVER_TYPE=19&SORT=1211506-KEY&TYPE_FIELD=256&IDB=0&IDOC=1205953&C=10&ELEMENT_SET=IA,WO,TTL-EN&RESULT=1&TOTAL=3&START=1&DISP=25&FORM=SEP-0/HITNUM,B-ENG,DP,MC,PA,ABSUM-ENG&SEARCH_IA=US2005045566&QUERY=%28IN%2fmerkey%29+
-> 
-> The last one was filed with WIPO and has international protection, UK 
-> included.
 
-Nope. EU and UK law does not recognize software as patentable. See the
-caselaw.
+> On Jun 16, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+
+> > I don't see how TiVO has done this. They have placed no restrictions on
+> > *modification* at all. What they have done is placed a restriction on
+> > *REPLACEMENT* of the program.
+
+> Technicality.  In order for the software to remain free (which is what
+> the GPL is all about), the user must not be stopped from adapting the
+> software to suit his needs and running it for any purpose.  TiVo
+> places restrictions on it.  It's really this simple.
+
+No, this is completely and utterly wrong. By this logic, Linux isn't free if
+I can't run it on *YOUR* laptop. TiVo places restrictions on *hardware*. The
+hardware is not free.
+
+> And then, TiVo doesn't really prohibit replacement.  You can replace
+> it as much as you like; just not as conveniently as TiVo can replace
+> it.  And then, if you do, it won't run, because it's not signed with a
+> key that they omit from the source code.  And they do this in order to
+> prevent the user from changing the behavior of the Free Software that
+> they use, while they keep this ability to themselves.
+
+> If these are not restrictions on the freedoms that the GPL is designed
+> to protect to ensure that Free Software remains Free for all its
+> users, I don't know what is.
+
+So why is it not a restriction on this freedom that I can't modify the copy
+of Linux running on *your* desktop? If it helps you to understand the
+situation better, think of TiVo as not really selling you the hardware.
+
+To see why this isn't a GPL issue, imagine if TiVo explicitly didn't sell
+the hardware. Imagine if they only rented it or sold it but retained the
+right to control what software ran on it. Essentially, your TiVo would be
+like my laptop -- you don't get to decide what software runs on it. But if
+you get GPL'd software, you get source code.
+
+Regardless of how the GPL came to be in the first place, the vast majority
+of people who chose to use the GPL (including Linus himself) choose it so
+that the code can't be modified and distributed and those modifications kept
+secret. The idea is that any change widely distributed in binary form is
+nearly assured to propogate back in source code form, and is assured to get
+to those who paid for the binary.
+
+Linus, and many other people, don't give a damn (from a GPL perspective)
+about what TiVo does with their hardware. They may agree with it, disagree
+with it, think it's legal, maybe even illegal, but they don't think it has
+*anything* to do with the intent or spirit of the GPLv2 as *they* understand
+it and for the reasons *they* chose it. They just want to get source code,
+and they really don't care what other people do with it -- they care about
+what *they* can do with it.
+
+They just want the source code, and TiVo gives it to them. GPL was about
+source code not being secret, to them and to many others.
+
+> No, they're using the hardware (along with other pieces of software)
+> to deny users (but not themselves) the freedoms that the license of
+> software *meant* to defend, for that software, even if some believe it
+> doesn't actually defend them.
+
+At least to Linus, the GPL was never meant to defend the freedom to run
+Linux on any hardware you want. It was just meant to ensure that you
+couldn't keep the source code secret. I personally feel precisely the same
+way and I think many other people do too.
+
+I think that what TiVo is doing is wrong for completely different reasons
+that have nothing to do with the fact that it happens to run Linux or that
+Linux happens to be free software. But I think I've already made that clear
+in other posts.
+
+DS
+
 
