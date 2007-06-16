@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbXFPEdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbXFPEk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753719AbXFPEdz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 00:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbXFPEdr
+	id S1754454AbXFPEk3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 00:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbXFPEkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 00:33:47 -0400
-Received: from srv1.netkinetics.net ([206.71.148.180]:38705 "EHLO
-	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbXFPEdq (ORCPT
+	Sat, 16 Jun 2007 00:40:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:29396 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbXFPEkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 00:33:46 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Tim Post <tim.post@netkinetics.net>
-Reply-To: tim.post@netkinetics.net
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <or3b0stvgf.fsf@oliva.athome.lsd.ic.unicamp.br>
-References: <200706132304.21984.dhazelton@enter.net>
-	 <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu>
-	 <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <20070614195517.GA4933@elte.hu>
-	 <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <20070614235004.GA14952@elte.hu>
-	 <or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <20070615113123.GA6269@elte.hu>
-	 <orr6od11lt.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <20070615212905.GB4996@elte.hu>
-	 <1181962902.21803.513.camel@localhost.localdomain>
-	 <or3b0stvgf.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain
-Organization: Net Kinetics
-Date: Sat, 16 Jun 2007 12:31:57 +0800
-Message-Id: <1181968317.21803.528.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.1 
+	Sat, 16 Jun 2007 00:40:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RWSG/aSGiogtMrtWs5v5HpkbEa86YQ6I3Fy7ajLoHR+BAFvHXPwWhKYYrLxk+T8MbZkBaR54KFeg8+QS5t8CH0QRPtsa/X2luql+WNv0rySQFsF6KvuSgowtiHAPZ36NgPXAEdt+yzAEM+OaKq1ujHYLH6A9qvBSEn+/3SOq0og=
+Message-ID: <a56dfcf00706152140s36d01ff6sb9a6bb716b8afe65@mail.gmail.com>
+Date: Sat, 16 Jun 2007 00:40:17 -0400
+From: "Dan Merillat" <dan.merillat@gmail.com>
+To: "Neil Brown" <neilb@suse.de>
+Subject: Re: limits on raid
+Cc: "Wakko Warner" <wakko@animx.eu.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+In-Reply-To: <18035.23867.576212.859440@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - netkinetics.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+	 <18034.479.256870.600360@notabene.brown>
+	 <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+	 <18034.3676.477575.490448@notabene.brown>
+	 <20070616020320.GB2002@animx.eu.org>
+	 <18035.23867.576212.859440@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-06-16 at 00:44 -0300, Alexandre Oliva wrote:
-> On Jun 16, 2007, Tim Post <tim.post@netkinetics.net> wrote:
-> 
-> > On Fri, 2007-06-15 at 23:29 +0200, Ingo Molnar wrote:
-> >> Tivo has two choices: either it gives 
-> >> users the content they want to watch, or it goes out of business. Is 
-> >> that legitimate enough of a reason to restrict the hardware?
-> 
-> > Can I submit that they could just rent the use of their machines?
-> 
-> I don't think this would escape the wording of section 6 in GPLv3dd4:
-> 
->   [...] User Product is transferred to the recipient in perpetuity or
->   for a fixed term (regardless of how the transaction is
->   characterized), [...]
-> 
-> and IMHO that's as it should be to defend the freedoms of the user.
-> 
+> For raid5 on an array with more than 3 drive, if you attempt to write
+> a single block, it will:
+>
+>  - read the current value of the block, and the parity block.
+>  - "subtract" the old value of the block from the parity, and "add"
+>    the new value.
+>  - write out the new data and the new parity.
+>
+> If the parity was wrong before, it will still be wrong.  If you then
+> lose a drive, you lose your data.
 
-Yes, I think you're right. There may be no good solution for tivo.
-
-I'm not yet ready to give up on middle ground! :) I'll just have to work
-harder if I'm to think of it. I refuse to accept a situation where the
-only good outcome results in people being hurt, one way or another.
-
-You might see that as futility, it could very well be. But I feel
-obligated to keep looking and thinking because I can.
-
-My head hurts.
-
-Best,
---Tim
-
+Wow, that really needs to be put somewhere in 120 point red blinking
+text.  A lot of us are used to uninitialized disks calculating the
+parity-on-first-write, but if linux MD is forgoeing that
+'dangerous-no-resync' sounds really REALLY bad.  How about at least a
+'Warning: unlike other systems this WILL cause corruption if you
+forego reconstruction' on mkraid?
