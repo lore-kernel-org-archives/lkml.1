@@ -1,74 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbXFPFoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbXFPFqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757295AbXFPFoU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 01:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXFPFoM
+	id S1758404AbXFPFqq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 01:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXFPFqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 01:44:12 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:31981 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbXFPFoK (ORCPT
+	Sat, 16 Jun 2007 01:46:40 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:37742 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751988AbXFPFqj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 01:44:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QRUFsf5UKGuCgb0kU7PjbiavAozv2mnokAi0F9PWtPdsjPUwEXoKQPGKuwExCTYLKdyLpAHzFO/C/kN444kG7l4j3HVOIJhX4q5CuN9v8YvOBL1KFdKQvhAIunV/xB5BqQtpQ1rH+vFWKdUynl6LSVi2IRdBhXOA5DJupf5RGng=
-Message-ID: <7b69d1470706152244g8b23932i1f04e369f226fd0d@mail.gmail.com>
-Date: Sat, 16 Jun 2007 00:44:09 -0500
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Alexandre Oliva" <aoliva@redhat.com>
+	Sat, 16 Jun 2007 01:46:39 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: Rob Landley <rob@landley.net>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Daniel Hazelton" <dhazelton@enter.net>,
-       "Michael Gerdau" <mgd@technosis.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
-       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, "Tarkan Erimer" <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <orhcp8u15m.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Sat, 16 Jun 2007 07:46:07 +0200
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <alpine.LFD.0.98.0706151548070.14121@woody.linux-foundation.org> <200706152157.15444.rob@landley.net>
+In-Reply-To: <200706152157.15444.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart1316051.1DGFV4o52l";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	 <alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org>
-	 <200706160006.26428.mgd@technosis.de>
-	 <200706151830.46175.dhazelton@enter.net>
-	 <20070615224403.GA23721@elte.hu>
-	 <ork5u4vljw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <7b69d1470706151756m364985d2xd7c1dbb9b203df28@mail.gmail.com>
-	 <orhcp8u15m.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-Id: <200706160746.23597.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1181972798;db54cb8a;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/15/07, Alexandre Oliva <aoliva@redhat.com> wrote:
-> On Jun 15, 2007, "Scott Preece" <sepreece@gmail.com> wrote:
->
-> > On 6/15/07, Alexandre Oliva <aoliva@redhat.com> wrote:
-> >> > * Daniel Hazelton <dhazelton@enter.net> wrote:
-> >>
-> >> That's correct, but with a catch: since the contract or license is
-> >> chosen by the licensor, in case of ambiguity in the terms, many courts
-> >> will interpret it in a way that privileges the licensee, regardless of
-> >> the fact that copyright licenses are to be interpreted restrictively
-> >> (at least in Brazilian law).  And IANAL ;-)
-> > ---
->
-> > Hmm. In such a suit, however, the user would not be "the licensee" and
-> > would not be a party to the suit - some author would be the plaintiff
-> > and would be suing someone for doing something in violation of the
-> > license that author granted - that is, the *defendant* would be the
-> > licensee who would get the benefit of the doubt...
->
-> Yes.  And so justice is made.  Licensor gets to pick the license,
-> licensee gets the benefit of the doubt.  What's the 'however' about?
-> Was this not obvious?
----
+--nextPart1316051.1DGFV4o52l
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Sorry - I thought you were saying ambiguity would be resolved in favor
-of the user. If you meant in favor of the licensee (regardless of that
-limiting the user's rights), then I agree.
+> On Friday 15 June 2007 18:59:14 Linus Torvalds wrote:
+> > So it's true: the GPL just gives you rights, and without it you have no
+> > rights (other than fair use ones etc), and blah blah. But the distincti=
+on
+> > between "license" vs "contract" really isn't a very important one in any
+> > case.
+>=20
+> Er, copyright law is federal, contract law is generally state level?  So =
+not=20
+> only does contract law vary a lot more by jurisdiction, but it's enforced=
+ by=20
+> different courts than suits over copyright?  (You'll notice the GPL doesn=
+'t=20
+> say which state law holds sway.  If it was a contract this would be kind =
+of=20
+> important.)
 
-scott
+That seems to be a special property of the US legal system. At least I'm
+not aware of this or a similar distinction in e.g. germany (or most parts
+of europe AFAIK).
+
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart1316051.1DGFV4o52l
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGc3kvUYYhyuxDQc4RAl/QAJwIG7FOsogtfKPRaDbiog2bdjCgngCfebBD
+hS6dyv6AnSajZkBft6ONIbU=
+=KgPf
+-----END PGP SIGNATURE-----
+
+--nextPart1316051.1DGFV4o52l--
