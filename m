@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbXFPKZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbXFPKZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbXFPKZz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 06:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXFPKYP
+	id S1756488AbXFPKZk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 06:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbXFPKYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 06:24:15 -0400
-Received: from www.osadl.org ([213.239.205.134]:37171 "EHLO mail.tglx.de"
+	Sat, 16 Jun 2007 06:24:14 -0400
+Received: from www.osadl.org ([213.239.205.134]:37135 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753338AbXFPKYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 06:24:10 -0400
-Message-Id: <20070616101636.794026871@inhelltoy.tec.linutronix.de>
+	id S1752547AbXFPKYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 06:24:09 -0400
+Message-Id: <20070616101636.556333444@inhelltoy.tec.linutronix.de>
 References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 16 Jun 2007 10:36:07 -0000
+Date: Sat, 16 Jun 2007 10:36:01 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
        Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>
-Subject: [patch-mm 07/25] Tick management: spread timer interrupt
-Content-Disposition: inline; filename=tick-spread-timer-interrupts.patch
+       Adam Belay <abelay@novell.com>, Len Brown <lenb@kernel.org>,
+       Dave Miller <davem@davemloft.net>, Paul Mundt <lethal@linux-sh.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [patch-mm 01/25] NOHZ: Fix nox x86 dyntick idle handling
+Content-Disposition: inline; filename=cpuidle-fix-sparc-arm-sh-idle.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: john stultz <johnstul@us.ibm.com>
+The cpuidle patches moved the tick nohz handling from irq_exit into
+the inner idle loop. The change is correct as it covers non interrupt
+based wakeups (e.g DMA) on x86 as well, but the move breaks ARM, SH
+and SPARC64. 
 
-After discussing w/ Thomas over IRC, it seems the issue is the sched
-tick fires on every cpu at the same time, causing extra lock contention.
+Keep the original implementation and deselet the irq exit code for
+those architectures which have non irq idle wakeups.
 
-This smaller change, adds an extra offset per cpu so the ticks don't
-line up. This patch also drops the idle latency from 40us down to under
-20us.
+This way the non affected architectures are not burdened with the
+extra changes in the idle implementation.
 
-Signed-off-by: john stultz <johnstul@us.ibm.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Adam Belay <abelay@novell.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Dave Miller <davem@davemloft.net>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 
 ---
- kernel/time/tick-sched.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/i386/Kconfig |    4 ++++
+ kernel/softirq.c  |    5 +++++
+ 2 files changed, 9 insertions(+)
 
-Index: linux-2.6.22-rc4-mm/kernel/time/tick-sched.c
+Index: linux-2.6.22-rc4-mm/arch/i386/Kconfig
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/time/tick-sched.c	2007-06-16 12:10:21.000000000 +0200
-+++ linux-2.6.22-rc4-mm/kernel/time/tick-sched.c	2007-06-16 12:10:23.000000000 +0200
-@@ -573,6 +573,7 @@ void tick_setup_sched_timer(void)
- {
- 	struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
- 	ktime_t now = ktime_get();
-+	u64 offset;
+--- linux-2.6.22-rc4-mm.orig/arch/i386/Kconfig	2007-06-16 12:10:22.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/i386/Kconfig	2007-06-16 12:10:22.000000000 +0200
+@@ -31,6 +31,10 @@ config GENERIC_CLOCKEVENTS_BROADCAST
+ 	default y
+ 	depends on X86_LOCAL_APIC
  
- 	/*
- 	 * Emulate tick processing via per-CPU hrtimers:
-@@ -581,8 +582,12 @@ void tick_setup_sched_timer(void)
- 	ts->sched_timer.function = tick_sched_timer;
- 	ts->sched_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
++config NONIRQ_WAKEUP
++	bool
++	default y
++
+ config LOCKDEP_SUPPORT
+ 	bool
+ 	default y
+Index: linux-2.6.22-rc4-mm/kernel/softirq.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/kernel/softirq.c	2007-06-16 12:10:22.000000000 +0200
++++ linux-2.6.22-rc4-mm/kernel/softirq.c	2007-06-16 12:10:22.000000000 +0200
+@@ -304,6 +304,11 @@ void irq_exit(void)
+ 	if (!in_interrupt() && local_softirq_pending())
+ 		invoke_softirq();
  
--	/* Get the next period */
-+	/* Get the next period (per cpu)*/
- 	ts->sched_timer.expires = tick_init_jiffy_update();
-+	offset = ktime_to_ns(tick_period) >> 1;
-+	do_div(offset, NR_CPUS);
-+	offset *= smp_processor_id();
-+	ts->sched_timer.expires = ktime_add_ns(ts->sched_timer.expires, offset);
++#if defined(CONFIG_NO_HZ) && !defined(CONFIG_NONIRQ_WAKEUP)
++	/* Make sure that timer wheel updates are propagated */
++	if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
++		tick_nohz_stop_sched_tick();a
++#endif
+ 	preempt_enable_no_resched();
+ }
  
- 	for (;;) {
- 		hrtimer_forward(&ts->sched_timer, now, tick_period);
 
 -- 
 
