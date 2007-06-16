@@ -1,54 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbXFPMlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbXFPMtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbXFPMlS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 08:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbXFPMlH
+	id S1756608AbXFPMtS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 08:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbXFPMtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 08:41:07 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:49852 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754721AbXFPMlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 08:41:06 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4673DA43.5080109@s5r6.in-berlin.de>
-Date: Sat, 16 Jun 2007 14:40:35 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chris Friesen <cfriesen@nortel.com>,
-       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: coding style
-References: <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com> <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr> <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com> <20070615110326.b0762b7a.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr> <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com> <Pine.LNX.4.64.0706152122050.32724@fbirervta.pbzchgretzou.qr> <20070615194140.GE8151@cvg> <Pine.LNX.4.64.0706152210150.32724@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.98.0706151335240.14121@woody.linux-foundation.org> <Pine.LNX.4.64.0706160833220.32724@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706160833220.32724@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Jun 2007 08:49:13 -0400
+Received: from mx.laposte.net ([81.255.54.16]:3795 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752145AbXFPMtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 08:49:12 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <49716.192.54.193.51.1181907924.squirrel@rousalka.dyndns.org>
+References: <64689.192.54.193.51.1181901773.squirrel@rousalka.dyndns.org>
+	 <49716.192.54.193.51.1181907924.squirrel@rousalka.dyndns.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-xU/dp8vQqq+BtbxgbqUD"
+Organization: Adresse perso
+Date: Sat, 16 Jun 2007 14:48:52 +0200
+Message-Id: <1181998132.4388.125.camel@rousalka.dyndns.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.3 (2.11.3-4.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jun 15 2007 13:39, Linus Torvalds wrote:
->> On Fri, 15 Jun 2007, Jan Engelhardt wrote:
->>> Linux maintainers will enforce \t "being"[1] 8, and will also enforce
->>> the 80-column limit[2].
->> Heh. Actually, Linux maintainers have generally very consciously _avoided_ 
->> trying to "enforce" coding style issues.
-> 
-> Really? "it's not going to be merged unless you turn all uint32_t into
-> u_int32_t" is a paraphrased variant of what I was told this month.
 
-Here is a 3rd variant:  I mostly enforce CodingStyle as far as I am
-aware of deviations, but because I get so few contributions, I more and
-more tend to adjust coding style on my own before commit, rather than to
-bother the contributor.
--- 
-Stefan Richter
--=====-=-=== -==- =----
-http://arcgraph.de/sr/
+--=-xU/dp8vQqq+BtbxgbqUD
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Daniel Hazelton wrote:
+
+>> I always did imply a "within reason". To me that means "if it is
+>> simple for them to do it and can be simply extended to me as well
+>> then they have to extend it". Handing out a SHA1 key definitely is
+>> simple and thus IMO something I can expect them to do.
+
+> But the "within reason" isn't there. That some people have inferred that =
+term=20
+> applies doesn't matter.=20
+
+You know I was reading the "Wizard of the crow" yesterday (a terrific
+book about an imaginary dictatorship in Africa) and at one point a
+minister makes the mistake of using a wording that implies the Ruler and
+the Country may not be one and the same. Realising his error he quickly
+suggests adding to the constitution Ruler=3DCountry. Which fails to
+mollify the Ruler who replies something like "the constitution does not
+writes the Sun shines, should it?"=C2=B9
+
+Law texts are not self-contained logical units like software code. There
+is always an implied "#include common-sense.h and #include reason.h" in
+them. Law texts won't spell out common-sense limits. Law texts won't
+write about situations not happening in real life.
+
+Which brings me to another point. What happens when a new situation
+arises? Is it sufficient to do a litteral reading of existing legal
+texts to decide what's authorised or not? I'll say no. If something
+obviously new happens (like DRM did those past years) you *have* to
+check intent and not just verify if you can weasel by existing wording
+(and of course ideally wording is adjusted to lift any ambigu=C3=AFty).
+
+Alan Cox could sue Tivo today for all his code they use because his
+reading of the license he released code under is not the same as theirs.
+Hell if Linus was named Tivo CEO today Alan could probably sue Linus
+successfully too.
+
+All the messages of people who claim they know the legal status of Tivo
+WRT its use of GPL-v2 Linux code under DRM is just this =E2=80=93 noise. It=
+'s
+trivial to show GPL-v2 didn't envision DRM. It's trivial to show many
+smart people do not have the same GPLv2 interpretation as Linus. Till
+the intent of every significant kernel contributor is checked there is
+no legal certainty. Refusing to look it up may be expedient but won't
+lift the legal cloud.
+
+=C2=B9 Hope this will lighten the mood a bit
+--=20
+Nicolas Mailhot
+
+--=-xU/dp8vQqq+BtbxgbqUD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iEYEABECAAYFAkZz3DQACgkQI2bVKDsp8g0DVQCfawfc++Zd+Q/At1qawE/GxbPG
+DXsAoO/hXORcKBQVJdmx/pjsEU89hFnN
+=ZPNJ
+-----END PGP SIGNATURE-----
+
+--=-xU/dp8vQqq+BtbxgbqUD--
