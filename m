@@ -1,137 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbXFPLz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbXFPMHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbXFPLz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 07:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbXFPLzX
+	id S1756135AbXFPMHU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 08:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbXFPMHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 07:55:23 -0400
-Received: from mx.laposte.net ([81.255.54.16]:26365 "EHLO mx.laposte.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753236AbXFPLzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 07:55:22 -0400
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46063.192.54.193.51.1181897654.squirrel@rousalka.dyndns.org>
-References: <46063.192.54.193.51.1181897654.squirrel@rousalka.dyndns.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-frB8/V+5/kNMqaA/p1T+"
-Organization: Adresse perso
-Date: Sat, 16 Jun 2007 13:55:18 +0200
-Message-Id: <1181994918.4388.86.camel@rousalka.dyndns.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.3 (2.11.3-4.fc8) 
+	Sat, 16 Jun 2007 08:07:08 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:3351 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754070AbXFPMHF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 08:07:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=RWbxdt1h+c/+JhymiYo0j39sdzcPJNUWktX054uXBlGDf8v/DIJejod7thSsBVVr3r65iqD06egFTZZ+7UfqIH4pvbkMEQecQ3Z4v9UVd4zPBiZFfipt+IVr3Lpv8zDUU4VdAyOzDKwASKmU+qpI7BHFGAi65EKD/SS+6tlooUA=
+Message-ID: <4673D264.8090306@gmail.com>
+Date: Sat, 16 Jun 2007 14:07:00 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Thierry Merle <thierry.merle@free.fr>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+References: <2172422218943432279@wsc.cz>	 <1180364420.21547.160.camel@localhost>	 <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>	 <1180378677.21547.189.camel@localhost>	 <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>	 <1180383071.21547.230.camel@localhost> <465B49EB.4080204@free.fr>	 <465BBAFB.30906@free.fr> <1180448712.21547.314.camel@localhost>	 <465C7920.2080203@free.fr> <1180467116.9509.73.camel@localhost>	 <465F3361.106@free.fr> <1180739401.3904.50.camel@localhost>	 <466131CB.20301@free.fr> <466131CB.20301@free.fr>	 <6872422218943432279_1@wsc.cz> <1181994378.22144.11.camel@localhost>
+In-Reply-To: <1181994378.22144.11.camel@localhost>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thierry Merle napsal(a):
+> Le vendredi 15 juin 2007 à 23:08 +0200, Jiri Slaby a écrit :
+>> Mauro Carvalho Chehab wrote:
+>>> Em SÃ¡b, 2007-06-02 Ã s 11:00 +0200, Thierry Merle escreveu:
+>>>> Nevertheless, I will start to specify the framework.
+>>>> The helper daemon would link to the v4l2-apps/lib.
+>>> Ok, thanks!
+>> Ok, here comes updated version of stk11xx driver. Note that it's not
+>> still
+>> separated into more files (I'll do this as the last step) and also
+>> resize
+>> and bayer->rgb conversion remains. This is what I'm interested in --
+>> is
+>> there some embryo of library with resize and conversion? Or what was
+>> the
+>> decision to create?
+> 
+> Hi Jiri,
+> sorry I started the specification but nothing finalized (and
+> consequently no code).
+> Here is the start of my idea for a v4l2_extension:
+> http://thierry.merle.free.fr/v4l2_extension/general.html
+> My new USB tuner took me all my little time and I did not get into
+> details (the spec is incomplete).
+> Well, as you insist I will explain a bit more :)
+> Please comment, tell me what you don't understand I will try to update
+> during this week-end...
 
---=-frB8/V+5/kNMqaA/p1T+
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+At the first look seems good, the SD is self-explaining. If you want me to help
+you with something, feel free to drop a message ;).
 
-Ingo Molnar wrote:
+In the meantime until some early increment would be developped, is it
+feasible/acceptable to merge the driver as is (after changing some things which
+will be eventually commented plus splitting into several files)?
 
-> and that's where the GPLv3 errs: it arbitrarily attempts to "define"=20
-> some work that can _easily_ be completely separate from the GPL-ed
-> work to be under the scope of "source code".
-
-Well thanksfuly the last draft doesn't and puts keys and other such
-stuff under "installation information=C2=B9". Which does not mean they may
-not in fact be some sort of derived object, but I find the new language
-makes the license intent much clearer. And that's the primary objective
-of a license text. Yes the technical wording is important too, but a
-judge does not expect the technical wording to be perfect or time-proof,
-so if you focus on technicalities you get to argue on broken
-technicalities later because there is not clear intent for the court to
-rule on.
-
-Some would say other parts of the last GPLv3 draft forgot this and
-focused on technicalities over making the intent clear, and I wouldn't
-disagree. But the DRM bit has been controversial enough its current
-re-wording is quite good IMHO.
-
-This may be anathema to many on this list but I don't actually care
-about the original code author well being. I've done my share of
-contributions to FLOSS projects (in code, testing, money, etc) but I've
-no illusion the number of projects I've contributed to will be dwarfed
-by the number of projects I'll use in my everyday-life. So to me
-software licenses and the various GPL versions are primarily
-user-enabling tools.
-
-You'll note the GPL v2 doesn't particularly care about the original
-software author either. Source code (and various peripheral bits Alan
-cares about) must be made available to the end user, not the original
-code author. It worked out this user was often the original author, or
-if not said user had an incentive to retransmit the modifications to the
-original author. But he can choose to have someone else work on the
-source code without involving original upstream in any way, and the
-license is fine with that. In fact that is what happens when there is a
-rift in a project and both parties go working on their own fork.
-
-So contrarily to what many people wrote on this list the payback for
-GPL-ing some code is not access to modifications of this code but
-maintaining an open technical environment. You increase the FLOSS pool
-size, you increase the chance the software you use in your everyday life
-is FLOSS and open to changes. Either changes you do yourself or most
-often changes someone else made and you download somewhere (because
-everyone is not a software god, and even those who are will never have
-the time to fix themselves all the software they interact with=C2=B2). When
-you get this software with or for some hardware you care about deploying
-the changes on hardware you have (usually the same hardware you go the
-software with)
-
-Another way to describe this open technical environment is an
-environment with no vendor lock-in.=20
-
-For a very long time the GPLv2 served this purpose admirably.
-Unfortunately nowadays the standalone general-purpose open PC is not
-playing such a big part in everyday life, and we've been invaded by
-embedded computers. What's worse the manufacturers of those computers
-are control-freaks and making changes to the software of those computers
-is no longer just a matter of having code access. Lastly there is a
-definite temptation to re-make the PC on their image and add
-installation controls on it too.
-
-Therefore the GPLv2 is not sufficient to this end anymore and something
-like GPLv3 is necessary. The environment changed. Being able to install
-is no longer a given but something protected by law you have to
-explicitely require (yes require, the industry is perfectly able to
-fuck-itself up collectively for years if let alone, just look at the
-HDDVD/Blue-ray debacle). What use is the source code of a mobile app to
-me if the mobile industry decides to lock all the mobiles sold with a
-DRM lock?
-
-Now it could be many people on this list don't care about end users,
-think only the hardware people/software people relations matter, and are
-quite happy with the perspective of an environment restricted to a
-technical elite. In which case I suppose a lot of users are going to
-revisit their FLOSS over freeware bias in the next years, and we'll find
-out the exact weight of development in the FLOSS ecosystem.
-
-=C2=B9 Information clearly does not mean shipping users all sorts of physic=
-al
-tools to change the hardware, just the knowledge necessary to install
-stuff
-
-=C2=B2 Rockbox is a terrific example of Free Software logic in action in th=
-e
-embedded space outside technical circles, and would probably be the
-first casualty of DRM extensions
-
---=20
-Nicolas Mailhot
-
---=-frB8/V+5/kNMqaA/p1T+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iEYEABECAAYFAkZzz6UACgkQI2bVKDsp8g2q8gCgvzelAswZ82o10QmWttPcfPu4
-or0An1EbTaF/0juB0fWTT91neMhcettN
-=M3EM
------END PGP SIGNATURE-----
-
---=-frB8/V+5/kNMqaA/p1T+--
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
