@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbXFPKZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbXFPKZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbXFPKZR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 06:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbXFPKYN
+	id S1756326AbXFPKZz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 06:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXFPKYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 06:24:13 -0400
-Received: from www.osadl.org ([213.239.205.134]:37148 "EHLO mail.tglx.de"
+	Sat, 16 Jun 2007 06:24:15 -0400
+Received: from www.osadl.org ([213.239.205.134]:37171 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753266AbXFPKYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 06:24:09 -0400
-Message-Id: <20070616101636.675115029@inhelltoy.tec.linutronix.de>
+	id S1753338AbXFPKYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 06:24:10 -0400
+Message-Id: <20070616101636.794026871@inhelltoy.tec.linutronix.de>
 References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 16 Jun 2007 10:36:04 -0000
+Date: Sat, 16 Jun 2007 10:36:07 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
@@ -20,44 +20,53 @@ Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
        Arjan van de Ven <arjan@infradead.org>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        john stultz <johnstul@us.ibm.com>
-Subject: [patch-mm 04/25] Timekeeping: Fixup shadow variable argument
-Content-Disposition: inline;
-	filename=timekeeping-c-fixup-clock-shadow-global-variable.patch
+Subject: [patch-mm 07/25] Tick management: spread timer interrupt
+Content-Disposition: inline; filename=tick-spread-timer-interrupts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clocksource_adjust() has a clock argument, which shadows the file 
-global clock variable. Fix this up.
+From: john stultz <johnstul@us.ibm.com>
 
+After discussing w/ Thomas over IRC, it seems the issue is the sched
+tick fires on every cpu at the same time, causing extra lock contention.
+
+This smaller change, adds an extra offset per cpu so the ticks don't
+line up. This patch also drops the idle latency from 40us down to under
+20us.
+
+Signed-off-by: john stultz <johnstul@us.ibm.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: john stultz <johnstul@us.ibm.com>
 
 ---
- kernel/time/timekeeping.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ kernel/time/tick-sched.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.22-rc4-mm/kernel/time/timekeeping.c
+Index: linux-2.6.22-rc4-mm/kernel/time/tick-sched.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/time/timekeeping.c	2007-06-16 12:10:22.000000000 +0200
-+++ linux-2.6.22-rc4-mm/kernel/time/timekeeping.c	2007-06-16 12:10:23.000000000 +0200
-@@ -401,7 +401,7 @@ static __always_inline int clocksource_b
-  * this is optimized for the most common adjustments of -1,0,1,
-  * for other values we can do a bit more work.
-  */
--static void clocksource_adjust(struct clocksource *clock, s64 offset)
-+static void clocksource_adjust(s64 offset)
+--- linux-2.6.22-rc4-mm.orig/kernel/time/tick-sched.c	2007-06-16 12:10:21.000000000 +0200
++++ linux-2.6.22-rc4-mm/kernel/time/tick-sched.c	2007-06-16 12:10:23.000000000 +0200
+@@ -573,6 +573,7 @@ void tick_setup_sched_timer(void)
  {
- 	s64 error, interval = clock->cycle_interval;
- 	int adj;
-@@ -476,7 +476,7 @@ void update_wall_time(void)
- 	}
+ 	struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
+ 	ktime_t now = ktime_get();
++	u64 offset;
  
- 	/* correct the clock when NTP error is too big */
--	clocksource_adjust(clock, offset);
-+	clocksource_adjust(offset);
+ 	/*
+ 	 * Emulate tick processing via per-CPU hrtimers:
+@@ -581,8 +582,12 @@ void tick_setup_sched_timer(void)
+ 	ts->sched_timer.function = tick_sched_timer;
+ 	ts->sched_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
  
- 	/* store full nanoseconds into xtime */
- 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
+-	/* Get the next period */
++	/* Get the next period (per cpu)*/
+ 	ts->sched_timer.expires = tick_init_jiffy_update();
++	offset = ktime_to_ns(tick_period) >> 1;
++	do_div(offset, NR_CPUS);
++	offset *= smp_processor_id();
++	ts->sched_timer.expires = ktime_add_ns(ts->sched_timer.expires, offset);
+ 
+ 	for (;;) {
+ 		hrtimer_forward(&ts->sched_timer, now, tick_period);
 
 -- 
 
