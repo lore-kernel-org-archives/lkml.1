@@ -1,57 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbXFPKch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757704AbXFPKcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474AbXFPKch (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 06:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbXFPK1d
+	id S1757704AbXFPKcx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 06:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbXFPKbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 06:27:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:55907 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755457AbXFPK1b (ORCPT
+	Sat, 16 Jun 2007 06:31:40 -0400
+Received: from paragon.brong.net ([66.232.154.163]:57708 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759675AbXFPKbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 06:27:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
-Date: Sat, 16 Jun 2007 12:26:40 +0200
-User-Agent: KMail/1.9.6
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200706150159.l5F1xNgM000459@hera.kernel.org> <200706151131.38429.arnd@arndb.de> <1181986686.25228.639.camel@pmac.infradead.org>
-In-Reply-To: <1181986686.25228.639.camel@pmac.infradead.org>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sat, 16 Jun 2007 06:31:38 -0400
+Date: Sat, 16 Jun 2007 20:31:30 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070616103130.GD32405@brong.net>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net> <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net> <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616021630.GA30660@brong.net> <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706161226.40875.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/yP4sN5m0tHwr1cKyHnjnf3qEzU3gz8Z8BUzB
- NJo9oD7uYKS+pxHxLVzx0i2jO4pBHjQjmCykrrSqEqlF1I5bKT
- 1x1iCE5TrI/FTbyh54Zsg==
+In-Reply-To: <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
+Organization: brong.net
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 June 2007, David Woodhouse wrote:
-> Will GCC know that it needs to emit code to handle that (mis)alignment?
+On Sat, Jun 16, 2007 at 05:22:21AM -0300, Alexandre Oliva wrote:
+> On Jun 15, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
+> 
+> > because it could easily be argued that they linked the BIOS with the
+> > Linux kernel
+> 
+> How so?
 
-I've tested this with gcc-4.0.3, and it does the right thing, which
-is to split a 4 byte aligned 64 bit load/store into two 32 bit accesses,
-if you pass -mstrict-align.
+(I'm going to refer to Linux as GPLix from here on since this argument
+ is more general than a specific GPLed operating system)
 
-> Preliminary tests show that it does load the value bytewise if we use
-> the 'packed' attribute structure on ppc64, but doesn't if we use
-> compat_u64. But then, I don't think it actually _needs_ to handle it n
-> ppc64 anyway, so maybe that's not such a good test.
+Er, they installed it in the same piece of equipment, and the kernel
+couldn't function without it in that work.  What's more 'linked' than
+that.  It's a vital part of the boot process on that piece of hardware
+in exactly the same way that the public-key check is a vital part of
+the boot process.
 
-Right. Note that the behaviour of compat_u64 is the same as when you
-pass attribute((packed,aligned(4))) to the structure, where it also won't
-do byte accesses, and split the 64 bit access only if you pass
--mstrict-align.
+If your printer^wPC isn't doing what you want and you know how to
+change it to do what you want but it needs a BIOS patch.  Guess what,
+you can't do it - your vendor can.  By using GPLix as part of their
+boot process along with their non-GPL BIOS, they're subverting the
+freedoms that the user should have in being able to control the entire
+boot process.
 
-	Arnd <><
+Right?  Or are you unclear about the fact that there's a big grey area
+cutting through this part of usage, and Linus sat down pretty clearly on
+one side of it while you're arguing that the goalposts should be "where
+I feel that my rights to make changes are being infringed".
+
+While the vendor reserves the ability to change components of the
+system (post sale, i.e. a BIOS flash update) and doesn't hand those
+same rights on to you, they have partially Tivoised (hoover, kleenex,
+you've got nothing on these guys for having your name associated with
+a concept) the hardware.  By logical extention of your arguments over
+the past few days, this denies them the ability to use any GPLed
+software in 'the spirit of the licence' anyware on the machine because
+they are denying you rights regarding the instance of the product
+they shipped to you that they are retaining for themselves.  The very
+freedoms you so vocally claim.
+
+Now, the position I'm seeing here is that the above behaviour (every
+single hardware manufacturer that has ever shipped a machine with
+pre-installed Linux) violates the spirit of the GPL by the "retaining
+exclusive freedoms to modify shipped product" rule, and hence their
+BIOS is in the doghouse unless they either:
+
+a) offer full source code access and rights per the holy spirit ghost
+   of the GPL; or
+
+b) deny themselves the ability to every offer a patch to said BIOS if
+   bugs are found 
+
+
+Point (b) is also exactly on topic for the discussion of enforcing
+legal safety obligations in hardware on a peripheral rather than the
+software drivers.  It's requiring that these limitations be placed in
+a technically inferior location to hack around a legal "bug".  (A bug
+is in the eye of the beholder, please wear glasses while cycling, it's
+your own responsibility to protect your eyes)
+
+
+Er, I think I'm done.  Yes.
+
+
+Executive summary:
+
+a) by not providing the BIOS source code but retaining the right to 
+   change the BIOS the vendor is linking the GPLix kernel and the 
+   BIOS (you can't run the kernel without it)
+
+b) legislating intent is fraught.
+
+c) by your arguments, (a) is violating the spirit and (b) is necessary
+   to get around that.
+
+Bron.
