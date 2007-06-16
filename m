@@ -1,62 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbXFPV0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbXFPV2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbXFPV0P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 17:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbXFPV0B
+	id S1758018AbXFPV2U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 17:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbXFPV2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 17:26:01 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:17328 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753576AbXFPV0A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 17:26:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K9UkGA8wiP2rWgkrWLornEutAXVvuDxfJkvxHRWjPdSr83T+fU4B39SoXu65pPvnz1K82d4Dznd9CdKoH4y+/b3q5OM8Nnhxz7dMc9aZYw8viVjq++SZ4itLUOpUIUOaFVJVLwOBxGM5T6hLmE0WpbohiG+5zXchHpOVu5A8CyQ=
-Message-ID: <9a8748490706161425k67b52147t5552fba0638349ae@mail.gmail.com>
-Date: Sat, 16 Jun 2007 23:25:58 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Alexandre Oliva" <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Ingo Molnar" <mingo@elte.hu>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
-       david@lang.hm, "Tarkan Erimer" <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Sat, 16 Jun 2007 17:28:04 -0400
+Received: from daemonizer.de ([87.230.16.230]:55386 "EHLO daemonizer.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755664AbXFPV2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 17:28:01 -0400
+From: Maximilian Engelhardt <maxi@daemonizer.de>
+To: netdev <netdev@vger.kernel.org>
+Subject: b44: high ping times with wireless-dev
+Date: Sat, 16 Jun 2007 23:27:43 +0200
+User-Agent: KMail/1.9.7
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>, Gary Zambrano <zambrano@broadcom.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "Jeff Garzik" <jgarzik@pobox.com>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart9854408.IIlnzTzavd";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <20070614235004.GA14952@elte.hu>
-	 <20070615011012.6c09066e@the-village.bc.nu>
-	 <20070615012623.GA25189@elte.hu>
-	 <20070615101007.0cbfd078@the-village.bc.nu>
-	 <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <4673CA7C.5040207@t-online.de>
-	 <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <20070616181902.GB21478@ftp.linux.org.uk>
-	 <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-Id: <200706162327.47413.maxi@daemonizer.de>
+X-Spam-Score: -4.2 (----)
+X-Spam-Report: No, hits=-4.2 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	*  0.2 AWL AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/06/07, Alexandre Oliva <aoliva@redhat.com> wrote:
-> On Jun 16, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
->
-> > How the hell does that improve the situation for users?
->
-> Maybe it doesn't.  How does it make it worse?
->
-Now not even the vendor can upgrade the software in the hardware and
-fix problems for the user. The user loses.
+--nextPart9854408.IIlnzTzavd
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Hello,
+
+I recently did some test and found out something interesting about the b44=
+=20
+problem I wrote earlier.=20
+
+The problem is the following:
+When I use my BCM4401 with the b44 driver in wireless-dev I get very high p=
+ing=20
+times looking like this:
+
+64 bytes from 172.30.10.1: icmp_seq=3D1 ttl=3D64 time=3D1863 ms
+64 bytes from 172.30.10.1: icmp_seq=3D2 ttl=3D64 time=3D855 ms
+64 bytes from 172.30.10.1: icmp_seq=3D3 ttl=3D64 time=3D1855 ms
+64 bytes from 172.30.10.1: icmp_seq=3D4 ttl=3D64 time=3D855 ms
+64 bytes from 172.30.10.1: icmp_seq=3D5 ttl=3D64 time=3D1854 ms
+64 bytes from 172.30.10.1: icmp_seq=3D6 ttl=3D64 time=3D854 ms
+64 bytes from 172.30.10.1: icmp_seq=3D7 ttl=3D64 time=3D1851 ms
+64 bytes from 172.30.10.1: icmp_seq=3D8 ttl=3D64 time=3D851 ms
+64 bytes from 172.30.10.1: icmp_seq=3D9 ttl=3D64 time=3D1851 ms
+64 bytes from 172.30.10.1: icmp_seq=3D10 ttl=3D64 time=3D851 ms
+
+I also found out that shortly after I boot my laptop and log into kde ping=
+=20
+times are not that high but start to increase very quickly:
+
+64 bytes from 172.30.10.1: icmp_seq=3D53 ttl=3D64 time=3D2.19 ms
+64 bytes from 172.30.10.1: icmp_seq=3D54 ttl=3D64 time=3D2.22 ms
+64 bytes from 172.30.10.1: icmp_seq=3D55 ttl=3D64 time=3D2.20 ms
+64 bytes from 172.30.10.1: icmp_seq=3D56 ttl=3D64 time=3D2.20 ms
+64 bytes from 172.30.10.1: icmp_seq=3D57 ttl=3D64 time=3D18.6 ms
+64 bytes from 172.30.10.1: icmp_seq=3D58 ttl=3D64 time=3D1268 ms
+64 bytes from 172.30.10.1: icmp_seq=3D59 ttl=3D64 time=3D268 ms
+64 bytes from 172.30.10.1: icmp_seq=3D60 ttl=3D64 time=3D1268 ms
+64 bytes from 172.30.10.1: icmp_seq=3D61 ttl=3D64 time=3D268 ms
+64 bytes from 172.30.10.1: icmp_seq=3D62 ttl=3D64 time=3D6.08 ms
+64 bytes from 172.30.10.1: icmp_seq=3D63 ttl=3D64 time=3D268 ms
+64 bytes from 172.30.10.1: icmp_seq=3D64 ttl=3D64 time=3D1264 ms
+64 bytes from 172.30.10.1: icmp_seq=3D65 ttl=3D64 time=3D264 ms
+
+After some time digging around I found out something really interesting. Wh=
+en=20
+I play some music ping times are immediately lower. If I stop playing music=
+=20
+they are back to the same times as they were before.
+
+I guess that there is a problem with interrupts so I post some information =
+of=20
+my system in hope it will be usefull.
+
+maxi@koala:~$ cat /proc/interrupts
+          CPU0      =20
+ 0:     126317    XT-PIC-XT        timer
+ 1:       3600    XT-PIC-XT        i8042
+ 2:          0    XT-PIC-XT        cascade
+ 7:          1    XT-PIC-XT        parport0
+ 8:          1    XT-PIC-XT        rtc
+ 9:      17371    XT-PIC-XT        acpi
+10:      13237    XT-PIC-XT        firewire_ohci, yenta, yenta, ehci_hcd:us=
+b1,=20
+uhci_hcd:usb3, uhci_hcd:usb4, Intel 82801DB-ICH4, Intel 82801DB-ICH4 Modem,=
+=20
+eth0
+11:      89059    XT-PIC-XT        uhci_hcd:usb2, i915@pci:0000:00:02.0
+12:        632    XT-PIC-XT        i8042
+14:      10354    XT-PIC-XT        libata
+15:       7408    XT-PIC-XT        libata
+NMI:          0=20
+ERR:          0
+
+
+[...]
+ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 10
+ACPI: PCI Interrupt 0000:02:02.0[A] -> Link [LNKD] -> GSI 10 (level, low) -=
+>=20
+IRQ 10
+ssb: Sonics Silicon Backplane found on PCI device 0000:02:02.0
+b44.c:v2.0
+eth0: Broadcom 44xx/47xx 10/100BaseT Ethernet 00:c0:9f:29:99:a7
+[...]
+
+This problem did only happen with wireless-dev (checkout this evening) and=
+=20
+with -mm kernels I used some time ago for testing. Currently I'm running=20
+2.6.22-rc4 that works perfectly fine and doesn't show that problem.
+
+Maxi
+
+--nextPart9854408.IIlnzTzavd
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGdFXTOimwv528XGERAlEVAKDBDmhNPMN8i4bJKsuisJgvHqgGswCg5Pgh
+9wUy0qGH9zi/fBpQMCYxG1I=
+=HxBs
+-----END PGP SIGNATURE-----
+
+--nextPart9854408.IIlnzTzavd--
