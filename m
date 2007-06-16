@@ -1,115 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXFPDZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbXFPDeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbXFPDZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 23:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbXFPDZR
+	id S1753765AbXFPDeu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 23:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbXFPDem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 23:25:17 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:34425 "EHLO
+	Fri, 15 Jun 2007 23:34:42 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:15511 "EHLO
 	asav17.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbXFPDZP (ORCPT
+	with ESMTP id S1751367AbXFPDel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 23:25:15 -0400
+	Fri, 15 Jun 2007 23:34:41 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlE4ALb0ckZKhRO4UGdsb2JhbACBToVjh3sBARsNBhEB
+X-IronPort-Anti-Spam-Result: AlE4AAT3ckZKhRO4UGdsb2JhbACBToVjh3sBARsNBhEB
 From: Dmitry Torokhov <dtor@insightbb.com>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 23:25:13 -0400
+To: Indan Zupancic <indan@nul.nu>
+Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
+Date: Fri, 15 Jun 2007 23:34:39 -0400
 User-Agent: KMail/1.9.3
-Cc: Bernd Paysan <bernd.paysan@gmx.de>, Paulo Marques <pmarques@grupopie.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
-       linux-kernel@vger.kernel.org
-References: <466A3EC6.6030706@netone.net.tr> <d120d5000706151146u6f69667eodd2ff3f5e857a917@mail.gmail.com> <or8xalx6vu.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or8xalx6vu.fsf@oliva.athome.lsd.ic.unicamp.br>
+Cc: Pavel Machek <pavel@ucw.cz>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Andi Kleen <ak@suse.de>, Jiri Kosina <jikos@jikos.cz>,
+       kernel list <linux-kernel@vger.kernel.org>
+References: <20070604112426.GA2707@elf.ucw.cz> <200706150141.06142.dtor@insightbb.com> <33677.81.207.0.53.1181959473.squirrel@secure.samage.net>
+In-Reply-To: <33677.81.207.0.53.1181959473.squirrel@secure.samage.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706152325.14244.dtor@insightbb.com>
+Message-Id: <200706152334.40387.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007 17:08, Alexandre Oliva wrote:
-> On Jun 15, 2007, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+On Friday 15 June 2007 22:04, Indan Zupancic wrote:
+> On Fri, June 15, 2007 07:41, Dmitry Torokhov wrote:
+> >  /*
+> > + * Schedule switch for execution. We need to throttle requests,
+> > + * otherwise keyboard may become unresponsive.
+> > + */
+> > +static void atkbd_schedule_event_work(struct atkbd *atkbd, int event_bit)
+> > +{
+> > +	unsigned long delay = msecs_to_jiffies(50);
+> > +
+> > +	if (time_after(jiffies, atkbd->event_jiffies + delay))
+> > +		delay = 0;
+> > +
+> > +	atkbd->event_jiffies = jiffies;
+> > +	set_bit(event_bit, &atkbd->event_mask);
+> > +	wmb();
+> > +	schedule_delayed_work(&atkbd->event_work, delay);
+> > +}
 > 
-> > On 6/15/07, Alexandre Oliva <aoliva@redhat.com> wrote:
-> >> On Jun 15, 2007, "Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
-> >> 
-> >> > On 6/15/07, Bernd Paysan <bernd.paysan@gmx.de> wrote:
-> >> >> On Friday 15 June 2007 13:49, Paulo Marques wrote:
-> >> >>
-> >> >> > No, it is not "any version". It is the license specified in COPYING and
-> >> >> > nothing else.
-> >> >>
-> >> >> COPYING says in section 9 that there may be other versions, and if you as
-> >> >> author don't specify the version, it's "any version".
-> >> 
-> >> > Please read this sentence over and over until it sinks:
-> >> 
-> >> I believe he was talking about the sentence just after the one you
-> >> quoted:
-> >> 
-> >> If the Program does not specify a version number of this License,
-> >> you may choose any version ever published by the Free Software
-> >> Foundation.
+> I don't know whether schedule_delayed_work() requeues event_work, or if
+> it adds more work, but both seem to give wrong behaviour:
+
+Well, my advise would be to research the matter before saying that
+it will not work.
+
+> In the first case 
+> event_work can be postponed forever if atkbd_schedule_event_work() is
+> called repeatedly each time within 50 ms, and for the second case there's a
+> delay added, but the number of times the LED is switched stays the same,
+> so it's not being throttled.
 > 
-> > My response to this is that by including an entire copy of specific
-> > version of GPL in the release the version number was specified.
-> 
-> It's not that simple.  Including a copy of the license is a license
-> requirement for any redistributor, yes.
-> 
-> But if you, a sole copyright holder, were to distribute your program,
-> without any copy of the GPL, claiming "it's under the GPL", you're not
-> a violator.
->
 
-Distributing a copy of GPL is not a requirement for me as a licensor
-however I did chose to include a copy of a specific version of a
-specific license and did not make any other statements that is the
-license for the work.
- 
-> Then, any redistributor adds a copy of any version of the GPL (because
-> you didn't specify a version number).  At this point, is the program
-> licensed by *you* only under this specific license?
->
-
-If they did not make any changes then they have to include the earliest
-version of GPL that applies. If they did modifications and chose GPLv4
-they will have to include GPL v4 (if such requirement is in GPLv4) because
-what good any other license will do me?
- 
-> Now, if you picked one of the various versions of the license, to make
-> things easier for redistributors, does it mean you're choosing that
-> particular version of the license,
-
-Yes, this is my opinion.
-
-> even though the license itself 
-> says otherwise?
->
-
-License does not say otherwise. License says that if there is an
-_additional_ stipulation my the licensor then some other license
-(non existing yet license) may be used. They had to use this wording
-because these licensed do not exist yet. If GPL would say:
-
-"If the Program specifies a version number of this License which
-applies to it and "or BSD license", you have the option of following
-the terms and conditions either of that version or of BSD license"
-
-would you still say that BSD is allowed by default by GPL? "GPL v2
-and later versions" is not different from "GPL v2 or BSD" or
-"GPLv2 or CDDL".  
-
-> > You can't say that inclusion of copy of GPL is enough to specify
-> > class of licenses (all GPL) but not specific version.
-> 
-> I can't say either of these, indeed.  Or rather, I can, but I wouldn't
-> know whether I was right ;-)
-> 
+No, once work is queued for execution subsequent attempts to queue the
+same work will be ignored (until work starts executing). Therefore first
+time work will be scheduled for execution immediately and then execution
+be spaced by ~50 ms.
 
 -- 
 Dmitry
