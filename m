@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbXFPBlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbXFPBlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbXFPBlT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 21:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757689AbXFPBlH
+	id S1759564AbXFPBlf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 21:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbXFPBl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 21:41:07 -0400
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:55041 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757360AbXFPBlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 21:41:06 -0400
-Date: Fri, 15 Jun 2007 21:41:01 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@localhost.localdomain
-To: david@lang.hm
-cc: Greg KH <greg@kroah.com>, Crispin Cowan <crispin@novell.com>,
-       Pavel Machek <pavel@ucw.cz>, Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-In-Reply-To: <Pine.LNX.4.64.0706151656170.12349@asgard.lang.hm>
-Message-ID: <Line.LNX.4.64.0706152122520.29737@localhost.localdomain>
-References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de>
- <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com>
- <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz>
- <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com>
- <20070615234925.GB15056@kroah.com> <Pine.LNX.4.64.0706151656170.12349@asgard.lang.hm>
+	Fri, 15 Jun 2007 21:41:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38645 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757689AbXFPBl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 21:41:26 -0400
+To: "Scott Preece" <sepreece@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Daniel Hazelton" <dhazelton@enter.net>,
+       "Michael Gerdau" <mgd@technosis.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
+       "david\@lang.hm" <david@lang.hm>,
+       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org>
+	<200706160006.26428.mgd@technosis.de>
+	<200706151830.46175.dhazelton@enter.net>
+	<20070615224403.GA23721@elte.hu>
+	<ork5u4vljw.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<7b69d1470706151756m364985d2xd7c1dbb9b203df28@mail.gmail.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 22:40:53 -0300
+In-Reply-To: <7b69d1470706151756m364985d2xd7c1dbb9b203df28@mail.gmail.com> (Scott Preece's message of "Fri\, 15 Jun 2007 19\:56\:48 -0500")
+Message-ID: <orhcp8u15m.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, david@lang.hm wrote:
+On Jun 15, 2007, "Scott Preece" <sepreece@gmail.com> wrote:
 
-> on the contrary, useing 'mv' is by far the cleanest way to do this.
-> 
-> mv htdocs htdocs.old;mv htdocs.new htdocs
-> 
-> this makes two atomic changes to the filesystem, but can generate thousands to
-> millions of permission changes as a result.
+> On 6/15/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+>> > * Daniel Hazelton <dhazelton@enter.net> wrote:
+>> 
+>> That's correct, but with a catch: since the contract or license is
+>> chosen by the licensor, in case of ambiguity in the terms, many courts
+>> will interpret it in a way that privileges the licensee, regardless of
+>> the fact that copyright licenses are to be interpreted restrictively
+>> (at least in Brazilian law).  And IANAL ;-)
+> ---
 
-OTOH, you've performed your labeling up front, and don't have to 
-effectively relabel each file each time on each access, which is what 
-you're really doing with pathname labeling.
+> Hmm. In such a suit, however, the user would not be "the licensee" and
+> would not be a party to the suit - some author would be the plaintiff
+> and would be suing someone for doing something in violation of the
+> license that author granted - that is, the *defendant* would be the
+> licensee who would get the benefit of the doubt...
 
+Yes.  And so justice is made.  Licensor gets to pick the license,
+licensee gets the benefit of the doubt.  What's the 'however' about?
+Was this not obvious?
 
-
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
