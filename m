@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbXFPOlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbXFPOwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757836AbXFPOlu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 10:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbXFPOln
+	id S1757950AbXFPOwQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 10:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756496AbXFPOwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 10:41:43 -0400
-Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:1296 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756068AbXFPOlm (ORCPT
+	Sat, 16 Jun 2007 10:52:11 -0400
+Received: from build.arklinux.osuosl.org ([140.211.166.26]:49902 "EHLO
+	mail.arklinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756046AbXFPOwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 10:41:42 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+	Sat, 16 Jun 2007 10:52:10 -0400
+X-Greylist: delayed 370 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Jun 2007 10:52:10 EDT
+From: Bernhard Rosenkraenzer <bero@arklinux.org>
 To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch-mm 00/25] High resolution timer updates and x86_64 support - V2
-Date: Sat, 16 Jun 2007 15:41:33 +0100
+Subject: Re: [patch-mm 01/25] NOHZ: Fix nox x86 dyntick idle handling
+Date: Sat, 16 Jun 2007 16:36:50 +0200
 User-Agent: KMail/1.9.7
 Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
        Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
        Chris Wright <chrisw@sous-sol.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Mikko Tiihonen <mikko.tiihonen@iki.fi>
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
-In-Reply-To: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
+       Adam Belay <abelay@novell.com>, Len Brown <lenb@kernel.org>,
+       Dave Miller <davem@davemloft.net>, Paul Mundt <lethal@linux-sh.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de> <20070616101636.556333444@inhelltoy.tec.linutronix.de>
+In-Reply-To: <20070616101636.556333444@inhelltoy.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706161541.34032.s0348365@sms.ed.ac.uk>
+Message-Id: <200706161636.50661.bero@arklinux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 June 2007 11:36:00 Thomas Gleixner wrote:
-> The -hrt tree at http://www.tglx.de/projects/hrtimers/2.6.22-rc4/ contains
-> also an hpet force patch series from Venki Pallipadi, but I leave this up
-> to Venki to send it mainline wards.
+On Saturday 16 June 2007, Thomas Gleixner wrote:
 
-What's the status on the nForce "hpet force fix" (Subject: "Enable hidden HPET 
-on NVidia motherboards") that also exists? I think if one board can have its 
-HPET forced, so can another.
+> +#if defined(CONFIG_NO_HZ) && !defined(CONFIG_NONIRQ_WAKEUP)
+> +	/* Make sure that timer wheel updates are propagated */
+> +	if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
+> +		tick_nohz_stop_sched_tick();a
+> +#endif
+>  	preempt_enable_no_resched();
+>  }
 
-Last I heard we were waiting on NVIDIA to confirm whether Mikko's logic was 
-supported by specifications? Any update on this?
+The bit above breaks the build for a CONFIG_NO_HZ build without 
+CONFIG_NONIRQ_WAKEUP -- please remove the extra "a" after 
+tick_nohz_stop_sched_tick(); before applying this.
 
--- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+Regards,
+bero
