@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbXFPBa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbXFPBjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbXFPBa0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 21:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbXFPBaP
+	id S1758470AbXFPBjh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 21:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbXFPBj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 21:30:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48385 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751543AbXFPBaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 21:30:13 -0400
-Date: Fri, 15 Jun 2007 18:29:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rob Landley <rob@landley.net>
-cc: Michael Gerdau <mgd@technosis.de>, Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
+	Fri, 15 Jun 2007 21:39:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38402 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756921AbXFPBj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 21:39:28 -0400
+To: "Scott Preece" <sepreece@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Rob Landley" <rob@landley.net>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
+       david@lang.hm, "Tarkan Erimer" <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <200706152103.06921.rob@landley.net>
-Message-ID: <alpine.LFD.0.98.0706151814380.14121@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
- <200706150825.15491.mgd@technosis.de> <alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org>
- <200706152103.06921.rob@landley.net>
+References: <466A3EC6.6030706@netone.net.tr>
+	<20070614122031.4751a52b@the-village.bc.nu>
+	<20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
+	<20070615120926.GD6269@elte.hu>
+	<orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<7b69d1470706151503v23253546w5648f04673741c8f@mail.gmail.com>
+	<orodjgvm5v.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<7b69d1470706151752x30aeaaacl305d964b0ae4cc2d@mail.gmail.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 15 Jun 2007 22:38:45 -0300
+In-Reply-To: <7b69d1470706151752x30aeaaacl305d964b0ae4cc2d@mail.gmail.com> (Scott Preece's message of "Fri\, 15 Jun 2007 19\:52\:22 -0500")
+Message-ID: <orlkeku196.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 15, 2007, "Scott Preece" <sepreece@gmail.com> wrote:
 
+> On 6/15/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+>> > The FSF's approval of this distinction (ROM versus replaceable) places
+>> > the FSF's particular principles over users interests, for no
+>> > particular reason
 
-On Fri, 15 Jun 2007, Rob Landley wrote:
-> 
-> Technically what they're holding back is _trademark_ rights, which are a 
-> different area of IP law and not addressed by the GPL.  (I know you know 
-> this, but just for the record...)
+>> Over *users* interest?  How so?
 
-No, technically Red Hat really *does* have copyrights of their own.
+> Users benefit from the ability to get software updates, from the
+> manufacturer, to resolve problems, fix security vulnerabilities, and
+> provide updated functionality.
 
-Red Hat owns the "compilation copyright" on their distribution. That 
-means, for example, that even if they have _only_ open source programs on 
-their DVD image, you still are not necessarily able (without their 
-permission) to set up a "cheap-cd's" kind of operation, and sell their 
-CD-ROM/DVD images for a lower price.
+Which they could have the option to do themselves if the manufacturer
+didn't prohibit them from doing so.
 
-So yes, they do own the Red Hat trademark too, but they fundamentally do 
-own copyrights over and beyond those of the individual programs they 
-distribute!
+>> > if the manufacturer believes that it cannot legally allow software
+>> > modification, all the restriction does is force them either to make
+>> > the software unmodifiable (which advances freedom not at all) or to
+>> > use software under a different license (which advances freedom not
+>> > at all).
 
-Now, I think it so happens that the RHEL DVD's contains other programs 
-than just open source, and that you couldn't legally copy them *anyway*, 
-but that's a different issue.
+>> Right.
 
-Also, happily, a lot of vendors do not *want* to exercise their 
-copyright in the compilation, so you can go to cheapbytes.com, and you'll 
-find Fedora CD's, OpenSuSE CD's, Ubuntu CD's, etc, and as far as I know, 
-they're all perfectly legal. Exactly because open-source vendors usually 
-don't want to look nasty by limiting the compilation, when they can't 
-really limit the individual parts anyway.
+>> But if the manufacturer believes that it can legally allow it, and
+>> wants to be able to install, software modifications, then it must
+>> decide between giving that up and letting the user do it as well.  And
+>> this is where the users interests may prevail.
 
-> The five main areas of IP law as I understand them are copyright, patent, 
-> trademark, contract, and trade secret.
+> Whether it's a legal requirement or a business decision, the result is
+> the same - neither forcing the manufacturer to make the device
+> non-updatable nor forcing the manufacturer to use different software
+> benefits anyone.
 
-I'd not put contract there, but fair enough. But what I was really trying 
-to point out is that there are many different "levels" of copyright.
+I agree.  But that's an incomplete picture.
 
-So you can own a "copyright in the compilation" - which just means that 
-you own the details of how you set it all together - _without_ actually 
-necessarily owning the copyrights in any of the individual packages 
-(although you obviously have to have a license to _make_ a compilation of 
-them - but the GPLv2 is one such license).
+It's the other part of the picture, that you left out twice, that is
+the case that is good for the users *and* for the community.
 
-			Linus
+> I don't believe that the existence of this clause will lead to more
+> manufacturers making their devices modifiable - there are too many
+> other options if they think that non-modifiability is important to
+> them.
+
+> [Note that I *do* think it's perfectly appropriate that authors who
+> feel that they don't want their work used in such devices should be
+> able to license them in line with that belief. I just don't think it
+> has any practical value aside from making them feel better.]
+
+They can do that with GPLv3.  And those who don't want to stop this
+can then add a special permission.  And then everybody wins.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
