@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbXFPDoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbXFPDr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbXFPDoj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 23:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXFPDob
+	id S1755684AbXFPDr1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 23:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbXFPDrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 23:44:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60854 "EHLO mx1.redhat.com"
+	Fri, 15 Jun 2007 23:47:18 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59181 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752231AbXFPDob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 23:44:31 -0400
-To: Tim Post <tim.post@netkinetics.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <200706132304.21984.dhazelton@enter.net>
-	<20070614112329.3645c397@the-village.bc.nu>
-	<20070614103846.GA7902@elte.hu>
-	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614195517.GA4933@elte.hu>
-	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu>
-	<or645q6jp4.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615113123.GA6269@elte.hu>
-	<orr6od11lt.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615212905.GB4996@elte.hu>
-	<1181962902.21803.513.camel@localhost.localdomain>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sat, 16 Jun 2007 00:44:00 -0300
-In-Reply-To: <1181962902.21803.513.camel@localhost.localdomain> (Tim Post's message of "Sat\, 16 Jun 2007 11\:01\:42 +0800")
-Message-ID: <or3b0stvgf.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1751240AbXFPDrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 23:47:17 -0400
+From: Neil Brown <neilb@suse.de>
+To: Wakko Warner <wakko@animx.eu.org>
+Date: Sat, 16 Jun 2007 13:47:07 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18035.23867.576212.859440@notabene.brown>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: message from Wakko Warner on Friday June 15
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+	<18034.479.256870.600360@notabene.brown>
+	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+	<18034.3676.477575.490448@notabene.brown>
+	<20070616020320.GB2002@animx.eu.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 16, 2007, Tim Post <tim.post@netkinetics.net> wrote:
+On Friday June 15, wakko@animx.eu.org wrote:
+ 
+>                                                   As I understand the way
+> raid works, when you write a block to the array, it will have to read all
+> the other blocks in the stripe and recalculate the parity and write it out.
 
-> On Fri, 2007-06-15 at 23:29 +0200, Ingo Molnar wrote:
->> Tivo has two choices: either it gives 
->> users the content they want to watch, or it goes out of business. Is 
->> that legitimate enough of a reason to restrict the hardware?
+Your understanding is incomplete.
+For raid5 on an array with more than 3 drive, if you attempt to write
+a single block, it will:
 
-> Can I submit that they could just rent the use of their machines?
+ - read the current value of the block, and the parity block.
+ - "subtract" the old value of the block from the parity, and "add"
+   the new value.
+ - write out the new data and the new parity.
 
-I don't think this would escape the wording of section 6 in GPLv3dd4:
+If the parity was wrong before, it will still be wrong.  If you then
+lose a drive, you lose your data.
 
-  [...] User Product is transferred to the recipient in perpetuity or
-  for a fixed term (regardless of how the transaction is
-  characterized), [...]
+With the current implementation in md, this only affect RAID5.  RAID6
+will always behave as you describe.  But I don't promise that won't
+change with time.
 
-and IMHO that's as it should be to defend the freedoms of the user.
+It would be possible to have a 'this is not initialised' flag on the
+array, and if that is not set, always do a reconstruct-write rather
+than a read-modify-write.  But the first time you have an unclean
+shutdown you are going to resync all the parity anyway (unless you
+have a bitmap....) so you may as well resync at the start.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+And why is it such a big deal anyway?  The initial resync doesn't stop
+you from using the array.  I guess if you wanted to put an array into
+production instantly and couldn't afford any slowdown due to resync,
+then you might want to skip the initial resync.... but is that really
+likely?
+
+NeilBrown
