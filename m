@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbXFPO4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbXFPPId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758726AbXFPO4s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 10:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbXFPO4m
+	id S1758691AbXFPPId (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 11:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbXFPPIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 10:56:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41246 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756645AbXFPO4l (ORCPT
+	Sat, 16 Jun 2007 11:08:25 -0400
+Received: from pat.uio.no ([129.240.10.15]:58546 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756496AbXFPPIY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 10:56:41 -0400
-Date: Sat, 16 Jun 2007 16:00:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rob Landley <rob@landley.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Gerdau <mgd@technosis.de>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070616160001.32706b35@the-village.bc.nu>
-In-Reply-To: <200706160133.14204.rob@landley.net>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<200706152103.06921.rob@landley.net>
-	<alpine.LFD.0.98.0706151814380.14121@woody.linux-foundation.org>
-	<200706160133.14204.rob@landley.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sat, 16 Jun 2007 11:08:24 -0400
+Subject: Re: 2.6.21.14 NFS related oops
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Maciej =?UTF-8?Q?So=C5=82tysiak?= <solt2@dns.toxicfilms.tv>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <93879EA4546642A48E9511F1AD29E031@pysiak>
+References: <466FDC76.6020207@dns.toxicfilms.tv>
+	 <1181762227.6151.55.camel@heimdal.trondhjem.org>
+	 <93879EA4546642A48E9511F1AD29E031@pysiak>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 16 Jun 2007 11:08:19 -0400
+Message-Id: <1182006499.26143.3.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8BIT
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.088)
+X-UiO-Scanned: 2EB9370E511EB528FF1B83DD6C50ACF270A63BFC
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 35 total 2406191 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Red Hat created the "Fedora" trademark to have a separate and more liberally 
-> licensed trademark that people like cheapbytes.com could use without 
-> reflecting on Red Hat Enterprise.  Unfortunately, trying to find reference 
-> for this is non-obvious, because, the Fedora Trademarks page is: 
-> http://fedoraproject.org/wiki/Legal/TrademarkGuidelines
+On Sat, 2007-06-16 at 11:26 +0200, Maciej Sołtysiak wrote:
+> >>  =======================
+> >> Code: 10 89 5c 24 10 89 c3 89 7c 24 18 89 d7 89 74 24 14 8b 70 28 75 1a 
+> >> 8b
+> >> 4e 08 89 fa 89 d8 ff 51 18 8b 5c 24 10 83 74 24 14 8b 7c 24 <18> 83 c4 1c 
+> >> c3
+> >> 89 74 24 0c 8b 40 10 8b 40 24 8b 40 10 8b 40 08 EIP: [<f0a93c94>]
+> >> rpcauth_checkverf+0x34/0x70 [sunrpc] SS:ESP 0068:e64b5eec
+> >
+> > At a first guess, it looks as though something has scribbled over your
+> > credential. Have you tried running this kernel with slab debugging
+> > enabled?
 > 
-> Which contains no actual content, but instead links to a fedora.redhat.com 
-> page which is 404. :P
+> I'm running 2.6.21.5 now with slab debugging on, here's what I got about
+> slab corruption:
+> 
+> Slab corruption: skbuff_head_cache start=ef287b78, len=164
+> Redzone: 0x5a2cf071/0x5a2cf071.
+> Last user: [<c031710c>](kfree_skbmem+0x3c/0x90)
+> 090: 6b 6b 6b 6b 6b 63 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
+> Single bit error detected. Probably bad RAM.
+> Run memtest86+ or a similar memory test tool.
+> Prev obj: start=ef287ac8, len=164
+> Redzone: 0x170fc2a5/0x170fc2a5.
+> Last user: [<c031798b>](__alloc_skb+0x2b/0x100)
+> 000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 010: 00 00 00 00 e0 71 e6 ef 00 00 00 00 00 00 00 00
+> Next obj: start=ef287c28, len=164
+> Redzone: 0x170fc2a5/0x170fc2a5.
+> Last user: [<c031798b>](__alloc_skb+0x2b/0x100)
+> 000: 84 d0 85 c5 84 d0 85 c5 04 d0 85 c5 2c 0a 73 46
+> 010: 6f cd 09 00 00 00 00 00 01 00 00 00 08 e5 72 ee
+> 
+> How probable is that it is really a bad memory issue?
+> Does this report say anything about which RAM chip I should
+> investigate/replace ? I have 1x512MB+1x256MB
+> 
+> Best Regards,
+> Maciej
 
-That would be a bug 8)
+I'd try doing as suggested above: run memtest86 on the computer for a
+couple of hours and see what it tells you. That should hopefully give
+you enough information to figure out which chips need replacing.
 
-> But again, it's trademark not copyright they're restricting.
-
-Correct - all the vendors face the problem that there are people out
-there who want to try and pass crap on using someone elses good name
-whether its toothpaste, perfume or software (or in the case of RHEL
-software/services/support bundles)
-
-The Fedora mark is thus used to make sure that if you get a Fedora CD, it
-actually has -Fedora- on it etc.
+Cheers
+  Trond
 
