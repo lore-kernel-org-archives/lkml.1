@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbXFPHEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642AbXFPHKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbXFPHEY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 03:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbXFPHEK
+	id S1752642AbXFPHKZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 03:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbXFPHKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 03:04:10 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1765 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751138AbXFPHDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 03:03:52 -0400
-Date: Fri, 15 Jun 2007 13:36:44 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Sean <seanlkml@sympatico.ca>, david@lang.hm,
-       Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,pathname matching
-Message-ID: <20070615133644.GK9442@ucw.cz>
-References: <20070609032822.bc420a84.seanlkml@sympatico.ca> <637419.18785.qm@web36615.mail.mud.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <637419.18785.qm@web36615.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.9i
+	Sat, 16 Jun 2007 03:10:15 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:57094 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbXFPHKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 03:10:13 -0400
+Message-ID: <46738CD2.2080804@dgreaves.com>
+Date: Sat, 16 Jun 2007 08:10:10 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Michael Gerdau <mgd@technosis.de>, Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>	<200706142049.41819.dhazelton@enter.net>	<200706150825.15491.mgd@technosis.de>	<200706150520.15086.dhazelton@enter.net>	<46726793.1020206@dgreaves.com>	<alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>	<4672D648.7020700@dgreaves.com> <m37iq496z9.fsf@maximus.localdomain>
+In-Reply-To: <m37iq496z9.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > The question is: why not just extend SELinux to include AA functionality
-> > rather than doing a whole new subsystem.
+Krzysztof Halasa wrote:
+> David Greaves <david@dgreaves.com> writes:
 > 
-> Because, as hard as it seems for some people to believe,
-> not everyone wants Type Enforcement. SELinux is a fine
-> implementation of type enforcement, but if you don't want
-> what it does it would be silly to require that it be
-> used in order to accomplish something else, like name based
-> access control.
+>> This 5 minute design undoubtedly has flaws but it shows a direction:
+>> A basically standard 'De11' PC with some flash.
+>> A Tivoised boot system so only signed kernels boot.
+>> A modified kernel that only runs (FOSS) executables whose signed hash
+>> lives in the flash.
 > 
-> If the same things made everyone feel "secure" there would be
-> no optional security facilities (audit, cryptfs, /dev/random, ACLs).
-> It appears that the AA folks are sufficiently unimpressed with
-> SELinux they want to do something different. I understand that
+> How hard would it be to reprogramm the flash?
 
-Actually, no. AA was started at time when SELinux was very different
-from today, and now AA people have installed base of 'happy users'
-they are trying to support.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The flash contains hashes signed by the companies private key.
+
+The kernel contains the public key. It can decrypt the hashes but the private 
+key isn't available to encrypt them. So although you can put a new application 
+onto the system, you can't create a signed hash to write to the flash.
+
+The kernel only runs the executable if the hash is valid.
+You can re-write the kernel to avoid this check - but the hardware is Tivoised - 
+so you can't run it.
+
+I am not suggesting the kernel should go down the GPLV2 route - I am wondering 
+if this is a viable scenario or one of Schneiers'  "movie-plot" threats :)
+
+David
+
