@@ -1,108 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbXFPKh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbXFPLDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbXFPKh3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 06:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbXFPKhW
+	id S1755067AbXFPLDz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 07:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbXFPLDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 06:37:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39365 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753266AbXFPKhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 06:37:21 -0400
-Date: Sat, 16 Jun 2007 12:37:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070616103707.GA28096@elte.hu>
-References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu> <20070524125453.GA7554@elte.hu> <E1HrDuQ-0005m7-00@dorka.pomaz.szeredi.hu> <20070524141059.GA19872@elte.hu> <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu> <20070524144447.GA25068@elte.hu> <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu> <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
+	Sat, 16 Jun 2007 07:03:47 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48130 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbXFPLDq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 07:03:46 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 16 Jun 2007 13:03:34 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [GIT PULL] ieee1394 fixes
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.e86449c95726ba81@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus, please pull from the for-linus branch at
 
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-> I've got some more info about this bug.  It is gathered with 
-> nmi_watchdog=2 and a modified nmi_watchdog_tick(), which instead of 
-> calling die_nmi() just prints a line and calls show_registers().
+to receive the following updates to the old and the new IEEE 1394 subsystem:
 
-great!
+ drivers/firewire/fw-ohci.c |    2 +-
+ drivers/ieee1394/eth1394.c |   21 +++++++++++++++------
+ 2 files changed, 16 insertions(+), 7 deletions(-)
 
-> The pattern that emerges is that on CPU0 we have an interrupt, which 
-> is trying to acquire the rq lock, but can't.
-> 
-> On CPU1 we have strace which is doing wait_task_inactive(), which sort 
-> of spins acquiring and releasing the rq lock.  I've checked some of 
-> the traces and it is just before acquiring the rq lock, or just after 
-> releasing it, but is not actually holding it.
-> 
-> So is it possible that wait_task_inactive() could be starving the 
-> other waiters of the rq spinlock?  Any ideas?
+Carlos E. Ugarte (1):
+      ieee1394: fix to ether1394_tx in ether1394.c
 
-hm, this is really interesting, and indeed a smoking gun. The T60 has a 
-Core2Duo and i've _never_ seen MESI starvation happen on dual-core 
-single-socket CPUs! (The only known serious MESI starvation i know about 
-is on multi-socket Opterons: there the trylock loop of spinlock 
-debugging is known to starve some CPUs out of those locks that are being 
-polled, so we had to turn off that aspect of spinlock debugging.)
+Stefan Richter (1):
+      firewire: fix hang after card ejection
 
-wait_task_inactive(), although it busy-loops, is pretty robust: it does 
-a proper spin-lock/spin-unlock sequence and has a cpu_relax() inbetween. 
-Furthermore, the rep_nop() that cpu_relax() is based on is 
-unconditional, so it's not like we could somehow end up not having the 
-REP; NOP sequence there (which should make the lock polling even more 
-fair)
 
-could you try the quick hack below, ontop of cfs-v17? It adds two things 
-to wait_task_inactive():
-
-- a cond_resched() [in case you are running !PREEMPT]
-
-- use MONITOR+MWAIT to monitor memory transactions to the rq->curr 
-  cacheline. This should make the polling loop definitely fair.
-
-If this solves the problem on your box then i'll do a proper fix and 
-introduce a cpu_relax_memory_change(*addr) type of API to around 
-monitor/mwait. This patch boots fine on my T60 - but i never saw your 
-problem.
-
-[ btw., utrace IIRC fixes ptrace to get rid of wait_task_interactive(). ]
-
-	Ingo
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -834,6 +834,16 @@ repeat:
- 		cpu_relax();
- 		if (preempted)
- 			yield();
-+		else
-+			cond_resched();
-+		/*
-+		 * Wait for "curr" to change:
-+		 */
-+		__monitor((void *)&rq->curr, 0, 0);
-+		smp_mb();
-+		if (rq->curr != p)
-+			__mwait(0, 0);
+diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
+index 0d08bf9..b72a5c1 100644
+--- a/drivers/firewire/fw-ohci.c
++++ b/drivers/firewire/fw-ohci.c
+@@ -1001,7 +1001,7 @@ static irqreturn_t irq_handler(int irq, void *data)
+ 
+ 	event = reg_read(ohci, OHCI1394_IntEventClear);
+ 
+-	if (!event)
++	if (!event || !~event)
+ 		return IRQ_NONE;
+ 
+ 	reg_write(ohci, OHCI1394_IntEventClear, event);
+diff --git a/drivers/ieee1394/eth1394.c b/drivers/ieee1394/eth1394.c
+index 5f026b5..7c13fb3 100644
+--- a/drivers/ieee1394/eth1394.c
++++ b/drivers/ieee1394/eth1394.c
+@@ -1565,7 +1565,7 @@ static void ether1394_complete_cb(void *__ptask)
+ /* Transmit a packet (called by kernel) */
+ static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
+ {
+-	struct eth1394hdr *eth;
++	struct eth1394hdr hdr_buf;
+ 	struct eth1394_priv *priv = netdev_priv(dev);
+ 	__be16 proto;
+ 	unsigned long flags;
+@@ -1595,16 +1595,17 @@ static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
+ 	if (!skb)
+ 		goto fail;
+ 
+-	/* Get rid of the fake eth1394 header, but save a pointer */
+-	eth = (struct eth1394hdr *)skb->data;
++	/* Get rid of the fake eth1394 header, but first make a copy.
++	 * We might need to rebuild the header on tx failure. */
++	memcpy(&hdr_buf, skb->data, sizeof(hdr_buf));
+ 	skb_pull(skb, ETH1394_HLEN);
+ 
+-	proto = eth->h_proto;
++	proto = hdr_buf.h_proto;
+ 	dg_size = skb->len;
+ 
+ 	/* Set the transmission type for the packet.  ARP packets and IP
+ 	 * broadcast packets are sent via GASP. */
+-	if (memcmp(eth->h_dest, dev->broadcast, ETH1394_ALEN) == 0 ||
++	if (memcmp(hdr_buf.h_dest, dev->broadcast, ETH1394_ALEN) == 0 ||
+ 	    proto == htons(ETH_P_ARP) ||
+ 	    (proto == htons(ETH_P_IP) &&
+ 	     IN_MULTICAST(ntohl(ip_hdr(skb)->daddr)))) {
+@@ -1616,7 +1617,7 @@ static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
+ 		if (max_payload < dg_size + hdr_type_len[ETH1394_HDR_LF_UF])
+ 			priv->bc_dgl++;
+ 	} else {
+-		__be64 guid = get_unaligned((u64 *)eth->h_dest);
++		__be64 guid = get_unaligned((u64 *)hdr_buf.h_dest);
+ 
+ 		node = eth1394_find_node_guid(&priv->ip_node_list,
+ 					      be64_to_cpu(guid));
+@@ -1673,6 +1674,14 @@ static int ether1394_tx(struct sk_buff *skb, struct net_device *dev)
+ 		if (dest_node == (LOCAL_BUS | ALL_NODES))
+ 			goto fail;
+ 
++		/* At this point we want to restore the packet.  When we return
++		 * here with NETDEV_TX_BUSY we will get another entrance in this
++		 * routine with the same skb and we need it to look the same.
++		 * So we pull 4 more bytes, then build the header again. */
++		skb_pull(skb, 4);
++		ether1394_header(skb, dev, ntohs(hdr_buf.h_proto),
++				 hdr_buf.h_dest, NULL, 0);
 +
- 		goto repeat;
- 	}
- 	task_rq_unlock(rq, &flags);
+ 		/* Most failures of ether1394_send_packet are recoverable. */
+ 		netif_stop_queue(dev);
+ 		priv->wake_node = dest_node;
+
+-- 
+Stefan Richter
+-=====-=-=== -==- =----
+http://arcgraph.de/sr/
+
