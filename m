@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759092AbXFPCNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbXFPCPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759092AbXFPCNV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 22:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757645AbXFPCNP
+	id S1759285AbXFPCPn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 22:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbXFPCPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 22:13:15 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2882 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757429AbXFPCNO (ORCPT
+	Fri, 15 Jun 2007 22:15:37 -0400
+Received: from srv1.netkinetics.net ([206.71.148.180]:39869 "EHLO
+	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757637AbXFPCPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 22:13:14 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Fri, 15 Jun 2007 19:13:00 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKGEDDEKAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Fri, 15 Jun 2007 22:15:36 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Tim Post <tim.post@netkinetics.net>
+Reply-To: tim.post@netkinetics.net
+To: Scott Preece <sepreece@gmail.com>
+Cc: Alexandre Oliva <aoliva@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <7b69d1470706151752x30aeaaacl305d964b0ae4cc2d@mail.gmail.com>
+References: <466A3EC6.6030706@netone.net.tr>
+	 <20070614122031.4751a52b@the-village.bc.nu>
+	 <20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
+	 <20070615120926.GD6269@elte.hu>
+	 <orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <7b69d1470706151503v23253546w5648f04673741c8f@mail.gmail.com>
+	 <orodjgvm5v.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <7b69d1470706151752x30aeaaacl305d964b0ae4cc2d@mail.gmail.com>
+Content-Type: text/plain
+Organization: Net Kinetics
+Date: Sat, 16 Jun 2007 10:12:50 +0800
+Message-Id: <1181959970.21797.493.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.1 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEPOEJAC.davids@webmaster.com>
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Fri, 15 Jun 2007 19:13:38 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Fri, 15 Jun 2007 19:13:38 -0700
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - netkinetics.net
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-06-15 at 19:52 -0500, Scott Preece wrote:
 
-By the way, the unfortunate answer to the question of what the default
-position is when contributions to a collective work are received without
-explicit license, at least in the United States, is:
+> 
+> Yes, but in highlighting the possibility of evil intentions you
+> distort the fact that usually there are no such evil intentions...
+> 
 
-"In the absence of an express transfer of the copyright or of any rights
-under it, the owner of copyright in the collective work is presumed to have
-acquired only the privilege of reproducing and distributing the contribution
-as part of that particular collective work, any revision of that collective
-work, and any later collective work in the same series." -- USC 201(c)
+I don't think you can use "usually" and "fact" together like that. Why
+is it so bad to account for them since they (do) surface and (could)
+increase significantly in frequency? 
 
-That is, as I understand the law, if you receive a contribution to a project
-without any specific license in that contribution, it works like this:
+For me, the (could) is enough to act upon, regardless of the current
+likely hood of it happening. Things change frequently. 
 
-1) You automatically receive a license to use that piece as part of that
-project by virtue of the fact that it was contributed by the author to that
-project. (Because 210(c) says so.)
+This, unfortunately comes pre-distorted depending on what you believe.
+All of us are right but we still don't agree. Quite a fluke. 
 
-2) If the contribution is itself a derivative work of a GPL'd work, then you
-receive a GPL license. (Because the GPL says so).
+That's the problem.
 
-So it would be very unwise to add a contribution that wasn't itself a
-derivative work without clear indication from the author that the
-contribution is offered under the license you need. I had assumed no law set
-a default, and therefore the default would be the project's license. THIS IS
-INCORRECT. 201(c) sets the default, and it's the wrong one.
+Best,
+--Tim
 
-This means that contributions of non-derivative works to GPL projects should
-not be added to the project unless the author specifically licenses that
-piece under the GPL. I would not consider it safe to assume that the fact
-that the author knowingly contributed the work to a GPL'd project is
-sufficient to change the 201(c) default.
-
-What's worse, section 203 appears to grant the author various ways, by law,
-to *terminate* a license grant. This termination removes the ability to
-create subsequent derivative works. Ouch.
-
-http://www.copyright.gov/title17/92chap2.html
-
-I sure hope I'm misunderstanding something.
-
-DS
 
 
