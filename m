@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbXFPJPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbXFPJYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbXFPJPs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 05:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbXFPJPi
+	id S1754764AbXFPJYS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 05:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbXFPJYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 05:15:38 -0400
-Received: from postfix2-g20.free.fr ([212.27.60.43]:35252 "EHLO
-	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbXFPJPh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 05:15:37 -0400
-Message-ID: <1181985273.4673a9f9e9a4e@imp.free.fr>
-Date: Sat, 16 Jun 2007 11:14:33 +0200
-From: castet.matthieu@free.fr
-To: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-net@vger.kernel.org
-Subject: FW : airo suspend problem
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 81.57.151.96
+	Sat, 16 Jun 2007 05:24:11 -0400
+Received: from mail.screens.ru ([213.234.233.54]:43080 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753010AbXFPJYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 05:24:10 -0400
+Date: Sat, 16 Jun 2007 13:24:15 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: John Blackwood <john.blackwood@ccur.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH] selective signal ptracing
+Message-ID: <20070616092415.GA130@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+John Blackwood wrote:
+>
+> By default all signals are ptraced as before. However, a debugger
+> may now modify the set of per-task ptraced signals, where only the
+> signals in this ptrace signal mask will be ptraced.
 
-  Sujet : airo suspend problem
-      À : linux-pm@lists.osdl.org
+I must admit, I agree with Roland...
 
-Hi,
+> +void ptrace_update_traced_signals(struct task_struct *child,
+> +							sigset_t *new_smaskp)
+> +{
+> [...snip...]
+> +
+> +		spin_lock_irqsave(&child->sighand->siglock, flags);
+> +
+> +		if (child->sighand == NULL) {
 
-the airo driver (drivers/net/wireless/airo.c) does in its suspend routine [1].
-But not all the pci cards support power management and cause
-pci_enable_wake/pci_set_power_state to return errors.
+How so?
 
-On pci card that don't support PM, what should be done ?
-Don't call pci_enable_wake/pci_set_power_state ?
-
-
-Thanks
-
-Matthieu
-
-
-PS : after the failed suspend to ram due to airo driver, I tried to unload airo
-driver and it hanged. After a reset, I got my ext3 root fs corrupted :(
-
-
-
-
-[1]
-pci_enable_wake(pdev, pci_choose_state(pdev, state), 1);
-pci_save_state(pdev);
-return pci_set_power_state(pdev, pci_choose_state(pdev, state));
-
-
+Oleg.
 
