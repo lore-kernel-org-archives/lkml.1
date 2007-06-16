@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbXFPAH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbXFPANM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759391AbXFPAH3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 20:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbXFPAHV
+	id S1759217AbXFPANM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 20:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbXFPAM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 20:07:21 -0400
-Received: from ns.suse.de ([195.135.220.2]:59149 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757082AbXFPAHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 20:07:19 -0400
-Date: Fri, 15 Jun 2007 17:07:15 -0700
-From: Seth Arnold <seth.arnold@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <greg@kroah.com>, Crispin Cowan <crispin@novell.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070616000715.GO3564@suse.de>
-Mail-Followup-To: Pavel Machek <pavel@ucw.cz>,
-	Greg KH <greg@kroah.com>, Crispin Cowan <crispin@novell.com>,
-	Andreas Gruenbacher <agruen@suse.de>,
-	Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-	linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615233314.GN3564@suse.de> <20070615233914.GF2616@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Eu9PQ+LfZADlAtIa"
+	Fri, 15 Jun 2007 20:12:58 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:23926 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756144AbXFPAM6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 20:12:58 -0400
+Date: Sat, 16 Jun 2007 02:12:55 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: linux-kernel@vger.kernel.org
+Subject: My kernel hangs again: Help with git please
+Message-ID: <20070616001255.GA11403@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070615233914.GF2616@elf.ucw.cz>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Somewhere between 2.6.18 and 2.6.19, a patch was added to the
+kernel that makes it hang on my machine after the message:
 
---Eu9PQ+LfZADlAtIa
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+apgart: Detected an Intel 965G Chipset.
 
-On Sat, Jun 16, 2007 at 01:39:14AM +0200, Pavel Machek wrote:
-> > Pavel, please focus on the current AppArmor implementation. You're
-> > remembering a flaw with a previous version of AppArmor. The pathnames
-> > constructed with the current version of AppArmor are consistent and
-> > correct.
->=20
-> Ok, I did not know that this got fixed.
->=20
-> How do you do that? Hold a lock preventing renames for a whole time
-> you walk from file to the root of filesystem?
+When I upgraded to 2.6.22-rc4 (from debian trunk), I still ran
+into this same bug.
 
-We've improved d_path() to remove many of its previous shortcomings:
+After installing git for the first time, I made my first
+little steps with git - but it didn't get any further then
+an attempt to mount my root because I had done my configuration
+wrong (due the fact that libata seems to have moved).
 
-eb3dfb0cb1f4a44e2d0553f89514ce9f2a9fcaf1
+Later, I managed to get the configuration right, compiled
+HEAD (I think) and got a working 2.6.22-rc4 (+ patches).
+I was very happy, and assumed that by coincidence the very
+bug that was introduced shortly after 2.6.18 that made my
+machine hang during boot, was fixed only two or so days
+after I joined linux-kernel and installed git, somewhere
+after 2.6.22-rc4 ... What a coincidence right?
 
---Eu9PQ+LfZADlAtIa
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Indeed, I thought it was a bit TOO much of a coincidence.
+So I just HAD to see that patch that fixed the problem,
+and I tried to used git bisect to find the patch that changes
+the behaviour from a hang to a working kernel (that I am
+now using to write this very mail).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Surprise: Nothing I try produces a working kernel anymore?!
 
-iD8DBQFGcymz+9nuM9mwoJkRAhivAKCgrByUWMM2J3Vd8CxyUjpyYzE2xACfb28T
-yXsnfsri7KgHKbzFkZN/82Q=
-=Lhhj
------END PGP SIGNATURE-----
+Therefore I have the following questions:
 
---Eu9PQ+LfZADlAtIa--
+1) What git command will ASSURE that I get the LATEST
+   kernel tree checked out?
+ 
+I tried this:
+
+hikaru:/usr/src/kernel/git/linux-2.6>git branch -l
+* bisect
+  master
+  origin
+hikaru:/usr/src/kernel/git/linux-2.6>git reset --hard HEAD
+hikaru:/usr/src/kernel/git/linux-2.6>git rev-list --max-count=1 bisect
+c420bc9f09a0926b708c3edb27eacba434a4f4ba
+
+And, assuming I have c420bc9f09a0926b708c3edb27eacba434a4f4ba at that
+moment, then git reset --hard HEAD didn't do what I wanted: that is
+namely -rc3 even! I can see THAT in the Makefile -- but whenever I
+see -rc4 in the Makefile, that doesn't garantee in any way (apparently)
+that I have the latest of the latest.
+
+2) Is there some way to find back the exact version (git id)
+from the .config, System.map and vmlinuz image (or /proc, since I can
+boot it)? Because that is all I have left from the time that I managed
+to create a working kernel :(
+
+-- 
+Carlo Wood <carlo@alinoe.com>
