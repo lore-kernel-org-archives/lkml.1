@@ -1,88 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbXFPRTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbXFPRXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbXFPRTP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 13:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXFPRS6
+	id S1753517AbXFPRXT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 13:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbXFPRXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 13:18:58 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:54422
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754043AbXFPRS5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 13:18:57 -0400
-Date: Sat, 16 Jun 2007 10:16:17 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: David Greaves <david@dgreaves.com>
-cc: Neil Brown <neilb@suse.de>, Wakko Warner <wakko@animx.eu.org>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-In-Reply-To: <4673E7DC.80508@dgreaves.com>
-Message-ID: <Pine.LNX.4.64.0706160947350.7557@asgard.lang.hm>
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
- <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
- <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org>
- <18035.23867.576212.859440@notabene.brown> <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm>
- <4673E7DC.80508@dgreaves.com>
+	Sat, 16 Jun 2007 13:23:06 -0400
+Received: from il.qumranet.com ([82.166.9.18]:56356 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751176AbXFPRXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 13:23:04 -0400
+Message-ID: <46741C75.3000003@argo.co.il>
+Date: Sat, 16 Jun 2007 20:23:01 +0300
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Neil Brown <neilb@suse.de>
+CC: david@lang.hm, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>	<18034.479.256870.600360@notabene.brown>	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>	<18034.3676.477575.490448@notabene.brown>	<467273AB.9010202@argo.co.il> <18035.3009.568832.785308@notabene.brown>
+In-Reply-To: <18035.3009.568832.785308@notabene.brown>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Sat, 16 Jun 2007 20:23:02 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Jun 2007, David Greaves wrote:
-
-> david@lang.hm wrote:
->>  On Sat, 16 Jun 2007, Neil Brown wrote:
->>
->>  I want to test several configurations, from a 45 disk raid6 to a 45 disk
->>  raid0. at 2-3 days per test (or longer, depending on the tests) this
->>  becomes a very slow process.
-> Are you suggesting the code that is written to enhance data integrity is 
-> optimised (or even touched) to support this kind of test scenario?
-> Seriously? :)
-
-actually, if it can be done without a huge impact to the maintainability 
-of the code I think it would be a good idea for the simple reason that I 
-think the increased experimentation would result in people finding out 
-what raid level is really appropriate for their needs.
-
-there is a _lot_ of confusion around about what the performance 
-implications of different raid levels are (especially when you consider 
-things like raid 10/50/60 where you have two layers combined) and anything 
-that encourages experimentation would be a good thing.
-
->>  also, when a rebuild is slow enough (and has enough of a performance
->>  impact) it's not uncommon to want to operate in degraded mode just long
->>  enought oget to a maintinance window and then recreate the array and
->>  reload from backup.
+Neil Brown wrote:
+>>>   
+>>>       
+>> Some things are not achievable with block-level raid.  For example, with
+>> redundancy integrated into the filesystem, you can have three copies for
+>> metadata, two copies for small files, and parity blocks for large files,
+>> effectively using different raid levels for different types of data on
+>> the same filesystem.
+>>     
 >
-> so would mdadm --remove the rebuilding disk help?
+> Absolutely.  And doing that is a very good idea quite independent of
+> underlying RAID.  Even ext2 stores multiple copies of the superblock.
+>
+> Having the filesystem duplicate data, store checksums, and be able to
+> find a different copy if the first one it chose was bad is very
+> sensible and cannot be done by just putting the filesystem on RAID.
+>   
 
-no. let me try again
+It would need to know a lot about the RAID geometry in order not to put
+the the copies on the same disks.
 
-drive fails monday morning
+> Having the filesystem keep multiple copies of each data block so that
+> when one drive dies, another block is used does not excite me quite so
+> much.  If you are going to do that, then you want to be able to
+> reconstruct the data that should be on a failed drive onto a new
+> drive.
+> For a RAID system, that reconstruction can go at the full speed of the
+> drive subsystem - but needs to copy every block, whether used or not.
+> For in-filesystem duplication, it is easy to imagine that being quite
+> slow and complex.  It would depend a lot on how you arrange data,
+> and maybe there is some clever approach to data layout that I haven't
+> thought of.  But I think that sort of thing is much easier to do in a
+> RAID layer below the filesystem.
+>   
 
-scenerio 1
+You'd need a reverse mapping of extents to files.  While maintaining
+that is expensive, it brings a lot of benefits:
 
-replace the failed drive, start the rebuild. system will be slow (degraded 
-mode + rebuild) for the next three days.
+- rebuild a failed drive, without rebuilding free space
+- evacuate a drive in anticipation of taking it offline
+- efficient defragmentation
 
-scenerio 2
+Reverse mapping storage could serve as free space store too.
 
-leave it in degraded mode until monday night (accepting the speed penalty 
-for degraded mode, but not the rebuild penalty)
+> Combining these thoughts, it would make a lot of sense for the
+> filesystem to be able to say to the block device "That blocks looks
+> wrong - can you find me another copy to try?".  That is an example of
+> the sort of closer integration between filesystem and RAID that would
+> make sense.
+>   
 
-monday night shutdown the system, put in the new drive, reinitialize the 
-array, reload the system from backup.
+It's a step forward, but still quite limited compared to combining the
+two layers together.  Sticking with the example above, you still can't
+have a mix of parity-protected files and mirror-protected files; the
+RAID decides that for you.
 
-system is back to full speed tuesday morning.
-
-scenerio 2 isn't supported with md today, although it sounds as if the 
-skip rebuild could do this except for raid 5
-
-on my test system, the rebuild says it's running at 5M/s a DD to a file on 
-the array says it's doing 45M/s (even while the rebuild is running), so it 
-seems to me that there may be value in this approach.
-
-David Lang
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
