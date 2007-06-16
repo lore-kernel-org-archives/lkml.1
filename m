@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbXFPKYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbXFPKZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbXFPKYx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 06:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbXFPKYM
+	id S1754483AbXFPKZR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 06:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbXFPKYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 06:24:12 -0400
-Received: from www.osadl.org ([213.239.205.134]:37144 "EHLO mail.tglx.de"
+	Sat, 16 Jun 2007 06:24:13 -0400
+Received: from www.osadl.org ([213.239.205.134]:37148 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753077AbXFPKYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753266AbXFPKYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 16 Jun 2007 06:24:09 -0400
-Message-Id: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
+Message-Id: <20070616101636.675115029@inhelltoy.tec.linutronix.de>
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 16 Jun 2007 10:36:00 -0000
+Date: Sat, 16 Jun 2007 10:36:04 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
        Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
        Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [patch-mm 00/25] High resolution timer updates and x86_64 support - V2
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>
+Subject: [patch-mm 04/25] Timekeeping: Fixup shadow variable argument
+Content-Disposition: inline;
+	filename=timekeeping-c-fixup-clock-shadow-global-variable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch series contains:
+clocksource_adjust() has a clock argument, which shadows the file 
+global clock variable. Fix this up.
 
-- dyntick bugfixes for -mm (caused by the cpuidle changes in ACPI)
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: john stultz <johnstul@us.ibm.com>
 
-- updates and improvements to high resolution timer / dynticks 
+---
+ kernel/time/timekeeping.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-- high resolution timer / dynticks support for x86_64
+Index: linux-2.6.22-rc4-mm/kernel/time/timekeeping.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/kernel/time/timekeeping.c	2007-06-16 12:10:22.000000000 +0200
++++ linux-2.6.22-rc4-mm/kernel/time/timekeeping.c	2007-06-16 12:10:23.000000000 +0200
+@@ -401,7 +401,7 @@ static __always_inline int clocksource_b
+  * this is optimized for the most common adjustments of -1,0,1,
+  * for other values we can do a bit more work.
+  */
+-static void clocksource_adjust(struct clocksource *clock, s64 offset)
++static void clocksource_adjust(s64 offset)
+ {
+ 	s64 error, interval = clock->cycle_interval;
+ 	int adj;
+@@ -476,7 +476,7 @@ void update_wall_time(void)
+ 	}
+ 
+ 	/* correct the clock when NTP error is too big */
+-	clocksource_adjust(clock, offset);
++	clocksource_adjust(offset);
+ 
+ 	/* store full nanoseconds into xtime */
+ 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
 
-The x86_64 support is based on an initial patch from Chris Wright. Thanks Chris !
-
-The patch set has been tested in the -hrt and -rt trees for quite a while
-and the initial problems have been sorted out. Thanks to the folks from the
-PowerTop project for testing and feedback.
-
-The -hrt tree at http://www.tglx.de/projects/hrtimers/2.6.22-rc4/ contains
-also an hpet force patch series from Venki Pallipadi, but I leave this up to
-Venki to send it mainline wards.
-
-Changes since V1:
-
-- simplified the idle breakage fixup
-
-- fixed a resume bug (making the famous VAIO work again)
-
-- added a clocksource settimeofday hook for PPC (Tony Breeds)
-
-Thanks,
-
-	tglx
 -- 
 
