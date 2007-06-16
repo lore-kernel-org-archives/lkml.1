@@ -1,141 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbXFPNZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757331AbXFPNdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757419AbXFPNZu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 09:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXFPNZn
+	id S1757331AbXFPNdh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 09:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbXFPNd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 09:25:43 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36781 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755556AbXFPNZn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 09:25:43 -0400
-Date: Sat, 16 Jun 2007 15:25:57 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: regression tracking (Re: Linux 2.6.21)
-Message-ID: <20070616132557.GT3588@stusta.de>
-References: <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <20070616025516.GR3588@stusta.de> <20070616050344.GB16016@flower.upol.cz>
+	Sat, 16 Jun 2007 09:33:27 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:50070 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754980AbXFPNd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 09:33:26 -0400
+Message-ID: <4673E69A.4020309@dgreaves.com>
+Date: Sat, 16 Jun 2007 14:33:14 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070616050344.GB16016@flower.upol.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Neil Brown <neilb@suse.de>
+Cc: Wakko Warner <wakko@animx.eu.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>	<18034.479.256870.600360@notabene.brown>	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>	<18034.3676.477575.490448@notabene.brown>	<20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown>
+In-Reply-To: <18035.23867.576212.859440@notabene.brown>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 16, 2007 at 07:03:44AM +0200, Oleg Verych wrote:
->...
-> On Sat, Jun 16, 2007 at 04:55:16AM +0200, Adrian Bunk wrote:
-> > On Sat, Jun 16, 2007 at 03:32:36AM +0200, Oleg Verych wrote:
-> > > On Sat, Jun 16, 2007 at 01:42:02AM +0200, Adrian Bunk wrote:
->...
-> > > For example you feel, that you've wasted time. But after all, if you've
-> > > came up with some kind of tool, everybody else could take it. No
-> > > problems, useful ideas must and will evolve. But _ideally_ this must not be
-> > > from ground zero every time. _Ideally_ from technical, not personal
-> > > point of view ;).
-> > 
-> > As I expected, someone else has picked up regression tracking.
-> > And other from what you claim, this did not require any kind of tool.
+Neil Brown wrote:
+> On Friday June 15, wakko@animx.eu.org wrote:
+>  
+>>                                                   As I understand the way
+>> raid works, when you write a block to the array, it will have to read all
+>> the other blocks in the stripe and recalculate the parity and write it out.
 > 
-> So you expected good, doing bad. ``Bad'' means bringing pointless flame
-> about what everybody should do, without constructive approach like: "OK,
-> i can't do it due to my POV{0}, useless manual work. Everybody willing to
-> bring another way of dealing with it is welcome."
-> 
-> Your first reply:
-> 
-> "And it's not that Linus started developing the Linux kernel with writing
-> git, the first 10 years of Linux development were without any SCM." {3}
-> 
-> to my note about, that you are not hurry anywhere, that after all that
-> years of Open Source and Free Software development you are not trying
-> to deal with such important thing like regression/bug tracking in
-> ***organized way***, is rather pointless.
+> Your understanding is incomplete.
 
-I am dealing with bug tracking in the kernel Bugzilla.
-I did regression tracking for the kernel.
-Michal is currently tracking regressions.
-Andrew is doing an enormous amount of work in these areas.
+Does this help?
+[for future reference so you can paste a url and save the typing for code :) ]
 
-You might not see it because you are not active in this area, but it is 
-working in an organized way.
+http://linux-raid.osdl.org/index.php/Initial_Array_Creation
 
-What is not working is getting all tracked bugs properly debugged.
+David
 
-> > > That's why people in Debian have started *team* maintenance with alioth. 
-> > 
-> > The problem for the Linux kernel is that for a better bug handling you'd 
-> > need people willing to learn other people's code and to do the hard work 
-> > of debugging bug reports.
-> 
-> ... {0}++
-> 
-> Do you know, for example, why i'm not making my "hacker's career"
-> doing that?
-> 
-> 1. because i ended up with lynx, slrn, mutt, emacs-nox. Including
->    "zarro bogs found" kind of thing and other "userspace suck" problems.
-> 2. i have no way to know if something *really* broken, unless it right
->    on my hardware
-> 
-> This all unlike Debian BTS using reportbug, where you have basic
-> information, mbox format messages for easy "mutt -f", and other funny
-> things, real maintainers aware of (i'm trying to know, learn about).
-> 
-> Thus organized, non brain-damaged way of reporting and tracking is the
-> key issue.
 
-Bugzilla is a usable tool for bug and regression reporting and tracking 
-tracking.
 
-I am using the Debian BTS since 8 years and I've used many Bugzillas.
+Initial Creation
 
-Both are usable, and the real problem in kernel development is not 
-really related to the question which tool to use for bug tracking.
+When mdadm asks the kernel to create a raid array the most noticeable activity 
+is what's called the "initial resync".
 
->...
-> > Talking about "team maintenance" sounds nice, but the problem in the 
-> > kernel starts with code that has zero maintainers.
-> 
-> Floppy went pretty fine, before it was started to be maintained, and
-> you know that. But you also told that unmaintained and not-working are
-> different things.
+The kernel takes one (or two for raid6) disks and marks them as 'spare'; it then 
+creates the array in degraded mode. It then marks spare disks as 'rebuilding' 
+and starts to read from the 'good' disks, calculate the parity and determines 
+what should be on any spare disks and then writes it. Once all this is done the 
+array is clean and all disks are active.
 
-unmaintained != unused
-user != developer
-worked != went pretty fine
+This can take quite a time and the array is not fully resilient whilst this is 
+happening (it is however fully useable).
 
-Stuff can easily get broken and noone looks after bugs if there's no 
-maintainer both knowing the code and willing to debug bugs.
+--assume-clean
 
-The floppy driver is actually an example of code that has been broken 
-quite often by patches simply because noone who completely understands 
-this driver reviewed patches.
+Some people have noticed the --assume-clean option in mdadm and speculated that 
+this can be used to skip the initial resync. Which it does. But this is a bad 
+idea in some cases - and a *very* bad idea in others.
 
-It somehow works and it might work for some years, but there is a 
-problem.
+raid5
 
->...
-> I see (this repetition). Maybe i've managed to express my POV, that it
-> can be seeing more cleanly.
+For raid5 especially it is NOT safe to skip the initial sync. The raid5 
+implementation optimises use of the component disks and it is possible for all 
+updates to be "read-modify-write" updates which assume the parity is correct. If 
+it is wrong, it stays wrong. Then when you lose a drive, the parity blocks are 
+wrong so the data you recover using them is wrong. In other words - you will get 
+data corruption.
 
-IMHO your point of view is simply not related to the real current 
-quality problems in kernel development.
+For raid5 on an array with more than 3 drive, if you attempt to write a single 
+block, it will:
 
-cu
-Adrian
+     * read the current value of the block, and the parity block.
+     * "subtract" the old value of the block from the parity, and "add" the new 
+value.
+     * write out the new data and the new parity.
 
--- 
+If the parity was wrong before, it will still be wrong. If you then lose a 
+drive, you lose your data.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+linear, raid0,1,10
 
+These raid levels do not need an initial sync.
+
+linear and raid0 have no redundancy.
+
+raid1 always writes all data to all disks.
+
+raid10 always writes all data to all relevant disks.
+
+
+Other raid levels
+
+Probably the most noticeable effect for the other raid levels is that if you 
+don't sync first, then every check will find lots of errors. (Of course you 
+could 'repair' instead of 'check'. Or do that once. Or something.)
+
+For raid6 it is also safe to not sync first, though with the same caveat. Raid6 
+always updates parity by reading all blocks in the stripe that aren't known and 
+calculating P and Q. So the first write to a stripe will make P and Q correct 
+for that stripe. This is current behaviour. There is no guarantee it will never 
+changed (so theoretically one day you may upgrade your kernel and suffer data 
+corruption on an old raid6 array).
+
+Summary
+
+In summary, it is safe to use --assume-clean on a raid1 or raid1o, though a 
+"repair" is recommended before too long. For other raid levels it is best avoided.
+
+Potential 'Solutions'
+
+There have been 'solutions' suggested including the use of bitmaps to 
+efficiently store 'not yet synced' information about the array. It would be 
+possible to have a 'this is not initialised' flag on the array, and if that is 
+not set, always do a reconstruct-write rather than a read-modify-write. But the 
+first time you have an unclean shutdown you are going to resync all the parity 
+anyway (unless you have a bitmap....) so you may as well resync at the start. So 
+essentially, at the moment, there is no interest in implementing this since the 
+added complexity is not justified.
+
+What's the problem anyway?
+
+First of all RAID is all about being safe with your data.
+
+And why is it such a big deal anyway? The initial resync doesn't stop you from 
+using the array. If you wanted to put an array into production instantly and 
+couldn't afford any slowdown due to resync, then you might want to skip the 
+initial resync.... but is that really likely?
+
+So what is --assume-clean for then?
+
+Disaster recovery. If you want to build an array from components that used to be 
+in a raid then this stops the kernel from scribbling on them. As the man page says :
+
+"Use this ony if you really know what you are doing."
