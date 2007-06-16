@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbXFPQtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbXFPQ6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757285AbXFPQtu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 12:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbXFPQto
+	id S1757419AbXFPQ6i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 12:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbXFPQ6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 12:49:44 -0400
-Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:50048 "EHLO
-	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754585AbXFPQtn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 12:49:43 -0400
-Date: Sat, 16 Jun 2007 12:49:31 -0400
-To: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-Cc: Jack Stone <jack@hawkeye.stone.uk.eu.org>, alan <alan@clueserver.org>,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-Message-ID: <20070616164931.GF14788@delft.aura.cs.cmu.edu>
-Mail-Followup-To: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>,
-	Jack Stone <jack@hawkeye.stone.uk.eu.org>,
-	alan <alan@clueserver.org>, hpa@zytor.com,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	akpm@linux-foundation.org, viro@zeniv.linux.org.uk
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org> <46739B2C.4080606@hawkeye.stone.uk.eu.org> <4673B15B.2080300@wolfmountaingroup.com> <4673B77E.1000803@wolfmountaingroup.com>
+	Sat, 16 Jun 2007 12:58:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36694 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755307AbXFPQ63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 12:58:29 -0400
+To: Bernd Schmidt <bernds_cb1@t-online.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706132121.04532.dhazelton@enter.net>
+	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706132304.21984.dhazelton@enter.net>
+	<20070614112329.3645c397@the-village.bc.nu>
+	<20070614103846.GA7902@elte.hu>
+	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614195517.GA4933@elte.hu>
+	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu>
+	<20070615011012.6c09066e@the-village.bc.nu>
+	<20070615012623.GA25189@elte.hu>
+	<20070615101007.0cbfd078@the-village.bc.nu>
+	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4673CA7C.5040207@t-online.de>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Sat, 16 Jun 2007 13:57:59 -0300
+In-Reply-To: <4673CA7C.5040207@t-online.de> (Bernd Schmidt's message of "Sat\, 16 Jun 2007 13\:33\:16 +0200")
+Message-ID: <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4673B77E.1000803@wolfmountaingroup.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Jan Harkes <jaharkes@cs.cmu.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 16, 2007 at 04:12:14AM -0600, Jeffrey V. Merkey wrote:
-> Jeffrey V. Merkey wrote:
-> >over).  There's also another patent filed as well.  It's a noble 
-> >effort to do a free version, but be aware there's some big guns with 
-> >patents out there already, not to mention doing this is complex beyond 
-> >belief.
->
-> I reviewed your sample implementation, and it appears to infringe 3 
-> patents already.    You should do some research on this.  ~~~~
+On Jun 16, 2007, Bernd Schmidt <bernds_cb1@t-online.de> wrote:
 
-First of all, you are responding to someone in the UK, I thought they
-didn't even have software patents over there. Second, I didn't see any
-implementation, just a high level description. Finally advising anyone
-(who is not an actual patent lawyer that could correctly interpret the
-language and scope of a patent) to go search out patents seems pretty
-bad advice. That can only result in not even attempting to research some
-potentially new and innovative approach.
+> Alexandre Oliva wrote:
+>> On Jun 15, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> 
+>>> What this means for the FSF goals if Tivo get up one morning and switch
+>>> their system firmware to ROM however is interesting 8)
+>> 
+>> I'm not the FSF, and I don't speak for it, but it seems to me that
+>> this would be "mission accomplished".
 
-Researching prior published work in the area is considerably more
-helpful. Especially when something is complex beyond belief it has
-probably attracted various researchers over time and there are most
-likely various different solutions that have been explored previously.
-Such existing work can form a good basis for further work.
+> This is insane.  You start with a lofty ideal involving "freedom", and
+> when you end up with a meaningless technicality (and in technical terms
+> a change for the worse) you consider it a victory?
 
-Finally, even if there are patents they could be too limited in scope,
-overly broad, can be invalidated due to prior art. It may also be
-possible that a patent holder has no problem granting a royalty free
-license for a GPL licensed implementation.
+It accomplishes the mission in that everyone is on the same grounds.
+Same freedom for everyone.  If the vendor tries to keep a privilege
+over the software to itself, denying it to its customers, it's failing
+to comply with the spirit of the license.  It's really this simple.
+Is this so hard to understand?
 
-Jan
+The goal is not to push vendors away from GPLed software.  If they
+can't permit modification of the software, that's fine, they can still
+accomplish this.
 
+What they can't do is deny it to customers while they retain it to
+themselves.  This is unfair, this is wrong, and this disrespects
+users' freedoms.  Therefore, the GPL should not permit it.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
