@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbXFPBWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbXFPBa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbXFPBWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 21:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757464AbXFPBWE
+	id S1758787AbXFPBa0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 21:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbXFPBaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 21:22:04 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:38469 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756265AbXFPBWB (ORCPT
+	Fri, 15 Jun 2007 21:30:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48385 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751543AbXFPBaN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 21:22:01 -0400
-Date: Fri, 15 Jun 2007 21:21:57 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@localhost.localdomain
-To: Greg KH <greg@kroah.com>
-cc: Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-In-Reply-To: <20070615235041.GC15056@kroah.com>
-Message-ID: <Line.LNX.4.64.0706152057390.29737@localhost.localdomain>
-References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de>
- <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com>
- <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz>
- <20070615211157.GB7337@kroah.com> <Line.LNX.4.64.0706151736030.28697@localhost.localdomain>
- <20070615235041.GC15056@kroah.com>
+	Fri, 15 Jun 2007 21:30:13 -0400
+Date: Fri, 15 Jun 2007 18:29:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rob Landley <rob@landley.net>
+cc: Michael Gerdau <mgd@technosis.de>, Daniel Hazelton <dhazelton@enter.net>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <200706152103.06921.rob@landley.net>
+Message-ID: <alpine.LFD.0.98.0706151814380.14121@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+ <200706150825.15491.mgd@technosis.de> <alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org>
+ <200706152103.06921.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, Greg KH wrote:
-
-> Oh great, then things like source code control systems would have no
-> problems with new files being created under them, or renaming whole
-> trees.
-
-It depends -- I think we may be talking about different things.
-
-If you're using inotify to watch for new files and kick something in 
-userspace to relabel them, it could take a while to relabel a lot of 
-files, although there are likely some gains to be had from parallel 
-relabeling which we've not explored.
-
-What I was saying is that you can use traditional SELinux labeling policy 
-underneath that to ensure that there is always a safe label on each file 
-before it is relabeled from userspace.
-
-> So, so much for the "it's going to be too slow re-labeling everything"
-> issue, as it's not even required for almost all situations :)
-
-You could probably get an idea of the cost by running something like:
-
-$ time find /usr/src/linux | xargs setfattr -n user.foo -v bar
-
-On my system, it takes about 1.2 seconds to label a fully checked out 
-kernel source tree with ~23,000 files in this manner, on a stock standard 
-ext3 filesystem with a SATA drive.
 
 
+On Fri, 15 Jun 2007, Rob Landley wrote:
+> 
+> Technically what they're holding back is _trademark_ rights, which are a 
+> different area of IP law and not addressed by the GPL.  (I know you know 
+> this, but just for the record...)
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+No, technically Red Hat really *does* have copyrights of their own.
+
+Red Hat owns the "compilation copyright" on their distribution. That 
+means, for example, that even if they have _only_ open source programs on 
+their DVD image, you still are not necessarily able (without their 
+permission) to set up a "cheap-cd's" kind of operation, and sell their 
+CD-ROM/DVD images for a lower price.
+
+So yes, they do own the Red Hat trademark too, but they fundamentally do 
+own copyrights over and beyond those of the individual programs they 
+distribute!
+
+Now, I think it so happens that the RHEL DVD's contains other programs 
+than just open source, and that you couldn't legally copy them *anyway*, 
+but that's a different issue.
+
+Also, happily, a lot of vendors do not *want* to exercise their 
+copyright in the compilation, so you can go to cheapbytes.com, and you'll 
+find Fedora CD's, OpenSuSE CD's, Ubuntu CD's, etc, and as far as I know, 
+they're all perfectly legal. Exactly because open-source vendors usually 
+don't want to look nasty by limiting the compilation, when they can't 
+really limit the individual parts anyway.
+
+> The five main areas of IP law as I understand them are copyright, patent, 
+> trademark, contract, and trade secret.
+
+I'd not put contract there, but fair enough. But what I was really trying 
+to point out is that there are many different "levels" of copyright.
+
+So you can own a "copyright in the compilation" - which just means that 
+you own the details of how you set it all together - _without_ actually 
+necessarily owning the copyrights in any of the individual packages 
+(although you obviously have to have a license to _make_ a compilation of 
+them - but the GPLv2 is one such license).
+
+			Linus
