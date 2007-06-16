@@ -1,67 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbXFPTqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbXFPTyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755956AbXFPTqo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 15:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXFPTqh
+	id S1755762AbXFPTyo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 15:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbXFPTyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 15:46:37 -0400
-Received: from ipx20189.ipxserver.de ([80.190.249.56]:4705 "EHLO
-	ipx20189.ipxserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbXFPTqg (ORCPT
+	Sat, 16 Jun 2007 15:54:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36182 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751619AbXFPTyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 15:46:36 -0400
-Date: Sat, 16 Jun 2007 21:46:34 +0200
-From: Christian Leber <christian@leber.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: beeping patch for debugging acpi sleep
-Message-ID: <20070616194634.GA15953@core>
-References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz> <20070602182014.GB29546@core> <20070609130817.GI27793@elf.ucw.cz>
-MIME-Version: 1.0
+	Sat, 16 Jun 2007 15:54:35 -0400
+Date: Sat, 16 Jun 2007 20:54:01 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Tejun Heo <htejun@gmail.com>, David Greaves <david@dgreaves.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] block: always requeue !fs requests at the front
+Message-ID: <20070616195401.GA6929@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <htejun@gmail.com>,
+	David Greaves <david@dgreaves.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+	linux-pm <linux-pm@lists.osdl.org>, Neil Brown <neilb@suse.de>,
+	Jeff Garzik <jgarzik@pobox.com>
+References: <200706020122.49989.rjw@sisk.pl> <46706968.7000703@dgreaves.com> <alpine.LFD.0.98.0706131507360.14121@woody.linux-foundation.org> <200706140115.58733.rjw@sisk.pl> <46714ECF.8080203@gmail.com> <46715A66.8030806@suse.de> <20070615094246.GN29122@htj.dyndns.org> <20070615110544.GR6149@kernel.dk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070609130817.GI27793@elf.ucw.cz>
-X-Accept-Language: de en
-X-Location: Europe, Germany, Mannheim
-X-Operating-System: Debian GNU/Linux (sid)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070615110544.GR6149@kernel.dk>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 09, 2007 at 03:08:17PM +0200, Pavel Machek wrote:
+On Fri, Jun 15, 2007 at 01:05:44PM +0200, Jens Axboe wrote:
+> On Fri, Jun 15 2007, Tejun Heo wrote:
+> > SCSI marks internal commands with REQ_PREEMPT and push it at the front
+> > of the request queue using blk_execute_rq().  When entering suspended
+> > or frozen state, SCSI devices are quiesced using
+> > scsi_device_quiesce().  In quiesced state, only REQ_PREEMPT requests
+> > are processed.  This is how SCSI blocks other requests out while
+> > suspending and resuming.  As all internal commands are pushed at the
+> > front of the queue, this usually works.
+> > 
+> > Unfortunately, this interacts badly with ordered requeueing.  To
+> > preserve request order on requeueing (due to busy device, active EH or
+> > other failures), requests are sorted according to ordered sequence on
+> > requeue if IO barrier is in progress.
+> > 
+> > The following sequence deadlocks.
+> > 
+> > 1. IO barrier sequence issues.
+> > 
+> > 2. Suspend requested.  Queue is quiesced with part of all of IO
+> >    barrier sequence at the front.
+> > 
+> > 3. During suspending or resuming, SCSI issues internal command which
+> >    gets deferred and requeued for some reason.  As the command is
+> >    issued after the IO barrier in #1, ordered requeueing code puts the
+> >    request after IO barrier sequence.
+> > 
+> > 4. The device is ready to process requests again but still is in
+> >    quiesced state and the first request of the queue isn't
+> >    REQ_PREEMPT, so command processing is deadlocked -
+> >    suspending/resuming waits for the issued request to complete while
+> >    the request can't be processed till device is put back into
+> >    running state by resuming.
+> > 
+> > This can be fixed by always putting !fs requests at the front when
+> > requeueing.
+> > 
+> > The following thread reports this deadlock.
+> > 
+> >   http://thread.gmane.org/gmane.linux.kernel/537473
+> > 
+> > Signed-off-by: Tejun Heo <htejun@gmail.com>
+> > Cc: Jenn Axboe <jens.axboe@oracle.com>
+> > Cc: David Greaves <david@dgreaves.com>
+> > ---
+> > Okay, it took a lot of hours of debugging but boiled down to two liner
+> > fix.  I feel so empty. :-) RAID6 triggers this reliably because it
+> > uses BIO_BARRIER heavily to update its superblock.  The recent ATA
+> > suspend/resume rewrite is hit by this because it uses SCSI internal
+> > commands to spin down and up the drives for suspending and resuming.
+> > 
+> > David, please test this.  Jens, does it look okay?
+> 
+> Yep looks good, except for the bad multi-line comment style, but that's
+> minor stuff ;-)
+> 
+> Acked-by: Jens Axboe <jens.axboe@oracle.com>
 
-> Starting beeper as soon as ACPI sleep returns is very useful in
-> debugging "apparently dead" machines. If it beeps at all, it makes
-> sense to start playing with CMOS tracer.
-
-thank you very much Pavel
-
-The results are a bit unclear, I took a 2.6.22-rc4 with beep.
-Logged into KDE.
-(hardware: Dell Latitude D810)
-
-S = successfull resume
-D = had to resume 2 times, that means when pressing the power button the
-LED goes from blinking to on and after a few seconds it goes back to
-blinking, but without a beep in between; after pressing the power button
-a second time resume is successfull
-F = resume failes, NO beep
-
--run 1: D D F
--run 2: D D D(some X garbadge) F
--run 3: S S S S S S F
--run 4: S S F
--run 5: D F
-
-Very odd, nothing was changed in between and after each F i switched it
-off... because it was dead.
-
-With 2.6.19.7 i have never seen it fail.
-
-
-Christian Leber
-
--- 
-http://rettetdieti.vde-uni-mannheim.de/
-
+I'd much much prefer having a description of the problem in the actual
+comment then a hyperlink.  There's just too much chance of the latter
+breaking over time, and it's impossible to update it when things change
+that should be reflected in the comment.
