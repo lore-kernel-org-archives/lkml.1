@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbXFPCTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbXFPC2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbXFPCTZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 22:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbXFPCTS
+	id S1758733AbXFPC2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 22:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbXFPC2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 22:19:18 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:36269 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757277AbXFPCTR (ORCPT
+	Fri, 15 Jun 2007 22:28:13 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:38054 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757418AbXFPC2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 22:19:17 -0400
-Date: Fri, 15 Jun 2007 22:19:14 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@localhost.localdomain
-To: Seth Arnold <seth.arnold@suse.de>
-cc: Greg KH <greg@kroah.com>, Crispin Cowan <crispin@novell.com>,
-       Pavel Machek <pavel@ucw.cz>, Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-In-Reply-To: <20070616001810.GP3564@suse.de>
-Message-ID: <Line.LNX.4.64.0706152148170.29737@localhost.localdomain>
-References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de>
- <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com>
- <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz>
- <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com>
- <20070615234925.GB15056@kroah.com> <20070616001810.GP3564@suse.de>
+	Fri, 15 Jun 2007 22:28:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Ly8R5RsHKdVSkaI2SuIy0mojHOpaaYhrV+JRLgfz+BMmlmJAqwkJrU/Vtls2etE6lgQP/B7IKxxkF7895Lgv5o+EuJdYNPmfWDB4ppZd6Nemfxbrx1RkqSDKhrzHbmBLHNp+TjKmpxwT05HIi/IJu5rqrCR+pyLuHzHiuOm7ljM=
+Date: Sat, 16 Jun 2007 06:40:03 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] natsemi irq flags
+Message-ID: <20070616024003.GA5722@martell.zuzino.mipt.ru>
+References: <20070615211608.11079.35368.stgit@ghaskins-t60p.haskins.net> <46730D82.7020508@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46730D82.7020508@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007, Seth Arnold wrote:
+On Fri, Jun 15, 2007 at 06:06:58PM -0400, Chuck Ebbert wrote:
+> On 06/15/2007 05:17 PM, Gregory Haskins wrote:
+> > The spinlock irq flags should be a unsigned long to properly support 64 bit
+> 
+> Ouch. Can't we automate checking for that?
 
-> The time for restorecon is probably best imagined as a kind of 'du' that
-> also updates extended attributes as it does its work. It'd be very
-> difficult to improve on this.
+Hopefully I'll do it before next -rc1.
 
-restorecon can most definitely be improved. 
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -191,6 +191,7 @@ typedef __u32 __bitwise __wsum;
+ 
+ #ifdef __KERNEL__
+ typedef unsigned __bitwise__ gfp_t;
++typedef unsigned long __bitwise__ irq_flags_t;
+ 
+ #ifdef CONFIG_RESOURCES_64BIT
+ typedef u64 resource_size_t;
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+803 files changed, 2651 insertions(+), 2617 deletions(-)
+and counting
+
