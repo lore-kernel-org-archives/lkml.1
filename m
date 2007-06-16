@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbXFPWU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbXFPW0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758321AbXFPWU4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 18:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbXFPWUu
+	id S1758022AbXFPW0Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 18:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbXFPW0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 18:20:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33205 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756565AbXFPWUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 18:20:49 -0400
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Cc: "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Ingo Molnar" <mingo@elte.hu>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
-       david@lang.hm, "Tarkan Erimer" <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
+	Sat, 16 Jun 2007 18:26:17 -0400
+Received: from keil-draco.com ([216.193.185.50]:50079 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753739AbXFPW0Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 18:26:16 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alexandre Oliva <aoliva@redhat.com>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu>
-	<20070615011012.6c09066e@the-village.bc.nu>
-	<20070615012623.GA25189@elte.hu>
-	<20070615101007.0cbfd078@the-village.bc.nu>
-	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4673CA7C.5040207@t-online.de>
-	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616181902.GB21478@ftp.linux.org.uk>
-	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<9a8748490706161425k67b52147t5552fba0638349ae@mail.gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sat, 16 Jun 2007 19:19:57 -0300
-In-Reply-To: <9a8748490706161425k67b52147t5552fba0638349ae@mail.gmail.com> (Jesper Juhl's message of "Sat\, 16 Jun 2007 23\:25\:58 +0200")
-Message-ID: <or8xajo836.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+Date: Sat, 16 Jun 2007 18:26:03 -0400
+User-Agent: KMail/1.9.6
+Cc: Tim Post <tim.post@netkinetics.net>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <200706132304.21984.dhazelton@enter.net> <200706161443.26338.dhazelton@enter.net> <or3b0rpnhk.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or3b0rpnhk.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706161826.03408.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 16, 2007, "Jesper Juhl" <jesper.juhl@gmail.com> wrote:
+On Saturday 16 June 2007 18:01:59 Alexandre Oliva wrote:
+> On Jun 16, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+> > On Saturday 16 June 2007 04:21:04 Alexandre Oliva wrote:
+> >> On Jun 16, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+> >> > In the case of renting a machine you can try to legislate new laws all
+> >> > you want. It doesn't make a difference. There are certain rights you
+> >> > don't get when renting something that you do when you own it.
+> >>
+> >> You mean renting the computer with the software in it is not
+> >> distribution of the software?
+> >
+> > It is. But you don't have the same rights to a rented machine as you
+> > do to one you have purchased.
+>
+> That's true.  But since it's distribution, the licensing terms of the
+> software in there must be followed, or the software must be removed.
+> It's really this simple.
+>
+> It's not about the hardware.  It's about the software and what you
+> must not prevent others from doing with it.
+>
+> > And yes, they can even have terms in it that violate the GPL. Not
+> > that a "renters contract" ("rental agreement" or whatever they call
+> > them in your jurisdiction) that has those terms can *legally*
+> > violate the GPL - but it doesn't stop them from existing.
+>
+> By "legally violate the GPL", do you mean lawfully escape the terms of
+> the GPL, or that infringe the copyrights of the authors for violate
+> its legal terms?  I hope it's the latter.
 
-> On 16/06/07, Alexandre Oliva <aoliva@redhat.com> wrote:
->> On Jun 16, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
->> 
->> > How the hell does that improve the situation for users?
->> 
->> Maybe it doesn't.  How does it make it worse?
->> 
-> Now not even the vendor can upgrade the software in the hardware and
-> fix problems for the user. The user loses.
+Sorry, poor choice of words. I meant that they can violate the GPL, because 
+they have the right to say "You can't modify the software on the device you 
+are renting". I mis-stated it because I didn't make it clear that, even 
+though that is their legal right, they would still be in violation of the 
+GPL.
 
-Assuming the vendor's intent as for patching the software is to help
-the user.  If the vendor doesn't want to let the user do that
-independently, why should this assumption hold?
+The reason that it is different from the TiVO case is that they have not 
+stopped you from doing any modification - what they have prevented is the use 
+of those modifications on the hardware they designed. The response from the 
+FSF and people like you (Alexandre) is childish - at best. "They have one of 
+our toys in their house but we can't play with it. WAAAAH!"
+
+DRH
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
