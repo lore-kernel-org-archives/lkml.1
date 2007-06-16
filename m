@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbXFPFv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbXFPGWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757609AbXFPFv4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 01:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbXFPFvs
+	id S1753167AbXFPGWI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 02:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXFPGV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 01:51:48 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:34594 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbXFPFvr (ORCPT
+	Sat, 16 Jun 2007 02:21:57 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:57451 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750771AbXFPGV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 01:51:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UEs7irKLnovvop+6cPhdSqpit9Dx8P5ZFj3H2IR59bBjQ0ARfMennsyMxRzbhR2eNmgLuxMn9zpyh4KSdq6CeGzcL2yBFB/CgxaaqAWRz2eQJwqawlpWd3IUc22jw0ohGlVrqW2Sb66Cf9tEg7Z/t1dBC7qSFb8pzgzOwiotFbM=
-Message-ID: <7b69d1470706152251r60a8b060yd757c62b7bfe6e6b@mail.gmail.com>
-Date: Sat, 16 Jun 2007 00:51:46 -0500
-From: "Scott Preece" <sepreece@gmail.com>
-To: tim.post@netkinetics.net
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Alexandre Oliva" <aoliva@redhat.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Rob Landley" <rob@landley.net>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
-       david@lang.hm, "Tarkan Erimer" <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1181959970.21797.493.camel@localhost.localdomain>
+	Sat, 16 Jun 2007 02:21:56 -0400
+Date: Sat, 16 Jun 2007 08:21:52 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: David Miller <davem@davemloft.net>
+cc: alan@lxorguk.ukuu.org.uk, dwmw2@infradead.org, axboe@kernel.dk,
+       James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+In-Reply-To: <20070615.141917.85409547.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.62.0706160819200.15507@pademelon.sonytel.be>
+References: <1181918159.25228.543.camel@pmac.infradead.org>
+ <Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
+ <20070615171545.316dfac7@the-village.bc.nu> <20070615.141917.85409547.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466A3EC6.6030706@netone.net.tr>
-	 <20070614122031.4751a52b@the-village.bc.nu>
-	 <20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
-	 <20070615120926.GD6269@elte.hu>
-	 <orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <7b69d1470706151503v23253546w5648f04673741c8f@mail.gmail.com>
-	 <orodjgvm5v.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <7b69d1470706151752x30aeaaacl305d964b0ae4cc2d@mail.gmail.com>
-	 <1181959970.21797.493.camel@localhost.localdomain>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-540623539-1181974912=:15507"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/15/07, Tim Post <tim.post@netkinetics.net> wrote:
-> On Fri, 2007-06-15 at 19:52 -0500, Scott Preece wrote:
->
-> >
-> > Yes, but in highlighting the possibility of evil intentions you
-> > distort the fact that usually there are no such evil intentions...
-> >
->
-> I don't think you can use "usually" and "fact" together like that. Why
-> is it so bad to account for them since they (do) surface and (could)
-> increase significantly in frequency?
----
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I agree that it is possible to have different definitions of "evil"
-and "ethical"...
+---584337861-540623539-1181974912=:15507
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-scott
+On Fri, 15 Jun 2007, David Miller wrote:
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date: Fri, 15 Jun 2007 17:15:45 +0100
+> 
+> > > > Any particular reason why this is done as a separate block device driver
+> > > > rather than as SCSI?
+> > > 
+> > > Because no new fake SCSI drivers are accepted anymore.
+> > 
+> > Where did drivers/ata come from ;)
+> > 
+> > How about making it a fake ata driver if James is being fussy 8)
+> 
+> That sounds like a good idea for my virtual I/O case on
+> Niagara too actually :-)
+> 
+> Another quirk I have to deal with is that under LDOMs you
+> can export full disks and also just slices.  So I'll have
+> to get down into the partition machinery to support that
+> somehow.
+
+The PS3 hypervisor also splits each device in regions (cfr. partitions), with
+different access rights depending the OS that runs on top of it. The old
+virtual SCSI driver treated each region as a separate LUN.
+
+As currently only one region can be accessed by Linux anyway, I didn't bother
+supporting multiple accessible regions in the new storage drivers.
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-540623539-1181974912=:15507--
