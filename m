@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbXFPLVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbXFPLeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbXFPLVr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 07:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbXFPLVl
+	id S1755436AbXFPLeT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 07:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbXFPLeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 07:21:41 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:60212 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbXFPLVk (ORCPT
+	Sat, 16 Jun 2007 07:34:07 -0400
+Received: from mailout03.sul.t-online.com ([194.25.134.81]:59307 "EHLO
+	mailout03.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753464AbXFPLeG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 07:21:40 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
-Date: Sat, 16 Jun 2007 13:21:35 +0200
-User-Agent: KMail/1.9.6
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200706150159.l5F1xNgM000459@hera.kernel.org> <1181986686.25228.639.camel@pmac.infradead.org> <200706161226.40875.arnd@arndb.de>
-In-Reply-To: <200706161226.40875.arnd@arndb.de>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sat, 16 Jun 2007 07:34:06 -0400
+Message-ID: <4673CA7C.5040207@t-online.de>
+Date: Sat, 16 Jun 2007 13:33:16 +0200
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070519)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Alexandre Oliva <aoliva@redhat.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706132121.04532.dhazelton@enter.net>	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>	<200706132304.21984.dhazelton@enter.net>	<20070614112329.3645c397@the-village.bc.nu>	<20070614103846.GA7902@elte.hu>	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614195517.GA4933@elte.hu>	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614235004.GA14952@elte.hu>	<20070615011012.6c09066e@the-village.bc.nu>	<20070615012623.GA25189@elte.hu>	<20070615101007.0cbfd078@the-village.bc.nu> <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706161321.35940.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+Wdvjn8AoKzGf4QqynAzfUMH/SQQim4uRl9T5
- s1soWjeS+qJ6ErnIawkB7qS9kb8z1Qz/s0IXAm1qgUdlNJPRXZ
- XNGdA5/5wOQuDsKz+xnnQ==
+X-ID: EXvptyZAwe4Z7+OiIH3gBj+LGS+cb7JkGttMNcwHR+yltibbYmGykC
+X-TOI-MSGID: bb780142-5996-4145-b48e-cd4e2333d985
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 June 2007, Arnd Bergmann wrote:
-> On Saturday 16 June 2007, David Woodhouse wrote:
-> > Will GCC know that it needs to emit code to handle that (mis)alignment?
+Alexandre Oliva wrote:
+> On Jun 15, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> I've tested this with gcc-4.0.3, and it does the right thing, which
-> is to split a 4 byte aligned 64 bit load/store into two 32 bit accesses,
-> if you pass -mstrict-align.
+>> What this means for the FSF goals if Tivo get up one morning and switch
+>> their system firmware to ROM however is interesting 8)
+> 
+> I'm not the FSF, and I don't speak for it, but it seems to me that
+> this would be "mission accomplished".
 
-I just realized this was correct but slightly misleading. On powerpc, we
-don't set the 'attribute((aligned(4)))' on compat_64, so there is never
-a reason to handle the misalignment, even though it would work.
+This is insane.  You start with a lofty ideal involving "freedom", and
+when you end up with a meaningless technicality (and in technical terms
+a change for the worse) you consider it a victory?
 
-On x86_64, misaligned loads are always ok, so gcc never needs to
-care about this, even attribute((packed)) does not cause byte access
-here.
+Yes, I know that this is what happens in politics (look here, our laws
+had an effect!), but I have more respect for you than to think you fall
+for these kinds of games.  I do not wish to revise my opinion.
 
-	Arnd <><
+
+Bernd
+
