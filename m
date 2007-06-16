@@ -1,115 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbXFPOyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbXFPO4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758563AbXFPOyx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 10:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756792AbXFPOyr
+	id S1758726AbXFPO4s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 10:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbXFPO4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 10:54:47 -0400
-Received: from www.osadl.org ([213.239.205.134]:52095 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756205AbXFPOyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 10:54:46 -0400
-Subject: Re: [patch-mm 01/25] NOHZ: Fix nox x86 dyntick idle handling
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Bernhard Rosenkraenzer <bero@arklinux.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Adam Belay <abelay@novell.com>, Len Brown <lenb@kernel.org>,
-       Dave Miller <davem@davemloft.net>, Paul Mundt <lethal@linux-sh.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-In-Reply-To: <200706161636.50661.bero@arklinux.org>
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
-	 <20070616101636.556333444@inhelltoy.tec.linutronix.de>
-	 <200706161636.50661.bero@arklinux.org>
-Content-Type: text/plain
-Date: Sat, 16 Jun 2007 16:54:43 +0200
-Message-Id: <1182005683.8176.369.camel@chaos>
+	Sat, 16 Jun 2007 10:56:42 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41246 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756645AbXFPO4l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 10:56:41 -0400
+Date: Sat, 16 Jun 2007 16:00:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rob Landley <rob@landley.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Gerdau <mgd@technosis.de>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070616160001.32706b35@the-village.bc.nu>
+In-Reply-To: <200706160133.14204.rob@landley.net>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<200706152103.06921.rob@landley.net>
+	<alpine.LFD.0.98.0706151814380.14121@woody.linux-foundation.org>
+	<200706160133.14204.rob@landley.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-06-16 at 16:36 +0200, Bernhard Rosenkraenzer wrote:
-> On Saturday 16 June 2007, Thomas Gleixner wrote:
+> Red Hat created the "Fedora" trademark to have a separate and more liberally 
+> licensed trademark that people like cheapbytes.com could use without 
+> reflecting on Red Hat Enterprise.  Unfortunately, trying to find reference 
+> for this is non-obvious, because, the Fedora Trademarks page is: 
+> http://fedoraproject.org/wiki/Legal/TrademarkGuidelines
 > 
-> > +#if defined(CONFIG_NO_HZ) && !defined(CONFIG_NONIRQ_WAKEUP)
-> > +	/* Make sure that timer wheel updates are propagated */
-> > +	if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
-> > +		tick_nohz_stop_sched_tick();a
-> > +#endif
-> >  	preempt_enable_no_resched();
-> >  }
-> 
-> The bit above breaks the build for a CONFIG_NO_HZ build without 
-> CONFIG_NONIRQ_WAKEUP -- please remove the extra "a" after 
-> tick_nohz_stop_sched_tick(); before applying this.
+> Which contains no actual content, but instead links to a fedora.redhat.com 
+> page which is 404. :P
 
-Oops. Must have happened when I edited the mailbox. Replacement patch
-below:
+That would be a bug 8)
 
-	tglx
+> But again, it's trademark not copyright they're restricting.
 
---------------------->
+Correct - all the vendors face the problem that there are people out
+there who want to try and pass crap on using someone elses good name
+whether its toothpaste, perfume or software (or in the case of RHEL
+software/services/support bundles)
 
-Subject: NOHZ: Fix nox x86 dyntick idle handling
-
-The cpuidle patches moved the tick nohz handling from irq_exit into
-the inner idle loop. The change is correct as it covers non interrupt
-based wakeups (e.g DMA) on x86 as well, but the move breaks ARM, SH
-and SPARC64. 
-
-Keep the original implementation and deselet the irq exit code for
-those architectures which have no irq idle wakeups.
-
-This way the non affected architectures are not burdened with the
-extra changes in the idle implementation.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Adam Belay <abelay@novell.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Dave Miller <davem@davemloft.net>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-
----
- arch/i386/Kconfig |    4 ++++
- kernel/softirq.c  |    5 +++++
- 2 files changed, 9 insertions(+)
-
-Index: linux-2.6.22-rc4-mm/arch/i386/Kconfig
-===================================================================
---- linux-2.6.22-rc4-mm.orig/arch/i386/Kconfig	2007-06-16 17:04:14.000000000 +0200
-+++ linux-2.6.22-rc4-mm/arch/i386/Kconfig	2007-06-16 17:04:18.000000000 +0200
-@@ -31,6 +31,10 @@ config GENERIC_CLOCKEVENTS_BROADCAST
- 	default y
- 	depends on X86_LOCAL_APIC
- 
-+config NONIRQ_WAKEUP
-+	bool
-+	default y
-+
- config LOCKDEP_SUPPORT
- 	bool
- 	default y
-Index: linux-2.6.22-rc4-mm/kernel/softirq.c
-===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/softirq.c	2007-06-16 17:04:14.000000000 +0200
-+++ linux-2.6.22-rc4-mm/kernel/softirq.c	2007-06-16 17:04:39.000000000 +0200
-@@ -304,6 +304,11 @@ void irq_exit(void)
- 	if (!in_interrupt() && local_softirq_pending())
- 		invoke_softirq();
- 
-+#if defined(CONFIG_NO_HZ) && !defined(CONFIG_NONIRQ_WAKEUP)
-+	/* Make sure that timer wheel updates are propagated */
-+	if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
-+		tick_nohz_stop_sched_tick();
-+#endif
- 	preempt_enable_no_resched();
- }
- 
-
+The Fedora mark is thus used to make sure that if you get a Fedora CD, it
+actually has -Fedora- on it etc.
 
