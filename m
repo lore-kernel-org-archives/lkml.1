@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbXFPIVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbXFPIXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbXFPIVt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 04:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXFPIVk
+	id S1754806AbXFPIXG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 04:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbXFPIWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 04:21:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56464 "EHLO mx1.redhat.com"
+	Sat, 16 Jun 2007 04:22:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57018 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbXFPIVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 04:21:38 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Tim Post <tim.post@netkinetics.net>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	id S1750963AbXFPIWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 04:22:52 -0400
+To: Bron Gondwana <brong@fastmail.fm>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <200706132304.21984.dhazelton@enter.net>
-	<1181962902.21803.513.camel@localhost.localdomain>
-	<or3b0stvgf.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706160007.46024.dhazelton@enter.net>
+References: <20070614112329.3645c397@the-village.bc.nu>
+	<20070614103846.GA7902@elte.hu>
+	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614195517.GA4933@elte.hu>
+	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
+	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615072322.GA7594@brong.net>
+	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616021630.GA30660@brong.net>
 From: Alexandre Oliva <aoliva@redhat.com>
 Organization: Red Hat OS Tools Group
-Date: Sat, 16 Jun 2007 05:21:04 -0300
-In-Reply-To: <200706160007.46024.dhazelton@enter.net> (Daniel Hazelton's message of "Sat\, 16 Jun 2007 00\:07\:45 -0400")
-Message-ID: <orlkeks427.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Sat, 16 Jun 2007 05:22:21 -0300
+In-Reply-To: <20070616021630.GA30660@brong.net> (Bron Gondwana's message of "Sat\, 16 Jun 2007 12\:16\:30 +1000")
+Message-ID: <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 16, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+On Jun 15, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
 
-> On Friday 15 June 2007 23:44:00 Alexandre Oliva wrote:
->> On Jun 16, 2007, Tim Post <tim.post@netkinetics.net> wrote:
->> > On Fri, 2007-06-15 at 23:29 +0200, Ingo Molnar wrote:
->> >> Tivo has two choices: either it gives
->> >> users the content they want to watch, or it goes out of business. Is
->> >> that legitimate enough of a reason to restrict the hardware?
->> >
->> > Can I submit that they could just rent the use of their machines?
->> 
->> I don't think this would escape the wording of section 6 in GPLv3dd4:
->> 
->> [...] User Product is transferred to the recipient in perpetuity or
->> for a fixed term (regardless of how the transaction is
->> characterized), [...]
->> 
->> and IMHO that's as it should be to defend the freedoms of the user.
+> because it could easily be argued that they linked the BIOS with the
+> Linux kernel
 
-> In the case of renting a machine you can try to legislate new laws all you 
-> want. It doesn't make a difference. There are certain rights you don't get 
-> when renting something that you do when you own it.
-
-You mean renting the computer with the software in it is not
-distribution of the software?
+How so?
 
 -- 
 Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
