@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbXFPGWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbXFPGcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbXFPGWI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 02:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbXFPGV5
+	id S1752858AbXFPGcv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 02:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbXFPGcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 02:21:57 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:57451 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750771AbXFPGV4 (ORCPT
+	Sat, 16 Jun 2007 02:32:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55996 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750891AbXFPGcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 02:21:56 -0400
-Date: Sat, 16 Jun 2007 08:21:52 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: David Miller <davem@davemloft.net>
-cc: alan@lxorguk.ukuu.org.uk, dwmw2@infradead.org, axboe@kernel.dk,
-       James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: Re: [patch 4/6] ps3: Disk Storage Driver
-In-Reply-To: <20070615.141917.85409547.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.62.0706160819200.15507@pademelon.sonytel.be>
-References: <1181918159.25228.543.camel@pmac.infradead.org>
- <Pine.LNX.4.62.0706151642010.8248@pademelon.sonytel.be>
- <20070615171545.316dfac7@the-village.bc.nu> <20070615.141917.85409547.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-540623539-1181974912=:15507"
+	Sat, 16 Jun 2007 02:32:42 -0400
+Date: Fri, 15 Jun 2007 23:31:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: Jinxed VAIO wreckage - current state of affairs
+Message-Id: <20070615233138.78a79b00.akpm@linux-foundation.org>
+In-Reply-To: <1181921466.8176.356.camel@chaos>
+References: <1181418873.4404.402.camel@chaos>
+	<200706092259.50694.rjw@sisk.pl>
+	<20070609200827.635fec79.akpm@linux-foundation.org>
+	<1181909157.8176.342.camel@chaos>
+	<20070615082324.203610ec.randy.dunlap@oracle.com>
+	<1181921466.8176.356.camel@chaos>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 15 Jun 2007 17:31:06 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
----584337861-540623539-1181974912=:15507
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 15 Jun 2007, David Miller wrote:
-> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Date: Fri, 15 Jun 2007 17:15:45 +0100
-> 
-> > > > Any particular reason why this is done as a separate block device driver
-> > > > rather than as SCSI?
+> On Fri, 2007-06-15 at 08:23 -0700, Randy Dunlap wrote:
+> > On Fri, 15 Jun 2007 14:05:57 +0200 Thomas Gleixner wrote:
+> > 
+> > > On Sat, 2007-06-09 at 20:08 -0700, Andrew Morton wrote:
+> > > > On Sat, 9 Jun 2007 22:59:49 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > 
+> > > > > Hmm, how's 2.6.22-rc4-mm2 doing on the Vaio?
+> > > > 
+> > > > People would have heard if it was busted ;)
 > > > 
-> > > Because no new fake SCSI drivers are accepted anymore.
+> > > Just found a brown paperbag bug in the resume patch logic. Sigh, I was
+> > > staring at that code for month without noticing.
+> > > 
+> > > Andrew,
+> > > 
+> > > can you please test
+> > > 
+> > > http://www.tglx.de/projects/hrtimers/2.6.22-rc4/patch-2.6.22-rc4-hrt9.patch
 > > 
-> > Where did drivers/ata come from ;)
-> > 
-> > How about making it a fake ata driver if James is being fussy 8)
+> > bad URL, not found.
 > 
-> That sounds like a good idea for my virtual I/O case on
-> Niagara too actually :-)
+> http://www.tglx.de/projects/hrtimers/2.6.22-rc4/patch-2.6.22-rc4-hrt10.patch
 > 
-> Another quirk I have to deal with is that under LDOMs you
-> can export full disks and also just slices.  So I'll have
-> to get down into the partition machinery to support that
-> somehow.
 
-The PS3 hypervisor also splits each device in regions (cfr. partitions), with
-different access rights depending the OS that runs on top of it. The old
-virtual SCSI driver treated each region as a separate LUN.
+That suspends and resumes OK.
 
-As currently only one region can be accessed by Linux anyway, I didn't bother
-supporting multiple accessible regions in the new storage drivers.
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-540623539-1181974912=:15507--
+What was the bug?
