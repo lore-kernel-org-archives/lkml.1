@@ -1,110 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757704AbXFPKcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbXFPKh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757704AbXFPKcx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 06:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbXFPKbk
+	id S1757950AbXFPKh3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 06:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbXFPKhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 06:31:40 -0400
-Received: from paragon.brong.net ([66.232.154.163]:57708 "EHLO
-	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759675AbXFPKbi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 06:31:38 -0400
-Date: Sat, 16 Jun 2007 20:31:30 +1000
-From: Bron Gondwana <brong@fastmail.fm>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
+	Sat, 16 Jun 2007 06:37:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39365 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753266AbXFPKhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 06:37:21 -0400
+Date: Sat, 16 Jun 2007 12:37:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070616103130.GD32405@brong.net>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net> <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net> <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616021630.GA30660@brong.net> <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070616103707.GA28096@elte.hu>
+References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu> <20070524125453.GA7554@elte.hu> <E1HrDuQ-0005m7-00@dorka.pomaz.szeredi.hu> <20070524141059.GA19872@elte.hu> <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu> <20070524144447.GA25068@elte.hu> <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu> <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
-Organization: brong.net
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 16, 2007 at 05:22:21AM -0300, Alexandre Oliva wrote:
-> On Jun 15, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
+
+* Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> I've got some more info about this bug.  It is gathered with 
+> nmi_watchdog=2 and a modified nmi_watchdog_tick(), which instead of 
+> calling die_nmi() just prints a line and calls show_registers().
+
+great!
+
+> The pattern that emerges is that on CPU0 we have an interrupt, which 
+> is trying to acquire the rq lock, but can't.
 > 
-> > because it could easily be argued that they linked the BIOS with the
-> > Linux kernel
+> On CPU1 we have strace which is doing wait_task_inactive(), which sort 
+> of spins acquiring and releasing the rq lock.  I've checked some of 
+> the traces and it is just before acquiring the rq lock, or just after 
+> releasing it, but is not actually holding it.
 > 
-> How so?
+> So is it possible that wait_task_inactive() could be starving the 
+> other waiters of the rq spinlock?  Any ideas?
 
-(I'm going to refer to Linux as GPLix from here on since this argument
- is more general than a specific GPLed operating system)
+hm, this is really interesting, and indeed a smoking gun. The T60 has a 
+Core2Duo and i've _never_ seen MESI starvation happen on dual-core 
+single-socket CPUs! (The only known serious MESI starvation i know about 
+is on multi-socket Opterons: there the trylock loop of spinlock 
+debugging is known to starve some CPUs out of those locks that are being 
+polled, so we had to turn off that aspect of spinlock debugging.)
 
-Er, they installed it in the same piece of equipment, and the kernel
-couldn't function without it in that work.  What's more 'linked' than
-that.  It's a vital part of the boot process on that piece of hardware
-in exactly the same way that the public-key check is a vital part of
-the boot process.
+wait_task_inactive(), although it busy-loops, is pretty robust: it does 
+a proper spin-lock/spin-unlock sequence and has a cpu_relax() inbetween. 
+Furthermore, the rep_nop() that cpu_relax() is based on is 
+unconditional, so it's not like we could somehow end up not having the 
+REP; NOP sequence there (which should make the lock polling even more 
+fair)
 
-If your printer^wPC isn't doing what you want and you know how to
-change it to do what you want but it needs a BIOS patch.  Guess what,
-you can't do it - your vendor can.  By using GPLix as part of their
-boot process along with their non-GPL BIOS, they're subverting the
-freedoms that the user should have in being able to control the entire
-boot process.
+could you try the quick hack below, ontop of cfs-v17? It adds two things 
+to wait_task_inactive():
 
-Right?  Or are you unclear about the fact that there's a big grey area
-cutting through this part of usage, and Linus sat down pretty clearly on
-one side of it while you're arguing that the goalposts should be "where
-I feel that my rights to make changes are being infringed".
+- a cond_resched() [in case you are running !PREEMPT]
 
-While the vendor reserves the ability to change components of the
-system (post sale, i.e. a BIOS flash update) and doesn't hand those
-same rights on to you, they have partially Tivoised (hoover, kleenex,
-you've got nothing on these guys for having your name associated with
-a concept) the hardware.  By logical extention of your arguments over
-the past few days, this denies them the ability to use any GPLed
-software in 'the spirit of the licence' anyware on the machine because
-they are denying you rights regarding the instance of the product
-they shipped to you that they are retaining for themselves.  The very
-freedoms you so vocally claim.
+- use MONITOR+MWAIT to monitor memory transactions to the rq->curr 
+  cacheline. This should make the polling loop definitely fair.
 
-Now, the position I'm seeing here is that the above behaviour (every
-single hardware manufacturer that has ever shipped a machine with
-pre-installed Linux) violates the spirit of the GPL by the "retaining
-exclusive freedoms to modify shipped product" rule, and hence their
-BIOS is in the doghouse unless they either:
+If this solves the problem on your box then i'll do a proper fix and 
+introduce a cpu_relax_memory_change(*addr) type of API to around 
+monitor/mwait. This patch boots fine on my T60 - but i never saw your 
+problem.
 
-a) offer full source code access and rights per the holy spirit ghost
-   of the GPL; or
+[ btw., utrace IIRC fixes ptrace to get rid of wait_task_interactive(). ]
 
-b) deny themselves the ability to every offer a patch to said BIOS if
-   bugs are found 
+	Ingo
 
-
-Point (b) is also exactly on topic for the discussion of enforcing
-legal safety obligations in hardware on a peripheral rather than the
-software drivers.  It's requiring that these limitations be placed in
-a technically inferior location to hack around a legal "bug".  (A bug
-is in the eye of the beholder, please wear glasses while cycling, it's
-your own responsibility to protect your eyes)
-
-
-Er, I think I'm done.  Yes.
-
-
-Executive summary:
-
-a) by not providing the BIOS source code but retaining the right to 
-   change the BIOS the vendor is linking the GPLix kernel and the 
-   BIOS (you can't run the kernel without it)
-
-b) legislating intent is fraught.
-
-c) by your arguments, (a) is violating the spirit and (b) is necessary
-   to get around that.
-
-Bron.
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -834,6 +834,16 @@ repeat:
+ 		cpu_relax();
+ 		if (preempted)
+ 			yield();
++		else
++			cond_resched();
++		/*
++		 * Wait for "curr" to change:
++		 */
++		__monitor((void *)&rq->curr, 0, 0);
++		smp_mb();
++		if (rq->curr != p)
++			__mwait(0, 0);
++
+ 		goto repeat;
+ 	}
+ 	task_rq_unlock(rq, &flags);
