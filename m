@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbXFPHz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXFPIBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbXFPHz6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 03:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbXFPHzv
+	id S1753739AbXFPIBS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 04:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbXFPIBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 03:55:51 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:60328 "EHLO relay4.usu.ru"
+	Sat, 16 Jun 2007 04:01:11 -0400
+Received: from khc.piap.pl ([195.187.100.11]:56956 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbXFPHzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 03:55:51 -0400
-Message-ID: <4673978F.4030001@ums.usu.ru>
-Date: Sat, 16 Jun 2007 13:55:59 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
+	id S1751204AbXFPIBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 04:01:10 -0400
+To: David Greaves <david@dgreaves.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Michael Gerdau <mgd@technosis.de>, Alexandre Oliva <aoliva@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<200706142049.41819.dhazelton@enter.net>
+	<200706150825.15491.mgd@technosis.de>
+	<200706150520.15086.dhazelton@enter.net>
+	<46726793.1020206@dgreaves.com>
+	<alpine.LFD.0.98.0706151004460.14121@woody.linux-foundation.org>
+	<4672D648.7020700@dgreaves.com> <m37iq496z9.fsf@maximus.localdomain>
+	<46738CD2.2080804@dgreaves.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 16 Jun 2007 10:01:06 +0200
+In-Reply-To: <46738CD2.2080804@dgreaves.com> (David Greaves's message of "Sat, 16 Jun 2007 08:10:10 +0100")
+Message-ID: <m3r6ocuy4d.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Christian Schmidt <lkml@digadd.de>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Help needed: Partitioned software raid > 2TB
-References: <46727E7C.8060102@digadd.de> <p73d4zxs2q4.fsf@bingen.suse.de> <46729C14.5000809@digadd.de> <Pine.LNX.4.64.0706151824240.32724@fbirervta.pbzchgretzou.qr> <46737747.1050608@ums.usu.ru> <Pine.LNX.4.64.0706160844230.32724@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706160844230.32724@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
+David Greaves <david@dgreaves.com> writes:
 
-> I am not sure (would have to check again), but I believe both opensuse and
-> fedora (the latter of which uses LVM for all partitions by default) have
-> that working, while still using GRUB.
+>> How hard would it be to reprogramm the flash?
+>
+> The flash contains hashes signed by the companies private key.
+>
+> The kernel contains the public key. It can decrypt the hashes but the
+> private key isn't available to encrypt them. So although you can put a
+> new application onto the system, you can't create a signed hash to
+> write to the flash.
+>
+> The kernel only runs the executable if the hash is valid.
+> You can re-write the kernel to avoid this check - but the hardware is
+> Tivoised -
+> so you can't run it.
 
-Keyword: partitions. I.e., they partition the hard drive (so that the first 
-31 sectors are available for GRUB) and use LVM on devices such as /dev/hda2. 
-But this is not what was needed. I need to use LVM on /dev/hda, without a 
-partition table.
+I read it: the flash contains everything from the bootloader to the
+kernel and file system.
+The bootloader contains the public key and checks if the kernel/fs
+are ok. That includes calculating hashes and checking signatures.
+No encryption/decryption there at all.
 
-> But, what's much more amazing, is
-> that GRUB seems to work with raid0 (both BIOS-based and MD)... perhaps
-> it's just luck that the needed files are contiguous?
+Right?
 
-[wild guess] Maybe they set up a raid1 /boot partition?
+Then how hard would it be to reprogram the flash, to get rid of all
+this crap? Or to just put your public key there.
 
+Do they at least use BGA type of flash chips so you can't attach
+a clip and have to use something more demanding?
 -- 
-Alexander E. Patrakov
+Krzysztof Halasa
