@@ -1,100 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbXFPDwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXFPEH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbXFPDwm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 23:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbXFPDwf
+	id S1752812AbXFPEH5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 00:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbXFPEHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 23:52:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34142 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329AbXFPDwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 23:52:34 -0400
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: Bernd Paysan <bernd.paysan@gmx.de>, Paulo Marques <pmarques@grupopie.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<d120d5000706151146u6f69667eodd2ff3f5e857a917@mail.gmail.com>
-	<or8xalx6vu.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706152325.14244.dtor@insightbb.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sat, 16 Jun 2007 00:51:58 -0300
-In-Reply-To: <200706152325.14244.dtor@insightbb.com> (Dmitry Torokhov's message of "Fri\, 15 Jun 2007 23\:25\:13 -0400")
-Message-ID: <ory7iksgip.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Sat, 16 Jun 2007 00:07:49 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:24317 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750708AbXFPEHs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 00:07:48 -0400
+Date: Sat, 16 Jun 2007 06:07:47 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: My kernel hangs again: Help with git please
+Message-ID: <20070616040747.GA21076@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Daniel Barkalow <barkalow@iabervon.org>,
+	linux-kernel@vger.kernel.org
+References: <20070616001255.GA11403@alinoe.com> <Pine.LNX.4.64.0706152026320.4740@iabervon.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706152026320.4740@iabervon.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 16, 2007, Dmitry Torokhov <dtor@insightbb.com> wrote:
+On Fri, Jun 15, 2007 at 08:33:38PM -0400, Daniel Barkalow wrote:
+> HEAD doesn't mean what you think it means. It's the latest revision on the 
+> branch with the *. What you want is:
+> 
+> $ git checkout master
+> 
+> This will move the * to "master", which shouldn't have been affected by 
+> any of this, and move your working directory to this point as well. At 
+> that point, you should be able to build a working kernel.
+> 
+> What "git reset --hard HEAD" does is discard any differences to tracked 
+> files between your working directory and the revision you're on. It's 
+> relevant if you want to discard local changes, not otherwise.
 
-> On Friday 15 June 2007 17:08, Alexandre Oliva wrote:
->> >> If the Program does not specify a version number of this License,
->> >> you may choose any version ever published by the Free Software
->> >> Foundation.
+I don't understand - any branch that I am on has many tags. I can use
+'git reset --hard sometag' to change the source tree to that tag (which
+works if I look at the version in the Makefile and pick tags that are
+far apart enough). Then, shouldn't 'HEAD' have the meaning: the newest
+tag on the branch? I was on the 'bisect' branch - but that is a copy
+of the master, no? At least, that was what I started on when I started
+the bisect.
 
-> Distributing a copy of GPL is not a requirement for me as a licensor
-> however I did chose to include a copy of a specific version of a
-> specific license and did not make any other statements that is the
-> license for the work.
- 
-And the copy you chose to include says the above.
+Anyway, I tried this:
 
-Are you absolutely sure you could terminate the license of a
-distributor that refrains to pass on a patent license it obtained, if
-you included a copy of the GPLv2 without any other indication that
-you're choosing GPLv2 and no other version of the GPL, in spite of the
-above?
+$ git checkout master
+$ git branch
+  bisect
+* master
+  origin
+$ BRANCH=$(git branch | grep "^\*" | sed -e "s/\* //")
+$ echo $BRANCH
+master
+$ git rev-list --max-count=1 $BRANCH
+5ecd3100e695228ac5e0ce0e325e252c0f11806f
 
-Would it change anything if you had released the program back when
-GPLv3 wasn't under discussion, and GPLv1 was long forgotten, so most
-people (yourself included) only referred to it as GPL, or GNU GPL?
+Is it correct that this last command gives me the 'git id' (if that
+is the correct name for the hash) of the revision that my local
+working copy is at?
 
->> Then, any redistributor adds a copy of any version of the GPL (because
->> you didn't specify a version number).  At this point, is the program
->> licensed by *you* only under this specific license?
+Can you tell me what is the latest git id that you see?
 
-> If they did not make any changes then they have to include the earliest
-> version of GPL that applies.
+Because, if I compile 5ecd3100e695228ac5e0ce0e325e252c0f11806f is
+still hangs at boot :(
 
-Why?  Why does it have to be the earliest?
-
->> even though the license itself 
->> says otherwise?
-
-> License does not say otherwise. License says that if there is an
-> _additional_ stipulation my the licensor then some other license
-> (non existing yet license) may be used.
-
-No, you're referring to the portion you quoted, but I'm referring to
-another portion, that I quoted above.
-
-> "If the Program specifies a version number of this License which
-> applies to it and "or BSD license", you have the option of following
-> the terms and conditions either of that version or of BSD license"
-
-> would you still say that BSD is allowed by default by GPL? "GPL v2
-> and later versions" is not different from "GPL v2 or BSD" or
-> "GPLv2 or CDDL".
-
-Agreed.  But this is not what this is about.  This is about the
-license saying something like:
-
-  If the program does not specify a license version number, then
-  you're permitted to relicense the program under the BSD license.
-
-Since the license file itself is not part of the program (if it were,
-a program under the GPL would require the GPL itself to be under the
-GPL, right?), I claim the program does not specify a license version
-number.
-
-Now what?
+I really don't know how I got a working kernel before :/
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Carlo Wood <carlo@alinoe.com>
