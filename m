@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbXFPGro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbXFPGxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbXFPGro (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 02:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbXFPGri
+	id S1754711AbXFPGxB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 02:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbXFPGwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 02:47:38 -0400
-Received: from www.osadl.org ([213.239.205.134]:55026 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752202AbXFPGrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 02:47:37 -0400
-Subject: Re: Jinxed VAIO wreckage - current state of affairs
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>
-In-Reply-To: <20070615233138.78a79b00.akpm@linux-foundation.org>
-References: <1181418873.4404.402.camel@chaos>
-	 <200706092259.50694.rjw@sisk.pl>
-	 <20070609200827.635fec79.akpm@linux-foundation.org>
-	 <1181909157.8176.342.camel@chaos>
-	 <20070615082324.203610ec.randy.dunlap@oracle.com>
-	 <1181921466.8176.356.camel@chaos>
-	 <20070615233138.78a79b00.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 16 Jun 2007 08:47:33 +0200
-Message-Id: <1181976453.8176.362.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Sat, 16 Jun 2007 02:52:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:40745 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbXFPGwy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 02:52:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=aFgeaE3IP/nDJA8qxSQmbMINK9vyJKtIYg85eCOnYrvoZM0WKVtymFOVfbqXRxKYJDxEuxRimSqYLaWl7OyJVsWlFzpSBCTRwoGKYI1rVHbg64tIexAXduaA/P96SiSvEWhY7m6vKr1sK6YWKydccM7CV7ekUYWMz1UklKYiGVQ=
+Message-ID: <8d6898730706152352q1edc9b65i351841fbc81e0c20@mail.gmail.com>
+Date: Sat, 16 Jun 2007 12:22:53 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux and Windows 2003 servers comparison for Gaming
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 23:31 -0700, Andrew Morton wrote:
-> > 
-> > http://www.tglx.de/projects/hrtimers/2.6.22-rc4/patch-2.6.22-rc4-hrt10.patch
-> > 
-> 
-> That suspends and resumes OK.
-> 
-> What was the bug?
+Following is my Server Hardware configuration
 
-A stupid state check, which prevented the PIT to be setup again. So the
-box got stuck waiting for a timer to expire.
+Intel Xeon Clovertown 5355
+Intel 2U Server Case
+TYAN S5382WAG2NRF Dual Socket 771 Motherboard
+LSI Logic PCI-X SATA / SAS Controller 8 Port
+Kingston 2 GB (2x 1G) 240 Pin FB-Dimm 667 Memory
+Sabrent External USB Floppy Drive
+Seagate Cheetah 15K RPM SAS 74GB HDD
+LG Slim CD/DVD Combo Drive
+100mbps full duplex NIC
 
-Still I can not explain, why this resulted in this strange "disappear in
-the return instruction" behavior.
-
-	tglx
+Regards
+Nobin
 
 
+On 6/15/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Fri, 15 Jun 2007 19:42:50 +0530
+> "Nobin Mathew" <nobin.mathew@gmail.com> wrote:
+>
+> > I am trying to move my Game server from windows to Linux.
+> >
+> > Is this a good idea?
+> > How much better performance i will get?
+>
+> How long is a piece of string. Given you don't give any hardware info,
+> any info on the applications run or on the network and capacity expected
+> its a bit hard to guess really.
+>
