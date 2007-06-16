@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbXFPDeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbXFPDft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbXFPDeu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 23:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbXFPDem
+	id S1754572AbXFPDft (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 23:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbXFPDfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 23:34:42 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:15511 "EHLO
-	asav17.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751367AbXFPDel (ORCPT
+	Fri, 15 Jun 2007 23:35:43 -0400
+Received: from mraos.ra.phy.cam.ac.uk ([131.111.48.8]:46956 "EHLO
+	mraos.ra.phy.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751665AbXFPDfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 23:34:41 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlE4AAT3ckZKhRO4UGdsb2JhbACBToVjh3sBARsNBhEB
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Indan Zupancic <indan@nul.nu>
-Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
-Date: Fri, 15 Jun 2007 23:34:39 -0400
-User-Agent: KMail/1.9.3
-Cc: Pavel Machek <pavel@ucw.cz>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Andi Kleen <ak@suse.de>, Jiri Kosina <jikos@jikos.cz>,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <20070604112426.GA2707@elf.ucw.cz> <200706150141.06142.dtor@insightbb.com> <33677.81.207.0.53.1181959473.squirrel@secure.samage.net>
-In-Reply-To: <33677.81.207.0.53.1181959473.squirrel@secure.samage.net>
+	Fri, 15 Jun 2007 23:35:42 -0400
+X-Greylist: delayed 2061 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Jun 2007 23:35:41 EDT
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Carlo Wood <carlo@alinoe.com>, Alexandre Oliva <aoliva@redhat.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, Sean <seanlkml@sympatico.ca>,
+       Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <alpine.LFD.0.98.0706141153550.14121@woody.linux-foundation.org>
+	<or1wgeco9v.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141311330.14121@woody.linux-foundation.org>
+	<orir9q9rgl.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141424160.14121@woody.linux-foundation.org>
+	<orps3y88ru.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706141545470.14121@woody.linux-foundation.org>
+	<orzm326s3w.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<87r6oeytin.fsf@jbms.ath.cx>
+	<orsl8u54pa.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615124211.GA11830@alinoe.com>
+	<20070615124211.GA11830@alinoe.com>
+	<alpine.LFD.0.98.0706150748180.14121@woody.linux-foundation.org>
+From: Sanjoy Mahajan <sanjoy@mrao.cam.ac.uk>
+Date: 16 Jun 2007 04:00:32 +0100
+In-Reply-To: <alpine.LFD.0.98.0706150748180.14121@woody.linux-foundation.org>
+Message-ID: <r6lkek1u3z.fsf@inf-skye.phy.cam.ac.uk>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706152334.40387.dtor@insightbb.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 June 2007 22:04, Indan Zupancic wrote:
-> On Fri, June 15, 2007 07:41, Dmitry Torokhov wrote:
-> >  /*
-> > + * Schedule switch for execution. We need to throttle requests,
-> > + * otherwise keyboard may become unresponsive.
-> > + */
-> > +static void atkbd_schedule_event_work(struct atkbd *atkbd, int event_bit)
-> > +{
-> > +	unsigned long delay = msecs_to_jiffies(50);
-> > +
-> > +	if (time_after(jiffies, atkbd->event_jiffies + delay))
-> > +		delay = 0;
-> > +
-> > +	atkbd->event_jiffies = jiffies;
-> > +	set_bit(event_bit, &atkbd->event_mask);
-> > +	wmb();
-> > +	schedule_delayed_work(&atkbd->event_work, delay);
-> > +}
-> 
-> I don't know whether schedule_delayed_work() requeues event_work, or if
-> it adds more work, but both seem to give wrong behaviour:
+>> "version 2 or higher"
 
-Well, my advise would be to research the matter before saying that
-it will not work.
+> That phrase exists outside the license
 
-> In the first case 
-> event_work can be postponed forever if atkbd_schedule_event_work() is
-> called repeatedly each time within 50 ms, and for the second case there's a
-> delay added, but the number of times the LED is switched stays the same,
-> so it's not being throttled.
-> 
+That's true.  But sec. 9 of the GPLv2 says:
 
-No, once work is queued for execution subsequent attempts to queue the
-same work will be ignored (until work starts executing). Therefore first
-time work will be scheduled for execution immediately and then execution
-be spaced by ~50 ms.
+  If the Program does not specify a version number of this License, you
+  may choose any version ever published by the Free Software Foundation.
 
--- 
-Dmitry
+So, by making the COPYING contain the v2 text, is the author
+specifying a particular version?  If yes, then the sec. 9 provision
+would be meaningless, since there would be no way to not specify a
+version number.  
+
+My understanding is that courts would presume that a license term has
+a meaning, if it has a plausible reading.  And there such a reading:
+that to specify a version, there needs to be (e.g. in the source
+files) a statement like, "This file [or work] is licensed under the
+GNU GPLv2."
+
+Corrections, flames, etc. are welcome.
+
+-Sanjoy
