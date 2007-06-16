@@ -1,102 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbXFPLqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbXFPLye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756370AbXFPLqU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 07:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbXFPLqN
+	id S1756068AbXFPLye (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 07:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbXFPLy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 07:46:13 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:45024 "EHLO smtp4-g19.free.fr"
+	Sat, 16 Jun 2007 07:54:26 -0400
+Received: from neon.samage.net ([85.17.153.66]:33294 "EHLO neon.samage.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753236AbXFPLqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 07:46:12 -0400
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-From: Thierry Merle <thierry.merle@free.fr>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <6872422218943432279_1@wsc.cz>
-References: <2172422218943432279@wsc.cz>
-	 <1180364420.21547.160.camel@localhost>
-	 <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>
-	 <1180378677.21547.189.camel@localhost>
-	 <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>
-	 <1180383071.21547.230.camel@localhost> <465B49EB.4080204@free.fr>
-	 <465BBAFB.30906@free.fr> <1180448712.21547.314.camel@localhost>
-	 <465C7920.2080203@free.fr> <1180467116.9509.73.camel@localhost>
-	 <465F3361.106@free.fr> <1180739401.3904.50.camel@localhost>
-	 <466131CB.20301@free.fr> <466131CB.20301@free.fr>
-	 <6872422218943432279_1@wsc.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Sat, 16 Jun 2007 13:46:17 +0200
-Message-Id: <1181994378.22144.11.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 Dropline GNOME 
+	id S1753236AbXFPLyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 07:54:25 -0400
+Message-ID: <60127.81.207.0.53.1181994857.squirrel@secure.samage.net>
+In-Reply-To: <200706152334.40387.dtor@insightbb.com>
+References: <20070604112426.GA2707@elf.ucw.cz>
+    <200706150141.06142.dtor@insightbb.com>
+    <33677.81.207.0.53.1181959473.squirrel@secure.samage.net>
+    <200706152334.40387.dtor@insightbb.com>
+Date: Sat, 16 Jun 2007 13:54:17 +0200 (CEST)
+Subject: Re: 2.6.22-rc[23]: blinking capslock led, stuck keys?
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Cc: "Pavel Machek" <pavel@ucw.cz>,
+       "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       "Andi Kleen" <ak@suse.de>, "Jiri Kosina" <jikos@jikos.cz>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: 40b81d93390a3dca3ee709c9c36a2335
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 15 juin 2007 à 23:08 +0200, Jiri Slaby a écrit :
-> Mauro Carvalho Chehab wrote:
-> > Em SÃ¡b, 2007-06-02 Ã s 11:00 +0200, Thierry Merle escreveu:
-> > > 
-> > > Mauro Carvalho Chehab a Ã©crit :
-> > > >>> This seems to be an interesting approach.
-> > > >>>
-> > > >>>   
-> > > >>>       
-> > > >> Interesting but impossible to do for ioctl calls.
-> > > >> When the application does a
-> ioctl(fd_of_mnt_video0,VIDIOC_G_FMT,&arg) 
-> > > >> for example, there is no way for the userspace helper to catch
-> this ioctl.
-> > > >> The application could only open/read from the userspace
-> helper's file 
-> > > >> /mnt/video0.
-> > > >> ioctl would still have to be done on the kernel device driver.
-> > > >> I thought also about a /proc interface for decompression
-> algorithms (a 
-> > > >> helper would listen on a /proc file and write on another /proc
-> file) but 
-> > > >> /proc is not designed for that kind of thing.
-> > > >> A separate library seems to be the simplest solution.
-> > > >>     
-> > > >
-> > > > There are some ways for this to work. For example, you may
-> create a
-> > > > helper device for the daemon driver to bind, even requiring it
-> to have
-> > > > root permission.
-> > > >
-> > > >   
-> > > Right, but I am afraid that complex userspace/kernelspace context 
-> > > changes breaks performance.
-> > Yes, there's a risk.
-> > 
-> > > Nevertheless, I will start to specify the framework.
-> > > The helper daemon would link to the v4l2-apps/lib.
-> > 
-> > Ok, thanks!
-> 
-> Ok, here comes updated version of stk11xx driver. Note that it's not
-> still
-> separated into more files (I'll do this as the last step) and also
-> resize
-> and bayer->rgb conversion remains. This is what I'm interested in --
-> is
-> there some embryo of library with resize and conversion? Or what was
-> the
-> decision to create?
+On Sat, June 16, 2007 05:34, Dmitry Torokhov wrote:
+> On Friday 15 June 2007 22:04, Indan Zupancic wrote:
+>> On Fri, June 15, 2007 07:41, Dmitry Torokhov wrote:
+>> >  /*
+>> > + * Schedule switch for execution. We need to throttle requests,
+>> > + * otherwise keyboard may become unresponsive.
+>> > + */
+>> > +static void atkbd_schedule_event_work(struct atkbd *atkbd, int event_bit)
+>> > +{
+>> > +	unsigned long delay = msecs_to_jiffies(50);
+>> > +
+>> > +	if (time_after(jiffies, atkbd->event_jiffies + delay))
+>> > +		delay = 0;
+>> > +
+>> > +	atkbd->event_jiffies = jiffies;
+>> > +	set_bit(event_bit, &atkbd->event_mask);
+>> > +	wmb();
+>> > +	schedule_delayed_work(&atkbd->event_work, delay);
+>> > +}
+>>
+>> I don't know whether schedule_delayed_work() requeues event_work, or if
+>> it adds more work, but both seem to give wrong behaviour:
+>
+> Well, my advise would be to research the matter before saying that
+> it will not work.
 
-Hi Jiri,
-sorry I started the specification but nothing finalized (and
-consequently no code).
-Here is the start of my idea for a v4l2_extension:
-http://thierry.merle.free.fr/v4l2_extension/general.html
-My new USB tuner took me all my little time and I did not get into
-details (the spec is incomplete).
-Well, as you insist I will explain a bit more :)
-Please comment, tell me what you don't understand I will try to update
-during this week-end...
+Good advise. My advise to others is, that if you do research it, then don't
+do it hastily like I did. ;-)
 
-Thierry
+My quick search didn't find the exact behaviour of schedule_delayed_work(),
+when looking in LDD, but I should've digged through to the description of
+queue_delayed_work().
+
+
+>> In the first case
+>> event_work can be postponed forever if atkbd_schedule_event_work() is
+>> called repeatedly each time within 50 ms, and for the second case there's a
+>> delay added, but the number of times the LED is switched stays the same,
+>> so it's not being throttled.
+>>
+>
+> No, once work is queued for execution subsequent attempts to queue the
+> same work will be ignored (until work starts executing). Therefore first
+> time work will be scheduled for execution immediately and then execution
+> be spaced by ~50 ms.
+
+Thank you for the explanation.
+
+I applied the patch, and it compiles and runs as expected, can't lockup the
+keyboard anymore with it applied.
+
+Greetings,
+
+Indan
+
 
