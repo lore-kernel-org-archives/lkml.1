@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbXFPHRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbXFPHUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752954AbXFPHRQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 03:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXFPHRL
+	id S1753597AbXFPHUs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 03:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXFPHUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 03:17:11 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:19147 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbXFPHRJ convert rfc822-to-8bit (ORCPT
+	Sat, 16 Jun 2007 03:20:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58298 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750758AbXFPHUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 03:17:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=l6dL5GAsfEYeNd7qsVKNKEVp5UEVx8KeIt9IN4A5fFmoJN7mRJQhFjFOzcsXr8+FwvJPYFCt2hEX+/yToqnT8vAbTFbhnfoT3lwKzUuAHlaMNtliPAhANSMDLXIwcl8OLw+Uh0KhJeKqQchCb5/FGYyQt4ErMCp63QsvPlcGFos=
-Message-ID: <4354d3270706160017t59e72882jd99a87a16288fe3f@mail.gmail.com>
-Date: Sat, 16 Jun 2007 10:17:09 +0300
-From: "=?ISO-8859-1?Q?T=F6r=F6k_Edvin?=" <edwintorok@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: CFS-v16: top shows incorrect CPU% for multi-threaded application
-In-Reply-To: <4354d3270706131235x6c879f7emc1869700af108b27@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <4354d3270706131235x6c879f7emc1869700af108b27@mail.gmail.com>
+	Sat, 16 Jun 2007 03:20:41 -0400
+Date: Sat, 16 Jun 2007 00:19:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: Jinxed VAIO wreckage - current state of affairs
+Message-Id: <20070616001942.475c8beb.akpm@linux-foundation.org>
+In-Reply-To: <1181976813.8176.365.camel@chaos>
+References: <1181418873.4404.402.camel@chaos>
+	<200706092259.50694.rjw@sisk.pl>
+	<20070609200827.635fec79.akpm@linux-foundation.org>
+	<1181909157.8176.342.camel@chaos>
+	<20070615082324.203610ec.randy.dunlap@oracle.com>
+	<1181921466.8176.356.camel@chaos>
+	<20070615233138.78a79b00.akpm@linux-foundation.org>
+	<1181976453.8176.362.camel@chaos>
+	<1181976813.8176.365.camel@chaos>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/13/07, Török Edvin <edwintorok@gmail.com> wrote:
-> Hi,
->
-> When I run a multithreaded application, consisting of a "main thread"
-> that is mostly idle, and
-> 3 "worker threads" (using as much CPU as they can get), 'top' and 'ps'
-> show that
-> the application uses 0% CPU.
-> If I turn off thread details in top, and ps it correctly shows the CPU
-> usage of each thread.
->
-> This happens only on 2.6.22-rc4-cfs-v16, on 2.6.21-1 everything is ok
-> (top shows sum-of-all-threads-CPU-usage, i.e. ~98,99%).
+On Sat, 16 Jun 2007 08:53:33 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-This has been fixed in cfs-v17.
+> > Still I can not explain, why this resulted in this strange "disappear in
+> > the return instruction" behavior.
+> 
+> I put up a fixed patch series against rc4-mm to:
+> 
+> http://www.tglx.de/projects/hrtimers/2.6.22-rc4-mm2/patch-2.6.22-rc4-mm2-hrt3.patches.tar.bz2
 
-Thanks,
-Edwin
+I expect that everyone's forgotten what they do.  It wouldn't hurt to send
+them all out in the usual fashion.
+
+btw, I have a huge backlog here (almost two days' worth!) and I'll be only
+intermittently up for a couple of weeks.  There will be some delays,
+sorry.  
