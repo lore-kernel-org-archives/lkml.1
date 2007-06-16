@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759702AbXFPKbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbXFPKb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759702AbXFPKbl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 06:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbXFPKYh
+	id S1759860AbXFPKb4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 06:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682AbXFPKYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 06:24:37 -0400
-Received: from www.osadl.org ([213.239.205.134]:37265 "EHLO mail.tglx.de"
+	Sat, 16 Jun 2007 06:24:38 -0400
+Received: from www.osadl.org ([213.239.205.134]:37267 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755269AbXFPKY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 06:24:27 -0400
-Message-Id: <20070616101637.429539521@inhelltoy.tec.linutronix.de>
+	id S1755321AbXFPKY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 06:24:28 -0400
+Message-Id: <20070616101637.468591137@inhelltoy.tec.linutronix.de>
 References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 16 Jun 2007 10:36:24 -0000
+Date: Sat, 16 Jun 2007 10:36:25 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
        Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [patch-mm 23/25] x86-64 block irq balancing for timer
-Content-Disposition: inline; filename=x86-64-clockevents-irq-balancing.patch
+Subject: [patch-mm 24/25] x86_64: prep idle loop for dynticks
+Content-Disposition: inline; filename=x86-64-prepare-idle-for-dyntick.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+From:	Chris Wright <chrisw@sous-sol.org>
 
-Disable irq balancing on IRQ0.
+Add tick_nohz_{stop,restart}_sched_tick to idle
+loop in prepartion for turning on dynticks.  These
+are just noops until NO_HZ is enabled in next patch.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/time.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86_64/kernel/process.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c
+Index: linux-2.6.22-rc4-mm/arch/x86_64/kernel/process.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/arch/x86_64/kernel/time.c	2007-06-16 12:10:24.000000000 +0200
-+++ linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c	2007-06-16 12:10:25.000000000 +0200
-@@ -255,7 +255,7 @@ static unsigned int __init tsc_calibrate
+--- linux-2.6.22-rc4-mm.orig/arch/x86_64/kernel/process.c	2007-06-16 12:10:20.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/x86_64/kernel/process.c	2007-06-16 12:10:25.000000000 +0200
+@@ -37,6 +37,7 @@
+ #include <linux/notifier.h>
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
++#include <linux/tick.h>
  
- static struct irqaction irq0 = {
- 	.handler	= timer_interrupt,
--	.flags		= IRQF_DISABLED | IRQF_IRQPOLL,
-+	.flags		= IRQF_DISABLED | IRQF_IRQPOLL | IRQF_NOBALANCING,
- 	.mask		= CPU_MASK_NONE,
- 	.name		= "timer"
- };
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+@@ -207,6 +208,8 @@ void cpu_idle (void)
+ 			if (__get_cpu_var(cpu_idle_state))
+ 				__get_cpu_var(cpu_idle_state) = 0;
+ 
++			tick_nohz_stop_sched_tick();
++
+ 			check_pgt_cache();
+ 			rmb();
+ 			idle = pm_idle;
+@@ -228,6 +231,7 @@ void cpu_idle (void)
+ 			__exit_idle();
+ 		}
+ 
++		tick_nohz_restart_sched_tick();
+ 		preempt_enable_no_resched();
+ 		schedule();
+ 		preempt_disable();
 
 -- 
 
