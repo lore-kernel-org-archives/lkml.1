@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbXFPCPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbXFPCQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759285AbXFPCPn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 22:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbXFPCPh
+	id S1759554AbXFPCQm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 22:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbXFPCQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 22:15:37 -0400
-Received: from srv1.netkinetics.net ([206.71.148.180]:39869 "EHLO
-	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757637AbXFPCPg (ORCPT
+	Fri, 15 Jun 2007 22:16:36 -0400
+Received: from paragon.brong.net ([66.232.154.163]:35824 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758180AbXFPCQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 22:15:36 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Tim Post <tim.post@netkinetics.net>
-Reply-To: tim.post@netkinetics.net
-To: Scott Preece <sepreece@gmail.com>
-Cc: Alexandre Oliva <aoliva@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Fri, 15 Jun 2007 22:16:35 -0400
+Date: Sat, 16 Jun 2007 12:16:30 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Daniel Hazelton <dhazelton@enter.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <7b69d1470706151752x30aeaaacl305d964b0ae4cc2d@mail.gmail.com>
-References: <466A3EC6.6030706@netone.net.tr>
-	 <20070614122031.4751a52b@the-village.bc.nu>
-	 <20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
-	 <20070615120926.GD6269@elte.hu>
-	 <orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <7b69d1470706151503v23253546w5648f04673741c8f@mail.gmail.com>
-	 <orodjgvm5v.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <7b69d1470706151752x30aeaaacl305d964b0ae4cc2d@mail.gmail.com>
-Content-Type: text/plain
-Organization: Net Kinetics
-Date: Sat, 16 Jun 2007 10:12:50 +0800
-Message-Id: <1181959970.21797.493.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.1 
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - netkinetics.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070616021630.GA30660@brong.net>
+References: <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu> <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net> <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net> <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+Organization: brong.net
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-15 at 19:52 -0500, Scott Preece wrote:
-
+On Fri, Jun 15, 2007 at 04:26:34PM -0300, Alexandre Oliva wrote:
+> On Jun 15, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
 > 
-> Yes, but in highlighting the possibility of evil intentions you
-> distort the fact that usually there are no such evil intentions...
+> > What happens if you're debugging something you think is a bug in the
+> > Linux kernel and then you run bang into some interactions that make you
+> > think the bug might be in the BIOS instead.
 > 
+> > have denied your freedom to modify and debug the system they sold you
+> 
+> If the bug is in the non-GPLed BIOS, not in the GPLed code, too bad.
+> One more reason to dislike non-Free Software.
 
-I don't think you can use "usually" and "fact" together like that. Why
-is it so bad to account for them since they (do) surface and (could)
-increase significantly in frequency? 
+If the bug is in the non-GPLed binary module, not in the GPLed code, too
+bad.  One more reason to dislike non-Free Software.
 
-For me, the (could) is enough to act upon, regardless of the current
-likely hood of it happening. Things change frequently. 
+It's the same argument from the other direction.  The BIOS is linked
+(inside the machine, sure) to the kernel for all intents and purposes
+through a defined interface.  This doesn't affect the BIOS developers
+who ship me a machine on to which I then install Linux, but it _does_
+affect a hardware vendor who ships me a system with Linux pre-installed,
+because it could easily be argued that they linked the BIOS with the
+Linux kernel and hence produced a combined work (remember, they reserve
+the right to modify the BIOS, but don't give that that right to me) and
+the BIOS should now come under the GPL.
 
-This, unfortunately comes pre-distorted depending on what you believe.
-All of us are right but we still don't agree. Quite a fluke. 
+Talk about your chilling effects.  It's a strong reason for vendors not
+to ship GPL3 or GPL2[your interpretation] code pre-installed while the
+legal boundaries of work combination are in any way grey.
 
-That's the problem.
+Regards,
 
-Best,
---Tim
-
-
-
+Bron.
