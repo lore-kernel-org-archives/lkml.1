@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXFPEH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbXFPEIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbXFPEH5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 00:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbXFPEHt
+	id S1753844AbXFPEIV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 00:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbXFPEIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 00:07:49 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:24317 "EHLO
-	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750708AbXFPEHs (ORCPT
+	Sat, 16 Jun 2007 00:08:06 -0400
+Received: from keil-draco.com ([216.193.185.50]:50429 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753278AbXFPEH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 00:07:48 -0400
-Date: Sat, 16 Jun 2007 06:07:47 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: My kernel hangs again: Help with git please
-Message-ID: <20070616040747.GA21076@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Daniel Barkalow <barkalow@iabervon.org>,
-	linux-kernel@vger.kernel.org
-References: <20070616001255.GA11403@alinoe.com> <Pine.LNX.4.64.0706152026320.4740@iabervon.org>
+	Sat, 16 Jun 2007 00:07:59 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alexandre Oliva <aoliva@redhat.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Sat, 16 Jun 2007 00:07:45 -0400
+User-Agent: KMail/1.9.6
+Cc: Tim Post <tim.post@netkinetics.net>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <200706132304.21984.dhazelton@enter.net> <1181962902.21803.513.camel@localhost.localdomain> <or3b0stvgf.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or3b0stvgf.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706152026320.4740@iabervon.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706160007.46024.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 08:33:38PM -0400, Daniel Barkalow wrote:
-> HEAD doesn't mean what you think it means. It's the latest revision on the 
-> branch with the *. What you want is:
-> 
-> $ git checkout master
-> 
-> This will move the * to "master", which shouldn't have been affected by 
-> any of this, and move your working directory to this point as well. At 
-> that point, you should be able to build a working kernel.
-> 
-> What "git reset --hard HEAD" does is discard any differences to tracked 
-> files between your working directory and the revision you're on. It's 
-> relevant if you want to discard local changes, not otherwise.
+On Friday 15 June 2007 23:44:00 Alexandre Oliva wrote:
+> On Jun 16, 2007, Tim Post <tim.post@netkinetics.net> wrote:
+> > On Fri, 2007-06-15 at 23:29 +0200, Ingo Molnar wrote:
+> >> Tivo has two choices: either it gives
+> >> users the content they want to watch, or it goes out of business. Is
+> >> that legitimate enough of a reason to restrict the hardware?
+> >
+> > Can I submit that they could just rent the use of their machines?
+>
+> I don't think this would escape the wording of section 6 in GPLv3dd4:
+>
+>   [...] User Product is transferred to the recipient in perpetuity or
+>   for a fixed term (regardless of how the transaction is
+>   characterized), [...]
+>
+> and IMHO that's as it should be to defend the freedoms of the user.
 
-I don't understand - any branch that I am on has many tags. I can use
-'git reset --hard sometag' to change the source tree to that tag (which
-works if I look at the version in the Makefile and pick tags that are
-far apart enough). Then, shouldn't 'HEAD' have the meaning: the newest
-tag on the branch? I was on the 'bisect' branch - but that is a copy
-of the master, no? At least, that was what I started on when I started
-the bisect.
+In the case of renting a machine you can try to legislate new laws all you 
+want. It doesn't make a difference. There are certain rights you don't get 
+when renting something that you do when you own it.
 
-Anyway, I tried this:
-
-$ git checkout master
-$ git branch
-  bisect
-* master
-  origin
-$ BRANCH=$(git branch | grep "^\*" | sed -e "s/\* //")
-$ echo $BRANCH
-master
-$ git rev-list --max-count=1 $BRANCH
-5ecd3100e695228ac5e0ce0e325e252c0f11806f
-
-Is it correct that this last command gives me the 'git id' (if that
-is the correct name for the hash) of the revision that my local
-working copy is at?
-
-Can you tell me what is the latest git id that you see?
-
-Because, if I compile 5ecd3100e695228ac5e0ce0e325e252c0f11806f is
-still hangs at boot :(
-
-I really don't know how I got a working kernel before :/
+DRH
 
 -- 
-Carlo Wood <carlo@alinoe.com>
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
