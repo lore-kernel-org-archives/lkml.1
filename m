@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbXFPCHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759092AbXFPCNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbXFPCHX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 22:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbXFPCHN
+	id S1759092AbXFPCNV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 22:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757645AbXFPCNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 22:07:13 -0400
-Received: from animx.eu.org ([216.98.75.249]:35308 "EHLO animx.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758010AbXFPCHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 22:07:12 -0400
-Date: Fri, 15 Jun 2007 22:03:20 -0400
-From: Wakko Warner <wakko@animx.eu.org>
-To: Neil Brown <neilb@suse.de>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-Message-ID: <20070616020320.GB2002@animx.eu.org>
-Mail-Followup-To: Neil Brown <neilb@suse.de>, david@lang.hm,
-	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18034.3676.477575.490448@notabene.brown>
-User-Agent: Mutt/1.5.6+20040907i
+	Fri, 15 Jun 2007 22:13:15 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2882 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757429AbXFPCNO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 22:13:14 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Fri, 15 Jun 2007 19:13:00 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEDDEKAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEPOEJAC.davids@webmaster.com>
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 15 Jun 2007 19:13:38 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 15 Jun 2007 19:13:38 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Thursday June 14, david@lang.hm wrote:
-> > why does it need to do a rebuild when makeing a new array? couldn't it 
-> > just zero all the drives instead? (or better still just record most of the 
-> > space as 'unused' and initialize it as it starts useing it?)
-> 
-> Yes, it could zero all the drives first.  But that would take the same
-> length of time (unless p/q generation was very very slow), and you
-> wouldn't be able to start writing data until it had finished.
-> You can "dd" /dev/zero onto all drives and then create the array with
-> --assume-clean if you want to.  You could even write a shell script to
-> do it for you.
 
-I still fail to see the reason to actually "resync" the drives.  I've dealt
-with some hardware raid devices and they do not force a resync but they do
-recommend it.
+By the way, the unfortunate answer to the question of what the default
+position is when contributions to a collective work are received without
+explicit license, at least in the United States, is:
 
-If there was no resync (I have not found a way to force the kernel not to do
-this), the parity will not be correct.  Well in this case, that's fine, the
-data is pretty much useless anyway.  (I'm assuming newly created arrays,
-not attempting to recreate an array that had some failures)
+"In the absence of an express transfer of the copyright or of any rights
+under it, the owner of copyright in the collective work is presumed to have
+acquired only the privilege of reproducing and distributing the contribution
+as part of that particular collective work, any revision of that collective
+work, and any later collective work in the same series." -- USC 201(c)
 
-Noone zeros out a new hard drive because of what might be on it.  You just
-fdisk (or lvm or whatever), mkfs and use it.  Assume this is performed on an
-array that has not been resync'd (or initialized as some hardware raids call
-it).  You fdisk it, mkfs it, and start using it.  As I understand the way
-raid works, when you write a block to the array, it will have to read all
-the other blocks in the stripe and recalculate the parity and write it out.
-(I also assume that if you write lots of data at a time, there may not be a
-read since those sectors will be over written anyway).
+That is, as I understand the law, if you receive a contribution to a project
+without any specific license in that contribution, it works like this:
 
-Ok, so we have a device with some parity information "correct" due to writes
-of some of the sectors but not all of them since there was no resync.  What
-happens if a drive fails and you replace it?  Ok, now we have to resync. 
-The strips that were never written to may now have random data.  Well, does
-that *really* matter?  After all, it was never written to.
+1) You automatically receive a license to use that piece as part of that
+project by virtue of the fact that it was contributed by the author to that
+project. (Because 210(c) says so.)
 
-In the past, I have used arrays that were not initialized (hardware raids)
-and had to rebuild the array due to a disk failure.  There was no problems
-with the data that was already allocated on the array.
+2) If the contribution is itself a derivative work of a GPL'd work, then you
+receive a GPL license. (Because the GPL says so).
 
--- 
- Lab tests show that use of micro$oft causes cancer in lab animals
- Got Gas???
+So it would be very unwise to add a contribution that wasn't itself a
+derivative work without clear indication from the author that the
+contribution is offered under the license you need. I had assumed no law set
+a default, and therefore the default would be the project's license. THIS IS
+INCORRECT. 201(c) sets the default, and it's the wrong one.
+
+This means that contributions of non-derivative works to GPL projects should
+not be added to the project unless the author specifically licenses that
+piece under the GPL. I would not consider it safe to assume that the fact
+that the author knowingly contributed the work to a GPL'd project is
+sufficient to change the 201(c) default.
+
+What's worse, section 203 appears to grant the author various ways, by law,
+to *terminate* a license grant. This termination removes the ability to
+create subsequent derivative works. Ouch.
+
+http://www.copyright.gov/title17/92chap2.html
+
+I sure hope I'm misunderstanding something.
+
+DS
+
+
