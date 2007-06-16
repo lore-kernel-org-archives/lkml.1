@@ -1,102 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbXFPRPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbXFPRTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbXFPRPS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 13:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbXFPRPH
+	id S1756395AbXFPRTP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 13:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXFPRS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 13:15:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40654 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753783AbXFPRPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 13:15:03 -0400
-To: Bron Gondwana <brong@fastmail.fm>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614195517.GA4933@elte.hu>
-	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
-	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615072322.GA7594@brong.net>
-	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616021630.GA30660@brong.net>
-	<orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616103130.GD32405@brong.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sat, 16 Jun 2007 14:14:29 -0300
-In-Reply-To: <20070616103130.GD32405@brong.net> (Bron Gondwana's message of "Sat\, 16 Jun 2007 20\:31\:30 +1000")
-Message-ID: <orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Sat, 16 Jun 2007 13:18:58 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:54422
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbXFPRS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 13:18:57 -0400
+Date: Sat, 16 Jun 2007 10:16:17 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Greaves <david@dgreaves.com>
+cc: Neil Brown <neilb@suse.de>, Wakko Warner <wakko@animx.eu.org>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <4673E7DC.80508@dgreaves.com>
+Message-ID: <Pine.LNX.4.64.0706160947350.7557@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+ <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+ <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org>
+ <18035.23867.576212.859440@notabene.brown> <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm>
+ <4673E7DC.80508@dgreaves.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 16, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
+On Sat, 16 Jun 2007, David Greaves wrote:
 
-> On Sat, Jun 16, 2007 at 05:22:21AM -0300, Alexandre Oliva wrote:
->> On Jun 15, 2007, Bron Gondwana <brong@fastmail.fm> wrote:
->> 
->> > because it could easily be argued that they linked the BIOS with the
->> > Linux kernel
->> 
->> How so?
+> david@lang.hm wrote:
+>>  On Sat, 16 Jun 2007, Neil Brown wrote:
+>>
+>>  I want to test several configurations, from a 45 disk raid6 to a 45 disk
+>>  raid0. at 2-3 days per test (or longer, depending on the tests) this
+>>  becomes a very slow process.
+> Are you suggesting the code that is written to enhance data integrity is 
+> optimised (or even touched) to support this kind of test scenario?
+> Seriously? :)
 
-> Er, they installed it in the same piece of equipment, and the kernel
-> couldn't function without it in that work.
+actually, if it can be done without a huge impact to the maintainability 
+of the code I think it would be a good idea for the simple reason that I 
+think the increased experimentation would result in people finding out 
+what raid level is really appropriate for their needs.
 
-I see what you're getting at.  You're thinking of a license that
-doesn't respect the idea of "mere aggregation", right?
+there is a _lot_ of confusion around about what the performance 
+implications of different raid levels are (especially when you consider 
+things like raid 10/50/60 where you have two layers combined) and anything 
+that encourages experimentation would be a good thing.
 
-For starters, this wouldn't evidently not qualify as an Open Source
-license, and I'm pretty sure it wouldn't qualify as a Free Software
-license either.
+>>  also, when a rebuild is slow enough (and has enough of a performance
+>>  impact) it's not uncommon to want to operate in degraded mode just long
+>>  enought oget to a maintinance window and then recreate the array and
+>>  reload from backup.
+>
+> so would mdadm --remove the rebuilding disk help?
 
-> By using GPLix as part of their boot process along with their
-> non-GPL BIOS, they're subverting the freedoms that the user should
-> have in being able to control the entire boot process.
+no. let me try again
 
-You're pushing the "freedom to change" too far.  Sure, I'd like to be
-able to do that, and I prefer hardware that lets me do it, but it's
-not like this BIOS in the scenario you described is being used as a
-means to stop me from modifying the GPLed software.
+drive fails monday morning
 
-I have never said that including a GPLed piece of software should
-grant users the right to modify anything whatsoever in the system, or
-grant them control over the entire system.  Others have, but it's not
-true, it just shows how much mis-information is floating around.
+scenerio 1
 
-All the GPL stands for is to defend the freedom of the users over the
-particular program it applies to.  You can't impose further
-restrictions on the user's ability to modify what *that* software
-does.
+replace the failed drive, start the rebuild. system will be slow (degraded 
+mode + rebuild) for the next three days.
 
-If you wanted to change something else, but this something else is not
-covered by the license, and is not being used to contradict the terms
-of the license, well, too bad, you lose.
+scenerio 2
 
-> b) deny themselves the ability to every offer a patch to said BIOS if
->    bugs are found 
+leave it in degraded mode until monday night (accepting the speed penalty 
+for degraded mode, but not the rebuild penalty)
 
-> Point (b) is also exactly on topic for the discussion of enforcing
-> legal safety obligations in hardware on a peripheral rather than the
-> software drivers.
+monday night shutdown the system, put in the new drive, reinitialize the 
+array, reload the system from backup.
 
-> It's requiring that these limitations be placed in a technically
-> inferior location to hack around a legal "bug".
+system is back to full speed tuesday morning.
 
-I don't think this last sentence is true.  If you implement hardware
-locks that prevent modification of the software even by yourself, then
-you're in compliance with the terms of the GPLv3dd4.  But IANAL.
+scenerio 2 isn't supported with md today, although it sounds as if the 
+skip rebuild could do this except for raid 5
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+on my test system, the rebuild says it's running at 5M/s a DD to a file on 
+the array says it's doing 45M/s (even while the rebuild is running), so it 
+seems to me that there may be value in this approach.
+
+David Lang
+
