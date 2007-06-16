@@ -1,116 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbXFPAYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbXFPA37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759394AbXFPAYM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Jun 2007 20:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbXFPAX7
+	id S1758765AbXFPA37 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Jun 2007 20:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbXFPA3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Jun 2007 20:23:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53392 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755325AbXFPAX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Jun 2007 20:23:58 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<20070614122031.4751a52b@the-village.bc.nu>
-	<20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
-	<20070615120926.GD6269@elte.hu>
-	<orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615214804.GC4996@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 15 Jun 2007 21:22:50 -0300
-In-Reply-To: <20070615214804.GC4996@elte.hu> (Ingo Molnar's message of "Fri\, 15 Jun 2007 23\:48\:04 +0200")
-Message-ID: <or3b0svjc5.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 15 Jun 2007 20:29:49 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:44126 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752987AbXFPA3s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Jun 2007 20:29:48 -0400
+Date: Fri, 15 Jun 2007 17:29:45 -0700
+From: Greg KH <greg@kroah.com>
+To: Crispin Cowan <crispin@novell.com>, Pavel Machek <pavel@ucw.cz>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+	pathname matching
+Message-ID: <20070616002945.GA30127@kroah.com>
+References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <20070615234925.GB15056@kroah.com> <20070616001810.GP3564@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070616001810.GP3564@suse.de>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, Jun 15, 2007 at 05:18:10PM -0700, Seth Arnold wrote:
+> On Fri, Jun 15, 2007 at 04:49:25PM -0700, Greg KH wrote:
+> > > We have built a label-based AA prototype. It fails because there is no
+> > > reasonable way to address the tree renaming problem.
+> > 
+> > How does inotify not work here?  You are notified that the tree is
+> > moved, your daemon goes through and relabels things as needed.  In the
+> > meantime, before the re-label happens, you might have the wrong label on
+> > things, but "somehow" SELinux already handles this, so I think you
+> > should be fine.
+> 
+> SELinux does not relabel files when containing directories move, so it
+> is not a problem they've chosen to face.
+> 
+> How well does inotify handle running attached to every directory on a
+> typical Linux system?
 
-> * Alexandre Oliva <aoliva@redhat.com> wrote:
+Look at SLED and Beagle (taking the indexing logic out of the equation.)
+It runs good enough that a major Linux vendor is willing to stake its
+reputation on it :)
 
->> On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
->> 
->> > it irreversibly cuts off certain people from being to distribute
->> > GPLv3-ed software alongside with certain types of hardware that the
->> > FSF's president does not like.
+> > > Under the restorecon-alike proposal, you have a HUGE open race. This
+> > > post http://bugs.centos.org/view.php?id=1981 describes restorecon
+> > > running for 30 minutes relabeling a file system. That is so far from
+> > > acceptable that it is silly.
+> > 
+> > Ok, so we fix it.  Seriously, it shouldn't be that hard.  If that's the
+> > only problem we have here, it isn't an issue.
+> 
+> Restorecon traverses the filesystem from a specific down. In order to
+> apply to an entire system (as would be necessary to try to emulate
+> AppArmor's model using SELinux), restorecon would need to run on vast
+> portions of the filesystem often. (mv ~/public_html ~/archived; or tar
+> zxvf linux-*.tar.gz, etc.)
+> 
+> I'm not sure we need to run restorecon every time rename(2) is called.
 
->> That's not true.  They can just as well throw the key away and refrain 
->> from modifying the installed software behind the users' back.
+Ok, so we optimize it.  Putting speed issues aside right now as a "mere"
+implementation details, I'm looking for logical reasons the AA model
+will not work in this type of system.
 
-> uhm, so you claim that my argument is false, and your proof for that is 
-> a "non-upgradeable Tivo"?? <sarcasm> That is a _great_ idea. Not being 
-> able to patch security holes. Not being able to fix bugs. Not being able 
-> to add new features. Makes complete sense.
+> > > Of course, this depends on the system in question, but restorecon will
+> > > necessarily need to traverse whatever portions of the filesystem that
+> > > have changed, which can be quite a long time indeed. Any race condition
+> > > measured in minutes is a very serious issue.
+> > 
+> > Agreed, so we fix that.  There are ways to speed those kinds of things
+> > up quite a bit, and I imagine since the default SELinux behavior doesn't
+> > use restorecon in this kind of use-case, no one has spent the time to do
+> > the work.
+> 
+> The time for restorecon is probably best imagined as a kind of 'du' that
+> also updates extended attributes as it does its work. It'd be very
+> difficult to improve on this.
 
-Oh, so you think patching security holes, fixing bugs and adding new
-features are good ideas?  What if you can't do it in your TiVo?
+Is that a bet?  :)
 
->> > guess why this section has been completely removed from the GPLv3, 
->> > without a replacement?
+> > What "kernel memory and performance" issues are there?  Your SLED
+> > machine already has inotify running on every directory in the system
+> > today, and you don't seem to have noticed that :)
+> 
+> I beg to differ. :)
 
->> My guess:
+The Beagle index backend is known to slow things down at times, yes, but
+is that the fault of the inotify watches, or the use of mono and a
+big-ass database on the system at the same time?
 
->> First, because it was redundant, given that the license didn't quite 
->> discuss other activities.  Unless you count say "imposing restrictions 
->> on the exercise of others' freedoms" as other activities, even though 
->> these are associated with modification and distribution.
+In the original inotify development, the issue was not inotify at all,
+unless you have some newer numbers in this regard?
 
-> here you prove that you cannot even read what i wrote. I wrote that this 
-> section has been removed from the GPLv3. What relevance does it have 
-> that in your opinion this section was redundant in the GPLv2??
+And Crispin mentioned that you all already implemented this.  Do you
+have the code around so that we can take a look at it?
 
-If you didn't mean "removed from the GPLv3 as compared with v2", I
-misunderstood what you wrote.
+thanks,
 
-The fact that it's redundant is v2 means it is reasonable to take it
-out.  That's the relevance.
-
-> It would clearly not be redundant in the GPLv3: it would contradict
-> and _completely neutralize_ most of the crap from the GPLv3 that we
-> are talking about here ...
- 
-And, per the same reasoning, some of the v2 provisions as well.
-
-> dont you realize that declaring certain types of activities by hardware 
-> makers as being "against freedom" is _exactly_ such an activity that the 
-> GPLv2 did not attempt to control?
-
-No.  And some Linux hackers disagree with your assessment too.
-
-> censure, opression of free speech, out of control climate,
-> dictatorship, campaign financing laws, the WIN32 API and human
-> stupidity. By your argument we'd have to add prohibition against
-> those restrictions of freedom to the license too, right?
-
--ENONSEQUITUR
-
-How do these stop a user's exercise of the four freedoms of a piece of
-software licensed under the GPL?
-
-> Your argument still leads to absurd results, even now that you've
-> modified it a few times already ...
-
-I hope you're not saying that my listening to you, recognizing
-mistakes in my arguments and fixing them up is a bad thing.
-
-But hey, at least I'm not modifying my arguments as much as you are!
-;-)
-
-It's pretty easy to shoot a straw man and claim the original argument
-was broken.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+greg k-h
