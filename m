@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbXFPNiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbXFPN5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbXFPNiv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 09:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbXFPNim
+	id S1756962AbXFPN5L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 09:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbXFPN46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 09:38:42 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:50255 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754831AbXFPNil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 09:38:41 -0400
-Message-ID: <4673E7DC.80508@dgreaves.com>
-Date: Sat, 16 Jun 2007 14:38:36 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+	Sat, 16 Jun 2007 09:56:58 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:44028 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753755AbXFPN45 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 09:56:57 -0400
+Date: Sat, 16 Jun 2007 07:56:55 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Introduce compat_u64 and compat_s64 types
+Message-ID: <20070616135655.GL8154@parisc-linux.org>
+References: <200706150159.l5F1xNgM000459@hera.kernel.org> <1181986686.25228.639.camel@pmac.infradead.org> <200706161226.40875.arnd@arndb.de> <200706161321.35940.arnd@arndb.de> <1181993652.25228.690.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: david@lang.hm
-Cc: Neil Brown <neilb@suse.de>, Wakko Warner <wakko@animx.eu.org>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown> <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181993652.25228.690.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Sat, 16 Jun 2007, Neil Brown wrote:
+On Sat, Jun 16, 2007 at 12:34:11PM +0100, David Woodhouse wrote:
+> You're right. My question was probably not relevant -- all these 64-bit
+> architectures cope with misaligned loads anyway. If we ever have to deal
+> with 32-bit compat on a 64-bit architecture which can't handle
+> misalignment, I'm just going to hide under my desk and never come out.
+
+... 32-bit compat on a 64-bit architecture where the 32-bit architecture
+aligned 64-bit quantities to 32-bit boundaries ...
+
+> > On x86_64, misaligned loads are always ok, so gcc never needs to
+> > care about this, even attribute((packed)) does not cause byte access
+> > here.
 > 
-> I want to test several configurations, from a 45 disk raid6 to a 45 disk 
-> raid0. at 2-3 days per test (or longer, depending on the tests) this 
-> becomes a very slow process.
-Are you suggesting the code that is written to enhance data integrity is 
-optimised (or even touched) to support this kind of test scenario?
-Seriously? :)
+> IA64 too, but it'll be handled there too -- either naturally or by
+> fixups; it doesn't matter.
 
-> also, when a rebuild is slow enough (and has enough of a performance 
-> impact) it's not uncommon to want to operate in degraded mode just long 
-> enought oget to a maintinance window and then recreate the array and 
-> reload from backup.
-
-so would mdadm --remove the rebuilding disk help?
-
-David
-
+Yes.  iirc, McKinley and later handle misaligned loads within a cacheline
+without interrupting.  Merced would interrupt on every misaligned load.
