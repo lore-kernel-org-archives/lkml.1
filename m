@@ -1,125 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbXFPWAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbXFPWCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757590AbXFPWAn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 18:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbXFPWAc
+	id S1758031AbXFPWCv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 18:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbXFPWCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 18:00:32 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:8416 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755906AbXFPWAb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 18:00:31 -0400
-Date: Sun, 17 Jun 2007 00:00:30 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.05
-In-Reply-To: <c0970fee9a3802d4930b2a9ac96fdd57@pinky>
-Message-ID: <Pine.LNX.4.64.0706162353390.32724@fbirervta.pbzchgretzou.qr>
-References: <c0970fee9a3802d4930b2a9ac96fdd57@pinky>
+	Sat, 16 Jun 2007 18:02:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56088 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756433AbXFPWCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 18:02:43 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Tim Post <tim.post@netkinetics.net>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706132304.21984.dhazelton@enter.net>
+	<200706160007.46024.dhazelton@enter.net>
+	<orlkeks427.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706161443.26338.dhazelton@enter.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Sat, 16 Jun 2007 19:01:59 -0300
+In-Reply-To: <200706161443.26338.dhazelton@enter.net> (Daniel Hazelton's message of "Sat\, 16 Jun 2007 14\:43\:26 -0400")
+Message-ID: <or3b0rpnhk.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 16, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-On Jun 16 2007 22:42, Andy Whitcroft wrote:
->@@ -180,12 +182,17 @@ sub ctx_block_get {
-> sub ctx_block_outer {
-> 	my ($linenr, $remain) = @_;
-> 
->-	return ctx_block_get($linenr, $remain, 1);
->+	return ctx_block_get($linenr, $remain, 1, '\{', '\}');
+> On Saturday 16 June 2007 04:21:04 Alexandre Oliva wrote:
+>> On Jun 16, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+>> > In the case of renting a machine you can try to legislate new laws all
+>> > you want. It doesn't make a difference. There are certain rights you
+>> > don't get when renting something that you do when you own it.
+>> 
+>> You mean renting the computer with the software in it is not
+>> distribution of the software?
 
-'\\{'.
+> It is. But you don't have the same rights to a rented machine as you
+> do to one you have purchased.
 
-Or, if it works, directly use
-	return &ctx_block_get($linenr, $remain, 1, qr/\{/, qr/\}/);
+That's true.  But since it's distribution, the licensing terms of the
+software in there must be followed, or the software must be removed.
+It's really this simple.
 
->+sub ctx_statement {
->+	my ($linenr, $remain) = @_;
->+
->+	return ctx_block_get($linenr, $remain, 0, '\(', '\)');
+It's not about the hardware.  It's about the software and what you
+must not prevent others from doing with it.
 
-^^
+> And yes, they can even have terms in it that violate the GPL. Not
+> that a "renters contract" ("rental agreement" or whatever they call
+> them in your jurisdiction) that has those terms can *legally*
+> violate the GPL - but it doesn't stop them from existing.
 
->+	my $ident	= '[A-Za-z\d_]+';
+By "legally violate the GPL", do you mean lawfully escape the terms of
+the GPL, or that infringe the copyrights of the authors for violate
+its legal terms?  I hope it's the latter.
 
-Oh yes, use the qr operator here. (qr{}, qr//, choose anything like you
-would do with m//)
-
->+	my $storage	= '(?:extern|static)';
->+	my $sparse	= '(?:__user|__kernel|__force|__iomem)';
->+	my $type	= '(?:unsigned\s+)?' .
->+			  '(?:void|char|short|int|long|unsigned|float|double|' .
->+			  'long\s+long|' .
->+			  "struct\\s+${ident}|" .
->+			  "union\\s+${ident}|" .
->+			  "${ident}_t)" .
->+			  "(?:\\s+$sparse)*" .
->+			  '(?:\s*\*+)?';
->+	my $attribute	= '(?:__read_mostly|__init|__initdata)';
->+
->+	my $Ident	= $ident;
->+	my $Type	= $type;
->+	my $Storage	= $storage;
->+	my $Declare	= "(?:$storage\\s+)?$type";
->+	my $Attribute	= $attribute;
->+
-
-> #trailing whitespace
->-		if ($line=~/\+.*\S\s+$/) {
->+		if ($line=~/^\+.*\S\s+$/) {
-                if ($line =~ /^\+.*\S\s+$/) {
-> 			my $herevet = "$here\n" . cat_vet($line) . "\n\n";
-> 			print "trailing whitespace\n";
-> 			print "$herevet";
->@@ -392,17 +420,20 @@ sub process {
-> 		#
-> 		next if ($in_comment);
-> 
->-		# Remove comments from the line before processing.
->+# Remove comments from the line before processing.
-> 		$line =~ s@/\*.*\*/@@g;
-> 		$line =~ s@/\*.*@@;
-
-C being a wonderful language, has this nice pitfall for parsers
-
-	foo = number /*pointer_to_int;
-
-> 		$line =~ s@.*\*/@@;
-> 
->-		#
->-		# Checks which may be anchored in the context.
->-		#
->+# Standardise the strings and chars within the input to simplify matching.
->+		$line = sanitise_line($line);
->+
->+#
->+# Checks which may be anchored in the context.
->+#
-> 
->-		# Check for switch () and associated case and default
->-		# statements should be at the same indent.
->+# Check for switch () and associated case and default
->+# statements should be at the same indent.
-> 		if ($line=~/\bswitch\s*\(.*\)/) {
-
-Codingstyle warrants \bswitch\s+  :)
-
-> # * goes on variable not on type
->-		my $type = '(?:char|short|int|long|unsigned|float|double|' .
->-			   'struct\s+[A-Za-z\d_]+|' .
->-			   'union\s+[A-Za-z\d_]+)';
->-
-
-qr. (I don't know what it is good for - compare qr/xyz/ with 'xyz'...,
-but there's a reason to its existence, so let's use it :-)
-
-
-
-
-	Jan
 -- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
