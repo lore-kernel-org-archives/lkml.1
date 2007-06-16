@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbXFPUPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbXFPUdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbXFPUPd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 16:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbXFPUPW
+	id S1756076AbXFPUdb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 16:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXFPUdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 16:15:22 -0400
-Received: from rwcrmhc13.comcast.net ([216.148.227.153]:58355 "EHLO
-	rwcrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752193AbXFPUPV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 16:15:21 -0400
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Jun 2007 16:15:21 EDT
-Message-ID: <46745567.2030701@wolfmountaingroup.com>
-Date: Sat, 16 Jun 2007 15:25:59 -0600
-From: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Fedora/1.7.8-2
-X-Accept-Language: en-us, en
+	Sat, 16 Jun 2007 16:33:23 -0400
+Received: from comtv.ru ([217.10.32.17]:38159 "EHLO comtv.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752688AbXFPUdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 16:33:22 -0400
+X-UCL: actv
+Date: Sun, 17 Jun 2007 00:31:58 +0400 (MSD)
+From: malc <av1474@comtv.ru>
+X-X-Sender: malc@linmac.oyster.ru
+To: Ingo Molnar <mingo@elte.hu>
+cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] sched: accurate user accounting
+In-Reply-To: <20070616184021.GA3887@elte.hu>
+Message-ID: <Pine.LNX.4.64.0706170018400.3414@linmac.oyster.ru>
+References: <20070328113743.GA5615@elte.hu> <Pine.LNX.4.64.0706142149020.2991@linmac.oyster.ru>
+ <20070614204253.GA14076@elte.hu> <Pine.LNX.4.64.0706150052190.3404@linmac.oyster.ru>
+ <20070614211828.GA21243@elte.hu> <Pine.LNX.4.64.0706150129430.3526@linmac.oyster.ru>
+ <46720B19.5000006@linux.vnet.ibm.com> <Pine.LNX.4.64.0706151002530.2175@linmac.oyster.ru>
+ <4673E3D9.2020300@linux.vnet.ibm.com> <Pine.LNX.4.64.0706161732040.2619@linmac.oyster.ru>
+ <20070616184021.GA3887@elte.hu>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jan Harkes <jaharkes@cs.cmu.edu>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, alan <alan@clueserver.org>,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org>	<467314E2.9010306@zytor.com>	<Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>	<46739B2C.4080606@hawkeye.stone.uk.eu.org>	<4673B15B.2080300@wolfmountaingroup.com>	<4673B77E.1000803@wolfmountaingroup.com>	<20070616164931.GF14788@delft.aura.cs.cmu.edu>	<46744225.7000609@wolfmountaingroup.com> <20070616210834.3bd051b9@the-village.bc.nu>
-In-Reply-To: <20070616210834.3bd051b9@the-village.bc.nu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+On Sat, 16 Jun 2007, Ingo Molnar wrote:
 
->>http://www.wipo.int/pctdb/en/fetch.jsp?LANG=ENG&DBSELECT=PCT&SERVER_TYPE=19&SORT=1211506-KEY&TYPE_FIELD=256&IDB=0&IDOC=1205953&C=10&ELEMENT_SET=IA,WO,TTL-EN&RESULT=1&TOTAL=3&START=1&DISP=25&FORM=SEP-0/HITNUM,B-ENG,DP,MC,PA,ABSUM-ENG&SEARCH_IA=US2005045566&QUERY=%28IN%2fmerkey%29+
+>
+> * malc <av1474@comtv.ru> wrote:
+>
+>>> Interesting, the idle time accounting (done from
+>>> account_system_time()) has not changed. Has your .config changed?
+>>> Could you please send it across. I've downloaded apc and I am trying
+>>> to reproduce your problem.
 >>
->>The last one was filed with WIPO and has international protection, UK 
->>included.
->>    
->>
+>> http://www.boblycat.org/~malc/apc/cfs/ has config for 2.6.21 an the
+>> diff against 2.6.21.4-cfs-v16.
 >
->Nope. EU and UK law does not recognize software as patentable. See the
->caselaw.
->  
+> hm. Could you add this to your kernel boot command line:
 >
-
-Thanks for clarifying Alan, I was uncertain about current patent laws in 
-the UK and abroad. I know this area has undergone considerable debate 
-and changes recently, and I have not been keeping up with all of it.
-
-Jeff
-
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+>     highres=off nohz=off
 >
->  
->
+> and retest, to inquire whether this problem is independent of any
+> timer-events effects?
 
+It certainly makes a difference. Without dynticks however scheduler
+still moves the task (be it hog or mplayer) between CPUs for no good
+reason, for hog the switching is every few seconds (instead of more or
+less all the time in case of dynticks). What's rather strange is that
+while it hogs 7x% of CPU on core#1 it only hogs 3x% on core#2
+(percentage is obtained by timing idle handler not form /proc/stat,
+according to /proc/stat either core is 0% loaded)..
+
+Live report... After a while it stabilized and was running on core#2
+all the time, when the process was stopped and restarted it started to
+run constantly on core#1 (with ~70% load)
+
+Btw. i don't want to waste anyones time here. All i originally wanted
+is to know if something was done (as per LWN article) with increasing
+the accuracy of system wide statistics (in /proc/stat), turns out that
+nothing really happened in this area, but latest developments
+(CFS/dynticks) have some peculiar effect on hog. Plus this constant
+migration of hog/mplayer is somewhat strange.
+
+Live report... again.. Okay now that hog stabilized on running
+exclusively on core#1 and at 70% load i switched to the machine
+where it runs and after just switching the windows in IceWM
+resulted in system load dropping to 30%.. Quite reproducible too.
+
+-- 
+vale
