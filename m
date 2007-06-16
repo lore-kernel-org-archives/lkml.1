@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbXFPMOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbXFPMYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbXFPMOM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 08:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbXFPMN7
+	id S1756321AbXFPMYr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 08:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbXFPMYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 08:13:59 -0400
-Received: from procserver.webwayone.co.uk ([62.8.115.202]:2557 "EHLO
-	procserver.webwayone.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753892AbXFPMN6 (ORCPT
+	Sat, 16 Jun 2007 08:24:40 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49644 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754583AbXFPMYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 08:13:58 -0400
-X-Greylist: delayed 1907 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 Jun 2007 08:13:58 EDT
-X-DKIM: Sendmail DKIM Filter v1.0.0 procserver.webwayone.co.uk l5GBg7UQ022580
-DomainKey-Signature: a=rsa-sha1; s=procserver; d=webwayone.co.uk; c=nofws; q=dns;
-	h=x-dkim:from:to:subject:references:x-hashcash:date:
-	in-reply-to:message-id:user-agent:mime-version:content-type:
-	x-spam-status:x-scanned-by;
-	b=ZAsjfo5k8gzGJDr/rDMp5Le/OFcuj3Dyhu7zzRIoZ28R467dR4bs95VMMM4/KsvGa
-	MUvYoR7k7YwTl7z4eb7DA==
-X-DKIM: Sendmail DKIM Filter v1.0.0 procserver.webwayone.co.uk l5GBg7UQ022580
-From: Graham Murray <gmurray@webwayone.co.uk>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org>
-	<467314E2.9010306@zytor.com>
-	<Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
-	<46739B2C.4080606@hawkeye.stone.uk.eu.org>
-	<4673B15B.2080300@wolfmountaingroup.com>
-X-Hashcash: 1:20:070616:linux-kernel@vger.kernel.org::tAaQIs6CnS8d0LA+:0000000000000000000000000000000002nC7
-Date: Sat, 16 Jun 2007 12:42:07 +0100
-In-Reply-To: <4673B15B.2080300@wolfmountaingroup.com> (Jeffrey V. Merkey's
-	message of "Sat, 16 Jun 2007 03:46:03 -0600")
-Message-ID: <7wy7ik2kj4.fsf@gmdev.webwayone.co.uk>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/22.1.50 (i686-pc-linux-gnu)
+	Sat, 16 Jun 2007 08:24:40 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4673D63D.5020804@s5r6.in-berlin.de>
+Date: Sat, 16 Jun 2007 14:23:25 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Oleg Verych <olecom@flower.upol.cz>
+CC: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: regression tracking (Re: Linux 2.6.21)
+References: <20070426040806.GJ3468@stusta.de> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz>
+In-Reply-To: <20070616013236.GA16016@flower.upol.cz>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com> writes:
+Oleg Verych wrote:
+> On Sat, Jun 16, 2007 at 01:42:02AM +0200, Adrian Bunk wrote:
+[...]
+>> This means going through every single point in the regression list 
+>> asking "Have we tried everything possible to solve this regression?". 
+[...]
+>> And a low hanging fruit to improve the release would be if you could 
+>> release one last -rc, wait for 48 hours, and then release either this 
+>> -rc unchanged as -final or another -rc (and wait another 48 hours).
+>> There were at least two different regressions people ran into in 2.6.21 
+>> who successfully tested -rc7.
+> 
+> What about Linus' tree is a development tree, Andrew's one is a "crazy
+> development one" (quoting Linus)?
+[...]
 
-> This already exists -- it just not open sourced, and you could spend
-> years trying to create it.  Trust me, once you start dealing with the
-> distributed issues with this, its gets very complex.  I am not meaning
-> to discourage you, but there are patents already filed on this on
-> Linux.    So you need to consider these as well, and there are several
-> folks who are already doing this or have done it.  If it goes into
-> Microsoft endorsed cross licensed Linuxes It may be ok (Vertias sold
-> this capability to Microsoft already, about 12 patents there to worry
-> over).  There's also another patent filed as well.  It's a noble
-> effort to do a free version, but be aware there's some big guns with
-> patents out there already, not to mention doing this is complex beyond
-> belief. 
+Linus also said that Andrew's tree is abused too often for broken stuff.
 
-Would such patents still be valid? He does  not seem to be describing
-anything that the ICL VME/B operating system did not do in the 1970s, so
-any applicable patents should have eithe expired by now or be
-invalidated by prior art.
+My goal for the little driver subsystem I'm maintaining is
+  - everything that Andrew pulls from me builds and runs and doesn't
+    introduce regressions to my and the submitters' knowledge.  I am
+    slowly expanding my test procedures to catch things that fail that
+    goal.
+  - Everything that Linus pulls from me fulfills the above criteria
+    and, in addition, had reasonable time and publication for test and
+    review, depending on the kind of patch.
+
+I had a few regressions in Linus' releases.  None of them were known
+before release.  All of them were debugged and fixed rather soon after
+report, AFAIR.
+
+So what _I_ need is neither better regression tracking nor more manpower
+for debugging of regression reports.  What I need is more own spare time
+and equipment for tests, more own knowledge and experience, and more
+people who run-time test -rc kernels or at least my subsystem updates on
+top of older kernels.
+
+    (Note, I'm talking only about regressions here, not old bugs.
+    There my requirements are different; the by far most important
+    one is more manpower for debugging and fixing.)
+
+Well, if _other_ subsystems would get regressions in Linus' tree fixed
+quicker, there might perhaps be more people who would consider to run
+-rc kernels and would catch and report "my" regressions.
+
+[Oleg, sorry that I too digressed from the subject of your thread, but
+your remark about "[crazy] development tree"s caught my eye.  IMO people
+should care for quality already in Andrew's tree --- more so than at the
+moment.]
+
+[Adrian, I'm not saying "too few users run -rc kernels", I'm saying "too
+few FireWire driver users run -rc kernels".]
+-- 
+Stefan Richter
+-=====-=-=== -==- =----
+http://arcgraph.de/sr/
