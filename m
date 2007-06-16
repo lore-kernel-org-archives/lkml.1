@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbXFPQpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbXFPQrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208AbXFPQpm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 12:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbXFPQpe
+	id S1757027AbXFPQrr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 12:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbXFPQri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 12:45:34 -0400
-Received: from wine.ocn.ne.jp ([220.111.47.146]:53172 "EHLO
-	smtp.wine.ocn.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754555AbXFPQpe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 12:45:34 -0400
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading andmanipulation,pathname matching
-From: Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp>
-References: <20070609001703.GA17644@kroah.com>
-	<466C303E.5010304@novell.com>
-	<20070615165054.GA11345@kroah.com>
-	<200706170044.DJF02182.TtMPNGNS@I-love.SAKURA.ne.jp>
-	<20070616162653.GC20990@kroah.com>
-In-Reply-To: <20070616162653.GC20990@kroah.com>
-Message-Id: <200706170145.HBG40443.GTtNNPSM@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50]
-X-Accept-Language: ja,en
-Date: Sun, 17 Jun 2007 01:45:31 +0900
+	Sat, 16 Jun 2007 12:47:38 -0400
+Received: from pat.uio.no ([129.240.10.15]:56924 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754474AbXFPQrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 12:47:37 -0400
+Subject: Re: [PATCH] NFS: Make NFS root work again
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20070616091514.8e5dc1d3.akpm@linux-foundation.org>
+References: <20070607164003.24322.51086.stgit@warthog.cambridge.redhat.com>
+	 <20070616091514.8e5dc1d3.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 16 Jun 2007 12:47:30 -0400
+Message-Id: <1182012450.26143.8.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.082)
+X-UiO-Scanned: 60AEB12DC88AADCB4C3910512D0F367850F224B1
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 249 total 2406681 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Greg KH wrote:
-> On Sun, Jun 17, 2007 at 12:44:08AM +0900, Tetsuo Handa wrote:
-> > Can the daemon using inotify access to all pathnames in all process's
-> > namespaces?
+On Sat, 2007-06-16 at 09:15 -0700, Andrew Morton wrote:
+> On Thu, 07 Jun 2007 17:40:03 +0100 David Howells <dhowells@redhat.com> wrote:
 > 
-> I don't see why not, do you?
+> > Make NFS root work by creating a "/root" directory to satisfy the mount,
+> > otherwise the path lookup for the mount fails with ENOENT.
+> > 
+> > Signed-off-by: David Howells <dhowells@redhat.com>
+> > ---
+> > 
+> >  init/do_mounts.c |    5 ++++-
+> >  1 files changed, 4 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/init/do_mounts.c b/init/do_mounts.c
+> > index 46fe407..967b852 100644
+> > --- a/init/do_mounts.c
+> > +++ b/init/do_mounts.c
+> > @@ -270,7 +270,10 @@ static void __init get_fs_names(char *page)
+> >  
+> >  static int __init do_mount_root(char *name, char *fs, int flags, void *data)
+> >  {
+> > -	int err = sys_mount(name, "/root", fs, flags, data);
+> > +	int err;
+> > +
+> > +	sys_mkdir("/root", 0755);
+> > +	err = sys_mount(name, "/root", fs, flags, data);
+> >  	if (err)
+> >  		return err;
 > 
-> > Are the namespace the daemon has and the namespace of pathnames
-> > notified via inotify always the same?
+> Am still awaiting a proper description of this patch, please.
 > 
-> If they are in the same namespace, then yes, they will as far as I can
-> tell.  Do you think this is incorrect?
+> What is not working, and how does this patch fix it?
+> 
+> I am unaware of any open bug reports against NFS root.
 
-At least, I think SELinux's "make relabel" can't relabel
-files that are not in the namespace of "make" process.
+I'm confused too. We never used to require that the kernel create a
+special /root directory. What changed, and when?
 
-I don't know how to use inotify, but what I worried is ...
+Trond
 
-If there are cases they are in different namespace,
-it is impossible to relabel using userland daemon
-(i.e. deferred-relabeling won't work)
-unless all pathnames of all namespaces are somehow
-accessible via inotify.
-
-Thanks.
