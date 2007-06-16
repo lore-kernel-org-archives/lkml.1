@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbXFPHVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbXFPHnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbXFPHVv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 03:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXFPHVn
+	id S1753252AbXFPHnl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 03:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbXFPHnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 03:21:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57443 "EHLO mx2.mail.elte.hu"
+	Sat, 16 Jun 2007 03:43:32 -0400
+Received: from il.qumranet.com ([82.166.9.18]:49602 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751854AbXFPHVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 03:21:42 -0400
-Date: Sat, 16 Jun 2007 09:21:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Michael Gerdau <mgd@technosis.de>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070616072125.GA31926@elte.hu>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> <alpine.LFD.0.98.0706150913480.14121@woody.linux-foundation.org> <200706160006.26428.mgd@technosis.de> <200706151830.46175.dhazelton@enter.net> <20070615224403.GA23721@elte.hu> <alpine.LFD.0.98.0706151548070.14121@woody.linux-foundation.org>
+	id S1750939AbXFPHnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 03:43:32 -0400
+Message-ID: <4673949B.1070505@qumranet.com>
+Date: Sat, 16 Jun 2007 10:43:23 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706151548070.14121@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] [BUG] Oops with KVM-27
+References: <68676e00706101354n5fe7e1a9y12cb690cae2924e3@mail.gmail.com> <466CFD6D.2080201@qumranet.com> <20070612175246.GA5864@dreamland.darkstar.lan> <466FB1ED.3090905@qumranet.com> <20070613204948.GA14710@dreamland.darkstar.lan> <4670FBB5.70707@qumranet.com> <20070614225324.GA4088@dreamland.darkstar.lan> <20070614231359.GA5705@dreamland.darkstar.lan> <68676e00706141627s3cb87391sa0ee6711d2f7933f@mail.gmail.com> <467256AA.1040001@qumranet.com> <20070615214915.GA10536@dreamland.darkstar.lan>
+In-Reply-To: <20070615214915.GA10536@dreamland.darkstar.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Sat, 16 Jun 2007 10:43:23 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Luca Tettamanti wrote:
+> Il Fri, Jun 15, 2007 at 12:06:50PM +0300, Avi Kivity ha scritto: 
+>   
+>>> After a bit of thinking: it's correct but removes an optimization;
+>>> furthermore it may miss other instructions that write to memory mapped
+>>> areas.
+>>> A more proper fix should be "force the writeback if dst.ptr is in some
+>>> kind of mmio area".
+>>>
+>>>       
+>> I think we can just disable the optimization, and (in a separate patch)
+>> add it back in emulator_write_phys(), where we know we're modifying
+>> memory and not hitting mmio.
+>>     
+>
+> Problem is that in emulator_write_phys() we've already lost track of the
+> previous (dst.orig_val) value. I moved up the decision in
+>   
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Actually we haven't; just before the memcpy(), we can put a memcmp() to
+guard the kvm_mmu_pte_write(), which is the really expensive operation,
+especially with guest smp.
 
-> > Furthermore when you get source code of free software then there is 
-> > no "meeting of minds" needed for you to accept the GPL's conditions, 
-> > and only the letter of the license (and, in case of any ambiguities, 
-> > the intent of the author of the code) matters to the interpretation 
-> > of the license, not the intent of the recipient. (while in contract 
-> > cases both the meeting of minds is needed and the intent and 
-> > understanding of both parties matters to the interpretation of the 
-> > contract.)
-> 
-> I do agree that you can probably use this to say that the intent of 
-> the copyright has a stronger position, and that his "intent" thus 
-> matters more.
-> 
-> But I suspect that the "intent" angle is fairly weak legally to begin 
-> with, and if you cannot show that the intent was mutual, it's probably 
-> weaker still. So yeah, the intent of the copyright owner arguably 
-> might matter more, but quite frankly, I suspect everbody is better off 
-> not worrying so much about "intent", and worrying more about the 
-> "terms and conditions" part.
+> cmpxchg_emulated; unfortunately this means that the non-locked write
+> path (write_emulated) can't do this optimization, unless I change its
+> signature to include the old value.
+>
+> The first patch makes the writeback step uncoditional whenever we have a
+> destination operand (the mov check (d & Mov) may be superfluous, yes?).
+> The write-to-registry path still has the optimization that skips the
+> write if possible.
+>   
 
-yeah - and from everything i know about this subject the distinction 
-between contract and license is small and more of a technicality - but 
-still, it's a nice touch that the "pure license" argument that the FSF 
-has advanced for a long time (and which it is now more silent about, 
-given the GPLv3's not so pure structure) neatly defeats the common 
-argument:
+The mov check is in done since the destination is not read for moves; so
+the check for change would read uninitialized memory.
 
-  "but, but, when i received the Tivo with GPL-ed software on it the 
-   GPLv2 was not intended to be like that, there is a right to run 
-   modified software on the hardware!"
+I think we can simply remove the if ().  For the register case, the
+check is more expensive that the write; for mmio, we don't want it; and
+for memory writes, we can put it in emulator_write_phys().
 
-> What is pretty clear, though, is that the intent of a third party in 
-> the license/cotnract matters not at all. In the case of the kernel, 
-> the FSF being such a third party.
+> Next one: I've splitted emulator_write_phys into emulator_write_phys_mem
+> (for normal RAM) and emulator_write_phys_mmio (for the rest). The
+>   
 
-yeah. But the argument goes a bit further: people who chose to _license_ 
-the kernel (by receiving a Tivo for example and downloading its kernel 
-source) claim that _their_ interpretation of the GPL is that of the 
-FSF's and that Tivo ought to follow it. The whole "Tivo is cheating the 
-GPL deal with the end users" line of PR. As far as license 
-interpretation goes there is _no end user deal_ and the 'end user' does 
-not even play in terms of intent - only if she choses to be an active 
-member of the community. That's why i think it's better to talk about a 
-license than a contract. (even though legally, at least in the US, the 
-two are quite close to each other.)
+This is in order to properly emulate cmpxchg(), right?  I don't think
+it's necessary since all that memory is write protected and the
+modifications happen under kvm->lock.
 
-so a 'pure copyright license' stresses the point even more that you only 
-really count in the ecosystem if you contribute in one way or another. 
-The system should be and _is_ assymetric towards the actual black letter 
-text of the license and, as a second layer, towards the intent of the 
-people who actually produced this 1+ billion lines of code, 
-documentation, bugzilla entries and other nice works. And that is a 
-thing the FSF is missing sometimes i believe - the "listen to _all_ the 
-people who enabled this cool stuff" part.
+>
+> I'm a bit confused about this test, found in emulator_write_phys
+> (original code):
+>
+> if (((gpa + bytes - 1) >> PAGE_SHIFT) != (gpa >> PAGE_SHIFT))
+>         return 0;
+>
+> AFAICT is makes the emulator skip the write if the modified area spans
+> across two different (physical) pages. When this happens write_emulated
+> does a MMIO write. I'd expect the function to load the 2 pages and do the
+> memory write on both instead.
+>   
 
-	Ingo
+This isn't skipping the write; instead it uses the mmio path to update
+memory instead of the direct path, as I was too lazy to code split page
+writes.  It's also wrong in case someone uses nonaligned writes to
+update page tables, but no-one does that.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
