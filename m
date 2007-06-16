@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbXFPGcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbXFPGiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbXFPGcv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 02:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbXFPGcn
+	id S1753467AbXFPGiU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 02:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXFPGiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 02:32:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55996 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750891AbXFPGcm (ORCPT
+	Sat, 16 Jun 2007 02:38:12 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:24868 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbXFPGiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 02:32:42 -0400
-Date: Fri, 15 Jun 2007 23:31:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: Jinxed VAIO wreckage - current state of affairs
-Message-Id: <20070615233138.78a79b00.akpm@linux-foundation.org>
-In-Reply-To: <1181921466.8176.356.camel@chaos>
-References: <1181418873.4404.402.camel@chaos>
-	<200706092259.50694.rjw@sisk.pl>
-	<20070609200827.635fec79.akpm@linux-foundation.org>
-	<1181909157.8176.342.camel@chaos>
-	<20070615082324.203610ec.randy.dunlap@oracle.com>
-	<1181921466.8176.356.camel@chaos>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Jun 2007 02:38:12 -0400
+Date: Sat, 16 Jun 2007 08:38:10 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       dave young <hidave.darkstar@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: coding style
+In-Reply-To: <alpine.LFD.0.98.0706151335240.14121@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706160833220.32724@fbirervta.pbzchgretzou.qr>
+References: <46721F18.8090303@intel.com> <a8e1da0706142338s6cd76e94hf7a4c44ed5b067a0@mail.gmail.com>
+ <Pine.LNX.4.64.0706151109430.32724@fbirervta.pbzchgretzou.qr>
+ <20070615173206.GA8151@cvg> <4672D246.2040306@nortel.com>
+ <20070615110326.b0762b7a.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0706152108080.32724@fbirervta.pbzchgretzou.qr>
+ <20070615191804.GC8151@cvg> <4672E6B3.1080205@intel.com>
+ <Pine.LNX.4.64.0706152122050.32724@fbirervta.pbzchgretzou.qr>
+ <20070615194140.GE8151@cvg> <Pine.LNX.4.64.0706152210150.32724@fbirervta.pbzchgretzou.qr>
+ <alpine.LFD.0.98.0706151335240.14121@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007 17:31:06 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> On Fri, 2007-06-15 at 08:23 -0700, Randy Dunlap wrote:
-> > On Fri, 15 Jun 2007 14:05:57 +0200 Thomas Gleixner wrote:
-> > 
-> > > On Sat, 2007-06-09 at 20:08 -0700, Andrew Morton wrote:
-> > > > On Sat, 9 Jun 2007 22:59:49 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > 
-> > > > > Hmm, how's 2.6.22-rc4-mm2 doing on the Vaio?
-> > > > 
-> > > > People would have heard if it was busted ;)
-> > > 
-> > > Just found a brown paperbag bug in the resume patch logic. Sigh, I was
-> > > staring at that code for month without noticing.
-> > > 
-> > > Andrew,
-> > > 
-> > > can you please test
-> > > 
-> > > http://www.tglx.de/projects/hrtimers/2.6.22-rc4/patch-2.6.22-rc4-hrt9.patch
-> > 
-> > bad URL, not found.
-> 
-> http://www.tglx.de/projects/hrtimers/2.6.22-rc4/patch-2.6.22-rc4-hrt10.patch
-> 
+On Jun 15 2007 13:39, Linus Torvalds wrote:
+>On Fri, 15 Jun 2007, Jan Engelhardt wrote:
+>> 
+>> Linux maintainers will enforce \t "being"[1] 8, and will also enforce
+>> the 80-column limit[2].
+>
+>Heh. Actually, Linux maintainers have generally very consciously _avoided_ 
+>trying to "enforce" coding style issues.
 
-That suspends and resumes OK.
+Really? "it's not going to be merged unless you turn all uint32_t into
+u_int32_t" is a paraphrased variant of what I was told this month.
 
-What was the bug?
+
+
+	Jan
+-- 
