@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbXFPTkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbXFPTlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbXFPTkK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 15:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbXFPTj7
+	id S1756619AbXFPTlj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 15:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbXFPTlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 15:39:59 -0400
-Received: from khc.piap.pl ([195.187.100.11]:33028 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751601AbXFPTj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 15:39:58 -0400
-To: Sanjoy Mahajan <sanjoy@mrao.cam.ac.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Carlo Wood <carlo@alinoe.com>, Alexandre Oliva <aoliva@redhat.com>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, Sean <seanlkml@sympatico.ca>,
-       Adrian Bunk <bunk@stusta.de>, Valdis.Kletnieks@vt.edu,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <E1HzYqk-0001aI-00@skye.ra.phy.cam.ac.uk>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 16 Jun 2007 21:39:55 +0200
-In-Reply-To: <E1HzYqk-0001aI-00@skye.ra.phy.cam.ac.uk> (Sanjoy Mahajan's message of "Sat, 16 Jun 2007 15:01:58 +0100")
-Message-ID: <m3tzt7u1ro.fsf@maximus.localdomain>
-MIME-Version: 1.0
+	Sat, 16 Jun 2007 15:41:32 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42687 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754107AbXFPTlc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 15:41:32 -0400
+Date: Sat, 16 Jun 2007 20:41:30 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH] madvise_need_mmap_write() usage
+Message-ID: <20070616194130.GA6681@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, nickpiggin@yahoo.com.au,
+	Rik van Riel <riel@redhat.com>
+References: <Pine.LNX.4.64.0706151118150.11498@dhcp83-20.boston.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706151118150.11498@dhcp83-20.boston.redhat.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sanjoy Mahajan <sanjoy@mrao.cam.ac.uk> writes:
+On Fri, Jun 15, 2007 at 11:20:31AM -0400, Jason Baron wrote:
+> hi,
+> 
+> i was just looking at the new madvise_need_mmap_write() call...can we
+> avoid an extra case statement and function call as follows?
 
-> So you have to give recipients the license text from a particular
-> version of the GPL.  To make that the only version unde which the work
-> is licensed, you have to add something like "Licensed under the
-> GPLv2".  Otherwise sec. 9 says that you offer the work under any
-> version of the GPL, and the licensee can take his or her pick -- even
-> using v1 (!).
+Sounds like a good idea, but please move the assignment out of the
+conditional.
 
-That's exactly what I meant by "not specifying the version".
--- 
-Krzysztof Halasa
