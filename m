@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbXFPHUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbXFPHVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbXFPHUs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 03:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXFPHUl
+	id S1754089AbXFPHVT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 03:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXFPHVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 03:20:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58298 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750758AbXFPHUl (ORCPT
+	Sat, 16 Jun 2007 03:21:11 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:43470 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbXFPHVK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 03:20:41 -0400
-Date: Sat, 16 Jun 2007 00:19:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: Jinxed VAIO wreckage - current state of affairs
-Message-Id: <20070616001942.475c8beb.akpm@linux-foundation.org>
-In-Reply-To: <1181976813.8176.365.camel@chaos>
-References: <1181418873.4404.402.camel@chaos>
-	<200706092259.50694.rjw@sisk.pl>
-	<20070609200827.635fec79.akpm@linux-foundation.org>
-	<1181909157.8176.342.camel@chaos>
-	<20070615082324.203610ec.randy.dunlap@oracle.com>
-	<1181921466.8176.356.camel@chaos>
-	<20070615233138.78a79b00.akpm@linux-foundation.org>
-	<1181976453.8176.362.camel@chaos>
-	<1181976813.8176.365.camel@chaos>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Jun 2007 03:21:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VA+LjNyx0NCynUIHFhD4Z05QyyLCJ8jPbmJqTUn3YxqKyTnDq1kWIbT5bdj8t7qTGJOcd5pPlNTtZwS9MnalCbb38sWMmIJU7MDDPQaMDfaFN8NBTh0iz12rC2ngJcOpfJbGFBUIZSbpIIGye/G2FFM0KvPse9mpE328Nly7nk0=
+Message-ID: <4354d3270706160021m56ee71e2ic4bd4e5da9ecab4@mail.gmail.com>
+Date: Sat, 16 Jun 2007 10:21:09 +0300
+From: "=?ISO-8859-1?Q?T=F6r=F6k_Edvin?=" <edwintorok@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: CFS Scheduler and real-time tasks
+In-Reply-To: <4354d3270705181407t6e2d6der396ea3d0fd06f790@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <4354d3270705171214v25bc4834t5e28a08649761e91@mail.gmail.com>
+	 <20070517192343.GA24249@elte.hu>
+	 <4354d3270705171310x1d7770b2mb086f1fde7cffabd@mail.gmail.com>
+	 <20070517201338.GA1713@elte.hu>
+	 <4354d3270705181407t6e2d6der396ea3d0fd06f790@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Jun 2007 08:53:33 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+On 5/19/07, Török Edvin <edwintorok@gmail.com> wrote:
+> I tried -v13. However the scheduling "error" is now 10% (vs 2% with -v12).
+>
+> I also noticed strange behaviour with CPU hotplug. I offlined cpu1
+> (echo 0 >/sys/devices/system/cpu/cpu1/online), and the typing speed on
+> my terminal decreased noticably. I could hardly type something there.
 
-> > Still I can not explain, why this resulted in this strange "disappear in
-> > the return instruction" behavior.
-> 
-> I put up a fixed patch series against rc4-mm to:
-> 
-> http://www.tglx.de/projects/hrtimers/2.6.22-rc4-mm2/patch-2.6.22-rc4-mm2-hrt3.patches.tar.bz2
+These both have been fixed in cfs-v17. Smp load balancing is accurate,
+and I noticed no problems with CPU hotplug.
 
-I expect that everyone's forgotten what they do.  It wouldn't hurt to send
-them all out in the usual fashion.
-
-btw, I have a huge backlog here (almost two days' worth!) and I'll be only
-intermittently up for a couple of weeks.  There will be some delays,
-sorry.  
+Thanks,
+Edwin
