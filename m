@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbXFPRvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbXFPSSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbXFPRvg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 13:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbXFPRvb
+	id S1753987AbXFPSSj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 14:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbXFPSSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 13:51:31 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:11290 "EHLO
-	asav18.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750723AbXFPRva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 13:51:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoXAJXAc0ZKhRO4UGdsb2JhbACPLAEBGw0GEQE
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Richard Hughes <hughsient@gmail.com>
-Subject: Re: [patch] Reporting the lid status using INPUT
-Date: Sat, 16 Jun 2007 13:51:27 -0400
-User-Agent: KMail/1.9.3
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, a_bartok@freemail.hu,
-       Bastien Nocera <hadess@hadess.net>, David Zeuthen <david@fubar.dk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <1181910567.4819.7.camel@work> <1181919208.2681.6.camel@work> <1182013911.2309.4.camel@work>
-In-Reply-To: <1182013911.2309.4.camel@work>
+	Sat, 16 Jun 2007 14:18:33 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:16619 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbXFPSSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 14:18:32 -0400
+Date: Sat, 16 Jun 2007 22:17:51 +0400
+From: Dmitriy Monakhov <dmonakhov@sw.ru>
+To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       npiggin@suse.de, mark.fasheh@oracle.com, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: iov_iter_fault_in_readable fix
+Message-ID: <20070616181751.GE14349@localhost.sw.ru>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	linux-kernel@vger.kernel.org, npiggin@suse.de,
+	mark.fasheh@oracle.com, linux-ext4@vger.kernel.org, xfs@oss.sgi.com
+References: <200705292119.l4TLJtAD011726@shell0.pdx.osdl.net> <20070613134005.GA13815@localhost.sw.ru> <20070613135759.GD13815@localhost.sw.ru> <20070614173153.GA14771@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200706161351.28885.dtor@insightbb.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070614173153.GA14771@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 June 2007 13:11, Richard Hughes wrote:
-> On Fri, 2007-06-15 at 15:53 +0100, Richard Hughes wrote:
-> > On Fri, 2007-06-15 at 10:29 -0400, Dmitry Torokhov wrote:
-> > > On 6/15/07, Richard Hughes <hughsient@gmail.com> wrote:
-> > > > On Fri, 2007-06-15 at 13:29 +0100, Richard Hughes wrote:
-> > > > > in response to an event, but I'm thinking in a resume hook we should
-> > > > > probably do acpi_evaluate_integer(handle, "_LID", NULL, &state) and then
-> > > > > send an event, just so userspace is aware of what the state of the panel
-> > > > > is.
-> > > >
-> > > > Attached patch fixed the issue for me. Comments?
-> > > >
-> > > 
-> > > The patch makes perfect sense. The only issue I have is this:
-> > > 
-> > > > +	/* on resume we send the state; it might be the same, but userspace
-> > > > +	 * should handle duplicated events */
-> > > 
-> > > If switch state matches to what input layer thinks it is the event
-> > > will not even reach userspace.
-> > 
-> > Okay, new patch attached, thanks for the speedy review.
+On 18:31 Чтв 14 Июн     , Christoph Hellwig wrote:
+> On Wed, Jun 13, 2007 at 05:57:59PM +0400, Dmitriy Monakhov wrote:
+> >  	Function prerform check for signgle region, with out respect to
+> >  	segment nature of iovec, For example writev no longer works :)
 > 
-> This fix is also confirmed by somebody else, see
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243030
-> 
-> It would be great if this could go into .22, although I appreciate it's
-> quite late in the day.
->
+> Btw, could someone please start to collect all sniplets like this in
+> a nice simple regression test suite?  If no one wants to start a new
+> one we should probably just put it into xfsqa (which should be useable
+> for other filesystems aswell despite the name)
+I've prepared testcase (testcases/kernel/syscalls/writev/writev06.c) 
+and sent it to ltp mailing list.
 
-This is of course Len's call but in my book this is a bugfix and as such
-is appropriate for -rc4/rc5.
-
--- 
-Dmitry
