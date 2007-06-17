@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbXFQNOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbXFQNOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760023AbXFQNOL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 09:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759033AbXFQNN7
+	id S1760318AbXFQNOf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 09:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbXFQNO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 09:13:59 -0400
-Received: from procserver.webwayone.co.uk ([62.8.115.202]:2188 "EHLO
-	procserver.webwayone.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753375AbXFQNN6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 09:13:58 -0400
-X-Greylist: delayed 1345 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Jun 2007 09:13:58 EDT
-X-DKIM: Sendmail DKIM Filter v1.0.0 procserver.webwayone.co.uk l5HCpSKl006346
-DomainKey-Signature: a=rsa-sha1; s=procserver; d=webwayone.co.uk; c=nofws; q=dns;
-	h=x-dkim:from:to:subject:references:x-hashcash:date:
-	in-reply-to:message-id:user-agent:mime-version:content-type:
-	x-spam-status:x-scanned-by;
-	b=hmulxvn8mZ1nR27RreweQytlGWCRm5NHke8s04fXd/ON5jTuUk2v3b39ahPmavFKY
-	y1ZLe7Wxro4mzd0dlEqqw==
-X-DKIM: Sendmail DKIM Filter v1.0.0 procserver.webwayone.co.uk l5HCpSKl006346
-From: Graham Murray <gmurray@webwayone.co.uk>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706162306.14516.dhazelton@enter.net>
-	<orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706170008.17477.dhazelton@enter.net>
-X-Hashcash: 1:20:070617:linux-kernel@vger.kernel.org::cAwgSjbvk2ZQ4pe+:0000000000000000000000000000000002r6D
-Date: Sun, 17 Jun 2007 13:51:28 +0100
-In-Reply-To: <200706170008.17477.dhazelton@enter.net> (Daniel Hazelton's
-	message of "Sun, 17 Jun 2007 00:08:17 -0400")
-Message-ID: <7wabuy3fsf.fsf@gmdev.webwayone.co.uk>
-User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/22.1.50 (i686-pc-linux-gnu)
-MIME-Version: 1.0
+	Sun, 17 Jun 2007 09:14:26 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:50380 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759033AbXFQNOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 09:14:25 -0400
+Date: Sun, 17 Jun 2007 15:15:28 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] headercheck: add dependency check and improve speed
+Message-ID: <20070617131528.GA14140@uranus.ravnborg.org>
+References: <20070523181140.GA23425@uranus.ravnborg.org> <1182076908.2799.27.camel@shinybook.infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182076908.2799.27.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton <dhazelton@enter.net> writes:
+On Sun, Jun 17, 2007 at 11:41:47AM +0100, David Woodhouse wrote:
+> On Wed, 2007-05-23 at 20:11 +0200, Sam Ravnborg wrote:
+> > David - I assume you will take it in your tree? 
+> 
+> Actually I don't keep a tree for header stuff (except for the automatic
+> export-to-userspace one at linux/kernel/git/dwmw2/kernel-headers.git
+> which just tracks Linus' tree.
+> 
+> I figure that keeping headers in shape is a task for _everyone_, which
+> is sort of why we now have the infrastructure for exporting them and
+> checking on that.
+> 
+> Could you include it in your kbuild tree, or would you like me to (try
+> to remember to) send it to Linus myself after 2.6.22 is out?
+I can have it in kbuild.git - no problem.
+I'm reworking the header support a bit and will post patches for review/test
+when ready. So we will end up with something a bit different than what
+I poster the other week.
 
-> The second:
-> I buy a DSL modem. Until I want to actually connect to the internet it can 
-> have whatever settings I want it to have. The second I want to connect to the 
-> internet it has to be configured the way that the ISP wants.
-
-But only those configurations which enable it to work, such as the
-modulation type, PPPOE/PPPOA, VPI/VCI, PPP username and password
-etc. You still have control over the rest of the configuration such as
-NAT/No NAT, LAN IP address(es), firewall, MTU, QoS, etc.
+	Sam
