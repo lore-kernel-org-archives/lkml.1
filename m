@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbXFQMHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbXFQMNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbXFQMHL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 08:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758764AbXFQMG6
+	id S1759972AbXFQMNN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 08:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758764AbXFQMM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 08:06:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33275 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758525AbXFQMG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 08:06:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [PATCH] (Re: regression tracking (Re: Linux 2.6.21))
-Date: Sun, 17 Jun 2007 14:13:39 +0200
-User-Agent: KMail/1.9.5
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <6bffcb0e0706170322j3c51868fn6189bfd7d3bcac1@mail.gmail.com> <20070617114709.GD16016@flower.upol.cz>
-In-Reply-To: <20070617114709.GD16016@flower.upol.cz>
+	Sun, 17 Jun 2007 08:12:59 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:50917
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758360AbXFQMM6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 08:12:58 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Maximilian Engelhardt <maxi@daemonizer.de>
+Subject: Re: b44: high ping times with wireless-dev
+Date: Sun, 17 Jun 2007 14:12:44 +0200
+User-Agent: KMail/1.9.6
+Cc: netdev <netdev@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Gary Zambrano <zambrano@broadcom.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "Jeff Garzik" <jgarzik@pobox.com>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
+References: <200706162327.47413.maxi@daemonizer.de> <200706171255.40155.mb@bu3sch.de> <200706171403.34299.maxi@daemonizer.de>
+In-Reply-To: <200706171403.34299.maxi@daemonizer.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706171413.40890.rjw@sisk.pl>
+Message-Id: <200706171412.45074.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 June 2007 13:47, Oleg Verych wrote:
-> On Sun, Jun 17, 2007 at 12:22:26PM +0200, Michal Piotrowski wrote:
-> > On 17/06/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > >On Sun, 17 Jun 2007 11:41:36 +0200 Michal Piotrowski 
-> > ><michal.k.k.piotrowski@gmail.com> wrote:
-> > >
-> > >> +If the patch introduces a new regression and this regression was not 
-> > >fixed
-> > >> +in seven days, then the patch will be reverted.
-> > >
-> > >Those regressions where we know which patch caused them are the easy ones.
-> > >Often we don't know which patch (or even which subsystem merge) is at
-> > >fault.
-> > >
-> > >I think.  How many of the present 2.6.22-rc regressions which you're
-> > >presently tracking have such a well-identified cause?
-> > >
-> > 
-> > Here lays the problem.
-> > 
-> > git-bisect is a killer app, people should start using it.
+On Sunday 17 June 2007 14:03:30 Maximilian Engelhardt wrote:
+> On Sunday 17 June 2007, Michael Buesch wrote:
+> > On Saturday 16 June 2007 23:27:43 Maximilian Engelhardt wrote:
+> > > [...]
+> > > ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 10
+> > > ACPI: PCI Interrupt 0000:02:02.0[A] -> Link [LNKD] -> GSI 10 (level, low)
+> > > -> IRQ 10
+> > > ssb: Sonics Silicon Backplane found on PCI device 0000:02:02.0
+> > > b44.c:v2.0
+> > > eth0: Broadcom 44xx/47xx 10/100BaseT Ethernet 00:c0:9f:29:99:a7
+> > > [...]
+> >
+> > Ok, I prepared two debugging patches.
+> >
+> > Please enable SonicsSiliconBackplane Debugging in the kernel kconfig,
+> > so I can get more detail information about your card.
+> > Device Drivers/Sonics Silicon Backplane/SSB debugging
+> > (Must disable "No SSB kernel messages")
+> >
+> > Please apply and test the attached debugging patches in a row.
+> > So apply patch 1 and test if it works again. If not, apply
+> > patch 2 and test if it works.
+> > Always save complete dmesg log on each test run and send it to me.
+> >
+> > Thanks for testing.
+> > (This time it seems we are actually getting somewhere, when
+> > dealing with sane people. :D )
 > 
-> It's OK _only_ in case of unknown, hard to find *hardware* bugs.
-> 
-> If you think it's "a good thing" for bad, untested by developer
-> code, then something is completely wrong.
+> I did the tests with my kernel where only the card is on interrupt 10. dmesg 
+> is attached.
+> With the first patch applied networking does work again. I also additionally 
+> tried patch2 and it also does work.
 
-Oh, I've just fixed two purely software bugs pointed out by binary searching
-in the code that I'm sure has been tested, not only by its developers, but the
-bugs only showed up in my configuration (on one out of four test boxes).
-
-There are so many different kernel configurations possible that there's no way
-a developer can test them all.
-
-Greetings,
-Rafael
-
+Great!
+To me this seems to be a silicon bug. The IRQ routing value, which is read
+from the chip here, is hardcoded in the old b44 driver.
+I'll implement a workaround for this and submit a patch.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Greetings Michael.
