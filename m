@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761091AbXFQTeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbXFQTfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761091AbXFQTeq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 15:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbXFQTej
+	id S1761413AbXFQTfb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759721AbXFQTfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 15:34:39 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:6386 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbXFQTei (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 15:34:38 -0400
-Date: Sun, 17 Jun 2007 21:33:56 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: How to improve the quality of the kernel?
-Message-ID: <20070617193356.GB20727@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Adrian Bunk <bunk@stusta.de>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	Oleg Verych <olecom@flower.upol.cz>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <200706172053.41806.bzolnier@gmail.com> <20070617115258.1f55b29d.akpm@linux-foundation.org> <200706172118.19214.rjw@sisk.pl>
-MIME-Version: 1.0
+	Sun, 17 Jun 2007 15:35:22 -0400
+Received: from animx.eu.org ([216.98.75.249]:53382 "EHLO animx.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752269AbXFQTfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 15:35:20 -0400
+Date: Sun, 17 Jun 2007 15:30:25 -0400
+From: Wakko Warner <wakko@animx.eu.org>
+To: dean gaudet <dean@arctic.org>
+Cc: Neil Brown <neilb@suse.de>, david@lang.hm, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+Message-ID: <20070617193025.GA8770@animx.eu.org>
+Mail-Followup-To: dean gaudet <dean@arctic.org>, Neil Brown <neilb@suse.de>,
+	david@lang.hm, linux-kernel@vger.kernel.org,
+	linux-raid@vger.kernel.org
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown> <20070616140857.GA4206@animx.eu.org> <Pine.LNX.4.64.0706161845180.24938@twinlark.arctic.org> <20070617132809.GB7806@animx.eu.org> <Pine.LNX.4.64.0706171019490.24938@twinlark.arctic.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200706172118.19214.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0706171019490.24938@twinlark.arctic.org>
+User-Agent: Mutt/1.5.6+20040907i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 09:18:17PM +0200, Rafael J. Wysocki wrote:
-> where n is a number that needs to be determined (I think that n could be 3).
-> Well, "negative comments" should also be defined more precisely. ;-)
+dean gaudet wrote:
+> On Sun, 17 Jun 2007, Wakko Warner wrote:
+> 
+> > > i use an external write-intent bitmap on a raid1 to avoid this... you 
+> > > could use internal bitmap but that slows down i/o too much for my tastes.  
+> > > i also use an external xfs journal for the same reason.  2 disk raid1 for 
+> > > root/journal/bitmap, N disk raid5 for bulk storage.  no spindles in 
+> > > common.
+> > 
+> > I must remember this if I have to rebuild the array.  Although I'm
+> > considering moving to a hardware raid solution when I upgrade my storage.
+> 
+> you can do it without a rebuild -- that's in fact how i did it the first 
+> time.
+> 
+> to add an external bitmap:
+> 
+> mdadm --grow --bitmap /bitmapfile /dev/mdX
+> 
+> plus add "bitmap=/bitmapfile" to mdadm.conf... as in:
+> 
+> ARRAY /dev/md4 bitmap=/bitmap.md4 UUID=dbc3be0b:b5853930:a02e038c:13ba8cdc
 
-I think that n should be a function of the number of accepted patches
-that this person sent in before, and the number of regressions he
-caused in the past.
+I used evms to setup mine.  I have used mdadm in the past.  I use lvm ontop
+of it which evms makes it a little easier to maintain.  I have 3 arrays
+total (only the raid5 was configured by evms, the other 2 raid1s were done
+by hand)
 
-Ie, new developers have to wait a considerable amount of time - while
-experienced developers who never caused a regression should be able
-to write patches that are immediately applied. Also, if anyone causes
-a regression - that would lead to them having to wait longer the
-next time before they can apply the patch - a good reason for a
-developer to put extra time into making sure there are no regressions.
+> you can also easily move an ext3 journal to an external journal with 
+> tune2fs (see man page).
+
+I only have 2 ext3 file systems (One of which is mounted R/O since it's
+full), all my others are reiserfs (v3).
+
+What benefit would I gain by using an external journel and how big would it
+need to be?
+
+> if you use XFS it's a bit more of a challenge to convert from internal to 
+> external, but see this thread:
+
+I specifically didn't use XFS (or JFS) since neither one at the time could
+be shrinked.
 
 -- 
-Carlo Wood <carlo@alinoe.com>
+ Lab tests show that use of micro$oft causes cancer in lab animals
+ Got Gas???
