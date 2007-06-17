@@ -1,40 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbXFQPPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbXFQPQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbXFQPPo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 11:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbXFQPPe
+	id S1753028AbXFQPQs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 11:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbXFQPQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 11:15:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57529 "EHLO mx3.mail.elte.hu"
+	Sun, 17 Jun 2007 11:16:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46318 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751158AbXFQPPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 11:15:32 -0400
-Date: Sun, 17 Jun 2007 17:14:50 +0200
+	id S1750800AbXFQPQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 11:16:41 -0400
+Date: Sun, 17 Jun 2007 17:16:12 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: James Morris <jmorris@namei.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, Dave Airlie <airlied@linux.ie>,
-       Andrea Righi <righiandr@users.sourceforge.net>,
-       Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
-       Samuel Ortiz <samuel@sortiz.org>, Andrey Borzenkov <arvidjaar@mail.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Chad Tindel <ctindel@users.sourceforge.net>,
-       Dan Aloni <da-x@monatomic.org>, Jay Vosburgh <fubar@us.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, Paulo Pereira <pfmp.404@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [2/2] 2.6.22-rc5: known regressions with patches
-Message-ID: <20070617151450.GA11762@elte.hu>
-References: <4675430B.2000304@googlemail.com> <46754400.2080101@googlemail.com> <Line.LNX.4.64.0706171046190.1178@localhost.localdomain>
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       "Darrick J. Wong" <djwong@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       Ian McDonald <ian.mcdonald@jandi.co.nz>,
+       William Cohen <wcohen@redhat.com>,
+       "S. P. Prasanna" <prasanna@in.ibm.com>,
+       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
+       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
+       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
+Message-ID: <20070617151612.GB11762@elte.hu>
+References: <467543FA.60905@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Line.LNX.4.64.0706171046190.1178@localhost.localdomain>
+In-Reply-To: <467543FA.60905@googlemail.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -48,21 +43,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* James Morris <jmorris@namei.org> wrote:
+* Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-> > SELinux
-> > 
-> > Subject    : very high non-preempt latency in context_struct_compute_av()
-> > References : http://lkml.org/lkml/2007/6/4/78
-> > Submitter  : Ingo Molnar <mingo@elte.hu>
-> > Handled-By : Stephen Smalley <sds@tycho.nsa.gov>
-> >             James Morris <jmorris@namei.org>
-> > Patch      : http://lkml.org/lkml/2007/6/7/334
-> > Status     : patch available
-> 
-> This patch is queued for -mm, and will be submitted for 2.6.23.
+> Subject    : long freezes on thinkpad t60
+> References : http://lkml.org/lkml/2007/5/24/100
+> Submitter  : Miklos Szeredi <miklos@szeredi.hu>
+> Handled-By : Ingo Molnar <mingo@elte.hu>
+> Patch      : http://lkml.org/lkml/2007/6/16/81
+> Status     : patch was suggested
 
-and that is fine with me - think this is a pre-existing problem so not a 
-new regression in .22.
+i think this isnt a new regression in .22, it existed in .21 too - or 
+are you tracking all 2.6 regressions?
 
 	Ingo
