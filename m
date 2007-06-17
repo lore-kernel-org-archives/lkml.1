@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbXFQV2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbXFQVeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbXFQV2h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 17:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbXFQV2a
+	id S1758698AbXFQVeR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 17:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbXFQVeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 17:28:30 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:49822 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753082AbXFQV23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 17:28:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=OJmumnJi5bBgeFl64SL6hkiN0u2jrWAqPvRMXlQdY/2u1da8ZXt8qx8Y3TTYQCHLu0bJ1TAOQr8GDmKonilUuzMbFHOgUOb3nG8bM/zNAB8oYnO2lOntl1WSSAeF52J1hcuRRpFvwzY2FpNBmISOKbtPNLIP8TX/TezChrmERKs=
-Message-ID: <9c21eeae0706171428u5a9ff79rad2b2083d3436d7f@mail.gmail.com>
-Date: Sun, 17 Jun 2007 14:28:28 -0700
-From: "David Brown" <dmlb2000@gmail.com>
-To: fuse-devel@lists.sourceforge.net,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: FS block count, size and seek offset?
+	Sun, 17 Jun 2007 17:34:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55206 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752604AbXFQVeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 17:34:02 -0400
+Date: Sun, 17 Jun 2007 17:33:55 -0400
+From: Dave Jones <davej@redhat.com>
+To: Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+Message-ID: <20070617213355.GC3430@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com
+References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070617211338.GA24771@alinoe.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was looking at various file systems and how they return
-stat.st_blocks and stat.st_size for directories and had some questions
-on how a fuse filesystem is supposed to implement readdir with the
-seek offset when trying to union two directories together.
+On Sun, Jun 17, 2007 at 11:13:38PM +0200, Carlo Wood wrote:
+ > On Sun, Jun 17, 2007 at 04:49:04PM -0400, Dave Jones wrote:
+ > > That's pretty bad corruption indeed.  What I'm puzzling over though
+ > > is why other 965G users aren't seeing the same thing.
+ > > My own 965G seems to be fine, though that's using Intel graphics
+ > > instead of nvidia.
+ > > 
+ > > (Just to rule it out, I'm assuming at this stage in boot that the
+ > >  nvidia driver module has never been loaded?)
+ > 
+ > Doesn't even exist for that kernel. I only compiled a new
+ > nvidia driver module for one kernel - the one that I am using
+ > on a daily basis.
+ > 
+ > > And if you never load the agpgart modules, you never see lockups?
+ > 
+ > What would the name be of such module?
 
-Is the offset a byte offset into the DIR *dp? or is it the struct
-dirent size (which is relative based on the name of the file) into the
-dir pointer?
+intel-agp
 
-Also, if you want to be accurate when you stat a directory that's
-unioned in the fuse file system how many blocks should one return?
-Since each filesystem seems to return different values for size and
-number of blocks for directories. I know I could just say that its not
-supported with my filesystem built using fuse... but I'd like to at
-least try to be accurate.
+Though by the looks of things, with the working kernel, you don't have
+it loaded (it's dependant upon the 'agpgart' module, which prints the
+"Detected" line that was missing).
 
-Is it accurate to assume that the size or number of blocks returned
-from a stat will be used to pass a seek offset?
+	Dave
 
-When does fuse use the seek offset?
-
-These are the number of blocks and size on an empty dir.
-ext3
-size 4096 nblocks 8
-reiserfs
-size 48 nblocks 0
-jfs
-size 1 nblocks 0
-xfs
-size 6 nblocks 0
-
-Any help to figure out how to union two directories and return correct
-values would be helpful.
-
-Thanks,
-- David Brown
-
-P.S. maybe a posix filesystem interface manual would be good?
+-- 
+http://www.codemonkey.org.uk
