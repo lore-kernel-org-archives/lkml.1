@@ -1,167 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757694AbXFQAom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758500AbXFQA7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757694AbXFQAom (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 20:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbXFQAo2
+	id S1758500AbXFQA7X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 20:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757382AbXFQA7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 20:44:28 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2654 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757986AbXFQAo0 (ORCPT
+	Sat, 16 Jun 2007 20:59:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59640 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756900AbXFQA7O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 20:44:26 -0400
-Message-ID: <467483F5.8020706@shadowen.org>
-Date: Sun, 17 Jun 2007 01:44:37 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Sat, 16 Jun 2007 20:59:14 -0400
+Date: Sat, 16 Jun 2007 17:58:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bron Gondwana <brong@fastmail.fm>
+cc: Alexandre Oliva <aoliva@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <20070616233251.GA17270@brong.net>
+Message-ID: <alpine.LFD.0.98.0706161728070.14121@woody.linux-foundation.org>
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
+ <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net>
+ <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616021630.GA30660@brong.net>
+ <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616103130.GD32405@brong.net>
+ <orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070616233251.GA17270@brong.net>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.05
-References: <c0970fee9a3802d4930b2a9ac96fdd57@pinky> <Pine.LNX.4.64.0706162353390.32724@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706162353390.32724@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jun 16 2007 22:42, Andy Whitcroft wrote:
->> @@ -180,12 +182,17 @@ sub ctx_block_get {
->> sub ctx_block_outer {
->> 	my ($linenr, $remain) = @_;
->>
->> -	return ctx_block_get($linenr, $remain, 1);
->> +	return ctx_block_get($linenr, $remain, 1, '\{', '\}');
+
+
+On Sun, 17 Jun 2007, Bron Gondwana wrote:
 > 
-> '\\{'.
+> No, I'm arguing that it's not "mere aggregation" - the kernel is useless
+> on that machine unless the BIOS is present or replaced with something
+> else with equivalent functionality.
 
-I want the string to be \{ ... '\}' gives me that:
+That's *not* a valid argument!
 
-$ perl
-$q = '\}';
-print "$q\n";
-\}
+I know, I know, it's a common one, but it is *nonsense*.
 
-> Or, if it works, directly use
-> 	return &ctx_block_get($linenr, $remain, 1, qr/\{/, qr/\}/);
-> 
->> +sub ctx_statement {
->> +	my ($linenr, $remain) = @_;
->> +
->> +	return ctx_block_get($linenr, $remain, 0, '\(', '\)');
-> 
-> ^^
-> 
->> +	my $ident	= '[A-Za-z\d_]+';
-> 
-> Oh yes, use the qr operator here. (qr{}, qr//, choose anything like you
-> would do with m//)
+The thing is, "mere aggregation" doesn't mean what you think it means.
 
-Well I want a combination of variable expanded and not expanded.  I
-think there will be a general cleanup to some standard quoting for the
-RE's as there are hundreds, and about 7 different quote styles right now.
+"Mere aggregation" doesn't mean that they cannot depend on each other. It 
+means that they are not *based* on each other in the sense of GPLv2.
 
-> 
->> +	my $storage	= '(?:extern|static)';
->> +	my $sparse	= '(?:__user|__kernel|__force|__iomem)';
->> +	my $type	= '(?:unsigned\s+)?' .
->> +			  '(?:void|char|short|int|long|unsigned|float|double|' .
->> +			  'long\s+long|' .
->> +			  "struct\\s+${ident}|" .
->> +			  "union\\s+${ident}|" .
->> +			  "${ident}_t)" .
->> +			  "(?:\\s+$sparse)*" .
->> +			  '(?:\s*\*+)?';
->> +	my $attribute	= '(?:__read_mostly|__init|__initdata)';
->> +
->> +	my $Ident	= $ident;
->> +	my $Type	= $type;
->> +	my $Storage	= $storage;
->> +	my $Declare	= "(?:$storage\\s+)?$type";
->> +	my $Attribute	= $attribute;
->> +
-> 
->> #trailing whitespace
->> -		if ($line=~/\+.*\S\s+$/) {
->> +		if ($line=~/^\+.*\S\s+$/) {
->                 if ($line =~ /^\+.*\S\s+$/) {
->> 			my $herevet = "$here\n" . cat_vet($line) . "\n\n";
->> 			print "trailing whitespace\n";
->> 			print "$herevet";
->> @@ -392,17 +420,20 @@ sub process {
->> 		#
->> 		next if ($in_comment);
->>
->> -		# Remove comments from the line before processing.
->> +# Remove comments from the line before processing.
->> 		$line =~ s@/\*.*\*/@@g;
->> 		$line =~ s@/\*.*@@;
-> 
-> C being a wonderful language, has this nice pitfall for parsers
-> 
-> 	foo = number /*pointer_to_int;
+In other words, "mere aggregation" is about two pieces that are not 
+derivative works under copyright law.
 
-Hmm really?  Thats not how gcc seems to parse that, it seems to think
-its a comment.  Which makes us safe, as the compiler will trip them up.
+For example, on a Red Hat DVD, *every*single*binary* on that DVD requires 
+a kernel to run on. And the kernel image itself "depends" on the user 
+programs to actually do something _useful_. 
 
-$ cat test4.c
-int main(int argc, char *argv[])
-{
-        int _p = 10;
-        int *p = &_p;
+But it's all still "mere aggregation", because they are not related to 
+each other in the sense of being derived works!
 
-        int foo = 10 /*p;
+So "mere aggregation" is not about intimacy. OF COURSE high-tech products 
+depend intimately on each other. The Linux kernel cannot boot on a PC 
+without a BIOS or something equivalent. You cannot run your graphical 
+environment without a kernel, an X server, the CPU, the memory, the 
+display, the BIOS, the power company (or an equivalent hand-crank) etc etc 
+etc, and these things are all very much dependent on each other to make a 
+"usable system", that has absolutely _zero_ relevance to whether they are 
+"mere aggregation" or not.
 
-        printf("foo=%d\n", foo);
-}
-$ cc -o test4 test4.c
-test4.c:6:15: error: unterminated comment
-test4.c: In function 'main':
-test4.c:6: error: expected ',' or ';' at end of input
-test4.c:6: error: expected declaration or statement at end of input
+So the only thing the "mere aggregation" phrase in the GPLv2 means is 
+simply: "putting together two or more pieces that are not derived works of 
+each other". That's what that
 
->> 		$line =~ s@.*\*/@@;
->>
->> -		#
->> -		# Checks which may be anchored in the context.
->> -		#
->> +# Standardise the strings and chars within the input to simplify matching.
->> +		$line = sanitise_line($line);
->> +
->> +#
->> +# Checks which may be anchored in the context.
->> +#
->>
->> -		# Check for switch () and associated case and default
->> -		# statements should be at the same indent.
->> +# Check for switch () and associated case and default
->> +# statements should be at the same indent.
->> 		if ($line=~/\bswitch\s*\(.*\)/) {
-> 
-> Codingstyle warrants \bswitch\s+  :)
+	mere aggregation of another work not based on the Program
+	                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Yep and we check for that.  But here we are trying to catch a switch and
-case at differing levels, we want to catch that whether they got their
-spacing right or not.
+part of the license is all about.  The BIOS is "another work", and it 
+clearly is "not based on the Program". The "aggregation" just means 
+"putting them together", and the "mere" is there just to show that as far 
+as the license is concerned, that is not even interesting!
 
->> # * goes on variable not on type
->> -		my $type = '(?:char|short|int|long|unsigned|float|double|' .
->> -			   'struct\s+[A-Za-z\d_]+|' .
->> -			   'union\s+[A-Za-z\d_]+)';
->> -
-> 
-> qr. (I don't know what it is good for - compare qr/xyz/ with 'xyz'...,
-> but there's a reason to its existence, so let's use it :-)
+In other words, the sentence in section 2 about mere aggregation says one 
+thing only: the fact that you lump things together storage-wise does not 
+matter *at*all* for the license. The _only_ thing that matters for the 
+GPLv2 is whether something is a derived work, _not_ whether it is lumped 
+together, and depends on something else.
 
-Well I would tend to say use what works and is easy to understand.  The
-semantics of '' and "" are well known, to change to qr{} I would have to
-go read the manual to know what it is going to do.  That said, _if_ it
-did have the same semantics as m// then it may wel allow all of these to
-be expressed as qr{} as it would expand variables but treat \ as if we
-were in ''.  So ... to the manual for me.
+This is why the BIOS is irrelevant. You can put it in the same flash chip 
+as the kernel: it still isn't a derived work of Linux (and Linux is not a 
+derived work of the BIOS), and the GPLv2 explicitly makes it clear that 
+the license holds no sway over the BIOS, even though it's physically on 
+the same chip.
 
--apw
+The BIOS can do whatever it wants to, and the GPLv2 has *nothing* to say 
+about it. The GPLv2 makes that very clear indeed. It is just "mere 
+aggregation", and the fact that they  are in the same machine, on the same 
+harddisk, on the same flash rom, or on the same DVD doesn't bring them any 
+closer from a *copyright* angle.
+
+Copyright in general (and the GPLv2 in the specific) isn't about how 
+things are *physically* tied together. It's not even about how things 
+interconnect, and how "important" they are for each other. It is _purely_ 
+about whether they are derived works.
+
+So when the GPLv2 talks about "mere aggregation", it talks about it 
+specifically to say that it does not matter, and that the license _only_ 
+affects the actual derived work!
+
+This is why the BIOS, the hardware, the programs you run under Linux etc 
+etc are all totally irrelevant. The GPLv2 explicitly says that they are 
+irrelevant as far as that license is concerned.
+
+			Linus
