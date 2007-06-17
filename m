@@ -1,158 +1,394 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761401AbXFQUYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761472AbXFQU0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761401AbXFQUYN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 16:24:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760454AbXFQUX6
+	id S1761472AbXFQU0T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 16:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760454AbXFQU0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 16:23:58 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53656 "EHLO mx1.suse.de"
+	Sun, 17 Jun 2007 16:26:09 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53733 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758880AbXFQUX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 16:23:57 -0400
-Subject: [PATCH 0/3] ACPI autoloading
+	id S1755859AbXFQU0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 16:26:06 -0400
+Subject: [PATCH 1/3] ACPI autoloading - ACPICA adjustance
 From: Thomas Renninger <trenn@suse.de>
 Reply-To: trenn@suse.de
 To: Len Brown <lenb@kernel.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Kay Sievers <kasievers@suse.de>
-Content-Type: multipart/mixed; boundary="=-IISBTvarbZl6kMQOKne3"
-Date: Sun, 17 Jun 2007 22:22:04 +0200
-Message-Id: <1182111724.4204.0.camel@noname>
+       linux-acpi <linux-acpi@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="=-t9BybZ1tzay5RopewCmP"
+Date: Sun, 17 Jun 2007 22:24:14 +0200
+Message-Id: <1182111854.4204.4.camel@noname>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-IISBTvarbZl6kMQOKne3
+--=-t9BybZ1tzay5RopewCmP
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-This patch series enables ACPI modules to get loaded automatically via
-module aliases.
+Define standardized HIDs - Rename current acpi_device_id to __acpi_device_id
 
-Thanks to Kay I got help with the udev strings and this got already some
-testing and review.
+Signed-off-by: Thomas Renninger <trenn@suse.de>
 
-There are some minor problems left, but this should be mm ready and it
-would be great if you can add these to your acpi-test tree, Len (patches
-clean against 2.6.22-rc4, the last patch has some offset/fuzz against
-acpi-test, but should patch correctly without modifications).
+---
+ drivers/acpi/events/evrgnini.c    |    2 +-
+ drivers/acpi/namespace/nsxfeval.c |    2 +-
+ drivers/acpi/utilities/uteval.c   |    4 ++--
+ include/acpi/acpi_bus.h           |    5 +++--
+ include/acpi/acpi_drivers.h       |   33 +++++++++++++++++++++++++--------
+ include/acpi/actypes.h            |    6 +++---
+ include/acpi/acutils.h            |    4 ++--
+ 7 files changed, 37 insertions(+), 19 deletions(-)
 
-The known problems are:
+Index: linux-2.6.22-rc4/drivers/acpi/events/evrgnini.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/acpi/events/evrgnini.c
++++ linux-2.6.22-rc4/drivers/acpi/events/evrgnini.c
+@@ -377,7 +377,7 @@ static u8 acpi_ev_match_pci_root_bridge(
+ static u8 acpi_ev_is_pci_root_bridge(struct acpi_namespace_node *node)
+ {
+ 	acpi_status status;
+-	struct acpi_device_id hid;
++	struct __acpi_device_id hid;
+ 	struct acpi_compatible_id_list *cid;
+ 	acpi_native_uint i;
+ 
+Index: linux-2.6.22-rc4/drivers/acpi/utilities/uteval.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/acpi/utilities/uteval.c
++++ linux-2.6.22-rc4/drivers/acpi/utilities/uteval.c
+@@ -410,7 +410,7 @@ acpi_ut_copy_id_string(char *destination
+ 
+ acpi_status
+ acpi_ut_execute_HID(struct acpi_namespace_node *device_node,
+-		    struct acpi_device_id *hid)
++		    struct __acpi_device_id *hid)
+ {
+ 	union acpi_operand_object *obj_desc;
+ 	acpi_status status;
+@@ -612,7 +612,7 @@ acpi_ut_execute_CID(struct acpi_namespac
+ 
+ acpi_status
+ acpi_ut_execute_UID(struct acpi_namespace_node *device_node,
+-		    struct acpi_device_id *uid)
++		    struct __acpi_device_id *uid)
+ {
+ 	union acpi_operand_object *obj_desc;
+ 	acpi_status status;
+Index: linux-2.6.22-rc4/include/acpi/actypes.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/acpi/actypes.h
++++ linux-2.6.22-rc4/include/acpi/actypes.h
+@@ -809,7 +809,7 @@ acpi_status(*acpi_walk_callback) (acpi_h
+ 
+ /* Common string version of device HIDs and UIDs */
+ 
+-struct acpi_device_id {
++struct __acpi_device_id {
+ 	char value[ACPI_DEVICE_ID_LENGTH];
+ };
+ 
+@@ -859,8 +859,8 @@ struct acpi_device_info {
+ 	u32 valid;		/* Indicates which fields below are valid */
+ 	u32 current_status;	/* _STA value */
+ 	acpi_integer address;	/* _ADR value if any */
+-	struct acpi_device_id hardware_id;	/* _HID value if any */
+-	struct acpi_device_id unique_id;	/* _UID value if any */
++	struct __acpi_device_id hardware_id;	/* _HID value if any */
++	struct __acpi_device_id unique_id;	/* _UID value if any */
+ 	u8 highest_dstates[4];	/* _sx_d values: 0xFF indicates not valid */
+ 	struct acpi_compatible_id_list compatibility_id;	/* List of _CIDs if any */
+ };
+Index: linux-2.6.22-rc4/include/acpi/acutils.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/acpi/acutils.h
++++ linux-2.6.22-rc4/include/acpi/acutils.h
+@@ -354,7 +354,7 @@ acpi_ut_evaluate_numeric_object(char *ob
+ 
+ acpi_status
+ acpi_ut_execute_HID(struct acpi_namespace_node *device_node,
+-		    struct acpi_device_id *hid);
++		    struct __acpi_device_id *hid);
+ 
+ acpi_status
+ acpi_ut_execute_CID(struct acpi_namespace_node *device_node,
+@@ -366,7 +366,7 @@ acpi_ut_execute_STA(struct acpi_namespac
+ 
+ acpi_status
+ acpi_ut_execute_UID(struct acpi_namespace_node *device_node,
+-		    struct acpi_device_id *uid);
++		    struct __acpi_device_id *uid);
+ 
+ acpi_status
+ acpi_ut_execute_sxds(struct acpi_namespace_node *device_node, u8 * highest);
+Index: linux-2.6.22-rc4/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/acpi/acpi_bus.h
++++ linux-2.6.22-rc4/include/acpi/acpi_bus.h
+@@ -131,7 +131,7 @@ struct acpi_device_ops {
+ struct acpi_driver {
+ 	char name[80];
+ 	char class[80];
+-	char *ids;		/* Supported Hardware IDs */
++	const struct acpi_device_id *ids; /* Supported Hardware IDs */
+ 	struct acpi_device_ops ops;
+ 	struct device_driver drv;
+ 	struct module *owner;
+@@ -340,7 +340,8 @@ int acpi_bus_add(struct acpi_device **ch
+ int acpi_bus_trim(struct acpi_device *start, int rmdevice);
+ int acpi_bus_start(struct acpi_device *device);
+ acpi_status acpi_bus_get_ejd(acpi_handle handle, acpi_handle * ejd);
+-int acpi_match_ids(struct acpi_device *device, char *ids);
++int acpi_match_device_ids(struct acpi_device *device,
++			  const struct acpi_device_id *ids);
+ int acpi_create_dir(struct acpi_device *);
+ void acpi_remove_dir(struct acpi_device *);
+ 
+Index: linux-2.6.22-rc4/include/acpi/acpi_drivers.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/acpi/acpi_drivers.h
++++ linux-2.6.22-rc4/include/acpi/acpi_drivers.h
+@@ -34,16 +34,33 @@
+ #define ACPI_BUS_COMPONENT		0x00010000
+ #define ACPI_SYSTEM_COMPONENT		0x02000000
+ 
+-/* _HID definitions */
++/*
++  _HID definitions
++  HIDs starting with 'X' are self defined here and are used for devices where
++  a HID does not exist in spec.
++  HIDs must conform to (ACPI spec - 6.1.4):
+ 
+-#define ACPI_POWER_HID			"power_resource"
++  Numeric 32-bit compressed EISA type ID are not supported (never seen one as
++  an ACPI HID?)
++
++  A valid PNP ID must be of the form AAA#### where A is an uppercase letter
++  and # is a hex digit.
++  A valid ACPI ID must be of the form ACPI#### where # is a hex digit.
++
++  and our self-defined: XAAA#### where A is an uppercase letter and # is a hex
++  digit.
++
++*/
++
++#define ACPI_POWER_HID			"XPWR0001"
+ #define ACPI_PROCESSOR_HID		"ACPI0007"
+-#define ACPI_SYSTEM_HID			"acpi_system"
+-#define ACPI_THERMAL_HID		"thermal"
+-#define ACPI_BUTTON_HID_POWERF		"button_power"
+-#define ACPI_BUTTON_HID_SLEEPF		"button_sleep"
+-#define ACPI_VIDEO_HID			"video"
+-#define ACPI_BAY_HID			"bay"
++#define ACPI_SYSTEM_HID			"XSYS0001"
++#define ACPI_THERMAL_HID		"XTHM0001"
++#define ACPI_BUTTON_HID_POWERF		"XPBT0001"
++#define ACPI_BUTTON_HID_SLEEPF		"XSBT0001"
++#define ACPI_VIDEO_HID			"XVID0001"
++#define ACPI_BAY_HID			"XBAY0001"
++
+ /* --------------------------------------------------------------------------
+                                        PCI
+    -------------------------------------------------------------------------- */
+Index: linux-2.6.22-rc4/drivers/acpi/namespace/nsxfeval.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/acpi/namespace/nsxfeval.c
++++ linux-2.6.22-rc4/drivers/acpi/namespace/nsxfeval.c
+@@ -440,7 +440,7 @@ acpi_ns_get_device_callback(acpi_handle 
+ 	acpi_status status;
+ 	struct acpi_namespace_node *node;
+ 	u32 flags;
+-	struct acpi_device_id hid;
++	struct __acpi_device_id hid;
+ 	struct acpi_compatible_id_list *cid;
+ 	acpi_native_uint i;
+ 
 
 
-A) Cannot pass acpi_device_id through ops.add (probe equivalent func)
----------------------------------------------------------------------
-
-int acpi_match_device_ids(..)
-should be:
-const acpi_device_id *acpi_match_device_ids
-and the matching device id should get passed to the acpi driver's .add
-function.
-This would ease up the code in the ACPI driver a lot (e.g. see button.c,
-it is compared again which device (HID) has been found. Theoretically
-the drivers also needs to check CIDs...).
-
-The problem is that in scan.c ACPI driver is abstracted to use .match
-and .probe "struct bus_type" functions and I have no idea how the
-matching acpi_device_id should get passed or stored from
-acpi_match_device_ids (.match) to ops.add (invoked in .probe).
-Currently:
-        kernel_ulong_t driver_data;
-of acpi_device_id got added, but is not used at all atm.
-
-
-B) Thermal module always gets loaded
-------------------------------------
-
-This is because _TZ_ (scope?!?) always gets added, but is declared as a
-device or at least pops up as a thermal device.
-This is in drivers/acpi/utilities/utglobal.c:
-
-/*
- * Predefined ACPI Names (Built-in to the Interpreter)
- *
- * NOTES:
- * 1) _SB_ is defined to be a device to allow \_SB_._INI to be run
- *    during the initialization sequence.
- * 2) _TZ_ is defined to be a thermal zone in order to allow ASL code to
- *    perform a Notify() operation on it.
- */
-
-Any idea how to get rid of that is very welcome.
-Is this to be able to process buggy ASL code of this kind?:
-"Notify ("_TZ_", 0x80)"
-While _TZ_ is not a real device, but a scope operator and gets
-statically declared as a device here to solve such things?
-
-
-C) Renaming/Unifying of HID strings
------------------------------------
-
-This shouldn't be a problem. Consequence is that the new ACPI sysfs
-structure will show other names, but as it got introduced recently this
-shouldn't hurt anyone?
-
-For better readability we could map all HIDs to a device name through a
-HID <-> Device Name - enum and table. And then export "battery" again
-through /sys instead of "PNP0C0A".
-This was a bit mixed up. If, this should get implemented soon as the
-sysfs structure should not get altered that often...
-If wanted, I can send an on top patch later...
-
-D) Why renaming struct acpi_device_id to struct __acpi_device_id
-
-Not a problem, just for understanding why I have done this:
-struct acpi_device_id already exists in ACPICA. The module aliasing
-interface requires that struct "SUBSYSTEM"_device_id is used as name.
-This is not that obvious (include/linux/module.h):
-#define MODULE_GENERIC_TABLE(gtype,name) and
-#define MODULE_DEVICE_TABLE(type,name)
-
--------------------------
-
-
-For SUSE users who want to test this, you also need a minor change in
-userspace (AFAIK this additionally abstraction vanishes soon...
-hopefully), the change is attached. Theoretically ACPI modules should
-now get autoloaded via udev out of the box...
-
-Any comments, corrections, ideas, etc. very welcome.
-
-Thanks,
-
-     Thomas
-
---=-IISBTvarbZl6kMQOKne3
-Content-Disposition: attachment; filename=acpi_autoload_userspace_suse.patch
-Content-Type: text/x-patch; name=acpi_autoload_userspace_suse.patch; charset=UTF-8
+--=-t9BybZ1tzay5RopewCmP
+Content-Disposition: attachment; filename=acpica_rename_device_id.patch
+Content-Type: text/x-patch; name=acpica_rename_device_id.patch; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-Index: /etc/udev/rules.d/80-sysconfig.rules
-===================================================================
---- .orig/etc/udev/rules.d/80-sysconfig.rules
-+++ /etc/udev/rules.d/80-sysconfig.rules
-@@ -15,5 +15,6 @@ SUBSYSTEM=="pnp", ACTION=="add", RUN+="/
- SUBSYSTEM=="ide", ACTION=="add", RUN+="/sbin/hwup ide-devpath-%p -o hotplug"
- SUBSYSTEM=="input", KERNEL=="input[0-9]*", ACTION=="add", RUN+="/sbin/hwup input-devpath-%p -o hotplug"
- SUBSYSTEM=="platform", ACTION=="add", RUN+="/sbin/hwup platform-devpath-%p -o hotplug"
-+SUBSYSTEM=="acpi", ACTION=="add", RUN+="/sbin/hwup acpi-devpath-%p -o hotplug"
- 
- LABEL="sysconfig_end"
-Index: /sbin/hwup
-===================================================================
---- .orig/sbin/hwup
-+++ /sbin/hwup
-@@ -65,6 +65,7 @@ get_config_getcfg() {
- 
- is_known_subsystem() {
- 	case "$1" in
-+		acpi)             return 0 ;;
- 		ccw)              return 0 ;;
- 		ccwgroup)         return 0 ;;
- 		iucv)             return 0 ;;
+Define standardized HIDs - Rename current acpi_device_id to __acpi_device_id
 
---=-IISBTvarbZl6kMQOKne3--
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+
+---
+ drivers/acpi/events/evrgnini.c    |    2 +-
+ drivers/acpi/namespace/nsxfeval.c |    2 +-
+ drivers/acpi/utilities/uteval.c   |    4 ++--
+ include/acpi/acpi_bus.h           |    5 +++--
+ include/acpi/acpi_drivers.h       |   33 +++++++++++++++++++++++++--------
+ include/acpi/actypes.h            |    6 +++---
+ include/acpi/acutils.h            |    4 ++--
+ 7 files changed, 37 insertions(+), 19 deletions(-)
+
+Index: linux-2.6.22-rc4/drivers/acpi/events/evrgnini.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/acpi/events/evrgnini.c
++++ linux-2.6.22-rc4/drivers/acpi/events/evrgnini.c
+@@ -377,7 +377,7 @@ static u8 acpi_ev_match_pci_root_bridge(
+ static u8 acpi_ev_is_pci_root_bridge(struct acpi_namespace_node *node)
+ {
+ 	acpi_status status;
+-	struct acpi_device_id hid;
++	struct __acpi_device_id hid;
+ 	struct acpi_compatible_id_list *cid;
+ 	acpi_native_uint i;
+ 
+Index: linux-2.6.22-rc4/drivers/acpi/utilities/uteval.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/acpi/utilities/uteval.c
++++ linux-2.6.22-rc4/drivers/acpi/utilities/uteval.c
+@@ -410,7 +410,7 @@ acpi_ut_copy_id_string(char *destination
+ 
+ acpi_status
+ acpi_ut_execute_HID(struct acpi_namespace_node *device_node,
+-		    struct acpi_device_id *hid)
++		    struct __acpi_device_id *hid)
+ {
+ 	union acpi_operand_object *obj_desc;
+ 	acpi_status status;
+@@ -612,7 +612,7 @@ acpi_ut_execute_CID(struct acpi_namespac
+ 
+ acpi_status
+ acpi_ut_execute_UID(struct acpi_namespace_node *device_node,
+-		    struct acpi_device_id *uid)
++		    struct __acpi_device_id *uid)
+ {
+ 	union acpi_operand_object *obj_desc;
+ 	acpi_status status;
+Index: linux-2.6.22-rc4/include/acpi/actypes.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/acpi/actypes.h
++++ linux-2.6.22-rc4/include/acpi/actypes.h
+@@ -809,7 +809,7 @@ acpi_status(*acpi_walk_callback) (acpi_h
+ 
+ /* Common string version of device HIDs and UIDs */
+ 
+-struct acpi_device_id {
++struct __acpi_device_id {
+ 	char value[ACPI_DEVICE_ID_LENGTH];
+ };
+ 
+@@ -859,8 +859,8 @@ struct acpi_device_info {
+ 	u32 valid;		/* Indicates which fields below are valid */
+ 	u32 current_status;	/* _STA value */
+ 	acpi_integer address;	/* _ADR value if any */
+-	struct acpi_device_id hardware_id;	/* _HID value if any */
+-	struct acpi_device_id unique_id;	/* _UID value if any */
++	struct __acpi_device_id hardware_id;	/* _HID value if any */
++	struct __acpi_device_id unique_id;	/* _UID value if any */
+ 	u8 highest_dstates[4];	/* _sx_d values: 0xFF indicates not valid */
+ 	struct acpi_compatible_id_list compatibility_id;	/* List of _CIDs if any */
+ };
+Index: linux-2.6.22-rc4/include/acpi/acutils.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/acpi/acutils.h
++++ linux-2.6.22-rc4/include/acpi/acutils.h
+@@ -354,7 +354,7 @@ acpi_ut_evaluate_numeric_object(char *ob
+ 
+ acpi_status
+ acpi_ut_execute_HID(struct acpi_namespace_node *device_node,
+-		    struct acpi_device_id *hid);
++		    struct __acpi_device_id *hid);
+ 
+ acpi_status
+ acpi_ut_execute_CID(struct acpi_namespace_node *device_node,
+@@ -366,7 +366,7 @@ acpi_ut_execute_STA(struct acpi_namespac
+ 
+ acpi_status
+ acpi_ut_execute_UID(struct acpi_namespace_node *device_node,
+-		    struct acpi_device_id *uid);
++		    struct __acpi_device_id *uid);
+ 
+ acpi_status
+ acpi_ut_execute_sxds(struct acpi_namespace_node *device_node, u8 * highest);
+Index: linux-2.6.22-rc4/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/acpi/acpi_bus.h
++++ linux-2.6.22-rc4/include/acpi/acpi_bus.h
+@@ -131,7 +131,7 @@ struct acpi_device_ops {
+ struct acpi_driver {
+ 	char name[80];
+ 	char class[80];
+-	char *ids;		/* Supported Hardware IDs */
++	const struct acpi_device_id *ids; /* Supported Hardware IDs */
+ 	struct acpi_device_ops ops;
+ 	struct device_driver drv;
+ 	struct module *owner;
+@@ -340,7 +340,8 @@ int acpi_bus_add(struct acpi_device **ch
+ int acpi_bus_trim(struct acpi_device *start, int rmdevice);
+ int acpi_bus_start(struct acpi_device *device);
+ acpi_status acpi_bus_get_ejd(acpi_handle handle, acpi_handle * ejd);
+-int acpi_match_ids(struct acpi_device *device, char *ids);
++int acpi_match_device_ids(struct acpi_device *device,
++			  const struct acpi_device_id *ids);
+ int acpi_create_dir(struct acpi_device *);
+ void acpi_remove_dir(struct acpi_device *);
+ 
+Index: linux-2.6.22-rc4/include/acpi/acpi_drivers.h
+===================================================================
+--- linux-2.6.22-rc4.orig/include/acpi/acpi_drivers.h
++++ linux-2.6.22-rc4/include/acpi/acpi_drivers.h
+@@ -34,16 +34,33 @@
+ #define ACPI_BUS_COMPONENT		0x00010000
+ #define ACPI_SYSTEM_COMPONENT		0x02000000
+ 
+-/* _HID definitions */
++/*
++  _HID definitions
++  HIDs starting with 'X' are self defined here and are used for devices where
++  a HID does not exist in spec.
++  HIDs must conform to (ACPI spec - 6.1.4):
+ 
+-#define ACPI_POWER_HID			"power_resource"
++  Numeric 32-bit compressed EISA type ID are not supported (never seen one as
++  an ACPI HID?)
++
++  A valid PNP ID must be of the form AAA#### where A is an uppercase letter
++  and # is a hex digit.
++  A valid ACPI ID must be of the form ACPI#### where # is a hex digit.
++
++  and our self-defined: XAAA#### where A is an uppercase letter and # is a hex
++  digit.
++
++*/
++
++#define ACPI_POWER_HID			"XPWR0001"
+ #define ACPI_PROCESSOR_HID		"ACPI0007"
+-#define ACPI_SYSTEM_HID			"acpi_system"
+-#define ACPI_THERMAL_HID		"thermal"
+-#define ACPI_BUTTON_HID_POWERF		"button_power"
+-#define ACPI_BUTTON_HID_SLEEPF		"button_sleep"
+-#define ACPI_VIDEO_HID			"video"
+-#define ACPI_BAY_HID			"bay"
++#define ACPI_SYSTEM_HID			"XSYS0001"
++#define ACPI_THERMAL_HID		"XTHM0001"
++#define ACPI_BUTTON_HID_POWERF		"XPBT0001"
++#define ACPI_BUTTON_HID_SLEEPF		"XSBT0001"
++#define ACPI_VIDEO_HID			"XVID0001"
++#define ACPI_BAY_HID			"XBAY0001"
++
+ /* --------------------------------------------------------------------------
+                                        PCI
+    -------------------------------------------------------------------------- */
+Index: linux-2.6.22-rc4/drivers/acpi/namespace/nsxfeval.c
+===================================================================
+--- linux-2.6.22-rc4.orig/drivers/acpi/namespace/nsxfeval.c
++++ linux-2.6.22-rc4/drivers/acpi/namespace/nsxfeval.c
+@@ -440,7 +440,7 @@ acpi_ns_get_device_callback(acpi_handle 
+ 	acpi_status status;
+ 	struct acpi_namespace_node *node;
+ 	u32 flags;
+-	struct acpi_device_id hid;
++	struct __acpi_device_id hid;
+ 	struct acpi_compatible_id_list *cid;
+ 	acpi_native_uint i;
+ 
+
+--=-t9BybZ1tzay5RopewCmP--
 
