@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbXFQERn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759237AbXFQEUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758878AbXFQERn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 00:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbXFQERe
+	id S1759237AbXFQEUZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 00:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXFQEUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 00:17:34 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:54192 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750803AbXFQERd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 00:17:33 -0400
-Date: Sat, 16 Jun 2007 22:29:04 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: [PATCH] Add missing DATA_DATA to powerpc
-Message-ID: <20070617022904.GB6832@Krystal>
-References: <20070615202959.316963297@polymtl.ca> <20070615203550.044690775@polymtl.ca> <20070615215534.GB11267@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Sun, 17 Jun 2007 00:20:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35031 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011AbXFQEUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 00:20:14 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616233251.GA17270@brong.net>
+	<ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706162310.24726.dhazelton@enter.net>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Sun, 17 Jun 2007 01:19:49 -0300
+In-Reply-To: <200706162310.24726.dhazelton@enter.net> (Daniel Hazelton's message of "Sat\, 16 Jun 2007 23\:10\:24 -0400")
+Message-ID: <orejkbkyai.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070615215534.GB11267@uranus.ravnborg.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:28:27 up 19 days, 11:07,  3 users,  load average: 0.00, 0.09, 0.22
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sam Ravnborg (sam@ravnborg.org) wrote:
-> From your patch it looks like I originally missed out
-> powerpc + xtensa when introducing DATA_DATA - would be nice if
-> you could fix that.
-> 
-> 	Sam
+On Jun 17, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
 
-Add missing DATA_DATA in powerpc
+> On Saturday 16 June 2007 21:54:56 Alexandre Oliva wrote:
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
---
- arch/powerpc/kernel/vmlinux.lds.S |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+>> There may be laws that require certification or limitations on the
+>> user.  Manufacturer giving up the ability to make modifications would
+>> address this, or *perhaps* arranging for user and manufacturer to each
+>> hold half of the key needed to run a modification (which might comply
+>> with the GPLv3dd4 terms, IANAL).
 
-Index: linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/vmlinux.lds.S	2007-06-16 22:17:53.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S	2007-06-16 22:18:32.000000000 -0400
-@@ -173,7 +173,9 @@
- 	}
- #else
- 	.data : {
--		*(.data .data.rel* .toc1)
-+		DATA_DATA
-+		*(.data.rel*)
-+		*(.toc1)
- 		*(.branch_lt)
- 	}
+> It doesn't. The GPLv3 (dd4) makes that very clear. See the quote below.
+
+You left out the relevant bit:
+
+  this requirement does not apply if neither you nor any third party
+  retains the ability to install modified object code on the User
+  Product (for example, the work has been installed in ROM).
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
