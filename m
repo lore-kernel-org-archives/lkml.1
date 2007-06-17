@@ -1,116 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbXFQIQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbXFQISr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758209AbXFQIQA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 04:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbXFQIPm
+	id S1758647AbXFQISr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 04:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbXFQISe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 04:15:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41462 "EHLO mx2.mail.elte.hu"
+	Sun, 17 Jun 2007 04:18:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40845 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753681AbXFQIPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 04:15:40 -0400
-Date: Sun, 17 Jun 2007 10:15:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Friesen <cfriesen@nortel.com>,
+	id S1754806AbXFQISc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 04:18:32 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070617081521.GC6267@elte.hu>
-References: <466A3EC6.6030706@netone.net.tr> <200706150308.20148.dhazelton@enter.net> <or1wgd102n.fsf@oliva.athome.lsd.ic.unicamp.br> <200706151715.55218.dhazelton@enter.net> <orfy4sx577.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615215734.GB16371@elte.hu> <orabv0x1gh.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <466A3EC6.6030706@netone.net.tr>
+	<20070614122031.4751a52b@the-village.bc.nu>
+	<20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
+	<20070615120926.GD6269@elte.hu>
+	<orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615214804.GC4996@elte.hu>
+	<or3b0svjc5.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617073820.GA6267@elte.hu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Sun, 17 Jun 2007 05:17:57 -0300
+In-Reply-To: <20070617073820.GA6267@elte.hu> (Ingo Molnar's message of "Sun\, 17 Jun 2007 09\:38\:20 +0200")
+Message-ID: <ory7ijhu4q.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <orabv0x1gh.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 17, 2007, Ingo Molnar <mingo@elte.hu> wrote:
 
-* Alexandre Oliva <aoliva@redhat.com> wrote:
+> * Alexandre Oliva <aoliva@redhat.com> wrote:
 
-> On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > * Alexandre Oliva <aoliva@redhat.com> wrote:
-> >
-> > > On Jun 15, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+>> On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+>> 
+>> >>> it irreversibly cuts off certain people from being to distribute
+>> >>> GPLv3-ed software alongside with certain types of hardware that 
+>> >>> the FSF's president does not like.
+>> >>>
+>> >> That's not true.  They can just as well throw the key away and 
+>> >> refrain from modifying the installed software behind the users' 
+>> >> back.
+>> 
+>> > uhm, so you claim that my argument is false, and your proof for that 
+>> > is a "non-upgradeable Tivo"?? <sarcasm> That is a _great_ idea. Not 
+>> > being able to patch security holes. Not being able to fix bugs. Not 
+>> > being able to add new features. Makes complete sense.
+>> 
+>> Oh, so you think patching security holes, fixing bugs and adding new 
+>> features are good ideas?  What if you can't do it in your TiVo?
 
-> >> >> >> It is also clear, thanks to language directly in the GPLv2 
-> >> >> >> itself, that there is no "intent" of the license to cover 
-> >> >> >> that situation.
-> 
-> >> >> You're again confusing legal terms with the intent.  The legal 
-> >> >> terms provide an indication of the intent, but the preamble, along 
-> >> >> with the free software definition it alludes to, do an even better 
-> >> >> job at that.
-> 
-> >> > And the preamble, not being part of the active portion of the 
-> >> > license, has absolutely *ZERO* bearing. Just as it is not the 
-> >> > *intent* of RMS, the FSF or *ANY* person (or legal entity) that had 
-> >> > a hand in crafting the GPLv2 or GPLv3 which is looked at when 
-> >> > determining the "intent" of the license. It is the intent of the 
-> >> > person and/or "legal entity" that has placed their work under said 
-> >> > license.
-> 
-> >> No disagreement.  You keep forgetting that I'm not here to say what 
-> >> Linux licensing means or doesn't mean.
-> 
-> > it is _you_ forgetting to read what you wrote just 1 mail ago above. 
-> > _Read_ it:
-> 
-> >   "The legal terms provide an indication of the intent, but the 
-> >    preamble, along with the free software definition it alludes to, do 
-> >    an even better job at that.".
+> this has to be one of the most bizarre arguments i've read in this 
+> thread as of date. Are you seriously questioning the notion that it's a 
+> good and legitimate idea for a hardware vendor to make the system 
+> fixable, patchable and upgradable?
 
-[...]
+No.  I'm questioning why the vendor could keep this privilege to
+itself.
 
-> Now, the spirit of the GPL, the intent behind its design, is something 
-> that may be entirely different.  And when I say that GPLv3 didn't 
-> change the spirit of the GPL, I'm saying that from the perspective of 
-> someone who understands very deeply the philosphy and motivations 
-> behind it.
+> Are you seriously suggesting that for a hardware vendor to be able
+> to offer such a solution, if they are under the unescapable
+> restriction of content providers that the system itself must be
+> tamper-proof, it should not be able to use a GPL-ed kernel at all?
 
-why do you start babbling about the GPLv3 when the false statement you 
-made was about the GPLv2 - as visible _very_ clearly in the first quote 
-above??  Again, as a reminder, this point was presented to you (see the 
-quotes above), in the discussion about whether the Tivo is fine by the 
-GPLv2 or not:
+No, and I've already explained how I believe this can be accomplished
+with the wording in the GPLv3dd4, although IANAL to tell whether
+that's correct.
 
-' It is also clear, thanks to language directly in the GPLv2
-  itself, that there is no "intent" of the license to cover that
-  situation. '
+Just make the tivoization machinery require two keys: one that the
+vendor keeps, one that the vendor gives to the user (maybe without
+ever knowing it).  Neither one can install modifications alone, but
+the user can approve modifications by the vendor, and the vendor can
+approve modifications by the user.  This is still not ideal, but it at
+least doesn't permit the vendor to remove features from under the
+user.
 
-to which you replied with this falsehood:
+> Because that is what your arguments lead to, and that is what the 
+> GPLv3 implements.
 
-' You're again confusing legal terms with the intent.  The legal
-  terms provide an indication of the intent, but the preamble, 
-  along with the free software definition it alludes to, do an even 
-  better job at that. '
+You haven't really read that bit of dd3 or dd4, have you?
 
-and you have simply been pointed out that what you say is trivially 
-false - the simple legal fact is that the GPLv2 does not "embedd" more 
-than what is its letter and, to the lesser extent that letter may be 
-ambigious, what Linus' (and other copyright holders') intent is and was. 
-Not RMS's external intentions or the "free software definition" you 
-mention.
+Or the various portions of this thread in which I showed your
+assumptions are utterly broken?
 
-how about just simply admitting that you were wrong about this, instead 
-of putting up (and beating down) yet another non-sequitor strawman 
-argument? Is that really that hard and embarrasing to do? I've yet to 
-see a _single_ instance of you admitting in this thread that "oops, it 
-seems i was really wrong about this point. Sorry.". Or are you one of 
-those perfect humans who are never wrong? ;-)
+> RMS _does not want the Tivo to use a GPLv3 kernel_,
 
-	Ingo
+I know you're not stupid, but I can't tell whether you're malicious or
+just misinformed.
+
+RMS does not want TiVo (or anyone else) to disrespect users' freedoms,
+and installing technical measures to prevent users from adapting the
+software to suit their needs and running their modifications is
+disrespecting users freedoms.
+
+That he is not opposed to the idea of TiVo using a GPLv3 kernel is
+easy to see, if you take the time to read the draft instead of
+spreading false assumptions about it:
+
+  this requirement does not apply if neither you nor any third party
+  retains the ability to install modified object code on the User
+  Product
+
+> Hint: it's not some friendly suggestion of cooperation and working
+> together ;)
+
+Hey, wouldn't this be just tit-for-tat? ;-)
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
