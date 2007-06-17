@@ -1,176 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760564AbXFQSUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760453AbXFQSXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760564AbXFQSUb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 14:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXFQSUX
+	id S1760453AbXFQSXK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 14:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXFQSW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 14:20:23 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59141
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757165AbXFQSUW (ORCPT
+	Sun, 17 Jun 2007 14:22:58 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:28921 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755936AbXFQSW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 14:20:22 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: QEMU's scsi controller no longer works on arm.
-Date: Sun, 17 Jun 2007 14:20:30 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-arm-kernel@lists.arm.linux.org.uk
+	Sun, 17 Jun 2007 14:22:57 -0400
+Date: Sun, 17 Jun 2007 20:22:54 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: 2.6.22-rc5 regression
+Message-ID: <20070617182254.GA17595@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_utXdG25Aj1y2Kvq"
-Message-Id: <200706171420.31003.rob@landley.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_utXdG25Aj1y2Kvq
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+I cheered too soon ... I just tested 2.6.22-rc5 and it hangs
+again at the same point, right after printing:
 
-In 2.6.20, I can boot an arm kernel up to a shell prompt including a virtual 
-scsi hard drive.  In 2.6.21-rc1, this stopped working.
+agpgart: Detected an Intel 965G Chipset.
 
-I tried "git bisect" and found out there's a range of about 5000 commits 
-between the two where arm doesn't compile.  At the start of this range, the 
-controller worked.  At the end, it didn't anymore.
+So far I tested:
 
-How can YOU reproduce this problem?  I'm glad you asked:
+188e1f81ba31af1b65a2f3611df4c670b092bbac        BAD     2007-06-17 04:09:12     v2.6.22-rc5
+99f9f3d49cbc7d944476f6fde53a77ec789ab2aa        GOOD    2007-06-12 00:46:08     Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband
+3334500b460a5eede2e3466ca97a90fe3b91ceb5        GOOD    2007-06-11 20:39:05     Merge master.kernel.org:/pub/scm/linux/kernel/git/davej/agpgart
+df80b148869291621ddf51eb8716658d5bfba811        GOOD    2007-05-31 05:51:21     [AGPGART] intel_agp: add support for 945GME
+9614ece14f23f2ce54a076c471aec9c91e51e79c        GOOD    2007-05-30 03:45:58     [AGPGART] intel_agp: use table for device probe
+c4ca881796b7e14120851ddf6e04845ef94a314a        BAD     2007-05-30 03:40:46     [AGPGART] intel_agp: cleanup intel private data
+e141d999b682cda9907179e3b843acb64c34a1d8        BAD     2007-06-10 07:26:20
+b44c0267b7571b449e05f390349c4e4d080f0f4c        BAD     2007-06-11 20:32:28     Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb
+bb3d2dd72302ea3eefcc6738cdd39ed5864b62f8        BAD     2007-06-11 20:31:43     Merge master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6
+1a539a87280b3032fd12bc93a4a82f1d8aa97ca8        BAD     2007-06-08 22:46:58
+5ecd3100e695228ac5e0ce0e325e252c0f11806f        BAD     2007-06-05 02:57:25     v2.6.22-rc4
+c420bc9f09a0926b708c3edb27eacba434a4f4ba        BAD     2007-05-26 04:55:14     v2.6.22-rc3
+55b637c6a003a8c4850b41a2c2fd6942d8a7f530        BAD     2007-05-19 06:06:17     v2.6.22-rc2
+...                                             ...
+                                                BAD                             v2.6.19-rc1
+                                                GOOD                            v2.6.18
 
-The miniconfig I'm using is attached.  You'll need an arm compiler to build 
-it, of course.  (If you haven't got one, the cross compiler I made is 
-at "http://landley.net/code/firmware/downloads/cross-compiler/".  Download 
-the armv4l version for the appropriate host, extract the tarball and add 
-the "bin" directory under that to your path.  The x86 version should work on 
-Ubuntu 6.06 or newer, the x86-64 version was built on 7.04.)
+I am now doing a bisect between 99f9f3d49cbc7d944476f6fde53a77ec789ab2aa
+and 188e1f81ba31af1b65a2f3611df4c670b092bbac.
 
-Configure with:
+The hardware that I'm using is:
 
-make ARCH=arm allnoconfig KCONFIG_ALLCONFIG=miniconfig-linux
-make ARCH=arm CROSS_COMPILE=armv4l-
+An ASUS P5B Deluxe motherboard with an Intel Core 2 Quad QX6700 2.66 GHz,
+4 GB of low latency DIMMs (two times KHX6400D2LLK2/2GN - two DIMM's each, 4 DIMM's
+in total, which are CL4-4-4). Asus EN8600 GTS 256MB.
 
-And then run qemu on it:
-
-qemu-system-arm -M versatilepb -nographic -no-reboot \
-  -hda /dev/null -kernel zImage-armv4l -append \
-  'rw panic=1 root=/dev/sdaconsole=ttyAMA0'
-
-The failing system will loop resetting the scsi controller with lots of 
-timeouts, and takes several minutes to get the the panic where it can't mount 
-root.  The working system will panic due to root being /dev/null fairly 
-quickly, without pages of error messages and a very long wait first.
-
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
-
---Boundary-00=_utXdG25Aj1y2Kvq
-Content-Type: text/plain;
-  charset="utf-8";
-  name="miniconfig-linux"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="miniconfig-linux"
-
-CONFIG_EXPERIMENTAL=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_IKCONFIG=y
-CONFIG_IKCONFIG_PROC=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_KALLSYMS_EXTRA_PASS=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_AS=y
-CONFIG_ARCH_VERSATILE_PB=y
-CONFIG_MACH_VERSATILE_AB=y
-CONFIG_CPU_ARM926T=y
-CONFIG_ARM_THUMB=y
-CONFIG_PCI=y
-CONFIG_CMDLINE="mem=128M console=ttyAMA0 user_debug=31"
-CONFIG_FPE_NWFPE=y
-CONFIG_BINFMT_ELF=y
-CONFIG_BINFMT_MISC=y
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_NET_KEY=y
-CONFIG_INET=y
-CONFIG_IP_PNP=y
-CONFIG_IP_PNP_DHCP=y
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=y
-CONFIG_BRIDGE=y
-CONFIG_VLAN_8021Q=y
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_BLK_DEV_CRYPTOLOOP=y
-CONFIG_BLK_DEV_NBD=y
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_SIZE=16384
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_SCSI=y
-CONFIG_SCSI_PROC_FS=y
-CONFIG_BLK_DEV_SD=y
-CONFIG_BLK_DEV_SR=y
-CONFIG_SCSI_MULTI_LUN=y
-CONFIG_SCSI_FC_ATTRS=y
-CONFIG_SCSI_ISCSI_ATTRS=y
-CONFIG_SCSI_SAS_LIBSAS=y
-CONFIG_SCSI_SAS_LIBSAS_DEBUG=y
-CONFIG_SCSI_SYM53C8XX_2=y
-CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
-CONFIG_SCSI_SYM53C8XX_MMIO=y
-CONFIG_NETDEVICES=y
-CONFIG_DUMMY=y
-CONFIG_TUN=y
-CONFIG_PPP=y
-CONFIG_PPP_MULTILINK=y
-CONFIG_PPP_FILTER=y
-CONFIG_PPP_ASYNC=y
-CONFIG_PPP_SYNC_TTY=y
-CONFIG_PPP_DEFLATE=y
-CONFIG_PPPOE=y
-CONFIG_SERIAL_NONSTANDARD=y
-CONFIG_N_HDLC=y
-CONFIG_SERIAL_AMBA_PL011=y
-CONFIG_SERIAL_AMBA_PL011_CONSOLE=y
-CONFIG_HW_RANDOM=y
-CONFIG_FIRMWARE_EDID=y
-CONFIG_EXT2_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_ROMFS_FS=y
-CONFIG_TMPFS=y
-CONFIG_CRAMFS=y
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-CONFIG_NFS_V4=y
-CONFIG_NFS_DIRECTIO=y
-CONFIG_SMB_FS=y
-CONFIG_NLS_DEFAULT="utf8"
-CONFIG_NLS_UTF8=y
-CONFIG_ENABLE_MUST_CHECK=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_LOG_BUF_SHIFT=17
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-CONFIG_DEBUG_INFO=y
-CONFIG_FORCED_INLINING=y
-CONFIG_DEBUG_USER=y
-CONFIG_DEBUG_ERRORS=y
-CONFIG_DEBUG_LL=y
-CONFIG_CRYPTO_CRC32C=y
-
---Boundary-00=_utXdG25Aj1y2Kvq--
+Carlo Wood <carlo@alinoe.com>
