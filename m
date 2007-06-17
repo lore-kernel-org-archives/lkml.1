@@ -1,124 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbXFQROO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbXFQROh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbXFQROO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 13:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXFQROF
+	id S1755173AbXFQROh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 13:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbXFQROH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 13:14:05 -0400
-Received: from mail.tmr.com ([64.65.253.246]:35436 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbXFQROC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 13:14:02 -0400
-Message-ID: <46756BE2.7010401@tmr.com>
-Date: Sun, 17 Jun 2007 13:14:10 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sun, 17 Jun 2007 13:14:07 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:64413 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754121AbXFQROE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 13:14:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=YFYTG371886NSSbdelvK72lGosuIw6YvEZ7RIjYNmX7jH2UZcMMdiDOG2fefZvMZfA89pK9LRplKN2B1eLf+kkWMtQZWg8SdT63kFZd+PF4oLBQYSodsUzCiDuRN4i2L0ygehJC8yrfVR5HzM95ksD8PbmPuPzZGBeoZZCv1APk=
+Message-ID: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
+Date: Sun, 17 Jun 2007 19:14:03 +0200
+From: "Gabor Czigola" <czigola@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: david@lang.hm, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>	<18034.479.256870.600360@notabene.brown>	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown>
-In-Reply-To: <18034.3676.477575.490448@notabene.brown>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Thursday June 14, david@lang.hm wrote:
->   
->> On Fri, 15 Jun 2007, Neil Brown wrote:
->>
->>     
->>> On Thursday June 14, david@lang.hm wrote:
->>>       
->>>> what is the limit for the number of devices that can be in a single array?
->>>>
->>>> I'm trying to build a 45x750G array and want to experiment with the
->>>> different configurations. I'm trying to start with raid6, but mdadm is
->>>> complaining about an invalid number of drives
->>>>
->>>> David Lang
->>>>         
->>> "man mdadm"  search for "limits".  (forgive typos).
->>>       
->> thanks.
->>
->> why does it still default to the old format after so many new versions? 
->> (by the way, the documetnation said 28 devices, but I couldn't get it to 
->> accept more then 27)
->>     
->
-> Dunno - maybe I can't count...
->
->   
->> it's now churning away 'rebuilding' the brand new array.
->>
->> a few questions/thoughts.
->>
->> why does it need to do a rebuild when makeing a new array? couldn't it 
->> just zero all the drives instead? (or better still just record most of the 
->> space as 'unused' and initialize it as it starts useing it?)
->>     
->
-> Yes, it could zero all the drives first.  But that would take the same
-> length of time (unless p/q generation was very very slow), and you
-> wouldn't be able to start writing data until it had finished.
-> You can "dd" /dev/zero onto all drives and then create the array with
-> --assume-clean if you want to.  You could even write a shell script to
-> do it for you.
->
-> Yes, you could record which space is used vs unused, but I really
-> don't think the complexity is worth it.
->
->   
-How about a simple solution which would get an array on line and still 
-be safe? All it would take is a flag which forced reconstruct writes for 
-RAID-5. You could set it with an option, or automatically if someone 
-puts --assume-clean with --create, leave it in the superblock until the 
-first "repair" runs to completion. And for repair you could make some 
-assumptions about bad parity not being caused by error but just unwritten.
+Hello!
 
-Thought 2: I think the unwritten bit is easier than you think, you only 
-need it on parity blocks for RAID5, not on data blocks. When a write is 
-done, if the bit is set do a reconstruct, write the parity block, and 
-clear the bit. Keeping a bit per data block is madness, and appears to 
-be unnecessary as well.
->> while I consider zfs to be ~80% hype, one advantage it could have (but I 
->> don't know if it has) is that since the filesystem an raid are integrated 
->> into one layer they can optimize the case where files are being written 
->> onto unallocated space and instead of reading blocks from disk to 
->> calculate the parity they could just put zeros in the unallocated space, 
->> potentially speeding up the system by reducing the amount of disk I/O.
->>     
->
-> Certainly.  But the raid doesn't need to be tightly integrated
-> into the filesystem to achieve this.  The filesystem need only know
-> the geometry of the RAID and when it comes to write, it tries to write
-> full stripes at a time.  If that means writing some extra blocks full
-> of zeros, it can try to do that.  This would require a little bit
-> better communication between filesystem and raid, but not much.  If
-> anyone has a filesystem that they want to be able to talk to raid
-> better, they need only ask...
->  
->   
->> is there any way that linux would be able to do this sort of thing? or is 
->> it impossible due to the layering preventing the nessasary knowledge from 
->> being in the right place?
->>     
->
-> Linux can do anything we want it to.  Interfaces can be changed.  All
-> it takes is a fairly well defined requirement, and the will to make it
-> happen (and some technical expertise, and lots of time .... and
-> coffee?).
->   
-Well, I gave you two thoughts, one which would be slow until a repair 
-but sounds easy to do, and one which is slightly harder but works better 
-and minimizes performance impact.
+I didn't follow the whole thread from the beginning, but I see that
+there are pros and cons for both versions of GPL.
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+I wonder why the linux kernel development community couldn't propose
+an own GPL draft (say v2.2) that is "as free as v2" and that includes
+some ideas (from v3) that are considered as good (free, innovative, in
+the spirit of whatever etc.) by the majority of the kernel developers.
 
+I guess to have an own version of the GPL license could also help to
+resolve (future) dual-licensing problems.
+
+Gabor Czigola
