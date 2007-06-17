@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760099AbXFQJ7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762142AbXFQJ7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760099AbXFQJ7X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 05:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758010AbXFQJpf
+	id S1762142AbXFQJ7i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 05:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759724AbXFQJph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 05:45:35 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55190 "EHLO il.qumranet.com"
+	Sun, 17 Jun 2007 05:45:37 -0400
+Received: from il.qumranet.com ([82.166.9.18]:55188 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759475AbXFQJov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 05:44:51 -0400
+	id S1759451AbXFQJou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 05:44:50 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 58/58] KVM: VMX: Ensure vcpu time stamp counter is monotonous
-Date: Sun, 17 Jun 2007 12:44:39 +0300
-Message-Id: <1182073482118-git-send-email-avi@qumranet.com>
+Subject: [PATCH 52/58] KVM: Emulate hlt on real mode for Intel
+Date: Sun, 17 Jun 2007 12:44:33 +0300
+Message-Id: <11820734811851-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.6
 In-Reply-To: <1182073479890-git-send-email-avi@qumranet.com>
 References: <1182073479890-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the time stamp counter goes backwards, a guest delay loop can become
-infinite.  This can happen if a vcpu is migrated to another cpu, where
-the counter has a lower value than the first cpu.
-
-Since we're doing an IPI to the first cpu anyway, we can use that to pick
-up the old tsc, and use that to calculate the adjustment we need to make
-to the tsc offset.
+This has two use cases: the bios can't boot from disk, and guest smp
+bootstrap.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/vmx.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ drivers/kvm/kvm.h         |    1 +
+ drivers/kvm/vmx.c         |    7 ++++++-
+ drivers/kvm/x86_emulate.c |    6 +++++-
+ 3 files changed, 12 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index ac358b8..d49b16c 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -347,6 +347,7 @@ struct kvm_vcpu {
+ 			u32 ar;
+ 		} tr, es, ds, fs, gs;
+ 	} rmode;
++	int halt_request; /* real mode on Intel only */
+ 
+ 	int cpuid_nent;
+ 	struct kvm_cpuid_entry cpuid_entries[KVM_MAX_CPUID_ENTRIES];
 diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index 0b2aace..d06c362 100644
+index 90abd3c..a1f51b9 100644
 --- a/drivers/kvm/vmx.c
 +++ b/drivers/kvm/vmx.c
-@@ -160,6 +160,7 @@ static void __vcpu_clear(void *arg)
- 		vmcs_clear(vcpu->vmcs);
- 	if (per_cpu(current_vmcs, cpu) == vcpu->vmcs)
- 		per_cpu(current_vmcs, cpu) = NULL;
-+	rdtscll(vcpu->host_tsc);
- }
+@@ -1608,8 +1608,13 @@ static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
  
- static void vcpu_clear(struct kvm_vcpu *vcpu)
-@@ -376,6 +377,7 @@ static void vmx_vcpu_load(struct kvm_vcpu *vcpu)
- {
- 	u64 phys_addr = __pa(vcpu->vmcs);
- 	int cpu;
-+	u64 tsc_this, delta;
+ 	if (vcpu->rmode.active &&
+ 	    handle_rmode_exception(vcpu, intr_info & INTR_INFO_VECTOR_MASK,
+-								error_code))
++								error_code)) {
++		if (vcpu->halt_request) {
++			vcpu->halt_request = 0;
++			return kvm_emulate_halt(vcpu);
++		}
+ 		return 1;
++	}
  
- 	cpu = get_cpu();
- 
-@@ -409,6 +411,13 @@ static void vmx_vcpu_load(struct kvm_vcpu *vcpu)
- 
- 		rdmsrl(MSR_IA32_SYSENTER_ESP, sysenter_esp);
- 		vmcs_writel(HOST_IA32_SYSENTER_ESP, sysenter_esp); /* 22.2.3 */
-+
-+		/*
-+		 * Make sure the time stamp counter is monotonous.
-+		 */
-+		rdtscll(tsc_this);
-+		delta = vcpu->host_tsc - tsc_this;
-+		vmcs_write64(TSC_OFFSET, vmcs_read64(TSC_OFFSET) + delta);
+ 	if ((intr_info & (INTR_INFO_INTR_TYPE_MASK | INTR_INFO_VECTOR_MASK)) == (INTR_TYPE_EXCEPTION | 1)) {
+ 		kvm_run->exit_reason = KVM_EXIT_DEBUG;
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index 6123c02..a4a8481 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -143,7 +143,8 @@ static u8 opcode_table[256] = {
+ 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+ 	/* 0xF0 - 0xF7 */
+ 	0, 0, 0, 0,
+-	0, 0, ByteOp | DstMem | SrcNone | ModRM, DstMem | SrcNone | ModRM,
++	ImplicitOps, 0,
++	ByteOp | DstMem | SrcNone | ModRM, DstMem | SrcNone | ModRM,
+ 	/* 0xF8 - 0xFF */
+ 	0, 0, 0, 0,
+ 	0, 0, ByteOp | DstMem | SrcNone | ModRM, DstMem | SrcNone | ModRM
+@@ -1149,6 +1150,9 @@ special_insn:
+ 	case 0xae ... 0xaf:	/* scas */
+ 		DPRINTF("Urk! I don't handle SCAS.\n");
+ 		goto cannot_emulate;
++	case 0xf4:              /* hlt */
++		ctxt->vcpu->halt_request = 1;
++		goto done;
  	}
- }
+ 	goto writeback;
  
 -- 
 1.5.0.6
