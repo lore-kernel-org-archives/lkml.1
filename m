@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbXFQRYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbXFQR2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757638AbXFQRYg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 13:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbXFQRY2
+	id S1757759AbXFQR2T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 13:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXFQR2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 13:24:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33865 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754005AbXFQRY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 13:24:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: How to improve the quality of the kernel?
-Date: Sun, 17 Jun 2007 19:31:01 +0200
-User-Agent: KMail/1.9.5
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com> <20070617142950.GW3588@stusta.de>
-In-Reply-To: <20070617142950.GW3588@stusta.de>
+	Sun, 17 Jun 2007 13:28:07 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:41403 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754309AbXFQR2F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 13:28:05 -0400
+Date: Sun, 17 Jun 2007 10:28:02 -0700 (PDT)
+From: dean gaudet <dean@arctic.org>
+To: Wakko Warner <wakko@animx.eu.org>
+cc: Neil Brown <neilb@suse.de>, david@lang.hm, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <20070617132809.GB7806@animx.eu.org>
+Message-ID: <Pine.LNX.4.64.0706171019490.24938@twinlark.arctic.org>
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+ <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+ <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org>
+ <18035.23867.576212.859440@notabene.brown> <20070616140857.GA4206@animx.eu.org>
+ <Pine.LNX.4.64.0706161845180.24938@twinlark.arctic.org> <20070617132809.GB7806@animx.eu.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706171931.02572.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 June 2007 16:29, Adrian Bunk wrote:
-> On Sun, Jun 17, 2007 at 03:17:58PM +0200, Michal Piotrowski wrote:
-> > On 17/06/07, Adrian Bunk <bunk@stusta.de> wrote:
-> >...
-> >> Fine with me, but:
-> >>
-> >> There are not so simple cases like big infrastructure patches with
-> >> 20 other patches in the tree depending on it causing a regression, or
-> >> even worse, a big infrastructure patch exposing a latent old bug in some
-> >> completely different area of the kernel.
-> >
-> > It is different case.
-> >
-> > "If the patch introduces a new regression"
-> >
-> > introduces != exposes an old bug
-> 
-> My remark was meant as a note "this sentence can't handle all 
-> regressions" (and for a user it doesn't matter whether a new 
-> regression is introduced or an old regression exposed).
-> 
-> It could be we simply agree on this one.  ;-)
-> 
-> > Removal of 20 patches will be painful, but sometimes you need to
-> > "choose minor evil to prevent a greater one" [1].
+On Sun, 17 Jun 2007, Wakko Warner wrote:
+
+> dean gaudet wrote:
+> > On Sat, 16 Jun 2007, Wakko Warner wrote:
 > > 
-> >> And we should be aware that reverting is only a workaround for the real
-> >> problem which lies in our bug handling.
-> >...
+> > > When I've had an unclean shutdown on one of my systems (10x 50gb raid5) it's
+> > > always slowed the system down when booting up.  Quite significantly I must
+> > > say.  I wait until I can login and change the rebuild max speed to slow it
+> > > down while I'm using it.   But that is another thing.
+> > 
+> > i use an external write-intent bitmap on a raid1 to avoid this... you 
+> > could use internal bitmap but that slows down i/o too much for my tastes.  
+> > i also use an external xfs journal for the same reason.  2 disk raid1 for 
+> > root/journal/bitmap, N disk raid5 for bulk storage.  no spindles in 
+> > common.
 > 
-> And this is something I want to emphasize again.
-> 
-> How can we make any progress with the real problem and not only the 
-> symptoms?
+> I must remember this if I have to rebuild the array.  Although I'm
+> considering moving to a hardware raid solution when I upgrade my storage.
 
-I think that we can handle bug reports like we handle modifications of code.
+you can do it without a rebuild -- that's in fact how i did it the first 
+time.
 
-Namely, for each subsystem there can be a person (or a team) responsible
-for handling bugs, by which I don't mean fixing them, but directing bug reports
-at the right developers or subsystem maintainers, following the history of each
-bug report etc.  [Of course, these people can choose to use the bugzilla or any
-other bug tracking system they want, as long as it works for them.]
+to add an external bitmap:
 
-The email addresses of these people should be known (and even documented),
-so that everyone can notify them if need be and so that it's clear who should
-handle given bug reports.
+mdadm --grow --bitmap /bitmapfile /dev/mdX
 
-Just an idea. :-)
+plus add "bitmap=/bitmapfile" to mdadm.conf... as in:
 
-Greetings,
-Rafael
+ARRAY /dev/md4 bitmap=/bitmap.md4 UUID=dbc3be0b:b5853930:a02e038c:13ba8cdc
 
+you can also easily move an ext3 journal to an external journal with 
+tune2fs (see man page).
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+if you use XFS it's a bit more of a challenge to convert from internal to 
+external, but see this thread:
+
+http://marc.theaimsgroup.com/?l=linux-xfs&m=106929781232520&w=2
+
+i found that i had to do "sb 1", "sb 2", ..., "sb N" for all sb rather 
+than just the "sb 0" that email instructed me to do.
+
+-dean
