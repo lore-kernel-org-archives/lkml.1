@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761296AbXFQTMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761570AbXFQTMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761296AbXFQTMJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 15:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761173AbXFQTKD
+	id S1761570AbXFQTMc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761151AbXFQTKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 15:10:03 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36870 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761098AbXFQTKA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Jun 2007 15:10:00 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36867 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760023AbXFQTJ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 15:09:57 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 02/16] Unionfs: Don't revalidate dropped dentries
-Date: Sun, 17 Jun 2007 15:09:09 -0400
-Message-Id: <11821073631223-git-send-email-jsipek@cs.sunysb.edu>
+Cc: akpm@linux-foundation.org
+Subject: [GIT PULL -mm] Unionfs cleanups, fixes, and mmap
+Date: Sun, 17 Jun 2007 15:09:07 -0400
+Message-Id: <11821073632989-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
-In-Reply-To: <11821073632989-git-send-email-jsipek@cs.sunysb.edu>
-References: <11821073632989-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Erez Zadok <ezk@cs.sunysb.edu>
+The following patches consist of mostly cleanups and bug fixes of the
+Unionfs code. The major improvement is the new mmap implementation, as well
+as a major locking overhaul.
 
-This fixes a harmless but annoying message that unionfs prints if a dropped
-dentry is being revalidated, which could happen if you unlink open files.
+As before, there is a git repo at:
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
----
- fs/unionfs/commonfops.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/unionfs.git
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index 1045e51..89a236b 100644
---- a/fs/unionfs/commonfops.c
-+++ b/fs/unionfs/commonfops.c
-@@ -305,9 +305,12 @@ int unionfs_file_revalidate(struct file *file, int willwrite)
- 	unionfs_lock_dentry(dentry);
- 	sb = dentry->d_sb;
- 
--	/* first revalidate the dentry inside struct file */
--	if (!__unionfs_d_revalidate_chain(dentry, NULL) &&
--	    !d_deleted(dentry)) {
-+	/*
-+	 * First revalidate the dentry inside struct file,
-+	 * but not unhashed dentries.
-+	 */
-+	if (!d_deleted(dentry) &&
-+	    !__unionfs_d_revalidate_chain(dentry, NULL)) {
- 		err = -ESTALE;
- 		goto out_nofree;
- 	}
--- 
-1.5.2.rc1.165.gaf9b
+(master.kernel.org:/pub/scm/linux/kernel/git/jsipek/unionfs.git)
 
+There are 16 new commits:
+
+Erez Zadok (9):
+      Unionfs: Don't revalidate dropped dentries
+      Unionfs: Retry lookup for different silly-renamed files
+      Unionfs: Set lower inodes correctly after branch management succeeds
+      Unionfs: call statfs on lower file system properly
+      MAINTAINERS: Add Erez Zadok as a maintainer of Unionfs
+      Unionfs: Add standard copyright comment to include/linux/union_fs.h
+      Unionfs: Remove unnecessary #define
+      Unionfs: merge find_new_branch_index and branch_id_to_idx into one function
+      Unionfs: Revalidate dentries passed to all inode/super operations
+
+Josef 'Jeff' Sipek (5):
+      Unionfs: Cleanup new_dentry_private_data
+      Unionfs: Change free_dentry_private_info to take a struct dentry
+      Unionfs: Add BUG_ONs to unionfs_lower_*
+      Unionfs: Change the semantics of sb info's rwsem
+      Unionfs: Remove superfluous check for NULL pointer
+
+Randy Dunlap (1):
+      unionfs section mismatch
+
+Yiannis Pericleous (1):
+      Unionfs: mmap implementation
+
+Thanks,
+
+Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
