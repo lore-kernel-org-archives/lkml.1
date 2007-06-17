@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbXFQB2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbXFQBaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbXFQB2F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 21:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756792AbXFQB1z
+	id S1758932AbXFQBaF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 21:30:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbXFQB3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 21:27:55 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:52543 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756366AbXFQB1y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 21:27:54 -0400
-Date: Sun, 17 Jun 2007 03:27:43 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bron Gondwana <brong@fastmail.fm>, Alexandre Oliva <aoliva@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070617012743.GA26272@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	"Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Bron Gondwana <brong@fastmail.fm>,
-	Alexandre Oliva <aoliva@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-	debian developer <debiandev@gmail.com>, david@lang.hm,
-	Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net> <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616021630.GA30660@brong.net> <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616103130.GD32405@brong.net> <orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616233251.GA17270@brong.net> <alpine.LFD.0.98.0706161728070.14121@woody.linux-foundation.org> <46749AA2.4030608@wolfmountaingroup.com>
+	Sat, 16 Jun 2007 21:29:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34371 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757430AbXFQB3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 21:29:55 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46749AA2.4030608@wolfmountaingroup.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+X-Fcc: ~/Mail/utrace
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, john.blackwood@ccur.com,
+       linux-kernel@vger.kernel.org,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>, bugsy@ccur.com
+Subject: Re: [RFC] [PATCH] selective signal ptracing
+In-Reply-To: Benjamin Herrenschmidt's message of  Sunday, 17 June 2007 10:11:02 +1000 <1182039062.26853.111.camel@localhost.localdomain>
+Emacs: because one operating system isn't enough.
+Message-Id: <20070617012952.09F2D4D059F@magilla.localdomain>
+Date: Sat, 16 Jun 2007 18:29:52 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 16, 2007 at 08:21:22PM -0600, Jeffrey V. Merkey wrote:
-> Linus,
-> 
-> Just take a vote and start tagging files and ignore this needless 
-> diatribe. It is was it is, I seriously doubt you will
-> get all of Linux moved to GPL3 as a monolith, since you will never get 
-> concensus. You should fork a GPL3 kernel and let people decide
-> whether their code goes in or not. If they don't want to move to it, new 
-> people can contribute new code. Start a 2.8 tree or whatever that is 
-> GPL3 only.
+> What are the issues with arch like ARM ? 
 
-*snicker*
+The interesting class ARM belongs to is machines that don't (or don't
+always) have hardware support for single-step.  Maintaining the status quo
+of how PTRACE_SINGLESTEP functions on these machines is different in
+implementation under utrace than it is for machines that always use
+hardware support.  That is the only special complication for ARM, and it is
+not really very complicated.  Apparently the way I described the issue in
+the past was easily misunderstood.
 
-Yeah, Linus - when do you finally understand that nobody WANTS
-your GPL3 kernel?  :))
+> Also, is there a mail thread or paper somewhere describing utrace, its
+> interfaces and what's needed to hook it up on a platform ?
 
-ROFL
+See http://redhat.com/~roland/utrace/ for the patches and a porting howto.
+The patches add a Documentation/ file and kerneldoc stuff for the interfaces.
 
--- 
-Carlo Wood <carlo@alinoe.com>
 
+Thanks,
+Roland
