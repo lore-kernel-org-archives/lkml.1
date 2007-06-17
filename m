@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760943AbXFQULA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761225AbXFQUOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760943AbXFQULA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 16:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759871AbXFQUKx
+	id S1761225AbXFQUOg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 16:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758988AbXFQUO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 16:10:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:60419 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757634AbXFQUKw (ORCPT
+	Sun, 17 Jun 2007 16:14:29 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46925 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758777AbXFQUO2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 16:10:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=f0I3UdYtIJT+xwbFFi520sxvHzqSpAePyUxx32pHxTWlfauHCs9JWY+VqS7z3cx5l3CVi+jRv5o7/PZvNQ8hxjicig7k/s533JG8yAMJx2lxuSrVYyUwrc3bfiMsGlGbCpiQjUF9JnDb7YlspRRpQPrtw2k066L9wtHyiZH1Ww8=
-Message-ID: <6bffcb0e0706171310o3b486a64sda36744dce8b52cd@mail.gmail.com>
-Date: Sun, 17 Jun 2007 22:10:51 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: How to improve the quality of the kernel?
-Cc: "Carlo Wood" <carlo@alinoe.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Adrian Bunk" <bunk@stusta.de>, "Oleg Verych" <olecom@flower.upol.cz>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>, "Diego Calleja" <diegocg@gmail.com>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <467592D7.8050300@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 17 Jun 2007 16:14:28 -0400
+Date: Sun, 17 Jun 2007 21:18:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070617211853.400712e0@the-village.bc.nu>
+In-Reply-To: <orsl8qh1mq.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu>
+	<20070615041149.GA6741@brong.net>
+	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615072322.GA7594@brong.net>
+	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616021630.GA30660@brong.net>
+	<orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616103130.GD32405@brong.net>
+	<orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616233251.GA17270@brong.net>
+	<ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617122025.5a444e62@the-village.bc.nu>
+	<orsl8qh1mq.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org>
-	 <200706172053.41806.bzolnier@gmail.com>
-	 <20070617115258.1f55b29d.akpm@linux-foundation.org>
-	 <200706172118.19214.rjw@sisk.pl> <20070617193356.GB20727@alinoe.com>
-	 <467592D7.8050300@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/06/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> Carlo Wood wrote:
-> > On Sun, Jun 17, 2007 at 09:18:17PM +0200, Rafael J. Wysocki wrote:
-> >> where n is a number that needs to be determined (I think that n could be 3).
-> >> Well, "negative comments" should also be defined more precisely. ;-)
-> >
-> > I think that n should be a function of the number of accepted patches
-> > that this person sent in before, and the number of regressions he
-> > caused in the past.
->
-> The character of the patch (potential impacts, size...) and availability
-> of reviewers and testers influence the required review time so much that
-> other factors, like reputation of the submitter, hardly matter.
+On Sun, 17 Jun 2007 15:33:33 -0300
+Alexandre Oliva <aoliva@redhat.com> wrote:
 
-So we need a bug/regression/patch tracking system based on MMORPG game ;)
+> On Jun 17, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> >> I don't know any law that requires tivoization.
+> 
+> > In the USSA it is arguable that wireless might need it (if done in
+> > software) for certain properties. (The argument being it must be
+> > tamperproof to random end consumers).
+> 
+> But this is not tivoization.
 
-Regards,
-Michal
+It most definitely is
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+> Tivoization is a manufacturer using technical measures to prevent the
+> user from tampering (*) with the device, *while* keeping the ability
+> to tamper with it changes itself.
+
+That accurately describes the FCC wireless rules. As a vendor I am
+perfectly allowed to tinker, but the product must not be "end user"
+modifiable. (and some vendors take this to mean binary only, despite the
+fact end users generally aren't able to modify code and EE students are
+just as able to modify electronics as we are code).
+
+Alan
