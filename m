@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbXFVGK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXFVGNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754665AbXFVGK5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 02:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXFVGKu
+	id S1754048AbXFVGNj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 02:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbXFVGNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 02:10:50 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:54653 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbXFVGKt (ORCPT
+	Fri, 22 Jun 2007 02:13:32 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:58898 "EHLO
+	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750769AbXFVGNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 02:10:49 -0400
-Date: Fri, 22 Jun 2007 16:10:47 +1000
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Daniel Walker <dwalker@mvista.com>, Andrew Morton <akpm@osdl.org>,
-       john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC] clocksouce implementation for powerpc
-Message-ID: <20070622061047.GW9768@bakeyournoodle.com>
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de> <20070616101637.107940593@inhelltoy.tec.linutronix.de> <1182009083.11539.369.camel@imap.mvista.com> <20070620065710.GR9768@bakeyournoodle.com> <46795B9B.2020401@ru.mvista.com>
+	Fri, 22 Jun 2007 02:13:31 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Organization: AMD
+To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+Subject: Re: Machine Check Exception: 0...04
+Date: Sun, 17 Jun 2007 14:08:28 +0200
+User-Agent: KMail/1.9.7
+cc: "Linux Kernel Maillist" <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0706160948510.29686@filesrv1.baby-dragons.com>
+In-Reply-To: <Pine.LNX.4.64.0706160948510.29686@filesrv1.baby-dragons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Message-ID: <200706171408.29521.joachim.deguara@amd.com>
+X-OriginalArrivalTime: 22 Jun 2007 06:13:03.0075 (UTC)
+ FILETIME=[64173330:01C7B494]
+X-WSS-ID: 6A65B7FD1S41109967-03-01
+Content-Type: text/plain;
+ charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46795B9B.2020401@ru.mvista.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 08:53:47PM +0400, Sergei Shtylyov wrote:
+On Saturday 16 June 2007 22:40:53 Mr. James W. Laferriere wrote:
+>  	Hello All ,  Does anoyone know howto identify a cause for these(*) ?
+>  	Or of any tools to help in the identification of the cause ?
+>  	So far the Machine checks only happen when I am running bonnie++ against
+>  	my software raid6 array .
 
-Hi Sergei,
-	Thanks for taking the time to look over my patch.
+You should run mcelog to decode what the machine checks mean.  These do point 
+to a hardware problem.   Just briefly judging from you description of when 
+the MCEs happen I wonder if the power supply is getting maxed out driving all 
+of those disks.  Either way, use mcelog to find out what the MCEs are first.
 
->    I guess it's been based on the prior work by John Stultz (and me too :-)?
+-Joachim
 
-At some level I guess so.  John did send me a patch a while ago.
- 
->    If you mean the init. part, this has been already done by me -- I've 
-> implemented read_persistent_clock() and got rid of xtime setting. What's 
-> left is to implemet update_persistent_clock() and get rid of 
-> timer_check_rtc()...
-
-Actually I think that comment is redundant.  and should be removed
-sorry.
-
->    Perhaps we even need to raise the rating to 300 or 400 -- according to 
-> what <linux/clocksource.h> says?
-
-Sure.
- 
-> >+	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
-> >+	.mask         = CLOCKSOURCE_MASK(64),
-> >+	.shift        = 22,
-> 
->    PPC64 has issues with the fixed shift value, see:
-> 
-> http://patchwork.ozlabs.org/linuxppc/patch?id=11125
-
-Thanks!
- 
-> >+	.mult         = 0,	/* To be filled in */
-> >+	.read         = NULL,   /* To be filled in */
-> >+	.settimeofday = NULL,   /* To be filled in */
-> 
->    I don't quite understand why not just init them right away?  The values 
-> are fixed anyways.
-
-Well at least mult needs to be calculated at runtime, and I prefer to
-have the structure near the top of the file at which stage the
-read/settimeofday functions aren't defined.
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
 
