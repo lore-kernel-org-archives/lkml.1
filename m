@@ -1,27 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761955AbXFQXnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbXFQXnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761955AbXFQXnb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 19:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760369AbXFQXmn
+	id S1758468AbXFQXnp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 19:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761802AbXFQXmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 19:42:43 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37893 "EHLO
+	Sun, 17 Jun 2007 19:42:46 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37895 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761932AbXFQXml (ORCPT
+	with ESMTP id S1761968AbXFQXmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 19:42:41 -0400
-Date: Mon, 18 Jun 2007 01:42:57 +0200
+	Sun, 17 Jun 2007 19:42:45 -0400
+Date: Mon, 18 Jun 2007 01:43:01 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] arch/i386/video/fbdev.c should #include <asm/fb.h>
-Message-ID: <20070617234257.GE3588@stusta.de>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] kernel/sys_ni.c should #include <linux/syscalls.h>
+Message-ID: <20070617234301.GF3588@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -32,15 +28,14 @@ it's global functions.
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.22-rc4-mm2/arch/i386/video/fbdev.c.old	2007-06-17 15:48:25.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/arch/i386/video/fbdev.c	2007-06-17 15:48:53.000000000 +0200
-@@ -11,6 +11,8 @@
- #include <linux/fb.h>
- #include <linux/pci.h>
+--- linux-2.6.22-rc4-mm2/kernel/sys_ni.c.old	2007-06-17 16:03:11.000000000 +0200
++++ linux-2.6.22-rc4-mm2/kernel/sys_ni.c	2007-06-17 16:03:30.000000000 +0200
+@@ -1,6 +1,7 @@
  
-+#include <asm/fb.h>
-+
- int fb_is_primary_device(struct fb_info *info)
- {
- 	struct device *device = info->device;
+ #include <linux/linkage.h>
+ #include <linux/errno.h>
++#include <linux/syscalls.h>
+ 
+ #include <asm/unistd.h>
+ 
 
