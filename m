@@ -1,147 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbXFQSyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760942AbXFQSyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759568AbXFQSyM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 14:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbXFQSx6
+	id S1760942AbXFQSyb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 14:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758094AbXFQSyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 14:53:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53981 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752874AbXFQSx5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 14:53:57 -0400
-Date: Sun, 17 Jun 2007 11:52:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Oleg Verych <olecom@flower.upol.cz>,
+	Sun, 17 Jun 2007 14:54:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49108 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757592AbXFQSyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 14:54:19 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rob Landley <rob@landley.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: How to improve the quality of the kernel?
-Message-Id: <20070617115258.1f55b29d.akpm@linux-foundation.org>
-In-Reply-To: <200706172053.41806.bzolnier@gmail.com>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org>
-	<6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com>
-	<20070617142950.GW3588@stusta.de>
-	<200706172053.41806.bzolnier@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <466A3EC6.6030706@netone.net.tr>
+	<20070614122031.4751a52b@the-village.bc.nu>
+	<20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
+	<20070615120926.GD6269@elte.hu>
+	<orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615214804.GC4996@elte.hu>
+	<or3b0svjc5.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617073820.GA6267@elte.hu>
+	<ory7ijhu4q.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617150819.GI14788@delft.aura.cs.cmu.edu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Sun, 17 Jun 2007 15:53:22 -0300
+In-Reply-To: <20070617150819.GI14788@delft.aura.cs.cmu.edu> (Jan Harkes's message of "Sun\, 17 Jun 2007 11\:08\:19 -0400")
+Message-ID: <ork5u2h0pp.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Jun 2007 20:53:41 +0200 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+On Jun 17, 2007, Jan Harkes <jaharkes@cs.cmu.edu> wrote:
 
-> 
-> 
-> IMO we should concentrate more on preventing regressions than on fixing them.
-> In the long-term preventing bugs is cheaper than fixing them afterwards.
-> 
-> First let me tell you all a little story...
-> 
-> Over two years ago I've reviewed some _cleanup_ patch and noticed three bugs
-> in it (in other words I potentially prevented three regressions).  I also
-> asked for more thorough verification of the patch as I suspected that it may
-> have more problems.  The author fixed the issues and replied that he hasn't
-> done the full verification yet but he doesn't suspect any problems...
-> 
-> Fast forward...
-> 
-> Year later I discover that the final version of the patch hit the mainline.
-> I don't remember ever seeing the final version in my mailbox (there are no
-> cc: lines in the patch description) and I saw that I'm not credited in the
-> patch description.  However the worse part is that it seems that the full
-> verification has never been done.  The result?   Regression in the release
-> kernel (exactly the issue that I was worried about) which required three
-> patches and over a month to be fixed completely.  It seems that a year
-> was not enough to get this ~70k _cleanup_ patch fully verified and tested
-> (it hit -mm soon before being merged)...
+> On Sun, Jun 17, 2007 at 05:17:57AM -0300, Alexandre Oliva wrote:
+>> Just make the tivoization machinery require two keys: one that the
+>> vendor keeps, one that the vendor gives to the user (maybe without
+>> ever knowing it).  Neither one can install modifications alone, but
+>> the user can approve modifications by the vendor, and the vendor can
+>> approve modifications by the user.  This is still not ideal, but it at
+>> least doesn't permit the vendor to remove features from under the
+>> user.
 
-crap.  Commit ID, please ;)
+> So what features has Tivo removed (or threatened to remove) from the GPL
+> licensed parts?
 
-> >From reviewer's POV: I have invested my time into review, discovered real
-> issues and as a reward I got no credit et all and extra frustration from the
-> fact that part of my review was forgotten/ignored (the part which resulted in
-> real regression in the release kernel)...  Oh and in the past the said
-> developer has already been asked (politely in private message) to pay more
-> attention to his changes (after I silently fixed some other regression caused
-> by his other patch).
-> 
-> But wait there is more, I happend to be the maintainer of the subsystem which
-> got directly hit by the issue and I was getting bugreports from the users about
-> the problem...  :-)
-> 
-> It wasn't my first/last bad experience as a reviewer... finally I just gave up
-> on reviewing other people patches unless they are stricly for IDE subsystem.
-> 
-> The moral of the story is that currently it just doesn't pay off to do
-> code reviews.
+Why does it matter?  The point is that a tivoizer *could* do that.
 
-I dunno.  I suspect (hope) that this was an exceptional case, hence one
-should not draw general conclusions from it.  It certainly sounds very bad.
+> So Google is using Linux right. What if they remove some feature?
 
->  From personal POV it pays much more to wait until buggy patch
-> hits the mainline and then fix the issues yourself (at least you will get
-> some credit).  To change this we should put more ephasize on the importance
-> of code reviews by "rewarding" people investing their time into reviews
-> and "rewarding" developers/maintainers taking reviews seriously.
-> 
-> We should credit reviewers more, sometimes it takes more time/knowledge to
-> review the patch than to make it so getting near to zero credit for review
-> doesn't sound too attractive.  Hmm, wait it can be worse - your review
-> may be ignored... ;-)
-> 
-> >From my side I think I'll start adding less formal "Reviewed-by" to IDE
-> patches even if the review resulted in no issues being found (in additon to
-> explicit "Acked-by" tags and crediting people for finding real issues - which
-> I currently always do as a way for showing my appreciation for their work).
+Are you claiming Google is tivoizing something in their internal
+infrastructure?  They're not distributing or conveying that software,
+so, nothing wrong with that.
 
-yup, Reviewed-by: is good and I do think we should start adopting it,
-although I haven't thought through exactly how.
+Or are you talking about their search appliance, which I know nearly
+nothing about?
 
-On my darker days I consider treating a Reviewed-by: as a prerequisite for
-merging.  I suspect that would really get the feathers flying.
+> So if Tivo would allow you to boot your own kernel, but keeps the
+> harddisk encrypted if the booted kernel does not have the right
+> signature?
 
-> I also encourage other maintainers/developers to pay more attention to
-> adding "Acked-by"/"Reviewed-by" tags and crediting reviewers.  I hope
-> that maintainers will promote changes that have been reviewed by others
-> by giving them priority over other ones (if the changes are on more-or-less
-> the same importance level of course, you get the idea).
-> 
-> Now what to do with people who ignore reviews and/or have rather high
-> regressions/patches ratio?
+  The information must suffice to ensure that the continued
+  functioning of the modified object code is in no case prevented or
+  interfered with solely because modification has been made.
 
-Ignoring a review would be a wildly wrong thing to do.  It's so unusual
-that I'd be suspecting a lost email or an i-sent-the-wrong-patch.
+> And how is that any different from taking an off-the-shelf PC and
+> booting your own kernel with Tivo's modifications?
 
-As for high regressions/patches ratio: that'll be hard to calculate and
-tends to be dependent upon the code which is being altered rather than who
-is doing the altering: some stuff is just fragile, for various reasons.
+TiVo did not sell me that off-the-shelf PC with the Free Software in
+it.  It (hypothetically) sold me a computer with technical measures
+meant to restrict my ability to adapt the software it shipped to my
+own needs and to run it for any purpose, while it can still do that.
+That's a difference.
 
-One ratio which we might want to have a think about is the patches-sent
-versus reviews-done ratio ;)
+>>   this requirement does not apply if neither you nor any third
+>>   party retains the ability to install modified object code on the
+>>   User Product
 
-> I think that we should have info about regressions integrated into SCM,
-> i.e. in git we should have optional "fixes-commit" tag and we should be
-> able to do some reverse data colletion.   This feature combined with
-> "Author:" info after some time should give us some very interesting
-> statistics (Top Ten "Regressors").  It wouldn't be ideal (ie. we need some
-> patches threshold to filter out people with 1 patch and >= 1 regression(s),
-> we need to remember that some code areas are more difficult than the others
-> and that patches are not equal per se etc.) however I believe than making it
-> into Top Ten "Regressors" should give the winners some motivation to improve
-> their work ethic.  Well, in the worst case we would just get some extra
-> trivial/documentation patches. ;-)
+> So they keep the system locked down, but include perl/python/emacs and
+> distribute updates in the form of scripts/source code which are either
+> interpreted or compiled to a ramfs filesystem at boot. Time to add
+> another exception?
 
-We of course do want to minimise the amount of overhead for each developer. 
-I'm a strong believer in specialisation: rather than requiring that *every*
-developer/maintainer integrate new steps in their processes it would be
-better to allow them to proceed in a close-to-usual fashion and to provide
-for a specialist person (or team) to do the sorts of things which you're
-thinking about.
+Intent behind this?: weasel out of the obligations of the license.
+Anyone, probably even a US court, might very well see it that way.
 
+They retain the ability to modify the software, so they ought to pass
+it on to the user.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
