@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbXFQOYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbXFQOZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759480AbXFQOYq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 10:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760378AbXFQOYT
+	id S1760678AbXFQOZA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 10:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759862AbXFQOY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 10:24:19 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:19784 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760309AbXFQOYO (ORCPT
+	Sun, 17 Jun 2007 10:24:28 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:16181 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758563AbXFQOYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 10:24:14 -0400
+	Sun, 17 Jun 2007 10:24:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=n8ZGmFt1WMVTiOPp6sQ/4ja76s0zOC3IEVMbphRNeNGpEJ+tw0dYJrwTk8ogVJJMxafexu3iKqRzUd4rCOriO8zqCtcbKQwSlySzq5KK4mWl2g+qj35IbgesT5jx27dTdNgjkD/6LcI1fifS9ck0XzT4yh3c2W8woRgV/jKONvU=
-Message-ID: <467543FA.60905@googlemail.com>
-Date: Sun, 17 Jun 2007 16:23:54 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=qexU+7z0U9DEM7ckm/TTcO76s2S/dQGn0VzzJuSX9vMeV1DgQ6PPCeXK+KRJFaopYI34tAagWl/1SJuXOmWrAEnjMFE9jbWoHiPAo+AGhIQylM5sFC/Xa5/kmpJV0yO9giQELmKaADvRZc2JYHwuRiLrPpQEpDqweFFgwBXsHYw=
+Message-ID: <46754400.2080101@googlemail.com>
+Date: Sun, 17 Jun 2007 16:24:00 +0200
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andi Kleen <ak@suse.de>,
-       =?ISO-8859-2?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       Ian McDonald <ian.mcdonald@jandi.co.nz>,
-       William Cohen <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       =?ISO-8859-2?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>,
-       Jean Delvare <khali@linux-fr.org>, Rudolf Marek <r.marek@assembler.cz>,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: [1/2] 2.6.22-rc5: known regressions with patches
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, Dave Airlie <airlied@linux.ie>,
+       Andrea Righi <righiandr@users.sourceforge.net>,
+       Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       Samuel Ortiz <samuel@sortiz.org>, Andrey Borzenkov <arvidjaar@mail.ru>,
+       Samuel Ortiz <samuel@sortiz.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Dan Aloni <da-x@monatomic.org>, Jay Vosburgh <fubar@us.ibm.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>, Paulo Pereira <pfmp.404@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [2/2] 2.6.22-rc5: known regressions with patches
+References: <4675430B.2000304@googlemail.com>
+In-Reply-To: <4675430B.2000304@googlemail.com>
 Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -48,53 +53,53 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Unclassified
+Memory management
 
-Subject    : CONFIG_DEBUG_RODATA prevents kprobes from working on 2.6.22-rc2
-References : http://lkml.org/lkml/2007/5/23/202
-Submitter  : William Cohen <wcohen@redhat.com>
-             Ian McDonald <ian.mcdonald@jandi.co.nz>
-Handled-By : S. P. Prasanna <prasanna@in.ibm.com>
-Patch      : http://lkml.org/lkml/2007/6/7/2
+Subject    : bug in i386 MTRR initialization
+References : http://lkml.org/lkml/2007/5/19/93
+Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
 Status     : patch available
 
-Subject    : long freezes on thinkpad t60
-References : http://lkml.org/lkml/2007/5/24/100
-Submitter  : Miklos Szeredi <miklos@szeredi.hu>
-Handled-By : Ingo Molnar <mingo@elte.hu>
-Patch      : http://lkml.org/lkml/2007/6/16/81
-Status     : patch was suggested
-
-Subject    : OProfile issues
-References : http://lkml.org/lkml/2007/6/12/207
-Submitter  : Stephane Eranian <eranian@hpl.hp.com>
-Handled-By : Björn Steinbrink <B.Steinbrink@gmx.de>
-Patch      : http://lkml.org/lkml/2007/6/12/392
-Status     : patch was suggested
 
 
-
-FBDEV
-
-Subject    : mach64 breakage in 2.6.22
-References : http://lkml.org/lkml/2007/6/14/73
-Submitter  : Olaf Hering <olaf@aepfle.de>
-Handled-By : Ville Syrjälä <syrjala@sci.fi>
-Patch      : http://lkml.org/lkml/2007/6/14/273
-Status     : patch was suggested
-
-
-
-HWMON
-
-Subject    : latest coretemp changes break s2ram
-References : http://lkml.org/lkml/2007/6/16/173
-Submitter  : Soeren Sonnenburg <kernel@nn7.de>
-Caused-By  : Rudolf Marek <r.marek@assembler.cz>
-             commit 67f363b1f6a31cf5027a97372f64bcced4f05ba6
-Handled-By : Jean Delvare <khali@linux-fr.org>
-Patch      : http://lkml.org/lkml/2007/6/16/177
+Networking
+Subject    : commit 9093bbb2d96d0184f037cea9b4e952a44ebe7c32 broke the bonding driver
+References : http://lkml.org/lkml/2007/6/13/65
+Submitter  : Dan Aloni <da-x@monatomic.org>
+Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
 Status     : patch available
+             (I cannot find it in archives. Stephen, please resend the patch)
+
+Subject    : no irda0 interface (2.6.21 was OK), smsc does not find chip
+References : http://lkml.org/lkml/2007/6/3/16
+Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
+Handled-By : Samuel Ortiz <samuel@sortiz.org>
+             Bjorn Helgaas <bjorn.helgaas@hp.com>
+Patch      : http://lkml.org/lkml/2007/6/7/237
+Status     : patch was suggested
+
+
+
+SELinux
+
+Subject    : very high non-preempt latency in context_struct_compute_av()
+References : http://lkml.org/lkml/2007/6/4/78
+Submitter  : Ingo Molnar <mingo@elte.hu>
+Handled-By : Stephen Smalley <sds@tycho.nsa.gov>
+             James Morris <jmorris@namei.org>
+Patch      : http://lkml.org/lkml/2007/6/7/334
+Status     : patch available
+
+
+
+USB
+
+Subject    : list_add corruption. prev->next should be next (f7d28794), but was f0df8ed4 (prev=f0df8ed4) Kernel Bug at lib/list_debug.c:33
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8561
+Submitter  : Paulo Pereira <pfmp.404@gmail.com>
+Handled-By : Alan Stern <stern@rowland.harvard.edu>
+Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8561#c8
+Status     : patch was suggested
 
 
 
