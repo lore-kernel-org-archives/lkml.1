@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbXFQLez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbXFQLfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbXFQLez (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 07:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758772AbXFQLeq
+	id S1760137AbXFQLfz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 07:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbXFQLfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 07:34:46 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:39321 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758436AbXFQLeq (ORCPT
+	Sun, 17 Jun 2007 07:35:44 -0400
+Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:3566 "EHLO
+	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758772AbXFQLfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 07:34:46 -0400
-Date: Sun, 17 Jun 2007 13:47:09 +0200
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Sun, 17 Jun 2007 07:35:42 -0400
+Date: Sun, 17 Jun 2007 12:35:32 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] (Re: regression tracking (Re: Linux 2.6.21))
-Message-ID: <20070617114709.GD16016@flower.upol.cz>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <4673D63D.5020804@s5r6.in-berlin.de> <20070617004436.GU3588@stusta.de> <467501D0.3090203@googlemail.com> <20070617025552.addd1c41.akpm@linux-foundation.org> <6bffcb0e0706170322j3c51868fn6189bfd7d3bcac1@mail.gmail.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Jay Vosburgh <fubar@us.ibm.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-pm@lists.linux-foundation.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alex Riesen <raa.lkml@gmail.com>,
+       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc4: known regressions v3
+In-Reply-To: <20070614142146.GN15426@holomorphy.com>
+Message-ID: <Pine.LNX.4.61.0706171223160.3680@mtfhpc.demon.co.uk>
+References: <46704923.1010009@googlemail.com> <46704C44.8020602@googlemail.com>
+ <Pine.LNX.4.61.0706132320200.26751@mtfhpc.demon.co.uk>
+ <20070614020055.GL15426@holomorphy.com> <Pine.LNX.4.61.0706141123160.28903@mtfhpc.demon.co.uk>
+ <20070614142146.GN15426@holomorphy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6bffcb0e0706170322j3c51868fn6189bfd7d3bcac1@mail.gmail.com>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 12:22:26PM +0200, Michal Piotrowski wrote:
-> On 17/06/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >On Sun, 17 Jun 2007 11:41:36 +0200 Michal Piotrowski 
-> ><michal.k.k.piotrowski@gmail.com> wrote:
-> >
-> >> +If the patch introduces a new regression and this regression was not 
-> >fixed
-> >> +in seven days, then the patch will be reverted.
-> >
-> >Those regressions where we know which patch caused them are the easy ones.
-> >Often we don't know which patch (or even which subsystem merge) is at
-> >fault.
-> >
-> >I think.  How many of the present 2.6.22-rc regressions which you're
-> >presently tracking have such a well-identified cause?
-> >
-> 
-> Here lays the problem.
-> 
-> git-bisect is a killer app, people should start using it.
+Hi all,
 
-It's OK _only_ in case of unknown, hard to find *hardware* bugs.
+I have been investigating the random invalid instruction occourances on 
+sparc32 (sun4c) and identified that the problem was introduced 
+pre-v2.6.22-rc1. v2.6.21 is OK. The first time I have observed the issue 
+so far is after commit b46b8f19c9cd435ecac4d9d12b39d78c137ecd66:
+Increase slab redzone to 64bits.
 
-If you think it's "a good thing" for bad, untested by developer
-code, then something is completely wrong.
+Prior to this commit there apears to be a problem with the memory 
+management (depmod -a causes the system to run out of memory!) that may be 
+masking the issue. As a result of this, I am going to try to find the 
+'last known good' commit after v2.6.21 to see if this helps narrow down 
+the cause.
 
-And if there's no debugger in the mainline kernel, which is developer's
-tool, then why do you think testers must stick with git-bisect, as their
-debugger-like tool (bandwidth in most and time consuming in some cases)?
+Regards
+ 	Mark Fortescue.
 
-That's wrong if developers are tending to reply only one thing --
-git-bisect.
+On Thu, 14 Jun 2007, William Lee Irwin III wrote:
 
-If things are going to be that bad, then better to start dealing with the
-cause, not consequences. In this situation requesting test-cases is a
-better way, as it's going to influence developer as cause of potential
-problems. If tests will show *hardware* side of problem, then, well some
-parts may be not obvious, thus bisecting is a way to continue.
-
-Sorry if i'm from the abnormally different side yet one more time.
-____
+> On Thu, Jun 14, 2007 at 11:30:25AM +0100, Mark Fortescue wrote:
+>> They apear as soon as simpleinit starts up. Somtimes I get to a login
+>> prompt before seeing any. Other times, commands in the simpleinit rc
+>> script fail.
+>> They do apear to be random. If a command failes, you re-run the command
+>> and it is OK. Commands seen to fail are basic (depmod, rm cat ..).
+>> The test I did use the same binaries with both the OK and problem kernels
+>> so it is not a change to the application code, it is definatly a kernel
+>> issue.
+>
+> This sounds like it may be addressed by benh's ptep_set_access_flags()
+> fixes. Those fixes are still in -mm, hopefully to hit mainline by 2.6.22.
+>
+>
+> -- wli
+>
