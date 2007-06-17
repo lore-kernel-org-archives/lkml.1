@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbXFQUtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbXFQUtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbXFQUtU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 16:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbXFQUtK
+	id S1757010AbXFQUtc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 16:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbXFQUtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 16:49:10 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:59184
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751047AbXFQUtH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 16:49:07 -0400
-Date: Sun, 17 Jun 2007 13:46:47 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: dean gaudet <dean@arctic.org>
-cc: Wakko Warner <wakko@animx.eu.org>, Neil Brown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-In-Reply-To: <Pine.LNX.4.64.0706171242390.24938@twinlark.arctic.org>
-Message-ID: <Pine.LNX.4.64.0706171345320.31145@asgard.lang.hm>
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
- <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
- <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org>
- <18035.23867.576212.859440@notabene.brown> <20070616140857.GA4206@animx.eu.org>
- <Pine.LNX.4.64.0706161845180.24938@twinlark.arctic.org> <20070617132809.GB7806@animx.eu.org>
- <Pine.LNX.4.64.0706171019490.24938@twinlark.arctic.org> <20070617193025.GA8770@animx.eu.org>
- <Pine.LNX.4.64.0706171242390.24938@twinlark.arctic.org>
+	Sun, 17 Jun 2007 16:49:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46669 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751578AbXFQUtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 16:49:11 -0400
+Date: Sun, 17 Jun 2007 16:49:04 -0400
+From: Dave Jones <davej@redhat.com>
+To: Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+Message-ID: <20070617204904.GB3430@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com
+References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070617195901.GA5689@alinoe.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Jun 2007, dean gaudet wrote:
+On Sun, Jun 17, 2007 at 09:59:01PM +0200, Carlo Wood wrote:
+ > On Sun, Jun 17, 2007 at 03:07:14PM -0400, Dave Jones wrote:
+ > > Sometimes things fall through the cracks..
+ > > I haven't heard any similar problems, which makes it somewhat odd.
+ > 
+ > Ok. Well, the lockup is all to real here :p
+ > 
+ > I suspect a memory corruption going on, as under certain circumstances
+ > there is printed more after the "agpgart: Detected an Intel 965G
+ > Chipset." -- that is, the kernel *sometimes* doesn't hang silently,
+ > but either reboots by itself (hard reset) or prints something
+ > that looks like a total crash to me. Often, this is prefixed by
+ > the name of running process. I am sorry, I never wrote any of that
+ > down. Only the last time, it then went like:
+ > 
+ > agpgart: Detected an Intel 965G Chipset.
+ > modprobe: Corrupt page table at address 20
+ > PGD 178c6c067 PUD 201000c0049c04f BAD
 
-> On Sun, 17 Jun 2007, Wakko Warner wrote:
->
->> What benefit would I gain by using an external journel and how big would it
->> need to be?
->
-> i don't know how big the journal needs to be... i'm limited by xfs'
-> maximum journal size of 128MiB.
->
-> i don't have much benchmark data -- but here are some rough notes i took
-> when i was evaluating a umem NVRAM card.  since the pata disks in the
-> raid1 have write caching enabled it's somewhat of an unfair comparison,
-> but the important info is the 88 seconds for internal journal vs. 81
-> seconds for external journal.
+That's pretty bad corruption indeed.  What I'm puzzling over though
+is why other 965G users aren't seeing the same thing.
+My own 965G seems to be fine, though that's using Intel graphics
+instead of nvidia.
 
-if you turn on disk write caching the difference will be much larger.
+(Just to rule it out, I'm assuming at this stage in boot that the
+ nvidia driver module has never been loaded?)
 
-> -dean
->
-> time sh -c 'tar xf /var/tmp/linux-2.6.20.tar; sync'
+And if you never load the agpgart modules, you never see lockups?
 
-I know that sync will force everything to get as far as the journal, will 
-it force the journal to be flushed?
+Right now, I'm at a loss to explain this.
 
-David Lang
+	Dave
 
->
-> xfs journal     raid5 bitmap    times
-> internal        none            0.18s user 2.14s system 2% cpu 1:27.95 total
-> internal        internal        0.16s user 2.16s system 1% cpu 2:01.12 total
-> raid1           none            0.07s user 2.02s system 2% cpu 1:20.62 total
-> raid1           internal        0.14s user 2.01s system 1% cpu 1:55.18 total
-> raid1           raid1           0.14s user 2.03s system 2% cpu 1:20.61 total
-> umem            none            0.13s user 2.07s system 2% cpu 1:20.77 total
-> umem            internal        0.15s user 2.16s system 2% cpu 1:51.28 total
-> umem            umem            0.12s user 2.13s system 2% cpu 1:20.50 total
->
->
-> raid5:
-> - 4x seagate 7200.10 400GB on marvell MV88SX6081
-> - mdadm --create --level=5 --raid-devices=4 /dev/md4 /dev/sd[abcd]1
->
-> raid1:
-> - 2x maxtor 6Y200P0 on 3ware 7504
-> - two 128MiB partitions starting at cyl 1
-> - mdadm --create --level=1 --raid-disks=2 --auto=yes --assume-clean /dev/md1 /dev/sd[fg]1
-> - mdadm --create --level=1 --raid-disks=2 --auto=yes --assume-clean /dev/md2 /dev/sd[fg]2
-> - md1 is used for external xfs journal
-> - md2 has an ext3 filesystem for the external md4 bitmap
->
-> xfs:
-> - mkfs.xfs issued before each run using the defaults (aside from -l logdev=/dev/md1)
-> - mount -o noatime,nodiratime[,logdev=/dev/md1]
->
-> umem:
-> - 512MiB Micro Memory MM-5415CN
-> - 2 partitions similar to the raid1 setup
->
+-- 
+http://www.codemonkey.org.uk
