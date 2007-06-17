@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbXFQTyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbXFQT6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761468AbXFQTyX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 15:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760486AbXFQTyO
+	id S1761391AbXFQT6S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759045AbXFQT6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 15:54:14 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:52935 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759510AbXFQTyN (ORCPT
+	Sun, 17 Jun 2007 15:58:09 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:41150 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758657AbXFQT6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 15:54:13 -0400
-Date: Sun, 17 Jun 2007 12:54:12 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Wakko Warner <wakko@animx.eu.org>
-cc: Neil Brown <neilb@suse.de>, david@lang.hm, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-In-Reply-To: <20070617193025.GA8770@animx.eu.org>
-Message-ID: <Pine.LNX.4.64.0706171242390.24938@twinlark.arctic.org>
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
- <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
- <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org>
- <18035.23867.576212.859440@notabene.brown> <20070616140857.GA4206@animx.eu.org>
- <Pine.LNX.4.64.0706161845180.24938@twinlark.arctic.org> <20070617132809.GB7806@animx.eu.org>
- <Pine.LNX.4.64.0706171019490.24938@twinlark.arctic.org> <20070617193025.GA8770@animx.eu.org>
+	Sun, 17 Jun 2007 15:58:08 -0400
+Date: Sun, 17 Jun 2007 21:58:05 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: Re: 2.6.22-rc5 regression
+Message-ID: <20070617195805.GA6125@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com
+References: <20070617182254.GA17595@alinoe.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070617182254.GA17595@alinoe.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Jun 2007, Wakko Warner wrote:
+On Sun, Jun 17, 2007 at 03:07:14PM -0400, Dave Jones wrote:
+> Out of curiousity, I'd like to see your lspci
+> (not -v or anything, just run with no args)
 
-> What benefit would I gain by using an external journel and how big would it
-> need to be?
+$ lspci
+00:00.0 Host bridge: Intel Corporation P965/G965 Memory Controller Hub (rev 02)
+00:01.0 PCI bridge: Intel Corporation P965/G965 PCI Express Root Port (rev 02)
+00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #4 (rev 02)
+00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #5 (rev 02)
+00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI #2 (rev 02)
+00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 02)
+00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 1 (rev 02)
+00:1c.5 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 6 (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #3 (rev 02)
+00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI #1 (rev 02)
+00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev f2)
+00:1f.0 ISA bridge: Intel Corporation 82801HB/HR (ICH8/R) LPC Interface Controller (rev 02)
+00:1f.2 SATA controller: Intel Corporation 82801HB (ICH8) SATA AHCI Controller (rev 02)
+00:1f.3 SMBus: Intel Corporation 82801H (ICH8 Family) SMBus Controller (rev 02)
+01:00.0 VGA compatible controller: nVidia Corporation Unknown device 0400 (rev a1)
+02:00.0 Ethernet controller: Marvell Technology Group Ltd. Unknown device 4364 (rev 12)
+04:02.0 Multimedia audio controller: Creative Labs SB Live! EMU10k1 (rev 08)
+04:02.1 Input device controller: Creative Labs SB Live! Game Port (rev 08)
+04:03.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
 
-i don't know how big the journal needs to be... i'm limited by xfs'
-maximum journal size of 128MiB.
-
-i don't have much benchmark data -- but here are some rough notes i took
-when i was evaluating a umem NVRAM card.  since the pata disks in the
-raid1 have write caching enabled it's somewhat of an unfair comparison,
-but the important info is the 88 seconds for internal journal vs. 81
-seconds for external journal.
-
--dean
-
-time sh -c 'tar xf /var/tmp/linux-2.6.20.tar; sync'
-
-xfs journal     raid5 bitmap    times
-internal        none            0.18s user 2.14s system 2% cpu 1:27.95 total
-internal        internal        0.16s user 2.16s system 1% cpu 2:01.12 total
-raid1           none            0.07s user 2.02s system 2% cpu 1:20.62 total
-raid1           internal        0.14s user 2.01s system 1% cpu 1:55.18 total
-raid1           raid1           0.14s user 2.03s system 2% cpu 1:20.61 total
-umem            none            0.13s user 2.07s system 2% cpu 1:20.77 total
-umem            internal        0.15s user 2.16s system 2% cpu 1:51.28 total
-umem            umem            0.12s user 2.13s system 2% cpu 1:20.50 total
-
-
-raid5:
-- 4x seagate 7200.10 400GB on marvell MV88SX6081
-- mdadm --create --level=5 --raid-devices=4 /dev/md4 /dev/sd[abcd]1
-
-raid1:
-- 2x maxtor 6Y200P0 on 3ware 7504
-- two 128MiB partitions starting at cyl 1
-- mdadm --create --level=1 --raid-disks=2 --auto=yes --assume-clean /dev/md1 /dev/sd[fg]1
-- mdadm --create --level=1 --raid-disks=2 --auto=yes --assume-clean /dev/md2 /dev/sd[fg]2
-- md1 is used for external xfs journal
-- md2 has an ext3 filesystem for the external md4 bitmap
-
-xfs:
-- mkfs.xfs issued before each run using the defaults (aside from -l logdev=/dev/md1)
-- mount -o noatime,nodiratime[,logdev=/dev/md1] 
-
-umem:
-- 512MiB Micro Memory MM-5415CN
-- 2 partitions similar to the raid1 setup
+-- 
+Carlo Wood <carlo@alinoe.com>
