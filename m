@@ -1,85 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbXFQJi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbXFQJmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758741AbXFQJi0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 05:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbXFQJiR
+	id S1758527AbXFQJmF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 05:42:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757496AbXFQJlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 05:38:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39536 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756970AbXFQJiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 05:38:16 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19sDFlsHUls5BGTj2w82RaNSPJ1bPJpGe4PBA1B3n
-	CiU7J1y83Wa99B
-Date: Sun, 17 Jun 2007 11:38:55 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Replace obscure constructs in fs/block_dev.c
-Message-ID: <20070617093855.GA30197@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20070615134632.GA11666@saeurebad.de>
+	Sun, 17 Jun 2007 05:41:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:1216 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753582AbXFQJly (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 05:41:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=H/2pUgm/PV7sgykxNrQspgo317bgPoUewYXK89B3pSrk1pvQV+O1Sy21x54JvSivGLn/9tdZ5B6P/ubNw6sIOJ3insHG7RLLqVcTS3ib3fWlaXvZ8GCxA12Ka61dcSxt4See2rsZ62zxh6zHzoHw3k3fcKg+4qQpk7q4gL7u0rw=
+Message-ID: <467501D0.3090203@googlemail.com>
+Date: Sun, 17 Jun 2007 11:41:36 +0200
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070615134632.GA11666@saeurebad.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Oleg Verych <olecom@flower.upol.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH]  (Re: regression tracking (Re: Linux 2.6.21))
+References: <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <4673D63D.5020804@s5r6.in-berlin.de> <20070617004436.GU3588@stusta.de>
+In-Reply-To: <20070617004436.GU3588@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.15 15:46:32 +0200, Johannes Weiner wrote:
-> Hi,
-> 
-> Andrew, I promised it [1], here goes. Patched against Linus' git-tree.
-> 
-> [1] http://lkml.org/lkml/2007/3/22/226
-> 
-> This patch replaces some obscure code-paths in fs/block_dev.c with more
-> readable versions.
-> 
-> Signed-off-by: Johannes Weiner <hannes-kernel@saeurebad.de>
-> 
+Hi all,
 
-> diff --git a/fs/block_dev.c b/fs/block_dev.c
-> index ea1480a..1ffbb6d 100644
-> --- a/fs/block_dev.c
-> +++ b/fs/block_dev.c
-> @@ -660,26 +660,16 @@ void bd_forget(struct inode *inode)
->  
->  int bd_claim(struct block_device *bdev, void *holder)
->  {
-> -	int res;
-> +	int res = 0;
->  	spin_lock(&bdev_lock);
->  
-> -	/* first decide result */
-> -	if (bdev->bd_holder == holder)
-> -		res = 0;	 /* already a holder */
-> -	else if (bdev->bd_holder != NULL)
-> -		res = -EBUSY; 	 /* held by someone else */
-> -	else if (bdev->bd_contains == bdev)
-> -		res = 0;  	 /* is a whole device which isn't held */
-> -
-> -	else if (bdev->bd_contains->bd_holder == bd_claim)
-> -		res = 0; 	 /* is a partition of a device that is being partitioned */
-> -	else if (bdev->bd_contains->bd_holder != NULL)
-> -		res = -EBUSY;	 /* is a partition of a held device */
-> -	else
-> -		res = 0;	 /* is a partition of an un-held device */
-> +	/* If already held by someone else or we have a
-> +	 * partition of a held device, we do nothing. */
->  
-> -	/* now impose change */
-> -	if (res==0) {
-> +	if (bdev->bd_holder || bdev->bd_contains->bd_holder)
-> +		res = -EBUSY;
+Adrian Bunk pisze:
+> On Sat, Jun 16, 2007 at 02:23:25PM +0200, Stefan Richter wrote:
+>> ...
+>> [Adrian, I'm not saying "too few users run -rc kernels", I'm saying "too
+>> few FireWire driver users run -rc kernels".]
+> 
+> Getting more people testing -rc kernels might be possible, and I don't 
+> think it would be too hard. And not only FireWire would benefit from 
+> this, remember e.g. that at least 2 out of the last 5 kernels Linus 
+> released contained filesystem corruption regressions.
+> 
+> The problem is that we aren't able to handle the many regression reports 
+> we get today, so asking for more testing and regression reports today 
+> would attack it at the wrong part of the chain.
+> 
+> Additionally, every reported and unhandled regression will frustrate the 
+> reporter - never forget that we have _many_ unhandled bug reports 
+> (including but not limited to regression reports) where the submitter 
+> spent much time and energy in writing a good bug report.
+> 
+> If we somehow gain the missing manpower for debugging regressions we can 
+> actively ask for more testing. Missing manpower (of people knowing some 
+> part of the kernel well) for debugging bug reports is IMHO the one big 
+> source of quality problems in the Linux kernel. If we get this solved, 
+> things like getting more testers for -rc kernels will become low hanging 
+> fruits.
 
-Hm, that actually ignores the "someone else" part of the comment and
-introduces a semantic change. No idea, if it breaks anything though.
+Adrian, I agree with _all_ your points.
 
-Björn
+I bet that developers will hate me for this.
+
+Please consider for 2.6.23
+
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
+
+Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+
+--- linux-work-clean/Documentation/SubmitChecklist	2007-06-17 11:18:37.000000000 +0200
++++ linux-work/Documentation/SubmitChecklist	2007-06-17 11:29:26.000000000 +0200
+@@ -90,3 +90,8 @@ kernel patches.
+     patch style checker prior to submission (scripts/checkpatch.pl).
+     You should be able to justify all violations that remain in
+     your patch.
++
++
++
++If the patch introduces a new regression and this regression was not fixed
++in seven days, then the patch will be reverted.
