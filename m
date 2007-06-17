@@ -1,61 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbXFRAK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760871AbXFRAN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759503AbXFRAK5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 20:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXFRAKu
+	id S1760871AbXFRAN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 20:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbXFRANW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 20:10:50 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:65292 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751377AbXFRAKu (ORCPT
+	Sun, 17 Jun 2007 20:13:22 -0400
+Received: from gateway-b.fh-trier.de ([143.93.54.182]:41843 "EHLO
+	gateway-b.fh-trier.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752050AbXFRANW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 20:10:50 -0400
-Date: Mon, 18 Jun 2007 02:10:49 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Paul Mundt <lethal@linux-sh.org>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org, eric@anholt.net, zhenyu.z.wang@intel.com,
-       y-goto@jp.fujitsu.com, torvalds@linux-foundation.org
-Subject: Re: 2.6.22-rc5 regression
-Message-ID: <20070618001049.GB1375@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Paul Mundt <lethal@linux-sh.org>, Dave Jones <davej@redhat.com>,
-	linux-kernel@vger.kernel.org, eric@anholt.net,
-	zhenyu.z.wang@intel.com, y-goto@jp.fujitsu.com,
-	torvalds@linux-foundation.org
-References: <20070617182254.GA17595@alinoe.com> <20070617195805.GA6125@alinoe.com> <20070617214905.GA6207@alinoe.com> <20070617231858.GB27460@linux-sh.org>
+	Sun, 17 Jun 2007 20:13:22 -0400
+X-Greylist: delayed 1958 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Jun 2007 20:13:21 EDT
+Message-ID: <4675C678.3080807@gentoo.org>
+Date: Mon, 18 Jun 2007 01:40:40 +0200
+From: Alexander Gabert <pappy@gentoo.org>
+Organization: Hardened Gentoo Linux
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070617231858.GB27460@linux-sh.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: libc-alpha@sourceware.org, linux-kernel@vger.kernel.org
+CC: hardened@gentoo.org
+Subject: AT_ENTROPY1 and AT_ENTROPY2 values for include/linux/auxvec.h
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 08:18:58AM +0900, Paul Mundt wrote:
-> The obvious question of course is whether actually reverting this
-> changeset fixes your problem? I would be very surprised if it did.
+Hello glibc and kernel maintainers,
 
-Having a git commit Id, like d09c6b809432668371b5de9102f4f9aa6a7c79cc,
-how can I create a .diff file from that?
+could you please add two AT_ entries to include/linux/auxvec.h in the 
+upstream kernel and the respective elf/elf.h definitions in glibc.
 
-> If it does make a difference, please provide the values for
-> CONFIG_HOTPLUG, CONFIG_MEMORY_HOTPLUG and CONFIG_HOTPLUG_CPU from your
-> .config.
-> 
-> I would wager that you only have CONFIG_HOTPLUG=y, in which case, the
-> only difference over previous kernels will be that zone_batchlist() is no
-> longer flagged as __init, and so it won't be freed -- this was the reason
-> for the "special section" comment in the changeset, as currently it's
-> left hanging around for folks that aren't doing cpu/memory hotplug, since
-> __devinit was the closest that both cpu and memory hotplug had in common.
-> 
-> I can't imagine that this would impact you at all, though.
+#define AT_ENTROPY1 24   /* kernel entropy in auxiliary vector */
+#define AT_ENTROPY2 25   /* second field for kernel entropy */
 
-I think git bisect made an error... as you can see for yourself
-with the list of tested git Id's that I gave - it didn't test
-both sides of that patch imho. If you tell me how to extract a patch
-then I'll manually unapply it to some failing kernel revisions and
-see if that makes a difference.
+The accompanying kernel patch follows, it is basically a config option 
+to give userland entropy.
+We are using the appended patch for Gentoo Hardened.
+You don't have to put it into the upstream linux kernel, it is only 
+there for explaining what i need the AT_ values for.
+Also the patch contains a subtle "bug" because the repetive call to 
+get_random_int()
+seems to yield the same result when done immediately after another:
 
--- 
-Carlo Wood <carlo@alinoe.com>
+$$ od -tx8 /proc/self/auxv
+0000000 ffffe40000000020 ffffe00000000021
+0000020 0383f9ff00000010 0000100000000006
+0000040 0000006400000011 8000003400000003
+0000060 0000002000000004 0000000a00000005
+0000100 b7ef200000000007 0000000000000008
+0000120 800013f000000009 000000000000000b
+0000140 000000000000000c 000000000000000d
+0000160 000000000000000e 0000000000000017
+0000200 0c1f4d8100000018 0c1f4d8100000019
+0000220 bfa7da8b0000000f 0000000000000000
+0000240
+
+
+However, this is just a proof of concept, all i'm asking for is to get 
+the two numbers into the upstream
+kernel and glibc auxvec.h to avoid future clashes with the numbers, thx 
+in advance.
+
+-- patch --
+
+diff -Nru linux-2.6.21.5.ORIG/fs/binfmt_elf.c linux-2.6.21.5/fs/binfmt_elf.c
+--- linux-2.6.21.5.ORIG/fs/binfmt_elf.c	2007-06-11 20:37:06.000000000 +0200
++++ linux-2.6.21.5/fs/binfmt_elf.c	2007-06-18 00:22:59.000000000 +0200
+@@ -201,6 +201,13 @@
+ 	NEW_AUX_ENT(AT_GID, tsk->gid);
+ 	NEW_AUX_ENT(AT_EGID, tsk->egid);
+  	NEW_AUX_ENT(AT_SECURE, security_bprm_secureexec(bprm));
++#if defined(CONFIG_AT_ENTROPY1)
++  NEW_AUX_ENT(AT_ENTROPY1, get_random_int());
++#endif
++#if defined(CONFIG_AT_ENTROPY2)
++  NEW_AUX_ENT(AT_ENTROPY2, get_random_int());
++#endif
++
+ 	if (k_platform) {
+ 		NEW_AUX_ENT(AT_PLATFORM,
+ 			    (elf_addr_t)(unsigned long)u_platform);
+diff -Nru linux-2.6.21.5.ORIG/include/linux/auxvec.h linux-2.6.21.5/include/linux/auxvec.h
+--- linux-2.6.21.5.ORIG/include/linux/auxvec.h	2007-06-11 20:37:06.000000000 +0200
++++ linux-2.6.21.5/include/linux/auxvec.h	2007-06-18 00:19:57.000000000 +0200
+@@ -26,6 +26,9 @@
+ 
+ #define AT_SECURE 23   /* secure mode boolean */
+ 
+-#define AT_VECTOR_SIZE  44 /* Size of auxiliary table.  */
++#define AT_ENTROPY1 24   /* kernel entropy in auxiliary vector */
++#define AT_ENTROPY2 25   /* second field for kernel entropy */
++
++#define AT_VECTOR_SIZE  46 /* Size of auxiliary table.  */
+ 
+ #endif /* _LINUX_AUXVEC_H */
+diff -Nru linux-2.6.21.5.ORIG/security/Kconfig linux-2.6.21.5/security/Kconfig
+--- linux-2.6.21.5.ORIG/security/Kconfig	2007-06-11 20:37:06.000000000 +0200
++++ linux-2.6.21.5/security/Kconfig	2007-06-18 00:32:57.000000000 +0200
+@@ -4,6 +4,24 @@
+ 
+ menu "Security options"
+ 
++config AT_ENTROPY1
++  bool "Enable kernel entropy in the auxiliary vector"
++  help
++    This option provides support for kernel-generated entropy handed
++    to processes via the auxiliary vector table in /proc/self/auxv.
++    Most notably userlands with heavy usage of stack smashing protection
++    benefit from kernel entropy because /dev/urandom is less likely to
++    become depleted due to the extensive need for randomized SSP __guard.
++
++config AT_ENTROPY2
++  bool "Enable additional kernel entropy in the auxiliary vector"
++  depends on AT_ENTROPY1
++  help
++    This option provides support for an additional field of kernel-generated
++    entropy for userland processes.  It can be used for an extension to SSP
++    where a second guard value is necessary for XOR encoding control data
++    residing in the stack frame of userland processes.
++
+ config KEYS
+ 	bool "Enable access key retention support"
+ 	help
+
+-- /patch --
+
+also available at
+
+http://dev.gentoo.org/~pappy/ssp/AT_ENTROPY/linux-2.6.21.5_AT_ENTROPY.patch
+
+
+Thanks again,
+
+
+Alex
