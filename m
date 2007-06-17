@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbXFQXqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbXFQXte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755655AbXFQXqu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 19:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbXFQXqm
+	id S1757361AbXFQXte (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 19:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXFQXt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 19:46:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55397 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750980AbXFQXqm (ORCPT
+	Sun, 17 Jun 2007 19:49:27 -0400
+Received: from paragon.brong.net ([66.232.154.163]:38212 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbXFQXt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 19:46:42 -0400
-Date: Mon, 18 Jun 2007 00:50:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
-       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: mea culpa on the meaning of Tivoization (was: Re:
- Dual-Licensing Linux Kernel with GPL V2 and GPL V3)
-Message-ID: <20070618005041.6c51a368@the-village.bc.nu>
-In-Reply-To: <orabuyfa7i.fsf_-_@oliva.athome.lsd.ic.unicamp.br>
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu>
-	<20070615041149.GA6741@brong.net>
-	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615072322.GA7594@brong.net>
-	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616021630.GA30660@brong.net>
-	<orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616103130.GD32405@brong.net>
-	<orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616233251.GA17270@brong.net>
-	<ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070617122025.5a444e62@the-village.bc.nu>
-	<orsl8qh1mq.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070617211853.400712e0@the-village.bc.nu>
-	<orodjefgrc.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070617222123.0412f740@the-village.bc.nu>
-	<orabuyfa7i.fsf_-_@oliva.athome.lsd.ic.unicamp.br>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Jun 2007 19:49:27 -0400
+Date: Mon, 18 Jun 2007 09:22:21 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Chris Adams <cmadams@hiwaay.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070617232221.GB14098@brong.net>
+References: <fa.toMqQ3LqoQn6Xh51bVordO8WMVc@ifi.uio.no> <fa.EmnDne9QndTLcw7NAzc83tWplMI@ifi.uio.no> <fa.G+0vGcF8U8pcd6ozkdhKGsQ/dDs@ifi.uio.no> <fa.8bXRW7nY7z5eXVZxCxUgra+gbb8@ifi.uio.no> <fa.qtDtq+aSKlNweTqHtKcy/Gj5PXg@ifi.uio.no> <20070617215840.GA1217855@hiwaay.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070617215840.GA1217855@hiwaay.net>
+Organization: brong.net
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > In practical terms it does since a recall/replacement in the event of
-> > rule changes is a bit impractical
+On Sun, Jun 17, 2007 at 04:58:40PM -0500, Chris Adams wrote:
+> Once upon a time, Jesper Juhl <jesper.juhl@gmail.com> said:
+> >Let's say I'm the owner of a company selling some device that uses a
+> >GPLv2 OS and some GPLv2 applications to do the job. Let's say that for
+> >some reason I don't want the end users of my device to tinker with the
+> >software inside my device.  Obviously I release the source for any
+> >modifications I may have made, but I use the hardware to prevent users
+> >from installing modified versions on the device (basically I TiVO'ize
+> >the device).
 > 
-> Indeed.  But that's not a legal requirement, it's an economic reason.
+> BTW: Another reason a vendor might lock down the device is for security.
+> For example, Juniper routers (which now run a significant portion of the
+> "core" of the Internet) run FreeBSD on the routing engine.  They include
+> several GNU software utilities (for example gawk, diff, and gdb).
+> Starting with JUNOS 7.6 (IIRC), end-users can no longer build and run
+> their own binaries on the routing engine.  This means that the GPLv2
+> code cannot be modified in-place (similar to TiVo altough done using
+> different means).
+> 
+> The reason is that if there ever is a security hole in the routing
+> engine software (FreeBSD kernel, OpenSSH, etc.), it would be a really
+> bad thing if crackers could load arbitrary software (rootkits, spam
+> software, etc.) directly on Internet core routers.  If you think spam
+> zombies on cable modems or DSL are bad, imagine them on 100 megabit
+> links!
 
-Cynical Economists would argue 'legal requirements' are just changes to
-the cost of the various economic options. Sometimes when I look at
-Microsoft's approach to various cases it seems they think that way too.
+To be fair here, this could also be accomplished by having to flip a
+physical switch on the router, especially if you did something funky
+like:
 
->   denying the user of the computer the freedom to run modified
->   versions of the Free Software in it, by not sharing information as
->   to how it could be accomplished.
+[---] push this button for a 5 minute access pass to upload new
+      software through physical cable port 1.
 
-That's a nice definition but one I can see being sort of abusable
-depending how you read it. We head ever more into the disposable computer
-era where as a vendor putting the code on ROM is cheap and upgrades don't
-matter (throw it away get a new one).
+More complex, but not unreasonable.
 
-I can tell you how to upgrade it ("you can't") yet I as the manufacturer
-can issue new units with modified code so I still control it even though
-it is meant to be "free"
+Bron.
