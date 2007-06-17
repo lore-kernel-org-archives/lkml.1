@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761289AbXFQWnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761098AbXFQWtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761289AbXFQWnA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 18:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbXFQWmx
+	id S1761098AbXFQWtf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 18:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbXFQWt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 18:42:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:12061 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbXFQWmx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 18:42:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=c9A2YOqFHa3qZVTPMeHVvfgpguqlZrSwV3pQI7uKB/y/5cZhoqHYvrFrHzJco685YWs3BXPSSYSTKJr61saqa6AKB3urOhOxpZC57+3reFeP6LO+sIYKH9ewniFTVeR6B3TuyA0rRLeZpqk6FzBFj3jxDUmRwR3ByMJ5PQK49P0=
-Message-ID: <9a8748490706171542t20d03743h46243976ffbf9917@mail.gmail.com>
-Date: Mon, 18 Jun 2007 00:42:52 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-Subject: Re: Machine Check Exception: 0...04
-Cc: "Linux Kernel Maillist" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706171535160.6316@filesrv1.baby-dragons.com>
+	Sun, 17 Jun 2007 18:49:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41707 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752936AbXFQWt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 18:49:26 -0400
+Date: Sun, 17 Jun 2007 18:49:18 -0400
+From: Dave Jones <davej@redhat.com>
+To: Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+Message-ID: <20070617224918.GC12483@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com
+References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com> <20070617223649.GA31587@alinoe.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0706160948510.29686@filesrv1.baby-dragons.com>
-	 <Pine.LNX.4.64.0706171535160.6316@filesrv1.baby-dragons.com>
+In-Reply-To: <20070617223649.GA31587@alinoe.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18/06/07, Mr. James W. Laferriere <babydr@baby-dragons.com> wrote:
->         Hello All ,  As a continuation .
->
-> On Sat, 16 Jun 2007, Mr. James W. Laferriere wrote:
-> >       Hello All ,  Does anoyone know howto identify a cause for these(*) ?
-> >       Or of any tools to help in the identification of the cause ?
-> >       So far the Machine checks only happen when I am running bonnie++
-> > against
-> >       my software raid6 array .
-> >
-> >       I have done everything I know to do to attempt to ascertain what is
-> >       causing the machine checks .
-> >       ie:
-> > 1)    memtest86+ for days ,  no errors .
-> > 2)    cpuburnP6 ,  The tests run were 'cpuburnP6 E' & 'cpuburnP6 H' for ~
-> >       60 minutes each .  All CPU's & HT were at 96+<->100% for 60+ Minutes
-> > ,
-> >       no excessive heating or lockups . In single user mode of course .
-> >       I know cpuburn is old but it can excersize the comms between l1 & cpu
-> >       & l1 & l2 -> cpu if done right .
-> >
-> > (*)
-> > CPU 5: Machine Check Exception: 0000000000000004
-> > CPU 4: Machine Check Exception: 0000000000000004
-> > Kernel panic - not syncing: Unable to continue
-> > <system reboots>
-> >
+On Mon, Jun 18, 2007 at 12:36:49AM +0200, Carlo Wood wrote:
+ > On Sun, Jun 17, 2007 at 05:33:55PM -0400, Dave Jones wrote:
+ > > intel-agp
+ > > 
+ > > Though by the looks of things, with the working kernel, you don't have
+ > > it loaded (it's dependant upon the 'agpgart' module, which prints the
+ > > "Detected" line that was missing).
+ > 
+ > You are wrong.
+ > I don't have any agpgart module at all, in any of the kernels that I compiled.
 
-An MCE is an error reported by the hardware. It is most likely not a
-software problem, not much kernel people can do about it.
+ok, then you must have CONFIG_AGP=y
 
-Google for "parsemce.c" to find a program that'll decode most MCE's for you.
+ > $ find /lib/modules -name 'agpgart.ko'
+ > $ /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64 -name '*agp*.ko'
+ > /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/sis-agp.ko
+ > /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/intel-agp.ko
+ > /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/via-agp.ko
+ > 
+ > 2)
+ > 
+ > $ strings /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/intel-agp.ko | grep 'agpgart: Detected an Intel'
+ > <6>agpgart: Detected an Intel %s Chipset.
+ > 
+ > Hence, in the case that the kernel works, intel-agp is loaded
+ > WITHOUT printing this Detected line
 
-You may also want to contact your hardware vendor to get an exact
-explanation for the error.
+That doesn't make much sense.  The hardware doesn't change between
+a working & not-working kernel, and somehow the PCI probing fails.
+Hmm, do you have CONFIG_EDAC set ?
+There's an outstanding bug (well, lack of feature) , where it claims
+the PCI device before AGP gets a chance to.
+This is unrelated to your hang however, but would at least explain
+the inconsistent probing.
+
+ > Perhaps my "solution" is to remove this module completely?
+ > I don't seem to need it.
+
+It's needed only for 3d, but it'd be good to figure out why its so
+broken on your system, even if you don't need it.
+
+	Dave
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+http://www.codemonkey.org.uk
