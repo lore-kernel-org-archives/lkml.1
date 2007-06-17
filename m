@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760029AbXFQOss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751654AbXFQPCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760029AbXFQOss (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 10:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXFQOsl
+	id S1751654AbXFQPCU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 11:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbXFQPCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 10:48:41 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37516 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751564AbXFQOsk (ORCPT
+	Sun, 17 Jun 2007 11:02:11 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:48156 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750717AbXFQPCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 10:48:40 -0400
-Date: Sun, 17 Jun 2007 16:48:55 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] (Re: regression tracking (Re: Linux 2.6.21))
-Message-ID: <20070617144855.GX3588@stusta.de>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <6bffcb0e0706170322j3c51868fn6189bfd7d3bcac1@mail.gmail.com> <20070617114709.GD16016@flower.upol.cz> <200706171413.40890.rjw@sisk.pl> <20070617142430.GF16016@flower.upol.cz>
+	Sun, 17 Jun 2007 11:02:09 -0400
+Message-ID: <46754CDF.4080109@interia.pl>
+Date: Sun, 17 Jun 2007 17:01:51 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070524)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070617142430.GF16016@flower.upol.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: video4linux-list@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Hardware MPEG audio fix for SAA7134 based "KNC One TV-Station
+ DVR" card
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-EMID: 9bc86acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 04:24:30PM +0200, Oleg Verych wrote:
-> On Sun, Jun 17, 2007 at 02:13:39PM +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 17 June 2007 13:47, Oleg Verych wrote:
-> []
-> > > It's OK _only_ in case of unknown, hard to find *hardware* bugs.
-> > > 
-> > > If you think it's "a good thing" for bad, untested by developer
-> > > code, then something is completely wrong.
-> > 
-> > Oh, I've just fixed two purely software bugs pointed out by binary searching
-> > in the code that I'm sure has been tested, not only by its developers, but the
-> > bugs only showed up in my configuration (on one out of four test boxes).
-> > 
-> > There are so many different kernel configurations possible that there's no way
-> > a developer can test them all.
-> 
-> With current state of affairs it's not only hard for developers, but
-> and for users: <20070221220520.GA20659@artselect.com>,
->               <20070429230037.95120@gmx.net>
 
-Uwe has an attitude that made many people (including Linus himself) 
-set their mail filters to deliver his emails directly to /dev/null.
+With previous patch card is generating MPEG audio stream too.
+Unfortunatly I2S audio output is muted. Unmute it.
 
-Parts of the contents of his emails were usable including usable 
-regression reports - but the way he treats people simply disqualified 
-him.
+Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
+---
+ drivers/media/video/saa7134/saa7134-empress.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-> I'm trying to re-do some kbuild stuff, but i'm getting rather offensive
-> answers :( <1182020654.8176.398.camel@chaos>
->...
-
-I'm not seeing anything in Thomas' email that could be considered 
-offensive. He told you in a technical way why he disagrees with you.
-
-If you call this email "rather offensive", you should _really_ 
-unsubscribe from lkml (or even any Debian mailing lists). And this is 
-not meant against you, it's simply that for the standards of lkml there 
-is nothing offensive in this email.
-
-cu
-Adrian
-
+diff --git a/drivers/media/video/saa7134/saa7134-empress.c b/drivers/media/video/saa7134/saa7134-empress.c
+--- a/drivers/media/video/saa7134/saa7134-empress.c
++++ b/drivers/media/video/saa7134/saa7134-empress.c
+@@ -96,6 +96,10 @@ static int ts_open(struct inode *inode, struct file *file)
+ 	if (dev->empress_users)
+ 		goto done_up;
+ 
++	/* Unmute audio */
++	saa_writeb(SAA7134_AUDIO_MUTE_CTRL,
++		saa_readb(SAA7134_AUDIO_MUTE_CTRL) & ~(1 << 6));
++
+ 	dev->empress_users++;
+ 	file->private_data = dev;
+ 	err = 0;
+@@ -121,6 +125,10 @@ static int ts_release(struct inode *inode, struct file *file)
+ 	/* stop the encoder */
+ 	ts_reset_encoder(dev);
+ 
++	/* Mute audio */
++	saa_writeb(SAA7134_AUDIO_MUTE_CTRL,
++		saa_readb(SAA7134_AUDIO_MUTE_CTRL) | (1 << 6));
++
+ 	mutex_unlock(&dev->empress_tsq.lock);
+ 	return 0;
+ }
 -- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+
+----------------------------------------------------------------------
+W sklepie orange.pl dostaniesz wiecej minut na rozmowy 
+i telefon od 1 zl. Kup on-line >>> 
+http://link.interia.pl/f1aad
+
 
