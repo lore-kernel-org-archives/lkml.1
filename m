@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbXFQJ6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbXFQJ7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762004AbXFQJ6p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 05:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759672AbXFQJpc
+	id S1760738AbXFQJ7E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 05:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759716AbXFQJpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 05:45:32 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55166 "EHLO il.qumranet.com"
+	Sun, 17 Jun 2007 05:45:34 -0400
+Received: from il.qumranet.com ([82.166.9.18]:55176 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759466AbXFQJou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759463AbXFQJou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Jun 2007 05:44:50 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Shani Moideen <shani.moideen@wipro.com>,
        Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 56/58] KVM: VMX: Replace memset(<addr>, 0, PAGESIZE) with clear_page(<addr>)
-Date: Sun, 17 Jun 2007 12:44:37 +0300
-Message-Id: <11820734822030-git-send-email-avi@qumranet.com>
+Subject: [PATCH 55/58] KVM: SVM: Replace memset(<addr>, 0, PAGESIZE) with clear_page(<addr>)
+Date: Sun, 17 Jun 2007 12:44:36 +0300
+Message-Id: <1182073481246-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.6
 In-Reply-To: <1182073479890-git-send-email-avi@qumranet.com>
 References: <1182073479890-git-send-email-avi@qumranet.com>
@@ -27,33 +27,31 @@ From: Shani Moideen <shani.moideen@wipro.com>
 Signed-off-by: Shani Moideen <shani.moideen@wipro.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/vmx.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/kvm/svm.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index b969db1..b909b54 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -1180,16 +1180,16 @@ static int init_rmode_tss(struct kvm* kvm)
- 	}
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index eb175c5..68841ef 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -581,7 +581,7 @@ static int svm_create_vcpu(struct kvm_vcpu *vcpu)
+ 		goto out2;
  
- 	page = kmap_atomic(p1, KM_USER0);
--	memset(page, 0, PAGE_SIZE);
-+	clear_page(page);
- 	*(u16*)(page + 0x66) = TSS_BASE_SIZE + TSS_REDIRECTION_SIZE;
- 	kunmap_atomic(page, KM_USER0);
+ 	vcpu->svm->vmcb = page_address(page);
+-	memset(vcpu->svm->vmcb, 0, PAGE_SIZE);
++	clear_page(vcpu->svm->vmcb);
+ 	vcpu->svm->vmcb_pa = page_to_pfn(page) << PAGE_SHIFT;
+ 	vcpu->svm->asid_generation = 0;
+ 	memset(vcpu->svm->db_regs, 0, sizeof(vcpu->svm->db_regs));
+@@ -957,7 +957,7 @@ static int shutdown_interception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	 * VMCB is undefined after a SHUTDOWN intercept
+ 	 * so reinitialize it.
+ 	 */
+-	memset(vcpu->svm->vmcb, 0, PAGE_SIZE);
++	clear_page(vcpu->svm->vmcb);
+ 	init_vmcb(vcpu->svm->vmcb);
  
- 	page = kmap_atomic(p2, KM_USER0);
--	memset(page, 0, PAGE_SIZE);
-+	clear_page(page);
- 	kunmap_atomic(page, KM_USER0);
- 
- 	page = kmap_atomic(p3, KM_USER0);
--	memset(page, 0, PAGE_SIZE);
-+	clear_page(page);
- 	*(page + RMODE_TSS_SIZE - 2 * PAGE_SIZE - 1) = ~0;
- 	kunmap_atomic(page, KM_USER0);
- 
+ 	kvm_run->exit_reason = KVM_EXIT_SHUTDOWN;
 -- 
 1.5.0.6
 
