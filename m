@@ -1,44 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbXFQWTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759643AbXFQWdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760590AbXFQWTx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 18:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbXFQWTp
+	id S1759643AbXFQWdh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 18:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXFQWd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 18:19:45 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:64217 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753821AbXFQWTp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 18:19:45 -0400
-Date: Mon, 18 Jun 2007 00:19:42 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       eric@anholt.net, zhenyu.z.wang@intel.com
-Subject: Re: [AGPGART] intel_agp: use table for device probe
-Message-ID: <20070617221942.GC6207@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-	eric@anholt.net, zhenyu.z.wang@intel.com
-References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com>
+	Sun, 17 Jun 2007 18:33:28 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:51391 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750901AbXFQWd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 18:33:27 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, rmk@arm.linux.org.uk
+Subject: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
+Date: Sun, 17 Jun 2007 18:33:28 -0400
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070617213355.GC3430@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706171833.29046.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 05:33:55PM -0400, Dave Jones wrote:
->  > What would the name be of such module?
-> 
-> intel-agp
-> 
-> Though by the looks of things, with the working kernel, you don't have
-> it loaded (it's dependant upon the 'agpgart' module, which prints the
-> "Detected" line that was missing).
+This changes asm() to __asm__() and volatile to __volatile__ so that these
+headers can be used with gcc's -std=c99.
 
-I can rmmod intel-agp without problems.
-The agpgart module isn't loaded.
-
--- 
-Carlo Wood <carlo@alinoe.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/include/asm-arm/byteorder.h b/include/asm-arm/byteorder.h
+index e6f7fcd..39105dc 100644
+--- a/include/asm-arm/byteorder.h
++++ b/include/asm-arm/byteorder.h
+@@ -29,7 +29,7 @@ static inline __attribute_const__ __u32 ___arch__swab32(__u32 x)
+ 		 * right thing and not screw it up to different degrees
+ 		 * depending on the gcc version.
+ 		 */
+-		asm ("eor\t%0, %1, %1, ror #16" : "=r" (t) : "r" (x));
++		__asm__ ("eor\t%0, %1, %1, ror #16" : "=r" (t) : "r" (x));
+ 	} else
+ #endif
+ 		t = x ^ ((x << 16) | (x >> 16)); /* eor r1,r0,r0,ror #16 */
+diff --git a/include/asm-i386/byteorder.h b/include/asm-i386/byteorder.h
+index a45470a..4ead40b 100644
+--- a/include/asm-i386/byteorder.h
++++ b/include/asm-i386/byteorder.h
+@@ -32,13 +32,13 @@ static __inline__ __attribute_const__ __u64 ___arch__swab64(__u64 val)
+ 	} v;
+ 	v.u = val;
+ #ifdef CONFIG_X86_BSWAP
+-	asm("bswapl %0 ; bswapl %1 ; xchgl %0,%1" 
+-	    : "=r" (v.s.a), "=r" (v.s.b) 
+-	    : "0" (v.s.a), "1" (v.s.b)); 
++	__asm__("bswapl %0 ; bswapl %1 ; xchgl %0,%1" 
++	        : "=r" (v.s.a), "=r" (v.s.b) 
++	        : "0" (v.s.a), "1" (v.s.b)); 
+ #else
+    v.s.a = ___arch__swab32(v.s.a); 
+ 	v.s.b = ___arch__swab32(v.s.b); 
+-	asm("xchgl %0,%1" : "=r" (v.s.a), "=r" (v.s.b) : "0" (v.s.a), "1" (v.s.b));
++	__asm__("xchgl %0,%1" : "=r" (v.s.a), "=r" (v.s.b) : "0" (v.s.a), "1" (v.s.b));
+ #endif
+ 	return v.u;	
+ } 
+diff --git a/include/asm-s390/byteorder.h b/include/asm-s390/byteorder.h
+index 1fe2492..07230f6 100644
+--- a/include/asm-s390/byteorder.h
++++ b/include/asm-s390/byteorder.h
+@@ -18,7 +18,7 @@ static inline __u64 ___arch__swab64p(const __u64 *x)
+ {
+ 	__u64 result;
+ 
+-	asm volatile("lrvg %0,%1" : "=d" (result) : "m" (*x));
++	__asm__ __volatile__("lrvg %0,%1" : "=d" (result) : "m" (*x));
+ 	return result;
+ }
+ 
+@@ -26,7 +26,7 @@ static inline __u64 ___arch__swab64(__u64 x)
+ {
+ 	__u64 result;
+ 
+-	asm volatile("lrvgr %0,%1" : "=d" (result) : "d" (x));
++	__asm__ __volatile__("lrvgr %0,%1" : "=d" (result) : "d" (x));
+ 	return result;
+ }
+ 
+@@ -40,7 +40,7 @@ static inline __u32 ___arch__swab32p(const __u32 *x)
+ {
+ 	__u32 result;
+ 	
+-	asm volatile(
++	__asm__ __volatile__(
+ #ifndef __s390x__
+ 		"	icm	%0,8,3(%1)\n"
+ 		"	icm	%0,4,2(%1)\n"
+@@ -61,7 +61,7 @@ static inline __u32 ___arch__swab32(__u32 x)
+ #else /* __s390x__ */
+ 	__u32 result;
+ 	
+-	asm volatile("lrvr  %0,%1" : "=d" (result) : "d" (x));
++	__asm__ __volatile__("lrvr  %0,%1" : "=d" (result) : "d" (x));
+ 	return result;
+ #endif /* __s390x__ */
+ }
+@@ -75,7 +75,7 @@ static __inline__ __u16 ___arch__swab16p(const __u16 *x)
+ {
+ 	__u16 result;
+ 	
+-	asm volatile(
++	__asm__ __volatile__(
+ #ifndef __s390x__
+ 		"	icm	%0,2,1(%1)\n"
+ 		"	ic	%0,0(%1)\n"
