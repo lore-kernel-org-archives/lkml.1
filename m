@@ -1,81 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbXFQOCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbXFQOEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759552AbXFQOCk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 10:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbXFQOCc
+	id S1759981AbXFQOEK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 10:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbXFQOD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 10:02:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53174 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753292AbXFQOCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 10:02:31 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX1/Gc4t5GJfGz8UBnAZcmr6rs1D0BKtsdp14CP0Idc
-	wfvlhyyT35un0Z
-Message-ID: <4673D832.8060009@gmx.net>
-Date: Sat, 16 Jun 2007 14:31:46 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Sun, 17 Jun 2007 10:03:57 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:42340 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754335AbXFQOD5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 10:03:57 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46753F07.6050806@s5r6.in-berlin.de>
+Date: Sun, 17 Jun 2007 16:02:47 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-2.57 is released
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Adrian Bunk <bunk@stusta.de>, Oleg Verych <olecom@flower.upol.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] (Re: regression tracking (Re: Linux 2.6.21))
+References: <200704291849.23197.rjw@sisk.pl>	 <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org>	 <E1HyipW-0005wJ-0Q@flower>	 <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org>	 <20070615234202.GP3588@stusta.de>	 <20070616013236.GA16016@flower.upol.cz>	 <4673D63D.5020804@s5r6.in-berlin.de> <20070617004436.GU3588@stusta.de>	 <467501D0.3090203@googlemail.com> <20070617124508.GV3588@stusta.de> <6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com>
+In-Reply-To: <6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com>
+X-Enigmail-Version: 0.94.1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+Michal Piotrowski wrote:
+> "choose minor evil to prevent a greater one"
 
-I just released man-pages-2.57.
-
-This release is now available for download at:
-
-    http://www.kernel.org/pub/linux/docs/manpages
-    or ftp://ftp.kernel.org/pub/linux/docs/manpages
-
-and soon at:
-
-    ftp://ftp.win.tue.nl/pub/linux-local/manpages
-
-Various things remain to be fixed in man-pages.  A few of the outstanding
-FIXME points from section 2 are listed below.  Any assistance with these
-points would be most welcome.
-
-Cheers,
-
-Michael
-(man-pages maintenance is supported by Google, as a Google engineer 20%
-project.)
-
-==========
-./man2/ioperm.2
-     FIXME is the following ("Only the first 0x3ff I/O ports can be
-     specified in this manner") still true?  Looking at changes in
-     include/asm-i386/processor.h between 2.4 and 2.6 suggests
-     that the limit is different in 2.6.
-
-==========
-./man2/mprotect.2
-     FIXME
-     Document PROT_GROWSUP and PROT_GROWSDOWN
-
-==========
-./man2/nfsservctl.2
-     FIXME The description of nfsservctl() on this page
-     is woefully thin.
-
-==========
-./man2/shmop.2
-     FIXME A good explanation of the rationale for the existence
-     of SHMLBA would be useful here
-
+The measurement of "evil" is subjective.  That's why there are releases
+with known regressions.
 -- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
-
-
+Stefan Richter
+-=====-=-=== -==- =---=
+http://arcgraph.de/sr/
