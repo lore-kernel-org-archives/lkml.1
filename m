@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbXFQUtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbXFQUuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757010AbXFQUtc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 16:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbXFQUtP
+	id S1756291AbXFQUuX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 16:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXFQUuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 16:49:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46669 "EHLO mx1.redhat.com"
+	Sun, 17 Jun 2007 16:50:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46932 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751578AbXFQUtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 16:49:11 -0400
-Date: Sun, 17 Jun 2007 16:49:04 -0400
-From: Dave Jones <davej@redhat.com>
-To: Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
-       eric@anholt.net, zhenyu.z.wang@intel.com
-Subject: Re: [AGPGART] intel_agp: use table for device probe
-Message-ID: <20070617204904.GB3430@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
-	eric@anholt.net, zhenyu.z.wang@intel.com
-References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com>
+	id S1751862AbXFQUuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 16:50:06 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
+	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615072322.GA7594@brong.net>
+	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616021630.GA30660@brong.net>
+	<orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616103130.GD32405@brong.net>
+	<orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616233251.GA17270@brong.net>
+	<ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617122025.5a444e62@the-village.bc.nu>
+	<orsl8qh1mq.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617211853.400712e0@the-village.bc.nu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Sun, 17 Jun 2007 17:49:43 -0300
+In-Reply-To: <20070617211853.400712e0@the-village.bc.nu> (Alan Cox's message of "Sun\, 17 Jun 2007 21\:18\:53 +0100")
+Message-ID: <orodjefgrc.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070617195901.GA5689@alinoe.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 09:59:01PM +0200, Carlo Wood wrote:
- > On Sun, Jun 17, 2007 at 03:07:14PM -0400, Dave Jones wrote:
- > > Sometimes things fall through the cracks..
- > > I haven't heard any similar problems, which makes it somewhat odd.
- > 
- > Ok. Well, the lockup is all to real here :p
- > 
- > I suspect a memory corruption going on, as under certain circumstances
- > there is printed more after the "agpgart: Detected an Intel 965G
- > Chipset." -- that is, the kernel *sometimes* doesn't hang silently,
- > but either reboots by itself (hard reset) or prints something
- > that looks like a total crash to me. Often, this is prefixed by
- > the name of running process. I am sorry, I never wrote any of that
- > down. Only the last time, it then went like:
- > 
- > agpgart: Detected an Intel 965G Chipset.
- > modprobe: Corrupt page table at address 20
- > PGD 178c6c067 PUD 201000c0049c04f BAD
+On Jun 17, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-That's pretty bad corruption indeed.  What I'm puzzling over though
-is why other 965G users aren't seeing the same thing.
-My own 965G seems to be fine, though that's using Intel graphics
-instead of nvidia.
+> On Sun, 17 Jun 2007 15:33:33 -0300
+> Alexandre Oliva <aoliva@redhat.com> wrote:
 
-(Just to rule it out, I'm assuming at this stage in boot that the
- nvidia driver module has never been loaded?)
+>> On Jun 17, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> 
+>> >> I don't know any law that requires tivoization.
+>> 
+>> > In the USSA it is arguable that wireless might need it (if done in
+>> > software) for certain properties. (The argument being it must be
+>> > tamperproof to random end consumers).
+>> 
+>> But this is not tivoization.
 
-And if you never load the agpgart modules, you never see lockups?
+> It most definitely is
 
-Right now, I'm at a loss to explain this.
+>> Tivoization is a manufacturer using technical measures to prevent the
+>> user from tampering (*) with the device, *while* keeping the ability
+>> to tamper with it changes itself.
 
-	Dave
+> That accurately describes the FCC wireless rules.
+
+AFAIK the FCC mandates not permitting the user to tinker.  It doesn't
+mandate the vendor to retain this ability to itself.
+
+Therefore, per the above, FCC doesn't mandate tivoization.
+
+Is there anything else I'm missing that would show it does?
 
 -- 
-http://www.codemonkey.org.uk
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
