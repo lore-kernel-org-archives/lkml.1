@@ -1,114 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbXFQJqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbXFQJqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759936AbXFQJqV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 05:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758468AbXFQJon
+	id S1758765AbXFQJqg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 05:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758973AbXFQJoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 05:44:43 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55127 "EHLO il.qumranet.com"
+	Sun, 17 Jun 2007 05:44:44 -0400
+Received: from il.qumranet.com ([82.166.9.18]:55133 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757680AbXFQJok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757890AbXFQJok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Jun 2007 05:44:40 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/58] KVM updates for 2.6.23
-Date: Sun, 17 Jun 2007 12:43:41 +0300
-Message-Id: <1182073479890-git-send-email-avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
+       Yaozu (Eddie) Dong <eddie.dong@intel.com>
+Subject: [PATCH 04/58] KVM: Avoid saving and restoring some host CPU state on lightweight vmexit
+Date: Sun, 17 Jun 2007 12:43:45 +0300
+Message-Id: <11820734791893-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <1182073479890-git-send-email-avi@qumranet.com>
+References: <1182073479890-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following is my patchqueue for the 2.6.23 merge window, not including
-the cpu hotplug fixes posted earlier.  The changes include performance
-improvements, guest smp, random fixes, and cleanups.  Comments welcome.
+Many msrs and the like will only be used by the host if we schedule() or
+return to userspace.  Therefore, we avoid saving them if we handle the
+exit within the kernel, and if a reschedule is not requested.
 
-Anthony Liguori (1):
-      KVM: SVM: Allow direct guest access to PC debug port
+Based on a patch from Eddie Dong <eddie.dong@intel.com> with a couple of
+fixes by me.
 
-Avi Kivity (44):
-      KVM: Assume that writes smaller than 4 bytes are to non-pagetable pages
-      KVM: Avoid saving and restoring some host CPU state on lightweight vmexit
-      KVM: Unindent some code
-      KVM: Reduce misfirings of the fork detector
-      KVM: Be more careful restoring fs on lightweight vmexit
-      KVM: Unify kvm_mmu_pre_write() and kvm_mmu_post_write()
-      KVM: MMU: Respect nonpae pagetable quadrant when zapping ptes
-      KVM: Update shadow pte on write to guest pte
-      KVM: Increase mmu shadow cache to 1024 pages
-      KVM: Fix potential guest state leak into host
-      KVM: Move some more msr mangling into vmx_save_host_state()
-      KVM: Rationalize exception bitmap usage
-      KVM: Consolidate guest fpu activation and deactivation
-      KVM: Set cr0.mp for guests
-      KVM: MMU: Simplify kvm_mmu_free_page() a tiny bit
-      KVM: MMU: Store shadow page tables as kernel virtual addresses, not physical
-      KVM: VMX: Only reload guest msrs if they are already loaded
-      KVM: Avoid corrupting tr in real mode
-      KVM: Fix vmx I/O bitmap initialization on highmem systems
-      KVM: VMX: Use local labels in inline assembly
-      KVM: x86 emulator: implement wbinvd
-      KVM: MMU: Use slab caches for shadow pages and their headers
-      KVM: MMU: Simplify fetch() a little bit
-      KVM: MMU: Move set_pte_common() to pte width dependent code
-      KVM: MMU: Pass the guest pde to set_pte_common
-      KVM: MMU: Fold fix_read_pf() into set_pte_common()
-      KVM: MMU: Fold fix_write_pf() into set_pte_common()
-      KVM: Move shadow pte modifications from set_pte/set_pde to set_pde_common()
-      KVM: Make shadow pte updates atomic
-      KVM: MMU: Make setting shadow ptes atomic on i386
-      KVM: MMU: Remove cr0.wp tricks
-      KVM: MMU: Simpify accessed/dirty/present/nx bit handling
-      KVM: MMU: Don't cache guest access bits in the shadow page table
-      KVM: MMU: Remove unused large page marker
-      KVM: Lazy guest cr3 switching
-      KVM: Fix vcpu freeing for guest smp
-      KVM: Fix adding an smp virtual machine to the vm list
-      KVM: Enable guest smp
-      KVM: Move duplicate halt handling code into kvm_main.c
-      KVM: Emulate hlt on real mode for Intel
-      KVM: Keep an upper bound of initialized vcpus
-      KVM: Flush remote tlbs when reducing shadow pte permissions
-      KVM: Initialize the BSP bit in the APIC_BASE msr correctly
-      KVM: VMX: Ensure vcpu time stamp counter is monotonous
+Signed-off-by: Yaozu(Eddie) Dong <eddie.dong@intel.com>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ drivers/kvm/kvm.h      |    1 +
+ drivers/kvm/kvm_main.c |    1 +
+ drivers/kvm/vmx.c      |  105 +++++++++++++++++++++++++++--------------------
+ 3 files changed, 62 insertions(+), 45 deletions(-)
 
-Eddie Dong (4):
-      KVM: VMX: Avoid saving and restoring msrs on lightweight vmexit
-      KVM: VMX: Cleanup redundant code in MSR set
-      KVM: VMX: Avoid saving and restoring msr_efer on lightweight vmexit
-      KVM: Use symbolic constants instead of magic numbers
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index 152312c..7facebd 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -252,6 +252,7 @@ struct kvm_stat {
+ 	u32 halt_exits;
+ 	u32 request_irq_exits;
+ 	u32 irq_exits;
++	u32 light_exits;
+ };
+ 
+ struct kvm_vcpu {
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index 8f1f07a..7d68258 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -72,6 +72,7 @@ static struct kvm_stats_debugfs_item {
+ 	{ "halt_exits", STAT_OFFSET(halt_exits) },
+ 	{ "request_irq", STAT_OFFSET(request_irq_exits) },
+ 	{ "irq_exits", STAT_OFFSET(irq_exits) },
++	{ "light_exits", STAT_OFFSET(light_exits) },
+ 	{ NULL }
+ };
+ 
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index 52bd5f0..84ce0c0 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -483,6 +483,13 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
+ 	case MSR_GS_BASE:
+ 		vmcs_writel(GUEST_GS_BASE, data);
+ 		break;
++	case MSR_LSTAR:
++	case MSR_SYSCALL_MASK:
++		msr = find_msr_entry(vcpu, msr_index);
++		if (msr)
++			msr->data = data;
++		load_msrs(vcpu->guest_msrs, NR_BAD_MSRS);
++		break;
+ #endif
+ 	case MSR_IA32_SYSENTER_CS:
+ 		vmcs_write32(GUEST_SYSENTER_CS, data);
+@@ -1820,7 +1827,7 @@ static int vmx_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	int fs_gs_ldt_reload_needed;
+ 	int r;
+ 
+-again:
++preempted:
+ 	/*
+ 	 * Set host fs and gs selectors.  Unfortunately, 22.2.3 does not
+ 	 * allow segment selectors with cpl > 0 or ti == 1.
+@@ -1851,13 +1858,6 @@ again:
+ 	if (vcpu->guest_debug.enabled)
+ 		kvm_guest_debug_pre(vcpu);
+ 
+-	kvm_load_guest_fpu(vcpu);
+-
+-	/*
+-	 * Loading guest fpu may have cleared host cr0.ts
+-	 */
+-	vmcs_writel(HOST_CR0, read_cr0());
+-
+ #ifdef CONFIG_X86_64
+ 	if (is_long_mode(vcpu)) {
+ 		save_msrs(vcpu->host_msrs + msr_offset_kernel_gs_base, 1);
+@@ -1865,6 +1865,14 @@ again:
+ 	}
+ #endif
+ 
++again:
++	kvm_load_guest_fpu(vcpu);
++
++	/*
++	 * Loading guest fpu may have cleared host cr0.ts
++	 */
++	vmcs_writel(HOST_CR0, read_cr0());
++
+ 	asm (
+ 		/* Store host registers */
+ 		"pushf \n\t"
+@@ -1984,36 +1992,8 @@ again:
+ 		[cr2]"i"(offsetof(struct kvm_vcpu, cr2))
+ 	      : "cc", "memory" );
+ 
+-	/*
+-	 * Reload segment selectors ASAP. (it's needed for a functional
+-	 * kernel: x86 relies on having __KERNEL_PDA in %fs and x86_64
+-	 * relies on having 0 in %gs for the CPU PDA to work.)
+-	 */
+-	if (fs_gs_ldt_reload_needed) {
+-		load_ldt(ldt_sel);
+-		load_fs(fs_sel);
+-		/*
+-		 * If we have to reload gs, we must take care to
+-		 * preserve our gs base.
+-		 */
+-		local_irq_disable();
+-		load_gs(gs_sel);
+-#ifdef CONFIG_X86_64
+-		wrmsrl(MSR_GS_BASE, vmcs_readl(HOST_GS_BASE));
+-#endif
+-		local_irq_enable();
+-
+-		reload_tss();
+-	}
+ 	++vcpu->stat.exits;
+ 
+-#ifdef CONFIG_X86_64
+-	if (is_long_mode(vcpu)) {
+-		save_msrs(vcpu->guest_msrs, NR_BAD_MSRS);
+-		load_msrs(vcpu->host_msrs, NR_BAD_MSRS);
+-	}
+-#endif
+-
+ 	vcpu->interrupt_window_open = (vmcs_read32(GUEST_INTERRUPTIBILITY_INFO) & 3) == 0;
+ 
+ 	asm ("mov %0, %%ds; mov %0, %%es" : : "r"(__USER_DS));
+@@ -2035,24 +2015,59 @@ again:
+ 		if (r > 0) {
+ 			/* Give scheduler a change to reschedule. */
+ 			if (signal_pending(current)) {
+-				++vcpu->stat.signal_exits;
+-				post_kvm_run_save(vcpu, kvm_run);
++				r = -EINTR;
+ 				kvm_run->exit_reason = KVM_EXIT_INTR;
+-				return -EINTR;
++				++vcpu->stat.signal_exits;
++				goto out;
+ 			}
+ 
+ 			if (dm_request_for_irq_injection(vcpu, kvm_run)) {
+-				++vcpu->stat.request_irq_exits;
+-				post_kvm_run_save(vcpu, kvm_run);
++				r = -EINTR;
+ 				kvm_run->exit_reason = KVM_EXIT_INTR;
+-				return -EINTR;
++				++vcpu->stat.request_irq_exits;
++				goto out;
++			}
++			if (!need_resched()) {
++				++vcpu->stat.light_exits;
++				goto again;
+ 			}
+-
+-			kvm_resched(vcpu);
+-			goto again;
+ 		}
+ 	}
+ 
++out:
++	/*
++	 * Reload segment selectors ASAP. (it's needed for a functional
++	 * kernel: x86 relies on having __KERNEL_PDA in %fs and x86_64
++	 * relies on having 0 in %gs for the CPU PDA to work.)
++	 */
++	if (fs_gs_ldt_reload_needed) {
++		load_ldt(ldt_sel);
++		load_fs(fs_sel);
++		/*
++		 * If we have to reload gs, we must take care to
++		 * preserve our gs base.
++		 */
++		local_irq_disable();
++		load_gs(gs_sel);
++#ifdef CONFIG_X86_64
++		wrmsrl(MSR_GS_BASE, vmcs_readl(HOST_GS_BASE));
++#endif
++		local_irq_enable();
++
++		reload_tss();
++	}
++#ifdef CONFIG_X86_64
++	if (is_long_mode(vcpu)) {
++		save_msrs(vcpu->guest_msrs, NR_BAD_MSRS);
++		load_msrs(vcpu->host_msrs, NR_BAD_MSRS);
++	}
++#endif
++
++	if (r > 0) {
++		kvm_resched(vcpu);
++		goto preempted;
++	}
++
+ 	post_kvm_run_save(vcpu, kvm_run);
+ 	return r;
+ }
+-- 
+1.5.0.6
 
-He, Qing (1):
-      KVM: VMX: Enable io bitmaps to avoid IO port 0x80 VMEXITs
-
-Jan Engelhardt (1):
-      Use menuconfig objects II - KVM/Virt
-
-Markus Rechberger (1):
-      KVM: Fix includes
-
-Matthew Gregan (1):
-      KVM: Implement IA32_EBL_CR_POWERON msr
-
-Nguyen Anh Quynh (1):
-      KVM: Remove unnecessary initialization and checks in mark_page_dirty()
-
-Nitin A Kamble (1):
-      KVM: VMX: Handle #SS faults from real mode
-
-Robert P. J. Day (1):
-      KVM: Replace C code with call to ARRAY_SIZE() macro.
-
-Shani Moideen (2):
-      KVM: SVM: Replace memset(<addr>, 0, PAGESIZE) with clear_page(<addr>)
-      KVM: VMX: Replace memset(<addr>, 0, PAGESIZE) with clear_page(<addr>)
-
- drivers/kvm/Kconfig       |    9 +-
- drivers/kvm/kvm.h         |   53 ++++-
- drivers/kvm/kvm_main.c    |  115 ++++++++-
- drivers/kvm/mmu.c         |  284 +++++++++-----------
- drivers/kvm/paging_tmpl.h |  273 ++++++++++---------
- drivers/kvm/svm.c         |   46 ++--
- drivers/kvm/vmx.c         |  640 ++++++++++++++++++++++++++++-----------------
- drivers/kvm/x86_emulate.c |   10 +-
- 8 files changed, 868 insertions(+), 562 deletions(-)
