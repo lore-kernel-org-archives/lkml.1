@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761081AbXFQXUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761500AbXFQXZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761081AbXFQXUh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 19:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbXFQXUa
+	id S1761500AbXFQXZD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 19:25:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbXFQXYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 19:20:30 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:53766 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752571AbXFQXU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 19:20:29 -0400
-Date: Mon, 18 Jun 2007 08:18:58 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Carlo Wood <carlo@alinoe.com>, Dave Jones <davej@redhat.com>,
-       linux-kernel@vger.kernel.org, eric@anholt.net, zhenyu.z.wang@intel.com,
-       y-goto@jp.fujitsu.com, torvalds@linux-foundation.org
-Subject: Re: 2.6.22-rc5 regression
-Message-ID: <20070617231858.GB27460@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Carlo Wood <carlo@alinoe.com>, Dave Jones <davej@redhat.com>,
-	linux-kernel@vger.kernel.org, eric@anholt.net,
-	zhenyu.z.wang@intel.com, y-goto@jp.fujitsu.com,
-	torvalds@linux-foundation.org
-References: <20070617182254.GA17595@alinoe.com> <20070617195805.GA6125@alinoe.com> <20070617214905.GA6207@alinoe.com>
+	Sun, 17 Jun 2007 19:24:54 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:50457 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756550AbXFQXYx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 19:24:53 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
+Date: Mon, 18 Jun 2007 01:24:24 +0200
+User-Agent: KMail/1.9.6
+Cc: Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       rmk@arm.linux.org.uk
+References: <200706171833.29046.vapier@gentoo.org> <1182120674.22999.4.camel@laptopd505.fenrus.org>
+In-Reply-To: <1182120674.22999.4.camel@laptopd505.fenrus.org>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070617214905.GA6207@alinoe.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706180124.25574.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19QUhdJs89InPoxG5/ft3MstMXmTMC6wAOBLdt
+ 1t+OwE+xCaZSIvKhTMw/LjN3wQ559lueqmAvvNPLM6PgQFHrx9
+ P8tUwQ7rAay1r+a56TfLQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 11:49:05PM +0200, Carlo Wood wrote:
-> Kernels that work do NOT print "agpgart: Detected an Intel
-> 965G Chipset." (All I know is that I have an ASUS P5B motherboard
-> with a iP965, whether it's this 'G' or not I don't know).
+On Monday 18 June 2007, Arjan van de Ven wrote:
 > 
-The obvious question of course is whether actually reverting this
-changeset fixes your problem? I would be very surprised if it did.
+> On Sun, 2007-06-17 at 18:33 -0400, Mike Frysinger wrote:
+> > This changes asm() to __asm__() and volatile to __volatile__ so that these
+> > headers can be used with gcc's -std=c99.
+> 
+> hmm but the kernel doesn't use -std=c99...
 
-If it does make a difference, please provide the values for
-CONFIG_HOTPLUG, CONFIG_MEMORY_HOTPLUG and CONFIG_HOTPLUG_CPU from your
-.config.
+The byteorder headers are exported to user space through
+include/asm-generic/Kbuild.asm, and they are used by a number
+of other exported headers, so they should work with any
+gcc flags that a user might want to use.
 
-I would wager that you only have CONFIG_HOTPLUG=y, in which case, the
-only difference over previous kernels will be that zone_batchlist() is no
-longer flagged as __init, and so it won't be freed -- this was the reason
-for the "special section" comment in the changeset, as currently it's
-left hanging around for folks that aren't doing cpu/memory hotplug, since
-__devinit was the closest that both cpu and memory hotplug had in common.
-
-I can't imagine that this would impact you at all, though.
+	Arnd <><
