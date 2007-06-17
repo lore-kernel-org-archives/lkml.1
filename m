@@ -1,122 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbXFQXwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbXFQXzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbXFQXwf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 19:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbXFQXw2
+	id S1755152AbXFQXzi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 19:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXFQXzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 19:52:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52255 "EHLO mx1.redhat.com"
+	Sun, 17 Jun 2007 19:55:31 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:51384 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752070AbXFQXw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 19:52:27 -0400
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Ingo Molnar" <mingo@elte.hu>,
-       "Daniel Hazelton" <dhazelton@enter.net>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4673CA7C.5040207@t-online.de>
-	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616181902.GB21478@ftp.linux.org.uk>
-	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
-	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<9a8748490706171436x6b9f2f13pf115d97fee3b1525@mail.gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sun, 17 Jun 2007 20:51:35 -0300
-In-Reply-To: <9a8748490706171436x6b9f2f13pf115d97fee3b1525@mail.gmail.com> (Jesper Juhl's message of "Sun\, 17 Jun 2007 23\:36\:36 +0200")
-Message-ID: <ory7iidtrs.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1752108AbXFQXza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 19:55:30 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
+Date: Sun, 17 Jun 2007 19:55:32 -0400
+User-Agent: KMail/1.9.7
+Cc: Arjan van de Ven <arjan@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       rmk@arm.linux.org.uk
+References: <200706171833.29046.vapier@gentoo.org> <1182120674.22999.4.camel@laptopd505.fenrus.org> <200706180124.25574.arnd@arndb.de>
+In-Reply-To: <200706180124.25574.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart4660292.UO7Q3EYMze";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706171955.34044.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 17, 2007, "Jesper Juhl" <jesper.juhl@gmail.com> wrote:
+--nextPart4660292.UO7Q3EYMze
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On 17/06/07, Alexandre Oliva <aoliva@redhat.com> wrote:
-> [snip]
+On Sunday 17 June 2007, Arnd Bergmann wrote:
+> On Monday 18 June 2007, Arjan van de Ven wrote:
+> > On Sun, 2007-06-17 at 18:33 -0400, Mike Frysinger wrote:
+> > > This changes asm() to __asm__() and volatile to __volatile__ so that
+> > > these headers can be used with gcc's -std=3Dc99.
+> >
+> > hmm but the kernel doesn't use -std=3Dc99...
+>
+> The byteorder headers are exported to user space through
+> include/asm-generic/Kbuild.asm, and they are used by a number
+> of other exported headers, so they should work with any
+> gcc flags that a user might want to use.
 
->> Serious, what's so hard to understand about:
+yeah, sorry, i should have mentioned the point here was that these are=20
+exported headers
+=2Dmike
 
->> no tivoization => more users able to tinker their formerly-tivoized
->> computers => more users make useful modifications => more
->> contributions in kind
+--nextPart4660292.UO7Q3EYMze
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> I have to disagree.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
 
-Your analysis stopped at the downside of prohibiting tivoization.  You
-didn't analyze the potential upsides, so you may indeed come to
-different conclusions, and they may very well be wrong.
+iQIVAwUARnXJ9UFjO5/oN/WBAQJ6tw//c/wTRos4hMQhyWzGfGYgzoddTJrImjyc
+Kv9qa5PcYoRnePUpE9ixfZNYgJJAMmIVz4UbLuj6cx6rtvz5DgFUL32Qql2U1NNJ
+J35v72+eofz/HiM0hC8ZrfrHQ4wyg/ZshyI2gtMI4y2z5EUJ1z0JiGTf0R61K2T/
+IQGMdYn3vLiJMe80Ixi4BWzXvZ4W+HJBiOEpX5GqOainRkl8ZgIYLgR6whP9A2pX
+mCpElIDzwff8spMuaIMlCjfW53y6dt0bywHvo1OPVta45iI7MxvC+5VWiB7ILnhc
+Jts7OqomDpM0VSWIADecqofASqX0X+IbucUDzT4f5NDrdRHsH9j1eYLE30ceAYpD
+Xu57LD6q7qltohYWE/YbOOqPBhkfbL11IEdiY45Q8jDHANzsbyKrM2w7cFbrLTLa
+YoLShpyXuzTUFz+7ue94V0g4lokZJErH+/TrmgDqOqPT2VtBXCUgO8jfZPd+DPpH
+7Byije/kyTn9//l2rp5pX3RX8jY3gGI+ib4asr8soe5MXL+AxLNwe9EFp7Vq7cVI
+Drh1laSRJALI9fyFIAcgdDduMsprzhsNGIFncdKZMICu284pCNGxegC7YMU3fV+Q
+TX+XCk3XrKYMK87rTtQ24Xgn8fDcEQoU0gHDT7RBzu674OncAmU/NUf86I2Zuu4C
+sMNO/GvAjwI=
+=eUhk
+-----END PGP SIGNATURE-----
 
-It's very human to look only at the potential downside of an action
-and conclude it's a bad action.
-
-But it's more rational to look at the potential upside as well,
-evaluate the likelihood of each in the grand scheme of things, and
-then decide whether the potential upside will make up for the
-potential downside.
-
-
-> Let's say that for some reason I don't want the end users of my
-> device to tinker with the software inside my device.
-
-Ok, keep the *want* in mind.  This is very important.
-
-
-> Now I think you can agree to these things being positive:
-
-Yes, even if I'd phrase them slightly differently.
-
-> The only downside is that the end user purchasing the device can't
-> install modified versions of the software on it.
-
-And therefore you severely limit the number of end users who might
-turn into contributors because of self interest in hacking the device
-to suit their needs.
-
-
-> Now let's try it in a GPLv3 universe.  Since I can no longer create my
-> device without having to allow the end user to install modified
-> software on it
-
-False assumption.  You can create the device using GPLv3 software in
-it.  So your acccounting of necessary downsides is only one of the
-possibilities.  The other possibility would be to have the program in
-ROM, of course, which would come with a completely different set of
-downsides, but that would retain all of the "these things being
-positive" you mentioned above.
-
-
-And, remember, since you merely don't *want* the end user of the
-device to tinker with the software, you have the option to do let them
-do that.
-
-And, if you do, they may find in themselves reasons and incentives to
-change the software in the device, and the improvements are likely to
-get back to the community and thus back to you.  Everybody wins.
-
-This is the upside that you left out from your analysis, and from
-every other analysis that set out to "prove" that anti-tivoization is
-bad that I've seen so far.
-
-It appears that people are so concerned about whatever little they
-might lose from requiring respect for users' freedoms that they don't
-even consider what they might win, and that they *would* win if at
-least some of the vendors were to make an choice more favorable to
-their users and the community.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+--nextPart4660292.UO7Q3EYMze--
