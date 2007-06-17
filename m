@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762795AbXFQKEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762886AbXFQKEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762795AbXFQKEP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 06:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759829AbXFQJpz
+	id S1762886AbXFQKEj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 06:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760398AbXFQJtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 05:45:55 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55167 "EHLO il.qumranet.com"
+	Sun, 17 Jun 2007 05:49:49 -0400
+Received: from nn7.de ([85.214.94.156]:60233 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758736AbXFQJop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 05:44:45 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Nitin A Kamble <nitin.a.kamble@intel.com>,
-       Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 24/58] KVM: VMX: Handle #SS faults from real mode
-Date: Sun, 17 Jun 2007 12:44:05 +0300
-Message-Id: <11820734803179-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <1182073479890-git-send-email-avi@qumranet.com>
-References: <1182073479890-git-send-email-avi@qumranet.com>
+	id S1760579AbXFQJts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 05:49:48 -0400
+Subject: git-current: slub breaks s2ram with fglrx...
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       "Rafael J\. Wysocki" <rjw@sisk.pl>, Stefan Seyfried <seife@suse.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sun, 17 Jun 2007 11:49:46 +0200
+Message-Id: <1182073786.3841.11.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nitin A Kamble <nitin.a.kamble@intel.com>
+OK,
 
-Instructions with address size override prefix opcode 0x67
-Cause the #SS fault with 0 error code in VM86 mode.  Forward
-them to the emulator.
+I've found the second root for my 
 
-Signed-Off-By: Nitin A Kamble <nitin.a.kamble@intel.com>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- drivers/kvm/vmx.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+'2.6.22-rc regression: s2ram fails to suspend + fails to resume w/ Xorg':
 
-diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index c4c5535..a05bfa0 100644
---- a/drivers/kvm/vmx.c
-+++ b/drivers/kvm/vmx.c
-@@ -1488,7 +1488,11 @@ static int handle_rmode_exception(struct kvm_vcpu *vcpu,
- 	if (!vcpu->rmode.active)
- 		return 0;
- 
--	if (vec == GP_VECTOR && err_code == 0)
-+	/*
-+	 * Instruction with address size override prefix opcode 0x67
-+	 * Cause the #SS fault with 0 error code in VM86 mode.
-+	 */
-+	if (((vec == GP_VECTOR) || (vec == SS_VECTOR)) && err_code == 0)
- 		if (emulate_instruction(vcpu, NULL, 0, 0) == EMULATE_DONE)
- 			return 1;
- 	return 0;
+The first one was just the wrong coretemp patch (already fixed by Jean).
+
+The second one happens only with Xorg/fglrx loaded and slub enabled, as
+I've found after a useless git bisect session, I've traced down the
+other s2ram does not work problem to be caused by slub ... FYI: I am now
+on git-current which should be rc5:
+
+slab & fglrx works
+slub & console works
+slub & X11+fglrx creates hangs on suspend (black screen - no further
+idea ...)
+
+It should be noted that withouth the proprietary  fglrx.ko module loaded
+the machine just reboots on s2ram (though IIRC without fglrx.ko loaded
+it worked with 2.6.19 or so...)
+
+Is this a kernel thing or yet another bug in fglrx ?
+
+Soeren 
 -- 
-1.5.0.6
-
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
