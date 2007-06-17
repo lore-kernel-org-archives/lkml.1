@@ -1,40 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXFQQOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbXFQQO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbXFQQOq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 12:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbXFQQOi
+	id S1754710AbXFQQO6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 12:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbXFQQOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 12:14:38 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38912 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752343AbXFQQOh (ORCPT
+	Sun, 17 Jun 2007 12:14:40 -0400
+Received: from science.horizon.com ([192.35.100.1]:19774 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752866AbXFQQOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 12:14:37 -0400
-Subject: Re: [PATCH] blink: Only blink when parameter is set
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <20070617083904.GC4496@suse.de>
-References: <20070617083904.GC4496@suse.de>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 17 Jun 2007 09:11:59 -0700
-Message-Id: <1182096719.19654.2.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 17 Jun 2007 12:14:40 -0400
+Date: 17 Jun 2007 12:14:39 -0400
+Message-ID: <20070617161439.8470.qmail@science.horizon.com>
+From: linux@horizon.com
+To: linux-kernel@vger.kernel.org
+Subject: msleep(1000) vs. schedule_timeout_uninterruptible(HZ+1)
+Cc: linux@horizon.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-17 at 10:39 +0200, Bernhard Walle wrote:
-> This patch in the blink driver changes the module to only blink when
-> the parameter 'blink' is set to true. This is to allow the module to
-> be compiled in the kernel and not as module.
+I was looking at some of the stupider code that calls msleep(),
+particularly that which does
+	msleep(jiffies_to_msecs(jiff))
 
+and I noticed that msleep() just calls schedule_timeout_uninterruptible().
+But it does it in a loop.
 
-it also has a 1000Hz timer in it... which sucks power at a high rate..
-Any chance of making the timer more benign?
+The basic question is, when does the loop make a difference?
+Is it only when you're on a wait queue?  Or are there other kinds of
+unexpected wakeups that can arrive?
 
+I see all kinds of uses of both kinds for simple "wait a while" operations,
+and I'm not sure if one is more correct than the other.
+
+(And, in drivers/media/video/cpia2/cpia2_v4l.c:cpia2_exit(), a lovely
+example of calling schedule_timeout() without set_current_state() first.)
