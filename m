@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbXFQBYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbXFQB1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbXFQBYW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 21:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbXFQBYN
+	id S1758563AbXFQB1h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 21:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbXFQB1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 21:24:13 -0400
-Received: from rwcrmhc13.comcast.net ([216.148.227.153]:56881 "EHLO
-	rwcrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbXFQBYM (ORCPT
+	Sat, 16 Jun 2007 21:27:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34424 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752859AbXFQB1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 21:24:12 -0400
-Message-ID: <46749EF6.6060306@wolfmountaingroup.com>
-Date: Sat, 16 Jun 2007 20:39:50 -0600
-From: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Fedora/1.7.8-2
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jan Harkes <jaharkes@cs.cmu.edu>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, alan <alan@clueserver.org>,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org>	<467314E2.9010306@zytor.com>	<Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>	<46739B2C.4080606@hawkeye.stone.uk.eu.org>	<4673B15B.2080300@wolfmountaingroup.com>	<4673B77E.1000803@wolfmountaingroup.com>	<20070616164931.GF14788@delft.aura.cs.cmu.edu>	<46744225.7000609@wolfmountaingroup.com>	<20070616203926.GG14788@delft.aura.cs.cmu.edu> <20070616231758.7bbe9d01@the-village.bc.nu> <467499FF.5060306@wolfmountaingroup.com>
-In-Reply-To: <467499FF.5060306@wolfmountaingroup.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Sat, 16 Jun 2007 21:27:30 -0400
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large
+	Blocksize support
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       hch@infradead.org
+In-Reply-To: <20070614143248.736312f8.akpm@linux-foundation.org>
+References: <20070614193839.878721298@sgi.com>
+	 <20070614130645.cabdff1b.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com>
+	 <20070614143248.736312f8.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sat, 16 Jun 2007 18:25:00 -0700
+Message-Id: <1182043500.2743.7.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeffrey V. Merkey wrote:
 
-> The trick in the NetWare 3 model was to segregate the directory 
-> entries onto special reserved
-> 4K directory blocks (128 byte dir records). When it came time to purge 
-> storage after the file system filled, an entire 4K block and all
-> chains was deleted during block allocation for new files. The dir 
-> blocks were ordered by date -- oldest ones got purged
-> first. The model worked very well until compression was added to the 
-> filesystem, then it started getting complex.
->
-> I would be willing to help instrument the NetWare 3 model in this 
-> proposal on ext3, since this is a basic versioning model and
-> would provide coverage for 99% of the folks needing this capability. I 
-> am available for questions.
->
-> Jeff
->
-I resigned as Chief Scientist of Solera Networks May 8 this year -- 
-mostly because I was not allowed to have any freedom, including working on
-free Linux projects. This went on for almost 4 years (since 2003). Now 
-that I am independent again, I can work on stuff like this again. I 
-started a new company with John Noorda (Ray Noorda's oldest son) who 
-runs Canopy now. That's my current status. I am an owner and entrepeneur 
-again. So I have a lot of free time and will from now on.
+> You: conceptully-new add-on which benefits 0.25% of the user base, provided
+> they select the right config options and filesystem.
+> 
+> Me: simpler enhancement which benefits 100% of the user base (ie: includes
+> 4k blocksize, 4k pagesize) and which also fixes your performance problem
+> with that HBA.
 
-Jeff
+note that at least 2.6 is doing this "sort of", better than 2.4 at
+least. (30% hitrate or something like that).
+
+In addition, systems with an IOMMU (many really large systems have that,
+as well as several x86 ones, with more and more of that in the future),
+this is a moot point since the IOMMU will just linearize for the device.
+
+
