@@ -1,104 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbXFQI31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbXFQIfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbXFQI31 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 04:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbXFQI3S
+	id S1758144AbXFQIfg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 04:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbXFQIf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 04:29:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43906 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754055AbXFQI3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 04:29:17 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Scott Preece <sepreece@gmail.com>, Rob Landley <rob@landley.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	Sun, 17 Jun 2007 04:35:28 -0400
+Received: from paragon.brong.net ([66.232.154.163]:45627 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754055AbXFQIf1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 04:35:27 -0400
+Date: Sun, 17 Jun 2007 18:35:21 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bron Gondwana <brong@fastmail.fm>, Alexandre Oliva <aoliva@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <466A3EC6.6030706@netone.net.tr>
-	<20070614122031.4751a52b@the-village.bc.nu>
-	<20070614122546.GB22078@elte.hu> <200706141907.11957.rob@landley.net>
-	<20070615120926.GD6269@elte.hu>
-	<orvedp121p.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<7b69d1470706151503v23253546w5648f04673741c8f@mail.gmail.com>
-	<orodjgvm5v.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070617075748.GB6267@elte.hu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sun, 17 Jun 2007 05:28:43 -0300
-In-Reply-To: <20070617075748.GB6267@elte.hu> (Ingo Molnar's message of "Sun\, 17 Jun 2007 09\:57\:48 +0200")
-Message-ID: <ortzt7htms.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+Message-ID: <20070617083521.GC5440@brong.net>
+References: <20070615041149.GA6741@brong.net> <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net> <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616021630.GA30660@brong.net> <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616103130.GD32405@brong.net> <orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616233251.GA17270@brong.net> <alpine.LFD.0.98.0706161728070.14121@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706161728070.14121@woody.linux-foundation.org>
+Organization: brong.net
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 17, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+On Sat, Jun 16, 2007 at 05:58:11PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Sun, 17 Jun 2007, Bron Gondwana wrote:
+> > 
+> > No, I'm arguing that it's not "mere aggregation" - the kernel is useless
+> > on that machine unless the BIOS is present or replaced with something
+> > else with equivalent functionality.
+> 
+> That's *not* a valid argument!
+> 
+> I know, I know, it's a common one, but it is *nonsense*.
 
-> * Alexandre Oliva <aoliva@redhat.com> wrote:
+Further to my other response on this (yeah, I know, I should think
+first).
 
->> > if the manufacturer believes that it cannot legally allow software 
->> > modification, all the restriction does is force them either to make 
->> > the software unmodifiable (which advances freedom not at all) or to 
->> > use software under a different license (which advances freedom not 
->> > at all).
->> 
->> Right.
->> 
->> But if the manufacturer believes that it can legally allow it, and 
->> wants to be able to install, software modifications, then it must 
->> decide between giving that up and letting the user do it as well.  And 
->> this is where the users interests may prevail.
+Where the BIOS author and 'work aggregator' are different organisation
+with no shady backroom links (other than the usual industry cabal(TINC)
+of course) then it's clear.
 
-> with the little tiny problem that this is not what the GPLv3 actually 
-> implements.
+When they are the same organisation then the derivedness state is a lot
+less clear and more "discoverable", leading to a higher risk of ambush
+by litigation.
 
-Except that it does.  Go read it, then come back and admit you were
-mistaken and spreading lies about it.
+This isn't specific to any particular licence, but it's something that
+the "intent" theory of hardware limitations being a GPL3 violation makes
+extra dangerous, because that clause can be used as a hook to drag a
+claim through summary judgement (IMHO, IANAL, etc)
 
-The vendor must decide between respecting the freedom of the user, or
-stopping itself from modifying the software too.
-
-> But most fundamentally, a license should _never_ get into the 
-> business of trying to 'judge' what _use_ is 'good' and what is 'evil'. 
-
-What it does is to seek to carry out its mission (*) of defending
-users' freedoms.  Obstacles that are placed to impede the user from
-enjoying the freedoms are supposed to not be permitted by the GPL.
-
-(*) it seems that understanding "spirit of a license" is very
-difficult for you; does the term "mission" help you understand what
-the GPL means when it says "similar in spirit"?
-
-> But the GPLv3 completely destroys Tivo's ability to use Linux, were
-> Linux to be under the GPLv3.
-
-Sorry, wrong.  Barring nonsense.
-
-> You tried to find a workaround for that, by suggesting the 'dont do 
-> security fixes then', 'use a split key', 'use a rent model' solutions, 
-
-FTR, rent model wasn't me, and it doesn't escape the GPLv3dd4
-obligations IIUC, IANAL.
-
-> but dont you realize that by suggesting those you are explicitly against 
-> the intent of RMS, who wants to _stop_ Tivo from being able to do DRM? 
-
-You misunderstand not only the spirit of the license, but his
-intentions.  Oh, wait!  They're the same, that's why.
-
-Respect and defend users' freedoms.
-
-Repeat after me until it sinks.
-
-I know you're not stupid.  Why do you pretend to be?
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Bron ( mostly arguing the same things that you are Linus, I think, but
+       I didn't clarify that I was writing from a devil's advocate
+       position in an alternative reality where Tivo was illegal
+       purely due to "intent" )
