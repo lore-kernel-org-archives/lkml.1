@@ -1,110 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbXFQVOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759894AbXFQVRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbXFQVOU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 17:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbXFQVOG
+	id S1759894AbXFQVRE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 17:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbXFQVQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 17:14:06 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:45883
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbXFQVOC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 17:14:02 -0400
-Date: Sun, 17 Jun 2007 14:13:30 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
+	Sun, 17 Jun 2007 17:16:55 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:60759 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753041AbXFQVQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 17:16:54 -0400
+Date: Sun, 17 Jun 2007 22:21:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Alexandre Oliva <aoliva@redhat.com>
-cc: Bernd Petrovitsch <bernd@firmix.at>, Gabor Czigola <czigola@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <orfy4qffyj.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706171408260.31541@asgard.lang.hm>
-References: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
- <orfy4qh0mc.fsf@oliva.athome.lsd.ic.unicamp.br> <1182112097.3800.3.camel@gimli.at.home>
- <orfy4qffyj.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Message-ID: <20070617222123.0412f740@the-village.bc.nu>
+In-Reply-To: <orodjefgrc.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu>
+	<20070615041149.GA6741@brong.net>
+	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615072322.GA7594@brong.net>
+	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616021630.GA30660@brong.net>
+	<orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616103130.GD32405@brong.net>
+	<orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616233251.GA17270@brong.net>
+	<ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617122025.5a444e62@the-village.bc.nu>
+	<orsl8qh1mq.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617211853.400712e0@the-village.bc.nu>
+	<orodjefgrc.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-you argue that it is evil for tivo to produce a pice of hardware that they 
-can modify and the user can't
-
-but you then argue that it's a good thing for the FSF to produce a license 
-that they can modify and others can't
-
-in the first case tivo is limiting their hardware, releases all the 
-source for the software under the license, and makes it very clear that 
-this is the case before anyone buys a box.
-
-in the second case the FSF is trying to convince everyone that anyone who 
-produced code under the fist license, but didn't give the FSF the ability 
-to relicense their code to whatever the FSF wants are misguided fools who 
-just don't understand what they are doing.
-
-I for one see what tivo is doing as being much less evil then what the FSF 
-is doing.
-
-David Lang
-
-On Sun, 17 Jun 2007, Alexandre Oliva wrote:
-
-> Date: Sun, 17 Jun 2007 18:07:00 -0300
-> From: Alexandre Oliva <aoliva@redhat.com>
-> To: Bernd Petrovitsch <bernd@firmix.at>
-> Cc: Gabor Czigola <czigola@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-> Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+> > That accurately describes the FCC wireless rules.
 > 
-> On Jun 17, 2007, Bernd Petrovitsch <bernd@firmix.at> wrote:
->
->> On Sun, 2007-06-17 at 15:55 -0300, Alexandre Oliva wrote:
->>> On Jun 17, 2007, "Gabor Czigola" <czigola@gmail.com> wrote:
->>>
->>>> I wonder why the linux kernel development community couldn't propose
->>>> an own GPL draft (say v2.2) that is "as free as v2" and that includes
->>>> some ideas (from v3) that are considered as good (free, innovative, in
->>>> the spirit of whatever etc.) by the majority of the kernel developers.
->>>
->>> For one, because the text of the GPL is copyrighted by the FSF, and
->>> licensed without permission for modification.  And that's as it should
->>> be, you don't want others to modify the terms of the license you chose
->>> for your code, do you?
->
->> That's probably precisely the reason for removing the "or later" so that
->> others (even if it's "only" the FSF) can't modify the terms of the
->> license chosen for the code.
->
-> Yes, if you don't trust the organization entitled to publish revised
-> versions to abide by its commitment to abide by a similar spirit, or
-> if that spirit does not reflect your intent as a copyright holder,
-> this are all rational reasons to remove the "or later", indeed (at
-> least as much as distrust can be regarded as rational, that is ;-)
->
->
-> However, as Ingo argued, not being able to patch holes, fix bugs and
-> add new features is a very bad idea.  He was talking about the
-> software, but this is as true when it comes to the license.
->
-> There are smarter ways of retaining control over licensing terms that
-> don't paint yourself into a corner that's nearly impossible to get out
-> of.
->
-> For example, the license provisions could state "or any later version
-> that CONDITION", where CONDITION reflects your intent as a copyright
-> holder, or it could state "or any other license that CONDITION."
->
-> They could also appoint a committee, or rules for formation of a
-> committee, to make this sort of decisions on behalf of all the
-> copyright holders involved.
->
-> Of course, since these are in fact all additional permissions, anyone
-> could take them out, or rather elect not to offer this option for
-> their own contributions (and then you might end up refraining from
-> merging them).
->
-> The mechanics are no different from "or any later version" provisions,
-> really, except that then you establish what the goals of your
-> community are without blocking upgrades that wouldn't conflict, but
-> that would rather further the interests of your own community.
->
->
+> AFAIK the FCC mandates not permitting the user to tinker.  It doesn't
+> mandate the vendor to retain this ability to itself.
+
+In practical terms it does since a recall/replacement in the event of
+rule changes is a bit impractical
+
+> Therefore, per the above, FCC doesn't mandate tivoization.
+
+I'm sure you can find a definition to sort your goals whatever.
+
