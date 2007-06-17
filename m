@@ -1,178 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbXFQMxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbXFQNC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760341AbXFQMxq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 08:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760263AbXFQMwm
+	id S1760092AbXFQNC1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 09:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbXFQNCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 08:52:42 -0400
-Received: from saeurebad.de ([85.214.36.134]:35220 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760254AbXFQMwl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 08:52:41 -0400
-Date: Sun, 17 Jun 2007 14:52:32 +0200
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Replace obscure constructs in fs/block_dev.c
-Message-ID: <20070617125232.GA32374@saeurebad.de>
-Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20070615134632.GA11666@saeurebad.de> <20070617093855.GA30197@atjola.homenet>
+	Sun, 17 Jun 2007 09:02:20 -0400
+Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:54720
+	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753060AbXFQNCT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 09:02:19 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexandre Oliva <aoliva@redhat.com>, Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706142246.57583.dhazelton@enter.net>
+	<878xal2a0q.fsf@graviton.dyn.troilus.org>
+	<200706150127.18069.dhazelton@enter.net>
+	<87sl8tzaj1.fsf@graviton.dyn.troilus.org>
+	<20070615124039.GB21120@elte.hu>
+	<87fy4tz8dc.fsf@graviton.dyn.troilus.org>
+	<20070615143003.GA8775@elte.hu>
+	<87zm31xo3q.fsf@graviton.dyn.troilus.org>
+	<20070615154200.GA17172@elte.hu>
+	<orps3xx83o.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617084610.GD6267@elte.hu>
+From: Michael Poole <mdpoole@troilus.org>
+Date: Sun, 17 Jun 2007 09:02:18 -0400
+In-Reply-To: <20070617084610.GD6267@elte.hu> (Ingo Molnar's message of "Sun\, 17 Jun 2007 10\:46\:10 +0200")
+Message-ID: <871wgaybs5.fsf@graviton.dyn.troilus.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="liOOAslEiF7prFVr"
-Content-Disposition: inline
-In-Reply-To: <20070617093855.GA30197@atjola.homenet>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar writes:
 
---liOOAslEiF7prFVr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> * Alexandre Oliva <aoliva@redhat.com> wrote:
+>
+>> On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+>> 
+>> > it is a false statement on your part that the executable "does not 
+>> > function properly" if it lacks that part. Try it: take out the harddisk 
+>> > from the Tivo (it's a bog standard IDE harddisk), put into a nice Linux 
+>> > PC, mount it, modify a bit in the kernel image header and it will likely 
+>> > still boot just fine on that PC.
+>> 
+>> Ok, try this: take the disk out, remove/replace/modify the signature, 
+>> put the disk back in, and tell me what it is that fail to run.
+>
+> you mean back into the Tivo? That is not support for what you claimed. 
+> You claimed the "executable does not function properly" if it lacks that 
+> part (and you did not qualify your statement with anything). That was a 
+> false statement, because it still works fine in just about any 
+> bog-standard PC. A true statement would be: "the modified executable 
+> does not function properly _in the Tivo_". It still works fine on a 
+> general purpose PC.
 
-Hi,
+I claimed that.  Unless I missed something, Alexandre did not.
 
-On Sun, Jun 17, 2007 at 11:38:55AM +0200, Bjoern Steinbrink wrote:
-[SNIP]
-> > -	/* first decide result */
-> > -	if (bdev->bd_holder == holder)
-> > -		res = 0;	 /* already a holder */
-> > -	else if (bdev->bd_holder != NULL)
-> > -		res = -EBUSY; 	 /* held by someone else */
-> > -	else if (bdev->bd_contains == bdev)
-> > -		res = 0;  	 /* is a whole device which isn't held */
-> > -
-> > -	else if (bdev->bd_contains->bd_holder == bd_claim)
-> > -		res = 0; 	 /* is a partition of a device that is being partitioned */
-> > -	else if (bdev->bd_contains->bd_holder != NULL)
-> > -		res = -EBUSY;	 /* is a partition of a held device */
-> > -	else
-> > -		res = 0;	 /* is a partition of an un-held device */
-> > +	/* If already held by someone else or we have a
-> > +	 * partition of a held device, we do nothing. */
-> >  
-> > -	/* now impose change */
-> > -	if (res==0) {
-> > +	if (bdev->bd_holder || bdev->bd_contains->bd_holder)
-> > +		res = -EBUSY;
-[SNAP]
+Ability to run on a standard PC is irrelevant.  Tivo distributes the
+executable for the specific purpose of running on their hardware.
+Having the signature accepted by the hardware is a critical aspect of
+the executable.  That purpose and function are what make the signature
+part of the work based on Linux.
 
-> Hm, that actually ignores the "someone else" part of the comment and
-> introduces a semantic change. No idea, if it breaks anything though.
+Courts consider purpose and intent when analyzing actions; except when
+one has bought the best available legal system, they would not follow
+your logic.  (The role the signature plays in controlling access to a
+copyrighted work, per DMCA, might also separately identify it as part
+of the work based on Linux.)
 
-Whoops, yes. ->bd_holder can be actually !NULL when it is == holder.
-Same for ->bd_contains->bd_holder. Also the `is a whole unheld device'
-was ignored - sorry. Second try:
+If I wished to distribute a kernel with extended functionality from a
+C file but not the C source files, under your logic I need not give
+them out -- a user could modify the binary and run it on a general
+purpose PC.  Right?  At most it would take clever linker tricks to
+make the change small enough.
 
+As to the suggestion that vendors would use another kernel: I would
+not mind.  A huge fraction of the interesting and useful work in open
+source kernels happens in Linux (first or only).  Using any third
+party software is a trade-off of what you get versus what you give up.
 
-This patch replaces some obscure code-paths in fs/block_dev.c with more
-readable versions.
-
-Signed-off-by: Johannes Weiner <hannes-kernel@saeurebad.de>
-
---liOOAslEiF7prFVr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="block_dev-anti-obscurity-r1.patch"
-
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index ea1480a..3a49adb 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -660,37 +660,32 @@ void bd_forget(struct inode *inode)
- 
- int bd_claim(struct block_device *bdev, void *holder)
- {
--	int res;
-+	void *bd_holder;
-+	struct block_device *bd_contains;
-+
- 	spin_lock(&bdev_lock);
- 
--	/* first decide result */
--	if (bdev->bd_holder == holder)
--		res = 0;	 /* already a holder */
--	else if (bdev->bd_holder != NULL)
--		res = -EBUSY; 	 /* held by someone else */
--	else if (bdev->bd_contains == bdev)
--		res = 0;  	 /* is a whole device which isn't held */
--
--	else if (bdev->bd_contains->bd_holder == bd_claim)
--		res = 0; 	 /* is a partition of a device that is being partitioned */
--	else if (bdev->bd_contains->bd_holder != NULL)
--		res = -EBUSY;	 /* is a partition of a held device */
--	else
--		res = 0;	 /* is a partition of an un-held device */
-+	bd_holder = bdev->bd_holder;
-+	bd_contains = bdev->bd_contains;
- 
--	/* now impose change */
--	if (res==0) {
--		/* note that for a whole device bd_holders
--		 * will be incremented twice, and bd_holder will
--		 * be set to bd_claim before being set to holder
--		 */
--		bdev->bd_contains->bd_holders ++;
--		bdev->bd_contains->bd_holder = bd_claim;
--		bdev->bd_holders++;
--		bdev->bd_holder = holder;
-+	if ((bd_holder && bd_holder != holder) ||
-+	    (bd_contains != bdev &&
-+	     bd_contains->bd_holder && bd_contains->bd_holder != bd_claim)) {
-+		spin_unlock(&bdev_lock);
-+		return -EBUSY;
- 	}
-+
-+	/* note that for a whole device bd_holders
-+	 * will be incremented twice, and bd_holder will
-+	 * be set to bd_claim before being set to holder
-+	 */
-+	bdev->bd_contains->bd_holders ++;
-+	bdev->bd_contains->bd_holder = bd_claim;
-+	bdev->bd_holders++;
-+	bdev->bd_holder = holder;
-+
- 	spin_unlock(&bdev_lock);
--	return res;
-+	return 0;
- }
- 
- EXPORT_SYMBOL(bd_claim);
-@@ -874,7 +869,7 @@ static struct bd_holder *find_bd_holder(struct block_device *bdev,
-  */
- static int add_bd_holder(struct block_device *bdev, struct bd_holder *bo)
- {
--	int ret;
-+	int err;
- 
- 	if (!bo)
- 		return -EINVAL;
-@@ -882,14 +877,17 @@ static int add_bd_holder(struct block_device *bdev, struct bd_holder *bo)
- 	if (!bd_holder_grab_dirs(bdev, bo))
- 		return -EBUSY;
- 
--	ret = add_symlink(bo->sdir, bo->sdev);
--	if (ret == 0) {
--		ret = add_symlink(bo->hdir, bo->hdev);
--		if (ret)
--			del_symlink(bo->sdir, bo->sdev);
-+	err = add_symlink(bo->sdir, bo->sdev);
-+	if (err)
-+		return err;
-+
-+	err = add_symlink(bo->hdir, bo->hdev);
-+	if (err) {
-+		del_symlink(bo->sdir, bo->sdev);
-+		return err;
- 	}
--	if (ret == 0)
--		list_add_tail(&bo->list, &bdev->bd_holder_list);
-+
-+	list_add_tail(&bo->list, &bdev->bd_holder_list);
- 	return ret;
- }
- 
-
---liOOAslEiF7prFVr--
+Michael Poole
