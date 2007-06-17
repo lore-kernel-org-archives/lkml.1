@@ -1,167 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbXFQAmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbXFQAob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbXFQAmv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 20:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXFQAml
+	id S1758671AbXFQAob (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 20:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757613AbXFQAoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 20:42:41 -0400
-Received: from daemonizer.de ([87.230.16.230]:56485 "EHLO daemonizer.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757519AbXFQAmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 20:42:39 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: b44: high ping times with wireless-dev
-Date: Sun, 17 Jun 2007 02:42:18 +0200
-User-Agent: KMail/1.9.7
-Cc: netdev <netdev@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       Michael Buesch <mb@bu3sch.de>, Gary Zambrano <zambrano@broadcom.com>,
-       "Jeff Garzik" <jgarzik@pobox.com>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
-References: <200706162327.47413.maxi@daemonizer.de> <20070616154946.5fb6b013@localhost.localdomain>
-In-Reply-To: <20070616154946.5fb6b013@localhost.localdomain>
+	Sat, 16 Jun 2007 20:44:24 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37123 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756252AbXFQAoX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 20:44:23 -0400
+Date: Sun, 17 Jun 2007 02:44:36 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Oleg Verych <olecom@flower.upol.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: regression tracking (Re: Linux 2.6.21)
+Message-ID: <20070617004436.GU3588@stusta.de>
+References: <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <4673D63D.5020804@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6097975.8HiZyJlsfT";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706170242.24214.maxi@daemonizer.de>
-X-Spam-Score: -4.2 (----)
-X-Spam-Report: No, hits=-4.2 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.2 AWL AWL: From: address is in the auto white-list
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4673D63D.5020804@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6097975.8HiZyJlsfT
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, Jun 16, 2007 at 02:23:25PM +0200, Stefan Richter wrote:
+>...
+> [Adrian, I'm not saying "too few users run -rc kernels", I'm saying "too
+> few FireWire driver users run -rc kernels".]
 
-On Sunday 17 June 2007, Stephen Hemminger wrote:
-> On Sat, 16 Jun 2007 23:27:43 +0200
->
-> Maximilian Engelhardt <maxi@daemonizer.de> wrote:
-> > Hello,
-> >
-> > I recently did some test and found out something interesting about the
-> > b44 problem I wrote earlier.
-> >
-> > The problem is the following:
-> > When I use my BCM4401 with the b44 driver in wireless-dev I get very hi=
-gh
-> > ping times looking like this:
-> >
-> > 64 bytes from 172.30.10.1: icmp_seq=3D1 ttl=3D64 time=3D1863 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D2 ttl=3D64 time=3D855 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D3 ttl=3D64 time=3D1855 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D4 ttl=3D64 time=3D855 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D5 ttl=3D64 time=3D1854 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D6 ttl=3D64 time=3D854 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D7 ttl=3D64 time=3D1851 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D8 ttl=3D64 time=3D851 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D9 ttl=3D64 time=3D1851 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D10 ttl=3D64 time=3D851 ms
-> >
-> > I also found out that shortly after I boot my laptop and log into kde
-> > ping times are not that high but start to increase very quickly:
-> >
-> > 64 bytes from 172.30.10.1: icmp_seq=3D53 ttl=3D64 time=3D2.19 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D54 ttl=3D64 time=3D2.22 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D55 ttl=3D64 time=3D2.20 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D56 ttl=3D64 time=3D2.20 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D57 ttl=3D64 time=3D18.6 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D58 ttl=3D64 time=3D1268 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D59 ttl=3D64 time=3D268 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D60 ttl=3D64 time=3D1268 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D61 ttl=3D64 time=3D268 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D62 ttl=3D64 time=3D6.08 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D63 ttl=3D64 time=3D268 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D64 ttl=3D64 time=3D1264 ms
-> > 64 bytes from 172.30.10.1: icmp_seq=3D65 ttl=3D64 time=3D264 ms
-> >
-> > After some time digging around I found out something really interesting.
-> > When I play some music ping times are immediately lower. If I stop
-> > playing music they are back to the same times as they were before.
-> >
-> > I guess that there is a problem with interrupts so I post some
-> > information of my system in hope it will be usefull.
-> >
-> > maxi@koala:~$ cat /proc/interrupts
-> >           CPU0
-> >  0:     126317    XT-PIC-XT        timer
-> >  1:       3600    XT-PIC-XT        i8042
-> >  2:          0    XT-PIC-XT        cascade
-> >  7:          1    XT-PIC-XT        parport0
-> >  8:          1    XT-PIC-XT        rtc
-> >  9:      17371    XT-PIC-XT        acpi
-> > 10:      13237    XT-PIC-XT        firewire_ohci, yenta, yenta,
-> > ehci_hcd:usb1, uhci_hcd:usb3, uhci_hcd:usb4, Intel 82801DB-ICH4, Intel
-> > 82801DB-ICH4 Modem, eth0
-> > 11:      89059    XT-PIC-XT        uhci_hcd:usb2, i915@pci:0000:00:02.0
-> > 12:        632    XT-PIC-XT        i8042
-> > 14:      10354    XT-PIC-XT        libata
-> > 15:       7408    XT-PIC-XT        libata
-> > NMI:          0
-> > ERR:          0
-> >
-> >
-> > [...]
-> > ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 10
-> > ACPI: PCI Interrupt 0000:02:02.0[A] -> Link [LNKD] -> GSI 10 (level, lo=
-w)
-> > -> IRQ 10
-> > ssb: Sonics Silicon Backplane found on PCI device 0000:02:02.0
-> > b44.c:v2.0
-> > eth0: Broadcom 44xx/47xx 10/100BaseT Ethernet 00:c0:9f:29:99:a7
-> > [...]
-> >
-> > This problem did only happen with wireless-dev (checkout this evening)
-> > and with -mm kernels I used some time ago for testing. Currently I'm
-> > running 2.6.22-rc4 that works perfectly fine and doesn't show that
-> > problem.
-> >
-> > Maxi
->
-> Can you build with APIC for uniprocessor.
+Getting more people testing -rc kernels might be possible, and I don't 
+think it would be too hard. And not only FireWire would benefit from 
+this, remember e.g. that at least 2 out of the last 5 kernels Linus 
+released contained filesystem corruption regressions.
 
-I did enable CONFIG_X86_UP_APIC and CONFIG_X86_UP_IOAPIC and tried with lap=
-ic=20
-and apic=3Dforce but couldn't get APIC working.
+The problem is that we aren't able to handle the many regression reports 
+we get today, so asking for more testing and regression reports today 
+would attack it at the wrong part of the chain.
 
->
-> There is lots of IRQ sharing, so
->  - one of the other device's may be not handling shared IRQ properly.
->    Try unloading firewhire modem and yenta devices.
->
->  - IRQ might be set edge triggered which doesn't work with NAPI
-> 	or shared IRQ.
+Additionally, every reported and unhandled regression will frustrate the 
+reporter - never forget that we have _many_ unhandled bug reports 
+(including but not limited to regression reports) where the submitter 
+spent much time and energy in writing a good bug report.
 
-I did build a kernel without the three mentioned above but the problem is=20
-still the same. I also did remove everything but eth0 on interrupt 10 so th=
-e=20
-only device using that interrupt is eth0 and then the card completely stopp=
-ed=20
-working.
+If we somehow gain the missing manpower for debugging regressions we can 
+actively ask for more testing. Missing manpower (of people knowing some 
+part of the kernel well) for debugging bug reports is IMHO the one big 
+source of quality problems in the Linux kernel. If we get this solved, 
+things like getting more testers for -rc kernels will become low hanging 
+fruits.
 
-Maxi
+> Stefan Richter
 
---nextPart6097975.8HiZyJlsfT
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+cu
+Adrian
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+-- 
 
-iD8DBQBGdINwOimwv528XGERAtCDAKDf+ryWq+3sPSnEnf41/uegU3xlnACfSFLH
-v6ojEVuzum5Y0M9aWOOTYyk=
-=PzRh
------END PGP SIGNATURE-----
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
---nextPart6097975.8HiZyJlsfT--
