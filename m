@@ -1,64 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbXFQARe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbXFQAmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758461AbXFQARe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Jun 2007 20:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbXFQAR1
+	id S1758584AbXFQAmv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Jun 2007 20:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXFQAml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Jun 2007 20:17:27 -0400
-Received: from mailout03.sul.t-online.com ([194.25.134.81]:41043 "EHLO
-	mailout03.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755749AbXFQAR1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Jun 2007 20:17:27 -0400
-Message-ID: <46747D77.6090906@t-online.de>
-Date: Sun, 17 Jun 2007 02:16:55 +0200
-From: Bernd Schmidt <bernds_cb1@t-online.de>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070519)
+	Sat, 16 Jun 2007 20:42:41 -0400
+Received: from daemonizer.de ([87.230.16.230]:56485 "EHLO daemonizer.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757519AbXFQAmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Jun 2007 20:42:39 -0400
+From: Maximilian Engelhardt <maxi@daemonizer.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: b44: high ping times with wireless-dev
+Date: Sun, 17 Jun 2007 02:42:18 +0200
+User-Agent: KMail/1.9.7
+Cc: netdev <netdev@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>, Gary Zambrano <zambrano@broadcom.com>,
+       "Jeff Garzik" <jgarzik@pobox.com>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>
+References: <200706162327.47413.maxi@daemonizer.de> <20070616154946.5fb6b013@localhost.localdomain>
+In-Reply-To: <20070616154946.5fb6b013@localhost.localdomain>
 MIME-Version: 1.0
-To: Alexandre Oliva <aoliva@redhat.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <200706132121.04532.dhazelton@enter.net>	<orhcpbjnqj.fsf@oliva.athome.lsd.ic.unicamp.br>	<200706132304.21984.dhazelton@enter.net>	<20070614112329.3645c397@the-village.bc.nu>	<20070614103846.GA7902@elte.hu>	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614195517.GA4933@elte.hu>	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614235004.GA14952@elte.hu>	<20070615011012.6c09066e@the-village.bc.nu>	<20070615012623.GA25189@elte.hu>	<20070615101007.0cbfd078@the-village.bc.nu>	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>	<4673CA7C.5040207@t-online.de> <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart6097975.8HiZyJlsfT";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-ID: V8aPUBZYYeQNkUNvL5X2zjl5o17pwJM1ArHX32y309iZh1o6RE7css
-X-TOI-MSGID: ca8a84af-677a-4d42-a2b1-b9963d542373
+Message-Id: <200706170242.24214.maxi@daemonizer.de>
+X-Spam-Score: -4.2 (----)
+X-Spam-Report: No, hits=-4.2 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	*  0.2 AWL AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexandre Oliva wrote:
-> On Jun 16, 2007, Bernd Schmidt <bernds_cb1@t-online.de> wrote:
-> 
->> Alexandre Oliva wrote:
->>> On Jun 15, 2007, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->>>
->>>> What this means for the FSF goals if Tivo get up one morning and switch
->>>> their system firmware to ROM however is interesting 8)
->>> I'm not the FSF, and I don't speak for it, but it seems to me that
->>> this would be "mission accomplished".
-> 
->> This is insane.  You start with a lofty ideal involving "freedom", and
->> when you end up with a meaningless technicality (and in technical terms
->> a change for the worse) you consider it a victory?
-> 
-> It accomplishes the mission in that everyone is on the same grounds.
-> Same freedom for everyone.
+--nextPart6097975.8HiZyJlsfT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-See, that's the problem I have with your arguments.  "Same freedom for
-everyone" is a political slogan.  It is not a reasoned thought.  "We
-must stop terrorists" is also a political slogan, and the consequence
-"Tivo should install ROMs so they don't have more rights than users" is
-about equivalent as a victory for freedom as disallowing liquids in hand
-luggage is a victory against terrorism.  Both are nonsensical
-consequences of a political agenda that is applied without thought.
+On Sunday 17 June 2007, Stephen Hemminger wrote:
+> On Sat, 16 Jun 2007 23:27:43 +0200
+>
+> Maximilian Engelhardt <maxi@daemonizer.de> wrote:
+> > Hello,
+> >
+> > I recently did some test and found out something interesting about the
+> > b44 problem I wrote earlier.
+> >
+> > The problem is the following:
+> > When I use my BCM4401 with the b44 driver in wireless-dev I get very hi=
+gh
+> > ping times looking like this:
+> >
+> > 64 bytes from 172.30.10.1: icmp_seq=3D1 ttl=3D64 time=3D1863 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D2 ttl=3D64 time=3D855 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D3 ttl=3D64 time=3D1855 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D4 ttl=3D64 time=3D855 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D5 ttl=3D64 time=3D1854 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D6 ttl=3D64 time=3D854 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D7 ttl=3D64 time=3D1851 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D8 ttl=3D64 time=3D851 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D9 ttl=3D64 time=3D1851 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D10 ttl=3D64 time=3D851 ms
+> >
+> > I also found out that shortly after I boot my laptop and log into kde
+> > ping times are not that high but start to increase very quickly:
+> >
+> > 64 bytes from 172.30.10.1: icmp_seq=3D53 ttl=3D64 time=3D2.19 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D54 ttl=3D64 time=3D2.22 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D55 ttl=3D64 time=3D2.20 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D56 ttl=3D64 time=3D2.20 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D57 ttl=3D64 time=3D18.6 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D58 ttl=3D64 time=3D1268 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D59 ttl=3D64 time=3D268 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D60 ttl=3D64 time=3D1268 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D61 ttl=3D64 time=3D268 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D62 ttl=3D64 time=3D6.08 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D63 ttl=3D64 time=3D268 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D64 ttl=3D64 time=3D1264 ms
+> > 64 bytes from 172.30.10.1: icmp_seq=3D65 ttl=3D64 time=3D264 ms
+> >
+> > After some time digging around I found out something really interesting.
+> > When I play some music ping times are immediately lower. If I stop
+> > playing music they are back to the same times as they were before.
+> >
+> > I guess that there is a problem with interrupts so I post some
+> > information of my system in hope it will be usefull.
+> >
+> > maxi@koala:~$ cat /proc/interrupts
+> >           CPU0
+> >  0:     126317    XT-PIC-XT        timer
+> >  1:       3600    XT-PIC-XT        i8042
+> >  2:          0    XT-PIC-XT        cascade
+> >  7:          1    XT-PIC-XT        parport0
+> >  8:          1    XT-PIC-XT        rtc
+> >  9:      17371    XT-PIC-XT        acpi
+> > 10:      13237    XT-PIC-XT        firewire_ohci, yenta, yenta,
+> > ehci_hcd:usb1, uhci_hcd:usb3, uhci_hcd:usb4, Intel 82801DB-ICH4, Intel
+> > 82801DB-ICH4 Modem, eth0
+> > 11:      89059    XT-PIC-XT        uhci_hcd:usb2, i915@pci:0000:00:02.0
+> > 12:        632    XT-PIC-XT        i8042
+> > 14:      10354    XT-PIC-XT        libata
+> > 15:       7408    XT-PIC-XT        libata
+> > NMI:          0
+> > ERR:          0
+> >
+> >
+> > [...]
+> > ACPI: PCI Interrupt Link [LNKD] enabled at IRQ 10
+> > ACPI: PCI Interrupt 0000:02:02.0[A] -> Link [LNKD] -> GSI 10 (level, lo=
+w)
+> > -> IRQ 10
+> > ssb: Sonics Silicon Backplane found on PCI device 0000:02:02.0
+> > b44.c:v2.0
+> > eth0: Broadcom 44xx/47xx 10/100BaseT Ethernet 00:c0:9f:29:99:a7
+> > [...]
+> >
+> > This problem did only happen with wireless-dev (checkout this evening)
+> > and with -mm kernels I used some time ago for testing. Currently I'm
+> > running 2.6.22-rc4 that works perfectly fine and doesn't show that
+> > problem.
+> >
+> > Maxi
+>
+> Can you build with APIC for uniprocessor.
 
+I did enable CONFIG_X86_UP_APIC and CONFIG_X86_UP_IOAPIC and tried with lap=
+ic=20
+and apic=3Dforce but couldn't get APIC working.
 
-Bernd
+>
+> There is lots of IRQ sharing, so
+>  - one of the other device's may be not handling shared IRQ properly.
+>    Try unloading firewhire modem and yenta devices.
+>
+>  - IRQ might be set edge triggered which doesn't work with NAPI
+> 	or shared IRQ.
 
+I did build a kernel without the three mentioned above but the problem is=20
+still the same. I also did remove everything but eth0 on interrupt 10 so th=
+e=20
+only device using that interrupt is eth0 and then the card completely stopp=
+ed=20
+working.
+
+Maxi
+
+--nextPart6097975.8HiZyJlsfT
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGdINwOimwv528XGERAtCDAKDf+ryWq+3sPSnEnf41/uegU3xlnACfSFLH
+v6ojEVuzum5Y0M9aWOOTYyk=
+=PzRh
+-----END PGP SIGNATURE-----
+
+--nextPart6097975.8HiZyJlsfT--
