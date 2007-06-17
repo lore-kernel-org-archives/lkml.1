@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbXFQRQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbXFQRYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757913AbXFQRQg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 13:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbXFQRQ0
+	id S1757638AbXFQRYg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 13:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbXFQRY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 13:16:26 -0400
-Received: from mail.tmr.com ([64.65.253.246]:35445 "EHLO gaimboi.tmr.com"
+	Sun, 17 Jun 2007 13:24:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33865 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbXFQRQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 13:16:25 -0400
-Message-ID: <46756C6E.1070106@tmr.com>
-Date: Sun, 17 Jun 2007 13:16:30 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1754005AbXFQRY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 13:24:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: How to improve the quality of the kernel?
+Date: Sun, 17 Jun 2007 19:31:01 +0200
+User-Agent: KMail/1.9.5
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Oleg Verych <olecom@flower.upol.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com> <20070617142950.GW3588@stusta.de>
+In-Reply-To: <20070617142950.GW3588@stusta.de>
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Neil Brown <neilb@suse.de>, Wakko Warner <wakko@animx.eu.org>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown> <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706171931.02572.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Sat, 16 Jun 2007, Neil Brown wrote:
->
->> It would be possible to have a 'this is not initialised' flag on the
->> array, and if that is not set, always do a reconstruct-write rather
->> than a read-modify-write.  But the first time you have an unclean
->> shutdown you are going to resync all the parity anyway (unless you
->> have a bitmap....) so you may as well resync at the start.
->>
->> And why is it such a big deal anyway?  The initial resync doesn't stop
->> you from using the array.  I guess if you wanted to put an array into
->> production instantly and couldn't afford any slowdown due to resync,
->> then you might want to skip the initial resync.... but is that really
->> likely?
->
-> in my case it takes 2+ days to resync the array before I can do any 
-> performance testing with it. for some reason it's only doing the 
-> rebuild at ~5M/sec (even though I've increased the min and max rebuild 
-> speeds and a dd to the array seems to be ~44M/sec, even during the 
-> rebuild)
->
-> I want to test several configurations, from a 45 disk raid6 to a 45 
-> disk raid0. at 2-3 days per test (or longer, depending on the tests) 
-> this becomes a very slow process.
->
-I've been doing stuff like this, but I just build the array on a 
-partition per drive so the init is livable. For the stuff I'm doing a 
-total of 500-100GB is ample to do performance testing.
-> also, when a rebuild is slow enough (and has enough of a performance 
-> impact) it's not uncommon to want to operate in degraded mode just 
-> long enought oget to a maintinance window and then recreate the array 
-> and reload from backup.
+On Sunday, 17 June 2007 16:29, Adrian Bunk wrote:
+> On Sun, Jun 17, 2007 at 03:17:58PM +0200, Michal Piotrowski wrote:
+> > On 17/06/07, Adrian Bunk <bunk@stusta.de> wrote:
+> >...
+> >> Fine with me, but:
+> >>
+> >> There are not so simple cases like big infrastructure patches with
+> >> 20 other patches in the tree depending on it causing a regression, or
+> >> even worse, a big infrastructure patch exposing a latent old bug in some
+> >> completely different area of the kernel.
+> >
+> > It is different case.
+> >
+> > "If the patch introduces a new regression"
+> >
+> > introduces != exposes an old bug
+> 
+> My remark was meant as a note "this sentence can't handle all 
+> regressions" (and for a user it doesn't matter whether a new 
+> regression is introduced or an old regression exposed).
+> 
+> It could be we simply agree on this one.  ;-)
+> 
+> > Removal of 20 patches will be painful, but sometimes you need to
+> > "choose minor evil to prevent a greater one" [1].
+> > 
+> >> And we should be aware that reverting is only a workaround for the real
+> >> problem which lies in our bug handling.
+> >...
+> 
+> And this is something I want to emphasize again.
+> 
+> How can we make any progress with the real problem and not only the 
+> symptoms?
+
+I think that we can handle bug reports like we handle modifications of code.
+
+Namely, for each subsystem there can be a person (or a team) responsible
+for handling bugs, by which I don't mean fixing them, but directing bug reports
+at the right developers or subsystem maintainers, following the history of each
+bug report etc.  [Of course, these people can choose to use the bugzilla or any
+other bug tracking system they want, as long as it works for them.]
+
+The email addresses of these people should be known (and even documented),
+so that everyone can notify them if need be and so that it's clear who should
+handle given bug reports.
+
+Just an idea. :-)
+
+Greetings,
+Rafael
+
 
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+"Premature optimization is the root of all evil." - Donald Knuth
