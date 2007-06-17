@@ -1,365 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbXFQSTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760564AbXFQSUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760203AbXFQSTw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 14:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXFQSTp
+	id S1760564AbXFQSUb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 14:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXFQSUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 14:19:45 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:42876 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755190AbXFQSTn (ORCPT
+	Sun, 17 Jun 2007 14:20:23 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59141
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757165AbXFQSUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 14:19:43 -0400
-Date: Sun, 17 Jun 2007 13:50:09 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/8] Immediate Value - i386 Optimization
-Message-ID: <20070617175009.GA931@Krystal>
-References: <20070615202310.178466032@polymtl.ca> <20070615202926.152087904@polymtl.ca> <46730C5A.7080401@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <46730C5A.7080401@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:19:19 up 20 days,  1:57,  2 users,  load average: 0.59, 0.54, 0.55
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 17 Jun 2007 14:20:22 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-kernel@vger.kernel.org
+Subject: QEMU's scsi controller no longer works on arm.
+Date: Sun, 17 Jun 2007 14:20:30 -0400
+User-Agent: KMail/1.9.6
+Cc: linux-arm-kernel@lists.arm.linux.org.uk
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_utXdG25Aj1y2Kvq"
+Message-Id: <200706171420.31003.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chuck Ebbert (cebbert@redhat.com) wrote:
-> On 06/15/2007 04:23 PM, Mathieu Desnoyers wrote:
-> > i386 optimization of the immediate values which uses a movl with code patching
-> > to set/unset the value used to populate the register used for the branch test.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > ---
-> >  arch/i386/kernel/Makefile    |    1 
-> >  arch/i386/kernel/immediate.c |  177 +++++++++++++++++++++++++++++++++++++++++++
-> >  include/asm-i386/immediate.h |   72 +++++++++++++++++
-> >  3 files changed, 249 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6-lttng/include/asm-i386/immediate.h
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/include/asm-i386/immediate.h	2007-06-15 16:13:55.000000000 -0400
-> > +++ linux-2.6-lttng/include/asm-i386/immediate.h	2007-06-15 16:14:04.000000000 -0400
-> > @@ -1 +1,71 @@
-> > -#include <asm-generic/immediate.h>
-> > +#ifndef _ASM_I386_IMMEDIATE_H
-> > +#define _ASM_I386_IMMEDIATE_H
-> > +
-> > +/*
-> > + * Immediate values. i386 architecture optimizations.
-> > + *
-> > + * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > + *
-> > + * This file is released under the GPLv2.
-> > + * See the file COPYING for more details.
-> > + */
-> > +
-> > +#define IF_DEFAULT (IF_OPTIMIZED | IF_LOCKDEP)
-> > +
-> > +/*
-> > + * Optimized version of the immediate. Passing the flags as a pointer to
-> > + * the inline assembly to trick it into putting the flags value as third
-> > + * parameter in the structure.
-> > + */
-> > +#define immediate_optimized(flags, var)					\
-> > +	({								\
-> > +		int condition;						\
-> > +		asm (	".section __immediate, \"a\", @progbits;\n\t"	\
-> > +					".long %1, 0f, %2;\n\t"		\
-> > +					".previous;\n\t"		\
-> > +					"0:\n\t"			\
-> > +					"movl %3,%0;\n\t"		\
-> > +				: "=r" (condition)			\
-> > +				: "m" (var),				\
-> > +				  "m" (*(char*)flags),			\
-> > +				  "i" (0));				\
-> > +		(condition);						\
-> 
-Hi Chuck,
+--Boundary-00=_utXdG25Aj1y2Kvq
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Unnecessary parens.
-> 
+In 2.6.20, I can boot an arm kernel up to a shell prompt including a virtual 
+scsi hard drive.  In 2.6.21-rc1, this stopped working.
 
-ok, fixed in each immediate.h.
+I tried "git bisect" and found out there's a range of about 5000 commits 
+between the two where arm doesn't compile.  At the start of this range, the 
+controller worked.  At the end, it didn't anymore.
 
-> > +	})
-> > +
-> > +/*
-> > + * immediate macro selecting the generic or optimized version of immediate,
-> > + * depending on the flags specified. It is a macro because we need to pass the
-> > + * name to immediate_optimized() and immediate_generic() so they can declare a
-> > + * static variable with it.
-> > + */
-> > +#define _immediate(flags, var)						\
-> > +({									\
-> > +	(((flags) & IF_LOCKDEP) && ((flags) & IF_OPTIMIZED)) ?		\
-> > +		immediate_optimized(flags, var) :			\
-> > +		immediate_generic(flags, var);				\
-> > +})
-> > +
-> > +/* immediate with default behavior */
-> > +#define immediate(var)	_immediate(IF_DEFAULT, var)
-> > +
-> > +/*
-> > + * Architecture dependant immediate information, used internally for immediate
-> > + * activation.
-> > + */
-> > +
-> > +/*
-> > + * Offset of the immediate value from the start of the movl instruction, in
-> > + * bytes. We point to the first lower byte of the 4 bytes immediate value. Only
-> > + * changing one byte makes sure we do an atomic memory write, independently of
-> > + * the alignment of the 4 bytes in the load immediate instruction.
-> > + */
-> > +#define IMMEDIATE_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET 1
-> > +#define IMMEDIATE_OPTIMIZED_ENABLE_TYPE unsigned char
-> > +/* Dereference enable as lvalue from a pointer to its instruction */
-> > +#define IMMEDIATE_OPTIMIZED_ENABLE(a)					\
-> > +	(*(IMMEDIATE_OPTIMIZED_ENABLE_TYPE*)				\
-> > +		((char*)(a)+IMMEDIATE_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET))
-> > +
-> > +extern int immediate_optimized_set_enable(void *address, char enable);
-> > +
-> > +#endif /* _ASM_I386_IMMEDIATE_H */
-> > Index: linux-2.6-lttng/arch/i386/kernel/Makefile
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/arch/i386/kernel/Makefile	2007-06-15 16:13:51.000000000 -0400
-> > +++ linux-2.6-lttng/arch/i386/kernel/Makefile	2007-06-15 16:14:04.000000000 -0400
-> > @@ -35,6 +35,7 @@
-> >  obj-y				+= sysenter.o vsyscall.o
-> >  obj-$(CONFIG_ACPI_SRAT) 	+= srat.o
-> >  obj-$(CONFIG_EFI) 		+= efi.o efi_stub.o
-> > +obj-$(CONFIG_IMMEDIATE)		+= immediate.o
-> >  obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault.o
-> >  obj-$(CONFIG_SERIAL_8250)	+= legacy_serial.o
-> >  obj-$(CONFIG_VM86)		+= vm86.o
-> > Index: linux-2.6-lttng/arch/i386/kernel/immediate.c
-> > ===================================================================
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ linux-2.6-lttng/arch/i386/kernel/immediate.c	2007-06-15 16:14:04.000000000 -0400
-> > @@ -0,0 +1,177 @@
-> > +/*
-> > + * Immediate Value - i386 architecture specific code.
-> > + *
-> > + * Rationale
-> > + *
-> > + * Required because of :
-> > + * - Erratum 49 fix for Intel PIII.
-> > + * - Still present on newer processors : Intel Core 2 Duo Processor for Intel
-> > + *   Centrino Duo Processor Technology Specification Update, AH33.
-> > + *   Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
-> > + *   Instruction Execution Results.
-> > + *
-> > + * Permits immediate value modification by XMC with correct serialization.
-> > + *
-> > + * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
-> > + * location that has preemption enabled because it involves no temporary or
-> > + * reused data structure.
-> > + *
-> > + * Quoting Richard J Moore, source of the information motivating this
-> > + * implementation which differs from the one proposed by Intel which is not
-> > + * suitable for kernel context (does not support NMI and would require disabling
-> > + * interrupts on every CPU for a long period) :
-> > + *
-> > + * "There is another issue to consider when looking into using probes other
-> > + * then int3:
-> > + *
-> > + * Intel erratum 54 - Unsynchronized Cross-modifying code - refers to the
-> > + * practice of modifying code on one processor where another has prefetched
-> > + * the unmodified version of the code. Intel states that unpredictable general
-> > + * protection faults may result if a synchronizing instruction (iret, int,
-> > + * int3, cpuid, etc ) is not executed on the second processor before it
-> > + * executes the pre-fetched out-of-date copy of the instruction.
-> > + *
-> > + * When we became aware of this I had a long discussion with Intel's
-> > + * microarchitecture guys. It turns out that the reason for this erratum
-> > + * (which incidentally Intel does not intend to fix) is because the trace
-> > + * cache - the stream of micorops resulting from instruction interpretation -
-> > + * cannot guaranteed to be valid. Reading between the lines I assume this
-> > + * issue arises because of optimization done in the trace cache, where it is
-> > + * no longer possible to identify the original instruction boundaries. If the
-> > + * CPU discoverers that the trace cache has been invalidated because of
-> > + * unsynchronized cross-modification then instruction execution will be
-> > + * aborted with a GPF. Further discussion with Intel revealed that replacing
-> > + * the first opcode byte with an int3 would not be subject to this erratum.
-> > + *
-> > + * So, is cmpxchg reliable? One has to guarantee more than mere atomicity."
-> > + *
-> > + * Overall design
-> > + *
-> > + * The algorithm proposed by Intel applies not so well in kernel context: it
-> > + * would imply disabling interrupts and looping on every CPUs while modifying
-> > + * the code and would not support instrumentation of code called from interrupt
-> > + * sources that cannot be disabled.
-> > + *
-> > + * Therefore, we use a different algorithm to respect Intel's erratum (see the
-> > + * quoted discussion above). We make sure that no CPU sees an out-of-date copy
-> > + * of a pre-fetched instruction by 1 - using a breakpoint, which skips the
-> > + * instruction that is going to be modified, 2 - issuing an IPI to every CPU to
-> > + * execute a sync_core(), to make sure that even when the breakpoint is removed,
-> > + * no cpu could possibly still have the out-of-date copy of the instruction,
-> > + * modify the now unused 2nd byte of the instruction, and then put back the
-> > + * original 1st byte of the instruction.
-> > + *
-> > + * It has exactly the same intent as the algorithm proposed by Intel, but
-> > + * it has less side-effects, scales better and supports NMI, SMI and MCE.
-> 
-> Algorithm looks plausible, was it really tested?
-> 
+How can YOU reproduce this problem?  I'm glad you asked:
 
-Yes, but I can't reproduce the erroneous condition on my setup. I just
-realized that I did not test it after my last changes. Therefore, see
-the following comments inline for the upcoming fixes :
+The miniconfig I'm using is attached.  You'll need an arm compiler to build 
+it, of course.  (If you haven't got one, the cross compiler I made is 
+at "http://landley.net/code/firmware/downloads/cross-compiler/".  Download 
+the armv4l version for the appropriate host, extract the tarball and add 
+the "bin" directory under that to your path.  The x86 version should work on 
+Ubuntu 6.06 or newer, the x86-64 version was built on 7.04.)
 
-> > + *
-> > + * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > + */
-> > +
-> > +#include <linux/notifier.h>
-> > +#include <linux/preempt.h>
-> > +#include <linux/smp.h>
-> > +#include <linux/notifier.h>
-> > +#include <linux/module.h>
-> > +#include <linux/immediate.h>
-> > +#include <linux/kdebug.h>
-> > +
-> > +#include <asm/cacheflush.h>
-> > +
-> > +#define BREAKPOINT_INSTRUCTION  0xcc
-> > +#define BREAKPOINT_INS_LEN 1
-> > +
-> > +static long target_eip;
-> > +
-> > +static void immediate_synchronize_core(void *info)
-> > +{
-> > +	sync_core();	/* use cpuid to stop speculative execution */
-> > +}
-> > +
-> > +/*
-> > + * The eip value points right after the breakpoint instruction, in the second
-> > + * byte of the movb. Incrementing it of 1 byte makes the code resume right after
-> > + * the movb instruction, effectively skipping this instruction.
-> > + *
-> > + * We simply skip the 2 bytes load immediate here, leaving the register in an
-> > + * undefined state. We don't care about the content (0 or !0), because we are
-> > + * changing the value 0->1 or 1->0. This small window of undefined value
-> > + * doesn't matter.
-> > + */
-> > +static int immediate_notifier(struct notifier_block *nb,
-> > +	unsigned long val, void *data)
-> > +{
-> > +	enum die_val die_val = (enum die_val) val;
-> > +	struct die_args *args = data;
-> > +
-> > +	if (!args->regs || user_mode_vm(args->regs))
-> > +		return NOTIFY_DONE;
-> > +
-> > +	if (die_val == DIE_INT3	&& args->regs->eip == target_eip) {
-> > +		args->regs->eip += 1; /* Skip the next byte of load immediate */
-> 
-> <nitpick>
-> 		args->regs->eip++;
-> 
+Configure with:
 
-Should now be args->regs->eip += 4; because I jump over the last 4 bytes
-of the 5 bytes long movl instead of jumping over the last byte of the 2 bytes
-movb I used previously.
+make ARCH=arm allnoconfig KCONFIG_ALLCONFIG=miniconfig-linux
+make ARCH=arm CROSS_COMPILE=armv4l-
 
-I also have to use the int3 handler installed by CONFIG_KPROBES when
-CONFIG_IMMEDIATE is used so I do not depend on KPROBES for i386. It will
-also be fixed in the next release.
+And then run qemu on it:
 
-> > +		return NOTIFY_STOP;
-> > +	}
-> > +	return NOTIFY_DONE;
-> > +}
-> > +
-> > +static struct notifier_block immediate_notify = {
-> > +	.notifier_call = immediate_notifier,
-> > +	.priority = 0x7fffffff,	/* we need to be notified first */
-> > +};
-> > +
-> > +/*
-> > + * The address is not aligned. We can only change 1 byte of the value
-> > + * atomically.
-> > + * Must be called with immediate_mutex held.
-> > + */
-> > +int immediate_optimized_set_enable(void *address, char enable)
-> > +{
-> > +	char saved_byte;
-> > +	int ret;
-> > +	char *dest = address;
-> > +
-> > +	if (!(enable ^ dest[1])) /* Must be a state change 0<->1 to execute */
-> > +		return 0;
-> > +
-> > +#if defined(CONFIG_DEBUG_RODATA) || defined(CONFIG_DEBUG_PAGEALLOC)
-> > +	/* Make sure this page is writable */
-> > +	change_page_attr(virt_to_page(address), 1, PAGE_KERNEL_EXEC);
-> > +	global_flush_tlb();
-> > +#endif
-> 
-> Can't we have a macro or inline to do this, and the setting back
-> to read-only? kprobes also has the same ugly #if blocks...
-> 
-I guess it would be better to share a common macro between kprobes and
-immediate for this.
+qemu-system-arm -M versatilepb -nographic -no-reboot \
+  -hda /dev/null -kernel zImage-armv4l -append \
+  'rw panic=1 root=/dev/sdaconsole=ttyAMA0'
 
-> Hmm, what happens if you race with kprobes setting a probe on
-> the same page? Couldn't it unexpectedly become read-only?
-> 
+The failing system will loop resetting the scsi controller with lots of 
+timeouts, and takes several minutes to get the the panic where it can't mount 
+root.  The working system will panic due to root being /dev/null fairly 
+quickly, without pages of error messages and a very long wait first.
 
-Sure it can. Is there any spinlock already there that could be used by
-different objects and would fit this purpose?
-
-> > +	target_eip = (long)address + BREAKPOINT_INS_LEN;
-> > +	/* register_die_notifier has memory barriers */
-> > +	register_die_notifier(&immediate_notify);
-> > +	saved_byte = *dest;
-> > +	*dest = BREAKPOINT_INSTRUCTION;
-> > +	wmb();
-> > +	/*
-> > +	 * Execute serializing instruction on each CPU.
-> > +	 * Acts as a memory barrier.
-> > +	 */
-> > +	ret = on_each_cpu(immediate_synchronize_core, NULL, 1, 1);
-> > +	BUG_ON(ret != 0);
-> > +
-> > +	dest[1] = enable;
-> > +	wmb();
-> > +	*dest = saved_byte;
-> > +		/*
-> > +		 * Wait for all int3 handlers to end
-> > +		 * (interrupts are disabled in int3).
-> > +		 * This CPU is clearly not in a int3 handler,
-> > +		 * because int3 handler is not preemptible and
-> > +		 * there cannot be any more int3 handler called
-> > +		 * for this site, because we placed the original
-> > +		 * instruction back.
-> > +		 * synchronize_sched has memory barriers.
-> > +		 */
-> > +	synchronize_sched();
-> > +	unregister_die_notifier(&immediate_notify);
-> > +	/* unregister_die_notifier has memory barriers */
-> > +	target_eip = 0;
-> > +#if defined(CONFIG_DEBUG_RODATA)
-> > +	/* Set this page back to RX */
-> > +	change_page_attr(virt_to_page(address), 1, PAGE_KERNEL_RX);
-> > +	global_flush_tlb();
-> > +#endif
-> > +	return 0;
-> > +}
-> > +EXPORT_SYMBOL_GPL(immediate_optimized_set_enable);
-> > 
-> 
-
+Rob
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
+
+--Boundary-00=_utXdG25Aj1y2Kvq
+Content-Type: text/plain;
+  charset="utf-8";
+  name="miniconfig-linux"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="miniconfig-linux"
+
+CONFIG_EXPERIMENTAL=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_KALLSYMS_EXTRA_PASS=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_AS=y
+CONFIG_ARCH_VERSATILE_PB=y
+CONFIG_MACH_VERSATILE_AB=y
+CONFIG_CPU_ARM926T=y
+CONFIG_ARM_THUMB=y
+CONFIG_PCI=y
+CONFIG_CMDLINE="mem=128M console=ttyAMA0 user_debug=31"
+CONFIG_FPE_NWFPE=y
+CONFIG_BINFMT_ELF=y
+CONFIG_BINFMT_MISC=y
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_NET_KEY=y
+CONFIG_INET=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+CONFIG_INET_XFRM_MODE_TRANSPORT=y
+CONFIG_INET_XFRM_MODE_TUNNEL=y
+CONFIG_INET_XFRM_MODE_BEET=y
+CONFIG_BRIDGE=y
+CONFIG_VLAN_8021Q=y
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_CRYPTOLOOP=y
+CONFIG_BLK_DEV_NBD=y
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_SIZE=16384
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_SCSI=y
+CONFIG_SCSI_PROC_FS=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_BLK_DEV_SR=y
+CONFIG_SCSI_MULTI_LUN=y
+CONFIG_SCSI_FC_ATTRS=y
+CONFIG_SCSI_ISCSI_ATTRS=y
+CONFIG_SCSI_SAS_LIBSAS=y
+CONFIG_SCSI_SAS_LIBSAS_DEBUG=y
+CONFIG_SCSI_SYM53C8XX_2=y
+CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
+CONFIG_SCSI_SYM53C8XX_MMIO=y
+CONFIG_NETDEVICES=y
+CONFIG_DUMMY=y
+CONFIG_TUN=y
+CONFIG_PPP=y
+CONFIG_PPP_MULTILINK=y
+CONFIG_PPP_FILTER=y
+CONFIG_PPP_ASYNC=y
+CONFIG_PPP_SYNC_TTY=y
+CONFIG_PPP_DEFLATE=y
+CONFIG_PPPOE=y
+CONFIG_SERIAL_NONSTANDARD=y
+CONFIG_N_HDLC=y
+CONFIG_SERIAL_AMBA_PL011=y
+CONFIG_SERIAL_AMBA_PL011_CONSOLE=y
+CONFIG_HW_RANDOM=y
+CONFIG_FIRMWARE_EDID=y
+CONFIG_EXT2_FS=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_ROMFS_FS=y
+CONFIG_TMPFS=y
+CONFIG_CRAMFS=y
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_NFS_V4=y
+CONFIG_NFS_DIRECTIO=y
+CONFIG_SMB_FS=y
+CONFIG_NLS_DEFAULT="utf8"
+CONFIG_NLS_UTF8=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_LOG_BUF_SHIFT=17
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+CONFIG_DEBUG_INFO=y
+CONFIG_FORCED_INLINING=y
+CONFIG_DEBUG_USER=y
+CONFIG_DEBUG_ERRORS=y
+CONFIG_DEBUG_LL=y
+CONFIG_CRYPTO_CRC32C=y
+
+--Boundary-00=_utXdG25Aj1y2Kvq--
