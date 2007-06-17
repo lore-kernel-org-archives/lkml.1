@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbXFQJ5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761828AbXFQJ5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761702AbXFQJ5c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 05:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759705AbXFQJpY
+	id S1761828AbXFQJ5t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 05:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758579AbXFQJp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 05:45:24 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55154 "EHLO il.qumranet.com"
+	Sun, 17 Jun 2007 05:45:26 -0400
+Received: from il.qumranet.com ([82.166.9.18]:55204 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759437AbXFQJot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 05:44:49 -0400
+	id S1759446AbXFQJou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 05:44:50 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 49/58] KVM: Fix adding an smp virtual machine to the vm list
-Date: Sun, 17 Jun 2007 12:44:30 +0300
-Message-Id: <1182073481659-git-send-email-avi@qumranet.com>
+Subject: [PATCH 50/58] KVM: Enable guest smp
+Date: Sun, 17 Jun 2007 12:44:31 +0300
+Message-Id: <11820734811440-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.6
 In-Reply-To: <1182073479890-git-send-email-avi@qumranet.com>
 References: <1182073479890-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we add the vm once per vcpu, we corrupt the list if the guest has
-multiple vcpus.
+As we don't support guest tlb shootdown yet, this is only reliable
+for real-mode guests.
 
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm_main.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/kvm/kvm.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 3ff8ee5..230b25a 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -319,6 +319,9 @@ static struct kvm *kvm_create_vm(void)
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index 3ec4e26..e665f55 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -55,7 +55,7 @@
+ #define INVALID_PAGE (~(hpa_t)0)
+ #define UNMAPPED_GVA (~(gpa_t)0)
  
- 	spin_lock_init(&kvm->lock);
- 	INIT_LIST_HEAD(&kvm->active_mmu_pages);
-+	spin_lock(&kvm_lock);
-+	list_add(&kvm->vm_list, &vm_list);
-+	spin_unlock(&kvm_lock);
- 	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
- 		struct kvm_vcpu *vcpu = &kvm->vcpus[i];
- 
-@@ -326,9 +329,6 @@ static struct kvm *kvm_create_vm(void)
- 		vcpu->cpu = -1;
- 		vcpu->kvm = kvm;
- 		vcpu->mmu.root_hpa = INVALID_PAGE;
--		spin_lock(&kvm_lock);
--		list_add(&kvm->vm_list, &vm_list);
--		spin_unlock(&kvm_lock);
- 	}
- 	return kvm;
- }
+-#define KVM_MAX_VCPUS 1
++#define KVM_MAX_VCPUS 4
+ #define KVM_ALIAS_SLOTS 4
+ #define KVM_MEMORY_SLOTS 4
+ #define KVM_NUM_MMU_PAGES 1024
 -- 
 1.5.0.6
 
