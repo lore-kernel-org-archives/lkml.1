@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbXFQHIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbXFQHPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759195AbXFQHIi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 03:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbXFQHIa
+	id S1757896AbXFQHPQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 03:15:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbXFQHPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 03:08:30 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:56851 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753208AbXFQHI3 (ORCPT
+	Sun, 17 Jun 2007 03:15:04 -0400
+Received: from sccrmhc11.comcast.net ([63.240.77.81]:61639 "EHLO
+	sccrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754872AbXFQHPD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 03:08:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ErFIUt7MDGaooMdHgv4fW5FpMCweJT1xcsP+G8fIE/hsqk9CbLPhk6MGkkP3nrvLfJzUR5BtOhYDyXgi0ETdu6vBMlMIfGoyLg00beQQHinsCYFqtLRiLm12wAbUC3+busDSKS5L1dcAaAoqqRFNhMOMdLwmS37a5AiHoF0KAt4=
-Message-ID: <4674DDEF.8090600@gmail.com>
-Date: Sun, 17 Jun 2007 09:08:31 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] make pci_ids lowercase hexa
-References: <116342983010020429@wsc.cz> <20070616195738.GB23443@kroah.com>
-In-Reply-To: <20070616195738.GB23443@kroah.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 17 Jun 2007 03:15:03 -0400
+Subject: Re: And now for something _totally_ different: Linux v2.6.22-rc5
+From: Nicholas Miell <nmiell@comcast.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Davide Libenzi <davidel@xmailserver.org>
+In-Reply-To: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 17 Jun 2007 00:15:00 -0700
+Message-Id: <1182064500.2798.6.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.0.njm.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH napsal(a):
-> On Sat, Jun 16, 2007 at 05:44:52PM +0200, Jiri Slaby wrote:
->> make pci_ids lowercase hexa
+On Sat, 2007-06-16 at 20:33 -0700, Linus Torvalds wrote:
+> In a stunning turn of events, I've actually been able to make another -rc 
+> release despite all the discussion (*cough*flaming*cough*) about other 
+> issues, and we now have a brand-spanking-new Linux 2.6.22-rc5 release 
+> out there!
 > 
-> Why?  What good is this going to do in the long run?
 
-It's just cleanup to get rid of things like this:
- #define PCI_DEVICE_ID_PROMISE_20246	0x4d33
- #define PCI_DEVICE_ID_PROMISE_20262	0x4d38
--#define PCI_DEVICE_ID_PROMISE_20263	0x0D38
-+#define PCI_DEVICE_ID_PROMISE_20263	0x0d38
- #define PCI_DEVICE_ID_PROMISE_20268	0x4d68
+signalfd still has the broken behavior w.r.t. signal delivery to
+threads.
 
-But still not necessary, if you think, it's useless -- but why don't have whole
-document formatted in one way. However this patch needs a -fix if ACKed due to
-bad regexp used (omitted '*' changes only the first uppercase letter found). If
-NACKed, this doesn't matter.
+Is this going to get fixed before 2.6.22 proper is released, or should
+it just be disabled entirely so no userspace apps grow to depend on
+current wrong behavior?
 
-> Also, shouldn't you send pci specific patches like this to the pci
-> maintainer?  :)
+-- 
+Nicholas Miell <nmiell@comcast.net>
 
-Hell yes :/, every second time I post something, somebody is missing in the CC
-list, grr.
-
-thanks,
---js
