@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278AbXFQPb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbXFQPdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278AbXFQPb1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 11:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbXFQPbT
+	id S1753722AbXFQPdg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 11:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbXFQPd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 11:31:19 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:1824 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbXFQPbS (ORCPT
+	Sun, 17 Jun 2007 11:33:29 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:41240 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614AbXFQPd2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 11:31:18 -0400
+	Sun, 17 Jun 2007 11:33:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=R7wyAhGKhfuqeEm8jbaGp4mQ5KxltcFyfHtCKtCSKSnoxn+CtphyXKIaqWe61Pq1FCCCVa9ksPmjsggGDN4ph/o/ZHoXFamzC7Q/rLFYtGamAZiQJe32Ahg++r0KHPGfyG9VRwM2oeD+jo9fAq4dmu+Lv4uJQ4ijAwNMH0eQLWg=
-Message-ID: <6bffcb0e0706170831p80b4722qe03856a030c4c8ee@mail.gmail.com>
-Date: Sun, 17 Jun 2007 17:31:17 +0200
+        b=e0IzsXdXdpAZUHUbwYztlkgkA7B1ELyI6f40jysqM7WdPMj0DKnD91le8qObdtn+VXTdKqKfU7c7U5H4lBagSaZAdzk/5OMQrkU4nnputVMBPAqE/otXinko9zN27pJtK/y4c53GN5kcYHAw86Td4sFTYLd4Xk63rBP3HZhKyTs=
+Message-ID: <6bffcb0e0706170833x36aa33a3x5ff81ba5a112528f@mail.gmail.com>
+Date: Sun, 17 Jun 2007 17:33:27 +0200
 From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Miklos Szeredi" <miklos@szeredi.hu>,
-       "Darrick J. Wong" <djwong@us.ibm.com>, "Andi Kleen" <ak@suse.de>,
-       "Bj?rn Steinbrink" <B.Steinbrink@gmx.de>,
-       "Ian McDonald" <ian.mcdonald@jandi.co.nz>,
-       "William Cohen" <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       "Antonino Daplas" <adaplas@gmail.com>, "Olaf Hering" <olaf@aepfle.de>,
-       "Ville Syrj?l?" <syrjala@sci.fi>, "Jean Delvare" <khali@linux-fr.org>,
-       "Rudolf Marek" <r.marek@assembler.cz>,
-       "Soeren Sonnenburg" <kernel@nn7.de>
-In-Reply-To: <20070617151612.GB11762@elte.hu>
+To: "Soeren Sonnenburg" <kernel@nn7.de>
+Subject: Re: git-current: slub breaks s2ram with fglrx...
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Stefan Seyfried" <seife@suse.de>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <1182093905.3841.23.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <467543FA.60905@googlemail.com> <20070617151612.GB11762@elte.hu>
+References: <1182073786.3841.11.camel@localhost>
+	 <200706171304.46181.rjw@sisk.pl> <1182093905.3841.23.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/06/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->
-> > Subject    : long freezes on thinkpad t60
-> > References : http://lkml.org/lkml/2007/5/24/100
-> > Submitter  : Miklos Szeredi <miklos@szeredi.hu>
-> > Handled-By : Ingo Molnar <mingo@elte.hu>
-> > Patch      : http://lkml.org/lkml/2007/6/16/81
-> > Status     : patch was suggested
->
-> i think this isnt a new regression in .22, it existed in .21 too - or
-> are you tracking all 2.6 regressions?
+Hi Soeren,
 
-Unfortunately I don't have enough time, will and tools to track all
-2.6 regressions.
-
-Anyway, I'll leave it on the list. We've got a fix :)
-
+On 17/06/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
+> On Sun, 2007-06-17 at 13:04 +0200, Rafael J. Wysocki wrote:
+> > On Sunday, 17 June 2007 11:49, Soeren Sonnenburg wrote:
+> > > OK,
+> [...]
+> > > slab & fglrx works
+> > > slub & console works
+> > > slub & X11+fglrx creates hangs on suspend (black screen - no further
+> > > idea ...)
+> > >
+> > > It should be noted that withouth the proprietary  fglrx.ko module loaded
+> > > the machine just reboots on s2ram (though IIRC without fglrx.ko loaded
+> > > it worked with 2.6.19 or so...)
+> > >
+> > > Is this a kernel thing or yet another bug in fglrx ?
+> >
+> > I have no idea.
+> >
+> > I guess we should let Christoph know about it (CC added), but I'm afraid
+> > we won't be able to figure out what's wrong without access to the driver's
+> > source code ...
 >
->         Ingo
+> I have one question: What if I don't load fglrx.ko but still use the
+> proprietary binary driver for xorg.
+
+AFAIK it will not work.
+
+> Shouldn't s2ram work with that ? And
+> if not is this considered a kernel bug or still a ati-binary driver
+> bug ?
+>
+> Soeren
+> --
+> Sometimes, there's a moment as you're waking, when you become aware of
+> the real world around you, but you're still dreaming.
 >
 
 Regards,
