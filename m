@@ -1,43 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760911AbXFQSzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbXFQTHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760911AbXFQSzi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 14:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758764AbXFQSza
+	id S1760600AbXFQTHf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbXFQTH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 14:55:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49351 "EHLO mx1.redhat.com"
+	Sun, 17 Jun 2007 15:07:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52509 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754041AbXFQSz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 14:55:29 -0400
-To: "Gabor Czigola" <czigola@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sun, 17 Jun 2007 15:55:23 -0300
-In-Reply-To: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com> (Gabor Czigola's message of "Sun\, 17 Jun 2007 19\:14\:03 +0200")
-Message-ID: <orfy4qh0mc.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1758100AbXFQTH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 15:07:26 -0400
+Date: Sun, 17 Jun 2007 15:07:14 -0400
+From: Dave Jones <davej@redhat.com>
+To: Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+Message-ID: <20070617190714.GA18115@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com
+References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070617162235.GA5486@alinoe.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 17, 2007, "Gabor Czigola" <czigola@gmail.com> wrote:
+On Sun, Jun 17, 2007 at 06:22:35PM +0200, Carlo Wood wrote:
 
-> I wonder why the linux kernel development community couldn't propose
-> an own GPL draft (say v2.2) that is "as free as v2" and that includes
-> some ideas (from v3) that are considered as good (free, innovative, in
-> the spirit of whatever etc.) by the majority of the kernel developers.
+ > > Hi Dave, I have an amd64 box for which every kernel
+ > > after 2.6.18 hangs during boot, so I have no dmesg :(
+ > > 
+ > > I used git bisect to find out where the problem patch is,
+ > > and assuming bisect works (imho it jumped between versions
+ > > very weirdly: closing in on the last 6 revisions, it
+ > > jumped from 2.6.18 to 2.6.18-rc2 to 2.6.18-rc6), the problem
+ > > is a patch in intel-agp.c, where support for the intel 965G
+ > > is added (which I have).
+ > Dave, I have no idea why you never replied to this -- don't
+ > you care that kernels 2.6.19 through 2.6.21 lockup on boot? --
 
-For one, because the text of the GPL is copyrighted by the FSF, and
-licensed without permission for modification.  And that's as it should
-be, you don't want others to modify the terms of the license you chose
-for your code, do you?
+Sometimes things fall through the cracks..
+I haven't heard any similar problems, which makes it somewhat odd.
+
+ > The patch causes my machine to lock up and/or crash
+ > in various ways (depending on the exact version of the kernel),
+ > very shortly after printing: agpgart: Detected an Intel 965G Chipset.
+ > 
+ > The first kernel version that stops doing that is 2.6.22-rc5.
+ > I used git bisect once more to find the patch that fixes this bug:
+ > I am mailing this mostly because the comment doesn't seem to indicate
+ > that the author is aware that this patch fixes an existing regression
+ > (it worked fine for me with 2.6.18).
+
+Indeed, it was unknown to me too, this should have just been
+a clean-up.
+
+ > If anyone wants to know more (like what hardware I'm using), please
+ > show me that you're actually alive / reading my mails.
+
+Out of curiousity, I'd like to see your lspci
+(not -v or anything, just run with no args)
+
+	Dave
+
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+http://www.codemonkey.org.uk
