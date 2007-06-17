@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759298AbXFQEXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759450AbXFQEZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759298AbXFQEXW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 00:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbXFQEXQ
+	id S1759450AbXFQEZa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 00:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXFQEZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 00:23:16 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50605 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbXFQEXP (ORCPT
+	Sun, 17 Jun 2007 00:25:23 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:55535 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751391AbXFQEZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 00:23:15 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Sun, 17 Jun 2007 00:23:02 -0400
-User-Agent: KMail/1.9.6
-Cc: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <200706162310.24726.dhazelton@enter.net> <orejkbkyai.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orejkbkyai.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 17 Jun 2007 00:25:22 -0400
+Date: Sat, 16 Jun 2007 22:29:39 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: [PATCH] Use DATA_DATA in xtensa
+Message-ID: <20070617022939.GC6832@Krystal>
+References: <20070615202959.316963297@polymtl.ca> <20070615203550.044690775@polymtl.ca> <20070615215534.GB11267@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706170023.03209.dhazelton@enter.net>
+In-Reply-To: <20070615215534.GB11267@uranus.ravnborg.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:29:04 up 19 days, 11:07,  3 users,  load average: 0.07, 0.09, 0.22
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 June 2007 00:19:49 Alexandre Oliva wrote:
-> On Jun 17, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Saturday 16 June 2007 21:54:56 Alexandre Oliva wrote:
-> >> There may be laws that require certification or limitations on the
-> >> user.  Manufacturer giving up the ability to make modifications would
-> >> address this, or *perhaps* arranging for user and manufacturer to each
-> >> hold half of the key needed to run a modification (which might comply
-> >> with the GPLv3dd4 terms, IANAL).
-> >
-> > It doesn't. The GPLv3 (dd4) makes that very clear. See the quote below.
->
-> You left out the relevant bit:
->
->   this requirement does not apply if neither you nor any third party
->   retains the ability to install modified object code on the User
->   Product (for example, the work has been installed in ROM).
+* Sam Ravnborg (sam@ravnborg.org) wrote:
+> From your patch it looks like I originally missed out
+> powerpc + xtensa when introducing DATA_DATA - would be nice if
+> you could fix that.
+> 
+> 	Sam
 
-Ah, but giving the user half the key doesn't mean they still don't have access 
-to the entire key. QED: Giving people half the key won't cut it under the 
-GPLv3 (dd4)
+Use DATA_DATA in xtensa
 
-DRH
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/xtensa/kernel/vmlinux.lds.S |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+Index: linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/xtensa/kernel/vmlinux.lds.S	2007-06-16 22:20:09.000000000 -0400
++++ linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S	2007-06-16 22:20:41.000000000 -0400
+@@ -118,7 +118,8 @@
+   _fdata = .;
+   .data :
+   {
+-    *(.data) CONSTRUCTORS
++    DATA_DATA
++    CONSTRUCTORS
+     . = ALIGN(XCHAL_ICACHE_LINESIZE);
+     *(.data.cacheline_aligned)
+   }
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
