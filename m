@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbXFQV6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbXFQWI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761052AbXFQV6u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 17:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXFQV6n
+	id S1760165AbXFQWI3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 18:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbXFQWIU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 17:58:43 -0400
-Received: from bee.hiwaay.net ([216.180.54.11]:56106 "EHLO bee.hiwaay.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967AbXFQV6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 17:58:43 -0400
-Date: Sun, 17 Jun 2007 16:58:40 -0500
-From: Chris Adams <cmadams@hiwaay.net>
-To: linux-kernel@vger.kernel.org
+	Sun, 17 Jun 2007 18:08:20 -0400
+Received: from [212.12.190.177] ([212.12.190.177]:32853 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752056AbXFQWIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 18:08:19 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Alexandre Oliva <aoliva@redhat.com>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070617215840.GA1217855@hiwaay.net>
-References: <fa.toMqQ3LqoQn6Xh51bVordO8WMVc@ifi.uio.no> <fa.EmnDne9QndTLcw7NAzc83tWplMI@ifi.uio.no> <fa.G+0vGcF8U8pcd6ozkdhKGsQ/dDs@ifi.uio.no> <fa.8bXRW7nY7z5eXVZxCxUgra+gbb8@ifi.uio.no> <fa.qtDtq+aSKlNweTqHtKcy/Gj5PXg@ifi.uio.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 18 Jun 2007 01:08:21 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200706172319.22381.a1426z@gawab.com> <ork5u2fgpz.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <ork5u2fgpz.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9a8748490706171436x6b9f2f13pf115d97fee3b1525@mail.gmail.com>
-User-Agent: Mutt/1.4i
+Message-Id: <200706180108.22065.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Once upon a time, Jesper Juhl <jesper.juhl@gmail.com> said:
->Let's say I'm the owner of a company selling some device that uses a
->GPLv2 OS and some GPLv2 applications to do the job. Let's say that for
->some reason I don't want the end users of my device to tinker with the
->software inside my device.  Obviously I release the source for any
->modifications I may have made, but I use the hardware to prevent users
->from installing modified versions on the device (basically I TiVO'ize
->the device).
+Alexandre Oliva wrote:
+> On Jun 17, 2007, Al Boldi <a1426z@gawab.com> wrote:
+> > Under what circumstances would it be possible to receive permission for
+> > modification?
+>
+> You have to ask the copyright holder.
+>
+> Affero did just that, and so the Affero GPL was born.
+>
+> Just don't assume the FSF will grant such permissions lightly.
 
-BTW: Another reason a vendor might lock down the device is for security.
-For example, Juniper routers (which now run a significant portion of the
-"core" of the Internet) run FreeBSD on the routing engine.  They include
-several GNU software utilities (for example gawk, diff, and gdb).
-Starting with JUNOS 7.6 (IIRC), end-users can no longer build and run
-their own binaries on the routing engine.  This means that the GPLv2
-code cannot be modified in-place (similar to TiVo altough done using
-different means).
+But wouldn't this be against the spirit of the GPL?
 
-The reason is that if there ever is a security hole in the routing
-engine software (FreeBSD kernel, OpenSSH, etc.), it would be a really
-bad thing if crackers could load arbitrary software (rootkits, spam
-software, etc.) directly on Internet core routers.  If you think spam
-zombies on cable modems or DSL are bad, imagine them on 100 megabit
-links!
+
+Thanks!
+
+--
+Al
+
