@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbXFQV4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbXFQV6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761451AbXFQV4b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 17:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760592AbXFQV4R
+	id S1761052AbXFQV6u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 17:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXFQV6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 17:56:17 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:41064 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760168AbXFQV4Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 17:56:16 -0400
-Date: Sun, 17 Jun 2007 14:45:55 -0700
-From: Greg KH <greg@kroah.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] make pci_ids lowercase hexa
-Message-ID: <20070617214555.GA305@kroah.com>
-References: <116342983010020429@wsc.cz> <20070616195738.GB23443@kroah.com> <4674DDEF.8090600@gmail.com>
-MIME-Version: 1.0
+	Sun, 17 Jun 2007 17:58:43 -0400
+Received: from bee.hiwaay.net ([216.180.54.11]:56106 "EHLO bee.hiwaay.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751967AbXFQV6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 17:58:43 -0400
+Date: Sun, 17 Jun 2007 16:58:40 -0500
+From: Chris Adams <cmadams@hiwaay.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070617215840.GA1217855@hiwaay.net>
+References: <fa.toMqQ3LqoQn6Xh51bVordO8WMVc@ifi.uio.no> <fa.EmnDne9QndTLcw7NAzc83tWplMI@ifi.uio.no> <fa.G+0vGcF8U8pcd6ozkdhKGsQ/dDs@ifi.uio.no> <fa.8bXRW7nY7z5eXVZxCxUgra+gbb8@ifi.uio.no> <fa.qtDtq+aSKlNweTqHtKcy/Gj5PXg@ifi.uio.no>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4674DDEF.8090600@gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <9a8748490706171436x6b9f2f13pf115d97fee3b1525@mail.gmail.com>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 09:08:31AM +0200, Jiri Slaby wrote:
-> Greg KH napsal(a):
-> > On Sat, Jun 16, 2007 at 05:44:52PM +0200, Jiri Slaby wrote:
-> >> make pci_ids lowercase hexa
-> > 
-> > Why?  What good is this going to do in the long run?
-> 
-> It's just cleanup to get rid of things like this:
->  #define PCI_DEVICE_ID_PROMISE_20246	0x4d33
->  #define PCI_DEVICE_ID_PROMISE_20262	0x4d38
-> -#define PCI_DEVICE_ID_PROMISE_20263	0x0D38
-> +#define PCI_DEVICE_ID_PROMISE_20263	0x0d38
->  #define PCI_DEVICE_ID_PROMISE_20268	0x4d68
+Once upon a time, Jesper Juhl <jesper.juhl@gmail.com> said:
+>Let's say I'm the owner of a company selling some device that uses a
+>GPLv2 OS and some GPLv2 applications to do the job. Let's say that for
+>some reason I don't want the end users of my device to tinker with the
+>software inside my device.  Obviously I release the source for any
+>modifications I may have made, but I use the hardware to prevent users
+>from installing modified versions on the device (basically I TiVO'ize
+>the device).
 
-Get rid of what?  What's wrong with upper case hex numbers?  This seems
-like a pretty gratitous change to me.
+BTW: Another reason a vendor might lock down the device is for security.
+For example, Juniper routers (which now run a significant portion of the
+"core" of the Internet) run FreeBSD on the routing engine.  They include
+several GNU software utilities (for example gawk, diff, and gdb).
+Starting with JUNOS 7.6 (IIRC), end-users can no longer build and run
+their own binaries on the routing engine.  This means that the GPLv2
+code cannot be modified in-place (similar to TiVo altough done using
+different means).
 
-> But still not necessary, if you think, it's useless -- but why don't
-> have whole document formatted in one way. However this patch needs a
-> -fix if ACKed due to bad regexp used (omitted '*' changes only the
-> first uppercase letter found). If NACKed, this doesn't matter.
-> 
-> > Also, shouldn't you send pci specific patches like this to the pci
-> > maintainer?  :)
-> 
-> Hell yes :/, every second time I post something, somebody is missing
-> in the CC list, grr.
-
-Care to resend your other fixes to me, if you still think they are
-needed?
-
-thanks,
-
-greg k-h
+The reason is that if there ever is a security hole in the routing
+engine software (FreeBSD kernel, OpenSSH, etc.), it would be a really
+bad thing if crackers could load arbitrary software (rootkits, spam
+software, etc.) directly on Internet core routers.  If you think spam
+zombies on cable modems or DSL are bad, imagine them on 100 megabit
+links!
