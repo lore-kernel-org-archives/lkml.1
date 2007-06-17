@@ -1,109 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbXFQSTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbXFQSTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759952AbXFQSTA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 14:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXFQSSx
+	id S1760203AbXFQSTw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 14:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXFQSTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 14:18:53 -0400
-Received: from keil-draco.com ([216.193.185.50]:50518 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753828AbXFQSSw (ORCPT
+	Sun, 17 Jun 2007 14:19:45 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:42876 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755190AbXFQSTn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 14:18:52 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Michael Poole <mdpoole@troilus.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Sun, 17 Jun 2007 14:18:38 -0400
-User-Agent: KMail/1.9.6
-Cc: Alexandre Oliva <aoliva@redhat.com>, Bron Gondwana <brong@fastmail.fm>,
-       linux-kernel@vger.kernel.org
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706170008.17477.dhazelton@enter.net> <87sl8qwusg.fsf@graviton.dyn.troilus.org>
-In-Reply-To: <87sl8qwusg.fsf@graviton.dyn.troilus.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 17 Jun 2007 14:19:43 -0400
+Date: Sun, 17 Jun 2007 13:50:09 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/8] Immediate Value - i386 Optimization
+Message-ID: <20070617175009.GA931@Krystal>
+References: <20070615202310.178466032@polymtl.ca> <20070615202926.152087904@polymtl.ca> <46730C5A.7080401@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706171418.38844.dhazelton@enter.net>
+In-Reply-To: <46730C5A.7080401@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:19:19 up 20 days,  1:57,  2 users,  load average: 0.59, 0.54, 0.55
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 June 2007 09:54:39 Michael Poole wrote:
-> Daniel Hazelton writes:
-> > But your server doesn't run the internet. TiVO may use phone lines to
-> > connect a device to their server (and this is an example - I don't know
-> > how TiVO devices actually connect) but the network being connected to has
-> > a single owner who can set such terms.
-> >
-> > I'll repeat, in full, my earlier examples of this:
-> > The first:
-> > I buy a cable modem. Until the second I connect the cable-line to it so I
-> > can get a connection to the internet I can configure it in whatever
-> > manner I please. The second the line is connected, even though I *OWN*
-> > the hardware, I lose all control over its configuration.
-> >
-> > The second:
-> > I buy a DSL modem. Until I want to actually connect to the internet it
-> > can have whatever settings I want it to have. The second I want to
-> > connect to the internet it has to be configured the way that the ISP
-> > wants.
->
-> Jung va gur jbeyq znxrf lbh guvax gurer vf n hfrshy nanybtl
-> orgjrra pbzzhavpngvba fgnaqneqf naq pbclevtug yvprafrf?
->
-> One moment, let me retune.
->
-> What in the world makes you think there is a useful analogy
-> between communication standards and copyright licenses?
+* Chuck Ebbert (cebbert@redhat.com) wrote:
+> On 06/15/2007 04:23 PM, Mathieu Desnoyers wrote:
+> > i386 optimization of the immediate values which uses a movl with code patching
+> > to set/unset the value used to populate the register used for the branch test.
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > ---
+> >  arch/i386/kernel/Makefile    |    1 
+> >  arch/i386/kernel/immediate.c |  177 +++++++++++++++++++++++++++++++++++++++++++
+> >  include/asm-i386/immediate.h |   72 +++++++++++++++++
+> >  3 files changed, 249 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6-lttng/include/asm-i386/immediate.h
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/include/asm-i386/immediate.h	2007-06-15 16:13:55.000000000 -0400
+> > +++ linux-2.6-lttng/include/asm-i386/immediate.h	2007-06-15 16:14:04.000000000 -0400
+> > @@ -1 +1,71 @@
+> > -#include <asm-generic/immediate.h>
+> > +#ifndef _ASM_I386_IMMEDIATE_H
+> > +#define _ASM_I386_IMMEDIATE_H
+> > +
+> > +/*
+> > + * Immediate values. i386 architecture optimizations.
+> > + *
+> > + * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > + *
+> > + * This file is released under the GPLv2.
+> > + * See the file COPYING for more details.
+> > + */
+> > +
+> > +#define IF_DEFAULT (IF_OPTIMIZED | IF_LOCKDEP)
+> > +
+> > +/*
+> > + * Optimized version of the immediate. Passing the flags as a pointer to
+> > + * the inline assembly to trick it into putting the flags value as third
+> > + * parameter in the structure.
+> > + */
+> > +#define immediate_optimized(flags, var)					\
+> > +	({								\
+> > +		int condition;						\
+> > +		asm (	".section __immediate, \"a\", @progbits;\n\t"	\
+> > +					".long %1, 0f, %2;\n\t"		\
+> > +					".previous;\n\t"		\
+> > +					"0:\n\t"			\
+> > +					"movl %3,%0;\n\t"		\
+> > +				: "=r" (condition)			\
+> > +				: "m" (var),				\
+> > +				  "m" (*(char*)flags),			\
+> > +				  "i" (0));				\
+> > +		(condition);						\
+> 
+Hi Chuck,
 
-I don't. I was *REPEATING* an example of how TiVO has a *RIGHT* to change the 
-kernel or any other facet of the device connecting to their network. That 
-right *ISN'T* tied to copyright - as you have stated. Since it isn't, why is 
-the FSF trying to mandate that it is with the tivoization clauses in GPLv3?
+> Unnecessary parens.
+> 
 
-> Neither law nor common sense give much common ground to the two,
-> except in the general sense of two parties interacting.  One is a set
-> of rules so the two can interact through some information channel.
-> The other is a set of rules so that one can exploit a creative work
-> developed by the other.
->
-> I suppose that you think it is acceptable for someone to offer access
-> to binary and source versions of GPLed software (with or without
-> modifications from commonly available versions) -- but only on the
-> condition that people never download the source versions?  That
-> certainly corresponds to the idea that Tivo can keep proprietary
-> extensions to the kernel if Tivo's customers want to connect to Tivo's
-> network services.
+ok, fixed in each immediate.h.
 
-Nope. Because that isn't a right they have that is disconnected from copyright 
-law. Or did you not read the entire post and just decide to try and make me 
-look stupid?
+> > +	})
+> > +
+> > +/*
+> > + * immediate macro selecting the generic or optimized version of immediate,
+> > + * depending on the flags specified. It is a macro because we need to pass the
+> > + * name to immediate_optimized() and immediate_generic() so they can declare a
+> > + * static variable with it.
+> > + */
+> > +#define _immediate(flags, var)						\
+> > +({									\
+> > +	(((flags) & IF_LOCKDEP) && ((flags) & IF_OPTIMIZED)) ?		\
+> > +		immediate_optimized(flags, var) :			\
+> > +		immediate_generic(flags, var);				\
+> > +})
+> > +
+> > +/* immediate with default behavior */
+> > +#define immediate(var)	_immediate(IF_DEFAULT, var)
+> > +
+> > +/*
+> > + * Architecture dependant immediate information, used internally for immediate
+> > + * activation.
+> > + */
+> > +
+> > +/*
+> > + * Offset of the immediate value from the start of the movl instruction, in
+> > + * bytes. We point to the first lower byte of the 4 bytes immediate value. Only
+> > + * changing one byte makes sure we do an atomic memory write, independently of
+> > + * the alignment of the 4 bytes in the load immediate instruction.
+> > + */
+> > +#define IMMEDIATE_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET 1
+> > +#define IMMEDIATE_OPTIMIZED_ENABLE_TYPE unsigned char
+> > +/* Dereference enable as lvalue from a pointer to its instruction */
+> > +#define IMMEDIATE_OPTIMIZED_ENABLE(a)					\
+> > +	(*(IMMEDIATE_OPTIMIZED_ENABLE_TYPE*)				\
+> > +		((char*)(a)+IMMEDIATE_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET))
+> > +
+> > +extern int immediate_optimized_set_enable(void *address, char enable);
+> > +
+> > +#endif /* _ASM_I386_IMMEDIATE_H */
+> > Index: linux-2.6-lttng/arch/i386/kernel/Makefile
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/arch/i386/kernel/Makefile	2007-06-15 16:13:51.000000000 -0400
+> > +++ linux-2.6-lttng/arch/i386/kernel/Makefile	2007-06-15 16:14:04.000000000 -0400
+> > @@ -35,6 +35,7 @@
+> >  obj-y				+= sysenter.o vsyscall.o
+> >  obj-$(CONFIG_ACPI_SRAT) 	+= srat.o
+> >  obj-$(CONFIG_EFI) 		+= efi.o efi_stub.o
+> > +obj-$(CONFIG_IMMEDIATE)		+= immediate.o
+> >  obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault.o
+> >  obj-$(CONFIG_SERIAL_8250)	+= legacy_serial.o
+> >  obj-$(CONFIG_VM86)		+= vm86.o
+> > Index: linux-2.6-lttng/arch/i386/kernel/immediate.c
+> > ===================================================================
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ linux-2.6-lttng/arch/i386/kernel/immediate.c	2007-06-15 16:14:04.000000000 -0400
+> > @@ -0,0 +1,177 @@
+> > +/*
+> > + * Immediate Value - i386 architecture specific code.
+> > + *
+> > + * Rationale
+> > + *
+> > + * Required because of :
+> > + * - Erratum 49 fix for Intel PIII.
+> > + * - Still present on newer processors : Intel Core 2 Duo Processor for Intel
+> > + *   Centrino Duo Processor Technology Specification Update, AH33.
+> > + *   Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
+> > + *   Instruction Execution Results.
+> > + *
+> > + * Permits immediate value modification by XMC with correct serialization.
+> > + *
+> > + * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
+> > + * location that has preemption enabled because it involves no temporary or
+> > + * reused data structure.
+> > + *
+> > + * Quoting Richard J Moore, source of the information motivating this
+> > + * implementation which differs from the one proposed by Intel which is not
+> > + * suitable for kernel context (does not support NMI and would require disabling
+> > + * interrupts on every CPU for a long period) :
+> > + *
+> > + * "There is another issue to consider when looking into using probes other
+> > + * then int3:
+> > + *
+> > + * Intel erratum 54 - Unsynchronized Cross-modifying code - refers to the
+> > + * practice of modifying code on one processor where another has prefetched
+> > + * the unmodified version of the code. Intel states that unpredictable general
+> > + * protection faults may result if a synchronizing instruction (iret, int,
+> > + * int3, cpuid, etc ) is not executed on the second processor before it
+> > + * executes the pre-fetched out-of-date copy of the instruction.
+> > + *
+> > + * When we became aware of this I had a long discussion with Intel's
+> > + * microarchitecture guys. It turns out that the reason for this erratum
+> > + * (which incidentally Intel does not intend to fix) is because the trace
+> > + * cache - the stream of micorops resulting from instruction interpretation -
+> > + * cannot guaranteed to be valid. Reading between the lines I assume this
+> > + * issue arises because of optimization done in the trace cache, where it is
+> > + * no longer possible to identify the original instruction boundaries. If the
+> > + * CPU discoverers that the trace cache has been invalidated because of
+> > + * unsynchronized cross-modification then instruction execution will be
+> > + * aborted with a GPF. Further discussion with Intel revealed that replacing
+> > + * the first opcode byte with an int3 would not be subject to this erratum.
+> > + *
+> > + * So, is cmpxchg reliable? One has to guarantee more than mere atomicity."
+> > + *
+> > + * Overall design
+> > + *
+> > + * The algorithm proposed by Intel applies not so well in kernel context: it
+> > + * would imply disabling interrupts and looping on every CPUs while modifying
+> > + * the code and would not support instrumentation of code called from interrupt
+> > + * sources that cannot be disabled.
+> > + *
+> > + * Therefore, we use a different algorithm to respect Intel's erratum (see the
+> > + * quoted discussion above). We make sure that no CPU sees an out-of-date copy
+> > + * of a pre-fetched instruction by 1 - using a breakpoint, which skips the
+> > + * instruction that is going to be modified, 2 - issuing an IPI to every CPU to
+> > + * execute a sync_core(), to make sure that even when the breakpoint is removed,
+> > + * no cpu could possibly still have the out-of-date copy of the instruction,
+> > + * modify the now unused 2nd byte of the instruction, and then put back the
+> > + * original 1st byte of the instruction.
+> > + *
+> > + * It has exactly the same intent as the algorithm proposed by Intel, but
+> > + * it has less side-effects, scales better and supports NMI, SMI and MCE.
+> 
+> Algorithm looks plausible, was it really tested?
+> 
 
-> Your reliance on counterfactual arguments severely undermines your
-> position -- whether the fiction is how Tivo devices connect (a quick
-> search on Google indicates that Tivo recommends a broadband Ethernet
-> connection rather than a phone line) or that we should analyze based
-> on DRM signatures distributed separately from the kernel (when they
-> are not).  We are arguing about the universe we inhabit, not some
-> alternative where the GPL might actually be the Groundhog Petting
-> License.
+Yes, but I can't reproduce the erroneous condition on my setup. I just
+realized that I did not test it after my last changes. Therefore, see
+the following comments inline for the upcoming fixes :
 
-At no point have I claimed to know how TiVO was accomplishing the "connection 
-to the service" or how they were handling the signing of the kernel. If the 
-final binary is altered by the signing process then, IMHO, the signed kernel 
-and everything involved in creating it constitutes a "derived work".
+> > + *
+> > + * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > + */
+> > +
+> > +#include <linux/notifier.h>
+> > +#include <linux/preempt.h>
+> > +#include <linux/smp.h>
+> > +#include <linux/notifier.h>
+> > +#include <linux/module.h>
+> > +#include <linux/immediate.h>
+> > +#include <linux/kdebug.h>
+> > +
+> > +#include <asm/cacheflush.h>
+> > +
+> > +#define BREAKPOINT_INSTRUCTION  0xcc
+> > +#define BREAKPOINT_INS_LEN 1
+> > +
+> > +static long target_eip;
+> > +
+> > +static void immediate_synchronize_core(void *info)
+> > +{
+> > +	sync_core();	/* use cpuid to stop speculative execution */
+> > +}
+> > +
+> > +/*
+> > + * The eip value points right after the breakpoint instruction, in the second
+> > + * byte of the movb. Incrementing it of 1 byte makes the code resume right after
+> > + * the movb instruction, effectively skipping this instruction.
+> > + *
+> > + * We simply skip the 2 bytes load immediate here, leaving the register in an
+> > + * undefined state. We don't care about the content (0 or !0), because we are
+> > + * changing the value 0->1 or 1->0. This small window of undefined value
+> > + * doesn't matter.
+> > + */
+> > +static int immediate_notifier(struct notifier_block *nb,
+> > +	unsigned long val, void *data)
+> > +{
+> > +	enum die_val die_val = (enum die_val) val;
+> > +	struct die_args *args = data;
+> > +
+> > +	if (!args->regs || user_mode_vm(args->regs))
+> > +		return NOTIFY_DONE;
+> > +
+> > +	if (die_val == DIE_INT3	&& args->regs->eip == target_eip) {
+> > +		args->regs->eip += 1; /* Skip the next byte of load immediate */
+> 
+> <nitpick>
+> 		args->regs->eip++;
+> 
 
-My argument is that, as much as people want it to be different, in mandating 
-that people give up rights that are (potentially) disconnected from the 
-copyright - in order to "Defend the Four Freedoms" and keep "all users of the 
-licensed work equal in their freedoms" - the GPLv3 is flawed and potentially 
-unenforceable. 
+Should now be args->regs->eip += 4; because I jump over the last 4 bytes
+of the 5 bytes long movl instead of jumping over the last byte of the 2 bytes
+movb I used previously.
 
-DRH
+I also have to use the int3 handler installed by CONFIG_KPROBES when
+CONFIG_IMMEDIATE is used so I do not depend on KPROBES for i386. It will
+also be fixed in the next release.
 
-> Michael Poole
+> > +		return NOTIFY_STOP;
+> > +	}
+> > +	return NOTIFY_DONE;
+> > +}
+> > +
+> > +static struct notifier_block immediate_notify = {
+> > +	.notifier_call = immediate_notifier,
+> > +	.priority = 0x7fffffff,	/* we need to be notified first */
+> > +};
+> > +
+> > +/*
+> > + * The address is not aligned. We can only change 1 byte of the value
+> > + * atomically.
+> > + * Must be called with immediate_mutex held.
+> > + */
+> > +int immediate_optimized_set_enable(void *address, char enable)
+> > +{
+> > +	char saved_byte;
+> > +	int ret;
+> > +	char *dest = address;
+> > +
+> > +	if (!(enable ^ dest[1])) /* Must be a state change 0<->1 to execute */
+> > +		return 0;
+> > +
+> > +#if defined(CONFIG_DEBUG_RODATA) || defined(CONFIG_DEBUG_PAGEALLOC)
+> > +	/* Make sure this page is writable */
+> > +	change_page_attr(virt_to_page(address), 1, PAGE_KERNEL_EXEC);
+> > +	global_flush_tlb();
+> > +#endif
+> 
+> Can't we have a macro or inline to do this, and the setting back
+> to read-only? kprobes also has the same ugly #if blocks...
+> 
+I guess it would be better to share a common macro between kprobes and
+immediate for this.
 
+> Hmm, what happens if you race with kprobes setting a probe on
+> the same page? Couldn't it unexpectedly become read-only?
+> 
 
+Sure it can. Is there any spinlock already there that could be used by
+different objects and would fit this purpose?
+
+> > +	target_eip = (long)address + BREAKPOINT_INS_LEN;
+> > +	/* register_die_notifier has memory barriers */
+> > +	register_die_notifier(&immediate_notify);
+> > +	saved_byte = *dest;
+> > +	*dest = BREAKPOINT_INSTRUCTION;
+> > +	wmb();
+> > +	/*
+> > +	 * Execute serializing instruction on each CPU.
+> > +	 * Acts as a memory barrier.
+> > +	 */
+> > +	ret = on_each_cpu(immediate_synchronize_core, NULL, 1, 1);
+> > +	BUG_ON(ret != 0);
+> > +
+> > +	dest[1] = enable;
+> > +	wmb();
+> > +	*dest = saved_byte;
+> > +		/*
+> > +		 * Wait for all int3 handlers to end
+> > +		 * (interrupts are disabled in int3).
+> > +		 * This CPU is clearly not in a int3 handler,
+> > +		 * because int3 handler is not preemptible and
+> > +		 * there cannot be any more int3 handler called
+> > +		 * for this site, because we placed the original
+> > +		 * instruction back.
+> > +		 * synchronize_sched has memory barriers.
+> > +		 */
+> > +	synchronize_sched();
+> > +	unregister_die_notifier(&immediate_notify);
+> > +	/* unregister_die_notifier has memory barriers */
+> > +	target_eip = 0;
+> > +#if defined(CONFIG_DEBUG_RODATA)
+> > +	/* Set this page back to RX */
+> > +	change_page_attr(virt_to_page(address), 1, PAGE_KERNEL_RX);
+> > +	global_flush_tlb();
+> > +#endif
+> > +	return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(immediate_optimized_set_enable);
+> > 
+> 
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
