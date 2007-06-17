@@ -1,122 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761092AbXFQXe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbXFQXfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761092AbXFQXe0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 19:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXFQXeR
+	id S1761413AbXFQXfY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 19:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759963AbXFQXfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 19:34:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49290 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758870AbXFQXeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 19:34:16 -0400
-To: david@lang.hm
-Cc: Bernd Petrovitsch <bernd@firmix.at>, Gabor Czigola <czigola@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
+	Sun, 17 Jun 2007 19:35:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53159 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752844AbXFQXfJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 19:35:09 -0400
+Date: Sun, 17 Jun 2007 16:33:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
-	<orfy4qh0mc.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<1182112097.3800.3.camel@gimli.at.home>
-	<orfy4qffyj.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706171408260.31541@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sun, 17 Jun 2007 20:33:51 -0300
-In-Reply-To: <Pine.LNX.4.64.0706171408260.31541@asgard.lang.hm> (david@lang.hm's message of "Sun\, 17 Jun 2007 14\:13\:30 -0700 \(PDT\)")
-Message-ID: <or3b0qf95s.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+In-Reply-To: <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614235004.GA14952@elte.hu> <20070615011012.6c09066e@the-village.bc.nu>
+ <20070615012623.GA25189@elte.hu> <20070615101007.0cbfd078@the-village.bc.nu>
+ <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de>
+ <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk>
+ <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+ <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+ <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 17, 2007, david@lang.hm wrote:
-
-> you argue that it is evil for tivo to produce a pice of hardware that
-> they can modify and the user can't
-
-s/evil/unethical/, because I understand that denying people the
-ability to enjoy the four freedoms of Free Software is unethical, and
-accepting such restrictions is immoral.
-
-> but you then argue that it's a good thing for the FSF to produce a
-> license that they can modify and others can't
-
-A License is not software.  The ethical and moral principles involved
-are different.
 
 
-I can see why I may have misled you into this, with the argument that
-patching and fixing bugs and upgrading licenses is as important as
-doing that to the software.
+On Sun, 17 Jun 2007, Alexandre Oliva wrote:
+> > A third way of stating it is "software for software". No, the romans never 
+> > said that, but I just did, to make it just more obvious that the whole 
+> > point is that you are expected to answer IN KIND!
+> 
+> Yes.  And this was precisely what meant when I wrote "quid-pro-quo"
+> above.
 
-But a license, and in particular the GPL, is not only a legal
-document, it's also a political statement.
+Ok, so we're on the same page.
 
+"software for software".
 
-You'll see that articles, speeches, etc, published by Richard Stallman,
-by the FSF, by myself, and by many other people who defend Free
-Software on moral grounds don't grant permissions for people to enjoy
-the four freedoms.
+> > 	"You are either terminally stupid, or you're not allowing yourself 
+> > 	 to see an obvious argument, because it destroys your world-view".
+> > 
+> > The latter is very possible. It's a very human thing.
+> 
+> /me hands Linus a mirror
 
+"I'm a damn handsome dude, ain't I?"
 
-You don't want people to take your opinions and modify them.
+> Serious, what's so hard to understand about:
 
-Since literary works, music, movies, paintings, and other
-copyrightable works, don't quite have the same dual nature of software
-(both a form of expression and a tool to perform technical jobs),
-demanding the four freedoms for all of them is not only unnecessary,
-it may actually be counter-productive.
+You're talking about something totally different.
 
-You'll see that even the GNU Free Documentation License refrains from
-insisting that the entire work be modifiable.  Heck, even the GPL has
-some restrictions on what you can change.
+Answer my argument:
 
+ - I think Tivoization is *good*.
 
-So, yes, the situation is different, and it smells like "it's not
-fair", but to me this is very clearly comparing apples and oranges.
+ - Your license stops something *good*.
 
+Ergo:
 
-Consider it just for a moment longer:
+ - Your license is *bad*.
 
-I write software from scratch.  It's all mine.  I want to publish it.
-I need a license.  I look at the GPL.  It doesn't say what I want.
-Hey, I think, it would be nice if I could modify it such that it said
-what I wanted.  Hmm, I'd have to ask the FSF, and they might say no.
-I'll be better off using some other license.  I know I can.
+> Wrong.  It enables copyright holders to decide whether forgiveness is
+> appropriate, rather than forcing them to forgive.  Being forced to
+> forgive deception is not tit-for-tat, and it's a losing strategy.
 
+There is NOTHING TO FORGIVE!
 
-I put together a computer using various pre-existing hardware and
-software components.  Some of them demand me to respect other users'
-freedoms.  I want to sell it.  Some components don't do what I want.
-Cool, I can modify them, and I don't even have to ask the owner for
-permission.  I know I can.  But hey, I think, it would be nice if I
-could stop users from changing the software in this computer.  I'd be
-better off if the software had some other license, but I'll take the
-risk and hope this will do.
+Your whole idiotic argument misses the point:
 
+	What Tivo did is *good* in my opinion!
 
-I bought a computer containing various hardware and software
-components.  The computer doesn't quite do what I want.  Hey, I think,
-it would be nice if I could modify it such that it did what I wanted.
-I know I can.  But, heck, after I made the change, this thing won't
-boot any more, and I can't figure out what I did wrong.  Aah, the
-manufacturer prohibits me from running modified versions.  I don't
-think they can or should, but there's nothing I can do about it.  I'm
-stuck.  Oh well...
+Can't you get that through your skull?
 
+They gave the software back! Be happy! They *followed* the rules. They 
+*followed* the tit-for-tat.
 
-> in the second case the FSF is trying to convince everyone that anyone
-> who produced code under the fist license, but didn't give the FSF the
-> ability to relicense their code to whatever the FSF wants are
-> misguided fools who just don't understand what they are doing.
-
-I don't understand why you think the FSF is doing this.
-
-As for myself (I'm not FSF, I'm not even a member of the FSF), I'm not
-doing this, and I hope you'll agree that I'm not.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+			Linus
