@@ -1,111 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbXFQTlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761228AbXFQTmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760826AbXFQTlZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 15:41:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758657AbXFQTlS
+	id S1761228AbXFQTmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759708AbXFQTmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 15:41:18 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33977
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753686AbXFQTlS (ORCPT
+	Sun, 17 Jun 2007 15:42:10 -0400
+Received: from keil-draco.com ([216.193.185.50]:50990 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759574AbXFQTmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 15:41:18 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: Random oops in Ubuntu 7.04 stock kernel (usb hotplug null pointer dereference).
-Date: Sun, 17 Jun 2007 15:41:28 -0400
+	Sun, 17 Jun 2007 15:42:09 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Michael Poole <mdpoole@troilus.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Sun, 17 Jun 2007 15:41:55 -0400
 User-Agent: KMail/1.9.6
+Cc: Alexandre Oliva <aoliva@redhat.com>, Bron Gondwana <brong@fastmail.fm>,
+       linux-kernel@vger.kernel.org
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706171418.38844.dhazelton@enter.net> <87fy4qwhaq.fsf@graviton.dyn.troilus.org>
+In-Reply-To: <87fy4qwhaq.fsf@graviton.dyn.troilus.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706171541.28959.rob@landley.net>
+Message-Id: <200706171541.55338.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed this in the log.  The system's still running fine, I can only assume 
-this happened when I unplugged my external USB disk after the cat knocked it 
-on the floor.  Quite possibly already fixed in kernel.org, but just for the 
-record:
+On Sunday 17 June 2007 14:46:05 Michael Poole wrote:
+> Daniel Hazelton writes:
+> > On Sunday 17 June 2007 09:54:39 Michael Poole wrote:
+> >> Daniel Hazelton writes:
+> >> > But your server doesn't run the internet. TiVO may use phone lines to
+> >> > connect a device to their server (and this is an example - I don't
+> >> > know how TiVO devices actually connect) but the network being
+> >> > connected to has a single owner who can set such terms.
+> >> >
+> >> > I'll repeat, in full, my earlier examples of this:
+> >> > The first:
+> >> > I buy a cable modem. Until the second I connect the cable-line to it
+> >> > so I can get a connection to the internet I can configure it in
+> >> > whatever manner I please. The second the line is connected, even
+> >> > though I *OWN* the hardware, I lose all control over its
+> >> > configuration.
+> >> >
+> >> > The second:
+> >> > I buy a DSL modem. Until I want to actually connect to the internet it
+> >> > can have whatever settings I want it to have. The second I want to
+> >> > connect to the internet it has to be configured the way that the ISP
+> >> > wants.
+> >>
+> >> Jung va gur jbeyq znxrf lbh guvax gurer vf n hfrshy nanybtl
+> >> orgjrra pbzzhavpngvba fgnaqneqf naq pbclevtug yvprafrf?
+> >>
+> >> One moment, let me retune.
+> >>
+> >> What in the world makes you think there is a useful analogy
+> >> between communication standards and copyright licenses?
+> >
+> > I don't. I was *REPEATING* an example of how TiVO has a *RIGHT* to change
+> > the kernel or any other facet of the device connecting to their network.
+> > That right *ISN'T* tied to copyright - as you have stated. Since it
+> > isn't, why is the FSF trying to mandate that it is with the tivoization
+> > clauses in GPLv3?
+>
+> The FSF *ISN'T* trying to mandate what *CONNECTS* to *TiVO's*
+> *NETWORK*.  *BOY* *ISN'T* *SHOUTING* *FUN*?  If Tivo wants to restrict
+> what connects to their network, the GPL and FSF will not stop them.
+> The major new (relative to GPLv2) things the FSF is trying to restrict
+> are new technical and legal methods that software distributors have
+> tried to use to convert free software into non-free software.
+>
+> Tivo's right to dictate or change aspects of devices connecting to
+> their network is very much tied to copyright: Tivo needs appropriate
+> license if they are modifying or distributing anyone else's work.  I
+> am not sure why you think Tivo's right to free association trumps its
+> freely entered obligations to copyright owners.
 
-cat /proc/version
-Linux version 2.6.20-15-generic (root@palmer) (gcc version 4.1.2 (Ubuntu 
-4.1.2-0ubuntu4)) #2 SMP Sun Apr 15 07:36:31 UTC 2007
+Okay. So they give everyone the right to change the software on the box, but 
+on connection replace the modified stuff with the official versions. Is that 
+still a copyright problem? Absolutely, positively no. Is the current 
+situation any different? Not that I can tell - they've changed a reaction 
+into a preemptive act.
 
-[   40.330921] usb 4-3: USB disconnect, address 2
-[   40.331150] BUG: unable to handle kernel NULL pointer dereference at 
-virtual address 00000000
-[   40.331157]  printing eip:
-[   40.331159] c0258315
-[   40.331161] *pde = 00000000
-[   40.331166] Oops: 0000 [#1]
-[   40.331167] SMP
-[   40.331172] Modules linked in: cpufreq_powersave cpufreq_conservative 
-cpufreq_stats cpufreq_userspace cpufreq_ondemand freq_table pcc_acpi dev_acpi 
-sony_acpi tc1100_wmi ac asus_acpi container video sbs i2c_ec i2c_core dock 
-battery backlight button ipv6 lp fuse usb_storage snd_intel8x0 snd_ac97_codec 
-ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss usbhid 
-snd_seq_midi snd_rawmidi snd_seq_midi_event libusual snd_seq snd_timer 
-snd_seq_device hid snd psmouse serio_raw parport_pc parport pcspkr soundcore 
-snd_page_alloc sis_agp agpgart shpchp pci_hotplug af_packet tsdev evdev ext3 
-jbd mbcache sg sr_mod cdrom sd_mod sis5513 generic ata_generic floppy sis900 
-mii ehci_hcd ohci_hcd usbcore pata_sis libata scsi_mod thermal processor fan 
-fbcon tileblit font bitblit softcursor vesafb capability commoncap
-[   40.331245] CPU:    0
-[   40.331247] EIP:    0060:[<c0258315>]    Not tainted VLI
-[   40.331249] EFLAGS: 00010202   (2.6.20-15-generic #2)
-[   40.331266] EIP is at make_class_name+0x35/0xa0
-[   40.331270] eax: 00000000   ebx: ffffffff   ecx: ffffffff   edx: 0000000b
-[   40.331274] esi: d788cc91   edi: 00000000   ebp: 00000000   esp: d6067e50
-[   40.331278] ds: 007b   es: 007b   ss: 0068
-[   40.331282] Process khubd (pid: 1956, ti=d6066000 task=d6f9ba90 
-task.ti=d6066000)
-[   40.331284] Stack: ced67204 d789eec0 ced671fc ced67204 d789ee40 c0258591 
-00000000 d789eec8
-[   40.331293]        ced671fc cf92a000 00000246 ffffffed c0258618 ced67000 
-d7886a50 ced67000
-[   40.331301]        cf92a000 d788412b cf92a030 cf92a000 d787e825 cf92a2f4 
-d69d4e18 d7ac5f60
-[   40.331309] Call Trace:
-[   40.331317]  [<c0258591>] class_device_del+0xa1/0x120
-[   40.331327]  [<c0258618>] class_device_unregister+0x8/0x10
-[   40.331334]  [<d7886a50>] __scsi_remove_device+0x30/0x80 [scsi_mod]
-[   40.331383]  [<d788412b>] scsi_forget_host+0x4b/0x60 [scsi_mod]
-[   40.331405]  [<d787e825>] scsi_remove_host+0x55/0xe0 [scsi_mod]
-[   40.331426]  [<d7ab7cae>] storage_disconnect+0xe/0x20 [usb_storage]
-[   40.331443]  [<d785dd20>] usb_unbind_interface+0x50/0xa0 [usbcore]
-[   40.331492]  [<c02578a8>] __device_release_driver+0x68/0xa0
-[   40.331500]  [<c0257dd3>] device_release_driver+0x23/0x40
-[   40.331506]  [<c025721c>] bus_remove_device+0x5c/0x90
-[   40.331513]  [<c0255672>] device_del+0x152/0x1b0
-[   40.331522]  [<d785b1ee>] usb_disable_device+0x7e/0xe0 [usbcore]
-[   40.331544]  [<d7857597>] usb_disconnect+0x97/0x130 [usbcore]
-[   40.331570]  [<d78582ff>] hub_thread+0x26f/0xc20 [usbcore]
-[   40.331604]  [<c013adf0>] autoremove_wake_function+0x0/0x50
-[   40.331619]  [<d7858090>] hub_thread+0x0/0xc20 [usbcore]
-[   40.331636]  [<c013ac3a>] kthread+0xba/0xf0
-[   40.331643]  [<c013ab80>] kthread+0x0/0xf0
-[   40.331649]  [<c01044c7>] kernel_thread_helper+0x7/0x10
-[   40.331661]  =======================
-[   40.331663] Code: ff ff 89 6c 24 10 31 ed 89 d9 89 74 24 08 89 c6 89 7c 24 
-0c 89 c7 89 e8 89 14 24 f2 ae f7 d1 49 8b 04 24 89 ca 89 d9 8b 38 89 e8 <f2> 
-ae f7 d1 49 8d 44 0a 02 ba d0 00 00 00 e8 38 ae f1 ff ba f4
-[   40.331693] EIP: [<c0258315>] make_class_name+0x35/0xa0 SS:ESP 
-0068:d6067e50
-[   40.331700]  <5>sdb : READ CAPACITY failed.
-[   40.334887] sdb : status=0, message=00, host=1, driver=00
-[   40.334895] sdb : sense not available.
-[   40.336498] sdb: Write Protect is off
-[   40.336502] sdb: Mode Sense: 00 00 00 00
-[   40.336505] sdb: assuming drive cache: write through
-[   40.336605] sd 2:0:0:0: Attached scsi disk sdb
-[   40.336675] sd 2:0:0:0: Attached scsi generic sg2 type 0
+> >> Neither law nor common sense give much common ground to the two,
+> >> except in the general sense of two parties interacting.  One is a set
+> >> of rules so the two can interact through some information channel.
+> >> The other is a set of rules so that one can exploit a creative work
+> >> developed by the other.
+> >>
+> >> I suppose that you think it is acceptable for someone to offer access
+> >> to binary and source versions of GPLed software (with or without
+> >> modifications from commonly available versions) -- but only on the
+> >> condition that people never download the source versions?  That
+> >> certainly corresponds to the idea that Tivo can keep proprietary
+> >> extensions to the kernel if Tivo's customers want to connect to Tivo's
+> >> network services.
+> >
+> > Nope. Because that isn't a right they have that is disconnected from
+> > copyright law. Or did you not read the entire post and just decide to try
+> > and make me look stupid?
+>
+> I read your post, but it was full of nonsense.  Tivo has every right
+> to restrict what connects to their network.  Tivo does not have the
+> right to infringe copyrights in order to make that restriction
+> effective.
 
-Nice recovery, I thought.  My kernel's tainted now, isn't it? :)
+Okay - "nonsense" in this sense meaning "it proves me wrong, but I can't be 
+wrong, so it has no real meaning." I can accept that.
 
-Rob
+> You have said -- using enough words that you probably deceived
+> yourself -- that if Tivo distributes a specially mangled version of
+> Linux in order to restrict what connects to their network, and they
+> keep the mangling method proprietary, the GPL cannot shed light on
+> whether that hoarding is allowed.  Wrong: it can and does.
+
+But the mangling method isn't proprietary. What is proprietary is a number 
+that is input to a step of the process. (AFAICT the signing process is done 
+with proprietary tools, but the process itself isn't)
+
+DRH
+
+> Michael Poole
+
+
+
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
