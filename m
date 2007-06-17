@@ -1,85 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbXFQVHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbXFQVLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbXFQVHb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 17:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbXFQVHX
+	id S1757010AbXFQVLf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 17:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbXFQVL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 17:07:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50305 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbXFQVHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 17:07:22 -0400
-To: Bernd Petrovitsch <bernd@firmix.at>
-Cc: Gabor Czigola <czigola@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
-	<orfy4qh0mc.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<1182112097.3800.3.camel@gimli.at.home>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sun, 17 Jun 2007 18:07:00 -0300
-In-Reply-To: <1182112097.3800.3.camel@gimli.at.home> (Bernd Petrovitsch's message of "Sun\, 17 Jun 2007 22\:28\:17 +0200")
-Message-ID: <orfy4qffyj.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Sun, 17 Jun 2007 17:11:28 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:41410 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbXFQVL1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 17:11:27 -0400
+Date: Sun, 17 Jun 2007 23:23:56 +0200
+To: david@lang.hm, Adrian Bunk <bunk@stusta.de>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] (Re: regression tracking (Re: Linux 2.6.21))
+Message-ID: <20070617212356.GG16016@flower.upol.cz>
+References: <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <4673D63D.5020804@s5r6.in-berlin.de> <20070617004436.GU3588@stusta.de> <467501D0.3090203@googlemail.com> <20070617025552.addd1c41.akpm@linux-foundation.org> <6bffcb0e0706170322j3c51868fn6189bfd7d3bcac1@mail.gmail.com> <20070617114709.GD16016@flower.upol.cz> <Pine.LNX.4.64.0706171038290.28371@asgard.lang.hm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706171038290.28371@asgard.lang.hm>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 17, 2007, Bernd Petrovitsch <bernd@firmix.at> wrote:
+On Sun, Jun 17, 2007 at 10:44:39AM -0700, david@lang.hm wrote:
+> On Sun, 17 Jun 2007, Oleg Verych wrote:
+[]
+> >That's wrong if developers are tending to reply only one thing --
+> >git-bisect.
+> >
+> >If things are going to be that bad, then better to start dealing with the
+> >cause, not consequences. In this situation requesting test-cases is a
+> >better way, as it's going to influence developer as cause of potential
+> >problems. If tests will show *hardware* side of problem, then, well some
+> >parts may be not obvious, thus bisecting is a way to continue.
+> 
+> most people who report bugs don't know enough about what's actually going 
+> wrong to be able to write a test case (those that do can probably just 
+> write a patch to fix it). Along similar lines a debugger wouldn't be of 
+> much use either.
 
-> On Sun, 2007-06-17 at 15:55 -0300, Alexandre Oliva wrote:
->> On Jun 17, 2007, "Gabor Czigola" <czigola@gmail.com> wrote:
->> 
->> > I wonder why the linux kernel development community couldn't propose
->> > an own GPL draft (say v2.2) that is "as free as v2" and that includes
->> > some ideas (from v3) that are considered as good (free, innovative, in
->> > the spirit of whatever etc.) by the majority of the kernel developers.
->> 
->> For one, because the text of the GPL is copyrighted by the FSF, and
->> licensed without permission for modification.  And that's as it should
->> be, you don't want others to modify the terms of the license you chose
->> for your code, do you?
+Sorry for my English. Requesting test cases from the developers of
+course. Or at least results of some kind of testing, so people may run
+and check them as well, if something is suspected. And this from my POV
+leads again to organized way of filtering noise and collecting structured
+information easily (yea, i think it's BTS with reportbug in Debian).{0}
 
-> That's probably precisely the reason for removing the "or later" so that
-> others (even if it's "only" the FSF) can't modify the terms of the
-> license chosen for the code.
+> the fact that git-bisect doesn't require any knowledge other then 
+> knowledge the reporter has demonstrated that they already have (the 
+> ability to compile and install their own kernel) puts it within the reach 
+> of testers.
+> 
+> unfortunantly, as good as it is it can take a lot of effort, especially if 
+> the bug takes time to show up. it's not perfect, but it's a huge help.
 
-Yes, if you don't trust the organization entitled to publish revised
-versions to abide by its commitment to abide by a similar spirit, or
-if that spirit does not reflect your intent as a copyright holder,
-this are all rational reasons to remove the "or later", indeed (at
-least as much as distrust can be regarded as rational, that is ;-)
+I think, positive feedback from {0} to the LTP may improve that.
+Especially, if things are in parts and easy to choose for testing.
 
+> and developers aren't always responding with 'do a bisect', sometimes they 
+> respond with 'yes, we know about that'
 
-However, as Ingo argued, not being able to patch holes, fix bugs and
-add new features is a very bad idea.  He was talking about the
-software, but this is as true when it comes to the license.
+> or 'that sounds like X',
 
-There are smarter ways of retaining control over licensing terms that
-don't paint yourself into a corner that's nearly impossible to get out
-of.
+That two are _exactly_ what reportbug tool is doing. That's why i'm
+talking about it. And i'm *no* wonder why developers are boring -- at
+some points they might not handle the *noise*.
 
-For example, the license provisions could state "or any later version
-that CONDITION", where CONDITION reflects your intent as a copyright
-holder, or it could state "or any other license that CONDITION."
+> so it's still worthwhile for people to report the problem first before
+> going to the ffort of doing a bisect.
+> 
+> David Lang
+__
 
-They could also appoint a committee, or rules for formation of a
-committee, to make this sort of decisions on behalf of all the
-copyright holders involved.
+Bits for Adrian.
 
-Of course, since these are in fact all additional permissions, anyone
-could take them out, or rather elect not to offer this option for
-their own contributions (and then you might end up refraining from
-merging them).
+*ML*
 
-The mechanics are no different from "or any later version" provisions,
-really, except that then you establish what the goals of your
-community are without blocking upgrades that wouldn't conflict, but
-that would rather further the interests of your own community.
+I *use* Gmane. I'm not subscribed (receiving e-mail to my mbox) to any ML,
+except <kbuild@sf.net>.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Nearly every my e-mail here is with Gmane links. You seem ignored all of
+them. As for me it's result of *your personal*, rather than technical
+activity.
+
+*offense*
+
+I'm not talking about personal offense, you are seem thinking about, but
+technical one. I.e. when possible benefit might be even more, than NOHZ
+on x86 and a like[0], with much less effort. I still think, unless i will
+develop or fail, that reducing traffic on one or two order of magnitude
+is possible as well as improving kbuild/kconfig to reduce of the noise of
+mis-configurations/tester's .config length. Discouraging that effort is
+my source of offense.
+
+(FYI Until Linus checked in my _RFT_ kbuild patches, i realized how
+*many* people are willing to understand and try to test kbuild stuff.)
+
+[0] I bet VGA, DRAM, HDD are far more power hungry room-heaters. Unless
+    you can substantially lower frequency, you might have no benefit at
+    all. Whana know how it's done in perfectly designed embedded
+    MCU/CPU? Please, see for instance MSP430 from TI (i know, it uses
+    SRAM, but i've asked to look on processor core design).
+____
