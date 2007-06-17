@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbXFQVgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbXFQVgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbXFQVgF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 17:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXFQVfy
+	id S1760948AbXFQVgq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 17:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXFQVgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 17:35:54 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36366 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755382AbXFQVfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 17:35:53 -0400
-Date: Sun, 17 Jun 2007 23:35:30 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Frank Seidel <fseidel@suse.de>, Stefan Seyfried <seife@suse.de>,
-       linux-kernel@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       akpm@linux-foundation.org, nigel@nigel.suspend2.net
-Subject: Re: [PATCH, 3rd try] make disable_console_suspend runtime configurable
-Message-ID: <20070617213530.GE1803@elf.ucw.cz>
-References: <20070613200303.GB11437@suse.de> <200706141414.22152.rjw@sisk.pl> <200706141559.54242.fseidel@suse.de> <200706150020.29189.rjw@sisk.pl>
+	Sun, 17 Jun 2007 17:36:36 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:12879 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbXFQVgf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 17:36:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=OBV8xWTFj5uFC4gX/9NEJDP2o+HGsCxfSRS0A3T8N+uEKILJz6PAtzgG1EuOaSqW/ImmsAOcHSBT6r0l4EHv9kiKf+Li/WrFAt7ysdg9hEzloARUqpUOx35hLHT9oTNSl69JaqliqgoJcKClGZjExxJSdjBjGWLC+EOHYsvdD0c=
+Message-ID: <4675A948.80007@googlemail.com>
+Date: Sun, 17 Jun 2007 23:36:08 +0200
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706150020.29189.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Maurizio Monge <maurizio.monge@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Alan Cox <alan@redhat.com>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] Add new ICH9M pci id (8086:2850) to ata_piix id list
+References: <e4c519350706171423ldf77f77ve7080c213e6ec3fc@mail.gmail.com>
+In-Reply-To: <e4c519350706171423ldf77f77ve7080c213e6ec3fc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2007-06-15 00:20:28, Rafael J. Wysocki wrote:
-> On Thursday, 14 June 2007 15:59, Frank Seidel wrote:
-> > From: Stefan Seyfried <seife@suse.de>
-> > 
-> > I hate having to recompile the kernel, just to be able to debug suspend.
-> > Remove CONFIG_DISABLE_CONSOLE_SUSPEND, replace it by a tunable in
-> > /sys/power/disable_console_suspend.
-> > 
-> > 
-> > Signed-off-by: Stefan Seyfried <seife@suse.de>
-> > Signed-off-by: Frank Seidel <fseidel@suse.de>
-> > ---
-> > Third try, renamed sysfs interface to console_suspend 
-> > reporting and expecting either "enabled" or "disabled"
+Hi,
+
+Maurizio Monge pisze:
+> To make ata_piix recognize my ich9m chip i had to apply the
+> modification that follows.
 > 
-> Thanks a lot for redoing it.
+> Best regards
+> Maurizio Monge
 > 
-> I have no objections.  Pavel?
+> 
+> diff -Nurb old/drivers/ata/ata_piix.c new/drivers/ata/ata_piix.c
+> --- old/drivers/ata/ata_piix.c  2007-06-17 23:06:12.000000000 +0200
+> +++ new/drivers/ata/ata_piix.c  2007-06-17 23:15:57.000000000 +0200
+> @@ -243,6 +243,8 @@
+>        { 0x8086, 0x292d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
+>        /* SATA Controller IDE (ICH9M) */
+>        { 0x8086, 0x292e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
+> +       /* Mobile SATA Controller IDE (ICH9M) */
+> +       { 0x8086, 0x2850, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
+                      ^^^^
+http://pci-ids.ucw.cz/iii/?i=80862850
 
-I still think that patch is bad. I should have screamed when
-CONFIG_DISABLE_CONSOLE_SUSPEND went into kernel. That beast should
-_not_ be configurable, it should just do the right thing.
+Is this really a SATA controller?
+((ICH8M/ICH8M-E) IDE Controller)
 
-But I realized that too late. And this only makes it works, making
-that mistake part of user-kernel interface.
+Regards,
+Michal
 
-Sorry for not screaming when CONFIG_DISABLE_CONSOLE_SUSPEND went in,
-but please lets solve this correctly....
-
-Like every console says if it needs to  be disabled during suspend,
-and if at least one active console says so, we disable. Nothing to
-configure, we just do the right thing. And it should not be that much
-work, either.
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+LOG
+http://www.stardust.webpages.pl/log/
