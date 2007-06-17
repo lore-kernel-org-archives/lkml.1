@@ -1,89 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbXFQMpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbXFQMvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140AbXFQMpH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 08:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXFQMoz
+	id S1759512AbXFQMvo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 08:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbXFQMvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 08:44:55 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37426 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752190AbXFQMoy (ORCPT
+	Sun, 17 Jun 2007 08:51:32 -0400
+Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73]:49694 "EHLO
+	hoboe2bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbXFQMva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 08:44:54 -0400
-Date: Sun, 17 Jun 2007 14:45:08 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH]  (Re: regression tracking (Re: Linux 2.6.21))
-Message-ID: <20070617124508.GV3588@stusta.de>
-References: <200704291849.23197.rjw@sisk.pl> <20070429173725.GB30248@one.firstfloor.org> <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <4673D63D.5020804@s5r6.in-berlin.de> <20070617004436.GU3588@stusta.de> <467501D0.3090203@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <467501D0.3090203@googlemail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 17 Jun 2007 08:51:30 -0400
+Message-Id: <20070617125029.864159199@mail.of.borg>
+References: <20070617124704.800461751@mail.of.borg>
+User-Agent: quilt/0.46-1
+Date: Sun, 17 Jun 2007 14:47:05 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "James E.J. Bottomley" <James.Bottomley@SteelEye.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
+       Kars de Jong <jongk@linux-m68k.org>, Richard Hirst <rhirst@levanta.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-m68k@vger.kernel.org
+Subject: [patch 1/5] 53c700 scsi: m68k support for the 53c700 SCSI core
+Content-Disposition: inline; filename=m68k-53c700-core.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 11:41:36AM +0200, Michal Piotrowski wrote:
-> Hi all,
->
-> Adrian Bunk pisze:
->> On Sat, Jun 16, 2007 at 02:23:25PM +0200, Stefan Richter wrote:
->>> ...
->>> [Adrian, I'm not saying "too few users run -rc kernels", I'm saying "too
->>> few FireWire driver users run -rc kernels".]
->> Getting more people testing -rc kernels might be possible, and I don't 
->> think it would be too hard. And not only FireWire would benefit from this, 
->> remember e.g. that at least 2 out of the last 5 kernels Linus released 
->> contained filesystem corruption regressions.
->> The problem is that we aren't able to handle the many regression reports 
->> we get today, so asking for more testing and regression reports today 
->> would attack it at the wrong part of the chain.
->> Additionally, every reported and unhandled regression will frustrate the 
->> reporter - never forget that we have _many_ unhandled bug reports 
->> (including but not limited to regression reports) where the submitter 
->> spent much time and energy in writing a good bug report.
->> If we somehow gain the missing manpower for debugging regressions we can 
->> actively ask for more testing. Missing manpower (of people knowing some 
->> part of the kernel well) for debugging bug reports is IMHO the one big 
->> source of quality problems in the Linux kernel. If we get this solved, 
->> things like getting more testers for -rc kernels will become low hanging 
->> fruits.
->
-> Adrian, I agree with _all_ your points.
->
-> I bet that developers will hate me for this.
->
-> Please consider for 2.6.23
+From: Kars de Jong <jongk@linux-m68k.org>
 
-Fine with me, but:
+Add m68k support to the 53c700 SCSI driver
 
-There are not so simple cases like big infrastructure patches with
-20 other patches in the tree depending on it causing a regression, or 
-even worse, a big infrastructure patch exposing a latent old bug in some 
-completely different area of the kernel.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/scsi/53c700.c |   20 ++++++++++----------
+ drivers/scsi/53c700.h |    5 +++++
+ drivers/scsi/Kconfig  |   13 +++++--------
+ 3 files changed, 20 insertions(+), 18 deletions(-)
 
-And we should be aware that reverting is only a workaround for the real 
-problem which lies in our bug handling.
-
-> Regards,
-> Michal
->...
-
-cu
-Adrian
+--- a/drivers/scsi/53c700.c
++++ b/drivers/scsi/53c700.c
+@@ -653,7 +653,6 @@ NCR_700_chip_setup(struct Scsi_Host *hos
+ {
+ 	struct NCR_700_Host_Parameters *hostdata = 
+ 		(struct NCR_700_Host_Parameters *)host->hostdata[0];
+-	__u32 dcntl_extra = 0;
+ 	__u8 min_period;
+ 	__u8 min_xferp = (hostdata->chip710 ? NCR_710_MIN_XFERP : NCR_700_MIN_XFERP);
+ 
+@@ -678,13 +677,14 @@ NCR_700_chip_setup(struct Scsi_Host *hos
+ 			        burst_disable = BURST_DISABLE;
+ 			        break;
+ 		}
+-		dcntl_extra = COMPAT_700_MODE;
++		hostdata->dcntl_extra |= COMPAT_700_MODE;
+ 
+-		NCR_700_writeb(dcntl_extra, host, DCNTL_REG);
++		NCR_700_writeb(hostdata->dcntl_extra, host, DCNTL_REG);
+ 		NCR_700_writeb(burst_length | hostdata->dmode_extra,
+ 			       host, DMODE_710_REG);
+-		NCR_700_writeb(burst_disable | (hostdata->differential ? 
+-						DIFF : 0), host, CTEST7_REG);
++		NCR_700_writeb(burst_disable | hostdata->ctest7_extra |
++			       (hostdata->differential ? DIFF : 0),
++			       host, CTEST7_REG);
+ 		NCR_700_writeb(BTB_TIMER_DISABLE, host, CTEST0_REG);
+ 		NCR_700_writeb(FULL_ARBITRATION | ENABLE_PARITY | PARITY
+ 			       | AUTO_ATN, host, SCNTL0_REG);
+@@ -719,13 +719,13 @@ NCR_700_chip_setup(struct Scsi_Host *hos
+ 		 * of spec: sync divider 2, async divider 3 */
+ 		DEBUG(("53c700: sync 2 async 3\n"));
+ 		NCR_700_writeb(SYNC_DIV_2_0, host, SBCL_REG);
+-		NCR_700_writeb(ASYNC_DIV_3_0 | dcntl_extra, host, DCNTL_REG);
++		NCR_700_writeb(ASYNC_DIV_3_0 | hostdata->dcntl_extra, host, DCNTL_REG);
+ 		hostdata->sync_clock = hostdata->clock/2;
+ 	} else	if(hostdata->clock > 50  && hostdata->clock <= 75) {
+ 		/* sync divider 1.5, async divider 3 */
+ 		DEBUG(("53c700: sync 1.5 async 3\n"));
+ 		NCR_700_writeb(SYNC_DIV_1_5, host, SBCL_REG);
+-		NCR_700_writeb(ASYNC_DIV_3_0 | dcntl_extra, host, DCNTL_REG);
++		NCR_700_writeb(ASYNC_DIV_3_0 | hostdata->dcntl_extra, host, DCNTL_REG);
+ 		hostdata->sync_clock = hostdata->clock*2;
+ 		hostdata->sync_clock /= 3;
+ 		
+@@ -733,18 +733,18 @@ NCR_700_chip_setup(struct Scsi_Host *hos
+ 		/* sync divider 1, async divider 2 */
+ 		DEBUG(("53c700: sync 1 async 2\n"));
+ 		NCR_700_writeb(SYNC_DIV_1_0, host, SBCL_REG);
+-		NCR_700_writeb(ASYNC_DIV_2_0 | dcntl_extra, host, DCNTL_REG);
++		NCR_700_writeb(ASYNC_DIV_2_0 | hostdata->dcntl_extra, host, DCNTL_REG);
+ 		hostdata->sync_clock = hostdata->clock;
+ 	} else if(hostdata->clock > 25 && hostdata->clock <=37) {
+ 		/* sync divider 1, async divider 1.5 */
+ 		DEBUG(("53c700: sync 1 async 1.5\n"));
+ 		NCR_700_writeb(SYNC_DIV_1_0, host, SBCL_REG);
+-		NCR_700_writeb(ASYNC_DIV_1_5 | dcntl_extra, host, DCNTL_REG);
++		NCR_700_writeb(ASYNC_DIV_1_5 | hostdata->dcntl_extra, host, DCNTL_REG);
+ 		hostdata->sync_clock = hostdata->clock;
+ 	} else {
+ 		DEBUG(("53c700: sync 1 async 1\n"));
+ 		NCR_700_writeb(SYNC_DIV_1_0, host, SBCL_REG);
+-		NCR_700_writeb(ASYNC_DIV_1_0 | dcntl_extra, host, DCNTL_REG);
++		NCR_700_writeb(ASYNC_DIV_1_0 | hostdata->dcntl_extra, host, DCNTL_REG);
+ 		/* sync divider 1, async divider 1 */
+ 		hostdata->sync_clock = hostdata->clock;
+ 	}
+--- a/drivers/scsi/53c700.h
++++ b/drivers/scsi/53c700.h
+@@ -177,6 +177,7 @@ struct NCR_700_command_slot {
+ 	__u8	state;
+ 	#define NCR_700_FLAG_AUTOSENSE	0x01
+ 	__u8	flags;
++	__u8	pad1[2];	/* Needed for m68k where min alignment is 2 bytes */
+ 	int	tag;
+ 	__u32	resume_offset;
+ 	struct scsi_cmnd *cmnd;
+@@ -196,6 +197,8 @@ struct NCR_700_Host_Parameters {
+ 	void __iomem	*base;		/* the base for the port (copied to host) */
+ 	struct device	*dev;
+ 	__u32	dmode_extra;	/* adjustable bus settings */
++	__u32	dcntl_extra;	/* adjustable bus settings */
++	__u32	ctest7_extra;	/* adjustable bus settings */
+ 	__u32	differential:1;	/* if we are differential */
+ #ifdef CONFIG_53C700_LE_ON_BE
+ 	/* This option is for HP only.  Set it if your chip is wired for
+@@ -352,6 +355,7 @@ struct NCR_700_Host_Parameters {
+ #define		SEL_TIMEOUT_DISABLE	0x10 /* 710 only */
+ #define         DFP                     0x08
+ #define         EVP                     0x04
++#define         CTEST7_TT1              0x02
+ #define		DIFF			0x01
+ #define CTEST6_REG                      0x1A
+ #define	TEMP_REG			0x1C
+@@ -385,6 +389,7 @@ struct NCR_700_Host_Parameters {
+ #define		SOFTWARE_RESET		0x01
+ #define		COMPAT_700_MODE		0x01
+ #define 	SCRPTS_16BITS		0x20
++#define		EA_710			0x20
+ #define		ASYNC_DIV_2_0		0x00
+ #define		ASYNC_DIV_1_5		0x40
+ #define		ASYNC_DIV_1_0		0x80
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -1006,6 +1006,11 @@ config SCSI_STEX
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called stex.
+ 
++config 53C700_BE_BUS
++	bool
++	depends on M68K
++	default y
++
+ config SCSI_SYM53C8XX_2
+ 	tristate "SYM53C8XX Version 2 SCSI support"
+ 	depends on PCI && SCSI
+@@ -1728,14 +1733,6 @@ config BVME6000_SCSI
+ 	  SCSI controller chip.  Almost everyone using one of these boards
+ 	  will want to say Y to this question.
+ 
+-config SCSI_NCR53C7xx_FAST
+-	bool "allow FAST-SCSI [10MHz]"
+-	depends on SCSI_AMIGA7XX || MVME16x_SCSI || BVME6000_SCSI
+-	help
+-	  This will enable 10MHz FAST-SCSI transfers with your host
+-	  adapter. Some systems have problems with that speed, so it's safest
+-	  to say N here.
+-
+ config SUN3_SCSI
+ 	tristate "Sun3 NCR5380 SCSI"
+ 	depends on SUN3 && SCSI
 
 -- 
+Gr{oetje,eeting}s,
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
