@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbXFQXnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761955AbXFQXnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761929AbXFQXnH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 19:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761904AbXFQXmj
+	id S1761955AbXFQXnb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 19:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760369AbXFQXmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 19:42:39 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37889 "EHLO
+	Sun, 17 Jun 2007 19:42:43 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37893 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761889AbXFQXmi (ORCPT
+	with ESMTP id S1761932AbXFQXml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 19:42:38 -0400
-Date: Mon, 18 Jun 2007 01:42:54 +0200
+	Sun, 17 Jun 2007 19:42:41 -0400
+Date: Mon, 18 Jun 2007 01:42:57 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fix devres_release_all() return value
-Message-ID: <20070617234254.GD3588@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] arch/i386/video/fbdev.c should #include <asm/fb.h>
+Message-ID: <20070617234257.GE3588@stusta.de>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,37 +29,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Every file should include the headers containing the prototypes for
 it's global functions.
 
-Since the GNU C compiler is now able to detect that the function 
-prototype of devres_release_all() in the header and the actual function 
-disagree regarding the return value, this patch also fixes this bug.
-
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
-
- drivers/base/base.h   |    2 +-
- drivers/base/devres.c |    2 ++
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
---- linux-2.6.22-rc4-mm2/drivers/base/base.h.old	2007-06-17 15:37:21.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/drivers/base/base.h	2007-06-17 15:37:34.000000000 +0200
-@@ -44,6 +44,6 @@
+--- linux-2.6.22-rc4-mm2/arch/i386/video/fbdev.c.old	2007-06-17 15:48:25.000000000 +0200
++++ linux-2.6.22-rc4-mm2/arch/i386/video/fbdev.c	2007-06-17 15:48:53.000000000 +0200
+@@ -11,6 +11,8 @@
+ #include <linux/fb.h>
+ #include <linux/pci.h>
  
- extern char *make_class_name(const char *name, struct kobject *kobj);
- 
--extern void devres_release_all(struct device *dev);
-+extern int devres_release_all(struct device *dev);
- 
- extern struct kset devices_subsys;
---- linux-2.6.22-rc4-mm2/drivers/base/devres.c.old	2007-06-17 15:30:48.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/drivers/base/devres.c	2007-06-17 15:31:03.000000000 +0200
-@@ -10,6 +10,8 @@
- #include <linux/device.h>
- #include <linux/module.h>
- 
-+#include "base.h"
++#include <asm/fb.h>
 +
- struct devres_node {
- 	struct list_head		entry;
- 	dr_release_t			release;
+ int fb_is_primary_device(struct fb_info *info)
+ {
+ 	struct device *device = info->device;
 
