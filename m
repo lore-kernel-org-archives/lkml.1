@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760962AbXFQWg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbXFQWiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760962AbXFQWg7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 18:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbXFQWgw
+	id S1761052AbXFQWiy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 18:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbXFQWir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 18:36:52 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:45623 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755022AbXFQWgw (ORCPT
+	Sun, 17 Jun 2007 18:38:47 -0400
+Received: from ns3.system-techniques.com ([204.91.156.41]:60435 "EHLO
+	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753790AbXFQWiq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 18:36:52 -0400
-Date: Mon, 18 Jun 2007 00:36:49 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       eric@anholt.net, zhenyu.z.wang@intel.com
-Subject: Re: [AGPGART] intel_agp: use table for device probe
-Message-ID: <20070617223649.GA31587@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-	eric@anholt.net, zhenyu.z.wang@intel.com
-References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com>
+	Sun, 17 Jun 2007 18:38:46 -0400
+Date: Sun, 17 Jun 2007 15:38:45 -0700 (PDT)
+From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+To: Linux Kernel Maillist <linux-kernel@vger.kernel.org>
+Subject: Re: Machine Check Exception: 0...04
+In-Reply-To: <Pine.LNX.4.64.0706160948510.29686@filesrv1.baby-dragons.com>
+Message-ID: <Pine.LNX.4.64.0706171535160.6316@filesrv1.baby-dragons.com>
+References: <Pine.LNX.4.64.0706160948510.29686@filesrv1.baby-dragons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070617213355.GC3430@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.8 (ns3.baby-dragons.com [204.91.156.41]); Sun, 17 Jun 2007 22:38:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 05:33:55PM -0400, Dave Jones wrote:
-> intel-agp
-> 
-> Though by the looks of things, with the working kernel, you don't have
-> it loaded (it's dependant upon the 'agpgart' module, which prints the
-> "Detected" line that was missing).
+ 	Hello All ,  As a continuation .
 
-You are wrong.
+On Sat, 16 Jun 2007, Mr. James W. Laferriere wrote:
+> 	Hello All ,  Does anoyone know howto identify a cause for these(*) ?
+> 	Or of any tools to help in the identification of the cause ?
+> 	So far the Machine checks only happen when I am running bonnie++ 
+> against
+> 	my software raid6 array .
+>
+> 	I have done everything I know to do to attempt to ascertain what is
+> 	causing the machine checks .
+> 	ie:
+> 1)	memtest86+ for days ,  no errors .
+> 2)	cpuburnP6 ,  The tests run were 'cpuburnP6 E' & 'cpuburnP6 H' for ~
+> 	60 minutes each .  All CPU's & HT were at 96+<->100% for 60+ Minutes 
+> ,
+> 	no excessive heating or lockups . In single user mode of course .
+> 	I know cpuburn is old but it can excersize the comms between l1 & cpu
+> 	& l1 & l2 -> cpu if done right .
+>
+> (*)
+> CPU 5: Machine Check Exception: 0000000000000004
+> CPU 4: Machine Check Exception: 0000000000000004
+> Kernel panic - not syncing: Unable to continue
+> <system reboots>
+>
+> root@(none):~ # uname -a
+> Linux (none) 2.6.21.5 #1 SMP Fri Jun 15 04:37:23 UTC 2007 i686 pentium4 i386 
+> GNU/Linux
+>
+> Complete serial console log of a boot to single user mode is here .
+>
+> http://www.baby-dragons.com/test-2.6.21.5-mptscsi-4.00.10.00-2007006161326.log
+>
 
-1)
+ 	Hopefully more useful information .  Again only if I am doing any HEAVY
+ 	disk activity ie: bonnie++ .
+ 	I am not able to find a tool to disassamble the EIP: portion of the
+ 	CPU 4: output .
 
-I don't have any agpgart module at all, in any of the kernels that I compiled.
+eth2: after: tx_done_idx=125 free_idx=3 cmdsts=800005ea
+CPU 5: Machine Check Exception: 0000000000000004
+CPU 4: Machine Check Exception: 0000000000000004
+CPU 4: EIP: c0100c72 EFLAGS: 00000246
+         eax: 00000000 ebx: 00000000 ecx: 00000000 edx: 00000000
+         esi: 00000000 edi: f7c58000 ebp: f7c59f68 esp: f7c59f5c
+Kernel panic - not syncing: Unable to continue
 
-$ find /lib/modules -name 'agpgart.ko'
-$ /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64 -name '*agp*.ko'
-/lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/sis-agp.ko
-/lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/intel-agp.ko
-/lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/via-agp.ko
-
-2)
-
-$ strings /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/intel-agp.ko | grep 'agpgart: Detected an Intel'
-<6>agpgart: Detected an Intel %s Chipset.
-
-Hence, in the case that the kernel works, intel-agp is loaded
-WITHOUT printing this Detected line - while when it doesn't work,
-it is loaded while printing this line.
-
-Perhaps my "solution" is to remove this module completely?
-I don't seem to need it.
-
+ 		Tia ,  JimL
 -- 
-Carlo Wood <carlo@alinoe.com>
++-----------------------------------------------------------------+
+| James   W.   Laferriere | System   Techniques | Give me VMS     |
+| Network        Engineer | 663  Beaumont  Blvd |  Give me Linux  |
+| babydr@baby-dragons.com | Pacifica, CA. 94044 |   only  on  AXP |
++-----------------------------------------------------------------+
