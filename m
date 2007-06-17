@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbXFQQ14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbXFQQnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbXFQQ14 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 12:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXFQQ1s
+	id S1754904AbXFQQnl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 12:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbXFQQnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 12:27:48 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45213 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752703AbXFQQ1s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 12:27:48 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <467560CF.6090100@s5r6.in-berlin.de>
-Date: Sun, 17 Jun 2007 18:26:55 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: How to improve the quality of the kernel?
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <4673D63D.5020804@s5r6.in-berlin.de> <20070617004436.GU3588@stusta.de> <467501D0.3090203@googlemail.com> <20070617124508.GV3588@stusta.de> <6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com> <20070617142950.GW3588@stusta.de>
-In-Reply-To: <20070617142950.GW3588@stusta.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 17 Jun 2007 12:43:33 -0400
+Received: from www.osadl.org ([213.239.205.134]:40151 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753244AbXFQQnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 12:43:32 -0400
+Subject: Re: v2.6.21.4-rt11
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Nelson Castillo <nelsoneci@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <2accc2ff0706170915h7cc0ce97ofc16bc33f1714567@mail.gmail.com>
+References: <20070609210507.GA29194@elte.hu>
+	 <2accc2ff0706170915h7cc0ce97ofc16bc33f1714567@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 17 Jun 2007 18:43:25 +0200
+Message-Id: <1182098605.8176.422.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
->>> And we should be aware that reverting is only a workaround for the real
->>> problem which lies in our bug handling.
->> ...
+On Sun, 2007-06-17 at 11:15 -0500, Nelson Castillo wrote:
+> >      http://rt.wiki.kernel.org
 > 
-> And this is something I want to emphasize again.
+> Not for ARM yet :(
 > 
-> How can we make any progress with the real problem and not only the 
-> symptoms?
-...
+> What should I try for the ARM architecture? 
 
-Perhaps make lists of
+ARM has a lot of sub architectures and not all of them are supported
+yet.
 
-  - bug reports which never lead to any debug activity
-    (no responsible person/team was found, or a seemingly person/team
-    did not start to debug the report)
+> There are many choices and
+> I don't know what is the more friendly. By friendly I mean the one that
+> is likely to be merged and that cooperate with you.
 
-  - known regressions on release,
+Which choices do you mean ?
 
-  - regressions that became known after release,
+>   http://people.redhat.com/mingo/realtime-preempt/patch-2.6.21.4-rt14
+> 
+> : undefined reference to `usecs_to_cycles'
+> make: *** [.tmp_vmlinux1] Error 1
 
-  - subsystems with notable backlogs of old bugs,
+Which ARM sub arch ?
 
-  - other categories?
+	tglx
 
-Select typical cases from each categories, analyze what went wrong in
-these cases, and try to identify practicable countermeasures.
 
-Another approach:  Figure out areas where quality is exemplary and try
-to draw conclusions for areas where quality is lacking.
--- 
-Stefan Richter
--=====-=-=== -==- =---=
-http://arcgraph.de/sr/
