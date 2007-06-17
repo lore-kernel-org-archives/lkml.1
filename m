@@ -1,36 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbXFQOYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbXFQOYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760118AbXFQOYB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 10:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757785AbXFQOXw
+	id S1760446AbXFQOYb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 10:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759842AbXFQOYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 10:23:52 -0400
+	Sun, 17 Jun 2007 10:24:12 -0400
 Received: from ug-out-1314.google.com ([66.249.92.173]:34180 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755532AbXFQOXv (ORCPT
+	with ESMTP id S1760234AbXFQOYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 10:23:51 -0400
+	Sun, 17 Jun 2007 10:24:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=IkN4aLkZFFgQbmlxXYDprhyLev0MSN6em7oePH+TyV1l1M3Jl9kMHZL3jxRt7M4UuJX4nioBwW1YZbiyDv4/URnBm36JBsaIsdeSay4zjXnT0F+bdRtTqXehIV4K9nXhuSBrkmzK8TLrRcbD6GCgdqai2rjkWwNh2SXQid68Sew=
-Message-ID: <467543E1.1060001@googlemail.com>
-Date: Sun, 17 Jun 2007 16:23:29 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=MabSpTmqHVUmsXQwTuGS1IJ9uNz6I1TzZCkPJYPdPPP6Nr5ZBzOtWeJtqngmNRfAKnz/+hz3CW6lAd8L0wtrCdHDnS4jM0BQXosYESFg+QCYhPeH5ikhQYmes7G9vC/ErWa9+xMYtjkaoflVEZ5yAHGr3ZD237qkH3MLaMVtnTY=
+Message-ID: <467543EF.6080605@googlemail.com>
+Date: Sun, 17 Jun 2007 16:23:43 +0200
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rodrigo Luiz <troops.of.doom@gmail.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
-       Jaroslav Kysela <perex@suse.cz>, Ben Collins <bcollins@ubuntu.com>,
-       reiserfs-devel@vger.kernel.org, "Vladimir V. Saveliev" <vs@namesys.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <gregkh@suse.de>,
-       Malte Cornils <malte@cornils.net>
-Subject: [1/2] 2.6.22-rc5: known regressions
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rodney Gordon II <meff@spherevision.org>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       Mark Fortescue <mark@mtfhpc.demon.co.uk>,
+       William Lee Irwin III <wli@holomorphy.com>, Andi Kleen <ak@suse.de>,
+       discuss@x86-64.org, Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc5: known regressions
+References: <46754153.6040404@googlemail.com>
+In-Reply-To: <46754153.6040404@googlemail.com>
 Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
@@ -46,47 +46,36 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Unclassified
+SATA/PATA
 
-Subject    : Kernel hang on CMOS_READ
-References : http://lkml.org/lkml/2007/6/3/138
-Submitter  : Rodrigo Luiz <troops.of.doom@gmail.com>
-Status     : Unknown
-
-Subject    : Device hang when offlining a CPU due to IRQ misrouting
-References : http://lkml.org/lkml/2007/5/31/419
-Submitter  : Darrick J. Wong <djwong@us.ibm.com>
-Handled-By : Siddha, Suresh B <suresh.b.siddha@intel.com>
-Status     : problem is being debugged
-
-
-
-ALSA
-
-Subject    : snd-aoa causes badness in lib/kref.c:33
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8513
-Submitter  : Ben Collins <bcollins@ubuntu.com>
-Handled-By : Takashi Iwai <tiwai@suse.de>
-Status     : Unknown
-
-
-
-FS
-
-Subject    : 2.6.22-rc4-git5 reiserfs: null ptr deref.
-References : http://lkml.org/lkml/2007/6/13/322
-Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
-Handled-By : Vladimir V. Saveliev <vs@namesys.com>
-Status     : problem is being debugged
-
-
-
-PCI
-
-Subject    : PCI setup hangs on Asus Notebook (nolapic helps)
-References : http://lkml.org/lkml/2007/6/14/161
-Submitter  : Malte Cornils <malte@cornils.net>
+Subject    : libata IT821X driver still fails! Hard-freezes system
+References : http://lkml.org/lkml/2007/6/14/82
+Submitter  : Rodney Gordon II <meff@spherevision.org>
 Status     : unknown
+
+
+
+Sparc64
+
+Subject    : random invalid instruction occourances on sparc32 (sun4c)
+References : http://lkml.org/lkml/2007/6/17/111
+Submitter  : Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Status     : problem is being debugged
+
+Subject    : 2.6.22-rc broke X on Ultra5
+References : http://lkml.org/lkml/2007/5/22/78
+Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+Handled-By : David Miller <davem@davemloft.net>
+Status     : problem is being debugged
+
+
+
+x86-64
+
+Subject    : x86-64 2.6.22-rc2 random segfaults
+References : http://lkml.org/lkml/2007/5/24/275
+Submitter  : Ioan Ionita <opslynx@gmail.com>
+Status     : Unknown
 
 
 
