@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbXFQOMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbXFQOYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760033AbXFQOMQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 10:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbXFQOMD
+	id S1760118AbXFQOYB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 10:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757785AbXFQOXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 10:12:03 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:39900 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753783AbXFQOMB (ORCPT
+	Sun, 17 Jun 2007 10:23:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:34180 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755532AbXFQOXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 10:12:01 -0400
-Date: Sun, 17 Jun 2007 16:24:30 +0200
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] (Re: regression tracking (Re: Linux 2.6.21))
-Message-ID: <20070617142430.GF16016@flower.upol.cz>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <6bffcb0e0706170322j3c51868fn6189bfd7d3bcac1@mail.gmail.com> <20070617114709.GD16016@flower.upol.cz> <200706171413.40890.rjw@sisk.pl>
+	Sun, 17 Jun 2007 10:23:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=IkN4aLkZFFgQbmlxXYDprhyLev0MSN6em7oePH+TyV1l1M3Jl9kMHZL3jxRt7M4UuJX4nioBwW1YZbiyDv4/URnBm36JBsaIsdeSay4zjXnT0F+bdRtTqXehIV4K9nXhuSBrkmzK8TLrRcbD6GCgdqai2rjkWwNh2SXQid68Sew=
+Message-ID: <467543E1.1060001@googlemail.com>
+Date: Sun, 17 Jun 2007 16:23:29 +0200
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706171413.40890.rjw@sisk.pl>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rodrigo Luiz <troops.of.doom@gmail.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@suse.cz>, Ben Collins <bcollins@ubuntu.com>,
+       reiserfs-devel@vger.kernel.org, "Vladimir V. Saveliev" <vs@namesys.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <gregkh@suse.de>,
+       Malte Cornils <malte@cornils.net>
+Subject: [1/2] 2.6.22-rc5: known regressions
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 02:13:39PM +0200, Rafael J. Wysocki wrote:
-> On Sunday, 17 June 2007 13:47, Oleg Verych wrote:
-[]
-> > It's OK _only_ in case of unknown, hard to find *hardware* bugs.
-> > 
-> > If you think it's "a good thing" for bad, untested by developer
-> > code, then something is completely wrong.
-> 
-> Oh, I've just fixed two purely software bugs pointed out by binary searching
-> in the code that I'm sure has been tested, not only by its developers, but the
-> bugs only showed up in my configuration (on one out of four test boxes).
-> 
-> There are so many different kernel configurations possible that there's no way
-> a developer can test them all.
+Hi all,
 
-With current state of affairs it's not only hard for developers, but
-and for users: <20070221220520.GA20659@artselect.com>,
-              <20070429230037.95120@gmx.net>
+Here is a list of some known regressions in 2.6.22-rc5.
 
-I'm trying to re-do some kbuild stuff, but i'm getting rather offensive
-answers :( <1182020654.8176.398.camel@chaos>
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
-(Even if i'm academic with free Internet, i doubt i even tried to
-think to improve something, if i didn't have one, because i wouldn't knew
-huge lkml traffic, problems, etc.)
 
-Maybe i'm wrong. But reducing amount of traffic/files and ease of
-(re-)configuration are not last things to be done for better testing.
-All for speed of getting and compiling kernel. Latter for avoiding
-bugs and noise due to inconsistent build configuration.
 
-Finally again, bug-reporting and tracking tools, i've tried to discuss
-are major problems out there I think it's plain easy and deal with. One
-more example:
+Unclassified
 
-    <handler.s.C.117647526113388.transcript@bugs.debian.org>
-    Xref: news.gmane.org gmane.linux.debian.devel.kernel:28095
-    <http://permalink.gmane.org/gmane.linux.debian.devel.kernel/28095>
-____
+Subject    : Kernel hang on CMOS_READ
+References : http://lkml.org/lkml/2007/6/3/138
+Submitter  : Rodrigo Luiz <troops.of.doom@gmail.com>
+Status     : Unknown
+
+Subject    : Device hang when offlining a CPU due to IRQ misrouting
+References : http://lkml.org/lkml/2007/5/31/419
+Submitter  : Darrick J. Wong <djwong@us.ibm.com>
+Handled-By : Siddha, Suresh B <suresh.b.siddha@intel.com>
+Status     : problem is being debugged
+
+
+
+ALSA
+
+Subject    : snd-aoa causes badness in lib/kref.c:33
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8513
+Submitter  : Ben Collins <bcollins@ubuntu.com>
+Handled-By : Takashi Iwai <tiwai@suse.de>
+Status     : Unknown
+
+
+
+FS
+
+Subject    : 2.6.22-rc4-git5 reiserfs: null ptr deref.
+References : http://lkml.org/lkml/2007/6/13/322
+Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
+Handled-By : Vladimir V. Saveliev <vs@namesys.com>
+Status     : problem is being debugged
+
+
+
+PCI
+
+Subject    : PCI setup hangs on Asus Notebook (nolapic helps)
+References : http://lkml.org/lkml/2007/6/14/161
+Submitter  : Malte Cornils <malte@cornils.net>
+Status     : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
