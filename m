@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbXFQUrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbXFQUtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbXFQUrz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 16:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbXFQUrs
+	id S1754915AbXFQUtU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 16:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbXFQUtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 16:47:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46268 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbXFQUrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 16:47:47 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Michael Poole <mdpoole@troilus.org>, Bron Gondwana <brong@fastmail.fm>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706171418.38844.dhazelton@enter.net>
-	<87fy4qwhaq.fsf@graviton.dyn.troilus.org>
-	<200706171541.55338.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sun, 17 Jun 2007 17:47:31 -0300
-In-Reply-To: <200706171541.55338.dhazelton@enter.net> (Daniel Hazelton's message of "Sun\, 17 Jun 2007 15\:41\:55 -0400")
-Message-ID: <orsl8qfgv0.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Sun, 17 Jun 2007 16:49:10 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:59184
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751047AbXFQUtH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 16:49:07 -0400
+Date: Sun, 17 Jun 2007 13:46:47 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: dean gaudet <dean@arctic.org>
+cc: Wakko Warner <wakko@animx.eu.org>, Neil Brown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <Pine.LNX.4.64.0706171242390.24938@twinlark.arctic.org>
+Message-ID: <Pine.LNX.4.64.0706171345320.31145@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+ <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+ <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org>
+ <18035.23867.576212.859440@notabene.brown> <20070616140857.GA4206@animx.eu.org>
+ <Pine.LNX.4.64.0706161845180.24938@twinlark.arctic.org> <20070617132809.GB7806@animx.eu.org>
+ <Pine.LNX.4.64.0706171019490.24938@twinlark.arctic.org> <20070617193025.GA8770@animx.eu.org>
+ <Pine.LNX.4.64.0706171242390.24938@twinlark.arctic.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 17, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+On Sun, 17 Jun 2007, dean gaudet wrote:
 
-> Okay. So they give everyone the right to change the software on the
-> box, but on connection replace the modified stuff with the official
-> versions.
+> On Sun, 17 Jun 2007, Wakko Warner wrote:
+>
+>> What benefit would I gain by using an external journel and how big would it
+>> need to be?
+>
+> i don't know how big the journal needs to be... i'm limited by xfs'
+> maximum journal size of 128MiB.
+>
+> i don't have much benchmark data -- but here are some rough notes i took
+> when i was evaluating a umem NVRAM card.  since the pata disks in the
+> raid1 have write caching enabled it's somewhat of an unfair comparison,
+> but the important info is the 88 seconds for internal journal vs. 81
+> seconds for external journal.
 
-If I haven't modified it so as to stop them from doing so on my
-computer, that is ;-)
+if you turn on disk write caching the difference will be much larger.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+> -dean
+>
+> time sh -c 'tar xf /var/tmp/linux-2.6.20.tar; sync'
+
+I know that sync will force everything to get as far as the journal, will 
+it force the journal to be flushed?
+
+David Lang
+
+>
+> xfs journal     raid5 bitmap    times
+> internal        none            0.18s user 2.14s system 2% cpu 1:27.95 total
+> internal        internal        0.16s user 2.16s system 1% cpu 2:01.12 total
+> raid1           none            0.07s user 2.02s system 2% cpu 1:20.62 total
+> raid1           internal        0.14s user 2.01s system 1% cpu 1:55.18 total
+> raid1           raid1           0.14s user 2.03s system 2% cpu 1:20.61 total
+> umem            none            0.13s user 2.07s system 2% cpu 1:20.77 total
+> umem            internal        0.15s user 2.16s system 2% cpu 1:51.28 total
+> umem            umem            0.12s user 2.13s system 2% cpu 1:20.50 total
+>
+>
+> raid5:
+> - 4x seagate 7200.10 400GB on marvell MV88SX6081
+> - mdadm --create --level=5 --raid-devices=4 /dev/md4 /dev/sd[abcd]1
+>
+> raid1:
+> - 2x maxtor 6Y200P0 on 3ware 7504
+> - two 128MiB partitions starting at cyl 1
+> - mdadm --create --level=1 --raid-disks=2 --auto=yes --assume-clean /dev/md1 /dev/sd[fg]1
+> - mdadm --create --level=1 --raid-disks=2 --auto=yes --assume-clean /dev/md2 /dev/sd[fg]2
+> - md1 is used for external xfs journal
+> - md2 has an ext3 filesystem for the external md4 bitmap
+>
+> xfs:
+> - mkfs.xfs issued before each run using the defaults (aside from -l logdev=/dev/md1)
+> - mount -o noatime,nodiratime[,logdev=/dev/md1]
+>
+> umem:
+> - 512MiB Micro Memory MM-5415CN
+> - 2 partitions similar to the raid1 setup
+>
