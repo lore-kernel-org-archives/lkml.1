@@ -1,125 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759374AbXFQTRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762444AbXFQTR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759374AbXFQTRD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 15:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761386AbXFQTQD
+	id S1762444AbXFQTR2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761867AbXFQTRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 15:16:03 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43289 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762224AbXFQTP7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 15:15:59 -0400
-Date: Sun, 17 Jun 2007 12:14:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070614235004.GA14952@elte.hu> <20070615011012.6c09066e@the-village.bc.nu>
- <20070615012623.GA25189@elte.hu> <20070615101007.0cbfd078@the-village.bc.nu>
- <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de>
- <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk>
- <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
- <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Sun, 17 Jun 2007 15:17:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34298 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759983AbXFQTRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 15:17:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Uli Luckas <u.luckas@road.de>
+Subject: Re: [PATCH -mm 2/2] PM: Disable usermode helper before hibernation and suspend
+Date: Sun, 17 Jun 2007 21:24:13 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+References: <200706042325.28965.rjw@sisk.pl> <200706151508.53191.u.luckas@road.de> <200706152336.46278.rjw@sisk.pl>
+In-Reply-To: <200706152336.46278.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706172124.13550.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 17 Jun 2007, Alexandre Oliva wrote:
+On Friday, 15 June 2007 23:36, Rafael J. Wysocki wrote:
+> On Friday, 15 June 2007 15:08, Uli Luckas wrote:
+> > On Monday, 4. June 2007, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > >
+> > > Use a hibernation and suspend notifier to disable the user mode helper
+> > > before a hibernation/suspend and enable it after the operation.
+> > >
+> > Hi Rafael,
+> > I have a couple of questions, regarding this patch ...
+> > > -	if (!khelper_wq)
+> > > +	if (!khelper_wq || usermodehelper_disabled)
+> > >  		return -EBUSY;
+> > 1) how about not returning -EBUSY here, if (wait == UMH_NO_WAIT)?
 > 
-> > What I care about is that the GPLv3 is a _worse_license_ than GPLv2,
+> Yes, this would make sense.
+
+I know why I didn't do that from the start: my patch was against -rc4 and
+UMH_NO_WAIT is mm-only.
+
+> > 2) how does your patch prevent wait_for_completion(&done) to hang during
+> >    freezing if usermodehelper_pm_callback is called _after_ the above check?
 > 
-> Even though anti-tivoization furthers the quid-pro-quo spirit that you
-> love about v2, and anti-tivoization is your only objection to v3?
-
-You apparently do not understand "quid-pro-quo".
-
-Another way of stating it might be "same for same".
-
-A third way of stating it is "software for software". No, the romans never 
-said that, but I just did, to make it just more obvious that the whole 
-point is that you are expected to answer IN KIND!
-
-I do *not* ask for hardware access.
-
-I do *not* ask for money.
-
-	And the reason I'm harping on "money" is that "money" is something 
-	*different* from what I give out. I give out software. I don't 
-	expect money in return.
-
-	Money is *irrelevant*. It's allowed (and certainly much 
-	appreciated), but it's not required.
-
-See? Can you agree with that? Can you agree that that is actually part of 
-what the whole "open source" spirit is all about (I'll avoid the word 
-"free software", since you have defined it so rigorously personally that 
-it makes no sense any more).
-
-Now, replace "money" with "access to the hardware", and read the exact 
-*same* sentences again:
-
-	And the reason I'm harping on "access to hardware" is that "access 
-	to hardware" is something *different* from what I give out. I give 
-	out software. I don't expect access to hardware in return.
-
-	Access to hardware is *irrelevant*. It's allowed (and certainly 
-	much appreciated), but it's not required.
-
-See? 
-
-Exact same words. Exact same spirit. Just using "access to hardware" 
-instead of "money".
-
-You have been showing that you have a really hard time understanding that 
-very *simple* argument.
-
-> > I'd be stupid to select the worse of two licenses, wouldn't I?
+> It doesn't.  Once the helper is running, we can't distinguish it from any other
+> user land process.
 > 
-> Yes.  That's precisely why I don't understand your stance.
+> Still, it narrows the window quite a bit.
 
-If you don't understand it after the above, I really can only say:
+Okay, I think we can help it a bit.  Please tell me what you think of the
+following patch (on top of 2.6.22-rc4-mm2).
 
-	"You are either terminally stupid, or you're not allowing yourself 
-	 to see an obvious argument, because it destroys your world-view".
+Greetings,
+Rafael
 
-The latter is very possible. It's a very human thing. It's why apparently 
-a lot of people in the US have a hard time believing in evolution. Are 
-they terminally stupid? Yeah, that is quite possible. But it is also 
-possible that they are of average intelligence, and they just cannot 
-mentally _afford_ to follow the argument - it destroys the silyl stories 
-they heard as children, and requires them to think too hard about the 
-veracity of the source.
 
-		Linus
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/kmod.c |   24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
-PS. Since some people talked about the game theory aspects of 
-"tit-for-tat", I'd like to point out that what is usually considered an 
-even *better* strategy than "tit-for-tat" is actually "tit-for-tat with 
-forgiveness".
-
-In particular, "tit-for-tat with forgiveness" is considered better when 
-there is ambiguity (like "communication difficulties" - does that sound 
-familiar?) in the encouter. You allow some leeway, and don't always 
-retaliate!
-
-So the FSF is DOING THE WRONG THING! They are turning "tit-for-tat" not 
-into "tit-for-tat with forgiveness", but into "tit-for-tat with preemptive 
-strikes".
-
-That is a *LOSING* strategy in game theory. So a game theorist could very 
-well argue with good reason to believe he is right that the GPLv3 is 
-actually a worse license even from a purely theoretical standpoint!
+Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
++++ linux-2.6.22-rc4-mm2/kernel/kmod.c
+@@ -49,6 +49,15 @@ static struct workqueue_struct *khelper_
+  */
+ static int usermodehelper_disabled;
+ 
++/* Number of helpers running */
++static atomic_t running_helpers = ATOMIC_INIT(0);
++
++/*
++ * Time to wait for running_helpers to become zero before the setting of
++ * usermodehelper_disabled in usermodehelper_pm_callback() fails
++ */
++#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
++
+ #ifdef CONFIG_KMOD
+ 
+ /*
+@@ -279,11 +288,20 @@ static int usermodehelper_pm_callback(st
+ 					unsigned long action,
+ 					void *ignored)
+ {
++	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(waiting);
++
+ 	switch (action) {
+ 	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
+ 		usermodehelper_disabled = 1;
+-		return NOTIFY_OK;
++		wait_event_timeout(waiting, atomic_read(&running_helpers) == 0,
++					RUNNING_HELPERS_TIMEOUT);
++		if (atomic_read(&running_helpers) == 0) {
++			return NOTIFY_OK;
++		} else {
++			usermodehelper_disabled = 0;
++			return NOTIFY_BAD;
++		}
+ 	case PM_POST_HIBERNATION:
+ 	case PM_POST_SUSPEND:
+ 		usermodehelper_disabled = 0;
+@@ -397,12 +415,13 @@ int call_usermodehelper_exec(struct subp
+ 	DECLARE_COMPLETION_ONSTACK(done);
+ 	int retval;
+ 
++	atomic_inc(&running_helpers);
+ 	if (sub_info->path[0] == '\0') {
+ 		retval = 0;
+ 		goto out;
+ 	}
+ 
+-	if (!khelper_wq || usermodehelper_disabled) {
++	if (!khelper_wq || (wait != UMH_NO_WAIT && usermodehelper_disabled)) {
+ 		retval = -EBUSY;
+ 		goto out;
+ 	}
+@@ -418,6 +437,7 @@ int call_usermodehelper_exec(struct subp
+ 
+   out:
+ 	call_usermodehelper_freeinfo(sub_info);
++	atomic_dec(&running_helpers);
+ 	return retval;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_exec);
