@@ -1,72 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757785AbXFQVRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbXFQVTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757785AbXFQVRX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 17:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbXFQVQ6
+	id S1760590AbXFQVTb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 17:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbXFQVTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 17:16:58 -0400
-Received: from ns.firmix.at ([62.141.48.66]:60033 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754042AbXFQVQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 17:16:57 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Gabor Czigola <czigola@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <orfy4qffyj.fsf@oliva.athome.lsd.ic.unicamp.br>
-References: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
-	 <orfy4qh0mc.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <1182112097.3800.3.camel@gimli.at.home>
-	 <orfy4qffyj.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain
-Organization: http://www.firmix.at/
-Date: Sun, 17 Jun 2007 23:16:49 +0200
-Message-Id: <1182115009.3800.12.camel@gimli.at.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Sun, 17 Jun 2007 17:19:25 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49811 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752687AbXFQVTY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 17:19:24 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4675A530.6030002@s5r6.in-berlin.de>
+Date: Sun, 17 Jun 2007 23:18:40 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: bugme-daemon@bugzilla.kernel.org, linux1394-devel@lists.sourceforge.net
+Subject: Re: [Bug 8646] New: fw-ohci and ohci1394: panic in softirq, below
+ smp_apic_timer_interrupt
+References: <bug-8646-4803@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-8646-4803@http.bugzilla.kernel.org/>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -1.117 () AWL
-X-Firmix-Spam-Status: No, hits=-1.117 required=5
-X-Spam-Score: -1.117 () AWL
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-17 at 18:07 -0300, Alexandre Oliva wrote:
-[...]
-> However, as Ingo argued, not being able to patch holes, fix bugs and
-> add new features is a very bad idea.  He was talking about the
-> software, but this is as true when it comes to the license.
+For the lists:
 
-Yes, but the license of the license of the software is/can be a
-completely different thing then the license of the software itself.
+bugme-daemon@bugzilla.kernel.org wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=8646
+> 
+>            Summary: fw-ohci and ohci1394: panic in softirq, below
+>                     smp_apic_timer_interrupt
+>            Product: Drivers
+>            Version: 2.5
+>      KernelVersion: all
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: high
+>           Priority: P1
+>          Component: IEEE1394
+>         AssignedTo: drivers_ieee1394@kernel-bugs.osdl.org
+>         ReportedBy: stefan-r-bz@s5r6.in-berlin.de
+> 
+> 
+> Most recent kernel where this bug did not occur: unknown
+> Hardware Environment: SMP i586 and SMP x86-64
+> Software Environment: Linux 2.6.x
+> 
+> If an SBP-2 device is attached and sbp2 or firewire-sbp2 is loaded, any of the
+> following commands
+> 
+> # modprobe -r sbp2 && modprobe -r ohci1394
+> # modprobe -r firewire-ohci
+> # modprobe -r firewire-sbp2 firewire-ohci
+> # modprobe -r firewire-sbp2 && sleep 0 && modprobe -r firewire-ohci
+> 
+> will lead to a panic with a trace similar to this:
+> general protection fault [...]
+> Pid: 0, comm: swapper [...]
+> run_timer_softirq
+> __do_softirq
+> call_softirq
+> do_softirq
+> irq_exit
+> smp_apic_timer_interrupt
+> mwait_idle
+> apic_timer_interrupt
+> [...]
+> 
+> This happened on two different i945GM based boards with Core 2 Duo, 32-bit and
+> 64-bit kernels.  The last time I tried this with ohci1394/sbp2 is a while ago. 
+> I just saw it now happening in the new drivers too.
+> 
+> The same trace also happened on an older kernel repeatedly in a totally
+> different context, without FireWire drivers loaded:  It could be triggered by
+> "make -j" in the kernel source tree, i.e. by a spawning something with many
+> subthreads.  I don't have a spare machine with enough RAM available to test
+> this again with a recent kernel, for now.  I will try to make the machine where
+> I saw it available again.
+> 
+> I.e. the bug may be entirely outside the old and new FireWire drivers.
+> 
+> *Not* affected are:
+>   - The same machines with
+>     "modprobe -r firewire-sbp2 && sleep 0.1 && modprobe -r firewire-ohci",
+>   - A VIA KM-266/ AMD-Athlon single-CPU PC, even if running an SMP kernel.
 
-And the GPL doesn't fit well for normal literature anyways - otherwise
-we wouldn't have the Creative-Commons project.
 
-> There are smarter ways of retaining control over licensing terms that
-> don't paint yourself into a corner that's nearly impossible to get out
-> of.
+BTW, I didn't give this bug high priority while I knew of this bug in
+conjunction with ohci1394, because module removal of ohci1394 is not
+possible while sbp2 is logged in into a target since Linux 2.6.17.  But
+the new firewire drivers allow it, thus make the bug more visible.
 
-The copyright holders of the software can change the license if they
-wish/decide. The situation that a very large number of people are
-necessary for this in the case "Linux kernel" doesn't change the
-theoretical possibility.
 
-[ shortened to save space ]
-> The mechanics are no different from "or any later version" provisions,
-> really, except that then you establish what the goals of your
-> community are without blocking upgrades that wouldn't conflict, but
-> that would rather further the interests of your own community.
+> ------- Comment #1 from stefan-r-bz@s5r6.in-berlin.de  2007-06-17 14:07 -------
+> Created an attachment (id=11773)
+>  --> (http://bugzilla.kernel.org/attachment.cgi?id=11773&action=view)
+> screenshot
+> 
 
-ACK.
-
-	Bernd
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+Stefan Richter
+-=====-=-=== -==- =---=
+http://arcgraph.de/sr/
