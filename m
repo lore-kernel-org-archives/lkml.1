@@ -1,174 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762347AbXFQTQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759374AbXFQTRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762347AbXFQTQp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 15:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761495AbXFQTLr
+	id S1759374AbXFQTRD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:17:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761386AbXFQTQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 15:11:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34252 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761487AbXFQTLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 15:11:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: How to improve the quality of the kernel?
-Date: Sun, 17 Jun 2007 21:18:17 +0200
-User-Agent: KMail/1.9.5
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <200706172053.41806.bzolnier@gmail.com> <20070617115258.1f55b29d.akpm@linux-foundation.org>
-In-Reply-To: <20070617115258.1f55b29d.akpm@linux-foundation.org>
+	Sun, 17 Jun 2007 15:16:03 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43289 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762224AbXFQTP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 15:15:59 -0400
+Date: Sun, 17 Jun 2007 12:14:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614235004.GA14952@elte.hu> <20070615011012.6c09066e@the-village.bc.nu>
+ <20070615012623.GA25189@elte.hu> <20070615101007.0cbfd078@the-village.bc.nu>
+ <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de>
+ <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk>
+ <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+ <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706172118.19214.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 June 2007 20:52, Andrew Morton wrote:
-> On Sun, 17 Jun 2007 20:53:41 +0200 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> 
-> > 
-> > 
-> > IMO we should concentrate more on preventing regressions than on fixing them.
-> > In the long-term preventing bugs is cheaper than fixing them afterwards.
-> > 
-> > First let me tell you all a little story...
-> > 
-> > Over two years ago I've reviewed some _cleanup_ patch and noticed three bugs
-> > in it (in other words I potentially prevented three regressions).  I also
-> > asked for more thorough verification of the patch as I suspected that it may
-> > have more problems.  The author fixed the issues and replied that he hasn't
-> > done the full verification yet but he doesn't suspect any problems...
-> > 
-> > Fast forward...
-> > 
-> > Year later I discover that the final version of the patch hit the mainline.
-> > I don't remember ever seeing the final version in my mailbox (there are no
-> > cc: lines in the patch description) and I saw that I'm not credited in the
-> > patch description.  However the worse part is that it seems that the full
-> > verification has never been done.  The result?   Regression in the release
-> > kernel (exactly the issue that I was worried about) which required three
-> > patches and over a month to be fixed completely.  It seems that a year
-> > was not enough to get this ~70k _cleanup_ patch fully verified and tested
-> > (it hit -mm soon before being merged)...
-> 
-> crap.  Commit ID, please ;)
-> 
-> > >From reviewer's POV: I have invested my time into review, discovered real
-> > issues and as a reward I got no credit et all and extra frustration from the
-> > fact that part of my review was forgotten/ignored (the part which resulted in
-> > real regression in the release kernel)...  Oh and in the past the said
-> > developer has already been asked (politely in private message) to pay more
-> > attention to his changes (after I silently fixed some other regression caused
-> > by his other patch).
-> > 
-> > But wait there is more, I happend to be the maintainer of the subsystem which
-> > got directly hit by the issue and I was getting bugreports from the users about
-> > the problem...  :-)
-> > 
-> > It wasn't my first/last bad experience as a reviewer... finally I just gave up
-> > on reviewing other people patches unless they are stricly for IDE subsystem.
-> > 
-> > The moral of the story is that currently it just doesn't pay off to do
-> > code reviews.
-> 
-> I dunno.  I suspect (hope) that this was an exceptional case, hence one
-> should not draw general conclusions from it.  It certainly sounds very bad.
-> 
-> >  From personal POV it pays much more to wait until buggy patch
-> > hits the mainline and then fix the issues yourself (at least you will get
-> > some credit).  To change this we should put more ephasize on the importance
-> > of code reviews by "rewarding" people investing their time into reviews
-> > and "rewarding" developers/maintainers taking reviews seriously.
-> > 
-> > We should credit reviewers more, sometimes it takes more time/knowledge to
-> > review the patch than to make it so getting near to zero credit for review
-> > doesn't sound too attractive.  Hmm, wait it can be worse - your review
-> > may be ignored... ;-)
-> > 
-> > >From my side I think I'll start adding less formal "Reviewed-by" to IDE
-> > patches even if the review resulted in no issues being found (in additon to
-> > explicit "Acked-by" tags and crediting people for finding real issues - which
-> > I currently always do as a way for showing my appreciation for their work).
-> 
-> yup, Reviewed-by: is good and I do think we should start adopting it,
-> although I haven't thought through exactly how.
-> 
-> On my darker days I consider treating a Reviewed-by: as a prerequisite for
-> merging.  I suspect that would really get the feathers flying.
-
-How about the following "algorithm":
-
-* Step 1: Send a patch as an RFC to the relevant lists/people and only if there
-  are no negative comments within at least n days, you are allowed to proceed
-  to the next step.  If anyone has reviewed/acked the patch, add their names
-  and email addresses as "Reviewed-by"/"Acked-by" to the patch in the next
-  step.
-* Step 2: Send the patch as an RC to the relevant lists/people _and_ LKML and
-  if there are no negative comments within at least n days, you can proceed to
-  the next step.  If anyone has reviewed/acked the patch, add their names
-  and email addresses as "Reviewed-by"/"Acked-by" to the patch in the next
-  step.
-* Step 3: Submit the patch for merging to the right maintainer (keeping the
-  previous CC list).
-
-where n is a number that needs to be determined (I think that n could be 3).
-Well, "negative comments" should also be defined more precisely. ;-)
-
-> > I also encourage other maintainers/developers to pay more attention to
-> > adding "Acked-by"/"Reviewed-by" tags and crediting reviewers.  I hope
-> > that maintainers will promote changes that have been reviewed by others
-> > by giving them priority over other ones (if the changes are on more-or-less
-> > the same importance level of course, you get the idea).
-> > 
-> > Now what to do with people who ignore reviews and/or have rather high
-> > regressions/patches ratio?
-> 
-> Ignoring a review would be a wildly wrong thing to do.  It's so unusual
-> that I'd be suspecting a lost email or an i-sent-the-wrong-patch.
-> 
-> As for high regressions/patches ratio: that'll be hard to calculate and
-> tends to be dependent upon the code which is being altered rather than who
-> is doing the altering: some stuff is just fragile, for various reasons.
-> 
-> One ratio which we might want to have a think about is the patches-sent
-> versus reviews-done ratio ;)
-> 
-> > I think that we should have info about regressions integrated into SCM,
-> > i.e. in git we should have optional "fixes-commit" tag and we should be
-> > able to do some reverse data colletion.   This feature combined with
-> > "Author:" info after some time should give us some very interesting
-> > statistics (Top Ten "Regressors").  It wouldn't be ideal (ie. we need some
-> > patches threshold to filter out people with 1 patch and >= 1 regression(s),
-> > we need to remember that some code areas are more difficult than the others
-> > and that patches are not equal per se etc.) however I believe than making it
-> > into Top Ten "Regressors" should give the winners some motivation to improve
-> > their work ethic.  Well, in the worst case we would just get some extra
-> > trivial/documentation patches. ;-)
-> 
-> We of course do want to minimise the amount of overhead for each developer. 
-> I'm a strong believer in specialisation: rather than requiring that *every*
-> developer/maintainer integrate new steps in their processes it would be
-> better to allow them to proceed in a close-to-usual fashion and to provide
-> for a specialist person (or team) to do the sorts of things which you're
-> thinking about.
-
-Still, even very experienced developers make trivial mistakes, so there should
-be a way to catch such things before they hit -rc or even -mm kernels
-
-Greetings,
-Rafael
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+On Sun, 17 Jun 2007, Alexandre Oliva wrote:
+> 
+> > What I care about is that the GPLv3 is a _worse_license_ than GPLv2,
+> 
+> Even though anti-tivoization furthers the quid-pro-quo spirit that you
+> love about v2, and anti-tivoization is your only objection to v3?
+
+You apparently do not understand "quid-pro-quo".
+
+Another way of stating it might be "same for same".
+
+A third way of stating it is "software for software". No, the romans never 
+said that, but I just did, to make it just more obvious that the whole 
+point is that you are expected to answer IN KIND!
+
+I do *not* ask for hardware access.
+
+I do *not* ask for money.
+
+	And the reason I'm harping on "money" is that "money" is something 
+	*different* from what I give out. I give out software. I don't 
+	expect money in return.
+
+	Money is *irrelevant*. It's allowed (and certainly much 
+	appreciated), but it's not required.
+
+See? Can you agree with that? Can you agree that that is actually part of 
+what the whole "open source" spirit is all about (I'll avoid the word 
+"free software", since you have defined it so rigorously personally that 
+it makes no sense any more).
+
+Now, replace "money" with "access to the hardware", and read the exact 
+*same* sentences again:
+
+	And the reason I'm harping on "access to hardware" is that "access 
+	to hardware" is something *different* from what I give out. I give 
+	out software. I don't expect access to hardware in return.
+
+	Access to hardware is *irrelevant*. It's allowed (and certainly 
+	much appreciated), but it's not required.
+
+See? 
+
+Exact same words. Exact same spirit. Just using "access to hardware" 
+instead of "money".
+
+You have been showing that you have a really hard time understanding that 
+very *simple* argument.
+
+> > I'd be stupid to select the worse of two licenses, wouldn't I?
+> 
+> Yes.  That's precisely why I don't understand your stance.
+
+If you don't understand it after the above, I really can only say:
+
+	"You are either terminally stupid, or you're not allowing yourself 
+	 to see an obvious argument, because it destroys your world-view".
+
+The latter is very possible. It's a very human thing. It's why apparently 
+a lot of people in the US have a hard time believing in evolution. Are 
+they terminally stupid? Yeah, that is quite possible. But it is also 
+possible that they are of average intelligence, and they just cannot 
+mentally _afford_ to follow the argument - it destroys the silyl stories 
+they heard as children, and requires them to think too hard about the 
+veracity of the source.
+
+		Linus
+
+PS. Since some people talked about the game theory aspects of 
+"tit-for-tat", I'd like to point out that what is usually considered an 
+even *better* strategy than "tit-for-tat" is actually "tit-for-tat with 
+forgiveness".
+
+In particular, "tit-for-tat with forgiveness" is considered better when 
+there is ambiguity (like "communication difficulties" - does that sound 
+familiar?) in the encouter. You allow some leeway, and don't always 
+retaliate!
+
+So the FSF is DOING THE WRONG THING! They are turning "tit-for-tat" not 
+into "tit-for-tat with forgiveness", but into "tit-for-tat with preemptive 
+strikes".
+
+That is a *LOSING* strategy in game theory. So a game theorist could very 
+well argue with good reason to believe he is right that the GPLv3 is 
+actually a worse license even from a purely theoretical standpoint!
