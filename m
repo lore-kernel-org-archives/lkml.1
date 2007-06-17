@@ -1,220 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761297AbXFQJyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbXFQJy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761297AbXFQJyB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 05:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbXFQJpH
+	id S1761332AbXFQJy1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 05:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759666AbXFQJpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 05:45:07 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55207 "EHLO il.qumranet.com"
+	Sun, 17 Jun 2007 05:45:09 -0400
+Received: from il.qumranet.com ([82.166.9.18]:55187 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759194AbXFQJor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759203AbXFQJor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Jun 2007 05:44:47 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 32/58] KVM: MMU: Use slab caches for shadow pages and their headers
-Date: Sun, 17 Jun 2007 12:44:13 +0300
-Message-Id: <11820734801148-git-send-email-avi@qumranet.com>
+Subject: [PATCH 36/58] KVM: MMU: Fold fix_read_pf() into set_pte_common()
+Date: Sun, 17 Jun 2007 12:44:17 +0300
+Message-Id: <1182073480939-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.6
 In-Reply-To: <1182073479890-git-send-email-avi@qumranet.com>
 References: <1182073479890-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use slab caches instead of a simple custom list.
-
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h      |    4 +-
- drivers/kvm/kvm_main.c |    1 -
- drivers/kvm/mmu.c      |   64 +++++++++++++++++++++++++++++------------------
- 3 files changed, 41 insertions(+), 28 deletions(-)
+ drivers/kvm/mmu.c         |   17 -----------------
+ drivers/kvm/paging_tmpl.h |   34 +++++++++++++++++++++++-----------
+ 2 files changed, 23 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index 90001b5..199e1e9 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -299,12 +299,12 @@ struct kvm_vcpu {
- 	struct vmx_msr_entry *guest_msrs;
- 	struct vmx_msr_entry *host_msrs;
- 
--	struct list_head free_pages;
--	struct kvm_mmu_page page_header_buf[KVM_NUM_MMU_PAGES];
- 	struct kvm_mmu mmu;
- 
- 	struct kvm_mmu_memory_cache mmu_pte_chain_cache;
- 	struct kvm_mmu_memory_cache mmu_rmap_desc_cache;
-+	struct kvm_mmu_memory_cache mmu_page_cache;
-+	struct kvm_mmu_memory_cache mmu_page_header_cache;
- 
- 	gfn_t last_pt_write_gfn;
- 	int   last_pt_write_count;
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index af07cd5..bf35457 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -326,7 +326,6 @@ static struct kvm *kvm_create_vm(void)
- 		vcpu->cpu = -1;
- 		vcpu->kvm = kvm;
- 		vcpu->mmu.root_hpa = INVALID_PAGE;
--		INIT_LIST_HEAD(&vcpu->free_pages);
- 		spin_lock(&kvm_lock);
- 		list_add(&kvm->vm_list, &vm_list);
- 		spin_unlock(&kvm_lock);
 diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index c85c664..46491b4 100644
+index a763150..2079d69 100644
 --- a/drivers/kvm/mmu.c
 +++ b/drivers/kvm/mmu.c
-@@ -165,6 +165,8 @@ struct kvm_rmap_desc {
- 
- static struct kmem_cache *pte_chain_cache;
- static struct kmem_cache *rmap_desc_cache;
-+static struct kmem_cache *mmu_page_cache;
-+static struct kmem_cache *mmu_page_header_cache;
- 
- static int is_write_protection(struct kvm_vcpu *vcpu)
- {
-@@ -235,6 +237,14 @@ static int __mmu_topup_memory_caches(struct kvm_vcpu *vcpu, gfp_t gfp_flags)
- 		goto out;
- 	r = mmu_topup_memory_cache(&vcpu->mmu_rmap_desc_cache,
- 				   rmap_desc_cache, 1, gfp_flags);
-+	if (r)
-+		goto out;
-+	r = mmu_topup_memory_cache(&vcpu->mmu_page_cache,
-+				   mmu_page_cache, 4, gfp_flags);
-+	if (r)
-+		goto out;
-+	r = mmu_topup_memory_cache(&vcpu->mmu_page_header_cache,
-+				   mmu_page_header_cache, 4, gfp_flags);
- out:
- 	return r;
- }
-@@ -258,6 +268,8 @@ static void mmu_free_memory_caches(struct kvm_vcpu *vcpu)
- {
- 	mmu_free_memory_cache(&vcpu->mmu_pte_chain_cache);
- 	mmu_free_memory_cache(&vcpu->mmu_rmap_desc_cache);
-+	mmu_free_memory_cache(&vcpu->mmu_page_cache);
-+	mmu_free_memory_cache(&vcpu->mmu_page_header_cache);
+@@ -972,23 +972,6 @@ static void inject_page_fault(struct kvm_vcpu *vcpu,
+ 	kvm_arch_ops->inject_page_fault(vcpu, addr, err_code);
  }
  
- static void *mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc,
-@@ -458,7 +470,9 @@ static void kvm_mmu_free_page(struct kvm_vcpu *vcpu,
- 			      struct kvm_mmu_page *page_head)
- {
- 	ASSERT(is_empty_shadow_page(page_head->spt));
--	list_move(&page_head->link, &vcpu->free_pages);
-+	list_del(&page_head->link);
-+	mmu_memory_cache_free(&vcpu->mmu_page_cache, page_head->spt);
-+	mmu_memory_cache_free(&vcpu->mmu_page_header_cache, page_head);
- 	++vcpu->kvm->n_free_mmu_pages;
- }
- 
-@@ -472,11 +486,14 @@ static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu,
- {
- 	struct kvm_mmu_page *page;
- 
--	if (list_empty(&vcpu->free_pages))
-+	if (!vcpu->kvm->n_free_mmu_pages)
- 		return NULL;
- 
--	page = list_entry(vcpu->free_pages.next, struct kvm_mmu_page, link);
--	list_move(&page->link, &vcpu->kvm->active_mmu_pages);
-+	page = mmu_memory_cache_alloc(&vcpu->mmu_page_header_cache,
-+				      sizeof *page);
-+	page->spt = mmu_memory_cache_alloc(&vcpu->mmu_page_cache, PAGE_SIZE);
-+	set_page_private(virt_to_page(page->spt), (unsigned long)page);
-+	list_add(&page->link, &vcpu->kvm->active_mmu_pages);
- 	ASSERT(is_empty_shadow_page(page->spt));
- 	page->slot_bitmap = 0;
- 	page->multimapped = 0;
-@@ -1083,6 +1100,7 @@ static int init_kvm_mmu(struct kvm_vcpu *vcpu)
- 	ASSERT(vcpu);
- 	ASSERT(!VALID_PAGE(vcpu->mmu.root_hpa));
- 
-+	mmu_topup_memory_caches(vcpu);
- 	if (!is_paging(vcpu))
- 		return nonpaging_init_context(vcpu);
- 	else if (is_long_mode(vcpu))
-@@ -1256,13 +1274,6 @@ static void free_mmu_pages(struct kvm_vcpu *vcpu)
- 				    struct kvm_mmu_page, link);
- 		kvm_mmu_zap_page(vcpu, page);
- 	}
--	while (!list_empty(&vcpu->free_pages)) {
--		page = list_entry(vcpu->free_pages.next,
--				  struct kvm_mmu_page, link);
--		list_del(&page->link);
--		free_page((unsigned long)page->spt);
--		page->spt = NULL;
--	}
- 	free_page((unsigned long)vcpu->mmu.pae_root);
- }
- 
-@@ -1273,18 +1284,7 @@ static int alloc_mmu_pages(struct kvm_vcpu *vcpu)
- 
- 	ASSERT(vcpu);
- 
--	for (i = 0; i < KVM_NUM_MMU_PAGES; i++) {
--		struct kvm_mmu_page *page_header = &vcpu->page_header_buf[i];
+-static inline int fix_read_pf(u64 *shadow_ent)
+-{
+-	if ((*shadow_ent & PT_SHADOW_USER_MASK) &&
+-	    !(*shadow_ent & PT_USER_MASK)) {
+-		/*
+-		 * If supervisor write protect is disabled, we shadow kernel
+-		 * pages as user pages so we can trap the write access.
+-		 */
+-		*shadow_ent |= PT_USER_MASK;
+-		*shadow_ent &= ~PT_WRITABLE_MASK;
 -
--		INIT_LIST_HEAD(&page_header->link);
--		if ((page = alloc_page(GFP_KERNEL)) == NULL)
--			goto error_1;
--		set_page_private(page, (unsigned long)page_header);
--		page_header->spt = page_address(page);
--		memset(page_header->spt, 0, PAGE_SIZE);
--		list_add(&page_header->link, &vcpu->free_pages);
--		++vcpu->kvm->n_free_mmu_pages;
+-		return 1;
+-
 -	}
-+	vcpu->kvm->n_free_mmu_pages = KVM_NUM_MMU_PAGES;
- 
- 	/*
- 	 * When emulating 32-bit mode, cr3 is only 32 bits even on x86_64.
-@@ -1309,7 +1309,6 @@ int kvm_mmu_create(struct kvm_vcpu *vcpu)
+-	return 0;
+-}
+-
+ static void paging_free(struct kvm_vcpu *vcpu)
  {
- 	ASSERT(vcpu);
- 	ASSERT(!VALID_PAGE(vcpu->mmu.root_hpa));
--	ASSERT(list_empty(&vcpu->free_pages));
- 
- 	return alloc_mmu_pages(vcpu);
- }
-@@ -1318,7 +1317,6 @@ int kvm_mmu_setup(struct kvm_vcpu *vcpu)
+ 	nonpaging_free(vcpu);
+diff --git a/drivers/kvm/paging_tmpl.h b/drivers/kvm/paging_tmpl.h
+index 7e998d1..869582b 100644
+--- a/drivers/kvm/paging_tmpl.h
++++ b/drivers/kvm/paging_tmpl.h
+@@ -197,6 +197,7 @@ static void FNAME(set_pte_common)(struct kvm_vcpu *vcpu,
+ 				  gpa_t gaddr,
+ 				  pt_element_t *gpte,
+ 				  u64 access_bits,
++				  int write_fault,
+ 				  gfn_t gfn)
  {
- 	ASSERT(vcpu);
- 	ASSERT(!VALID_PAGE(vcpu->mmu.root_hpa));
--	ASSERT(!list_empty(&vcpu->free_pages));
+ 	hpa_t paddr;
+@@ -219,6 +220,17 @@ static void FNAME(set_pte_common)(struct kvm_vcpu *vcpu,
  
- 	return init_kvm_mmu(vcpu);
- }
-@@ -1377,6 +1375,10 @@ void kvm_mmu_module_exit(void)
- 		kmem_cache_destroy(pte_chain_cache);
- 	if (rmap_desc_cache)
- 		kmem_cache_destroy(rmap_desc_cache);
-+	if (mmu_page_cache)
-+		kmem_cache_destroy(mmu_page_cache);
-+	if (mmu_page_header_cache)
-+		kmem_cache_destroy(mmu_page_header_cache);
- }
+ 	*shadow_pte |= paddr;
  
- int kvm_mmu_module_init(void)
-@@ -1392,6 +1394,18 @@ int kvm_mmu_module_init(void)
- 	if (!rmap_desc_cache)
- 		goto nomem;
- 
-+	mmu_page_cache = kmem_cache_create("kvm_mmu_page",
-+					   PAGE_SIZE,
-+					   PAGE_SIZE, 0, NULL, NULL);
-+	if (!mmu_page_cache)
-+		goto nomem;
++	if (!write_fault && (*shadow_pte & PT_SHADOW_USER_MASK) &&
++	    !(*shadow_pte & PT_USER_MASK)) {
++		/*
++		 * If supervisor write protect is disabled, we shadow kernel
++		 * pages as user pages so we can trap the write access.
++		 */
++		*shadow_pte |= PT_USER_MASK;
++		*shadow_pte &= ~PT_WRITABLE_MASK;
++		access_bits &= ~PT_WRITABLE_MASK;
++	}
 +
-+	mmu_page_header_cache = kmem_cache_create("kvm_mmu_page_header",
-+						  sizeof(struct kvm_mmu_page),
-+						  0, 0, NULL, NULL);
-+	if (!mmu_page_header_cache)
-+		goto nomem;
-+
- 	return 0;
+ 	if (access_bits & PT_WRITABLE_MASK) {
+ 		struct kvm_mmu_page *shadow;
  
- nomem:
+@@ -242,13 +254,14 @@ static void FNAME(set_pte_common)(struct kvm_vcpu *vcpu,
+ }
+ 
+ static void FNAME(set_pte)(struct kvm_vcpu *vcpu, pt_element_t *gpte,
+-			   u64 *shadow_pte, u64 access_bits, gfn_t gfn)
++			   u64 *shadow_pte, u64 access_bits,
++			   int write_fault, gfn_t gfn)
+ {
+ 	ASSERT(*shadow_pte == 0);
+ 	access_bits &= *gpte;
+ 	*shadow_pte = (*gpte & PT_PTE_COPY_MASK);
+ 	FNAME(set_pte_common)(vcpu, shadow_pte, *gpte & PT_BASE_ADDR_MASK,
+-			      gpte, access_bits, gfn);
++			      gpte, access_bits, write_fault, gfn);
+ }
+ 
+ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
+@@ -262,12 +275,13 @@ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
+ 	if (~gpte & (PT_PRESENT_MASK | PT_ACCESSED_MASK))
+ 		return;
+ 	pgprintk("%s: gpte %llx spte %p\n", __FUNCTION__, (u64)gpte, spte);
+-	FNAME(set_pte)(vcpu, &gpte, spte, PT_USER_MASK | PT_WRITABLE_MASK,
++	FNAME(set_pte)(vcpu, &gpte, spte, PT_USER_MASK | PT_WRITABLE_MASK, 0,
+ 		       (gpte & PT_BASE_ADDR_MASK) >> PAGE_SHIFT);
+ }
+ 
+ static void FNAME(set_pde)(struct kvm_vcpu *vcpu, pt_element_t *gpde,
+-			   u64 *shadow_pte, u64 access_bits, gfn_t gfn)
++			   u64 *shadow_pte, u64 access_bits, int write_fault,
++			   gfn_t gfn)
+ {
+ 	gpa_t gaddr;
+ 
+@@ -279,14 +293,14 @@ static void FNAME(set_pde)(struct kvm_vcpu *vcpu, pt_element_t *gpde,
+ 			(32 - PT32_DIR_PSE36_SHIFT);
+ 	*shadow_pte = *gpde & PT_PTE_COPY_MASK;
+ 	FNAME(set_pte_common)(vcpu, shadow_pte, gaddr,
+-			      gpde, access_bits, gfn);
++			      gpde, access_bits, write_fault, gfn);
+ }
+ 
+ /*
+  * Fetch a shadow pte for a specific level in the paging hierarchy.
+  */
+ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+-			      struct guest_walker *walker)
++			 struct guest_walker *walker, int write_fault)
+ {
+ 	hpa_t shadow_addr;
+ 	int level;
+@@ -351,12 +365,12 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 		if (prev_shadow_ent)
+ 			*prev_shadow_ent |= PT_SHADOW_PS_MARK;
+ 		FNAME(set_pde)(vcpu, guest_ent, shadow_ent,
+-			       walker->inherited_ar, walker->gfn);
++			       walker->inherited_ar, write_fault, walker->gfn);
+ 	} else {
+ 		ASSERT(walker->level == PT_PAGE_TABLE_LEVEL);
+ 		FNAME(set_pte)(vcpu, guest_ent, shadow_ent,
+ 			       walker->inherited_ar,
+-			       walker->gfn);
++			       write_fault, walker->gfn);
+ 	}
+ 	return shadow_ent;
+ }
+@@ -489,7 +503,7 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
+ 		return 0;
+ 	}
+ 
+-	shadow_pte = FNAME(fetch)(vcpu, addr, &walker);
++	shadow_pte = FNAME(fetch)(vcpu, addr, &walker, write_fault);
+ 	pgprintk("%s: shadow pte %p %llx\n", __FUNCTION__,
+ 		 shadow_pte, *shadow_pte);
+ 
+@@ -499,8 +513,6 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
+ 	if (write_fault)
+ 		fixed = FNAME(fix_write_pf)(vcpu, shadow_pte, &walker, addr,
+ 					    user_fault, &write_pt);
+-	else
+-		fixed = fix_read_pf(shadow_pte);
+ 
+ 	pgprintk("%s: updated shadow pte %p %llx\n", __FUNCTION__,
+ 		 shadow_pte, *shadow_pte);
 -- 
 1.5.0.6
 
