@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760659AbXFQSYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760523AbXFQS26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760659AbXFQSYw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 14:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbXFQSYo
+	id S1760523AbXFQS26 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 14:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbXFQS2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 14:24:44 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37659 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757321AbXFQSYo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 14:24:44 -0400
-Date: Sun, 17 Jun 2007 20:24:57 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Oleg Verych <olecom@flower.upol.cz>,
+	Sun, 17 Jun 2007 14:28:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43600 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753281AbXFQS2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 14:28:50 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Michael Poole <mdpoole@troilus.org>, Daniel Hazelton <dhazelton@enter.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: How to improve the quality of the kernel?
-Message-ID: <20070617182457.GY3588@stusta.de>
-References: <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <4673D63D.5020804@s5r6.in-berlin.de> <20070617004436.GU3588@stusta.de> <467501D0.3090203@googlemail.com> <20070617124508.GV3588@stusta.de> <6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com> <20070617142950.GW3588@stusta.de> <467560CF.6090100@s5r6.in-berlin.de>
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706142246.57583.dhazelton@enter.net>
+	<878xal2a0q.fsf@graviton.dyn.troilus.org>
+	<200706150127.18069.dhazelton@enter.net>
+	<87sl8tzaj1.fsf@graviton.dyn.troilus.org>
+	<20070615124039.GB21120@elte.hu>
+	<87fy4tz8dc.fsf@graviton.dyn.troilus.org>
+	<20070615143003.GA8775@elte.hu>
+	<87zm31xo3q.fsf@graviton.dyn.troilus.org>
+	<20070615154200.GA17172@elte.hu>
+	<orps3xx83o.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617084610.GD6267@elte.hu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Sun, 17 Jun 2007 15:28:20 -0300
+In-Reply-To: <20070617084610.GD6267@elte.hu> (Ingo Molnar's message of "Sun\, 17 Jun 2007 10\:46\:10 +0200")
+Message-ID: <orwsy2h1vf.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <467560CF.6090100@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 06:26:55PM +0200, Stefan Richter wrote:
-> Adrian Bunk wrote:
-> >>> And we should be aware that reverting is only a workaround for the real
-> >>> problem which lies in our bug handling.
-> >> ...
-> > 
-> > And this is something I want to emphasize again.
-> > 
-> > How can we make any progress with the real problem and not only the 
-> > symptoms?
-> ...
-> 
-> Perhaps make lists of
-> 
->   - bug reports which never lead to any debug activity
->     (no responsible person/team was found, or a seemingly person/team
->     did not start to debug the report)
-> 
->   - known regressions on release,
-> 
->   - regressions that became known after release,
-> 
->   - subsystems with notable backlogs of old bugs,
-> 
->   - other categories?
-> 
-> Select typical cases from each categories, analyze what went wrong in
-> these cases, and try to identify practicable countermeasures.
+On Jun 17, 2007, Ingo Molnar <mingo@elte.hu> wrote:
 
-No maintainer or no maintainer who is debugging bug reports is the 
-major problem in all parts of your list.
+> * Alexandre Oliva <aoliva@redhat.com> wrote:
 
-> Another approach:  Figure out areas where quality is exemplary and try
-> to draw conclusions for areas where quality is lacking.
+>> On Jun 15, 2007, Ingo Molnar <mingo@elte.hu> wrote:
+>> 
+>> > it is a false statement on your part that the executable "does not 
+>> > function properly" if it lacks that part. Try it: take out the harddisk 
+>> > from the Tivo (it's a bog standard IDE harddisk), put into a nice Linux 
+>> > PC, mount it, modify a bit in the kernel image header and it will likely 
+>> > still boot just fine on that PC.
+>> 
+>> Ok, try this: take the disk out, remove/replace/modify the signature, 
+>> put the disk back in, and tell me what it is that fail to run.
 
-ieee1394 has a maintainer who is looking after all bug reports he gets.
+> you mean back into the Tivo? That is not support for what you claimed. 
+> You claimed the "executable does not function properly" if it lacks that 
+> part (and you did not qualify your statement with anything). That was a 
+> false statement, because it still works fine in just about any 
+> bog-standard PC. A true statement would be: "the modified executable 
+> does not function properly _in the Tivo_". It still works fine on a 
+> general purpose PC.
 
-Conclusion: We need such maintainers for all parts of the kernel.
+I stand """corrected""".  It doesn't matter, because the TiVo is where
+the combination of the executable with the signature shipped, and,
+see, I didn't talk about modifying the executable, what I wrote about
+above was modifying the signature alone.  See?
 
-> Stefan Richter
+> But you didnt really want to make use of Tivo's free software 
+> enhancements, right? Lets face the sad truth: the overwhelming majority 
+> of Tivo 'modders' wanted to hack the PVR not to enhance the Tivo, they 
+> more likely wanted to watch pay-per-view content without the pay bit and 
+> they perhaps wanted to get around service restrictions that the Tivo 
+> implements (and through which it funds lower-than-production-cost for 
+> the PVR).  So the 'rights' you are trying to protect are invented 
+> 'rights' of mostly _freeloaders_ in fact.
 
-cu
-Adrian
+Sony Betamax anyone?
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
