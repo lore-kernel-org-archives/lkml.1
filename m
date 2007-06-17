@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbXFQKwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbXFQK5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759150AbXFQKwi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 06:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbXFQKwa
+	id S1759347AbXFQK5Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 06:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbXFQK5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 06:52:30 -0400
-Received: from mo-p07-ob.rzone.de ([81.169.146.190]:46735 "EHLO
-	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755795AbXFQKw3 (ORCPT
+	Sun, 17 Jun 2007 06:57:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:57498 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757911AbXFQK5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 06:52:29 -0400
-Date: Sun, 17 Jun 2007 12:52:27 +0200
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Carlo Wood <carlo@alinoe.com>, Daniel Barkalow <barkalow@iabervon.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: My kernel hangs again: Help with git please
-Message-ID: <20070617105226.GA22912@steel.home>
-Reply-To: Alex Riesen <raa.lkml@gmail.com>
-Mail-Followup-To: Alex Riesen <raa.lkml@gmail.com>,
-	Carlo Wood <carlo@alinoe.com>,
-	Daniel Barkalow <barkalow@iabervon.org>,
-	linux-kernel@vger.kernel.org
-References: <20070616001255.GA11403@alinoe.com> <Pine.LNX.4.64.0706152026320.4740@iabervon.org> <20070616040747.GA21076@alinoe.com> <Pine.LNX.4.64.0706160059210.4740@iabervon.org> <20070616140340.GA30861@alinoe.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070616140340.GA30861@alinoe.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-RZG-AUTH: z4gQVF2k5XWuW3CcuQaFzAcmG5c=
-X-RZG-CLASS-ID: mo07
+	Sun, 17 Jun 2007 06:57:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=rWem4EqIoTK03OPKeMb+Ir/lQ0GOoa25vS8YHcRD6j13FiXpyaKKIVgnu86as4uNlm+QL0gpxYzcjIFVsmlCxKf+ImoAdT/IYrVIX6Kui4L0A0DaUbx8C1sekmh6kqmwTGw8D3hJgdJDpUs3n+A9wB5s+Xa0+MVCb7M08cTbKoo=
+Subject: Re: USB remote control missing keycodes
+From: Islam Amer <pharon@gmail.com>
+Reply-To: pharon@gmail.com
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0706151249520.23280@twin.jikos.cz>
+References: <20070611101319.GA14284@DervishD> <466D2DF7.9020709@aladin.ro>
+	 <1181563063.19258.11.camel@iamer-laptop>
+	 <Pine.LNX.4.64.0706111656340.23280@twin.jikos.cz>
+	 <1181743734.6163.1.camel@iamer-laptop>
+	 <Pine.LNX.4.64.0706131654180.23280@twin.jikos.cz>
+	 <d120d5000706130817v5b9291d4h8653ade63882d2bc@mail.gmail.com>
+	 <Pine.LNX.4.64.0706131741420.23280@twin.jikos.cz>
+	 <1181750326.6163.6.camel@iamer-laptop>
+	 <Pine.LNX.4.64.0706131809530.23280@twin.jikos.cz>
+	 <1181823597.6136.8.camel@iamer-laptop>
+	 <Pine.LNX.4.64.0706141425180.23280@twin.jikos.cz>
+	 <Pine.LNX.4.64.0706151211210.23280@twin.jikos.cz>
+	 <Pine.LNX.4.64.0706151249520.23280@twin.jikos.cz>
+Content-Type: text/plain
+Date: Sun, 17 Jun 2007 13:57:00 +0300
+Message-Id: <1182077820.5909.5.camel@iamer-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carlo Wood, Sat, Jun 16, 2007 16:03:40 +0200:
-> $ git merge origin
-> fatal: Needed a single revision
-> Usage: /usr/bin/git-merge [-n] [--no-commit] [--squash] [-s <strategy>]... <merge-message> <head> <remote>+
+On Fri, 2007-06-15 at 12:51 +0200, Jiri Kosina wrote:
+> On Fri, 15 Jun 2007, Jiri Kosina wrote:
 > 
-> For some reason I don't think I should be needing commands that need
-> "<merge-message>"; I don't want to change the (local) tree in anyway.
+> > please try the patch below (against 2.6.22-rc4) and send me the result.
+> 
+> Now I see in the logs that there are also messages about the 
+> report initialization failing, so we should also specify NOGET for this 
+> device.
+> 
+> Could you please try the patch below instead, which does just that? 
+> Thanks.
 
-I'd recommend to upgrade your git. There are some really nice
-improvements in the latest versions (1.5.2.2, for instance).
-Particularly, the command above would have worked. That is, assuming
-you actually do have that origin branch. In any case, a
+Sorry for the late reply, I don't have internet connection at home and I
+had to download 2.6.22-rc5 to test.
 
-    $ git fetch git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git master
-    $ git reset --hard FETCH_HEAD
+Yes the last patch fixes everything, amazing! Thanks a lot for this :)
+That's what I call opensource support...
 
-will get you the very latest kernel in your working directory. Has
-some disadvantages, though: does not retrieve the tags and destroys
-local changes.
+Oh btw, Sorry about hijacking the other thread.
 
-But you'll find a man page of git-remote and git-config very
-interesting, especially wrt the above operation. I do just "git pull",
-for example and actually _am_ sure I get the latest kernel, get all
-the tags and never loose local changes.
+I noticed another button not working the "More" button. I think I
+already got the idea of fixing these things, not that the "more" button
+matters anyway but here's the output from this button for the sake of
+completeness.
+
+[  547.916065] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  547.916073] drivers/hid/hid-core.c: report 4 (size 4) =  f6 00 00 00
+[  547.916081] hid-debug: input Consumer.0000 = 0
+[  547.916088] hid-debug: input Consumer.00f6 = 1
+[  547.924032] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  547.924036] drivers/hid/hid-core.c: report 6 (size 4) =  01 0f 00 00
+[  547.924043] hid-debug: input ff80.0001 = 1
+[  547.924052] hid-debug: input ff80.0001 = 15
+[  547.924064] hid-debug: input ff80.0001 = 0
+[  547.924069] hid-debug: input ff80.0001 = 0
+[  548.035668] drivers/hid/hid-core.c: report (size 5) (numbered)
+[  548.035673] drivers/hid/hid-core.c: report 4 (size 4) =  00 00 00 00
+[  548.035679] hid-debug: input Consumer.00f6 = 0
+[  548.035684] hid-debug: input Consumer.0000 = 1
+
 
