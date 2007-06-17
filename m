@@ -1,111 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbXFQOZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760404AbXFQO3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760678AbXFQOZA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 10:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759862AbXFQOY2
+	id S1760404AbXFQO3o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 10:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbXFQO3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 10:24:28 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:16181 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758563AbXFQOYY (ORCPT
+	Sun, 17 Jun 2007 10:29:36 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37503 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757373AbXFQO3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 10:24:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=qexU+7z0U9DEM7ckm/TTcO76s2S/dQGn0VzzJuSX9vMeV1DgQ6PPCeXK+KRJFaopYI34tAagWl/1SJuXOmWrAEnjMFE9jbWoHiPAo+AGhIQylM5sFC/Xa5/kmpJV0yO9giQELmKaADvRZc2JYHwuRiLrPpQEpDqweFFgwBXsHYw=
-Message-ID: <46754400.2080101@googlemail.com>
-Date: Sun, 17 Jun 2007 16:24:00 +0200
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 17 Jun 2007 10:29:36 -0400
+Date: Sun, 17 Jun 2007 16:29:50 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Oleg Verych <olecom@flower.upol.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: How to improve the quality of the kernel?
+Message-ID: <20070617142950.GW3588@stusta.de>
+References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <E1HyipW-0005wJ-0Q@flower> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <20070615234202.GP3588@stusta.de> <20070616013236.GA16016@flower.upol.cz> <4673D63D.5020804@s5r6.in-berlin.de> <20070617004436.GU3588@stusta.de> <467501D0.3090203@googlemail.com> <20070617124508.GV3588@stusta.de> <6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, Dave Airlie <airlied@linux.ie>,
-       Andrea Righi <righiandr@users.sourceforge.net>,
-       Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
-       Samuel Ortiz <samuel@sortiz.org>, Andrey Borzenkov <arvidjaar@mail.ru>,
-       Samuel Ortiz <samuel@sortiz.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Chad Tindel <ctindel@users.sourceforge.net>,
-       Dan Aloni <da-x@monatomic.org>, Jay Vosburgh <fubar@us.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, Paulo Pereira <pfmp.404@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [2/2] 2.6.22-rc5: known regressions with patches
-References: <4675430B.2000304@googlemail.com>
-In-Reply-To: <4675430B.2000304@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <6bffcb0e0706170617k32e79d96q5af1bcd7d9492cb8@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sun, Jun 17, 2007 at 03:17:58PM +0200, Michal Piotrowski wrote:
+> On 17/06/07, Adrian Bunk <bunk@stusta.de> wrote:
+>...
+>> Fine with me, but:
+>>
+>> There are not so simple cases like big infrastructure patches with
+>> 20 other patches in the tree depending on it causing a regression, or
+>> even worse, a big infrastructure patch exposing a latent old bug in some
+>> completely different area of the kernel.
+>
+> It is different case.
+>
+> "If the patch introduces a new regression"
+>
+> introduces != exposes an old bug
 
-Here is a list of some known regressions in 2.6.22-rc5
-with patches available.
+My remark was meant as a note "this sentence can't handle all 
+regressions" (and for a user it doesn't matter whether a new 
+regression is introduced or an old regression exposed).
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+It could be we simply agree on this one.  ;-)
 
+> Removal of 20 patches will be painful, but sometimes you need to
+> "choose minor evil to prevent a greater one" [1].
+> 
+>> And we should be aware that reverting is only a workaround for the real
+>> problem which lies in our bug handling.
+>...
 
+And this is something I want to emphasize again.
 
-Memory management
+How can we make any progress with the real problem and not only the 
+symptoms?
 
-Subject    : bug in i386 MTRR initialization
-References : http://lkml.org/lkml/2007/5/19/93
-Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
-Status     : patch available
+There's now much money in the Linux market, and the kernel quality 
+problems might result in real costs in the support of companies like
+IBM, SGI, Redhat or Novell (plus it harms the Linux image which might 
+result in lower revenues).
 
+If [1] this is true, it might even pay pay off for them to each assign 
+X man hours per month of experienced kernel developers to upstream 
+kernel bug handling?
 
+This is just a wild thought and it might be nonsense - better 
+suggestions for solving our quality problems would be highly welcome...
 
-Networking
-Subject    : commit 9093bbb2d96d0184f037cea9b4e952a44ebe7c32 broke the bonding driver
-References : http://lkml.org/lkml/2007/6/13/65
-Submitter  : Dan Aloni <da-x@monatomic.org>
-Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
-Status     : patch available
-             (I cannot find it in archives. Stephen, please resend the patch)
+cu
+Adrian
 
-Subject    : no irda0 interface (2.6.21 was OK), smsc does not find chip
-References : http://lkml.org/lkml/2007/6/3/16
-Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
-Handled-By : Samuel Ortiz <samuel@sortiz.org>
-             Bjorn Helgaas <bjorn.helgaas@hp.com>
-Patch      : http://lkml.org/lkml/2007/6/7/237
-Status     : patch was suggested
+[1] note that this is an "if"
 
+-- 
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-SELinux
-
-Subject    : very high non-preempt latency in context_struct_compute_av()
-References : http://lkml.org/lkml/2007/6/4/78
-Submitter  : Ingo Molnar <mingo@elte.hu>
-Handled-By : Stephen Smalley <sds@tycho.nsa.gov>
-             James Morris <jmorris@namei.org>
-Patch      : http://lkml.org/lkml/2007/6/7/334
-Status     : patch available
-
-
-
-USB
-
-Subject    : list_add corruption. prev->next should be next (f7d28794), but was f0df8ed4 (prev=f0df8ed4) Kernel Bug at lib/list_debug.c:33
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8561
-Submitter  : Paulo Pereira <pfmp.404@gmail.com>
-Handled-By : Alan Stern <stern@rowland.harvard.edu>
-Patch      : http://bugzilla.kernel.org/show_bug.cgi?id=8561#c8
-Status     : patch was suggested
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
