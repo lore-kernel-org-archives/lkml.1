@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbXFQT6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbXFQT7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761391AbXFQT6S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 15:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759045AbXFQT6J
+	id S1761626AbXFQT7R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760584AbXFQT7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 15:58:09 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:41150 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758657AbXFQT6I (ORCPT
+	Sun, 17 Jun 2007 15:59:08 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:10272 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759045AbXFQT7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 15:58:08 -0400
-Date: Sun, 17 Jun 2007 21:58:05 +0200
+	Sun, 17 Jun 2007 15:59:05 -0400
+Date: Sun, 17 Jun 2007 21:59:01 +0200
 From: Carlo Wood <carlo@alinoe.com>
 To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
        eric@anholt.net, zhenyu.z.wang@intel.com
-Subject: Re: 2.6.22-rc5 regression
-Message-ID: <20070617195805.GA6125@alinoe.com>
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+Message-ID: <20070617195901.GA5689@alinoe.com>
 Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
 	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
 	eric@anholt.net, zhenyu.z.wang@intel.com
-References: <20070617182254.GA17595@alinoe.com>
+References: <1181721735.4418.10.camel@malory> <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070617182254.GA17595@alinoe.com>
+In-Reply-To: <20070617190714.GA18115@redhat.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sun, Jun 17, 2007 at 03:07:14PM -0400, Dave Jones wrote:
+> Sometimes things fall through the cracks..
+> I haven't heard any similar problems, which makes it somewhat odd.
+
+Ok. Well, the lockup is all to real here :p
+
+I suspect a memory corruption going on, as under certain circumstances
+there is printed more after the "agpgart: Detected an Intel 965G
+Chipset." -- that is, the kernel *sometimes* doesn't hang silently,
+but either reboots by itself (hard reset) or prints something
+that looks like a total crash to me. Often, this is prefixed by
+the name of running process. I am sorry, I never wrote any of that
+down. Only the last time, it then went like:
+
+agpgart: Detected an Intel 965G Chipset.
+modprobe: Corrupt page table at address 20
+PGD 178c6c067 PUD 201000c0049c04f BAD
+
+This very same kernel (I boot it several times to see how
+reproducable things were) always prints "agpgart: Detected an Intel 965G
+Chipset." but then either hangs (two times), prints the above
+and hangs (one time) or hard resets (one time).
+
+Then I also booted the other kernels several times, and kernels
+that booted fine ALWAYS boot fine - while kernels that locked
+up (that I tested by booting them three times) only printed
+the agpgart line and locked up three times.
+
+>  > The patch causes my machine to lock up and/or crash
+>  > in various ways (depending on the exact version of the kernel),
+>  > very shortly after printing: agpgart: Detected an Intel 965G Chipset.
+>  > 
+>  > The first kernel version that stops doing that is 2.6.22-rc5.
+>  > I used git bisect once more to find the patch that fixes this bug:
+>  > I am mailing this mostly because the comment doesn't seem to indicate
+>  > that the author is aware that this patch fixes an existing regression
+>  > (it worked fine for me with 2.6.18).
+> 
+> Indeed, it was unknown to me too, this should have just been
+> a clean-up.
+
+I hope you saw my later post too? I sent it to you too - but also to the
+list, so I don't know if you'll notice it.
+
+The Subject of that post is: 2.6.22-rc5 regression
+
+I concluded too soon that 2.6.22-rc5 was working :(.
+I just really tested it and it doesn't! Same error.
+
+Please have a look at that other post of me and lets continue this
+thread there.
+
 > Out of curiousity, I'd like to see your lspci
 > (not -v or anything, just run with no args)
 
-$ lspci
-00:00.0 Host bridge: Intel Corporation P965/G965 Memory Controller Hub (rev 02)
-00:01.0 PCI bridge: Intel Corporation P965/G965 PCI Express Root Port (rev 02)
-00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #4 (rev 02)
-00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #5 (rev 02)
-00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI #2 (rev 02)
-00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 02)
-00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 1 (rev 02)
-00:1c.5 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 6 (rev 02)
-00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #1 (rev 02)
-00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #2 (rev 02)
-00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI #3 (rev 02)
-00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI #1 (rev 02)
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev f2)
-00:1f.0 ISA bridge: Intel Corporation 82801HB/HR (ICH8/R) LPC Interface Controller (rev 02)
-00:1f.2 SATA controller: Intel Corporation 82801HB (ICH8) SATA AHCI Controller (rev 02)
-00:1f.3 SMBus: Intel Corporation 82801H (ICH8 Family) SMBus Controller (rev 02)
-01:00.0 VGA compatible controller: nVidia Corporation Unknown device 0400 (rev a1)
-02:00.0 Ethernet controller: Marvell Technology Group Ltd. Unknown device 4364 (rev 12)
-04:02.0 Multimedia audio controller: Creative Labs SB Live! EMU10k1 (rev 08)
-04:02.1 Input device controller: Creative Labs SB Live! Game Port (rev 08)
-04:03.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
+I'll add that to that other thread.
 
 -- 
 Carlo Wood <carlo@alinoe.com>
