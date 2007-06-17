@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761818AbXFQXmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761994AbXFQXms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761818AbXFQXmg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 19:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbXFQXm2
+	id S1761994AbXFQXms (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 19:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760710AbXFQXmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 19:42:28 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37887 "EHLO
+	Sun, 17 Jun 2007 19:42:31 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37888 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759734AbXFQXm2 (ORCPT
+	with ESMTP id S1760611AbXFQXma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 19:42:28 -0400
-Date: Mon, 18 Jun 2007 01:42:42 +0200
+	Sun, 17 Jun 2007 19:42:30 -0400
+Date: Mon, 18 Jun 2007 01:42:46 +0200
 From: Adrian Bunk <bunk@stusta.de>
 To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper prototype for proc_nr_files()
-Message-ID: <20070617234242.GB3588@stusta.de>
+Subject: [2.6 patch] fs/namespace.c should #include "internal.h"
+Message-ID: <20070617234246.GC3588@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,52 +22,20 @@ User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proper prototype for proc_nr_files() in 
-include/linux/fs.h
+Every file should include the headers containing the prototypes for
+it's global functions.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
-
- include/linux/fs.h |    5 +++++
- kernel/sysctl.c    |    4 +---
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
---- linux-2.6.22-rc4-mm2/include/linux/fs.h.old	2007-06-17 03:50:01.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/include/linux/fs.h	2007-06-17 03:56:37.000000000 +0200
-@@ -302,6 +302,7 @@
- #include <linux/init.h>
- #include <linux/pid.h>
- #include <linux/mutex.h>
-+#include <linux/sysctl.h>
- 
- #include <asm/atomic.h>
- #include <asm/semaphore.h>
-@@ -2116,5 +2117,9 @@
- { }
- #endif	/* CONFIG_SECURITY */
- 
-+int proc_nr_files(ctl_table *table, int write, struct file *filp,
-+		  void __user *buffer, size_t *lenp, loff_t *ppos);
-+
-+
- #endif /* __KERNEL__ */
- #endif /* _LINUX_FS_H */
---- linux-2.6.22-rc4-mm2/kernel/sysctl.c.old	2007-06-17 03:51:37.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/kernel/sysctl.c	2007-06-17 03:51:51.000000000 +0200
-@@ -47,13 +47,11 @@
- #include <linux/nfs_fs.h>
- #include <linux/acpi.h>
- #include <linux/reboot.h>
-+#include <linux/fs.h>
- 
+--- linux-2.6.22-rc4-mm2/fs/namespace.c.old	2007-06-17 15:24:24.000000000 +0200
++++ linux-2.6.22-rc4-mm2/fs/namespace.c	2007-06-17 15:24:50.000000000 +0200
+@@ -28,6 +28,7 @@
  #include <asm/uaccess.h>
- #include <asm/processor.h>
+ #include <asm/unistd.h>
+ #include "pnode.h"
++#include "internal.h"
  
--extern int proc_nr_files(ctl_table *table, int write, struct file *filp,
--                     void __user *buffer, size_t *lenp, loff_t *ppos);
--
- #ifdef CONFIG_X86
- #include <asm/nmi.h>
- #include <asm/stacktrace.h>
+ /* spinlock for vfsmount related operations, inplace of dcache_lock */
+ __cacheline_aligned_in_smp DEFINE_SPINLOCK(vfsmount_lock);
 
