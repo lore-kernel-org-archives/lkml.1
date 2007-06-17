@@ -1,781 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761819AbXFQU31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbXFQUgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761819AbXFQU31 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 16:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760710AbXFQU3T
+	id S1752549AbXFQUgY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 16:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbXFQUgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 16:29:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35129 "EHLO mx2.suse.de"
+	Sun, 17 Jun 2007 16:36:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43927 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760696AbXFQU3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 16:29:17 -0400
-Subject: [PATCH 2/3] ACPI autoloading - Create acpi alias interface
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Len Brown <lenb@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Kay Sievers <kasievers@suse.de>
-Content-Type: multipart/mixed; boundary="=-UZKrmCmnohBjnVo56/WQ"
-Date: Sun, 17 Jun 2007 22:27:27 +0200
-Message-Id: <1182112047.4204.12.camel@noname>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+	id S1750753AbXFQUgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 16:36:14 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Daniel Hazelton <dhazelton@enter.net>, Bron Gondwana <brong@fastmail.fm>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706161817.36657.dhazelton@enter.net>
+	<orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706162306.14516.dhazelton@enter.net>
+	<orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706162116570.14121@woody.linux-foundation.org>
+	<ortzt7jfu3.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171215040.14121@woody.linux-foundation.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Sun, 17 Jun 2007 17:34:45 -0300
+In-Reply-To: <alpine.LFD.0.98.0706171215040.14121@woody.linux-foundation.org> (Linus Torvalds's message of "Sun\, 17 Jun 2007 12\:16\:40 -0700 \(PDT\)")
+Message-ID: <ory7iifhga.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 17, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
---=-UZKrmCmnohBjnVo56/WQ
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+> On Sun, 17 Jun 2007, Alexandre Oliva wrote:
+>> 
+>> One more time, I'm not talking about the license (the legal terms).
 
-Create acpi alias interface
+> Ok. Then go away.
 
-Modify modpost (file2alias.c) to add acpi*:XYZ0001: alias in modules.alias
-like:
-grep acpi /lib/modules/2.6.22-rc4-default/modules.alias 
-alias acpi*:SNY5001:* sony_laptop
-alias acpi*:SNY6001:* sony_laptop
-for e.g. the sony_laptop module.
-This module matches against all ACPI devices with a HID or CID of SNY5001
-or SNY6001
+> Everybody else just cares about the legal reasons.
 
-Export an uevent and modalias sysfs file containing the string:
-[MODALIAS=]acpi:PNP0C0C:
-additional CIDs are concatenated at the end.
+That's false, and the reason I know it is that, if this was true, I
+probably wouldn't even have got into this debate.
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+The reason I got into it was that there were false claims about
+changes in the spirit of the license, implied in Greg KH's e-mail that
+refers to the long thread and position paper that made these false
+claims.  I got into this debate in response to this reference:
 
----
- drivers/acpi/scan.c             |  185 +++++++++++++++++++++++++++++++---------
- drivers/pnp/pnpacpi/core.c      |   18 ++-
- include/linux/acpi.h            |    1 
- include/linux/mod_devicetable.h |   15 +++
- scripts/mod/file2alias.c        |   12 ++
- 5 files changed, 183 insertions(+), 48 deletions(-)
+http://www.ussg.iu.edu/hypermail/linux/kernel/0706.1/1904.html
 
-Index: linux-2.6.22-rc4/include/linux/mod_devicetable.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/mod_devicetable.h
-+++ linux-2.6.22-rc4/include/linux/mod_devicetable.h
-@@ -159,6 +159,21 @@ struct ap_device_id {
- 
- #define AP_DEVICE_ID_MATCH_DEVICE_TYPE		0x01
- 
-+#define ACPI_ID_LEN	9
-+
-+/*
-+  Similar exists in include/acpi/acmacros.h
-+  use this one for acpi linux specific stuff e.g.
-+  in ACPI modules and the other one inside the
-+  interpreter
-+*/
-+
-+/* Exists already in acpi includes (include/acpi/actypes.h) */
-+
-+struct acpi_device_id {
-+	__u8 id[ACPI_ID_LEN];
-+	kernel_ulong_t driver_data;
-+};
- 
- #define PNP_ID_LEN	8
- #define PNP_MAX_DEVICES	8
-Index: linux-2.6.22-rc4/scripts/mod/file2alias.c
-===================================================================
---- linux-2.6.22-rc4.orig/scripts/mod/file2alias.c
-+++ linux-2.6.22-rc4/scripts/mod/file2alias.c
-@@ -290,6 +290,14 @@ static int do_serio_entry(const char *fi
- 	return 1;
- }
- 
-+/* looks like: "acpi:ACPI0003 or acpi:PNP0C0B" */
-+static int do_acpi_entry(const char *filename,
-+			struct acpi_device_id *id, char *alias)
-+{
-+	sprintf(alias, "acpi*:%s:", id->id);
-+	return 1;
-+}
-+
- /* looks like: "pnp:dD" */
- static int do_pnp_entry(const char *filename,
- 			struct pnp_device_id *id, char *alias)
-@@ -551,6 +559,10 @@ void handle_moddevtable(struct module *m
- 		do_table(symval, sym->st_size,
- 			 sizeof(struct serio_device_id), "serio",
- 			 do_serio_entry, mod);
-+	else if (sym_is(symname, "__mod_acpi_device_table"))
-+		do_table(symval, sym->st_size,
-+			 sizeof(struct acpi_device_id), "acpi",
-+			 do_acpi_entry, mod);
- 	else if (sym_is(symname, "__mod_pnp_device_table"))
- 		do_table(symval, sym->st_size,
- 			 sizeof(struct pnp_device_id), "pnp",
-Index: linux-2.6.22-rc4/drivers/acpi/scan.c
-===================================================================
---- linux-2.6.22-rc4.orig/drivers/acpi/scan.c
-+++ linux-2.6.22-rc4/drivers/acpi/scan.c
-@@ -16,7 +16,7 @@ ACPI_MODULE_NAME("scan");
- extern struct acpi_device *acpi_root;
- 
- #define ACPI_BUS_CLASS			"system_bus"
--#define ACPI_BUS_HID			"ACPI_BUS"
-+#define ACPI_BUS_HID			"XBUS0001"
- #define ACPI_BUS_DEVICE_NAME		"System Bus"
- 
- static LIST_HEAD(acpi_device_list);
-@@ -29,6 +29,69 @@ struct acpi_device_bus_id{
- 	unsigned int instance_no;
- 	struct list_head node;
- };
-+
-+/*
-+  Currently only handles ID strings, not compressed EISA, here the spec:
-+
-+  A _HID object evaluates to either a numeric 32-bit compressed EISA type ID
-+  or a string. If a string, the format must be an alphanumeric PNP or ACPI ID
-+  with no asterisk or other leading characters.
-+
-+  Why is hardware_id char[15] -> see include/acpi/acpi_bus.h ?!?
-+
-+  This function only handles devices correctly that have a HID.
-+  If there are devices that have CID(s), but no HID work needs
-+*/
-+int create_modalias(struct acpi_device *acpi_dev, char *modalias, int size){
-+
-+	int len;
-+
-+	if (!acpi_dev->flags.hardware_id)
-+		return -ENODEV;
-+
-+	len = snprintf(modalias, size, "acpi:%s:",
-+		       acpi_dev->pnp.hardware_id);
-+	if (len < 0 || len >= size)
-+		return -EINVAL;
-+	size -= len;
-+
-+	if (acpi_dev->flags.compatible_ids) {
-+		struct acpi_compatible_id_list *cid_list;
-+		int i;
-+		int count;
-+
-+		cid_list = acpi_dev->pnp.cid_list;
-+		for (i = 0; i < cid_list->count; i++) {
-+			count = snprintf(&modalias[len], size, "%s:",
-+					 cid_list->id[i].value);
-+			if (count < 0 || count >= size) {
-+				printk(KERN_ERR "acpi: %s cid[%i] exceeds event buffer size",
-+				       acpi_dev->pnp.device_name, i);
-+				break;
-+			}
-+			len += count;
-+			size -= count;
-+		}
-+	}
-+
-+	modalias[len] = '\0';
-+	return len;
-+}
-+
-+static ssize_t
-+acpi_device_modalias_show(struct device *dev, struct device_attribute *attr, char *buf) {
-+	struct acpi_device *acpi_dev = to_acpi_device(dev);
-+	int len;
-+
-+	/* Device has no HID and no CID or string is >1024 */
-+	len = create_modalias(acpi_dev, buf, 1024);
-+	if (len <= 0)
-+		return 0;
-+	buf[len++] = '\n';
-+	return len;
-+}
-+static DEVICE_ATTR(modalias, 0444, acpi_device_modalias_show, NULL);
-+
- static int acpi_eject_operation(acpi_handle handle, int lockable)
- {
- 	struct acpi_object_list arg_list;
-@@ -154,6 +217,12 @@ static int acpi_device_setup_files(struc
- 			goto end;
- 	}
- 
-+	if (dev->flags.hardware_id || dev->flags.compatible_ids){
-+		result = device_create_file(&dev->dev, &dev_attr_modalias);
-+		if(result)
-+			goto end;
-+	}
-+
-         /*
-          * If device has _EJ0, 'eject' file is created that is used to trigger
-          * hot-removal function from userland.
-@@ -178,6 +247,9 @@ static void acpi_device_remove_files(str
- 	if (ACPI_SUCCESS(status))
- 		device_remove_file(&dev->dev, &dev_attr_eject);
- 
-+	if (dev->flags.hardware_id || dev->flags.compatible_ids)
-+		device_remove_file(&dev->dev, &dev_attr_modalias);
-+
- 	if(dev->flags.hardware_id)
- 		device_remove_file(&dev->dev, &dev_attr_hid);
- 	if(dev->handle)
-@@ -186,6 +258,37 @@ static void acpi_device_remove_files(str
- /* --------------------------------------------------------------------------
- 			ACPI Bus operations
-    -------------------------------------------------------------------------- */
-+
-+int acpi_match_device_ids(struct acpi_device *device,
-+			  const struct acpi_device_id *ids)
-+{
-+	const struct acpi_device_id *id;
-+
-+	if (device->flags.hardware_id) {
-+		for (id = ids; id->id[0]; id++) {
-+			if (!strcmp((char*)id->id, device->pnp.hardware_id))
-+				return 0;
-+		}
-+	}
-+
-+	if (device->flags.compatible_ids) {
-+		struct acpi_compatible_id_list *cid_list = device->pnp.cid_list;
-+		int i;
-+
-+		for (id = ids; id->id[0]; id++) {
-+			/* compare multiple _CID entries against driver ids */
-+			for (i = 0; i < cid_list->count; i++) {
-+				if (!strcmp((char*)id->id,
-+					    cid_list->id[i].value))
-+					return 0;
-+			}
-+		}
-+	}
-+
-+	return -ENOENT;
-+}
-+EXPORT_SYMBOL(acpi_match_device_ids);
-+
- static void acpi_device_release(struct device *dev)
- {
- 	struct acpi_device *acpi_dev = to_acpi_device(dev);
-@@ -219,37 +322,19 @@ static int acpi_bus_match(struct device 
- 	struct acpi_device *acpi_dev = to_acpi_device(dev);
- 	struct acpi_driver *acpi_drv = to_acpi_driver(drv);
- 
--	return !acpi_match_ids(acpi_dev, acpi_drv->ids);
-+	return !acpi_match_device_ids(acpi_dev, acpi_drv->ids);
- }
- 
- static int acpi_device_uevent(struct device *dev, char **envp, int num_envp,
--	char *buffer, int buffer_size)
-+			      char *buffer, int buffer_size)
- {
- 	struct acpi_device *acpi_dev = to_acpi_device(dev);
--	int i = 0, length = 0, ret = 0;
--
--	if (acpi_dev->flags.hardware_id)
--		ret = add_uevent_var(envp, num_envp, &i,
--			buffer, buffer_size, &length,
--			"HWID=%s", acpi_dev->pnp.hardware_id);
--	if (ret)
--		return -ENOMEM;
--	if (acpi_dev->flags.compatible_ids) {
--		int j;
--		struct acpi_compatible_id_list *cid_list;
- 
--		cid_list = acpi_dev->pnp.cid_list;
--
--		for (j = 0; j < cid_list->count; j++) {
--			ret = add_uevent_var(envp, num_envp, &i, buffer,
--				buffer_size, &length, "COMPTID=%s",
--				cid_list->id[j].value);
--			if (ret)
--				return -ENOMEM;
--		}
-+	strcpy(buffer, "MODALIAS=");
-+	if (create_modalias(acpi_dev, buffer + 9, buffer_size - 9) > 0) {
-+		envp[0] = buffer;
-+		envp[1] = NULL;
- 	}
--
--	envp[i] = NULL;
- 	return 0;
- }
- 
-@@ -543,25 +628,6 @@ void acpi_bus_data_handler(acpi_handle h
- 	return;
- }
- 
--int acpi_match_ids(struct acpi_device *device, char *ids)
--{
--	if (device->flags.hardware_id)
--		if (strstr(ids, device->pnp.hardware_id))
--			return 0;
--
--	if (device->flags.compatible_ids) {
--		struct acpi_compatible_id_list *cid_list = device->pnp.cid_list;
--		int i;
--
--		/* compare multiple _CID entries against driver ids */
--		for (i = 0; i < cid_list->count; i++) {
--			if (strstr(ids, cid_list->id[i].value))
--				return 0;
--		}
--	}
--	return -ENOENT;
--}
--
- static int acpi_bus_get_perf_flags(struct acpi_device *device)
- {
- 	device->performance.state = ACPI_STATE_UNKNOWN;
-@@ -624,6 +690,13 @@ static int acpi_bus_get_wakeup_device_fl
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
- 	union acpi_object *package = NULL;
- 
-+	struct acpi_device_id button_device_ids[] = {
-+		{"PNP0C0D", 0},
-+		{"PNP0C0C", 0},
-+		{"PNP0C0E", 0},
-+		{"", 0},
-+	};
-+
- 
- 	/* _PRW */
- 	status = acpi_evaluate_object(device->handle, "_PRW", NULL, &buffer);
-@@ -643,7 +716,7 @@ static int acpi_bus_get_wakeup_device_fl
- 
- 	device->wakeup.flags.valid = 1;
- 	/* Power button, Lid switch always enable wakeup */
--	if (!acpi_match_ids(device, "PNP0C0D,PNP0C0C,PNP0C0E"))
-+	if (!acpi_match_device_ids(device, button_device_ids))
- 		device->wakeup.flags.run_wake = 1;
- 
-       end:
-Index: linux-2.6.22-rc4/drivers/pnp/pnpacpi/core.c
-===================================================================
---- linux-2.6.22-rc4.orig/drivers/pnp/pnpacpi/core.c
-+++ linux-2.6.22-rc4/drivers/pnp/pnpacpi/core.c
-@@ -21,7 +21,10 @@
- 
- #include <linux/acpi.h>
- #include <linux/pnp.h>
-+#include <linux/mod_devicetable.h>
- #include <acpi/acpi_bus.h>
-+#include <acpi/actypes.h>
-+
- #include "pnpacpi.h"
- 
- static int num = 0;
-@@ -33,15 +36,17 @@ static int num = 0;
-  * have irqs (PIC, Timer) because we call acpi_register_gsi.
-  * Finaly only devices that have a CRS method need to be in this list.
-  */
--static char __initdata excluded_id_list[] =
--	"PNP0C09," /* EC */
--	"PNP0C0F," /* Link device */
--	"PNP0000," /* PIC */
--	"PNP0100," /* Timer */
--	;
-+static __initdata struct acpi_device_id excluded_id_list[] ={
-+	{"PNP0C09", 0}, /* EC */
-+	{"PNP0C0F", 0}, /* Link device */
-+	{"PNP0000", 0}, /* PIC */
-+	{"PNP0100", 0}, /* Timer */
-+	{"", 0};
-+};
-+
- static inline int is_exclusive_device(struct acpi_device *dev)
- {
--	return (!acpi_match_ids(dev, excluded_id_list));
-+	return (!acpi_match_device_ids(dev, excluded_id_list));
- }
- 
- /*
-Index: linux-2.6.22-rc4/include/linux/acpi.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/acpi.h
-+++ linux-2.6.22-rc4/include/linux/acpi.h
-@@ -33,6 +33,7 @@
- #endif
- 
- #include <linux/list.h>
-+#include <linux/mod_devicetable.h>
- 
- #include <acpi/acpi.h>
- #include <acpi/acpi_bus.h>
+to a thread about an article that stated
+
+  [...] solemn trust, as stated in article 9 of GPLv2, only to licence
+  the code under versions of the GPL that "... will be similar in
+  spirit to the present version". We, like all the individual
+  contributors to GNU projects, have taken that trust at face value
+  and accorded the FSF a special role in the Open Source Universe
+  because of it. It goes without saying that any updates to GPLv2 must
+  be completely in accord with the execution of that trust.
+
+before it went on to misleading references to a DRM clause (*), trying
+to frame anti-tivoization as end-use restrictions and how unacceptable
+that is in a license, while blessing tivoization itself (an end-use
+restriction, no less).
 
 
---=-UZKrmCmnohBjnVo56/WQ
-Content-Disposition: attachment; filename=acpi_autoloading_interface.patch
-Content-Type: text/x-patch; name=acpi_autoloading_interface.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+(*) meaning the anti-tivoization provisions, in spite of the existence
+of an unrelated section named DRM in a draft available at that time
 
-Create acpi alias interface
 
-Modify modpost (file2alias.c) to add acpi*:XYZ0001: alias in modules.alias
-like:
-grep acpi /lib/modules/2.6.22-rc4-default/modules.alias 
-alias acpi*:SNY5001:* sony_laptop
-alias acpi*:SNY6001:* sony_laptop
-for e.g. the sony_laptop module.
-This module matches against all ACPI devices with a HID or CID of SNY5001
-or SNY6001
+And then, the article goes on about FUD of jeopardising patent
+portfolios, which is *obviously* a misunderstanding, as I wrote in my
+e-mail.
 
-Export an uevent and modalias sysfs file containing the string:
-[MODALIAS=]acpi:PNP0C0C:
-additional CIDs are concatenated at the end.
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+In response to that intervention, my first one in this subject, you
+exploded.  And then, shortly after your explosion and all the name
+calling, there was this:
 
----
- drivers/acpi/scan.c             |  185 +++++++++++++++++++++++++++++++---------
- drivers/pnp/pnpacpi/core.c      |   18 ++-
- include/linux/acpi.h            |    1 
- include/linux/mod_devicetable.h |   15 +++
- scripts/mod/file2alias.c        |   12 ++
- 5 files changed, 183 insertions(+), 48 deletions(-)
+http://www.ussg.iu.edu/hypermail/linux/kernel/0706.1/2235.html
 
-Index: linux-2.6.22-rc4/include/linux/mod_devicetable.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/mod_devicetable.h
-+++ linux-2.6.22-rc4/include/linux/mod_devicetable.h
-@@ -159,6 +159,21 @@ struct ap_device_id {
- 
- #define AP_DEVICE_ID_MATCH_DEVICE_TYPE		0x01
- 
-+#define ACPI_ID_LEN	9
-+
-+/*
-+  Similar exists in include/acpi/acmacros.h
-+  use this one for acpi linux specific stuff e.g.
-+  in ACPI modules and the other one inside the
-+  interpreter
-+*/
-+
-+/* Exists already in acpi includes (include/acpi/actypes.h) */
-+
-+struct acpi_device_id {
-+	__u8 id[ACPI_ID_LEN];
-+	kernel_ulong_t driver_data;
-+};
- 
- #define PNP_ID_LEN	8
- #define PNP_MAX_DEVICES	8
-Index: linux-2.6.22-rc4/scripts/mod/file2alias.c
-===================================================================
---- linux-2.6.22-rc4.orig/scripts/mod/file2alias.c
-+++ linux-2.6.22-rc4/scripts/mod/file2alias.c
-@@ -290,6 +290,14 @@ static int do_serio_entry(const char *fi
- 	return 1;
- }
- 
-+/* looks like: "acpi:ACPI0003 or acpi:PNP0C0B" */
-+static int do_acpi_entry(const char *filename,
-+			struct acpi_device_id *id, char *alias)
-+{
-+	sprintf(alias, "acpi*:%s:", id->id);
-+	return 1;
-+}
-+
- /* looks like: "pnp:dD" */
- static int do_pnp_entry(const char *filename,
- 			struct pnp_device_id *id, char *alias)
-@@ -551,6 +559,10 @@ void handle_moddevtable(struct module *m
- 		do_table(symval, sym->st_size,
- 			 sizeof(struct serio_device_id), "serio",
- 			 do_serio_entry, mod);
-+	else if (sym_is(symname, "__mod_acpi_device_table"))
-+		do_table(symval, sym->st_size,
-+			 sizeof(struct acpi_device_id), "acpi",
-+			 do_acpi_entry, mod);
- 	else if (sym_is(symname, "__mod_pnp_device_table"))
- 		do_table(symval, sym->st_size,
- 			 sizeof(struct pnp_device_id), "pnp",
-Index: linux-2.6.22-rc4/drivers/acpi/scan.c
-===================================================================
---- linux-2.6.22-rc4.orig/drivers/acpi/scan.c
-+++ linux-2.6.22-rc4/drivers/acpi/scan.c
-@@ -16,7 +16,7 @@ ACPI_MODULE_NAME("scan");
- extern struct acpi_device *acpi_root;
- 
- #define ACPI_BUS_CLASS			"system_bus"
--#define ACPI_BUS_HID			"ACPI_BUS"
-+#define ACPI_BUS_HID			"XBUS0001"
- #define ACPI_BUS_DEVICE_NAME		"System Bus"
- 
- static LIST_HEAD(acpi_device_list);
-@@ -29,6 +29,69 @@ struct acpi_device_bus_id{
- 	unsigned int instance_no;
- 	struct list_head node;
- };
-+
-+/*
-+  Currently only handles ID strings, not compressed EISA, here the spec:
-+
-+  A _HID object evaluates to either a numeric 32-bit compressed EISA type ID
-+  or a string. If a string, the format must be an alphanumeric PNP or ACPI ID
-+  with no asterisk or other leading characters.
-+
-+  Why is hardware_id char[15] -> see include/acpi/acpi_bus.h ?!?
-+
-+  This function only handles devices correctly that have a HID.
-+  If there are devices that have CID(s), but no HID work needs
-+*/
-+int create_modalias(struct acpi_device *acpi_dev, char *modalias, int size){
-+
-+	int len;
-+
-+	if (!acpi_dev->flags.hardware_id)
-+		return -ENODEV;
-+
-+	len = snprintf(modalias, size, "acpi:%s:",
-+		       acpi_dev->pnp.hardware_id);
-+	if (len < 0 || len >= size)
-+		return -EINVAL;
-+	size -= len;
-+
-+	if (acpi_dev->flags.compatible_ids) {
-+		struct acpi_compatible_id_list *cid_list;
-+		int i;
-+		int count;
-+
-+		cid_list = acpi_dev->pnp.cid_list;
-+		for (i = 0; i < cid_list->count; i++) {
-+			count = snprintf(&modalias[len], size, "%s:",
-+					 cid_list->id[i].value);
-+			if (count < 0 || count >= size) {
-+				printk(KERN_ERR "acpi: %s cid[%i] exceeds event buffer size",
-+				       acpi_dev->pnp.device_name, i);
-+				break;
-+			}
-+			len += count;
-+			size -= count;
-+		}
-+	}
-+
-+	modalias[len] = '\0';
-+	return len;
-+}
-+
-+static ssize_t
-+acpi_device_modalias_show(struct device *dev, struct device_attribute *attr, char *buf) {
-+	struct acpi_device *acpi_dev = to_acpi_device(dev);
-+	int len;
-+
-+	/* Device has no HID and no CID or string is >1024 */
-+	len = create_modalias(acpi_dev, buf, 1024);
-+	if (len <= 0)
-+		return 0;
-+	buf[len++] = '\n';
-+	return len;
-+}
-+static DEVICE_ATTR(modalias, 0444, acpi_device_modalias_show, NULL);
-+
- static int acpi_eject_operation(acpi_handle handle, int lockable)
- {
- 	struct acpi_object_list arg_list;
-@@ -154,6 +217,12 @@ static int acpi_device_setup_files(struc
- 			goto end;
- 	}
- 
-+	if (dev->flags.hardware_id || dev->flags.compatible_ids){
-+		result = device_create_file(&dev->dev, &dev_attr_modalias);
-+		if(result)
-+			goto end;
-+	}
-+
-         /*
-          * If device has _EJ0, 'eject' file is created that is used to trigger
-          * hot-removal function from userland.
-@@ -178,6 +247,9 @@ static void acpi_device_remove_files(str
- 	if (ACPI_SUCCESS(status))
- 		device_remove_file(&dev->dev, &dev_attr_eject);
- 
-+	if (dev->flags.hardware_id || dev->flags.compatible_ids)
-+		device_remove_file(&dev->dev, &dev_attr_modalias);
-+
- 	if(dev->flags.hardware_id)
- 		device_remove_file(&dev->dev, &dev_attr_hid);
- 	if(dev->handle)
-@@ -186,6 +258,37 @@ static void acpi_device_remove_files(str
- /* --------------------------------------------------------------------------
- 			ACPI Bus operations
-    -------------------------------------------------------------------------- */
-+
-+int acpi_match_device_ids(struct acpi_device *device,
-+			  const struct acpi_device_id *ids)
-+{
-+	const struct acpi_device_id *id;
-+
-+	if (device->flags.hardware_id) {
-+		for (id = ids; id->id[0]; id++) {
-+			if (!strcmp((char*)id->id, device->pnp.hardware_id))
-+				return 0;
-+		}
-+	}
-+
-+	if (device->flags.compatible_ids) {
-+		struct acpi_compatible_id_list *cid_list = device->pnp.cid_list;
-+		int i;
-+
-+		for (id = ids; id->id[0]; id++) {
-+			/* compare multiple _CID entries against driver ids */
-+			for (i = 0; i < cid_list->count; i++) {
-+				if (!strcmp((char*)id->id,
-+					    cid_list->id[i].value))
-+					return 0;
-+			}
-+		}
-+	}
-+
-+	return -ENOENT;
-+}
-+EXPORT_SYMBOL(acpi_match_device_ids);
-+
- static void acpi_device_release(struct device *dev)
- {
- 	struct acpi_device *acpi_dev = to_acpi_device(dev);
-@@ -219,37 +322,19 @@ static int acpi_bus_match(struct device 
- 	struct acpi_device *acpi_dev = to_acpi_device(dev);
- 	struct acpi_driver *acpi_drv = to_acpi_driver(drv);
- 
--	return !acpi_match_ids(acpi_dev, acpi_drv->ids);
-+	return !acpi_match_device_ids(acpi_dev, acpi_drv->ids);
- }
- 
- static int acpi_device_uevent(struct device *dev, char **envp, int num_envp,
--	char *buffer, int buffer_size)
-+			      char *buffer, int buffer_size)
- {
- 	struct acpi_device *acpi_dev = to_acpi_device(dev);
--	int i = 0, length = 0, ret = 0;
--
--	if (acpi_dev->flags.hardware_id)
--		ret = add_uevent_var(envp, num_envp, &i,
--			buffer, buffer_size, &length,
--			"HWID=%s", acpi_dev->pnp.hardware_id);
--	if (ret)
--		return -ENOMEM;
--	if (acpi_dev->flags.compatible_ids) {
--		int j;
--		struct acpi_compatible_id_list *cid_list;
- 
--		cid_list = acpi_dev->pnp.cid_list;
--
--		for (j = 0; j < cid_list->count; j++) {
--			ret = add_uevent_var(envp, num_envp, &i, buffer,
--				buffer_size, &length, "COMPTID=%s",
--				cid_list->id[j].value);
--			if (ret)
--				return -ENOMEM;
--		}
-+	strcpy(buffer, "MODALIAS=");
-+	if (create_modalias(acpi_dev, buffer + 9, buffer_size - 9) > 0) {
-+		envp[0] = buffer;
-+		envp[1] = NULL;
- 	}
--
--	envp[i] = NULL;
- 	return 0;
- }
- 
-@@ -543,25 +628,6 @@ void acpi_bus_data_handler(acpi_handle h
- 	return;
- }
- 
--int acpi_match_ids(struct acpi_device *device, char *ids)
--{
--	if (device->flags.hardware_id)
--		if (strstr(ids, device->pnp.hardware_id))
--			return 0;
--
--	if (device->flags.compatible_ids) {
--		struct acpi_compatible_id_list *cid_list = device->pnp.cid_list;
--		int i;
--
--		/* compare multiple _CID entries against driver ids */
--		for (i = 0; i < cid_list->count; i++) {
--			if (strstr(ids, cid_list->id[i].value))
--				return 0;
--		}
--	}
--	return -ENOENT;
--}
--
- static int acpi_bus_get_perf_flags(struct acpi_device *device)
- {
- 	device->performance.state = ACPI_STATE_UNKNOWN;
-@@ -624,6 +690,13 @@ static int acpi_bus_get_wakeup_device_fl
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
- 	union acpi_object *package = NULL;
- 
-+	struct acpi_device_id button_device_ids[] = {
-+		{"PNP0C0D", 0},
-+		{"PNP0C0C", 0},
-+		{"PNP0C0E", 0},
-+		{"", 0},
-+	};
-+
- 
- 	/* _PRW */
- 	status = acpi_evaluate_object(device->handle, "_PRW", NULL, &buffer);
-@@ -643,7 +716,7 @@ static int acpi_bus_get_wakeup_device_fl
- 
- 	device->wakeup.flags.valid = 1;
- 	/* Power button, Lid switch always enable wakeup */
--	if (!acpi_match_ids(device, "PNP0C0D,PNP0C0C,PNP0C0E"))
-+	if (!acpi_match_device_ids(device, button_device_ids))
- 		device->wakeup.flags.run_wake = 1;
- 
-       end:
-Index: linux-2.6.22-rc4/drivers/pnp/pnpacpi/core.c
-===================================================================
---- linux-2.6.22-rc4.orig/drivers/pnp/pnpacpi/core.c
-+++ linux-2.6.22-rc4/drivers/pnp/pnpacpi/core.c
-@@ -21,7 +21,10 @@
- 
- #include <linux/acpi.h>
- #include <linux/pnp.h>
-+#include <linux/mod_devicetable.h>
- #include <acpi/acpi_bus.h>
-+#include <acpi/actypes.h>
-+
- #include "pnpacpi.h"
- 
- static int num = 0;
-@@ -33,15 +36,17 @@ static int num = 0;
-  * have irqs (PIC, Timer) because we call acpi_register_gsi.
-  * Finaly only devices that have a CRS method need to be in this list.
-  */
--static char __initdata excluded_id_list[] =
--	"PNP0C09," /* EC */
--	"PNP0C0F," /* Link device */
--	"PNP0000," /* PIC */
--	"PNP0100," /* Timer */
--	;
-+static __initdata struct acpi_device_id excluded_id_list[] ={
-+	{"PNP0C09", 0}, /* EC */
-+	{"PNP0C0F", 0}, /* Link device */
-+	{"PNP0000", 0}, /* PIC */
-+	{"PNP0100", 0}, /* Timer */
-+	{"", 0};
-+};
-+
- static inline int is_exclusive_device(struct acpi_device *dev)
- {
--	return (!acpi_match_ids(dev, excluded_id_list));
-+	return (!acpi_match_device_ids(dev, excluded_id_list));
- }
- 
- /*
-Index: linux-2.6.22-rc4/include/linux/acpi.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/acpi.h
-+++ linux-2.6.22-rc4/include/linux/acpi.h
-@@ -33,6 +33,7 @@
- #endif
- 
- #include <linux/list.h>
-+#include <linux/mod_devicetable.h>
- 
- #include <acpi/acpi.h>
- #include <acpi/acpi_bus.h>
 
---=-UZKrmCmnohBjnVo56/WQ--
+And you say people don't care about the spirit?
 
+
+Seriously, I'm not even asking for an apology for the name calling.
+All I'm asking for is that you don't lie about GPLv3 and about the
+spirit of the GPL.
+
+I know it's hard when you're trying to frame yourself as a victim of a
+tyranny, but since FSF's offer of a new license, and switching its own
+projects to it, framing it as "suborn or coerce others to go along
+with them" (from the article) is utterly false, and an evident
+misunderstanding of the intent.
+
+And that's not even unusual.  See, when Free Software advocates *ask*
+people to refer to the GNU operating system as such, even when it's
+combined with the kernel Linux, a lot of people over-react and
+complain that the FSF is trying to *force* anyone to rename Linux.
+This is false on two accounts.  Linux is the name of the kernel, and
+the FSF has never tried to rename that.  GNU is the name of the
+operating system, and it's people who confusingly call that operating
+system Linux that renamed it.  Free Software advocates merely ask that
+people call it by the right name.
+
+I can appreciate that some FSFers take positions that may come off as
+unfriendly and trigger this kind of negative feeling of being forced
+to do something.  I suspect this is the same case.
+
+But taking it as forcing is just as inappropriate.  There's no
+coercive force to be applied, and no moral grounds to coerce.  In both
+cases, it's a request for people to make the choice of helping defend
+users' freedoms.
+
+
+I know you're not going to believe this, because it doesn't fit in
+your world-view.
+
+My intent in participating in this discussion was really not to
+convince you.  I had a feeling, all the way from the beginning, that
+this was probably hopeless, even though there was thin hope.
+
+My intent was to enlighten others who were still open to listening and
+to accepting different viewpoints.  From personal feedback I got, I
+know I've accomplished a lot of that, and I thank deeply all of you
+who encouraged me to proceed, and who thanked me for the information I
+added to the debate.
+
+
+I wish I could say I'm going to step out of this debate now, because
+it's taken me far more time than I could afford.  But since my goal
+was to counter the spreading of mis-information about GPLv3, and since
+I am indeed addicted to this kind of discussion, I may end up failing
+to stay away from the discussion.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
