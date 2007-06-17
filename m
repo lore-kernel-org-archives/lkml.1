@@ -1,113 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbXFQTvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbXFQTyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761376AbXFQTvl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 15:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759963AbXFQTvd
+	id S1761468AbXFQTyX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 15:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760486AbXFQTyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 15:51:33 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50004 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759131AbXFQTvc (ORCPT
+	Sun, 17 Jun 2007 15:54:14 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:52935 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759510AbXFQTyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 15:51:32 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Sun, 17 Jun 2007 15:51:19 -0400
-User-Agent: KMail/1.9.6
-Cc: Michael Poole <mdpoole@troilus.org>, Bron Gondwana <brong@fastmail.fm>,
-       linux-kernel@vger.kernel.org
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706171418.38844.dhazelton@enter.net> <or7iq2gywd.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or7iq2gywd.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Sun, 17 Jun 2007 15:54:13 -0400
+Date: Sun, 17 Jun 2007 12:54:12 -0700 (PDT)
+From: dean gaudet <dean@arctic.org>
+To: Wakko Warner <wakko@animx.eu.org>
+cc: Neil Brown <neilb@suse.de>, david@lang.hm, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <20070617193025.GA8770@animx.eu.org>
+Message-ID: <Pine.LNX.4.64.0706171242390.24938@twinlark.arctic.org>
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+ <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+ <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org>
+ <18035.23867.576212.859440@notabene.brown> <20070616140857.GA4206@animx.eu.org>
+ <Pine.LNX.4.64.0706161845180.24938@twinlark.arctic.org> <20070617132809.GB7806@animx.eu.org>
+ <Pine.LNX.4.64.0706171019490.24938@twinlark.arctic.org> <20070617193025.GA8770@animx.eu.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706171551.20028.dhazelton@enter.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 June 2007 15:32:34 Alexandre Oliva wrote:
-> On Jun 17, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Sunday 17 June 2007 09:54:39 Michael Poole wrote:
-> >> What in the world makes you think there is a useful analogy
-> >> between communication standards and copyright licenses?
-> >
-> > I don't. I was *REPEATING* an example of how TiVO has a *RIGHT* to
-> > change the kernel or any other facet of the device connecting to
-> > their network. That right *ISN'T* tied to copyright - as you have
-> > stated. Since it isn't, why is the FSF trying to mandate that it is
-> > with the tivoization clauses in GPLv3?
->
-> Since you're talking about rights, and that's a legal term, and we've
-> (hopefully) already established that intent of license author, intent
-> of copyright holder and letter of the license are different concepts,
-> and only the last of the 3 has to do with legal terms, I'll excuse
-> myself from the plane of spirits ;-) and get down to legal terms to
-> shoot down your argument.
->
->
-> Let's see...  US law states that (paraphrasing), if you grant a
-> copyright license that says the person can do such and such, you can't
-> later turn to that person and say "oh, BTW, I have this patent, and it
-> means you couldn't do such and such in the first place, unless you pay
-> me a gazillion bucks"
->
->
->
-> Patents have nothing to do with copyrights.  Still, a copyright
-> license can (and does) limit the ways in which you can use the power
-> that patent law gives you.
->
-> You could try to argue that "you have a right to the patent, and to
-> use it however you like".  But the moment you accept a license such as
-> v1, v2, or any later version to be published by the FSF, you give up
-> the power to use that patent to stop users from fully enjoying the
-> freedoms that the license granted them and said you couldn't further
-> restrict.
->
+On Sun, 17 Jun 2007, Wakko Warner wrote:
 
-Agreed.
+> What benefit would I gain by using an external journel and how big would it
+> need to be?
 
-> s/patent/anti-circumvention measure/
->
-> s/patent/hardware/
+i don't know how big the journal needs to be... i'm limited by xfs'
+maximum journal size of 128MiB.
 
-Under GPLv2 the rights granted are to "copy, distribute and modify". Under v3 
-they are, as near as I can tell, your "beloved" 'Four Freedoms'. See the 
-difference? GPLv2 can be boiled down to mandating the "open exchange of 
-software", GPLv3 does the same, but also attempts to force the philosophy of 
-one group on everyone else.
+i don't have much benchmark data -- but here are some rough notes i took
+when i was evaluating a umem NVRAM card.  since the pata disks in the
+raid1 have write caching enabled it's somewhat of an unfair comparison,
+but the important info is the 88 seconds for internal journal vs. 81
+seconds for external journal.
 
->
-> See?
->
->
-> Now, why would we be revising the license, if it's all already there?
->
-> First of all, to make this all clear.
+-dean
 
-First of all, because we want everyone to believe exactly the same things we 
-believe.
+time sh -c 'tar xf /var/tmp/linux-2.6.20.tar; sync'
 
-> Second of all, because law does not operate this way.  While there is
-> case law that establishes that copyright law supersedes patent law in
-> this sense (or so I'm told, I don't have the references and IANAL),
-> it's not clear that the same would hold for the DMCA, or technical
-> measures, or even discriminatory agreements.
->
-> So, in order to provide users with a better defense against these
-> dangers for the freedoms, the newer revision clarifies them, such that
-> whoever attempts to deny users' freedoms has a weaker defense for such
-> attempts, in a copyright infringement lawsuit.
+xfs journal     raid5 bitmap    times
+internal        none            0.18s user 2.14s system 2% cpu 1:27.95 total
+internal        internal        0.16s user 2.16s system 1% cpu 2:01.12 total
+raid1           none            0.07s user 2.02s system 2% cpu 1:20.62 total
+raid1           internal        0.14s user 2.01s system 1% cpu 1:55.18 total
+raid1           raid1           0.14s user 2.03s system 2% cpu 1:20.61 total
+umem            none            0.13s user 2.07s system 2% cpu 1:20.77 total
+umem            internal        0.15s user 2.16s system 2% cpu 1:51.28 total
+umem            umem            0.12s user 2.13s system 2% cpu 1:20.50 total
 
-I agree with attempting to protect people from the DMCA. The simple fact is 
-that I feel that the GPLv3 would be better if all the "philosophy" crap was 
-removed from it and the language cleaned up and simplified. In fact, add 
-GPLv3dd4's section 3 was added to the GPLv2 it'd do just that. 
 
-DRH
+raid5:
+- 4x seagate 7200.10 400GB on marvell MV88SX6081
+- mdadm --create --level=5 --raid-devices=4 /dev/md4 /dev/sd[abcd]1
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+raid1:
+- 2x maxtor 6Y200P0 on 3ware 7504
+- two 128MiB partitions starting at cyl 1
+- mdadm --create --level=1 --raid-disks=2 --auto=yes --assume-clean /dev/md1 /dev/sd[fg]1
+- mdadm --create --level=1 --raid-disks=2 --auto=yes --assume-clean /dev/md2 /dev/sd[fg]2
+- md1 is used for external xfs journal
+- md2 has an ext3 filesystem for the external md4 bitmap
+
+xfs:
+- mkfs.xfs issued before each run using the defaults (aside from -l logdev=/dev/md1)
+- mount -o noatime,nodiratime[,logdev=/dev/md1] 
+
+umem:
+- 512MiB Micro Memory MM-5415CN
+- 2 partitions similar to the raid1 setup
