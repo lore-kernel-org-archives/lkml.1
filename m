@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbXFRSeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765191AbXFRSfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764853AbXFRSeN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761276AbXFRSd6
+	id S1765191AbXFRSfH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762627AbXFRSez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:33:58 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:59024
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761382AbXFRSd5 (ORCPT
+	Mon, 18 Jun 2007 14:34:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60098 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761276AbXFRSey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:33:57 -0400
-Date: Mon, 18 Jun 2007 11:32:41 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706181122410.12717@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <200706161817.36657.dhazelton@enter.net> <orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br>
- <200706162306.14516.dhazelton@enter.net> <orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070617051451.GD21478@ftp.linux.org.uk> <orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070618154549.GB6041@kroah.com> <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 18 Jun 2007 14:34:54 -0400
+Date: Mon, 18 Jun 2007 19:34:50 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, rmk@arm.linux.org.uk
+Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
+Message-ID: <20070618183450.GA17112@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+	rmk@arm.linux.org.uk
+References: <200706171833.29046.vapier@gentoo.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706171833.29046.vapier@gentoo.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do you realize that redhat uses checksums or signatures to check the 
-validity of their CD's?
+On Sun, Jun 17, 2007 at 06:33:28PM -0400, Mike Frysinger wrote:
+> This changes asm() to __asm__() and volatile to __volatile__ so that these
+> headers can be used with gcc's -std=c99.
 
-try to burn a redhat image with the -pad option which adds a chunk of 0's 
-to the end of the image and try to boot it.
+We should not allow inline assemly in the exported part of userspace headers
+at all.  These headers must only include defintions for the kernel <-> user
+ABI, and should not include code at all.
 
-I seriously doubt if redhat tells you how to how to generate such a 
-checksum/signature.
-
-in addition to the problem that Linus points out about being unable to 
-change the contents of the write-only CD this would seem to conflict with 
-what you are claiming the GPL is supposed to allow.
-
-David Lang
