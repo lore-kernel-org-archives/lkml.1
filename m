@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbXFRGeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbXFRGld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbXFRGeb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 02:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbXFRGeE
+	id S1759761AbXFRGld (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 02:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbXFRGlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 02:34:04 -0400
-Received: from paragon.brong.net ([66.232.154.163]:54122 "EHLO
-	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757550AbXFRGeD (ORCPT
+	Mon, 18 Jun 2007 02:41:25 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:6430 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755185AbXFRGlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 02:34:03 -0400
-Date: Mon, 18 Jun 2007 16:33:57 +1000
-From: Bron Gondwana <brong@fastmail.fm>
-To: Chris Adams <cmadams@hiwaay.net>
-Cc: Bron Gondwana <brong@fastmail.fm>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070618063357.GA26311@brong.net>
-References: <fa.toMqQ3LqoQn6Xh51bVordO8WMVc@ifi.uio.no> <fa.EmnDne9QndTLcw7NAzc83tWplMI@ifi.uio.no> <fa.G+0vGcF8U8pcd6ozkdhKGsQ/dDs@ifi.uio.no> <fa.8bXRW7nY7z5eXVZxCxUgra+gbb8@ifi.uio.no> <fa.qtDtq+aSKlNweTqHtKcy/Gj5PXg@ifi.uio.no> <20070617215840.GA1217855@hiwaay.net> <20070617232221.GB14098@brong.net> <20070618004538.GA1283823@hiwaay.net>
+	Mon, 18 Jun 2007 02:41:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cgIiig3h0MgpJqeF+6S/swWxn9gQsqv4+t7dzszk+QR9/mcPQW0dVAxRZwCw6j56izXCVYVkwnzXLFE0GS5QoB7KpO44Z9w+Ae1x3979hHCsfISNrdcPRH0v5qrBNTPF0zbcarLh5I+NW609B8vn6ehaBDuMQkMBf+OMrjhvMig=
+Message-ID: <a8e1da0706172341j3ee621efs8b2809b4fd094004@mail.gmail.com>
+Date: Mon, 18 Jun 2007 06:41:23 +0000
+From: "dave young" <hidave.darkstar@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: [PATCH] cdrom_sysctl_info fix
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070618062722.GP6149@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070618004538.GA1283823@hiwaay.net>
-Organization: brong.net
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20070614142430.GA2388@darkstar.te-china.tietoenator.com>
+	 <20070615132657.GW6149@kernel.dk>
+	 <20070618125811.GA1692@darkstar.te-china.tietoenator.com>
+	 <20070618062722.GP6149@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 07:45:38PM -0500, Chris Adams wrote:
-> Once upon a time, Bron Gondwana <brong@fastmail.fm> said:
-> > To be fair here, this could also be accomplished by having to flip a
-> > physical switch on the router, especially if you did something funky
-> > like:
-> > 
-> > [---] push this button for a 5 minute access pass to upload new
-> >       software through physical cable port 1.
-> > 
-> > More complex, but not unreasonable.
-> 
-> Well, there is no restriction on putting files on the routing engine's
-> storage devices (flash and hard drive); it is running OpenSSH, so
-> scp/sftp work fine, and you can drop to a shell easily.  The restriction
-> is that the kernel won't run unsigned binaries.
-> 
-> Also, flipping physical switches is pretty much an unreasonable
-> expectation for core router operation.  These are often in other
-> locations, sometimes other telcos' central offices (where you have to
-> pay to have "remote hands" do something and then hope they don't screw
-> it up).  You can easily go the entire life of a device where the primary
-> operators never physically see the device.
+Hi,
+> Yep that looks much better! I trust you booted and tested this and the
+> output looks correct?
+Yes, I tested and the output is correct.
 
-Every server I run is like that, but if something is important enough I
-can remote control a robot over to push the button for me (actually, I
-think they implement this under the hood by having a human read the
-ticket I submit and go push the button for me manually, but that could
-be my imagination.  So long as the button gets pushed the black box is
-functioning)
+BTW, another problem, I can't find the CONFIG_CDROM option in kernel
+config menu. Is it deperacated? If it is true, is the module part
+still necessary?
 
-Bron.
+Regards
+dave
