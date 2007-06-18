@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXFRKgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbXFRKkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761477AbXFRKgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 06:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759660AbXFRKgP
+	id S1761366AbXFRKkJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 06:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbXFRKj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 06:36:15 -0400
-Received: from gateway-a.fh-trier.de ([143.93.54.181]:45247 "EHLO
-	gateway-a.fh-trier.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbXFRKgP (ORCPT
+	Mon, 18 Jun 2007 06:39:57 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:60042 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758251AbXFRKj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 06:36:15 -0400
-Message-ID: <4676601A.7070209@gentoo.org>
-Date: Mon, 18 Jun 2007 12:36:10 +0200
-From: Alexander Gabert <pappy@gentoo.org>
-Organization: Hardened Gentoo Linux
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>, libc-alpha@sourceware.org,
-       linux-kernel@vger.kernel.org, hardened@gentoo.org
-Subject: Re: AT_ENTROPY1 and AT_ENTROPY2 values for include/linux/auxvec.h
-References: <4675C678.3080807@gentoo.org>	 <1182128803.22999.9.camel@laptopd505.fenrus.org>	 <4675DFA8.6060703@gentoo.org> <1182130680.22999.13.camel@laptopd505.fenrus.org>
-In-Reply-To: <1182130680.22999.13.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jun 2007 06:39:56 -0400
+To: tgraf@suug.ch
+CC: davem@davemloft.net, akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20070618103241.GX521@postel.suug.ch> (message from Thomas Graf
+	on Mon, 18 Jun 2007 12:32:41 +0200)
+Subject: Re: [PATCH] fix race in AF_UNIX
+References: <E1I0CTH-0006k3-00@dorka.pomaz.szeredi.hu> <20070618.021813.105401188.davem@davemloft.net> <E1I0DYW-0006uZ-00@dorka.pomaz.szeredi.hu> <20070618.023520.102546505.davem@davemloft.net> <E1I0DmJ-0006yg-00@dorka.pomaz.szeredi.hu> <20070618103241.GX521@postel.suug.ch>
+Message-Id: <E1I0EdX-0007Ia-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 18 Jun 2007 12:39:07 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven schrieb:
->> Hence the config option for the kernel- it's philosophy at Gentoo to 
->> make choices available to users how they want their systems to behave, 
->> even on the expense of added complexity and need to "understand" how 
->> things work in the first place.
->>     
->
-> While I am not opposed to choice, I am opposed to having too finegrained
-> kernel config options. In your view, every single kernel patch would be
-> a config option... I much rather have config options for "important" big
-> changes, not for something this small. Another argument is that this
-> kind of userspace interface is better off being always there or never;
-> making this variable serves no-one.
->
->
->
->   
-Hi again,
+> * Miklos Szeredi <miklos@szeredi.hu> 2007-06-18 11:44
+> > Garbage collection only ever happens, if the app is sending AF_UNIX
+> > sockets over AF_UNIX sockets.  Which is a rather rare case.  And which
+> > is basically why this bug went unnoticed for so long.
+> > 
+> > So my second patch only affects the performance of _exactly_ those
+> > apps which might well be bitten by the bug itself.
+> 
+> That's not entirely the truth. It affects all applications using
+> AF_UNIX sockets while file descriptors are being transfered. I
+> agree that the performance impact is not severe on most systems
+> but if file descriptors are being transfered continously by just
+> a single application it can become rather severe.
 
-as said, i'm not voting for getting the specific example patch into 
-kernel source.
-All i came for and would like to see is the two numbers into the 
-upstream header file to avoid future namespace clashes (as said in the 
-original mail).
+You are wrong.  Look in unix_release_sock():
 
-I honestly don't know how to follow the discussion to implement this 
-kind of entropy given via auxv to userland- if you (the kernel devs) 
-think it makes sense the way you want it you as upstream devs can do it 
-all the way you like it- i can always change it with a patch for my own 
-needs in my own sources.  I can't say anything at all about all of this 
-because i don't know what is important from your point of view as kernel 
-maintainers and what is not.  I understand your concerns and know that 
-we are talking from different perspectives, thus it is probably normal 
-that our interests and technical solutions vary.
-
-However, as said, the only thing important for me is to not use 
-"arbitrary" chosen numbers for the AT_ENTROPY1 and 2 values and later 
-have problems when my "private" numbers suddenly are assigned to a 
-different thing by "official" kernel devs.  That would be bad for me and 
-this is what i want to avoid in the first place.
-
-So please tell me what i can do about the requirements and the time and 
-what the usual process is for asking how to get the numbers into the 
-kernel so i can start using them for my own work.
-
-Thanks in advance,
+	if (atomic_read(&unix_tot_inflight))
+		unix_gc();		/* Garbage collect fds */
 
 
-Alex
+unix_tot_inflight is the number of AF_UNIX sockets currently being
+transferred over some AF_UNIX sockets.
 
+That means that just sending (non-unix socket) fds over unix sockets
+will never invoke the gc.
 
-
+Miklos
