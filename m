@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763963AbXFRSdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbXFRSeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763963AbXFRSdg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759353AbXFRSd0
+	id S1764853AbXFRSeN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761276AbXFRSd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:33:26 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:60227 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759273AbXFRSdZ (ORCPT
+	Mon, 18 Jun 2007 14:33:58 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:59024
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761382AbXFRSd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:33:25 -0400
-X-Greylist: delayed 1797 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 14:33:25 EDT
-Date: Mon, 18 Jun 2007 14:33:24 -0400
-To: david@lang.hm
-Cc: Brendan Conoboy <blc@redhat.com>, Neil Brown <neilb@suse.de>,
-       Wakko Warner <wakko@animx.eu.org>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-Message-ID: <20070618183324.GL10006@csclub.uwaterloo.ca>
-References: <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown> <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm> <4676BEC2.7090809@redhat.com> <Pine.LNX.4.64.0706181026170.12717@asgard.lang.hm> <20070618180327.GP10008@csclub.uwaterloo.ca> <Pine.LNX.4.64.0706181111020.12717@asgard.lang.hm>
+	Mon, 18 Jun 2007 14:33:57 -0400
+Date: Mon, 18 Jun 2007 11:32:41 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706181122410.12717@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <200706161817.36657.dhazelton@enter.net> <orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <200706162306.14516.dhazelton@enter.net> <orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070617051451.GD21478@ftp.linux.org.uk> <orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070618154549.GB6041@kroah.com> <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706181111020.12717@asgard.lang.hm>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 11:12:45AM -0700, david@lang.hm wrote:
-> simple ultra-wide SCSI to a single controller.
+do you realize that redhat uses checksums or signatures to check the 
+validity of their CD's?
 
-Hmm, isn't ultra-wide limited to 40MB/s?  Is it Ultra320 wide?  That
-could do a lot more, and 220MB/s sounds plausable for 320 scsi.
+try to burn a redhat image with the -pad option which adds a chunk of 0's 
+to the end of the image and try to boot it.
 
-> I didn't realize that the rate reported by /proc/mdstat was the write 
-> speed that was takeing place, I thought it was the total data rate (reads 
-> + writes). the next time this message gets changed it would be a good 
-> thing to clarify this.
+I seriously doubt if redhat tells you how to how to generate such a 
+checksum/signature.
 
-Well I suppose itcould make sense to show rate of rebuild which you can
-then compare against the total size of tha raid, or you can have rate of
-write, which you then compare against the size of the drive being
-synced.  Certainly I would expect much higer speeds if it was the
-overall raid size, while the numbers seem pretty reasonable as a write
-speed.  4MB/s would take for ever if it was the overall raid resync
-speed.  I usually see SATA raid1 resync at 50 to 60MB/s or so, which
-matches the read and write speeds of the drives in the raid.
+in addition to the problem that Linus points out about being unable to 
+change the contents of the write-only CD this would seem to conflict with 
+what you are claiming the GPL is supposed to allow.
 
---
-Len Sorensen
+David Lang
