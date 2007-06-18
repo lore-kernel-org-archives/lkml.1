@@ -1,131 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763130AbXFRKIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763191AbXFRKIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763130AbXFRKIF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 06:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761491AbXFRJ7n
+	id S1763191AbXFRKIc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 06:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761499AbXFRJ7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:59:43 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58632 "EHLO
+	Mon, 18 Jun 2007 05:59:44 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47917 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760045AbXFRJ7R (ORCPT
+	with ESMTP id S1759483AbXFRJ7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 05:59:17 -0400
-Message-Id: <20070618095917.242949306@sgi.com>
+	Mon, 18 Jun 2007 05:59:16 -0400
+Message-Id: <20070618095915.826976488@sgi.com>
 References: <20070618095838.238615343@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 18 Jun 2007 02:58:54 -0700
+Date: Mon, 18 Jun 2007 02:58:48 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: suresh.b.siddha@intel.com
-Subject: [patch 16/26] Slab defragmentation: Support defragmentation for extX filesystem inodes
-Content-Disposition: inline; filename=slub_defrag_fs_ext234
+Subject: [patch 10/26] SLUB: Faster more efficient slab determination for __kmalloc.
+Content-Disposition: inline; filename=slub_faster_kmalloc_slab
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+kmalloc_index is a long series of comparisons. The attempt to replace
+kmalloc_index with something more efficient like ilog2 failed due to
+compiler issues with constant folding on gcc 3.3 / powerpc.
+
+kmalloc_index()'es long list of comparisons works fine for constant folding
+since all the comparisons are optimized away. However, SLUB also uses
+kmalloc_index to determine the slab to use for the __kmalloc_xxx functions.
+This leads to a large set of comparisons in get_slab().
+
+The patch here allows to get rid of that list of comparisons in get_slab():
+
+1. If the requested size is larger than 192 then we can simply use
+   fls to determine the slab index since all larger slabs are
+   of the power of two type.
+
+2. If the requested size is smaller then we cannot use fls since there
+   are non power of two caches to be considered. However, the sizes are
+   in a managable range. So we divide the size by 8. Then we have only
+   24 possibilities left and then we simply look up the kmalloc index
+   in a table.
+
+Code size of slub.o decreases by more than 200 bytes through this patch.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/ext2/super.c |   16 ++++++++++++++--
- fs/ext3/super.c |   14 +++++++++++++-
- fs/ext4/super.c |   14 +++++++++++++-
- 3 files changed, 40 insertions(+), 4 deletions(-)
+ mm/slub.c |   73 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 65 insertions(+), 8 deletions(-)
 
-Index: slub/fs/ext2/super.c
+Index: linux-2.6.22-rc4-mm2/mm/slub.c
 ===================================================================
---- slub.orig/fs/ext2/super.c	2007-06-07 14:09:36.000000000 -0700
-+++ slub/fs/ext2/super.c	2007-06-07 14:28:47.000000000 -0700
-@@ -168,14 +168,26 @@ static void init_once(void * foo, struct
- 	mutex_init(&ei->truncate_mutex);
- 	inode_init_once(&ei->vfs_inode);
+--- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-17 18:12:13.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-17 18:12:16.000000000 -0700
+@@ -2322,20 +2322,59 @@ static struct kmem_cache *dma_kmalloc_ca
  }
-- 
-+
-+static void *ext2_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct ext2_inode_info, vfs_inode));
-+}
-+
-+static struct kmem_cache_ops ext2_kmem_cache_ops = {
-+	.get = ext2_get_inodes,
-+	.kick = kick_inodes
-+};
-+
- static int init_inodecache(void)
- {
- 	ext2_inode_cachep = kmem_cache_create("ext2_inode_cache",
- 					     sizeof(struct ext2_inode_info),
- 					     0, (SLAB_RECLAIM_ACCOUNT|
- 						SLAB_MEM_SPREAD),
--					     init_once, NULL);
-+					     init_once,
-+					     &ext2_kmem_cache_ops);
- 	if (ext2_inode_cachep == NULL)
- 		return -ENOMEM;
- 	return 0;
-Index: slub/fs/ext3/super.c
-===================================================================
---- slub.orig/fs/ext3/super.c	2007-06-07 14:09:36.000000000 -0700
-+++ slub/fs/ext3/super.c	2007-06-07 14:28:47.000000000 -0700
-@@ -483,13 +483,25 @@ static void init_once(void * foo, struct
- 	inode_init_once(&ei->vfs_inode);
- }
+ #endif
  
-+static void *ext3_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct ext3_inode_info, vfs_inode));
-+}
-+
-+static struct kmem_cache_ops ext3_kmem_cache_ops = {
-+	.get = ext3_get_inodes,
-+	.kick = kick_inodes
++/*
++ * Conversion table for small slabs sizes / 8 to the index in the
++ * kmalloc array. This is necessary for slabs < 192 since we have non power
++ * of two cache sizes there. The size of larger slabs can be determined using
++ * fls.
++ */
++static s8 size_index[24] = {
++	3,	/* 8 */
++	4,	/* 16 */
++	5,	/* 24 */
++	5,	/* 32 */
++	6,	/* 40 */
++	6,	/* 48 */
++	6,	/* 56 */
++	6,	/* 64 */
++	1,	/* 72 */
++	1,	/* 80 */
++	1,	/* 88 */
++	1,	/* 96 */
++	7,	/* 104 */
++	7,	/* 112 */
++	7,	/* 120 */
++	7,	/* 128 */
++	2,	/* 136 */
++	2,	/* 144 */
++	2,	/* 152 */
++	2,	/* 160 */
++	2,	/* 168 */
++	2,	/* 176 */
++	2,	/* 184 */
++	2	/* 192 */
 +};
 +
- static int init_inodecache(void)
+ static struct kmem_cache *get_slab(size_t size, gfp_t flags)
  {
- 	ext3_inode_cachep = kmem_cache_create("ext3_inode_cache",
- 					     sizeof(struct ext3_inode_info),
- 					     0, (SLAB_RECLAIM_ACCOUNT|
- 						SLAB_MEM_SPREAD),
--					     init_once, NULL);
-+					     init_once,
-+					     &ext3_kmem_cache_ops);
- 	if (ext3_inode_cachep == NULL)
- 		return -ENOMEM;
- 	return 0;
-Index: slub/fs/ext4/super.c
-===================================================================
---- slub.orig/fs/ext4/super.c	2007-06-07 14:09:36.000000000 -0700
-+++ slub/fs/ext4/super.c	2007-06-07 14:29:49.000000000 -0700
-@@ -543,13 +543,25 @@ static void init_once(void * foo, struct
- 	inode_init_once(&ei->vfs_inode);
- }
+-	int index = kmalloc_index(size);
++	int index;
  
-+static void *ext4_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct ext4_inode_info, vfs_inode));
-+}
+-	if (!index)
+-		return ZERO_SIZE_PTR;
++	if (size <= 192) {
++		if (!size)
++			return ZERO_SIZE_PTR;
+ 
+-	/* Allocation too large? */
+-	if (index < 0)
+-		return NULL;
++		index = size_index[(size - 1) / 8];
++	} else {
++		if (size > KMALLOC_MAX_SIZE)
++			return NULL;
 +
-+static struct kmem_cache_ops ext4_kmem_cache_ops = {
-+	.get = ext4_get_inodes,
-+	.kick = kick_inodes
-+};
++		index = fls(size - 1) + 1;
++	}
+ 
+ #ifdef CONFIG_ZONE_DMA
+-	if ((flags & SLUB_DMA))
++	if (unlikely((flags & SLUB_DMA)))
+ 		return dma_kmalloc_cache(index, flags);
 +
- static int init_inodecache(void)
- {
- 	ext4_inode_cachep = kmem_cache_create("ext4_inode_cache",
- 					     sizeof(struct ext4_inode_info),
- 					     0, (SLAB_RECLAIM_ACCOUNT|
- 						SLAB_MEM_SPREAD),
--					     init_once, NULL);
-+					     init_once,
-+					     &ext4_kmem_cache_ops);
- 	if (ext4_inode_cachep == NULL)
- 		return -ENOMEM;
- 	return 0;
+ #endif
+ 	return &kmalloc_caches[index];
+ }
+@@ -2550,6 +2589,24 @@ void __init kmem_cache_init(void)
+ 		caches++;
+ 	}
+ 
++
++	/*
++	 * Patch up the size_index table if we have strange large alignment
++	 * requirements for the kmalloc array. This is only the case for
++	 * mips it seems. The standard arches will not generate any code here.
++	 *
++	 * Largest permitted alignment is 256 bytes due to the way we
++	 * handle the index determination for the smaller caches.
++	 *
++	 * Make sure that nothing crazy happens if someone starts tinkering
++	 * around with ARCH_KMALLOC_MINALIGN
++	 */
++	BUG_ON(KMALLOC_MIN_SIZE > 256 ||
++		(KMALLOC_MIN_SIZE & (KMALLOC_MIN_SIZE - 1)));
++
++	for (i = 8; i < KMALLOC_MIN_SIZE;i++)
++		size_index[(i - 1) / 8] = KMALLOC_SHIFT_LOW;
++
+ 	slab_state = UP;
+ 
+ 	/* Provide the correct kmalloc names now that the caches are up */
 
 -- 
