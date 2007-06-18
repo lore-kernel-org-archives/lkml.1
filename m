@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760440AbXFRKaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbXFRKbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760440AbXFRKaM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 06:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761044AbXFRK3v
+	id S1761589AbXFRKbe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 06:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbXFRKb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 06:29:51 -0400
-Received: from lazybastard.de ([212.112.238.170]:40470 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760664AbXFRK3t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 06:29:49 -0400
-Date: Mon, 18 Jun 2007 12:13:34 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, alan <alan@clueserver.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-Message-ID: <20070618101333.GA21275@lazybastard.org>
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org> <20070616145337.GA13391@lazybastard.org> <20070618094524.GF5181@schatzie.adilger.int>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 18 Jun 2007 06:31:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60750 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752924AbXFRKb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 06:31:26 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18Ei5EnVqMER6j4MsN3LhBCImJAAIiNH01dPldnC8
+	EjCdGRMUB8h7ll
+Date: Mon, 18 Jun 2007 12:32:14 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
+       perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
+       levon@movementarian.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Separate performance counter reservation from nmi watchdog
+Message-ID: <20070618103214.GA12045@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Stephane Eranian <eranian@hpl.hp.com>,
+	oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
+	perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
+	levon@movementarian.org, akpm@linux-foundation.org
+References: <20070612150246.GJ32163@frankl.hpl.hp.com> <20070612190730.GA6978@atjola.homenet> <20070613014136.GA2386@atjola.homenet> <20070613164632.GA8674@atjola.homenet> <20070618095238.GC20759@frankl.hpl.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070618094524.GF5181@schatzie.adilger.int>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070618095238.GC20759@frankl.hpl.hp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 June 2007 03:45:24 -0600, Andreas Dilger wrote:
+On 2007.06.18 02:52:38 -0700, Stephane Eranian wrote:
+> Hello Bjorn,
 > 
-> Too bad everyone is spending time on 10 similar-but-slightly-different
-> filesystems.  This will likely end up with a bunch of filesystems that
-> implement some easy subset of features, but will not get polished for
-> users or have a full set of features implemented (e.g. ACL, quota, fsck,
-> etc).  While I don't think there is a single answer to every question,
-> it does seem that the number of filesystem projects has climbed lately.
+> Sorry for the delay in my reponse.
+> 
+> > > From: Björn Steinbrink <B.Steinbrink@gmx.de>
+> > > 
+> > > Separate the performance counter reservation system from the nmi
+> > > watchdog to allow usage of all performance counters even if the nmi
+> > > watchdog is not used.
+> > > 
+> 
+> I think it is a good idea to separate the counter allocator from NMI
+> becuase as you said they are/will be use used by more than the NMI
+> watchdog. Thus, I think you should drop the stirng nmi from the
+> routines. I would also povide a separate header file for this allocator.
 
-There definitely seems to be an inflation of new filesystems.  These
-days all the cool kids either write their own virtualization layer or
-their own filesystem.  No idea why that happened, two years ago
-filesystems seemed old and boring.
+Rationale for both: This was already a (IMHO) rather huge patch for such
+a bugfix so I didn't want to change even more code for the sake of
+cleanup. I had planned to send a second patch for 2.6.23 that would do
+the clean up, should have mentioned that (or included the second patch).
 
-> Maybe there should be a BOF at OLS to merge these filesystem projects
-> (btrfs, chunkfs, tilefs, logfs, etc) into a single project with multiple
-> people working on getting it solid, scalable (parallel readers/writers on
-> lots of CPUs), robust (checksums, failure localization), recoverable, etc.
+Will resend the patch later today, together with the cleanup patch.
+Whoever applies it can then decide if the cleanup should go into 2.6.22
+or 2.6.23.
 
-Consider me sceptical.  Here is my personal opinion when looking at the
-list:
-
-Chunkfs, tilefs - research projects.
-At this moment nobody knows whether either of the approaches works or
-not.  Once that is proven, the tricks should get incorporated in
-existing filesystems.
-
-Dave Chinner seems to be working on similar stuff for XFS already.
-Assuming he can deliver, a chunked/tiled/... XFS is useful while chunkfs
-and tilefs are mostly educational.  It doesn't have to be XFS, Ext4
-would do just as well.
-
-Logfs - flash filesystem.
-Btrfs - disk filesystem.
-Disk optimization comes down to avoiding seeks like the plague.  Flash
-requires garbage collection, wear leveling and avoiding writes like the
-plague.
-
-It is quite unlikely that either filesystem will do well in the other's
-domain.  At least some amount of code will remain seperate.  Subsets of
-code might be useful for both.  Collaboration on that level would be
-useful.
-
-JÃ¶rn
-
--- 
-Joern's library part 4:
-http://www.paulgraham.com/spam.html
+Thanks,
+Björn
