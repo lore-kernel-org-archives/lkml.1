@@ -1,118 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764065AbXFRQIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760963AbXFRQQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764065AbXFRQIs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 12:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbXFRQIk
+	id S1760963AbXFRQQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 12:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758474AbXFRQQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 12:08:40 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:48268 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752213AbXFRQIj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 12:08:39 -0400
-Date: Mon, 18 Jun 2007 12:05:49 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: maxk@qualcomm.com
-Cc: Guido Guenther <agx@sigxcpu.org>, LKML <linux-kernel@vger.kernel.org>,
-       vtun@office.satix.net
-Subject: [PATCH] Allow group ownership of TUN/TAP devices
-Message-ID: <20070618160549.GA8299@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Mon, 18 Jun 2007 12:16:37 -0400
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:34037 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757048AbXFRQQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 12:16:35 -0400
+Date: Mon, 18 Jun 2007 09:16:30 -0700 (PDT)
+From: alan <alan@clueserver.org>
+X-X-Sender: alan@blackbox.fnordora.org
+To: Theodore Tso <tytso@mit.edu>
+cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+In-Reply-To: <20070618140143.GD30244@thunk.org>
+Message-ID: <Pine.LNX.4.64.0706180907580.22137@blackbox.fnordora.org>
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com>
+ <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org>
+ <20070616145337.GA13391@lazybastard.org> <20070618094524.GF5181@schatzie.adilger.int>
+ <20070618140143.GD30244@thunk.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I recieved from Guido Guenther the patch below to the TUN/TAP driver
-which allows group ownerships to be effective.
+On Mon, 18 Jun 2007, Theodore Tso wrote:
 
-It seems reasonable to me.
+> On Mon, Jun 18, 2007 at 03:45:24AM -0600, Andreas Dilger wrote:
+>> Too bad everyone is spending time on 10 similar-but-slightly-different
+>> filesystems.  This will likely end up with a bunch of filesystems that
+>> implement some easy subset of features, but will not get polished for
+>> users or have a full set of features implemented (e.g. ACL, quota, fsck,
+>> etc).  While I don't think there is a single answer to every question,
+>> it does seem that the number of filesystem projects has climbed lately.
+>
+> I view some of the attempts for "from scratch" filesystems as ways of
+> testing out various designs as "proof-of-concepts".  It's a great way
+> of demo'ing ones ideas, to see how well they work.  There is a huge
+> chasm between a proof-of-concept and a full production filesystem that
+> has great repair/recovery tools, etc.  That's why it's so important to
+> do the POC implementation first, so folks can see how well it works
+> before investing a huge amount of effort to make it be
+> production-ready.
+>
 
-> the attached patches allow tun ownership by group. We found this useful
-> since we can then spawn tapX devices on system boot (via
-> /etc/network/interfaces) which logged on users can then use for their
-> virtual machines.
->   
-> The first patch is for the kernel, the second one for the tunctl. They
-> shouldn't change existing behaviour and we introduced a new syscall for
-> the group setting. The user now is allowed to send packages if either
-> his euid or his egid matches the one specified via tunctl (via -u or -g
-> respecitvely). If both gid and uid are set via tunctl, both have to
-> match. In case you find these useful, please apply.
+I just wish that people would learn from the mistakes of others.  The 
+MacOS is a prime example of why you do not want to use a forked 
+filesystem, yet some people still seem to think it is a good idea. 
+(Forked filesystems tend to be fragile and do not play well with 
+non-forked filesystems.)
+
+> So I actually think the number of these new filesystem proposals are
+> *good* things.  It means people are interested in creating new
+> filesystems, and that's all good.  Eventually, we'll need to decide
+> which design ideas should be combined, and that may be a little tough
+> to the egos involved, but that's all part of the darwinian kernel
+> programming model.  Not all implementations make it into the kernel
+> mainline.  That doesn't mean that the work that was done on the
+> various schedular proposals were useless; they just helped demonstrate
+> concepts and advanced the debate.
+
+I would like to see more clarification from the designers as to what 
+problem they are trying to solve.  Some of the goals seem to be laudable, 
+but some are not problems that I worry about.
+
+I see filesystems that are trying to handle the flakeyness of hardware. 
+That is useful to me.  I also see people who are trying to archive every 
+little change for "legal reasons".  I have a hard time with this one 
+because I have a hard enough time keeping spare hard drive space for the 
+stuff I want, not the space that someone else wants me to keep.
+
+What I really want are high throughput systems where I can write and read 
+as fast as the hardware will allow.  (And then I want faster hardware.)
 
 -- 
-Work email - jdike at linux dot intel dot com
-
-From: Guido Guenther <agx@sigxcpu.org>
-Date: Fri, 25 May 2007 11:10:27 +0200
-Subject: [PATCH] allow tun ownership by group
-
----
- drivers/net/tun.c      |   15 +++++++++++++--
- include/linux/if_tun.h |    2 ++
- 2 files changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/tun.c b/drivers/net/tun.c
-index a2c6caa..62b2b30 100644
---- a/drivers/net/tun.c
-+++ b/drivers/net/tun.c
-@@ -432,6 +432,7 @@ static void tun_setup(struct net_device *dev)
- 	init_waitqueue_head(&tun->read_wait);
- 
- 	tun->owner = -1;
-+	tun->group = -1;
- 
- 	SET_MODULE_OWNER(dev);
- 	dev->open = tun_net_open;
-@@ -467,8 +468,11 @@ static int tun_set_iff(struct file *file, struct ifreq *ifr)
- 			return -EBUSY;
- 
- 		/* Check permissions */
--		if (tun->owner != -1 &&
--		    current->euid != tun->owner && !capable(CAP_NET_ADMIN))
-+		if (((tun->owner != -1 &&
-+		      current->euid != tun->owner) ||
-+		     (tun->group != -1 &&
-+		      current->egid != tun->group)) &&
-+		     !capable(CAP_NET_ADMIN))
- 			return -EPERM;
- 	}
- 	else if (__dev_get_by_name(ifr->ifr_name))
-@@ -610,6 +614,13 @@ static int tun_chr_ioctl(struct inode *inode, struct file *file,
- 		DBG(KERN_INFO "%s: owner set to %d\n", tun->dev->name, tun->owner);
- 		break;
- 
-+	case TUNSETGROUP:
-+		/* Set group of the device */
-+		tun->group= (gid_t) arg;
-+
-+		DBG(KERN_INFO "%s: group set to %d\n", tun->dev->name, tun->group);
-+		break;
-+
- 	case TUNSETLINK:
- 		/* Only allow setting the type when the interface is down */
- 		if (tun->dev->flags & IFF_UP) {
-diff --git a/include/linux/if_tun.h b/include/linux/if_tun.h
-index 88aef7b..42eb694 100644
---- a/include/linux/if_tun.h
-+++ b/include/linux/if_tun.h
-@@ -36,6 +36,7 @@ struct tun_struct {
- 	unsigned long 		flags;
- 	int			attached;
- 	uid_t			owner;
-+	gid_t			group;
- 
- 	wait_queue_head_t	read_wait;
- 	struct sk_buff_head	readq;
-@@ -78,6 +79,7 @@ struct tun_struct {
- #define TUNSETPERSIST _IOW('T', 203, int) 
- #define TUNSETOWNER   _IOW('T', 204, int)
- #define TUNSETLINK    _IOW('T', 205, int)
-+#define TUNSETGROUP   _IOW('T', 206, int)
- 
- /* TUNSETIFF ifr flags */
- #define IFF_TUN		0x0001
--- 
-1.5.1.4
-
+"ANSI C says access to the padding fields of a struct is undefined.
+ANSI C also says that struct assignment is a memcpy. Therefore struct
+assignment in ANSI C is a violation of ANSI C..."
+                                   - Alan Cox
