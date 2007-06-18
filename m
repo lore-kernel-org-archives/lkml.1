@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbXFRCie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbXFRCj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbXFRCie (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 22:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXFRCiZ
+	id S1757689AbXFRCj0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 22:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbXFRCjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 22:38:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:18384 "EHLO mga01.intel.com"
+	Sun, 17 Jun 2007 22:39:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:48177 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbXFRCiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 22:38:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,432,1175497200"; 
-   d="scan'208";a="258007110"
-Date: Mon, 18 Jun 2007 10:37:26 +0800
-From: Wang Zhenyu <zhenyu.z.wang@intel.com>
-To: Carlo Wood <carlo@alinoe.com>, Dave Airlie <airlied@gmail.com>,
-       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       eric@anholt.net
-Subject: Re: [AGPGART] intel_agp: use table for device probe
-Message-ID: <20070618023726.GA7594@zhen-devel.sh.intel.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Dave Airlie <airlied@gmail.com>, Dave Jones <davej@redhat.com>,
-	linux-kernel@vger.kernel.org, eric@anholt.net
-References: <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com> <20070617223649.GA31587@alinoe.com> <20070617224918.GC12483@redhat.com> <20070618000643.GA1375@alinoe.com> <20070618001627.GA18598@redhat.com> <21d7e9970706171757n4709383cv7a39a66103edc370@mail.gmail.com> <20070618015636.GA8561@alinoe.com>
+	id S1751093AbXFRCjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 22:39:16 -0400
+Date: Mon, 18 Jun 2007 04:39:11 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       mark.fasheh@oracle.com, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] deny partial write for loop dev fd
+Message-ID: <20070618023911.GA27707@wotan.suse.de>
+References: <20070613134631.GB13815@localhost.sw.ru> <Pine.LNX.4.64.0706131426070.4539@blonde.wat.veritas.com> <20070613172939.GE13815@localhost.sw.ru> <Pine.LNX.4.64.0706131543380.10580@blonde.wat.veritas.com> <20070616153917.GC14349@localhost.sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070618015636.GA8561@alinoe.com>
-User-Agent: Mutt/1.4.2.1i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
+In-Reply-To: <20070616153917.GC14349@localhost.sw.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.18 03:56:36 +0000, Carlo Wood wrote:
-> On Mon, Jun 18, 2007 at 10:57:38AM +1000, Dave Airlie wrote:
-> > >Right now, I'm at a loss to explain the corruption, so it's
-> > >difficult to suggest what to try.
-> > 
-> > The thing is here, this is PCIE, so if there is a GPU plugged into the
-> > PCIE 16x slot in theory the main onboard graphics should disable, AGP
-> > code is used to control the GART for the onboard chip, in this case a
-> > plugged in card will  not use AGP, I wonder have Intel tested with a
-> > pcie card in place...
+On Sat, Jun 16, 2007 at 07:39:17PM +0400, Dmitriy Monakhov wrote:
+> Partial write can be easily supported by LO_CRYPT_NONE mode, but
+> it is not easy in LO_CRYPT_CRYPTOAPI case, because of its block nature.
+> I don't know who still used cryptoapi, but theoretically it is possible.
+> So let's leave things as they are. Loop device doesn't support partial
+> write before Nick's "write_begin/write_end" patch set, and let's it 
+> behave the same way after.
 
-Agree. We seem to always enable AGP even IGD is disabled or not exists,
-other card should not depend on this module ever.
+OK... but just bailing out here doesn't exactly solve the problem,
+does it? Some data is already written at this point, so failing
+just means that the underlying file just gets corrupted instead.
+
+OTOH, my attempt to support partial writes isn't right anyway,
+because it doesn't get propogated back to the caller correctly
+anyway.
+
+So we'll go with your patch, thanks.
+
 
 > 
-> That is Chinese for me :/.
-> Do you want me to try something?
-
-Carlo, I've just built latest kernel git tree on a Dell 965G box and
-have a NV card plugged-in. It boots fine.
-
-Linux agpgart interface v0.102 (c) Dave Jones
-agpgart: Detected an Intel 965G Chipset.
-agpgart: AGP aperture is 256M @ 0x0
-
-I don't know why it hangs your machine when loading this module, it should
-just not bother anything. But from your last "modprobe: ..." line, it seems
-there's really badness somewhere, do you have serial console to see more
-in the message?
+> Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
+> ---
+>  drivers/block/loop.c |    4 +---
+>  1 files changed, 1 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+> index 4bab9b1..de122f3 100644
+> --- a/drivers/block/loop.c
+> +++ b/drivers/block/loop.c
+> @@ -244,10 +244,8 @@ static int do_lo_send_aops(struct loop_device *lo, struct bio_vec *bvec,
+>  
+>  		ret = pagecache_write_end(file, mapping, pos, size, copied,
+>  							page, fsdata);
+> -		if (ret < 0)
+> +		if (ret < 0 || ret != copied)
+>  			goto fail;
+> -		if (ret < copied)
+> -			copied = ret;
+>  
+>  		if (unlikely(transfer_result))
+>  			goto fail;
+> -- 
+> 1.5.2
+> 
