@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbXFRHFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbXFRHR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760110AbXFRHFq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 03:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757537AbXFRHFi
+	id S1759477AbXFRHR2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 03:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757402AbXFRHRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 03:05:38 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9146 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756635AbXFRHFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 03:05:37 -0400
-Date: Mon, 18 Jun 2007 09:05:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: dave young <hidave.darkstar@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cdrom_sysctl_info fix
-Message-ID: <20070618070519.GR6149@kernel.dk>
-References: <20070614142430.GA2388@darkstar.te-china.tietoenator.com> <20070615132657.GW6149@kernel.dk> <20070618125811.GA1692@darkstar.te-china.tietoenator.com> <20070618062722.GP6149@kernel.dk> <a8e1da0706172341j3ee621efs8b2809b4fd094004@mail.gmail.com> <20070618064350.GQ6149@kernel.dk> <a8e1da0706180003u35003bb6j706efc25c2b287db@mail.gmail.com>
+	Mon, 18 Jun 2007 03:17:19 -0400
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:1669 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757011AbXFRHRT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 03:17:19 -0400
+Date: Mon, 18 Jun 2007 09:17:57 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Soeren Sonnenburg <kernel@nn7.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rudolf Marek <r.marek@assembler.cz>
+Subject: Re: [PATCH] hwmon/coretemp: Fix a broken error path
+Message-ID: <20070618091757.6d631d4f@hyperion.delvare>
+In-Reply-To: <1182071803.4815.5.camel@localhost>
+References: <1182026585.4230.8.camel@localhost>
+	<20070616231745.1b0f7bd9@hyperion.delvare>
+	<1182071803.4815.5.camel@localhost>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0706180003u35003bb6j706efc25c2b287db@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18 2007, dave young wrote:
-> Hi,
-> >> BTW, another problem, I can't find the CONFIG_CDROM option in kernel
-> >> config menu. Is it deperacated? If it is true, is the module part
-> >> still necessary?
-> >
-> >cdrom.o is a hardware independent helper module, it gets included if you
-> >use atapi/scsi/etc cdrom drivers. See drivers/cdrom/Makefile.
-> >
-> I know. Sorry for my bad english, I means MODULE's part maybe
-> deperacated, not uniform cdrom driver itsself.
+Hi Soeren,
+
+On Sun, 17 Jun 2007 11:16:43 +0200, Soeren Sonnenburg wrote:
+> On Sat, 2007-06-16 at 23:17 +0200, Jean Delvare wrote:
+> > Thanks for reporting. Indeed this patch is broken, sorry for
+> > overlooking it. I tested it but my hardware is such that the faulty
+> > error path was never taken. Please test the following patch (on top of
+> > git-current) and confirm it fixes your problem:
+> > 
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > Cc: Rudolf Marek <r.marek@assembler.cz>
+> > ---
+> >  drivers/hwmon/coretemp.c |    1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > --- linux-2.6.22-rc4.orig/drivers/hwmon/coretemp.c	2007-06-05 10:25:54.000000000 +0200
+> > +++ linux-2.6.22-rc4/drivers/hwmon/coretemp.c	2007-06-16 23:14:06.000000000 +0200
+> > @@ -185,6 +185,7 @@ static int __devinit coretemp_probe(stru
+> >  		/* check for microcode update */
+> >  		rdmsr_on_cpu(data->id, MSR_IA32_UCODE_REV, &eax, &edx);
+> >  		if (edx < 0x39) {
+> > +			err = -ENODEV;
+> >  			dev_err(&pdev->dev,
+> >  				"Errata AE18 not fixed, update BIOS or "
+> >  				"microcode of the CPU!\n");
 > 
-> For example  the module_init, module_exit and MODULE_LICENSE, I
-> remember it could be a standalone module in 2.4 kernels. But now seems
-> not possible. am I right?
+> this patch indeed fixes the problem. Thanks!
 
-It is a stand-alone module.
+OK, great. Andrew, can you please pick this patch:
+http://lkml.org/lkml/2007/6/16/177
+and push it to Linus in your next batch?
 
+> Soeren
+> -- 
+> Sometimes, there's a moment as you're waking, when you become aware of
+> the real world around you, but you're still dreaming.
+
+I too listen to Astral Projection at times :)
+
+Thanks,
 -- 
-Jens Axboe
-
+Jean Delvare
