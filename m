@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763973AbXFROpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764035AbXFROpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763973AbXFROpH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 10:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762989AbXFROo5
+	id S1764035AbXFROpe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 10:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763074AbXFROpY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 10:44:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:56225 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762982AbXFROo5 (ORCPT
+	Mon, 18 Jun 2007 10:45:24 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:30250 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763059AbXFROpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 10:44:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uc+3MqaFKllB83zaSQ2eKfDA19+QMlwU1mHtBrdN9C14INc7vWcHxO+HUbaT0czLfSzVIoc7QvNSPwVGXd9wEpo32Pge0vDPdJiaU4d0SdI96sinCe60Wa1guvOGljK5SnaacZElP+1koEHWuqX/nGD37uE8SQ+wH4kwHrbZZRA=
-Message-ID: <9c21eeae0706180744v5ad9a1a3s10da42c6d6f61637@mail.gmail.com>
-Date: Mon, 18 Jun 2007 07:44:56 -0700
-From: "David Brown" <dmlb2000@gmail.com>
-To: "Goswin von Brederlow" <brederlo@informatik.uni-tuebingen.de>
-Subject: Re: [fuse-devel] FS block count, size and seek offset?
-Cc: fuse-devel@lists.sourceforge.net,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <87645lr69g.fsf@informatik.uni-tuebingen.de>
+	Mon, 18 Jun 2007 10:45:21 -0400
+Date: Mon, 18 Jun 2007 10:41:21 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+Message-ID: <20070618144121.GD2061@think.oraclecorp.com>
+References: <20070612161029.GB28279@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <9c21eeae0706171428u5a9ff79rad2b2083d3436d7f@mail.gmail.com>
-	 <87645lr69g.fsf@informatik.uni-tuebingen.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070612161029.GB28279@think.oraclecorp.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why don't you use the existing fuse-unionfs?
+On Tue, Jun 12, 2007 at 12:10:29PM -0400, Chris Mason wrote:
+> Hello everyone,
+> 
+> After the last FS summit, I started working on a new filesystem that
+> maintains checksums of all file data and metadata.  Many thanks to Zach
+> Brown for his ideas, and to Dave Chinner for his help on 
+> benchmarking analysis.
 
-I thought about doing this but it would need to be modified somehow
-and even then my users would look to me to fix issues and I don't like
-trying to find hard bugs in other peoples code.
+Thanks to everyone that tried out btrfs.  Most of those that did managed
+to hit problems with apps that did writes via mmap.  So, I added a
+page_mkwrite call and worked out cow safe mmap writes.  
 
-Also, there's a lot of functionality that funionfs has but I don't
-need and the extra code would get in the way attempting to modify or
-debug issues.
+Terje Røsten sent along a btrfsprogs patch so that it compiles properly
+on FC7 (thanks!).
 
-What I want is fairly specific and I've not seen anything out there to do it.
+I'll have a site up on oss.oracle.com/projects with mailing lists and
+links to my HG trees shortly.  Until then:
 
-Thanks,
-- David Brown
+http://oss.oracle.com/~mason/btrfs/ has the latest tar balls.
+
+-chris
