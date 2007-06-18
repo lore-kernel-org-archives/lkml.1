@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764687AbXFRTdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764778AbXFRTiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764687AbXFRTdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 15:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761528AbXFRTdM
+	id S1764778AbXFRTiH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 15:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761435AbXFRTh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 15:33:12 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40509 "EHLO mx2.suse.de"
+	Mon, 18 Jun 2007 15:37:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41733 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761126AbXFRTdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 15:33:10 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 4/8] Immediate Value - i386 Optimization; kprobes
-Date: Mon, 18 Jun 2007 21:32:56 +0200
-User-Agent: KMail/1.9.6
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, prasanna@in.ibm.com, ananth@in.ibm.com
-References: <20070615202310.178466032@polymtl.ca> <4676D2A9.6090403@redhat.com> <20070618115632.7aca8c0f.akpm@linux-foundation.org>
-In-Reply-To: <20070618115632.7aca8c0f.akpm@linux-foundation.org>
+	id S1759353AbXFRThz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 15:37:55 -0400
+To: david@lang.hm
+Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706161817.36657.dhazelton@enter.net>
+	<orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706162306.14516.dhazelton@enter.net>
+	<orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070617051451.GD21478@ftp.linux.org.uk>
+	<orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070618154549.GB6041@kroah.com>
+	<orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706181122410.12717@asgard.lang.hm>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Mon, 18 Jun 2007 16:20:18 -0300
+In-Reply-To: <Pine.LNX.4.64.0706181122410.12717@asgard.lang.hm> (david@lang.hm's message of "Mon\, 18 Jun 2007 11\:32\:41 -0700 \(PDT\)")
+Message-ID: <orodjdax3h.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706182132.56559.ak@suse.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 June 2007 20:56:32 Andrew Morton wrote:
-> On Mon, 18 Jun 2007 14:44:57 -0400
-> Chuck Ebbert <cebbert@redhat.com> wrote:
-> 
-> > > I fancy it's done by the kprobe_page_fault handler, but I do not see
-> > > clearly how writing the breakpoint from arch_arm_kprobe() in
-> > > non-writeable memory is done.
-> > 
-> > Looks like it's not merged yet:
-> > 
-> > http://lkml.org/lkml/2007/6/7/2
-> > 
-> > This needs to go in before 2.6.22-final
-> 
-> Andi, I'll include the below two patches in the next batch, OK?
+On Jun 18, 2007, david@lang.hm wrote:
 
-It won't work reliably unless some of the c_p_a() fixes get in first.
+> do you realize that redhat uses checksums or signatures to check the
+> validity of their CD's?
 
-> 
-> 
-> 
-> +extern int kernel_text_is_ro;
+Yes.  How does this stop the users from enjoying any of the freedoms?
 
-No externs in .c files
+> I seriously doubt if redhat tells you how to how to generate such a
+> checksum/signature.
 
+Mixing two different issues here.
 
-I also don't like kernel_text_is_read_only() much, it would
-be better to just lookup_address() it and check the write flag.
+The checksums embedded in the ISO images are implemented in anaconda
+itself, provided along with the distro, so anyone can generate them,
+even though I don't know the precise algorithm.  The checksums over
+the ISO images themselves are implemented with sha1sum (earlier,
+md5sum), so anyone can generate them too.
 
-But for 2.6.22 as a quick fix it might be better to just
-make KPROBES dependent on !DEBUG_RODATA. That would be a one liner.
+As for the GPG signatures in the RPMs and in the SHA1SUM file, these
+are indeed generated using public algorithms but private keys.  But
+these signatures are not functional, and they don't in any way stop
+anyone from enjoying freedoms.
 
--Andi
+> in addition to the problem that Linus points out about being unable to
+> change the contents of the write-only CD this would seem to conflict
+> with what you are claiming the GPL is supposed to allow.
+
+It looks like you read only Linus' messages, not my responses.  A
+write-only CD is like ROM.  It's not the distributor who's imposing
+restrictions on its modification.  Nobody can modify it because nature
+says so.  It's not like the software is being recorded in a CD as a
+means to prevent you from modifying it.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
