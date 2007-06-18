@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933394AbXFRW4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933667AbXFRW4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933394AbXFRW4T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 18:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932425AbXFRW4F
+	id S933667AbXFRW4f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 18:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932833AbXFRW4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 18:56:05 -0400
-Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:56190 "EHLO
-	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932282AbXFRW4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 18:56:03 -0400
-Date: Mon, 18 Jun 2007 15:56:03 -0700 (PDT)
-From: alan <alan@clueserver.org>
-X-X-Sender: alan@blackbox.fnordora.org
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-cc: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Bodo Eggert <7eggert@gmx.de>, Jack Stone <jack@hawkeye.stone.uk.eu.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-In-Reply-To: <20070618222656.GB25089@lazybastard.org>
-Message-ID: <Pine.LNX.4.64.0706181551350.25913@blackbox.fnordora.org>
-References: <8wsCC-3wf-21@gated-at.bofh.it> <8wsW4-3UY-3@gated-at.bofh.it>
- <8wJal-3KA-1@gated-at.bofh.it> <8xm22-4Ql-1@gated-at.bofh.it>
- <8xq5G-32l-7@gated-at.bofh.it> <8xs7w-69W-21@gated-at.bofh.it>
- <E1I0OFQ-0001B9-7Z@be1.lrz> <Pine.LNX.4.64.0706181406250.25913@blackbox.fnordora.org>
- <4676F9A2.6010007@zytor.com> <20070618221021.GB2062@thunk.org>
- <20070618222656.GB25089@lazybastard.org>
+	Mon, 18 Jun 2007 18:56:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:39547 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933588AbXFRW4V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 18:56:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mofcZqyQB9Gw3cyDFvoem9nCd8Rvgv+l7i18aMuTvHtHM2YRF0D80DRFjf2i1QlujNJT2JRGkinHvh3GLJAAiA1qe74HcSkmh+tIj+/DuwJ9pT+mlVpWOOAz2B/XEzEBX1xVI9TfQbrcKNd8CosKC59RcrJU1Os27+Aecbcczzw=
+Message-ID: <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com>
+Date: Mon, 18 Jun 2007 15:56:19 -0700
+From: "Natalie Protasevich" <protasnb@gmail.com>
+To: "Martin Bligh" <mbligh@mbligh.org>
+Subject: Re: How to improve the quality of the kernel?
+Cc: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Adrian Bunk" <bunk@stusta.de>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Oleg Verych" <olecom@flower.upol.cz>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andi Kleen" <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Diego Calleja" <diegocg@gmail.com>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <46770A22.4020007@mbligh.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1637209403-1182207363=:25913"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org>
+	 <200706172053.41806.bzolnier@gmail.com>
+	 <20070617115258.1f55b29d.akpm@linux-foundation.org>
+	 <200706172349.08813.bzolnier@gmail.com>
+	 <4675C083.6080409@s5r6.in-berlin.de>
+	 <20070617220927.99ebc1ee.akpm@linux-foundation.org>
+	 <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca>
+	 <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com>
+	 <46770A22.4020007@mbligh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323328-1637209403-1182207363=:25913
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-
-On Tue, 19 Jun 2007, Jörn Engel wrote:
-
-> On Mon, 18 June 2007 18:10:21 -0400, Theodore Tso wrote:
->> On Mon, Jun 18, 2007 at 02:31:14PM -0700, H. Peter Anvin wrote:
->>> And that makes them different from extended attributes, how?
->>>
->>> Both of these really are nothing but ad hocky syntactic sugar for
->>> directories, sometimes combined with in-filesystem support for small
->>> data items.
->>
->> There's a good discussion of the issues involved in my LCA 2006
->> presentation....  which doesn't seem to be on the LCA 2006 site.  Hrm.
->> I'll have to ask that this be fixed.  In any case, here it is:
->>
->> 	http://thunk.org/tytso/forkdepot.odp
+On 6/18/07, Martin Bligh <mbligh@mbligh.org> wrote:
+> >> > So if you make changes to random-driver.c you can do `git-log
+> >> > random-driver.c|grep Tested-by" to find people who can test
+> >> > your changes for you.
+> >>
+> >> You would'nt even need to search in GIT.  Maybie even when ever a
+> >> patchset is being proposed a mail could be sent to appropriate
+> >> hardware/or feature pseudo-auto-generated mailing-list?
+> >>
+> >> On lkml I mostly try to follow patches/bugs associated with hardware I
+> >> use.  Why not try to automate the process and get more testers in?
+> >>
+> >
+> > I think this is an excellent point. One data point could be a field in
+> > bugzilla to input the hardware information. Simple query can select
+> > common hardware and platform. So far it's not working when hardware is
+> > just mentioned in the text part.
 >
-> The main difference appears to be the potential size.  Both extended
-> attributes and forks allow for extra data that I neither want or need.
-> But once the extra space is large enough to hide a rootkit in, it
-> becomes a security problem instead of just something pointless.
+> if it's free text it'll be useless for search ... I suppose we could
+> do drop-downs for architecture at least? Not sure much beyond that
+> would work ... *possibly* the common drivers, but I don't think
+> we'd get enough coverage for it to be of use.
 >
-> Pointless here means that _I_ don't see the point.  Maybe there are
-> valid uses for extended attributes.  If there are, noone has explained
-> them to me yet.
+How about several buckets for model/BIOS version/chipset etc., at
+least optional, and some will be relevant some not for particular
+cases. But at least people will make an attempt to collect such data
+from their system, boards, etc.
 
-Most of the extended attribute systems I have seen have been a set of 
-flags.  "If this bit is set, the user can do thus to this object." 
-Sometimes it is a named attribute that is attached to the object.
-
-Forks tend to be "this blob of data is attached to this object".
-
-With forks, the choices tend to be a lot more arbitrary.
-
--- 
-"ANSI C says access to the padding fields of a struct is undefined.
-ANSI C also says that struct assignment is a memcpy. Therefore struct
-assignment in ANSI C is a violation of ANSI C..."
-                                   - Alan Cox
---8323328-1637209403-1182207363=:25913--
+--Natalie
