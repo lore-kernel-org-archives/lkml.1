@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932869AbXFRUzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbXFRU50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932869AbXFRUzp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765353AbXFRUzf
+	id S932615AbXFRU50 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761059AbXFRU5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:55:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:61907 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765258AbXFRUzd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:55:33 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Versioning file system
-To: alan <alan@clueserver.org>, Theodore Tso <tytso@mit.edu>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Reply-To: 7eggert@gmx.de
-Date: Mon, 18 Jun 2007 22:54:52 +0200
-References: <8wst3-3kh-31@gated-at.bofh.it> <8wsCC-3wf-21@gated-at.bofh.it> <8wsW4-3UY-3@gated-at.bofh.it> <8wJal-3KA-1@gated-at.bofh.it> <8xm22-4Ql-1@gated-at.bofh.it> <8xq5G-32l-7@gated-at.bofh.it> <8xs7w-69W-21@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Mon, 18 Jun 2007 16:57:19 -0400
+Received: from snowcat.de ([89.31.32.98]:3110 "EHLO snowcat.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760830AbXFRU5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 16:57:18 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] Char: istallion, init+locking fixes
+Organization: Disorganized
+From: Ingo Korb <ml@akana.de>
+Date: Mon, 18 Jun 2007 22:57:12 +0200
+Message-ID: <uir9l9e1j.fsf@dragon.akana.de>
+User-Agent: Gnus/5.1002 (Gnus v5.10.2) Emacs/21.3 (windows-nt)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <E1I0OFQ-0001B9-7Z@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+b27SKG8W7RPz4AkwdDjnyzwFL8PmROfPPGUf
- FzRGcfVRnwhuBukmuYQyXBiUrhV2Ty02yQWSXR7Y/tvosfrOt5
- oD5sqf5nfY5D0B7MvdA0A==
+Content-Type: text/plain; charset=us-ascii
+X-Hashcash: 1:21:070618:linux-kernel@vger.kernel.org::3XKsYgpzqwi0BilF:000000000
+	0000000000000000000000002Z8L
+X-Hashcash: 1:21:070618:akpm@linux-foundation.org::+tIAPLFHxtxGFdR+:000000000000
+	0000000000000000000000008Ci5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alan <alan@clueserver.org> wrote:
+Move brdp->iosize assignment in stli_initecp up a few lines to stop the
+driver from requesting an I/O region of length 0.
 
-> I just wish that people would learn from the mistakes of others.  The
-> MacOS is a prime example of why you do not want to use a forked
-> filesystem, yet some people still seem to think it is a good idea.
-> (Forked filesystems tend to be fragile and do not play well with
-> non-forked filesystems.)
+Remove spin_lock_irqsave/spin_unlock_irqrestore from __stli_sendcmd as
+all users of that function take the lock already.
 
-What's the conceptual difference between forks and extended user attributes?
--- 
-"Unix policy is to not stop root from doing stupid things because
-that would also stop him from doing clever things." - Andi Kleen
+Signed-off-by: Ingo Korb <ml@akana.de>
+---
+One thing I dislike about this driver: It polls its cards every jiffy to
+look for new data. The cards are able to use interrupts (some of the
+drivers for other OSes use them), but as far as I know there is no open
+documentation. Unfortunately the DOS driver (probably easiest to
+analyze) also uses polling. =(
 
-"It's such a fine line between stupid and clever" - Derek Smalls
+
+diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
+index 7b279d1..0bc1c37 100644
+--- a/drivers/char/istallion.c
++++ b/drivers/char/istallion.c
+@@ -2168,8 +2168,6 @@ static void __stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigne
+ 	unsigned char __iomem *bits;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&brd_lock, flags);
+-
+ 	if (test_bit(ST_CMDING, &portp->state)) {
+ 		printk(KERN_ERR "STALLION: command already busy, cmd=%x!\n",
+ 				(int) cmd);
+@@ -2194,7 +2192,6 @@ static void __stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigne
+ 	writeb(readb(bits) | portp->portbit, bits);
+ 	set_bit(ST_CMDING, &portp->state);
+ 	EBRDDISABLE(brdp);
+-	spin_unlock_irqrestore(&brd_lock, flags);
+ }
+ 
+ static void stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigned long cmd, void *arg, int size, int copyback)
+@@ -3218,13 +3215,13 @@ static int stli_initecp(struct stlibrd *brdp)
+ 		goto err;
+ 	}
+ 
++	brdp->iosize = ECP_IOSIZE;
++
+ 	if (!request_region(brdp->iobase, brdp->iosize, "istallion")) {
+ 		retval = -EIO;
+ 		goto err;
+ 	}
+ 
+-	brdp->iosize = ECP_IOSIZE;
+-
+ /*
+  *	Based on the specific board type setup the common vars to access
+  *	and enable shared memory. Set all board specific information now
+
