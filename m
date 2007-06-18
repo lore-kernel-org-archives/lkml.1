@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932779AbXFRUxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbXFRUyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932779AbXFRUxz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764938AbXFRUxp
+	id S932800AbXFRUyh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765001AbXFRUyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:53:45 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:43037
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762072AbXFRUxo (ORCPT
+	Mon, 18 Jun 2007 16:54:25 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:38579
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763402AbXFRUyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:53:44 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: mea culpa on the meaning of Tivoization (was: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3)
-Date: Mon, 18 Jun 2007 16:53:56 -0400
-User-Agent: KMail/1.9.6
-Cc: Alexandre Oliva <aoliva@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>,
-       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <orabuyfa7i.fsf_-_@oliva.athome.lsd.ic.unicamp.br> <20070618005041.6c51a368@the-village.bc.nu>
-In-Reply-To: <20070618005041.6c51a368@the-village.bc.nu>
+	Mon, 18 Jun 2007 16:54:23 -0400
+Date: Mon, 18 Jun 2007 13:52:04 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Brendan Conoboy <blc@redhat.com>
+cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Neil Brown <neilb@suse.de>, Wakko Warner <wakko@animx.eu.org>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <4676D8DE.3050903@redhat.com>
+Message-ID: <Pine.LNX.4.64.0706181349290.14890@asgard.lang.hm>
+References: <18034.479.256870.600360@notabene.brown>
+ <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown>
+ <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown>
+ <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm> <4676BEC2.7090809@redhat.com>
+ <Pine.LNX.4.64.0706181026170.12717@asgard.lang.hm> <20070618180327.GP10008@csclub.uwaterloo.ca>
+ <Pine.LNX.4.64.0706181111020.12717@asgard.lang.hm> <20070618183324.GL10006@csclub.uwaterloo.ca>
+ <Pine.LNX.4.64.0706181138210.12717@asgard.lang.hm> <4676D8DE.3050903@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706181653.57713.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 June 2007 19:50:41 Alan Cox wrote:
-> That's a nice definition but one I can see being sort of abusable
-> depending how you read it. We head ever more into the disposable computer
-> era where as a vendor putting the code on ROM is cheap and upgrades don't
-> matter (throw it away get a new one).
+On Mon, 18 Jun 2007, Brendan Conoboy wrote:
 
-I'm waiting for cereal boxes in the store to have a display covering the 
-entire front side which changes every 30 seconds, with all the circuitry to 
-drive it taking up a few square milimeters and a small watch battery to power 
-it for six months ala the blinky LEDs of today.
+> david@lang.hm wrote:
+>>  yes, sorry, ultra 320 wide.
+>
+> Exactly how many channels and drives?
 
-This should be economicaly feasible in what, 10 years?  15?  (There are all 
-sorts of weird problems to solve like coming up with a battery that's not 
-only cheap enough but which you won't get in trouble putting millions of in 
-landfills.  Fuel cell might be more environmentally friendly depending on 
-your catalysts...)
+one channel, 2 OS drives plus the 45 drives in the array.
 
-We haven't even brushed against the "disposable computer era" compared to 
-what's coming.  Most of us will probably live to see happy meal toys capable 
-of running Linux, and that's just a _start_.
+yes I realize that there will be bottlenecks with this, the large capacity 
+is to handle longer history (it's going to be a 30TB circular buffer being 
+fed by a pair of OC-12 links)
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+it appears that my big mistake was not understanding what /proc/mdstat is 
+telling me.
+
+David Lang
