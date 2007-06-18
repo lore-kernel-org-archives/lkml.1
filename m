@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763325AbXFRNma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbXFRNo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763325AbXFRNma (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 09:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbXFRNmW
+	id S1763508AbXFRNo2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 09:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760614AbXFRNoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 09:42:22 -0400
-Received: from mail.screens.ru ([213.234.233.54]:43327 "EHLO mail.screens.ru"
+	Mon, 18 Jun 2007 09:44:21 -0400
+Received: from thunk.org ([69.25.196.29]:45768 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756265AbXFRNmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 09:42:22 -0400
-Date: Mon, 18 Jun 2007 17:42:33 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Nicholas Miell <nmiell@comcast.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: And now for something _totally_ different: Linux v2.6.22-rc5
-Message-ID: <20070618134233.GA265@tv-sign.ru>
-References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org> <1182064500.2798.6.camel@entropy> <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com> <1182108399.3794.4.camel@entropy> <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
-Mime-Version: 1.0
+	id S1757389AbXFRNoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 09:44:21 -0400
+Date: Mon, 18 Jun 2007 09:44:13 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Magnus Naeslund <mag@kite.se>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>, linux-kernel@vger.kernel.org
+Subject: Re: ARC-1260: No space left on device, when there is (or should be) free space left
+Message-ID: <20070618134413.GC30244@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Magnus Naeslund <mag@kite.se>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	linux-kernel@vger.kernel.org
+References: <4676679E.5040901@kite.se> <Pine.LNX.4.64.0706180730320.14972@localhost.localdomain> <4676787F.30609@kite.se>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <4676787F.30609@kite.se>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/17, Davide Libenzi wrote:
->
-> On Sun, 17 Jun 2007, Nicholas Miell wrote:
-> > 
-> > But there's still no way for multiple threads to read from a single
-> > signalfd and get their own thread-specific signals in addition to
-> > process-wide signals, right? I think this was agreed to be the least
-> > surprising behavior.
-> 
-> Multiple threads can wait on the signalfd. Each one will dequeue either 
-> its own private signals (tsk->pending) or the process shared ones 
-> (tsk->signal->shared_pending). This will be the behaviour once Ben's patch 
-> is applied.
+On Mon, Jun 18, 2007 at 02:20:15PM +0200, Magnus Naeslund wrote:
+> Duh, this was it!
+> What is the recommended method on how to increase the inode count on the filesystem (there is no need for online resize in this case)?
+> I have the resize_inode option set when looking at the tune2fs -l output.
 
-What if we pass a signalfd to another process with unix socket? Which signals
-should be dequeued in that case? Only shared ones?
+Unfortunately, at the moment there isn't a way to increase the inode
+count without resizing the filesystem (which will add more blocks and
+inodes as you add more blockgroups).  That's because the number of
+inodes per block group is fixed at mke2fs time.   
 
-I tried to follow this discussion, but I can't understans why the current
-behaviour is bad.
+In theory it should be possible to whip up a program which would
+implement this, but it would be a non-trivial exercise.  So at the
+moment, the only solution is to recreate it with a larger number of
+inodes, or resize the filesystem.
 
-Yes, a thread has to create its own signalfd if it wants to dequeue private
-signals. But this is simple and understandable. May be I missed something
-else ?
+How are you using the filesystem?  This wouldn't happen to be one of
+the backup schemes that use hard links and huge numbers of
+directories, would it?  And how did you create the filesystem
+originally?  Normally mke2fs is quite generous with the number of
+inodes it creates to avoid this problem.  Did you use -T largefile or
+-T largefile4 by any chance?  Or did you manually specify a
+non-standard inode_ratio size?
 
-Oleg.
+						- Ted
 
