@@ -1,247 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765281AbXFRSYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764780AbXFRS1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765281AbXFRSYA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762433AbXFRSXy
+	id S1764780AbXFRS1R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761421AbXFRS1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:23:54 -0400
-Received: from www19.your-server.de ([213.133.104.19]:4630 "EHLO
-	www19.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762123AbXFRSXx (ORCPT
+	Mon, 18 Jun 2007 14:27:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:32930 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760595AbXFRS1F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:23:53 -0400
-From: Uli Luckas <u.luckas@road.de>
-Organization: Road GmbH
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm 2/2] PM: Disable usermode helper before hibernation and suspend
-User-Agent: KMail/1.9.7
-References: <200706042325.28965.rjw@sisk.pl> <200706181251.10170.u.luckas@road.de> <200706181715.15017.rjw@sisk.pl>
-In-Reply-To: <200706181715.15017.rjw@sisk.pl>
+	Mon, 18 Jun 2007 14:27:05 -0400
+Date: Mon, 18 Jun 2007 11:25:08 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Miklos Szeredi <miklos@szeredi.hu>, cebbert@redhat.com, chris@atlee.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+In-Reply-To: <20070618180041.GA13483@elte.hu>
+Message-ID: <alpine.LFD.0.98.0706181112060.14121@woody.linux-foundation.org>
+References: <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu>
+ <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
+ <20070616103707.GA28096@elte.hu> <E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu>
+ <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu>
+ <20070618081204.GA11153@elte.hu> <alpine.LFD.0.98.0706180857120.14121@woody.linux-foundation.org>
+ <20070618180041.GA13483@elte.hu>
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 7905
-Date: Mon, 18 Jun 2007 20:23:45 +0200
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706182023.45984.u.luckas@road.de>
-X-Authenticated-Sender: webmaster@road.de
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 18. June 2007, you wrote:
-> On Monday, 18 June 2007 12:51, Uli Luckas wrote:
-> > On Sunday, 17. June 2007, you wrote:
-> > > On Friday, 15 June 2007 23:36, Rafael J. Wysocki wrote:
-> > > > On Friday, 15 June 2007 15:08, Uli Luckas wrote:
-> > > > > On Monday, 4. June 2007, Rafael J. Wysocki wrote:
-> > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > >
-> > > > > > Use a hibernation and suspend notifier to disable the user mode
-> > > > > > helper before a hibernation/suspend and enable it after the
-> > > > > > operation.
-> > > > >
-> > > > > Hi Rafael,
-> > > > > I have a couple of questions, regarding this patch ...
-> > > > >
-> > > > > 2) how does your patch prevent wait_for_completion(&done) to hang
-> > > > > during freezing if usermodehelper_pm_callback is called _after_ the
-> > > > > above check?
-> > > >
-> > > > It doesn't.  Once the helper is running, we can't distinguish it from
-> > > > any other user land process.
-> > > >
-> > > > Still, it narrows the window quite a bit.
-> > >
-> > > Okay, I think we can help it a bit.  Please tell me what you think of
-> > > the following patch (on top of 2.6.22-rc4-mm2).
-> >
-> > Hi Rafael,
-> > Thanks for your work. I haven't found the time to actually test your
-> > patch but in general it looks like a valid aproach.
-> > I think there is one problem though. You need to have your wait queue
-> > woken up when you update (atomic_dec) running_helpers. Otherwise you end
-> > up always waiting the full RUNNING_HELPERS_TIMEOUT.
->
-> Yeah, right.  I tend to forget about obvious things. :-(
->
-Great. As far as I can see, this patch should now fix the situation except 
-under heavy load where it would abort the attempted suspend. I can live with 
-that and it is a whole lot better than it was before - Thanks.
-
-> Besides, I think that the _pm_callback need not be compiled if CONFIG_PM is
-> unset.  
->
-Should work but is probably beneath what you intended to do. I'll comment 
-further down...
-
-> If you can, please have a look at the next version of the patch 
-> (appended).
->
-One more topic to keep in mind for the future. None of the callers of 
-call_usermode_helper* expect a return value of EBUSY nor do they handle it 
-correctly. If auto loading of a module for example fails, a permanent error 
-is usually assumed and no retry attempts are made. 
-
-> Greetings,
-> Rafael
->
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/kmod.c |   76
-> ++++++++++++++++++++++++++++++++++++++++++++++++++-------- 1 file changed,
-> 66 insertions(+), 10 deletions(-)
->
-> Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
-> ===================================================================
-> --- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
-> +++ linux-2.6.22-rc4-mm2/kernel/kmod.c
-> @@ -41,14 +41,6 @@ extern int max_threads;
->
->  static struct workqueue_struct *khelper_wq;
->
-> -/*
-> - * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe()
-> exit - * immediately returning -EBUSY.  Used for preventing user land
-> processes from - * being created after the user land has been frozen during
-> a system-wide - * hibernation or suspend operation.
-> - */
-> -static int usermodehelper_disabled;
-> -
->  #ifdef CONFIG_KMOD
->
->  /*
-> @@ -275,6 +267,30 @@ static void __call_usermodehelper(struct
->  	}
->  }
->
-> +#ifdef CONFIG_PM
-> +/*
-> + * If set and if call_usermodehelper_exec() is supposed to wait, it will
-> exit + * immediately returning -EBUSY (used for preventing user land
-> processes from + * being created after the user land has been frozen during
-> a system-wide + * hibernation or suspend operation).
-> + */
-> +static int usermodehelper_disabled;
-> +
-> +/* Number of helpers running */
-> +static atomic_t running_helpers = ATOMIC_INIT(0);
-> +
-> +/*
-> + * Wait queue head used by usermodehelper_pm_callback() to wait for all
-> running + * helpers to finish.
-> + */
-> +static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
-> +
-> +/*
-> + * Time to wait for running_helpers to become zero before the setting of
-> + * usermodehelper_disabled in usermodehelper_pm_callback() fails
-> + */
-> +#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
-> +
->  static int usermodehelper_pm_callback(struct notifier_block *nfb,
->  					unsigned long action,
->  					void *ignored)
-> @@ -283,7 +299,15 @@ static int usermodehelper_pm_callback(st
->  	case PM_HIBERNATION_PREPARE:
->  	case PM_SUSPEND_PREPARE:
->  		usermodehelper_disabled = 1;
-> -		return NOTIFY_OK;
-> +		wait_event_timeout(running_helpers_waitq,
-> +					atomic_read(&running_helpers) == 0,
-> +					RUNNING_HELPERS_TIMEOUT);
-> +		if (atomic_read(&running_helpers) == 0) {
-> +			return NOTIFY_OK;
-> +		} else {
-> +			usermodehelper_disabled = 0;
-> +			return NOTIFY_BAD;
-> +		}
->  	case PM_POST_HIBERNATION:
->  	case PM_POST_SUSPEND:
->  		usermodehelper_disabled = 0;
-> @@ -293,6 +317,36 @@ static int usermodehelper_pm_callback(st
->  	return NOTIFY_DONE;
->  }
->
-> +static void new_helper(void)
-> +{
-> +	atomic_inc(&running_helpers);
-> +}
-> +
-> +static void helper_finished(void)
-> +{
-> +	if (atomic_dec_and_test(&running_helpers))
-> +		wake_up(&running_helpers_waitq);
-> +}
-> +
-> +#else /* CONFIG_PM */
-> +#define usermodehelper_disabled	0
-> +
-> +static inline int usermodehelper_pm_callback(struct notifier_block *nfb,
-          ^^^^^^
-This kind of implies, the compiler might optimize this function away. Further 
-down you call "pm_notifier(usermodehelper_pm_callback, 0);", thereby passing 
-a pointer to usermodehelper_pm_callback which can't be inlined nor optimized 
-away. If instead you had an inline function 
-register_usermodehelper_pm_callback which called pm_notifier if CONFIG_PM was 
-defined and did nothing otherwise...
-
-> +						unsigned long action,
-> +						void *ignored)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void new_helper(void)
-> +{
-> +}
-> +
-> +static inline void helper_finished(void)
-> +{
-> +}
-> +#endif /* CONFIG_PM */
-> +
->  /**
->   * call_usermodehelper_setup - prepare to call a usermode helper
->   * @path - path to usermode executable
-> @@ -397,12 +451,13 @@ int call_usermodehelper_exec(struct subp
->  	DECLARE_COMPLETION_ONSTACK(done);
->  	int retval;
->
-> +	new_helper();
->  	if (sub_info->path[0] == '\0') {
->  		retval = 0;
->  		goto out;
->  	}
->
-> -	if (!khelper_wq || usermodehelper_disabled) {
-> +	if (!khelper_wq || (wait != UMH_NO_WAIT && usermodehelper_disabled)) {
->  		retval = -EBUSY;
->  		goto out;
->  	}
-> @@ -418,6 +473,7 @@ int call_usermodehelper_exec(struct subp
->
->    out:
->  	call_usermodehelper_freeinfo(sub_info);
-> +	helper_finished();
->  	return retval;
->  }
->  EXPORT_SYMBOL(call_usermodehelper_exec);
 
 
--- 
+On Mon, 18 Jun 2007, Ingo Molnar wrote:
+> 
+> ok. Do we have an guarantee that cpu_relax() is also an smp_rmb()?
 
-------- ROAD ...the handyPC Company - - -  ) ) )
+The common use for cpu_relax() is basically for code that does
 
-Uli Luckas
-Software Development
+	while (*ptr != val)
+		cpu_relax();
 
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
-url: www.road.de
+so yes, an architecture that doesn't notice writes by other CPU's on its 
+own had *better* have an implied read barrier in its "cpu_relax()" 
+implementation. For example, the irq handling code does
 
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing directors: Hans-Peter Constien, Hubertus von Streit
+	while (desc->status & IRQ_INPROGRESS)
+		cpu_relax();
+
+which is explicitly about waiting for another CPU to get out of their 
+interrupt handler. And one classic use for it in drivers is obviously the
+
+	while (time_before (jiffies, next))
+		cpu_relax();
+
+kind of setup (and "jiffies" may well be updated on another CPU: the fact 
+that it is "volatile" is just a *compiler* barrier just like cpu_relax() 
+itself will also be, not a "smp_rmb()" kind of hardware barrier).
+
+So we could certainly add the smp_rmb() to make it more explicit, and it 
+wouldn't be *wrong*.
+
+But quite frankly, I'd personally rather not - if it were to make a 
+difference in some situation, it would just be papering over a bug in 
+cpu_relax() itself.
+
+The whole point of cpu_relax() is about busy-looping, after all. And the 
+only thing you really *can* busy-loop on in a CPU is basically a memory 
+value.
+
+So the smp_rmb() would I think distract from the issue, and at best paper 
+over some totally separate bug.
+
+> hm, this might still go into a non-nice busy loop on SMP: one cpu runs 
+> the strace, another one runs two tasks, one of which is runnable but not 
+> on the runqueue (the one we are waiting for). In that case we'd call 
+> yield() on this CPU in a loop
+
+Sure. I agree - we can get into a loop that calls yield(). But I think a 
+loop that calls yield() had better be ok - we're explicitly giving the 
+scheduler the ability to to schedule anything else that is relevant. 
+
+So I think yield()'ing is fundamentally different from busy-looping any 
+other way. 
+
+Would it be better to be able to have a wait-queue, and actually *sleep* 
+on it, and not even busy-loop using yield? Yeah, possibly. I cannot 
+personally bring myself to care about that kind of corner-case situation, 
+though.
+
+			Linus
