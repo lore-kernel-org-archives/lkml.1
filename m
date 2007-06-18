@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbXFRNo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763546AbXFRNq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763508AbXFRNo2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 09:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760614AbXFRNoV
+	id S1763546AbXFRNq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 09:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762327AbXFRNqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 09:44:21 -0400
-Received: from thunk.org ([69.25.196.29]:45768 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757389AbXFRNoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 09:44:21 -0400
-Date: Mon, 18 Jun 2007 09:44:13 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Magnus Naeslund <mag@kite.se>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>, linux-kernel@vger.kernel.org
-Subject: Re: ARC-1260: No space left on device, when there is (or should be) free space left
-Message-ID: <20070618134413.GC30244@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Magnus Naeslund <mag@kite.se>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	linux-kernel@vger.kernel.org
-References: <4676679E.5040901@kite.se> <Pine.LNX.4.64.0706180730320.14972@localhost.localdomain> <4676787F.30609@kite.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4676787F.30609@kite.se>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Mon, 18 Jun 2007 09:46:23 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:16329 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760614AbXFRNqW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 09:46:22 -0400
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+From: holzheu <holzheu@linux.vnet.ibm.com>
+Reply-To: holzheu@linux.vnet.ibm.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, gregkh@suse.de,
+       mtk-manpages@gmx.net, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       "lf_kernel_messages@linux-foundation.org" 
+	<lf_kernel_messages@linux-foundation.org>
+In-Reply-To: <20070615124034.GH9442@ucw.cz>
+References: <1181747217.29512.9.camel@localhost.localdomain>
+	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>
+	 <20070614094128.GF17819@atrey.karlin.mff.cuni.cz>
+	 <20070615124034.GH9442@ucw.cz>
+Content-Type: text/plain
+Organization: IBM
+Date: Mon, 18 Jun 2007 15:42:34 +0200
+Message-Id: <1182174154.11400.57.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 02:20:15PM +0200, Magnus Naeslund wrote:
-> Duh, this was it!
-> What is the recommended method on how to increase the inode count on the filesystem (there is no need for online resize in this case)?
-> I have the resize_inode option set when looking at the tune2fs -l output.
+Hi Pavel,
 
-Unfortunately, at the moment there isn't a way to increase the inode
-count without resizing the filesystem (which will add more blocks and
-inodes as you add more blockgroups).  That's because the number of
-inodes per block group is fixed at mke2fs time.   
+On Fri, 2007-06-15 at 12:40 +0000, Pavel Machek wrote:
+> Hi!
+> 
+> > > Your proposal is similar to one I made to some Japanese developers
+> > > earlier this year.  I was more modest, proposing that we
+> > > 
+> > > - add an enhanced printk
+> > > 
+> > > 	xxprintk(msgid, KERN_ERR "some text %d\n", some_number);
+> >   Maybe a stupid idea but why do we want to assign these numbers by hand?
+> > I can imagine it could introduce collisions when merging tons of patches
+> > with new messages... Wouldn't it be better to compute say, 8-byte hash
+> > from the message and use it as it's identifier? We could do this
+> 
+> Why hashes? Just key it off full message, and treat it like normal
+> translation problem.
+> 
+> 'lp%d: on fire' -> 'your printer failed basic tests, you should check
+> cabling'.
 
-In theory it should be possible to whip up a program which would
-implement this, but it would be a non-trivial exercise.  So at the
-moment, the only solution is to recreate it with a larger number of
-inodes, or resize the filesystem.
+Hmmm... What about extracting all format strings from the KMSG_DOC
+macros and storing them in a file. E.g.:
 
-How are you using the filesystem?  This wouldn't happen to be one of
-the backup schemes that use hard links and huge numbers of
-directories, would it?  And how did you create the filesystem
-originally?  Normally mke2fs is quite generous with the number of
-inodes it creates to avoid this problem.  Did you use -T largefile or
--T largefile4 by any chance?  Or did you manually specify a
-non-standard inode_ratio size?
+  printk("lp%d: on fire");
 
-						- Ted
+  /**
+   * message
+   *
+   * Description:
+   * Your printer failed basic tests, you should check cabling
+   ...
+
+  KMSG_DOC(lp, "lp%d: on fire");
+
+Some build mechanism creates a file with all format strings of the
+KMSG_DOC macros:
+
+E.g.: cat kmsgs.txt
+
+# MSG:       "lp%d: on fire"
+# COMPONENT: lp
+# DESC:      Your printer failed basic tests, you should check cabling
+
+Then we provide a tool e.g. "kmsg", which gets as input the actual
+kernel message and searches the message database for matching format
+strings:
+
+>> kmsg "lp0: on fire"
+>> Your printer ...
+
+Of course, we can get duplicate hits, too.
+
+The advantage of that approach is, that we don't need additional message
+identifiers like hashes.
+
+Michael
+ 
 
