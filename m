@@ -1,130 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763024AbXFRL6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763273AbXFRMBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763024AbXFRL6n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 07:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761679AbXFRL6g
+	id S1763273AbXFRMBA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 08:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762048AbXFRMAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 07:58:36 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:48822 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761266AbXFRL6f (ORCPT
+	Mon, 18 Jun 2007 08:00:51 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52580 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761996AbXFRMAu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 07:58:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=AYmATDgzIjV7shOnx7bybKMXAoW0V4rxrSSfPrcU3rBAY7tBVHiQcUF5gDbi+orBWYprtCzhppcSdKuuWLsj9Tn5V0yhPAHjinsAVC0zLaMuGy841tM7qk4N7769IH6pyWzOd+y/3ioDBvk3dklsKSuxWks8Fe4S1vesxhKxdBc=
-Message-ID: <46767346.2040108@googlemail.com>
-Date: Mon, 18 Jun 2007 13:57:58 +0200
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: clameter@sgi.com
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       suresh.b.siddha@intel.com
-Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
-References: <20070618095838.238615343@sgi.com>
-In-Reply-To: <20070618095838.238615343@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Mon, 18 Jun 2007 08:00:50 -0400
+To: alan@lxorguk.ukuu.org.uk
+CC: davem@davemloft.net, akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20070618124721.56411b93@the-village.bc.nu> (message from Alan
+	Cox on Mon, 18 Jun 2007 12:47:21 +0100)
+Subject: Re: [PATCH] fix race in AF_UNIX
+References: <E1I0BzQ-0006gZ-00@dorka.pomaz.szeredi.hu>
+	<20070618.005711.21897961.davem@davemloft.net>
+	<E1I0CTH-0006k3-00@dorka.pomaz.szeredi.hu>
+	<20070618.021813.105401188.davem@davemloft.net>
+	<E1I0DYW-0006uZ-00@dorka.pomaz.szeredi.hu> <20070618124721.56411b93@the-village.bc.nu>
+Message-Id: <E1I0Ftt-0007Xc-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 18 Jun 2007 14:00:05 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> > No, correctness always trumps performance.  Lost packets on an AF_UNIX
+> > socket are _unexceptable_, and this is definitely not a theoretical
+> > problem.
+> 
+> If its so unacceptable why has nobody noticed until now - its a bug
+> clearly, it needs fixing clearly, but unless you can produce some kind of
+> exploit from it (eg a DoS attack or kernel memory leak exploiter) it
+> doesn't appear to be that serious.
 
-clameter@sgi.com pisze:
-> These contain the following groups of patches:
-> 
-> 1. Slab allocator code consolidation and fixing of inconsistencies
-> 
-> This makes ZERO_SIZE_PTR generic so that it works in all
-> slab allocators.
-> 
-> It adds __GFP_ZERO support to all slab allocators and
-> cleans up the zeroing in the slabs and provides modifications
-> to remove explicit zeroing following kmalloc_node and
-> kmem_cache_alloc_node calls.
-> 
-> 2. SLUB improvements
-> 
-> Inline some small functions to reduce code size. Some more memory
-> optimizations using CONFIG_SLUB_DEBUG. Changes to handling of the
-> slub_lock and an optimization of runtime determination of kmalloc slabs
-> (replaces ilog2 patch that failed with gcc 3.3 on powerpc).
-> 
-> 3. Slab defragmentation
-> 
-> This is V3 of the patchset with the one fix for the locking problem that
-> showed up during testing.
-> 
-> 4. Performance optimizations
-> 
-> These patches have a long history since the early drafts of SLUB. The
-> problem with these patches is that they require the touching of additional
-> cachelines (only for read) and SLUB was designed for minimal cacheline
-> touching. In doing so we may be able to remove cacheline bouncing in
-> particular for remote alloc/ free situations where I have had reports of
-> issues that I was not able to confirm for lack of specificity. The tradeoffs
-> here are not clear. Certainly the larger cacheline footprint will hurt the
-> casual slab user somewhat but it will benefit processes that perform these
-> local/remote alloc/free operations.
-> 
-> I'd appreciate if someone could evaluate these.
-> 
-> The complete patchset against 2.6.22-rc4-mm2 is available at
-> 
-> http://ftp.kernel.org/pub/linux/kernel/people/christoph/slub/2.6.22-rc4-mm2
-> 
-> Tested on
-> 
-> x86_64 SMP
-> x86_64 NUMA emulation
-> IA64 emulator
-> Altix 64p/128G NUMA system.
-> Altix 8p/6G asymmetric NUMA system.
-> 
-> 
+It's serious in that it affects the operation of one of my
+applications in a way that is rather hard to work around.  Sure, I
+could resend the lost sockets, but it's something one doesn't do
+unnecessarily for reliable transports.
 
-Testcase:
+And it's entirely possible, that it could bite other apps in rare and
+mysterious ways.  All you need is
 
-#! /bin/sh
+  - an application that sends a unix socket over a unix socket
 
-for i in `find /sys/ -type f`
-do
-    echo "wy¶wietlam $i"
-    sudo cat $i > /dev/null
-#    sleep 1s
-done
+  - a parallel close() operation on an independent unix socket
 
-Result:
+The two might happen to be from totally unrelated apps.
 
-[  212.247759] WARNING: at lib/vsprintf.c:280 vsnprintf()
-[  212.253263]  [<c04052ad>] dump_trace+0x63/0x1eb
-[  212.259042]  [<c040544f>] show_trace_log_lvl+0x1a/0x2f
-[  212.266672]  [<c040608d>] show_trace+0x12/0x14
-[  212.271622]  [<c04060a5>] dump_stack+0x16/0x18
-[  212.276663]  [<c050d512>] vsnprintf+0x6b/0x48c
-[  212.281325]  [<c050d9f0>] scnprintf+0x20/0x2d
-[  212.286707]  [<c0508dbc>] bitmap_scnlistprintf+0xa8/0xec
-[  212.292508]  [<c0480d40>] list_locations+0x24c/0x2a2
-[  212.298241]  [<c0480dde>] alloc_calls_show+0x1f/0x26
-[  212.303459]  [<c047e72e>] slab_attr_show+0x1c/0x20
-[  212.309469]  [<c04c1cf9>] sysfs_read_file+0x94/0x105
-[  212.315519]  [<c0485933>] vfs_read+0xcf/0x158
-[  212.320215]  [<c0485d99>] sys_read+0x3d/0x72
-[  212.327539]  [<c040420c>] syscall_call+0x7/0xb
-[  212.332203]  [<b7f74410>] 0xb7f74410
-[  212.336229]  =======================
+It's all the more serious, because it could happen rarely and
+unreproducibly, and could well be crashing the app which is not
+expecting this behavior.
 
-Unfortunately, I don't know which file was cat'ed
+> > And BTW my second patch does _not_ have the performance problems you
+> > are arguing about, it's just plain ugly.  But hey, if you can't live
+> > with ugly code, go and fix it.
+> 
+> If you put ugly code into the kernel you pay for maintaining it for years
+> to come. If you get it right then you don't
+> 
+> > Do you want me to send the patch to Andrew instead?  His attitude
+> > towards bugfixes is rather better ;)
+> 
+> And it'll get NAKked and binned. DaveM is (as happens sometimes ;)) right
+> to insist on the code being clean and efficient.
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm2-slub/slub-config
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm2-slub/slub-dmesg
+Right, but treating a bug in your subsystem as if it's entirely the
+responsibility of the reporter is not the right attitude either I
+think.
 
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+Miklos
