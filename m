@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933437AbXFRWhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763134AbXFRWh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933437AbXFRWhJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 18:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932432AbXFRWg5
+	id S1763134AbXFRWh3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 18:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933407AbXFRWhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 18:36:57 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:44661 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932377AbXFRWg5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 18:36:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=e4X+cLZsbiJ5pCkqd923+Zi60VQuAkmlWq8zc6rtDV6tPh94rSsI99yUpdeGpb1tDR7TV5gCSbYkBvr+sbJEYRkObpqjkDpfaB57Ix45DLifOF1VCjMI5Ccn4oloHx6SMm5K7PNLdik3yvJRdci/nBmOXIzK/DUa4Ge96Tl6JCY=
-To: linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Mon, 18 Jun 2007 18:36:53 -0400
-User-Agent: KMail/1.9.6
+	Mon, 18 Jun 2007 18:37:07 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34775 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933320AbXFRWhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 18:37:06 -0400
+Date: Mon, 18 Jun 2007 15:38:20 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
+Message-ID: <20070618223819.GD9751@tree.beaverton.ibm.com>
+References: <20070605183300.GD12782@tree.beaverton.ibm.com> <20070605184015.GF17143@linux-os.sc.intel.com> <20070605200954.GE12782@tree.beaverton.ibm.com> <20070605211451.GG17143@linux-os.sc.intel.com> <20070605235707.GB16074@tree.beaverton.ibm.com> <20070606013759.GI17143@linux-os.sc.intel.com> <20070606185829.GA26062@tree.beaverton.ibm.com> <20070606193514.GN17143@linux-os.sc.intel.com> <20070606231642.GH13751@tree.beaverton.ibm.com> <20070608005726.GO17143@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="5p8PegU4iirBW1oA"
 Content-Disposition: inline
-Message-Id: <200706181836.53736.yurimxpxman@gmail.com>
-From: Joshua David Williams <yurimxpxman.lkml@gmail.com>
+In-Reply-To: <20070608005726.GO17143@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/17/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
->  Everybody else just cares about the legal reasons.
+--5p8PegU4iirBW1oA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> The "legal terms" is the only reason a license *exists*. That's what a
-> license *is*, for crying out loud!
+On Thu, Jun 07, 2007 at 05:57:26PM -0700, Siddha, Suresh B wrote:
 
->  If you don't care about the legal side, go and read the free software
-> manifesto. That's the paper you're really arguing about.
+> As you have the failing system, you need to do more detective work and
+> help me out. Can you try this debug patch and send across the dmesg after the
+> bug happens and also can you try different compiler to see if something
+> changes..
 
-> If you want to argue about the GPLv2 *license*, then you'd better start
-> caring about the legal issues. Because that is what the license is: a
-> _legal_ document.
+Hrm, I just updated to -rc5.  Interrupts being handled by the IOAPIC
+don't suffer from this problem, but MSI interrupts are still affected.
+I added a few printks to the kernel to figure out what IRQ affinity
+masks were being passed around and saw this:
 
-IMHO, free and open source software seem to differ on one key point:
+[  256.298773] Breaking affinity for irq 4341
+[  256.298774] irq=4341 affinity=2 mask=d
+<call to set_affinity>
+[  256.298787] irq=4341 affinity=d
+<ethernet on irq 4341 stops working>
 
-The Open Source Definition wrote:
+I'll keep digging, but at least it appears that the problem has been
+shrunk down to something the MSI code.
 
-> 9. License Must Not Restrict Other Software
-> 
-> The license must not place restrictions on other software that
-> is distributed along with the licensed software. For example,
-> the license must not insist that all other programs distributed
-> on the same medium must be open-source software.
-> 
-> Rationale: Distributors of open-source software have the right
-> to make their own choices about their own software.
+--D
 
-> Yes, the GPL is conformant with this requirement. Software linked
-> with GPLed libraries only inherits the GPL if it forms a single work,
-> not any software with which they are merely distributed.
+--5p8PegU4iirBW1oA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-The way I understand it, programs licensed under the GPLv3 are *not* open 
-source software. FSF is so caught up in their own agenda that they're 
-forgetting the whole point - the freedom of choice. The GPLv2 may 
-be "conformant with this requirement", but it goes against the ethics of the 
-FSF, so we can't expect each new version of the GPL to comply to this right.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Attacking this so-called "tivozation", IMO, finally draws a distinct line 
-between "free" and "open source". We, as open source developers, are not 
-politicians or philosophers; we write software, and we wish to publish our 
-code under a certain set of ten rights.
+iD8DBQFGdwlba6vRYYgWQuURAkbpAJ9KOnUROoGbl4js1TEEVClVNSLQgwCbBrEr
+kDK3xkjY0TK99GeQrD3JNUs=
+=urQw
+-----END PGP SIGNATURE-----
 
-Yes, the GPL is a legal document, but it was written in order to compliment 
-the GNU Manifesto by setting legal parameters for which they could publish 
-their code under.
-
-Until now, the GPL (v2) has had the same *legal* paramaters the open source 
-developers need in order to do the job we need it to do. We have clearly went 
-our separate ways now, so I think it's time to drop the GPL. (See my other 
-thread about writing an open source license.)
-
-Anyways, that's my $0.02.
-
--- 
-It's a commonly known fact that most intruders come in through Windows.
+--5p8PegU4iirBW1oA--
