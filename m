@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbXFRO1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763767AbXFRObg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932066AbXFRO1h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 10:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762004AbXFRO1a
+	id S1763767AbXFRObg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 10:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761776AbXFROb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 10:27:30 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:29242 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbXFRO13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 10:27:29 -0400
-Date: Mon, 18 Jun 2007 08:27:15 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
-In-reply-to: <fa.tGqwq8EAmSwz5rSn2D2AkvD+yt0@ifi.uio.no>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Arjan van de Ven <arjan@infradead.org>,
-       Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       rmk@arm.linux.org.uk
-Message-id: <46769643.7010106@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.Xa4Tv0RVV3kUIdHC69Jp/LpQPcg@ifi.uio.no>
- <fa.D5W5QzyAnzzOD5Ln35+YDQKzWsE@ifi.uio.no>
- <fa.XhJVn2uLXM0A6yjcYTr2E44DELQ@ifi.uio.no>
- <fa.tGqwq8EAmSwz5rSn2D2AkvD+yt0@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Mon, 18 Jun 2007 10:31:29 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47260 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756821AbXFROb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 10:31:28 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1803XootZ40aWsmkeW0ryjHmzkmlkn/O20w0GzKOx
+	UGiGwJCYX+WOVX
+Date: Mon, 18 Jun 2007 16:31:25 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.22-rc3 nmi watchdog hang
+Message-ID: <20070618143124.GA4508@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <20070605091151.GA18385@elte.hu> <20070605022411.f303d28b.akpm@linux-foundation.org> <20070605093349.GA24956@elte.hu> <20070605093958.GA26135@elte.hu> <20070605094246.GA27135@elte.hu> <20070605094555.GA28097@elte.hu> <20070605095025.GA29029@elte.hu> <20070605095600.GA29270@elte.hu> <20070610181016.GA15979@atjola.homenet> <20070618121122.GA14375@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070618121122.GA14375@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Mon, 2007-06-18 at 01:24 +0200, Arnd Bergmann wrote:
->> On Monday 18 June 2007, Arjan van de Ven wrote:
->>> On Sun, 2007-06-17 at 18:33 -0400, Mike Frysinger wrote:
->>>> This changes asm() to __asm__() and volatile to __volatile__ so that these
->>>> headers can be used with gcc's -std=c99.
->>> hmm but the kernel doesn't use -std=c99...
->> The byteorder headers are exported to user space through
->> include/asm-generic/Kbuild.asm, and they are used by a number
->> of other exported headers, so they should work with any
->> gcc flags that a user might want to use. 
+On 2007.06.18 14:11:22 +0200, Ingo Molnar wrote:
 > 
-> Even those headers which are exported are _still_ kernel headersÂ¹. The
-> 'caveat emptor' principle still applies to them, and we don't have to be
-> _that_ anal about it. GNU extensions (and proper C types, for that
-> matter) should be acceptable, surely?
+> * Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+> 
+> > >      [PATCH] i386: Clean up NMI watchdog code
+> > > 
+> > > Andi - just boot with nmi_watchdog=2 on a dual-core Athlon64 CPU.
+> > 
+> > I still fail to reproduce this, could you send me your config?
+> 
+> attached below. nmi_watchdog=2 still hangs as of -rc5, using the 32-bit 
+> kernel (at various places during bootup - a typical place is somewhere 
+> after cfq_init()). Changing it to nmi_watchdog=0 makes the kernel boot 
+> again.
 
-If we expect userspace apps to include them, then I would vote for no, 
-not for anything outside of #ifdef __KERNEL__ in exported headers. Keep 
-in mind also that C++ apps may need to include these as well and those 
-extensions don't always play well in C++ mode. (Last instance I ran into 
-was the ioctl argument checking macros _IOR, _IOW, etc. that create 
-non-compiling code if you use them in a C++ program.)
+Still no hang here. Just to make sure that I didn't mess the test up,
+here's what I did:
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Get pristine 2.6.22-rc5 kernel sources.
+Put your config in place as .config
+Run: make ARCH=i386 CFLAGS_KERNEL="-m32" AFLAGS_KERNEL="-m32"
+Install the kernel.
+Reboot, pass "nmi_watchdog=2" as kernel parameter.
 
+As your config is for a 64bit kernel, several config items had to be set
+manually. In one run, I accepted the default values, in the second run,
+I tried to adjust those items to match your 64bit config as good as I
+could.
+
+Anything wrong with that?
+
+Björn
