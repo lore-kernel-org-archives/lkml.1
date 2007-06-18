@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbXFRH2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbXFRHg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760687AbXFRH2o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 03:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758307AbXFRH2h
+	id S1759981AbXFRHg0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 03:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXFRHgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 03:28:37 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:26030 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757428AbXFRH2g (ORCPT
+	Mon, 18 Jun 2007 03:36:16 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:58167 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755342AbXFRHgP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 03:28:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JhYwGxB1LfnqxusqDNbCn4SAPRgjGrk7Ig0zCM2TW993TReAHGAXObfTQvtvnv8MnwtQ4/dMRaFPzgW9eNpJFYirYvz7zhbuD/E4Dw1+OFp2SijiFedxvE9CJsp7j9dLaDRAerhAfxVeZummMqekjXjb0RxZwb6MwH3zDfH82/M=
-Message-ID: <a781481a0706180028k5d44f27eld7c2d2564c42ed63@mail.gmail.com>
-Date: Mon, 18 Jun 2007 12:58:34 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Yasunori Goto" <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH] mm: More __meminit annotations.
-Cc: "Paul Mundt" <lethal@linux-sh.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <a781481a0706172357s7c473686pa41df174af01cda4@mail.gmail.com>
+	Mon, 18 Jun 2007 03:36:15 -0400
+Message-ID: <467635D8.5060202@zytor.com>
+Date: Mon, 18 Jun 2007 00:35:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mike Frysinger <vapier@gentoo.org>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de
+Subject: Re: [patch] use __asm__ and __volatile__ in asm-x86_64/msr.h
+References: <200706180209.36762.vapier@gentoo.org>
+In-Reply-To: <200706180209.36762.vapier@gentoo.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070618143943.B108.Y-GOTO@jp.fujitsu.com>
-	 <20070618055842.GA17858@linux-sh.org>
-	 <20070618151544.B10A.Y-GOTO@jp.fujitsu.com>
-	 <a781481a0706172357s7c473686pa41df174af01cda4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/18/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> Hi,
->
-> On 6/18/07, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> > > On Mon, Jun 18, 2007 at 02:49:24PM +0900, Yasunori Goto wrote:
-> > > > > -static inline unsigned long zone_absent_pages_in_node(int nid,
-> > > > > +static inline unsigned long __meminit zone_absent_pages_in_node(int nid,
-> > > > >                                           unsigned long zone_type,
-> > > > >                                           unsigned long *zholes_size)
-> > > > >  {
-> > > >
-> > > > I thought __meminit is not effective for these static functions,
-> > > > because they are inlined function. So, it depends on caller's
-> > > > defenition. Is it wrong?
-> > > >
-> > > Ah, that's possible, I hadn't considered that. It seems to be a bit more
-> > > obvious what the intention is if it's annotated, especially as this is
-> > > the convention that's used by the rest of mm/page_alloc.c. A bit more
-> > > consistent, if nothing more.
-> >
-> > I'm not sure which is intended. I found some functions define both
-> > __init and inline in kernel tree. And probably, some functions don't
-> > do it. So, it seems there is no convention.
-> >
-> > I'm Okay if you prefer both defined. :-)
->
-> Marking inline functions as __init (or __meminit etc) is quite insane,
-> IMHO. Note that all callers of the said inline function will also have to
-> be __init anyway (else modpost will barf)
+Mike Frysinger wrote:
+> Most of the macros in msr.h already use __asm__ and __volatile__, this patch
+> brings the rest into line.  This is needed since these get exported into
+> userspace (need to use strict __asm__ vs asm when gcc compiles with GNU
+> extensions turned off).
+> ---
+> diff --git a/include/asm-x86_64/msr.h b/include/asm-x86_64/msr.h
+> index d5c55b8..ed15d2b 100644
+> --- a/include/asm-x86_64/msr.h
+> +++ b/include/asm-x86_64/msr.h
+> @@ -33,7 +33,7 @@
+>  
+>  /* wrmsr with exception handling */
+>  #define wrmsr_safe(msr,a,b) ({ int ret__;			\
+> -	asm volatile("2: wrmsr ; xorl %0,%0\n"			\
+> +	__asm__ __volatile__("2: wrmsr ; xorl %0,%0\n"			\
+>  		     "1:\n\t"					\
+>  		     ".section .fixup,\"ax\"\n\t"		\
+>  		     "3:  movl %4,%0 ; jmp 1b\n\t"		\
+> @@ -50,7 +50,7 @@
+>  
+>  #define rdmsr_safe(msr,a,b) \
+>  	({ int ret__;						\
+> -	  asm volatile ("1:       rdmsr\n"			\
+> +	  __asm__ __volatile__ ("1:       rdmsr\n"			\
+>                        "2:\n"					\
+>                        ".section .fixup,\"ax\"\n"		\
+>                        "3:       movl %4,%0\n"			\
 
-Actually, modpost will _not_ complain precisely _because_ kernel
-uses always_inline so a separate body for the function will never be
-emitted at all. But all callers of said inline function will *still* need to
-be in __init anyway, else if the said inline function itself calls some
-__init function (which is likely) and the caller of the said inline function
-is not __init *then* modpost will complain.
+NAK.
 
-> so the said function will
-> have all callsites in .init.text anyway, and hence would be inlined
-> in the same section as the caller (i.e. .init.text). [Note that kernel
-> uses always_inline.]
->
-> The annotation may still be a readability aid (which is subjective so
-> one can't really comment upon), but asking gcc to put into a separate
-> specified section, a function whose body would not be emitted by gcc
-> separately at all, doesn't really make much sense syntactically _or_
-> semantically -- gcc might not warn, of course, perhaps it's one of those
-> little things it takes care of by itself silently without complaining (like
-> taking pointers to inline functions).
+This is wrong for two reasons:
 
-All this is valid, still. Perhaps sparse warns / can be made to warn about
-such cases (which may not be bugs, but weird C, at least)?
+- MSRs are not accessible in user space.
+- .section .fixup is not applicable to user space.
+
+Anything MSR-related should be protected by __KERNEL__ instead.
+
+This NAK doesn't apply to rdtsc* and rdpmc* changes, however, as those
+instructions are legitimate in userspace.
+
+	-hpa
