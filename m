@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764780AbXFRS1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763963AbXFRSdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764780AbXFRS1R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761421AbXFRS1I
+	id S1763963AbXFRSdg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759353AbXFRSd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:27:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32930 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760595AbXFRS1F (ORCPT
+	Mon, 18 Jun 2007 14:33:26 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:60227 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759273AbXFRSdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:27:05 -0400
-Date: Mon, 18 Jun 2007 11:25:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Miklos Szeredi <miklos@szeredi.hu>, cebbert@redhat.com, chris@atlee.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-In-Reply-To: <20070618180041.GA13483@elte.hu>
-Message-ID: <alpine.LFD.0.98.0706181112060.14121@woody.linux-foundation.org>
-References: <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu>
- <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
- <20070616103707.GA28096@elte.hu> <E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu>
- <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu>
- <20070618081204.GA11153@elte.hu> <alpine.LFD.0.98.0706180857120.14121@woody.linux-foundation.org>
- <20070618180041.GA13483@elte.hu>
+	Mon, 18 Jun 2007 14:33:25 -0400
+X-Greylist: delayed 1797 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 14:33:25 EDT
+Date: Mon, 18 Jun 2007 14:33:24 -0400
+To: david@lang.hm
+Cc: Brendan Conoboy <blc@redhat.com>, Neil Brown <neilb@suse.de>,
+       Wakko Warner <wakko@animx.eu.org>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+Message-ID: <20070618183324.GL10006@csclub.uwaterloo.ca>
+References: <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown> <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm> <4676BEC2.7090809@redhat.com> <Pine.LNX.4.64.0706181026170.12717@asgard.lang.hm> <20070618180327.GP10008@csclub.uwaterloo.ca> <Pine.LNX.4.64.0706181111020.12717@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706181111020.12717@asgard.lang.hm>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 18, 2007 at 11:12:45AM -0700, david@lang.hm wrote:
+> simple ultra-wide SCSI to a single controller.
 
+Hmm, isn't ultra-wide limited to 40MB/s?  Is it Ultra320 wide?  That
+could do a lot more, and 220MB/s sounds plausable for 320 scsi.
 
-On Mon, 18 Jun 2007, Ingo Molnar wrote:
-> 
-> ok. Do we have an guarantee that cpu_relax() is also an smp_rmb()?
+> I didn't realize that the rate reported by /proc/mdstat was the write 
+> speed that was takeing place, I thought it was the total data rate (reads 
+> + writes). the next time this message gets changed it would be a good 
+> thing to clarify this.
 
-The common use for cpu_relax() is basically for code that does
+Well I suppose itcould make sense to show rate of rebuild which you can
+then compare against the total size of tha raid, or you can have rate of
+write, which you then compare against the size of the drive being
+synced.  Certainly I would expect much higer speeds if it was the
+overall raid size, while the numbers seem pretty reasonable as a write
+speed.  4MB/s would take for ever if it was the overall raid resync
+speed.  I usually see SATA raid1 resync at 50 to 60MB/s or so, which
+matches the read and write speeds of the drives in the raid.
 
-	while (*ptr != val)
-		cpu_relax();
-
-so yes, an architecture that doesn't notice writes by other CPU's on its 
-own had *better* have an implied read barrier in its "cpu_relax()" 
-implementation. For example, the irq handling code does
-
-	while (desc->status & IRQ_INPROGRESS)
-		cpu_relax();
-
-which is explicitly about waiting for another CPU to get out of their 
-interrupt handler. And one classic use for it in drivers is obviously the
-
-	while (time_before (jiffies, next))
-		cpu_relax();
-
-kind of setup (and "jiffies" may well be updated on another CPU: the fact 
-that it is "volatile" is just a *compiler* barrier just like cpu_relax() 
-itself will also be, not a "smp_rmb()" kind of hardware barrier).
-
-So we could certainly add the smp_rmb() to make it more explicit, and it 
-wouldn't be *wrong*.
-
-But quite frankly, I'd personally rather not - if it were to make a 
-difference in some situation, it would just be papering over a bug in 
-cpu_relax() itself.
-
-The whole point of cpu_relax() is about busy-looping, after all. And the 
-only thing you really *can* busy-loop on in a CPU is basically a memory 
-value.
-
-So the smp_rmb() would I think distract from the issue, and at best paper 
-over some totally separate bug.
-
-> hm, this might still go into a non-nice busy loop on SMP: one cpu runs 
-> the strace, another one runs two tasks, one of which is runnable but not 
-> on the runqueue (the one we are waiting for). In that case we'd call 
-> yield() on this CPU in a loop
-
-Sure. I agree - we can get into a loop that calls yield(). But I think a 
-loop that calls yield() had better be ok - we're explicitly giving the 
-scheduler the ability to to schedule anything else that is relevant. 
-
-So I think yield()'ing is fundamentally different from busy-looping any 
-other way. 
-
-Would it be better to be able to have a wait-queue, and actually *sleep* 
-on it, and not even busy-loop using yield? Yeah, possibly. I cannot 
-personally bring myself to care about that kind of corner-case situation, 
-though.
-
-			Linus
+--
+Len Sorensen
