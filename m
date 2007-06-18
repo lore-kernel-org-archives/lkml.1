@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbXFRUqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932766AbXFRUq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932697AbXFRUqT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764795AbXFRUqH
+	id S932766AbXFRUq4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763705AbXFRUqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:46:07 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:57797 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764809AbXFRUqG (ORCPT
+	Mon, 18 Jun 2007 16:46:46 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:39723
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764677AbXFRUqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:46:06 -0400
-Date: Mon, 18 Jun 2007 15:46:01 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
-Message-ID: <20070618204601.GF5836@austin.ibm.com>
-References: <20070618175713.GD5836@austin.ibm.com> <20070618212704.394912b8@the-village.bc.nu>
+	Mon, 18 Jun 2007 16:46:45 -0400
+Date: Mon, 18 Jun 2007 13:46:15 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Anders Larsen <al@alarsen.net>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <orbqfdavpn.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706181343320.14890@asgard.lang.hm>
+References: <1182156596l.29108l.0l@ecxwww1.reanet.de>
+ <or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706181202580.12717@asgard.lang.hm>
+ <orbqfdavpn.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070618212704.394912b8@the-village.bc.nu>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 09:27:04PM +0100, Alan Cox wrote:
-> > ide_dma_timeout_retry() in ide-io.c 
-> >   prints the "hdc: DMA Timeout error" then calls
-> >   HWIF(drive)->ide_dma_end(drive);
-> >     which returns, and then calls 
-> >   hwif->INB(IDE_STATUS_REG) which is needed as an argument to ide_error()
-> > 
-> > But this hangs! -- The INB never returns.
-> > Now:  hwif->INB = ide_inb; in ide-iops.c
-> 
-> Yep and the I/O cycle never completes so the box hangs. This occurs if
-> the drive blows up and never switches IORDY to indicate completion. The
-> hpt will also do this sometimes if it gets addled by a confused drive,
-> while an intel one often won't.
+On Mon, 18 Jun 2007, Alexandre Oliva wrote:
 
-So what do you suggest? (I could buy an alternate ide controller,
-and hope that goes away, or just buy a different hard drive. But
-that's beside the point).
+> On Jun 18, 2007, david@lang.hm wrote:
+>
+>> they want to prevent anyone from modifying the credit card machine to
+>> store copies of all the card info locally.
+>
+> I see.  Thanks for enlightening me.
+>
+>> you don't really answer this issue. since these boxes are required to
+>> be sealed and physically anti-tamper, changing the ROM is not
+>> acceptable.
+>
+> Given the ROM exception in GPLv3, I guess you could seal and
+> anti-tamper it as much as you want, and leave the ROM at such a place
+> in which it's easily replaceable but with signature checking and all
+> such that the user doesn't install ROM that is not authorized by you.
 
-I can prepare a patch, but only with a lot of guidance. I can test 
-& debug, I'm highly motivated just right now ... 
+'sealed, but easy to replace ROM containing the programming' is a 
+contridiction.
 
---linas
+if a local person can easily replace the programming it doesn't meet the 
+PCI requirements and therefor you just cannot use GPLv3 code for this sort 
+of application.
+
+David Lang
