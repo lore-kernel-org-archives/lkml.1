@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932615AbXFRU50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbXFRU57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932615AbXFRU50 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761059AbXFRU5T
+	id S932905AbXFRU57 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760830AbXFRU5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:57:19 -0400
-Received: from snowcat.de ([89.31.32.98]:3110 "EHLO snowcat.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760830AbXFRU5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:57:18 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1] Char: istallion, init+locking fixes
-Organization: Disorganized
-From: Ingo Korb <ml@akana.de>
-Date: Mon, 18 Jun 2007 22:57:12 +0200
-Message-ID: <uir9l9e1j.fsf@dragon.akana.de>
-User-Agent: Gnus/5.1002 (Gnus v5.10.2) Emacs/21.3 (windows-nt)
+	Mon, 18 Jun 2007 16:57:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57818 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763449AbXFRU5s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 16:57:48 -0400
+Date: Mon, 18 Jun 2007 13:57:27 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] debugfs: create file error handling
+Message-ID: <20070618205727.GA14857@kroah.com>
+References: <20070618134132.463a6699@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:21:070618:linux-kernel@vger.kernel.org::3XKsYgpzqwi0BilF:000000000
-	0000000000000000000000002Z8L
-X-Hashcash: 1:21:070618:akpm@linux-foundation.org::+tIAPLFHxtxGFdR+:000000000000
-	0000000000000000000000008Ci5
+Content-Disposition: inline
+In-Reply-To: <20070618134132.463a6699@localhost.localdomain>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move brdp->iosize assignment in stli_initecp up a few lines to stop the
-driver from requesting an I/O region of length 0.
+On Mon, Jun 18, 2007 at 01:41:32PM -0700, Stephen Hemminger wrote:
+> Shouldn't Debugfs file routines should either return NULL or use ERR_PTR()
+> not mixed? The following patch changes the create routines to
+> propagate return values.
+> 
+> --- a/fs/debugfs/file.c	2007-05-30 10:32:32.000000000 -0700
+> +++ b/fs/debugfs/file.c	2007-06-18 13:38:01.000000000 -0700
+> @@ -83,12 +83,11 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_u8, debugfs
+>   * This function will return a pointer to a dentry if it succeeds.  This
+>   * pointer must be passed to the debugfs_remove() function when the file is
+>   * to be removed (no automatic cleanup happens if your module is unloaded,
+> - * you are responsible here.)  If an error occurs, %NULL will be returned.
+> + * you are responsible here.)
+>   *
+> - * If debugfs is not enabled in the kernel, the value -%ENODEV will be
+> - * returned.  It is not wise to check for this value, but rather, check for
+> - * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
+> - * code.
+> + * If an error occurs, an invalid pointer will be returned, use
+> + * the function IS_ERR() to check. The error code can be extracted
+> + * with PTR_ERR().
 
-Remove spin_lock_irqsave/spin_unlock_irqrestore from __stli_sendcmd as
-all users of that function take the lock already.
+No, you are forgetting the issue when debugfs is not enabled in the
+kernel.
 
-Signed-off-by: Ingo Korb <ml@akana.de>
----
-One thing I dislike about this driver: It polls its cards every jiffy to
-look for new data. The cards are able to use interrupts (some of the
-drivers for other OSes use them), but as far as I know there is no open
-documentation. Unfortunately the DOS driver (probably easiest to
-analyze) also uses polling. =(
+The goal is not to return -ENODEV when it's not configured in, to make
+it "simpler" to handle that case.
 
+Check the lkml archives for previous times this has come up and example
+code to use to handle the error cases properly.
 
-diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
-index 7b279d1..0bc1c37 100644
---- a/drivers/char/istallion.c
-+++ b/drivers/char/istallion.c
-@@ -2168,8 +2168,6 @@ static void __stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigne
- 	unsigned char __iomem *bits;
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&brd_lock, flags);
--
- 	if (test_bit(ST_CMDING, &portp->state)) {
- 		printk(KERN_ERR "STALLION: command already busy, cmd=%x!\n",
- 				(int) cmd);
-@@ -2194,7 +2192,6 @@ static void __stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigne
- 	writeb(readb(bits) | portp->portbit, bits);
- 	set_bit(ST_CMDING, &portp->state);
- 	EBRDDISABLE(brdp);
--	spin_unlock_irqrestore(&brd_lock, flags);
- }
- 
- static void stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigned long cmd, void *arg, int size, int copyback)
-@@ -3218,13 +3215,13 @@ static int stli_initecp(struct stlibrd *brdp)
- 		goto err;
- 	}
- 
-+	brdp->iosize = ECP_IOSIZE;
-+
- 	if (!request_region(brdp->iobase, brdp->iosize, "istallion")) {
- 		retval = -EIO;
- 		goto err;
- 	}
- 
--	brdp->iosize = ECP_IOSIZE;
--
- /*
-  *	Based on the specific board type setup the common vars to access
-  *	and enable shared memory. Set all board specific information now
+I agree it isn't the "simplest" way, and if you can suggest something
+that is easier, and allow for the code to "easily" determine the option
+isn't built in that would be great.
 
+thanks,
+
+greg k-h
