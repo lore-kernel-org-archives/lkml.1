@@ -1,120 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762985AbXFRKHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763130AbXFRKIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762985AbXFRKHt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 06:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761474AbXFRJ7m
+	id S1763130AbXFRKIF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 06:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761491AbXFRJ7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:59:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58638 "EHLO
+	Mon, 18 Jun 2007 05:59:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58632 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760076AbXFRJ7S (ORCPT
+	with ESMTP id S1760045AbXFRJ7R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 05:59:18 -0400
-Message-Id: <20070618095917.475086785@sgi.com>
+	Mon, 18 Jun 2007 05:59:17 -0400
+Message-Id: <20070618095917.242949306@sgi.com>
 References: <20070618095838.238615343@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 18 Jun 2007 02:58:55 -0700
+Date: Mon, 18 Jun 2007 02:58:54 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: suresh.b.siddha@intel.com
-Subject: [patch 17/26] Slab defragmentation: Support inode defragmentation for xfs
-Content-Disposition: inline; filename=slub_defrag_fs_xfs
+Subject: [patch 16/26] Slab defragmentation: Support defragmentation for extX filesystem inodes
+Content-Disposition: inline; filename=slub_defrag_fs_ext234
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-Add slab defrag support.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/xfs/linux-2.6/kmem.h      |    5 +++--
- fs/xfs/linux-2.6/xfs_buf.c   |    2 +-
- fs/xfs/linux-2.6/xfs_super.c |   13 ++++++++++++-
- fs/xfs/xfs_vfsops.c          |    6 +++---
- 4 files changed, 19 insertions(+), 7 deletions(-)
+ fs/ext2/super.c |   16 ++++++++++++++--
+ fs/ext3/super.c |   14 +++++++++++++-
+ fs/ext4/super.c |   14 +++++++++++++-
+ 3 files changed, 40 insertions(+), 4 deletions(-)
 
-Index: slub/fs/xfs/linux-2.6/kmem.h
+Index: slub/fs/ext2/super.c
 ===================================================================
---- slub.orig/fs/xfs/linux-2.6/kmem.h	2007-06-06 13:08:09.000000000 -0700
-+++ slub/fs/xfs/linux-2.6/kmem.h	2007-06-06 13:32:58.000000000 -0700
-@@ -79,9 +79,10 @@ kmem_zone_init(int size, char *zone_name
- 
- static inline kmem_zone_t *
- kmem_zone_init_flags(int size, char *zone_name, unsigned long flags,
--		     void (*construct)(void *, kmem_zone_t *, unsigned long))
-+		     void (*construct)(void *, kmem_zone_t *, unsigned long),
-+		     const struct kmem_cache_ops *ops)
- {
--	return kmem_cache_create(zone_name, size, 0, flags, construct, NULL);
-+	return kmem_cache_create(zone_name, size, 0, flags, construct, ops);
+--- slub.orig/fs/ext2/super.c	2007-06-07 14:09:36.000000000 -0700
++++ slub/fs/ext2/super.c	2007-06-07 14:28:47.000000000 -0700
+@@ -168,14 +168,26 @@ static void init_once(void * foo, struct
+ 	mutex_init(&ei->truncate_mutex);
+ 	inode_init_once(&ei->vfs_inode);
  }
- 
- static inline void
-Index: slub/fs/xfs/linux-2.6/xfs_buf.c
-===================================================================
---- slub.orig/fs/xfs/linux-2.6/xfs_buf.c	2007-06-06 13:08:09.000000000 -0700
-+++ slub/fs/xfs/linux-2.6/xfs_buf.c	2007-06-06 13:32:58.000000000 -0700
-@@ -1834,7 +1834,7 @@ xfs_buf_init(void)
- #endif
- 
- 	xfs_buf_zone = kmem_zone_init_flags(sizeof(xfs_buf_t), "xfs_buf",
--						KM_ZONE_HWALIGN, NULL);
-+						KM_ZONE_HWALIGN, NULL, NULL);
- 	if (!xfs_buf_zone)
- 		goto out_free_trace_buf;
- 
-Index: slub/fs/xfs/linux-2.6/xfs_super.c
-===================================================================
---- slub.orig/fs/xfs/linux-2.6/xfs_super.c	2007-06-06 13:08:09.000000000 -0700
-+++ slub/fs/xfs/linux-2.6/xfs_super.c	2007-06-06 13:32:58.000000000 -0700
-@@ -355,13 +355,24 @@ xfs_fs_inode_init_once(
- 	inode_init_once(vn_to_inode((bhv_vnode_t *)vnode));
- }
- 
-+static void *xfs_get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	return fs_get_inodes(s, nr, v, offsetof(bhv_vnode_t, v_inode));
-+};
+- 
 +
-+static struct kmem_cache_ops xfs_kmem_cache_ops = {
-+	.get = xfs_get_inodes,
++static void *ext2_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext2_inode_info, vfs_inode));
++}
++
++static struct kmem_cache_ops ext2_kmem_cache_ops = {
++	.get = ext2_get_inodes,
 +	.kick = kick_inodes
 +};
 +
- STATIC int
- xfs_init_zones(void)
+ static int init_inodecache(void)
  {
- 	xfs_vnode_zone = kmem_zone_init_flags(sizeof(bhv_vnode_t), "xfs_vnode",
- 					KM_ZONE_HWALIGN | KM_ZONE_RECLAIM |
- 					KM_ZONE_SPREAD,
--					xfs_fs_inode_init_once);
-+					xfs_fs_inode_init_once,
-+					&xfs_kmem_cache_ops);
- 	if (!xfs_vnode_zone)
- 		goto out;
- 
-Index: slub/fs/xfs/xfs_vfsops.c
+ 	ext2_inode_cachep = kmem_cache_create("ext2_inode_cache",
+ 					     sizeof(struct ext2_inode_info),
+ 					     0, (SLAB_RECLAIM_ACCOUNT|
+ 						SLAB_MEM_SPREAD),
+-					     init_once, NULL);
++					     init_once,
++					     &ext2_kmem_cache_ops);
+ 	if (ext2_inode_cachep == NULL)
+ 		return -ENOMEM;
+ 	return 0;
+Index: slub/fs/ext3/super.c
 ===================================================================
---- slub.orig/fs/xfs/xfs_vfsops.c	2007-06-06 15:19:52.000000000 -0700
-+++ slub/fs/xfs/xfs_vfsops.c	2007-06-06 15:20:36.000000000 -0700
-@@ -109,13 +109,13 @@ xfs_init(void)
- 	xfs_inode_zone =
- 		kmem_zone_init_flags(sizeof(xfs_inode_t), "xfs_inode",
- 					KM_ZONE_HWALIGN | KM_ZONE_RECLAIM |
--					KM_ZONE_SPREAD, NULL);
-+					KM_ZONE_SPREAD, NULL, NULL);
- 	xfs_ili_zone =
- 		kmem_zone_init_flags(sizeof(xfs_inode_log_item_t), "xfs_ili",
--					KM_ZONE_SPREAD, NULL);
-+					KM_ZONE_SPREAD, NULL, NULL);
- 	xfs_chashlist_zone =
- 		kmem_zone_init_flags(sizeof(xfs_chashlist_t), "xfs_chashlist",
--					KM_ZONE_SPREAD, NULL);
-+					KM_ZONE_SPREAD, NULL, NULL);
+--- slub.orig/fs/ext3/super.c	2007-06-07 14:09:36.000000000 -0700
++++ slub/fs/ext3/super.c	2007-06-07 14:28:47.000000000 -0700
+@@ -483,13 +483,25 @@ static void init_once(void * foo, struct
+ 	inode_init_once(&ei->vfs_inode);
+ }
  
- 	/*
- 	 * Allocate global trace buffers.
++static void *ext3_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext3_inode_info, vfs_inode));
++}
++
++static struct kmem_cache_ops ext3_kmem_cache_ops = {
++	.get = ext3_get_inodes,
++	.kick = kick_inodes
++};
++
+ static int init_inodecache(void)
+ {
+ 	ext3_inode_cachep = kmem_cache_create("ext3_inode_cache",
+ 					     sizeof(struct ext3_inode_info),
+ 					     0, (SLAB_RECLAIM_ACCOUNT|
+ 						SLAB_MEM_SPREAD),
+-					     init_once, NULL);
++					     init_once,
++					     &ext3_kmem_cache_ops);
+ 	if (ext3_inode_cachep == NULL)
+ 		return -ENOMEM;
+ 	return 0;
+Index: slub/fs/ext4/super.c
+===================================================================
+--- slub.orig/fs/ext4/super.c	2007-06-07 14:09:36.000000000 -0700
++++ slub/fs/ext4/super.c	2007-06-07 14:29:49.000000000 -0700
+@@ -543,13 +543,25 @@ static void init_once(void * foo, struct
+ 	inode_init_once(&ei->vfs_inode);
+ }
+ 
++static void *ext4_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext4_inode_info, vfs_inode));
++}
++
++static struct kmem_cache_ops ext4_kmem_cache_ops = {
++	.get = ext4_get_inodes,
++	.kick = kick_inodes
++};
++
+ static int init_inodecache(void)
+ {
+ 	ext4_inode_cachep = kmem_cache_create("ext4_inode_cache",
+ 					     sizeof(struct ext4_inode_info),
+ 					     0, (SLAB_RECLAIM_ACCOUNT|
+ 						SLAB_MEM_SPREAD),
+-					     init_once, NULL);
++					     init_once,
++					     &ext4_kmem_cache_ops);
+ 	if (ext4_inode_cachep == NULL)
+ 		return -ENOMEM;
+ 	return 0;
 
 -- 
