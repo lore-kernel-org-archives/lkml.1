@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbXFRANm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761092AbXFRAQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761413AbXFRANm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 20:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760891AbXFRANa
+	id S1761092AbXFRAQo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 20:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbXFRAQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 20:13:30 -0400
-Received: from alnrmhc15.comcast.net ([206.18.177.55]:51520 "EHLO
-	alnrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760381AbXFRAN3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 20:13:29 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Jun 2007 20:13:29 EDT
-Subject: Re: And now for something _totally_ different: Linux v2.6.22-rc5
-From: Nicholas Miell <nmiell@comcast.net>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
-References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
-	 <1182064500.2798.6.camel@entropy>
-	 <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com>
-	 <1182108399.3794.4.camel@entropy>
-	 <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
-Content-Type: text/plain
-Date: Sun, 17 Jun 2007 17:08:23 -0700
-Message-Id: <1182125303.3794.8.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.0.njm.1) 
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Jun 2007 20:16:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57469 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753805AbXFRAQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 20:16:36 -0400
+Date: Sun, 17 Jun 2007 20:16:27 -0400
+From: Dave Jones <davej@redhat.com>
+To: Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+Message-ID: <20070618001627.GA18598@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com
+References: <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com> <20070617223649.GA31587@alinoe.com> <20070617224918.GC12483@redhat.com> <20070618000643.GA1375@alinoe.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070618000643.GA1375@alinoe.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-17 at 16:49 -0700, Davide Libenzi wrote:
-> On Sun, 17 Jun 2007, Nicholas Miell wrote:
-> 
-> > On Sun, 2007-06-17 at 10:01 -0700, Davide Libenzi wrote:
-> > > On Sun, 17 Jun 2007, Nicholas Miell wrote:
-> > > 
-> > > > On Sat, 2007-06-16 at 20:33 -0700, Linus Torvalds wrote:
-> > > > > In a stunning turn of events, I've actually been able to make another -rc 
-> > > > > release despite all the discussion (*cough*flaming*cough*) about other 
-> > > > > issues, and we now have a brand-spanking-new Linux 2.6.22-rc5 release 
-> > > > > out there!
-> > > > > 
-> > > > 
-> > > > signalfd still has the broken behavior w.r.t. signal delivery to
-> > > > threads.
-> > > > 
-> > > > Is this going to get fixed before 2.6.22 proper is released, or should
-> > > > it just be disabled entirely so no userspace apps grow to depend on
-> > > > current wrong behavior?
-> > > 
-> > > At the moment, with Ben's patch applied, signalfd can see all group-sent 
-> > > signals, and locally-directed thread signals.
-> > 
-> > But there's still no way for multiple threads to read from a single
-> > signalfd and get their own thread-specific signals in addition to
-> > process-wide signals, right? I think this was agreed to be the least
-> > surprising behavior.
-> 
-> Multiple threads can wait on the signalfd. Each one will dequeue either 
-> its own private signals (tsk->pending) or the process shared ones 
-> (tsk->signal->shared_pending). This will be the behaviour once Ben's patch 
-> is applied.
-> 
+On Mon, Jun 18, 2007 at 02:06:43AM +0200, Carlo Wood wrote:
+ > On Sun, Jun 17, 2007 at 06:49:18PM -0400, Dave Jones wrote:
+ > > ok, then you must have CONFIG_AGP=y
+ > 
+ > I do - not voluntary however. For some mysterious reason I am
+ > unable to set it to n or m.
 
-Ah, ok, that's great.
+You likely have CONFIG_IOMMU set. This makes AGP non-optional.
 
-I didn't see anything like that in linux.git, missed Ben's patch to the
-list, and mixed up your description with the original TIF_SIGPENDING
-work.
+ > I am also not able to set CONFIG_AGP_INTEL
+ > to n, only to y or m.
+ > (using make 'menuconfig' for example).
 
-Sorry for the confusion.
+Can't explain that one.
+
+ > >  > Hence, in the case that the kernel works, intel-agp is loaded
+ > >  > WITHOUT printing this Detected line
+ > > 
+ > > That doesn't make much sense.  The hardware doesn't change between
+ > > a working & not-working kernel, and somehow the PCI probing fails.
+ > > Hmm, do you have CONFIG_EDAC set ?
+ > 
+ > CONFIG_EDAC=m
+ > 
+ > $ lsmod | grep edac
+
+ok, red herring.
+
+ > > There's an outstanding bug (well, lack of feature) , where it claims
+ > > the PCI device before AGP gets a chance to.
+ > > This is unrelated to your hang however, but would at least explain
+ > > the inconsistent probing.
+ > > 
+ > >  > Perhaps my "solution" is to remove this module completely?
+ > >  > I don't seem to need it.
+ > > 
+ > > It's needed only for 3d,
+ > 
+ > Nope - I just played UT2004 without problems, and without intel-agp loaded.
+
+Using the nvidia driver? It has its own built-in AGP support which will
+get used if the kernel AGP support is missing.
+
+ > > but it'd be good to figure out why its so
+ > > broken on your system, even if you don't need it.
+ > 
+ > Please tell me what to do / try.
+ > I'm an experienced coder - but I never really played with the
+ > kernel before - so you'll have to spell out how to turn on debugging etc.
+
+Right now, I'm at a loss to explain the corruption, so it's
+difficult to suggest what to try.
+
+	Dave
 
 -- 
-Nicholas Miell <nmiell@comcast.net>
-
+http://www.codemonkey.org.uk
