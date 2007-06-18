@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbXFREtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbXFREvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbXFREtp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 00:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbXFREti
+	id S1755176AbXFREvs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 00:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbXFREvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 00:49:38 -0400
-Received: from holomorphy.com ([66.93.40.71]:42709 "EHLO holomorphy.com"
+	Mon, 18 Jun 2007 00:51:41 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47934 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752514AbXFREti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 00:49:38 -0400
-Date: Sun, 17 Jun 2007 21:50:45 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hch@infradead.org
-Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large Blocksize support
-Message-ID: <20070618045045.GH6909@holomorphy.com>
-References: <20070614193839.878721298@sgi.com> <20070614130645.cabdff1b.akpm@linux-foundation.org> <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com> <20070614143248.736312f8.akpm@linux-foundation.org> <1182043500.2743.7.camel@laptopd505.fenrus.org> <20070617050255.GM11166@waste.org> <Pine.LNX.4.64.0706171907360.26680@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
+	id S1750849AbXFREvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 00:51:40 -0400
+Date: Mon, 18 Jun 2007 06:52:44 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] arch/i386/video/fbdev.c should #include <asm/fb.h>
+Message-ID: <20070618045244.GA20224@uranus.ravnborg.org>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070617234257.GE3588@stusta.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706171907360.26680@schroedinger.engr.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070617234257.GE3588@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Jun 2007, Matt Mackall wrote:
->> Is it? Last I looked it had reverted to handing out reverse-contiguous
->> pages.
+On Mon, Jun 18, 2007 at 01:42:57AM +0200, Adrian Bunk wrote:
+> Every file should include the headers containing the prototypes for
+> it's global functions.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> --- linux-2.6.22-rc4-mm2/arch/i386/video/fbdev.c.old	2007-06-17 15:48:25.000000000 +0200
+> +++ linux-2.6.22-rc4-mm2/arch/i386/video/fbdev.c	2007-06-17 15:48:53.000000000 +0200
+> @@ -11,6 +11,8 @@
+>  #include <linux/fb.h>
+>  #include <linux/pci.h>
+>  
+> +#include <asm/fb.h>
+> +
 
-On Sun, Jun 17, 2007 at 07:08:41PM -0700, Christoph Lameter wrote:
-> I thought that was fixed? Bill Irwin was working on it.
-> But the contiguous pages usually only work shortly after boot. After 
-> awhile memory gets sufficiently scrambled that the coalescing in the I/O 
-> layer becomes ineffective.
+1) Why not include asm/fb.h from linux/fb.h?
+2) Is asm/fb.h an -mm thing? I do not have it in my linus tree.
 
-It fell off the bottom of my priority queue, sorry.
+Note: Ketchup is broken on my ubuntu box so no -mm right now.
 
-
--- wli
+	Sam
