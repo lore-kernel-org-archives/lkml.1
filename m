@@ -1,35 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762618AbXFRLlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762909AbXFRLmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762618AbXFRLlw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 07:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761216AbXFRLln
+	id S1762909AbXFRLmh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 07:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761278AbXFRLm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 07:41:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52419 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761124AbXFRLlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 07:41:42 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070615214520.GM3588@stusta.de>
-References: <20070615214520.GM3588@stusta.de>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] net/rxrpc/ar-output.c: remove dead code
-X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
-Date: Mon, 18 Jun 2007 12:40:02 +0100
-Message-ID: <22946.1182166802@redhat.com>
+	Mon, 18 Jun 2007 07:42:28 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40746 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754212AbXFRLm1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 07:42:27 -0400
+Date: Mon, 18 Jun 2007 12:47:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: davem@davemloft.net, akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix race in AF_UNIX
+Message-ID: <20070618124721.56411b93@the-village.bc.nu>
+In-Reply-To: <E1I0DYW-0006uZ-00@dorka.pomaz.szeredi.hu>
+References: <E1I0BzQ-0006gZ-00@dorka.pomaz.szeredi.hu>
+	<20070618.005711.21897961.davem@davemloft.net>
+	<E1I0CTH-0006k3-00@dorka.pomaz.szeredi.hu>
+	<20070618.021813.105401188.davem@davemloft.net>
+	<E1I0DYW-0006uZ-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> wrote:
+> No, correctness always trumps performance.  Lost packets on an AF_UNIX
+> socket are _unexceptable_, and this is definitely not a theoretical
+> problem.
 
-> This patch removes dead code spotted by the Coverity checker.
+If its so unacceptable why has nobody noticed until now - its a bug
+clearly, it needs fixing clearly, but unless you can produce some kind of
+exploit from it (eg a DoS attack or kernel memory leak exploiter) it
+doesn't appear to be that serious.
 
-This is the wrong solution.  'copied' should be updated.
+> And BTW my second patch does _not_ have the performance problems you
+> are arguing about, it's just plain ugly.  But hey, if you can't live
+> with ugly code, go and fix it.
 
-David
+If you put ugly code into the kernel you pay for maintaining it for years
+to come. If you get it right then you don't
+
+> Do you want me to send the patch to Andrew instead?  His attitude
+> towards bugfixes is rather better ;)
+
+And it'll get NAKked and binned. DaveM is (as happens sometimes ;)) right
+to insist on the code being clean and efficient.
+
+Alan
