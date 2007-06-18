@@ -1,155 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbXFRHue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759098AbXFRHxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758924AbXFRHue (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 03:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbXFRHuX
+	id S1759098AbXFRHxT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 03:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbXFRHxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 03:50:23 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:45902 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbXFRHuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 03:50:21 -0400
-To: davem@davemloft.net
-CC: viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu> (message from Miklos
-	Szeredi on Mon, 11 Jun 2007 11:57:27 +0200)
-Subject: Re: [PATCH] fix race in AF_UNIX
-References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
-	<20070605.224128.104032917.davem@davemloft.net>
-	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu> <20070607.184731.10907840.davem@davemloft.net> <E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
-Message-Id: <E1I0BzQ-0006gZ-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 18 Jun 2007 09:49:32 +0200
+	Mon, 18 Jun 2007 03:53:07 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41994 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751703AbXFRHxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 03:53:06 -0400
+Date: Mon, 18 Jun 2007 09:54:10 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] make hdrscheck.sh force __asm__ in exported headers
+Message-ID: <20070618075410.GC21222@uranus.ravnborg.org>
+References: <200706171854.24763.vapier@gentoo.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706171854.24763.vapier@gentoo.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ping Dave,
+On Sun, Jun 17, 2007 at 06:54:24PM -0400, Mike Frysinger wrote:
+> This updates scripts/hdrschecks.sh by grepping for asm() constructs and
+> rejecting them in favor of __asm__() in exported headers.
 
-Since there doesn't seem to be any new ideas forthcoming, can we
-please decide on either one of my two sumbitted patches?
+Hi Mike.
 
-Thanks,
-Miklos
+I have a new version of hdrcheck in works written in perl
+and a bit faster too.
+I hope to finish it off this weekend and sent it for review.
+Could I ask you to pick it up and add the below test to that version
+when it hits mainline - assuming that the other patches has hit mainline too.
+I do not want this check before we are clean so we basically use it to
+check that noone introduce a bug.
 
-> [CC'd Al Viro and Alan Cox, restored patch]
-> 
-> > > There are races involving the garbage collector, that can throw away
-> > > perfectly good packets with AF_UNIX sockets in them.
-> > > 
-> > > The problems arise when a socket goes from installed to in-flight or
-> > > vice versa during garbage collection.  Since gc is done with a
-> > > spinlock held, this only shows up on SMP.
-> > > 
-> > > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > I'm going to hold off on this one for now.
-> > 
-> > Holding all of the read locks kind of defeats the purpose of using
-> > the per-socket lock.
-> > 
-> > Can't you just lock purely around the receive queue operation?
-> 
-> That's already protected by the receive queue spinlock.  The race
-> however happens _between_ pushing the root set and marking of the
-> in-flight but reachable sockets.
-> 
-> If in that space any of the AF_UNIX sockets goes from in-flight to
-> installed into a file descriptor, the garbage collector can miss it.
-> If we want to protect against this using unix_sk(s)->readlock, then we
-> have to hold all of them for the duration of the marking.
-> 
-> Al, Alan, you have more experience with this piece of code.  Do you
-> have better ideas about how to fix this?
-> 
-> Thanks,
-> Miklos
-> 
-> > Index: linux-2.6.22-rc2/net/unix/garbage.c
-> > ===================================================================
-> > --- linux-2.6.22-rc2.orig/net/unix/garbage.c	2007-06-03 23:58:11.000000000 +0200
-> > +++ linux-2.6.22-rc2/net/unix/garbage.c	2007-06-06 09:48:36.000000000 +0200
-> > @@ -186,7 +186,21 @@ void unix_gc(void)
-> >  
-> >  	forall_unix_sockets(i, s)
-> >  	{
-> > -		unix_sk(s)->gc_tree = GC_ORPHAN;
-> > +		struct unix_sock *u = unix_sk(s);
-> > +
-> > +		u->gc_tree = GC_ORPHAN;
-> > +
-> > +		/*
-> > +		 * Hold ->readlock to protect against sockets going from
-> > +		 * in-flight to installed
-> > +		 *
-> > +		 * Can't sleep on this, because
-> > +		 *   a) we are under spinlock
-> > +		 *   b) skb_recv_datagram() could be waiting for a packet that
-> > +		 *      is to be sent by this thread
-> > +		 */
-> > +		if (!mutex_trylock(&u->readlock))
-> > +			goto lock_failed;
-> >  	}
-> >  	/*
-> >  	 *	Everything is now marked
-> > @@ -207,8 +221,6 @@ void unix_gc(void)
-> >  
-> >  	forall_unix_sockets(i, s)
-> >  	{
-> > -		int open_count = 0;
-> > -
-> >  		/*
-> >  		 *	If all instances of the descriptor are not
-> >  		 *	in flight we are in use.
-> > @@ -218,10 +230,20 @@ void unix_gc(void)
-> >  		 *	In this case (see unix_create1()) we set artificial
-> >  		 *	negative inflight counter to close race window.
-> >  		 *	It is trick of course and dirty one.
-> > +		 *
-> > +		 *	Get the inflight counter first, then the open
-> > +		 *	counter.  This avoids problems if racing with
-> > +		 *	sendmsg
-> > +		 *
-> > +		 *	If just created socket is not yet attached to
-> > +		 *	a file descriptor, assume open_count of 1
-> >  		 */
-> > +		int inflight_count = atomic_read(&unix_sk(s)->inflight);
-> > +		int open_count = 1;
-> > +
-> >  		if (s->sk_socket && s->sk_socket->file)
-> >  			open_count = file_count(s->sk_socket->file);
-> > -		if (open_count > atomic_read(&unix_sk(s)->inflight))
-> > +		if (open_count > inflight_count)
-> >  			maybe_unmark_and_push(s);
-> >  	}
-> >  
-> > @@ -300,6 +322,7 @@ void unix_gc(void)
-> >  			spin_unlock(&s->sk_receive_queue.lock);
-> >  		}
-> >  		u->gc_tree = GC_ORPHAN;
-> > +		mutex_unlock(&u->readlock);
-> >  	}
-> >  	spin_unlock(&unix_table_lock);
-> >  
-> > @@ -309,4 +332,19 @@ void unix_gc(void)
-> >  
-> >  	__skb_queue_purge(&hitlist);
-> >  	mutex_unlock(&unix_gc_sem);
-> > +	return;
-> > +
-> > + lock_failed:
-> > +	{
-> > +		struct sock *s1;
-> > +		forall_unix_sockets(i, s1) {
-> > +			if (s1 == s) {
-> > +				spin_unlock(&unix_table_lock);
-> > +				mutex_unlock(&unix_gc_sem);
-> > +				return;
-> > +			}
-> > +			mutex_unlock(&unix_sk(s1)->readlock);
-> > +		}
-> > +		BUG();
-> > +	}
-> >  }
-> > 
+And next time please put some effort in the _why_ part more than the
+_how_ part of the changelog.
+
+	Sam
