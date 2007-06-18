@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbXFRABg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbXFRAGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbXFRABg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 20:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbXFRAB2
+	id S1759614AbXFRAGx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 20:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbXFRAGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 20:01:28 -0400
-Received: from mail.suse.de ([195.135.220.2]:34575 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751108AbXFRAB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 20:01:28 -0400
-Date: Mon, 18 Jun 2007 02:01:14 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Chris Adams <cmadams@hiwaay.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070618000113.GB4542@v2.random>
-References: <fa.toMqQ3LqoQn6Xh51bVordO8WMVc@ifi.uio.no> <fa.EmnDne9QndTLcw7NAzc83tWplMI@ifi.uio.no> <fa.G+0vGcF8U8pcd6ozkdhKGsQ/dDs@ifi.uio.no> <fa.8bXRW7nY7z5eXVZxCxUgra+gbb8@ifi.uio.no> <fa.qtDtq+aSKlNweTqHtKcy/Gj5PXg@ifi.uio.no> <20070617215840.GA1217855@hiwaay.net>
+	Sun, 17 Jun 2007 20:06:46 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:55017 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753715AbXFRAGp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 20:06:45 -0400
+Date: Mon, 18 Jun 2007 02:06:43 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+Message-ID: <20070618000643.GA1375@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com
+References: <20070613162925.GG3875@redhat.com> <20070614011506.GA30566@alinoe.com> <20070617162235.GA5486@alinoe.com> <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com> <20070617223649.GA31587@alinoe.com> <20070617224918.GC12483@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070617215840.GA1217855@hiwaay.net>
+In-Reply-To: <20070617224918.GC12483@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 17, 2007 at 04:58:40PM -0500, Chris Adams wrote:
-> The reason is that if there ever is a security hole in the routing
-> engine software (FreeBSD kernel, OpenSSH, etc.), it would be a really
-> bad thing if crackers could load arbitrary software (rootkits, spam
-> software, etc.) directly on Internet core routers.  If you think spam
-> zombies on cable modems or DSL are bad, imagine them on 100 megabit
-> links!
+On Sun, Jun 17, 2007 at 06:49:18PM -0400, Dave Jones wrote:
+> ok, then you must have CONFIG_AGP=y
 
-Not sure if it's a good example, keep in mind that at the first
-exploitable software bug any hardware DRM breaks apart.
+I do - not voluntary however. For some mysterious reason I am
+unable to set it to n or m. I am also not able to set CONFIG_AGP_INTEL
+to n, only to y or m.
+(using make 'menuconfig' for example).
 
-But since you made a BSD-embedded example, this shows how the only
-really important thing is that by using linux instead of BSD, they
-can't make huge improvements or important security bugfixes to the
-routing engine, without us being able to incorporate them in our "home
-firewalls", that's the whole difference with BSD and it explains the
-spirit of the gpl pretty well and in the end why linux by definition
-can receive more contributions and in turn be technically
-superior. Whatever the vendor does with the gpl code is generally up
-to him, and if it uses the closed approach it'll allow somebody else
-to sell a "open" router (potentially at an higher price). Economy
-101. The worry that nobody will step in and sell an "open" equivalent
-is a red herring. Infact I wouldn't be so certain that openmoko would
-exist if the current linux cellphones would be already totally open!
-Now I know this all probably sounds boring talk, but I think it's much
-closer to reality than the prospect of a trusted computing and/or DRM
-apocalypse.
+>  > $ find /lib/modules -name 'agpgart.ko'
+>  > $ /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64 -name '*agp*.ko'
+>  > /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/sis-agp.ko
+>  > /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/intel-agp.ko
+>  > /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/via-agp.ko
+>  > 
+>  > 2)
+>  > 
+>  > $ strings /lib/modules/2.6.22-rc5-master-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64/kernel/drivers/char/agp/intel-agp.ko | grep 'agpgart: Detected an Intel'
+>  > <6>agpgart: Detected an Intel %s Chipset.
+>  > 
+>  > Hence, in the case that the kernel works, intel-agp is loaded
+>  > WITHOUT printing this Detected line
+> 
+> That doesn't make much sense.  The hardware doesn't change between
+> a working & not-working kernel, and somehow the PCI probing fails.
+> Hmm, do you have CONFIG_EDAC set ?
+
+CONFIG_EDAC=m
+
+$ lsmod | grep edac
+$
+
+> There's an outstanding bug (well, lack of feature) , where it claims
+> the PCI device before AGP gets a chance to.
+> This is unrelated to your hang however, but would at least explain
+> the inconsistent probing.
+> 
+>  > Perhaps my "solution" is to remove this module completely?
+>  > I don't seem to need it.
+> 
+> It's needed only for 3d,
+
+Nope - I just played UT2004 without problems, and without intel-agp loaded.
+
+> but it'd be good to figure out why its so
+> broken on your system, even if you don't need it.
+
+Please tell me what to do / try.
+I'm an experienced coder - but I never really played with the
+kernel before - so you'll have to spell out how to turn on debugging etc.
+
+-- 
+Carlo Wood <carlo@alinoe.com>
