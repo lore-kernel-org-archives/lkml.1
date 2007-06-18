@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764035AbXFROpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764063AbXFROpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764035AbXFROpe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 10:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763074AbXFROpY
+	id S1764063AbXFROpp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 10:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763316AbXFROp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 10:45:24 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:30250 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763059AbXFROpV (ORCPT
+	Mon, 18 Jun 2007 10:45:27 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:53052 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763118AbXFROp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 10:45:21 -0400
-Date: Mon, 18 Jun 2007 10:41:21 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Message-ID: <20070618144121.GD2061@think.oraclecorp.com>
-References: <20070612161029.GB28279@think.oraclecorp.com>
+	Mon, 18 Jun 2007 10:45:26 -0400
+Date: Mon, 18 Jun 2007 16:45:34 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Ville =?utf-8?B?U3lyasOkbMOk?= <syrjala@sci.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Antonino Daplas <adaplas@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: mach64 breakage in 2.6.22
+Message-ID: <20070618144534.GA18150@aepfle.de>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <20070614082528.GA10284@aepfle.de> <20070614173623.GA7950@sci.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070612161029.GB28279@think.oraclecorp.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20070614173623.GA7950@sci.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 12, 2007 at 12:10:29PM -0400, Chris Mason wrote:
-> Hello everyone,
+On Thu, Jun 14, Ville Syrjälä wrote:
+
+> On Thu, Jun 14, 2007 at 10:25:28AM +0200, Olaf Hering wrote:
+> > On Sat, May 05, Andrew Morton wrote:
+> > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+> > 
+> > > +atyfb-reorganize-clock-init.patch
+> > 
+> > This change breaks the display on an ibook1 with 800x600 lcd.
 > 
-> After the last FS summit, I started working on a new filesystem that
-> maintains checksums of all file data and metadata.  Many thanks to Zach
-> Brown for his ideas, and to Dave Chinner for his help on 
-> benchmarking analysis.
+> Are you sure?
 
-Thanks to everyone that tried out btrfs.  Most of those that did managed
-to hit problems with apps that did writes via mmap.  So, I added a
-page_mkwrite call and worked out cow safe mmap writes.  
+Yes.
 
-Terje R�sten sent along a btrfsprogs patch so that it compiles properly
-on FC7 (thanks!).
+> Please try this patch:
 
-I'll have a site up on oss.oracle.com/projects with mailing lists and
-links to my HG trees shortly.  Until then:
+>  	if (machine_is_compatible("PowerBook2,1")) {
+>  		par->pll_limits.mclk = 70;
+> -		par->pll_limits.xclk = 53;
+> +		par->pll_limits.xclk = 106;
 
-http://oss.oracle.com/~mason/btrfs/ has the latest tar balls.
-
--chris
+This oneliner fixes it for me.
