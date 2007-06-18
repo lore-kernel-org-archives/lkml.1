@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbXFRKbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760776AbXFRKes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761589AbXFRKbe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 06:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbXFRKb0
+	id S1760776AbXFRKes (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 06:34:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757562AbXFRKem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 06:31:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60750 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752924AbXFRKb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 06:31:26 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18Ei5EnVqMER6j4MsN3LhBCImJAAIiNH01dPldnC8
-	EjCdGRMUB8h7ll
-Date: Mon, 18 Jun 2007 12:32:14 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
-       perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
-       levon@movementarian.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Separate performance counter reservation from nmi watchdog
-Message-ID: <20070618103214.GA12045@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Stephane Eranian <eranian@hpl.hp.com>,
-	oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
-	perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
-	levon@movementarian.org, akpm@linux-foundation.org
-References: <20070612150246.GJ32163@frankl.hpl.hp.com> <20070612190730.GA6978@atjola.homenet> <20070613014136.GA2386@atjola.homenet> <20070613164632.GA8674@atjola.homenet> <20070618095238.GC20759@frankl.hpl.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 18 Jun 2007 06:34:42 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4201 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752896AbXFRKel (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 06:34:41 -0400
+Date: Mon, 18 Jun 2007 11:33:54 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Ivan Kuten <ivan.kuten@promwad.com>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] atmel_serial: Fix break handling
+Message-ID: <20070618103353.GB10387@flint.arm.linux.org.uk>
+References: <11806398911702-git-send-email-hskinnemoen@atmel.com> <20070605140720.4bdf887a@newbox> <20070605132336.3b8a9a4e@dhcp-255-175.norway.atmel.com> <20070618132121.2d00a907@newbox>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070618095238.GC20759@frankl.hpl.hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+In-Reply-To: <20070618132121.2d00a907@newbox>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.18 02:52:38 -0700, Stephane Eranian wrote:
-> Hello Bjorn,
+On Mon, Jun 18, 2007 at 01:21:21PM +0300, Ivan Kuten wrote:
+> Hi Haavard,
 > 
-> Sorry for the delay in my reponse.
+> I tried /dev/ttyAT3, break appeared but not the way I expected, after:
+> stty -F /dev/ttyAT3 brkint I get:
 > 
-> > > From: Björn Steinbrink <B.Steinbrink@gmx.de>
-> > > 
-> > > Separate the performance counter reservation system from the nmi
-> > > watchdog to allow usage of all performance counters even if the nmi
-> > > watchdog is not used.
-> > > 
+> cat /proc/tty/driver/atmel_serial 
+> serinfo:1.0 driver revision:
+> 0: uart:ATMEL_SERIAL mmio:0xFEFFF200 irq:1 tx:0 rx:0 CTS|DSR|CD|RI
+> 1: uart:ATMEL_SERIAL mmio:0xFFFC0000 irq:6 tx:0 rx:0 CTS|DSR|CD|RI             
+> 2: uart:ATMEL_SERIAL mmio:0xFFFC4000 irq:7 tx:0 rx:0 RI                        
+> 3: uart:ATMEL_SERIAL mmio:0xFFFC8000 irq:8 tx:1530 rx:115 brk:1 RTS|DTR|DSR|CD|RI
+> 4: uart:ATMEL_SERIAL mmio:0xFFFCC000 irq:9 tx:0 rx:0 DSR|CD|RI  
 > 
-> I think it is a good idea to separate the counter allocator from NMI
-> becuase as you said they are/will be use used by more than the NMI
-> watchdog. Thus, I think you should drop the stirng nmi from the
-> routines. I would also povide a separate header file for this allocator.
+> brk is 1 not depending on how many breaks was sent. May be I missunderstood
+> "break" meaning?
+> I use from minicom: Main Functions : send break.........F . 
 
-Rationale for both: This was already a (IMHO) rather huge patch for such
-a bugfix so I didn't want to change even more code for the sake of
-cleanup. I had planned to send a second patch for 2.6.23 that would do
-the clean up, should have mentioned that (or included the second patch).
+Note that if you want to use magic sysrq on ttyAT3, you need the kernel
+console on ttyAT3.  Since you successfully received one break event on
+ttyAT3, the next character should have caused a sysrq event.
 
-Will resend the patch later today, together with the cleanup patch.
-Whoever applies it can then decide if the cleanup should go into 2.6.22
-or 2.6.23.
+> I inserted printk:
+> 
+> /*
+>  * Control the transmission of a break signal
+                 ^^^^^^^^^^^^
+So if you're looking at the reception paths, this clearly isn't it...
 
-Thanks,
-Björn
+>  */
+> static void atmel_break_ctl(struct uart_port *port, int break_state)                                                                       
+> {                                                                                                                                          
+>         printk(KERN_EMERG "atmel_break_ctl break_state %d", break_state);                                                                  
+>         if (break_state != 0)                                                                                                              
+>                 UART_PUT_CR(port, ATMEL_US_STTBRK);     /* start break */                                                                  
+>         else                                                                                                                               
+>                 UART_PUT_CR(port, ATMEL_US_STPBRK);     /* stop break */                                                                   
+> }                                                                                                                                          
+> 
+> it's also not shown.
+
+... and that explains why.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
