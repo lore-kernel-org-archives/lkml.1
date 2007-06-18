@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933486AbXFRWIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933570AbXFRWIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933486AbXFRWIM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 18:08:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763137AbXFRWH5
+	id S933570AbXFRWIl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 18:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932903AbXFRWI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 18:07:57 -0400
-Received: from qb-out-0506.google.com ([72.14.204.224]:19646 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763370AbXFRWH4 (ORCPT
+	Mon, 18 Jun 2007 18:08:28 -0400
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:44678 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763137AbXFRWI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 18:07:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=nTTkbv0zU03XUSRvUS3jhi7xjEa19DGbImASPuZPfJ5GSaDBYVHk2ht+o0nlT1X79dlSBumo30Dq79Dndewz1A8ZUSbqBjTstHH+mq/71hjGvNMtLderTQYob5JspQfoYesPnzb8LsIMx4ZInIMP5k9g75W9GwqkD2GqmPVb0uY=
-To: linux-kernel@vger.kernel.org
-Subject: Re: GPLv3 dispute solution - new open source license?
-Date: Mon, 18 Jun 2007 18:07:53 -0400
-User-Agent: KMail/1.9.6
+	Mon, 18 Jun 2007 18:08:26 -0400
+Date: Tue, 19 Jun 2007 00:08:24 +0200
+From: Thomas Glanzmann <thomas@glanzmann.de>
+To: Carlo Wood <carlo@alinoe.com>, LKML <linux-kernel@vger.kernel.org>,
+       GIT <git@vger.kernel.org>
+Subject: Re: GIT Packages for Debian Etch
+Message-ID: <20070618220824.GJ16393@cip.informatik.uni-erlangen.de>
+Mail-Followup-To: Thomas Glanzmann <thomas@glanzmann.de>,
+	Carlo Wood <carlo@alinoe.com>, LKML <linux-kernel@vger.kernel.org>,
+	GIT <git@vger.kernel.org>
+References: <20070618212524.GC16393@cip.informatik.uni-erlangen.de> <20070618212741.GA5938@artemis.internal.dc7.debconf.org> <20070618214852.GA13538@alinoe.com> <20070618215610.GG16393@cip.informatik.uni-erlangen.de> <20070618220441.GC13538@alinoe.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706181807.53306.yurimxpxman@gmail.com>
-From: Joshua David Williams <yurimxpxman.lkml@gmail.com>
+In-Reply-To: <20070618220441.GC13538@alinoe.com>
+User-Agent: Mutt/1.5.15 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/18/07, Carlo Wood <carlo@alinoe.com> wrote:
+Hello,
 
->  Now, writing yet another license for the linux kernel is
->  therefore NOT the solution - if you get my drift.
+> after having a peek at git-core_1.5.2.1-1.dsc, and then it did build
+> just fine immediately.
 
-The new license could be written to be compatible with both versions of the 
-GPL. IMO, a new license written from the OSS perspective would behoove us 
-greatly in that we are no longer subject to this Higher Calling of the FSF 
-and the Church of Emacs.
+good point, that makes sense. I have to keep that in mind. Last time I
+looked at the failed tests, saw the missing dependency and tried again.
+:-)
 
-$0.02
-
--- 
-It's a commonly known fact that most intruders come in through Windows.
+        Thomas
