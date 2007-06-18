@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbXFRFST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbXFRFYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758255AbXFRFST (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 01:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXFRFSE
+	id S1757352AbXFRFYR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 01:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbXFRFYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 01:18:04 -0400
-Received: from srv1.netkinetics.net ([206.71.148.180]:49514 "EHLO
+	Mon, 18 Jun 2007 01:24:04 -0400
+Received: from srv1.netkinetics.net ([206.71.148.180]:56474 "EHLO
 	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752132AbXFRFSD (ORCPT
+	with ESMTP id S1750895AbXFRFYD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 01:18:03 -0400
+	Mon, 18 Jun 2007 01:24:03 -0400
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
 From: Tim Post <tim.post@netkinetics.net>
 Reply-To: tim.post@netkinetics.net
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200706172319.22381.a1426z@gawab.com>
-References: <200706172319.22381.a1426z@gawab.com>
+To: david@lang.hm
+Cc: Alexandre Oliva <aoliva@redhat.com>, Bernd Petrovitsch <bernd@firmix.at>,
+       Gabor Czigola <czigola@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0706171408260.31541@asgard.lang.hm>
+References: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
+	 <orfy4qh0mc.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <1182112097.3800.3.camel@gimli.at.home>
+	 <orfy4qffyj.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <Pine.LNX.4.64.0706171408260.31541@asgard.lang.hm>
 Content-Type: text/plain
 Organization: Net Kinetics
-Date: Mon, 18 Jun 2007 13:16:20 +0800
-Message-Id: <1182143780.21797.1443.camel@localhost.localdomain>
+Date: Mon, 18 Jun 2007 13:22:17 +0800
+Message-Id: <1182144137.21797.1449.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.4.1 
 Content-Transfer-Encoding: 7bit
@@ -35,38 +40,25 @@ X-Source-Dir:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-17 at 23:19 +0300, Al Boldi wrote:
-
+On Sun, 2007-06-17 at 14:13 -0700, david@lang.hm wrote:
+> you argue that it is evil for tivo to produce a pice of hardware that they 
+> can modify and the user can't
 > 
-> Wow!
-> 
-> Under what circumstances would it be possible to receive permission for 
-> modification?
-> 
-> 
-> Thanks for being GPL!
-> 
-> --
-> Al
-> 
+> but you then argue that it's a good thing for the FSF to produce a license 
+> that they can modify and others can't
 
-If the GPL2 were itself modifiable, there would be so many GPL licenses
-that the term "Relased under the GPL 2" would only indicate you chose
-one of a million licenses or wrote your own.
+They can't modify the license that you used. They can make a new license
+which you may optionally use at your discretion.
 
-That may not be a bad thing, not for me to debate. But I think that's
-why the FSF imposes the restriction. I don't feel that is unreasonable,
-but you might, and its your right to do so and be vocal about it.
+Once you release the code under the GPL(x), that is it. The only person
+who can change that is you or perhaps some bizarre court order. But it
+would still be you changing it, even if your hand was forced to do so.
 
-You could, of course take what language that you agree with, re-write it
-and make it your own and add a clause that allows people to modify the
-license provided that they do not call it the "XYZ" license any longer.
+Your copyright is your signing mechanism. Once you do it, its a done
+deed. That is the whole reason Linus chose GPL2 to begin with, I
+believe :)
 
-But you wouldn't be making a license - you'd be making the raw material
-for people to make their own license. 
-
-I don't think that's what the FSF wanted to accomplish. Again, just my
-opinion. I didn't make the GPL so there's no way I could know.
+You and _only_ you are the one. Its like a biometric lock.
 
 Best,
 --Tim
