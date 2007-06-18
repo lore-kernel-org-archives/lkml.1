@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXFRWFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbXFRWFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933289AbXFRWFD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 18:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764552AbXFRWEv
+	id S933409AbXFRWFi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 18:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765659AbXFRWF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 18:04:51 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:38961 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753901AbXFRWEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 18:04:50 -0400
-Date: Tue, 19 Jun 2007 00:04:41 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Thomas Glanzmann <thomas@glanzmann.de>,
-       LKML <linux-kernel@vger.kernel.org>, GIT <git@vger.kernel.org>
-Subject: Re: GIT Packages for Debian Etch
-Message-ID: <20070618220441.GC13538@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Thomas Glanzmann <thomas@glanzmann.de>,
-	LKML <linux-kernel@vger.kernel.org>, GIT <git@vger.kernel.org>
-References: <20070618212524.GC16393@cip.informatik.uni-erlangen.de> <20070618212741.GA5938@artemis.internal.dc7.debconf.org> <20070618214852.GA13538@alinoe.com> <20070618215610.GG16393@cip.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070618215610.GG16393@cip.informatik.uni-erlangen.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 18 Jun 2007 18:05:28 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:49609 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764552AbXFRWF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 18:05:27 -0400
+Message-Id: <20070618215846.247539382@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 18 Jun 2007 17:58:46 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Chuck Ebbert <cebbert@redhat.com>, prasanna@in.ibm.com, ananth@in.ibm.com,
+       jkenisto@us.ibm.com, ak@suse.de
+Subject: [patch 0/3] Text Section Edit Lock
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 18 Jun 2007 22:04:59 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 11:56:10PM +0200, Thomas Glanzmann wrote:
-> true. But when you run sid you get a newer version of git automatically.
-> Sooner or later. And you can always build it yourself. It's a pain in
-> the ass until you have all build dependencies installed and all the
-> tests pass.
+Hi,
 
-Oh, I already build it before my previous post :p
+This code adds locking around text section modifications. It can be used by
+paravirt/alternatives, kprobes and eventually the immediate values to:
 
-I just did:
+A - synchronize dynamic code patching
+B - make sure the pages are writable
 
-sudo apt-get install libz-dev asciidoc xmlto libexpat1-dev subversion unzip tcl8.4 libsvn-perl libcurl3-dev
+I only provided the i386 version, but it could be easily ported to other
+architectures.
 
-after having a peek at git-core_1.5.2.1-1.dsc, and then it did build
-just fine immediately.
+It applies at the end of the 2.6.22-rc4-mm2 series in the following order:
+
+text-edit-lock-i386.patch
+text-edit-lock-alternative-i386.patch
+text-edit-lock-kprobes-i386.patch
+
+Comments are welcome, (testing is welcome too)
+
+Mathieu
 
 -- 
-Carlo Wood <carlo@alinoe.com>
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
