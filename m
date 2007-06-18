@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763134AbXFRWh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932756AbXFRWnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763134AbXFRWh3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 18:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933407AbXFRWhH
+	id S932756AbXFRWnS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 18:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763134AbXFRWnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 18:37:07 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34775 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933320AbXFRWhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 18:37:06 -0400
-Date: Mon, 18 Jun 2007 15:38:20 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
-Message-ID: <20070618223819.GD9751@tree.beaverton.ibm.com>
-References: <20070605183300.GD12782@tree.beaverton.ibm.com> <20070605184015.GF17143@linux-os.sc.intel.com> <20070605200954.GE12782@tree.beaverton.ibm.com> <20070605211451.GG17143@linux-os.sc.intel.com> <20070605235707.GB16074@tree.beaverton.ibm.com> <20070606013759.GI17143@linux-os.sc.intel.com> <20070606185829.GA26062@tree.beaverton.ibm.com> <20070606193514.GN17143@linux-os.sc.intel.com> <20070606231642.GH13751@tree.beaverton.ibm.com> <20070608005726.GO17143@linux-os.sc.intel.com>
+	Mon, 18 Jun 2007 18:43:09 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50276
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762449AbXFRWnG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 18:43:06 -0400
+Date: Mon, 18 Jun 2007 15:43:02 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Joshua David Williams <yurimxpxman.lkml@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: GPLv3 dispute solution - new open source license?
+In-Reply-To: <200706181807.53306.yurimxpxman@gmail.com>
+Message-ID: <Pine.LNX.4.64.0706181541050.14890@asgard.lang.hm>
+References: <200706181807.53306.yurimxpxman@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="5p8PegU4iirBW1oA"
-Content-Disposition: inline
-In-Reply-To: <20070608005726.GO17143@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 18 Jun 2007, Joshua David Williams wrote:
 
---5p8PegU4iirBW1oA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On 6/18/07, Carlo Wood <carlo@alinoe.com> wrote:
+>
+>>  Now, writing yet another license for the linux kernel is
+>>  therefore NOT the solution - if you get my drift.
+>
+> The new license could be written to be compatible with both versions of the
+> GPL. IMO, a new license written from the OSS perspective would behoove us
+> greatly in that we are no longer subject to this Higher Calling of the FSF
+> and the Church of Emacs.
 
-On Thu, Jun 07, 2007 at 05:57:26PM -0700, Siddha, Suresh B wrote:
+no it couldn't
 
-> As you have the failing system, you need to do more detective work and
-> help me out. Can you try this debug patch and send across the dmesg after the
-> bug happens and also can you try different compiler to see if something
-> changes..
+the GPLv2 says that if you combine it with any other license the result 
+must be GPLv2
 
-Hrm, I just updated to -rc5.  Interrupts being handled by the IOAPIC
-don't suffer from this problem, but MSI interrupts are still affected.
-I added a few printks to the kernel to figure out what IRQ affinity
-masks were being passed around and saw this:
+the GPLv3 says that if you combine it with any other license the result 
+must be GPLv3
 
-[  256.298773] Breaking affinity for irq 4341
-[  256.298774] irq=4341 affinity=2 mask=d
-<call to set_affinity>
-[  256.298787] irq=4341 affinity=d
-<ethernet on irq 4341 stops working>
+so you have one requirement saying that the result must be GPLv2 and 
+another that says you must be GPLv3. there isn't any way to resolve this 
+conflict.
 
-I'll keep digging, but at least it appears that the problem has been
-shrunk down to something the MSI code.
-
---D
-
---5p8PegU4iirBW1oA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGdwlba6vRYYgWQuURAkbpAJ9KOnUROoGbl4js1TEEVClVNSLQgwCbBrEr
-kDK3xkjY0TK99GeQrD3JNUs=
-=urQw
------END PGP SIGNATURE-----
-
---5p8PegU4iirBW1oA--
+David Lang
