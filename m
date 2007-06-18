@@ -1,138 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765507AbXFRSnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932177AbXFRSna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765507AbXFRSnD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764219AbXFRSmy
+	id S932177AbXFRSna (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763802AbXFRSnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:42:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51368 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763316AbXFRSmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:42:53 -0400
-To: Johannes Stezenbach <js@linuxtv.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <20070615101007.0cbfd078@the-village.bc.nu>
-	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4673CA7C.5040207@t-online.de>
-	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616181902.GB21478@ftp.linux.org.uk>
-	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
-	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070618155016.GA31892@linuxtv.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Mon, 18 Jun 2007 15:41:44 -0300
-In-Reply-To: <20070618155016.GA31892@linuxtv.org> (Johannes Stezenbach's message of "Mon\, 18 Jun 2007 17\:50\:16 +0200")
-Message-ID: <or645lcdg7.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Mon, 18 Jun 2007 14:43:19 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50609
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764219AbXFRSnS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 14:43:18 -0400
+Date: Mon, 18 Jun 2007 11:40:58 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: Brendan Conoboy <blc@redhat.com>, Neil Brown <neilb@suse.de>,
+       Wakko Warner <wakko@animx.eu.org>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <20070618183324.GL10006@csclub.uwaterloo.ca>
+Message-ID: <Pine.LNX.4.64.0706181138210.12717@asgard.lang.hm>
+References: <18034.479.256870.600360@notabene.brown>
+ <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown>
+ <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown>
+ <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm> <4676BEC2.7090809@redhat.com>
+ <Pine.LNX.4.64.0706181026170.12717@asgard.lang.hm> <20070618180327.GP10008@csclub.uwaterloo.ca>
+ <Pine.LNX.4.64.0706181111020.12717@asgard.lang.hm> <20070618183324.GL10006@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, Johannes Stezenbach <js@linuxtv.org> wrote:
+On Mon, 18 Jun 2007, Lennart Sorensen wrote:
 
-> I think those two goals are somewhat conflicting. If you want to
-> win people for free software, you need to make it easy for them
-> to accept your ideas. However, in order to make it easy you have to
-> make compromises wrt the four freedoms.
+> On Mon, Jun 18, 2007 at 11:12:45AM -0700, david@lang.hm wrote:
+>> simple ultra-wide SCSI to a single controller.
+>
+> Hmm, isn't ultra-wide limited to 40MB/s?  Is it Ultra320 wide?  That
+> could do a lot more, and 220MB/s sounds plausable for 320 scsi.
 
-If you make compromises, it ceases to be free software.  *And*, in the
-pragmatic plane, you lose the benefits from users whose freedoms will
-be restricted by others.
+yes, sorry, ultra 320 wide.
 
-> If you look at the lenght of this thread, don't you realize
-> that even when you talk to software developers on a mailing list
-> dealing with free software/open source, you have trouble
-> to get acceptance for your fundamentalistic view of the
-> ethical principles of free software?
+>> I didn't realize that the rate reported by /proc/mdstat was the write
+>> speed that was takeing place, I thought it was the total data rate (reads
+>> + writes). the next time this message gets changed it would be a good
+>> thing to clarify this.
+>
+> Well I suppose itcould make sense to show rate of rebuild which you can
+> then compare against the total size of tha raid, or you can have rate of
+> write, which you then compare against the size of the drive being
+> synced.  Certainly I would expect much higer speeds if it was the
+> overall raid size, while the numbers seem pretty reasonable as a write
+> speed.  4MB/s would take for ever if it was the overall raid resync
+> speed.  I usually see SATA raid1 resync at 50 to 60MB/s or so, which
+> matches the read and write speeds of the drives in the raid.
 
-I do.  I get rejection from a number of people from whom I expected to
-get rejection, those with fundamentalist but opposing positions.
-Meanwhile, in private, I get lots of voices of encouragement and
-gratitude for what I'm doing.  I suppose they might even do that in
-public if they didn't care about getting verbal abuse for exposing
-dissenting opinions.
+as I read it right now what happens is the worst of the options, you show 
+the total size of the array for the amount of work that needs to be done, 
+but then show only the write speed for the rate pf progress being made 
+through the job.
 
-> And you haven't even started to talk to the business people,
-> executives and lawyers which you need to convince if you
-> want to make free software ubiquitous.
+total rebuild time was estimated at ~3200 min
 
-Oh, really?  How do you know?
-
-People talk a lot about TiVo here, but do they the faintest idea of
-how the conversations with TiVo are proceeding?  I thought so...
-
-> "It's a bargain, you can use it for free and all you have to do is
-> give back your changes" is what might work to win them.
-
-And that's precisely what I've been working on.  But fundamentalism
-can indeed blind people.  It works both ways, I guess.
-
-> The bottom line is that I think your perception is completely wrong.
-
-Do you think any part of this reasoning is wrong?
-
->   no tivoization => more users able to tinker their formerly-tivoized
->   computers => more users make useful modifications => more
->   contributions in kind
-
-I know you see the other possibility:
-
->   no tivoization => fewer contributions from manufacturers that demand
->   on tivoization
-
-and there's another, that's break-even for the community so I didn't
-even mention it:
-
-    no tivoization => ROM software, no difference for the community
-
-
-So, you see, when people who oppose anti-tivoization measure the
-outcome for the community, they only look at the second possibility,
-assuming the vendor would immediately switch to some other software.
-As if that was easy for the vendor, and as if the software sucked so
-much that the vendor was just looking for a reason to switch.
-
-But since the software is good, and moving to another software would
-be costly in various dimentions, the vendor has an incentive to stick
-with the software they have.
-
-So the vendor will look into respecting users' freedoms, and they
-might just do that, rather than switching to a tivoizable software or
-facing the potential costs of ROM replacements at every software
-update.
-
-And if just a few vendors take the stance of respecting users'
-freedoms, the community will gain not only more users, but also more
-developers more motivated to improve the software to serve their own
-interests, because they *will* be able to use the results of their
-modifications on their devices.
-
-
-So you see, the picture of anti-tivozation is not as bleak as people
-try to frame it.  In fact, it's not bleak at all.  If one out of 10,
-maybe even 1 out of 100 vendors start respecting users' freedoms, when
-faced with anti-tivoization provisions, the community will already win
-big time, because each vendor is likely to have thousands of
-customers, some of which will use the freedoms to serve the goals of
-the community, in the very terms the community claims to care about.
-
-
-So, what flaw do you see in this reasoning?
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+David Lang
