@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbXFRWeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbXFRWfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933090AbXFRWeS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 18:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764362AbXFRWeJ
+	id S932173AbXFRWfT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 18:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764537AbXFRWfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 18:34:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56595 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761479AbXFRWeH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 18:34:07 -0400
-Date: Mon, 18 Jun 2007 15:34:06 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, suresh.b.siddha@intel.com
-Subject: Re: [patch 05/26] Slab allocators: Cleanup zeroing allocations
-In-Reply-To: <84144f020706181326i6923cccdm21d122ee9eee8fb7@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706181531410.8595@schroedinger.engr.sgi.com>
-References: <20070618095838.238615343@sgi.com>  <20070618095914.622685354@sgi.com>
-  <84144f020706181316u70145db2i786641d265e5bc42@mail.gmail.com>
- <84144f020706181326i6923cccdm21d122ee9eee8fb7@mail.gmail.com>
+	Mon, 18 Jun 2007 18:35:05 -0400
+Received: from mail.samba.org ([66.70.73.150]:50355 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763874AbXFRWfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 18:35:02 -0400
+Date: Mon, 18 Jun 2007 15:34:25 -0700
+From: Jeremy Allison <jra@samba.org>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
+       alan <alan@clueserver.org>, Bodo Eggert <7eggert@gmx.de>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+Message-ID: <20070618223425.GL1152@samba1>
+Reply-To: Jeremy Allison <jra@samba.org>
+References: <8wsW4-3UY-3@gated-at.bofh.it> <8wJal-3KA-1@gated-at.bofh.it> <8xm22-4Ql-1@gated-at.bofh.it> <8xq5G-32l-7@gated-at.bofh.it> <8xs7w-69W-21@gated-at.bofh.it> <E1I0OFQ-0001B9-7Z@be1.lrz> <Pine.LNX.4.64.0706181406250.25913@blackbox.fnordora.org> <4676F9A2.6010007@zytor.com> <20070618221021.GB2062@thunk.org> <20070618222656.GB25089@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070618222656.GB25089@lazybastard.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007, Pekka Enberg wrote:
-
-> On 6/18/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > Hmm, did you check kernel text size before and after this change?
-> > Setting the __GFP_ZERO flag at every kzalloc call-site seems like a
-> > bad idea.
+On Tue, Jun 19, 2007 at 12:26:57AM +0200, Jörn Engel wrote:
 > 
-> Aah but most call-sites, of course, use constants such as GFP_KERNEL
-> only which should be folded nicely by the compiler. So this probably
-> doesn't have much impact. Would be nice if you'd check, though.
+> Pointless here means that _I_ don't see the point.  Maybe there are
+> valid uses for extended attributes.  If there are, noone has explained
+> them to me yet.
 
-IA64
+Samba uses them to store DOS'ism's that you don't want in your
+POSIX filesystem.
 
-Before:
-
-   text    data     bss     dec     hex filename
-10486815        4128471 3686044 18301330        1174192 vmlinux
-
-After:
-
-   text    data     bss     dec     hex filename
-10486335        4128439 3686044 18300818        1173f92 vmlinux
-
-Saved ~500 bytes in text size.
-
-x86_64:
-
-Before:
-
-   text    data     bss     dec     hex filename
-3823932  333840  220484 4378256  42ce90 vmlinux
-
-After
-
-   text    data     bss     dec     hex filename
-3823716  333840  220484 4378040  42cdb8 vmlinux
-
-200 bytes saved.
-
+Jeremy.
