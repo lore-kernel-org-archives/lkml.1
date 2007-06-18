@@ -1,51 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbXFRJ70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbXFRJ7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761314AbXFRJ70 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 05:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbXFRJ7Q
+	id S1761514AbXFRJ7p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 05:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759838AbXFRJ7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 18 Jun 2007 05:59:16 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47891 "EHLO
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47898 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758025AbXFRJ7P (ORCPT
+	with ESMTP id S1758079AbXFRJ7P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 Jun 2007 05:59:15 -0400
-Message-Id: <20070618095913.634860091@sgi.com>
+Message-Id: <20070618095914.332369986@sgi.com>
 References: <20070618095838.238615343@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 18 Jun 2007 02:58:39 -0700
+Date: Mon, 18 Jun 2007 02:58:42 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: suresh.b.siddha@intel.com
-Subject: [patch 01/26] SLUB Debug: Fix initial object debug state of NUMA bootstrap objects
-Content-Disposition: inline; filename=fix_numa_boostrap_debug
+Subject: [patch 04/26] Slab allocators: Support __GFP_ZERO in all allocators.
+Content-Disposition: inline; filename=slab_gfpzero
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function we are calling to initialize object debug state during early
-NUMA bootstrap sets up an inactive object giving it the wrong redzone
-signature. The bootstrap nodes are active objects and should have active redzone
-signatures.
+A kernel convention for many allocators is that if __GFP_ZERO is passed to
+an allocator then the allocated memory should be zeroed.
 
-Currently slab validation complains and reverts the object to active state.
+This is currently not supported by the slab allocators. The inconsistency
+makes it difficult to implement in derived allocators such as in the uncached
+allocator and the pool allocators.
+
+In addition the support zeroed allocations in the slab allocators does not
+have a consistent API. There are no zeroing allocator functions for NUMA node
+placement (kmalloc_node, kmem_cache_alloc_node). The zeroing allocations are
+only provided for default allocs (kzalloc, kmem_cache_zalloc_node).
+__GFP_ZERO will make zeroing universally available and does not require any
+addititional functions.
+
+So add the necessary logic to all slab allocators to support __GFP_ZERO.
+
+The code is added to the hot path. The gfp flags are on the stack
+and so the cacheline is readily available for checking if we want a zeroed
+object.
+
+Zeroing while allocating is now a frequent operation and we seem to be
+gradually approaching a 1-1 parity between zeroing and not zeroing allocs.
+The current tree has 3476 uses of kmalloc vs 2731 uses of kzalloc.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
+---
+ mm/slab.c |    8 +++++++-
+ mm/slob.c |    2 ++
+ mm/slub.c |   24 +++++++++++++++---------
+ 3 files changed, 24 insertions(+), 10 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/mm/slob.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/mm/slob.c	2007-06-17 22:30:01.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slob.c	2007-06-17 22:30:38.000000000 -0700
+@@ -293,6 +293,8 @@ static void *slob_alloc(size_t size, gfp
+ 		BUG_ON(!b);
+ 		spin_unlock_irqrestore(&slob_lock, flags);
+ 	}
++	if (unlikely((gfp & __GFP_ZERO) && b))
++		memset(b, 0, size);
+ 	return b;
+ }
+ 
 Index: linux-2.6.22-rc4-mm2/mm/slub.c
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-17 23:51:43.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-18 00:40:04.000000000 -0700
-@@ -1925,7 +1925,8 @@ static struct kmem_cache_node * __init e
- 	page->freelist = get_freepointer(kmalloc_caches, n);
- 	page->inuse++;
- 	kmalloc_caches->node[node] = n;
--	setup_object_debug(kmalloc_caches, page, n);
-+	init_object(kmalloc_caches, n, 1);
-+	init_tracking(kmalloc_caches, n);
- 	init_kmem_cache_node(n);
- 	atomic_long_inc(&n->nr_slabs);
- 	add_partial(n, page);
+--- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-17 22:30:01.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-17 22:31:41.000000000 -0700
+@@ -1087,7 +1087,7 @@ static struct page *new_slab(struct kmem
+ 	void *last;
+ 	void *p;
+ 
+-	BUG_ON(flags & ~(GFP_DMA | GFP_LEVEL_MASK));
++	BUG_ON(flags & ~(GFP_DMA | __GFP_ZERO | GFP_LEVEL_MASK));
+ 
+ 	if (flags & __GFP_WAIT)
+ 		local_irq_enable();
+@@ -1550,7 +1550,7 @@ debug:
+  * Otherwise we can simply pick the next object from the lockless free list.
+  */
+ static void __always_inline *slab_alloc(struct kmem_cache *s,
+-				gfp_t gfpflags, int node, void *addr)
++		gfp_t gfpflags, int node, void *addr, int length)
+ {
+ 	struct page *page;
+ 	void **object;
+@@ -1568,19 +1568,25 @@ static void __always_inline *slab_alloc(
+ 		page->lockless_freelist = object[page->offset];
+ 	}
+ 	local_irq_restore(flags);
++
++	if (unlikely((gfpflags & __GFP_ZERO) && object))
++		memset(object, 0, length);
++
+ 	return object;
+ }
+ 
+ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+ {
+-	return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
++	return slab_alloc(s, gfpflags, -1,
++			__builtin_return_address(0), s->objsize);
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc);
+ 
+ #ifdef CONFIG_NUMA
+ void *kmem_cache_alloc_node(struct kmem_cache *s, gfp_t gfpflags, int node)
+ {
+-	return slab_alloc(s, gfpflags, node, __builtin_return_address(0));
++	return slab_alloc(s, gfpflags, node,
++		__builtin_return_address(0), s->objsize);
+ }
+ EXPORT_SYMBOL(kmem_cache_alloc_node);
+ #endif
+@@ -2327,7 +2333,7 @@ void *__kmalloc(size_t size, gfp_t flags
+ 	if (ZERO_OR_NULL_PTR(s))
+ 		return s;
+ 
+-	return slab_alloc(s, flags, -1, __builtin_return_address(0));
++	return slab_alloc(s, flags, -1, __builtin_return_address(0), size);
+ }
+ EXPORT_SYMBOL(__kmalloc);
+ 
+@@ -2339,7 +2345,7 @@ void *__kmalloc_node(size_t size, gfp_t 
+ 	if (ZERO_OR_NULL_PTR(s))
+ 		return s;
+ 
+-	return slab_alloc(s, flags, node, __builtin_return_address(0));
++	return slab_alloc(s, flags, node, __builtin_return_address(0), size);
+ }
+ EXPORT_SYMBOL(__kmalloc_node);
+ #endif
+@@ -2662,7 +2668,7 @@ void *kmem_cache_zalloc(struct kmem_cach
+ {
+ 	void *x;
+ 
+-	x = slab_alloc(s, flags, -1, __builtin_return_address(0));
++	x = slab_alloc(s, flags, -1, __builtin_return_address(0), 0);
+ 	if (x)
+ 		memset(x, 0, s->objsize);
+ 	return x;
+@@ -2712,7 +2718,7 @@ void *__kmalloc_track_caller(size_t size
+ 	if (ZERO_OR_NULL_PTR(s))
+ 		return s;
+ 
+-	return slab_alloc(s, gfpflags, -1, caller);
++	return slab_alloc(s, gfpflags, -1, caller, size);
+ }
+ 
+ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
+@@ -2723,7 +2729,7 @@ void *__kmalloc_node_track_caller(size_t
+ 	if (ZERO_OR_NULL_PTR(s))
+ 		return s;
+ 
+-	return slab_alloc(s, gfpflags, node, caller);
++	return slab_alloc(s, gfpflags, node, caller, size);
+ }
+ 
+ #if defined(CONFIG_SYSFS) && defined(CONFIG_SLUB_DEBUG)
+Index: linux-2.6.22-rc4-mm2/mm/slab.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/mm/slab.c	2007-06-17 22:30:01.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slab.c	2007-06-17 22:30:38.000000000 -0700
+@@ -2734,7 +2734,7 @@ static int cache_grow(struct kmem_cache 
+ 	 * Be lazy and only check for valid flags here,  keeping it out of the
+ 	 * critical path in kmem_cache_alloc().
+ 	 */
+-	BUG_ON(flags & ~(GFP_DMA | GFP_LEVEL_MASK));
++	BUG_ON(flags & ~(GFP_DMA | __GFP_ZERO | GFP_LEVEL_MASK));
+ 
+ 	local_flags = (flags & GFP_LEVEL_MASK);
+ 	/* Take the l3 list lock to change the colour_next on this node */
+@@ -3380,6 +3380,9 @@ __cache_alloc_node(struct kmem_cache *ca
+ 	local_irq_restore(save_flags);
+ 	ptr = cache_alloc_debugcheck_after(cachep, flags, ptr, caller);
+ 
++	if (unlikely((flags & __GFP_ZERO) && ptr))
++		memset(ptr, 0, cachep->buffer_size);
++
+ 	return ptr;
+ }
+ 
+@@ -3431,6 +3434,9 @@ __cache_alloc(struct kmem_cache *cachep,
+ 	objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
+ 	prefetchw(objp);
+ 
++	if (unlikely((flags & __GFP_ZERO) && objp))
++		memset(objp, 0, cachep->buffer_size);
++
+ 	return objp;
+ }
+ 
 
 -- 
