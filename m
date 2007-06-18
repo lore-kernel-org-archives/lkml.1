@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762909AbXFRLmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763087AbXFRLmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762909AbXFRLmh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 07:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761278AbXFRLm2
+	id S1763087AbXFRLmt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 07:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761640AbXFRLmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 07:42:28 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40746 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754212AbXFRLm1 (ORCPT
+	Mon, 18 Jun 2007 07:42:31 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:24302 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761571AbXFRLmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 07:42:27 -0400
-Date: Mon, 18 Jun 2007 12:47:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: davem@davemloft.net, akpm@linux-foundation.org, viro@ftp.linux.org.uk,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix race in AF_UNIX
-Message-ID: <20070618124721.56411b93@the-village.bc.nu>
-In-Reply-To: <E1I0DYW-0006uZ-00@dorka.pomaz.szeredi.hu>
-References: <E1I0BzQ-0006gZ-00@dorka.pomaz.szeredi.hu>
-	<20070618.005711.21897961.davem@davemloft.net>
-	<E1I0CTH-0006k3-00@dorka.pomaz.szeredi.hu>
-	<20070618.021813.105401188.davem@davemloft.net>
-	<E1I0DYW-0006uZ-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jun 2007 07:42:31 -0400
+Date: Mon, 18 Jun 2007 13:42:30 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Denis Cheng <crquan@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: the memset operation on a automatic array variable can be removed
+ by data Initialization
+In-Reply-To: <467637b0.16be600a.377c.ffff8c04@mx.google.com>
+Message-ID: <Pine.LNX.4.64.0706181341070.5731@fbirervta.pbzchgretzou.qr>
+References: <467637b0.16be600a.377c.ffff8c04@mx.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> No, correctness always trumps performance.  Lost packets on an AF_UNIX
-> socket are _unexceptable_, and this is definitely not a theoretical
-> problem.
 
-If its so unacceptable why has nobody noticed until now - its a bug
-clearly, it needs fixing clearly, but unless you can produce some kind of
-exploit from it (eg a DoS attack or kernel memory leak exploiter) it
-doesn't appear to be that serious.
+On Jun 18 2007 00:43, Denis Cheng wrote:
+>Subject: the memset operation on a automatic array variable can be removed by
+>    data Initialization
+>
+>--- arch/x86_64/mm/init.c	2007-06-07 10:08:04.000000000 +0800
+>+++ /tmp/init.c	2007-06-18 14:43:15.000000000 +0800
+>@@ -406,8 +406,7 @@ void __cpuinit zap_low_mappings(int cpu)
+> #ifndef CONFIG_NUMA
+> void __init paging_init(void)
+> {
+>-	unsigned long max_zone_pfns[MAX_NR_ZONES];
+>-	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+>+	unsigned long max_zone_pfns[MAX_NR_ZONES] = { 0, };
 
-> And BTW my second patch does _not_ have the performance problems you
-> are arguing about, it's just plain ugly.  But hey, if you can't live
-> with ugly code, go and fix it.
+The cost is the same. "= {0}" is transformed into a bunch of movs,
+or a rep mov, (At least for x86), so is equivalent to memset (which
+will get transformed to __builtin_memset anyway). So I wonder
+what this really buys.
 
-If you put ugly code into the kernel you pay for maintaining it for years
-to come. If you get it right then you don't
+And, you do not even need the zero. Just write
+	...[MAX_NR_ZONES] = {};
 
-> Do you want me to send the patch to Andrew instead?  His attitude
-> towards bugfixes is rather better ;)
+> 	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
+> 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
+> 	max_zone_pfns[ZONE_NORMAL] = end_pfn;
 
-And it'll get NAKked and binned. DaveM is (as happens sometimes ;)) right
-to insist on the code being clean and efficient.
 
-Alan
+	Jan
+-- 
