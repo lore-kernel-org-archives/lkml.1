@@ -1,70 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764834AbXFRTTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764794AbXFRTYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764834AbXFRTTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 15:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761454AbXFRTTN
+	id S1764794AbXFRTYS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 15:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761940AbXFRTYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 15:19:13 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60691 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760318AbXFRTTM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 15:19:12 -0400
-Date: Mon, 18 Jun 2007 12:19:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       suresh.b.siddha@intel.com
-Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
-In-Reply-To: <6bffcb0e0706181209p49f4ae86xce5418b7c9b3edbb@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706181217350.8899@schroedinger.engr.sgi.com>
-References: <20070618095838.238615343@sgi.com>  <46767346.2040108@googlemail.com>
-  <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com> 
- <6bffcb0e0706181038j107e2357o89c525261cf671a@mail.gmail.com> 
- <Pine.LNX.4.64.0706181102280.6596@schroedinger.engr.sgi.com> 
- <6bffcb0e0706181158l739864e0t6fb5bc564444f23c@mail.gmail.com> 
- <Pine.LNX.4.64.0706181159430.1896@schroedinger.engr.sgi.com>
- <6bffcb0e0706181209p49f4ae86xce5418b7c9b3edbb@mail.gmail.com>
+	Mon, 18 Jun 2007 15:24:09 -0400
+Received: from mail.ccur.com ([66.10.65.12]:41124 "EHLO mail.ccur.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761776AbXFRTYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 15:24:08 -0400
+Message-ID: <4676DBD4.2030909@ccur.com>
+Date: Mon, 18 Jun 2007 15:24:04 -0400
+From: John Blackwood <john.blackwood@ccur.com>
+Reply-To: john.blackwood@ccur.com
+Organization: Concurrent Computer Corporation
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>, bugsy@ccur.com
+Subject: Re: [RFC] [PATCH] selective signal ptracing
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Jun 2007 19:24:06.0163 (UTC) FILETIME=[3CA4AE30:01C7B1DE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stupid me. n on both sides of the comparison. Tried to run your script 
-here but I cannot trigger it.
+ > Subject: Re: [RFC] [PATCH] selective signal ptracing
+ > From: Oleg Nesterov <oleg@tv-sign.ru>
+ > Date: Sat, 16 Jun 2007 13:24:15 +0400
+ > To: John Blackwood <john.blackwood@ccur.com>
+ > CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Roland McGrath 
+<roland@redhat.com>, linux-kernel@vger.kernel.org
+ >
+ > John Blackwood wrote:
+ > > >
+ > > > By default all signals are ptraced as before. However, a debugger
+ > > > may now modify the set of per-task ptraced signals, where only the
+ > > > signals in this ptrace signal mask will be ptraced.
+ >
+ > I must admit, I agree with Roland...
+ >
+ > > > +void ptrace_update_traced_signals(struct task_struct *child,
+ > > > +							sigset_t *new_smaskp)
+ > > > +{
+ > > > [...snip...]
+ > > > +
+ > > > +		spin_lock_irqsave(&child->sighand->siglock, flags);
+ > > > +
+ > > > +		if (child->sighand == NULL) {
+ >
+ > How so?
+ >
+ > Oleg.
 
-Next attempt: Sorry for the churn.
+Hi Oleg.
 
-SLUB: Fix behavior if the text output of list_locations overflows PAGE_SIZE
+Right, this above is not a good check for a NULL sighand.
 
-If slabs are allocated or freed from a large set of call sites (typical
-for the kmalloc area) then we may create more output than fits into
-a single PAGE and sysfs only gives us one page. The output should be
-truncated. This patch fixes the checks to do the truncation properly.
+Possibly, this routine could use something like the
+rcu_read_lock()/lock_task_sighand() sequences used elsewhere
+(shown below).
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+The whole ptrace_update_traced_signals() where we drain ignored signals
+is not dealt with today by ptraced tasks when the debugger exits or
+detaches from a target task.  So this whole routine is not entirely
+related just to selective signal ptracing.
 
-Index: linux-2.6.22-rc4-mm2/mm/slub.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-18 12:13:48.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-18 12:15:10.000000000 -0700
-@@ -3649,13 +3649,15 @@ static int list_locations(struct kmem_ca
- 			n += sprintf(buf + n, " pid=%ld",
- 				l->min_pid);
- 
--		if (num_online_cpus() > 1 && !cpus_empty(l->cpus)) {
-+		if (num_online_cpus() > 1 && !cpus_empty(l->cpus) &&
-+				n < PAGE_SIZE - 60) {
- 			n += sprintf(buf + n, " cpus=");
- 			n += cpulist_scnprintf(buf + n, PAGE_SIZE - n - 50,
- 					l->cpus);
- 		}
- 
--		if (num_online_nodes() > 1 && !nodes_empty(l->nodes)) {
-+		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
-+				n < PAGE_SIZE - 60) {
- 			n += sprintf(buf + n, " nodes=");
- 			n += nodelist_scnprintf(buf + n, PAGE_SIZE - n - 50,
- 					l->nodes);
+Thanks for you input.
+
+
+diff -rup linux-2.6.22-rc4-git5.old/kernel/exit.c 
+linux-2.6.22-rc4-git5.new/kernel/exit.c
+--- linux-2.6.22-rc4-git5.old/kernel/exit.c	2007-06-18 
+14:36:09.000000000 -0400
++++ linux-2.6.22-rc4-git5.new/kernel/exit.c	2007-06-18 
+14:31:16.000000000 -0400
+
++/*
++ * void ptrace_update_traced_signals(
++ *			struct task_struct *child, sigset_t *new_smaskp)
++ *
++ *	Update the signal mask of ptraced signals, removing any ignored
++ *	pending signals that are no longer ptraced.  'new_smaskp' points
++ *	to the new ptrace signal mask which will be stored into
++ *	child->ptrace_sigmask.
++ */
++void ptrace_update_traced_signals(struct task_struct *child,
++							sigset_t *new_smaskp)
++{
++	int sig = 0, index = 0;
++	unsigned long int flags;
++	sigset_t prev_smask;
++
++	/* Get signals that were previously, but no longer ptraced. */
++	signandsets(&prev_smask, &child->ptrace_sigmask, new_smaskp);
++	child->ptrace_sigmask = *new_smaskp;
++	rcu_read_lock();
++	while (!sigisemptyset(&prev_smask)) {
++		while (index < _NSIG_WORDS) {
++			if (prev_smask.sig[index]) {
++                               	sig = ffz(~prev_smask.sig[index]) +
++						(index * _NSIG_BPW) + 1;
++				break;
++			}
++			index++;
++		}
++		/* Remove signal from the previously ptraced signal mask. */
++		sigdelset(&prev_smask, sig);
++
++		if (!lock_task_sighand(child, &flags)) {
++			/* This task is exiting, so just return. */
++			unlock_task_sighand(child, &flags);
++			rcu_read_unlock();
++			return;
++		}
++		if (!sig_ignored(child, sig)) {
++			unlock_task_sighand(child, &flags);
++			continue;
++		}
++		/* Remove any queued signals - they should now be ignored. */
++		rm_from_queue(sigmask(sig), &child->pending);
++		rm_from_queue(sigmask(sig), &child->signal->shared_pending);
++		unlock_task_sighand(child, &flags);
++	}
++	rcu_read_unlock();
++}
