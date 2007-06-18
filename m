@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764931AbXFRSIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbXFRSKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764931AbXFRSIZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760828AbXFRSIO
+	id S1764943AbXFRSKI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761790AbXFRSJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:08:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38880 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762157AbXFRSIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:08:12 -0400
-Message-ID: <4676C9FF.7060607@redhat.com>
-Date: Mon, 18 Jun 2007 12:07:59 -0600
-From: Brendan Conoboy <blc@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Mon, 18 Jun 2007 14:09:57 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:47429 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760828AbXFRSJ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 14:09:56 -0400
+Message-ID: <4676C78D.8040208@zytor.com>
+Date: Mon, 18 Jun 2007 10:57:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Neil Brown <neilb@suse.de>, Wakko Warner <wakko@animx.eu.org>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown> <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm> <4676BEC2.7090809@redhat.com> <Pine.LNX.4.64.0706181026170.12717@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706181026170.12717@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Robert Hancock <hancockr@shaw.ca>
+CC: David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       rmk@arm.linux.org.uk
+Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
+References: <fa.Xa4Tv0RVV3kUIdHC69Jp/LpQPcg@ifi.uio.no> <fa.D5W5QzyAnzzOD5Ln35+YDQKzWsE@ifi.uio.no> <fa.XhJVn2uLXM0A6yjcYTr2E44DELQ@ifi.uio.no> <fa.tGqwq8EAmSwz5rSn2D2AkvD+yt0@ifi.uio.no> <46769643.7010106@shaw.ca>
+In-Reply-To: <46769643.7010106@shaw.ca>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> I plan to test the different configurations.
+Robert Hancock wrote:
 > 
-> however, if I was saturating the bus with the reconstruct how can I fire 
-> off a dd if=/dev/zero of=/mnt/test and get ~45M/sec whild only slowing 
-> the reconstruct to ~4M/sec?
+> If we expect userspace apps to include them, then I would vote for no,
+> not for anything outside of #ifdef __KERNEL__ in exported headers. Keep
+> in mind also that C++ apps may need to include these as well and those
+> extensions don't always play well in C++ mode. (Last instance I ran into
+> was the ioctl argument checking macros _IOR, _IOW, etc. that create
+> non-compiling code if you use them in a C++ program.)
 > 
-> I'm putting 10x as much data through the bus at that point, it would 
-> seem to proove that it's not the bus that's saturated.
 
-I am unconvinced.  If you take ~1MB/s for each active drive, add in SCSI 
-overhead, 45M/sec seems reasonable.  Have you look at a running iostat 
-while all this is going on?  Try it out- add up the kb/s from each drive 
-and see how close you are to your maximum theoretical IO.
+Some of the actual ioctl macros generate silently wrong code if you use
+them in a C program.
 
-Also, how's your CPU utilization?
-
--- 
-Brendan Conoboy / Red Hat, Inc. / blc@redhat.com
+	-hpa
