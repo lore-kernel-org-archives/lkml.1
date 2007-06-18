@@ -1,39 +1,880 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763296AbXFRKIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXFRKJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763296AbXFRKIs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 06:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761505AbXFRJ7p
+	id S1762944AbXFRKJM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 06:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761184AbXFRKAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:59:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50255
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761352AbXFRJ71 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 05:59:27 -0400
-Date: Mon, 18 Jun 2007 02:59:45 -0700 (PDT)
-Message-Id: <20070618.025945.123705241.davem@davemloft.net>
-To: miklos@szeredi.hu
-Cc: akpm@linux-foundation.org, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix race in AF_UNIX
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <E1I0Dx9-00071X-00@dorka.pomaz.szeredi.hu>
-References: <E1I0DmJ-0006yg-00@dorka.pomaz.szeredi.hu>
-	<20070618.024807.45712241.davem@davemloft.net>
-	<E1I0Dx9-00071X-00@dorka.pomaz.szeredi.hu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jun 2007 06:00:54 -0400
+Received: from linux.dunaweb.hu ([62.77.196.1]:46529 "EHLO linux.dunaweb.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761561AbXFRKAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 06:00:51 -0400
+Message-ID: <467657C9.7000108@dunaweb.hu>
+Date: Mon, 18 Jun 2007 12:00:41 +0200
+From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Peer Chen <pchen@nvidia.com>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Kuan Luo <kluo@nvidia.com>
+Subject: Re: MCP55 NCQ problem?
+References: <fa.g0ZgLrv0is9pYHXy6dxiSz+vSug@ifi.uio.no> <465EDC37.3010002@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B1478DB51@hkemmail01.nvidia.com> <465F9765.7000100@dunaweb.hu>
+In-Reply-To: <465F9765.7000100@dunaweb.hu>
+Content-Type: multipart/mixed;
+ boundary="------------080607030409030004070007"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 18 Jun 2007 11:55:19 +0200
+This is a multi-part message in MIME format.
+--------------080607030409030004070007
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 
-> It's doing trylocks and releasing all those locks within the same spin
-> locked region, how the f**k can that deadlock?
+Zoltan Boszormenyi írta:
+> Hi,
+>
+> Peer Chen írta:
+>> Zoltan,
+>> What's your board's model number? Could you post the pci dump using 
+>> 'lspci -xxx'? Thanks.
+>>
+>>
+>> BRs
+>> Peer Chen
+>>
+>> -----Original Message-----
+>> From: Robert Hancock [mailto:hancockr@shaw.ca] Sent: Thursday, May 
+>> 31, 2007 10:31 PM
+>> To: Zoltan Boszormenyi
+>> Cc: linux-kernel; Peer Chen; Kuan Luo
+>> Subject: Re: MCP55 NCQ problem?
+>>
+>> CCing Peer Chen and Kuan Luo from NVIDIA..
+>>
+>> Looks like there were some unrecognized FIS errors from the 
+>> controller in there?
+>>
+>> Zoltan Boszormenyi wrote:
+>>  
+>>> Hi,
+>>>
+>>> I just got this with 2.6.22-rc2 + cfs-v13 + swncq patch:
+>>>
+>>> ata2.00: exception Emask 0x0 SAct 0x6 SErr 0x0 action 0x2 frozen
+>>> ata2.00: cmd 61/18:08:0f:b7:68/00:00:16:00:00/40 tag 1 cdb 0x0 data 
+>>> 12288 out
+>>>         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> ata2.00: cmd 61/18:10:7f:b7:68/00:00:16:00:00/40 tag 2 cdb 0x0 data 
+>>> 12288 out
+>>>         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> ata2: hard resetting port
+>>> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>>> ata2.00: ata_hpa_resize 1: sectors = 625142448, hpa_sectors = 625142448
+>>> ata2.00: ata_hpa_resize 1: sectors = 625142448, hpa_sectors = 625142448
+>>> ata2.00: configured for UDMA/133
+>>> ata2: EH pending after completion, repeating EH (cnt=4)
+>>> ata2: EH complete
+>>> sd 1:0:0:0: [sdb] 625142448 512-byte hardware sectors (320073 MB)
+>>> sd 1:0:0:0: [sdb] Write Protect is off
+>>> sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+>>> sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't 
+>>> support DPO or FUA
+>>>
+>>> At the time I was creating a DVD ISO image (reads and writes went to 
+>>> the disk
+>>> that was resetted), browsing mail in thunderbird which also 
+>>> exercised the same
+>>> disk and I was downloading another ISO with about 400-450 kB/sec to
+>>> another disk. Here are the disks in question:
+>>>
+>>> scsi 0:0:0:0: Direct-Access     ATA      SAMSUNG HD160JJ  WU10 PQ: 0 
+>>> ANSI: 5
+>>> scsi 1:0:0:0: Direct-Access     ATA      ST3320620AS      3.AA PQ: 0 
+>>> ANSI: 5
+>>>
+>>> I got almost the same yesterday with 2.6.22-rc2-mm1:
+>>>
+>>> May 29 12:44:20 localhost kernel: ata2.00: exception Emask 0x0 SAct 
+>>> 0x6 SErr 0x0 action 0x2 frozen
+>>> May 29 12:44:20 localhost kernel: ata2.00: cmd 
+>>> 61/10:08:2f:41:e9/00:00:07:00:00/40 tag 1 cdb 0x0 data 8192 out
+>>> May 29 12:44:20 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:44:20 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:44:20 localhost kernel: ata2.00: cmd 
+>>> 61/30:10:8f:42:e9/00:00:07:00:00/40 tag 2 cdb 0x0 data 24576 out
+>>> May 29 12:44:20 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:44:20 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:44:20 localhost kernel: ata2: hard resetting port
+>>> May 29 12:44:21 localhost kernel: ata2: SATA link up 1.5 Gbps 
+>>> (SStatus 113 SControl 300)
+>>> May 29 12:44:21 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
+>>> 625142448, hpa_sectors = 625142448
+>>> May 29 12:44:21 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
+>>> 625142448, hpa_sectors = 625142448
+>>> May 29 12:44:21 localhost kernel: ata2.00: configured for UDMA/133
+>>> May 29 12:44:21 localhost kernel: ata2: EH pending after completion, 
+>>> repeating EH (cnt=4)
+>>> May 29 12:44:21 localhost kernel: ata2: EH complete
+>>> May 29 12:44:21 localhost kernel: sd 1:0:0:0: [sdb] 625142448 
+>>> 512-byte hardware sectors (320073 MB)
+>>> May 29 12:44:21 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is 
+>>> off
+>>> May 29 12:44:21 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
+>>> enabled, read cache: enabled, doesn't support DPO or FUA
+>>> ..
+>>> May 29 12:47:46 localhost kernel: ata2.00: exception Emask 0x0 SAct 
+>>> 0x7 SErr 0x0 action 0x2 frozen
+>>> May 29 12:47:46 localhost kernel: ata2.00: cmd 
+>>> 61/08:00:27:5a:eb/00:00:07:00:00/40 tag 0 cdb 0x0 data 4096 out
+>>> May 29 12:47:46 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:47:46 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:47:46 localhost kernel: ata2.00: cmd 
+>>> 61/08:08:bf:61:9e/00:00:0f:00:00/40 tag 1 cdb 0x0 data 4096 out
+>>> May 29 12:47:46 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:47:46 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:47:46 localhost kernel: ata2.00: cmd 
+>>> 61/20:10:97:5a:eb/00:00:07:00:00/40 tag 2 cdb 0x0 data 16384 out
+>>> May 29 12:47:46 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:47:46 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:47:46 localhost kernel: ata2: hard resetting port
+>>> May 29 12:47:46 localhost kernel: ata2: SATA link up 1.5 Gbps 
+>>> (SStatus 113 SControl 300)
+>>> May 29 12:47:46 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
+>>> 625142448, hpa_sectors = 625142448
+>>> May 29 12:47:46 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
+>>> 625142448, hpa_sectors = 625142448
+>>> May 29 12:47:47 localhost kernel: ata2.00: configured for UDMA/133
+>>> May 29 12:47:47 localhost kernel: ata2: EH pending after completion, 
+>>> repeating EH (cnt=4)
+>>> May 29 12:47:47 localhost kernel: ata2: EH complete
+>>> May 29 12:47:47 localhost kernel: sd 1:0:0:0: [sdb] 625142448 
+>>> 512-byte hardware sectors (320073 MB)
+>>> May 29 12:47:47 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is 
+>>> off
+>>> May 29 12:47:47 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
+>>> enabled, read cache: enabled, doesn't support DPO or FUA
+>>> May 29 12:49:23 localhost kernel: ata2.00: exception Emask 0x0 SAct 
+>>> 0x6 SErr 0x2000000 action 0x2 frozen
+>>> May 29 12:49:23 localhost kernel: ata2: SError: {UnrecFIS }
+>>> May 29 12:49:23 localhost kernel: ata2.00: cmd 
+>>> 61/40:08:3f:71:fa/00:00:07:00:00/40 tag 1 cdb 0x0 data 32768 out
+>>> May 29 12:49:23 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:49:23 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:49:23 localhost kernel: ata2.00: cmd 
+>>> 61/10:10:7f:e7:fa/00:00:07:00:00/40 tag 2 cdb 0x0 data 8192 out
+>>> May 29 12:49:23 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:49:23 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:49:23 localhost kernel: ata2: hard resetting port
+>>> May 29 12:49:24 localhost kernel: ata2: SATA link up 1.5 Gbps 
+>>> (SStatus 113 SControl 300)
+>>> May 29 12:49:24 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
+>>> 625142448, hpa_sectors = 625142448
+>>> May 29 12:49:24 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
+>>> 625142448, hpa_sectors = 625142448
+>>> May 29 12:49:24 localhost kernel: ata2.00: configured for UDMA/133
+>>> May 29 12:49:24 localhost kernel: ata2: EH pending after completion, 
+>>> repeating EH (cnt=4)
+>>> May 29 12:49:24 localhost kernel: ata2: EH complete
+>>> May 29 12:49:24 localhost kernel: sd 1:0:0:0: [sdb] 625142448 
+>>> 512-byte hardware sectors (320073 MB)
+>>> May 29 12:49:24 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is 
+>>> off
+>>> May 29 12:49:24 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
+>>> enabled, read cache: enabled, doesn't support DPO or FUA
+>>> May 29 12:50:24 localhost kernel: ata2.00: NCQ disabled due to 
+>>> excessive errors
+>>> May 29 12:50:24 localhost kernel: ata2.00: exception Emask 0x0 SAct 
+>>> 0x6 SErr 0x0 action 0x2 frozen
+>>> May 29 12:50:24 localhost kernel: ata2.00: cmd 
+>>> 61/10:08:c7:88:b8/00:00:0f:00:00/40 tag 1 cdb 0x0 data 8192 out
+>>> May 29 12:50:24 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:50:24 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:50:24 localhost kernel: ata2.00: cmd 
+>>> 61/10:10:9f:8a:b8/00:00:0f:00:00/40 tag 2 cdb 0x0 data 8192 out
+>>> May 29 12:50:24 localhost kernel:          res 
+>>> 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+>>> May 29 12:50:24 localhost kernel: ata2.00: status: {DRDY }
+>>> May 29 12:50:24 localhost kernel: ata2: hard resetting port
+>>> May 29 12:50:25 localhost kernel: ata2: SATA link up 1.5 Gbps 
+>>> (SStatus 113 SControl 300)
+>>> May 29 12:50:25 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
+>>> 625142448, hpa_sectors = 625142448
+>>> May 29 12:50:25 localhost kernel: ata2.00: ata_hpa_resize: sectors = 
+>>> 625142448, hpa_sectors = 625142448
+>>> May 29 12:50:25 localhost kernel: ata2.00: configured for UDMA/133
+>>> May 29 12:50:25 localhost kernel: ata2: EH pending after completion, 
+>>> repeating EH (cnt=4)
+>>> May 29 12:50:25 localhost kernel: ata2: EH complete
+>>> May 29 12:50:25 localhost kernel: sd 1:0:0:0: [sdb] 625142448 
+>>> 512-byte hardware sectors (320073 MB)
+>>> May 29 12:50:25 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is 
+>>> off
+>>> May 29 12:50:25 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
+>>> enabled, read cache: enabled, doesn't support DPO or FUA
+>>>
+>>> After the system disabled NCQ there weren't any more more ata resets
+>>> and the disks were working OK.
+>>>
+>>> Strange thing is, when I have run PostgreSQL pgbench with 25 clients
+>>> on 2.6.22-rc2 + cfs-v13 + swncq (which clearly showed advanced 
+>>> transfer rate)
+>>> I had no such problems. The PostgreSQL DB was also on ata2.00.
+>>>
+>>> Best regards,
+>>> Zoltán Böszörményi
+>>>
+>>> -
+>>> To unsubscribe from this list: send the line "unsubscribe 
+>>> linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>     
+>>
+>>
+>>   
+>
+> it's an ABIT KN9 SLI. lspci output is below.
 
-The case I'm very concerned about is the interactions of your
-new code with the unix_state_double_lock() stuff I added recently
-to fix another bug.
+Here's a newer one for BIOS v20, attached.
+The previous lspci output was with BIOS v18.
+
+Yesterday I got this with 2.6.22-rc4-mm2:
+
+...
+Jun 17 11:19:02 localhost kernel: ata1.00: exception Emask 0x0 SAct 0xff 
+SErr 0x2400000 action 0x2 frozen
+Jun 17 11:19:02 localhost kernel: ata1: SError: {Handshk UnrecFIS }
+Jun 17 11:19:02 localhost kernel: ata1.00: cmd 
+61/c0:00:65:1d:18/00:00:09:00:00/40 tag 0 cdb 0x0 data 98304 out
+Jun 17 11:19:02 localhost kernel:          res 
+40/00:0c:45:59:32/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 11:19:02 localhost kernel: ata1.00: status: {DRDY }
+Jun 17 11:19:02 localhost kernel: ata1.00: cmd 
+61/30:08:35:e6:0b/01:00:05:00:00/40 tag 1 cdb 0x0 data 155648 out
+Jun 17 11:19:02 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 11:19:02 localhost kernel: ata1.00: status: {DRDY }
+Jun 17 11:19:02 localhost kernel: ata1.00: cmd 
+61/a0:10:1d:cc:0d/00:00:05:00:00/40 tag 2 cdb 0x0 data 81920 out
+Jun 17 11:19:02 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 11:19:02 localhost kernel: ata1.00: status: {DRDY }
+Jun 17 11:19:02 localhost kernel: ata1.00: cmd 
+61/08:18:e5:81:43/00:00:05:00:00/40 tag 3 cdb 0x0 data 4096 out
+Jun 17 11:19:02 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 11:19:03 localhost kernel: ata1.00: status: {DRDY }
+Jun 17 11:19:03 localhost kernel: ata1.00: cmd 
+61/08:20:ed:81:43/00:00:05:00:00/40 tag 4 cdb 0x0 data 4096 out
+Jun 17 11:19:03 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 11:19:03 localhost kernel: ata1.00: status: {DRDY }
+Jun 17 11:19:03 localhost kernel: ata1.00: cmd 
+61/40:28:25:1e:18/00:00:09:00:00/40 tag 5 cdb 0x0 data 32768 out
+Jun 17 11:19:03 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 11:19:03 localhost kernel: ata1.00: status: {DRDY }
+Jun 17 11:19:03 localhost kernel: ata1.00: cmd 
+61/40:30:65:e7:0b/00:00:05:00:00/40 tag 6 cdb 0x0 data 32768 out
+Jun 17 11:19:03 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 11:19:03 localhost kernel: ata1.00: status: {DRDY }
+Jun 17 11:19:03 localhost kernel: ata1.00: cmd 
+61/08:38:bd:cc:0d/00:00:05:00:00/40 tag 7 cdb 0x0 data 4096 out
+Jun 17 11:19:03 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 11:19:03 localhost kernel: ata1.00: status: {DRDY }
+Jun 17 11:19:03 localhost kernel: ata1: hard resetting port
+Jun 17 11:19:03 localhost kernel: ata1: SATA link up 3.0 Gbps (SStatus 
+123 SControl 300)
+Jun 17 11:19:03 localhost kernel: ata1.00: ata_hpa_resize 1: sectors = 
+312581808, hpa_sectors = 312581808
+Jun 17 11:19:03 localhost kernel: ata1.00: ata_hpa_resize 1: sectors = 
+312581808, hpa_sectors = 312581808
+Jun 17 11:19:03 localhost kernel: ata1.00: configured for UDMA/133
+Jun 17 11:19:03 localhost kernel: ata1: EH pending after completion, 
+repeating EH (cnt=4)
+Jun 17 11:19:03 localhost kernel: ata1: EH complete
+Jun 17 11:19:03 localhost kernel: sd 0:0:0:0: [sda] 312581808 512-byte 
+hardware sectors (160042 MB)
+Jun 17 11:19:03 localhost kernel: sd 0:0:0:0: [sda] Write Protect is off
+Jun 17 11:19:03 localhost kernel: sd 0:0:0:0: [sda] Write cache: 
+enabled, read cache: enabled, doesn't support DPO or FUA
+
+...
+
+Jun 17 14:20:29 localhost kernel: ata2.00: exception Emask 0x0 SAct 0x7 
+SErr 0x0 action 0x2 frozen
+Jun 17 14:20:29 localhost kernel: ata2.00: cmd 
+61/08:00:4f:3f:03/00:00:00:00:00/40 tag 0 cdb 0x0 data 4096 out
+Jun 17 14:20:29 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 14:20:29 localhost kernel: ata2.00: status: {DRDY }
+Jun 17 14:20:29 localhost kernel: ata2.00: cmd 
+61/08:08:bf:01:74/00:00:04:00:00/40 tag 1 cdb 0x0 data 4096 out
+Jun 17 14:20:29 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 14:20:29 localhost kernel: ata2.00: status: {DRDY }
+Jun 17 14:20:29 localhost kernel: ata2.00: cmd 
+61/08:10:cf:92:4b/00:00:04:00:00/40 tag 2 cdb 0x0 data 4096 out
+Jun 17 14:20:29 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 14:20:29 localhost kernel: ata2.00: status: {DRDY }
+Jun 17 14:20:29 localhost kernel: ata2: hard resetting port
+Jun 17 14:20:29 localhost kernel: ata2: SATA link up 1.5 Gbps (SStatus 
+113 SControl 300)
+Jun 17 14:20:29 localhost kernel: ata2.00: ata_hpa_resize 1: sectors = 
+625142448, hpa_sectors = 625142448
+Jun 17 14:20:29 localhost kernel: ata2.00: ata_hpa_resize 1: sectors = 
+625142448, hpa_sectors = 625142448
+Jun 17 14:20:29 localhost kernel: ata2.00: configured for UDMA/133
+Jun 17 14:20:29 localhost kernel: ata2: EH pending after completion, 
+repeating EH (cnt=4)
+Jun 17 14:20:29 localhost kernel: ata2: EH complete
+Jun 17 14:20:29 localhost kernel: sd 1:0:0:0: [sdb] 625142448 512-byte 
+hardware sectors (320073 MB)
+Jun 17 14:20:29 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is off
+Jun 17 14:20:29 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
+enabled, read cache: enabled, doesn't support DPO or FUA
+
+...
+
+Jun 17 18:44:52 localhost kernel: ata2.00: exception Emask 0x0 SAct 0x6 
+SErr 0x0 action 0x2 frozen
+Jun 17 18:44:52 localhost kernel: ata2.00: cmd 
+61/08:08:bf:01:00/00:00:00:00:00/40 tag 1 cdb 0x0 data 4096 out
+Jun 17 18:44:52 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 18:44:52 localhost kernel: ata2.00: status: {DRDY }
+Jun 17 18:44:52 localhost kernel: ata2.00: cmd 
+61/08:10:cf:01:00/00:00:00:00:00/40 tag 2 cdb 0x0 data 4096 out
+Jun 17 18:44:52 localhost kernel:          res 
+40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 17 18:44:52 localhost kernel: ata2.00: status: {DRDY }
+Jun 17 18:44:52 localhost kernel: ata2: hard resetting port
+Jun 17 18:44:52 localhost kernel: ata2: SATA link up 1.5 Gbps (SStatus 
+113 SControl 300)
+Jun 17 18:44:53 localhost kernel: ata2.00: ata_hpa_resize 1: sectors = 
+625142448, hpa_sectors = 625142448
+Jun 17 18:44:53 localhost kernel: ata2.00: ata_hpa_resize 1: sectors = 
+625142448, hpa_sectors = 625142448
+Jun 17 18:44:53 localhost kernel: ata2.00: configured for UDMA/133
+Jun 17 18:44:53 localhost kernel: ata2: EH pending after completion, 
+repeating EH (cnt=4)
+Jun 17 18:44:53 localhost kernel: ata2: EH complete
+Jun 17 18:44:53 localhost kernel: sd 1:0:0:0: [sdb] 625142448 512-byte 
+hardware sectors (320073 MB)
+Jun 17 18:44:53 localhost kernel: sd 1:0:0:0: [sdb] Write Protect is off
+Jun 17 18:44:53 localhost kernel: sd 1:0:0:0: [sdb] Write cache: 
+enabled, read cache: enabled, doesn't support DPO or FUA
+
+But otherwise it worked OK.
+
+Best regards,
+Zoltán Böszörményi
+
+
+--------------080607030409030004070007
+Content-Type: text/plain;
+ name="v20-lspci.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="v20-lspci.txt"
+
+00:00.0 RAM memory: nVidia Corporation MCP55 Memory Controller (rev a1)
+00: de 10 69 03 06 00 b0 00 a1 00 00 05 00 00 00 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 ff 00 00 00
+40: 7b 14 20 1c 08 e0 e0 01 22 20 11 11 d0 00 00 00
+50: 23 06 7f 00 03 00 00 00 00 00 03 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 06 36 0a 00
+70: 44 44 44 00 d0 09 00 00 11 00 00 00 11 11 88 00
+80: 23 99 88 00 fa 00 64 0e 02 00 00 00 7f 00 00 00
+90: 78 00 00 a0 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 01 01 01 01 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 80 00 0f 0f
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 08 00 01 a8
+e0: 00 00 e0 fe 00 00 00 00 00 00 80 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:01.0 ISA bridge: nVidia Corporation MCP55 LPC Bridge (rev a2)
+00: de 10 60 03 0f 00 a0 00 a2 00 01 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00
+40: 7b 14 20 1c 00 00 ff fe fa 3e ff 00 fa 3e ff 00
+50: fa 3e ff 00 00 5a 62 02 00 00 00 01 00 00 ff ff
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f9 ff
+70: 10 00 ff ff c1 80 00 00 00 00 44 19 43 00 30 00
+80: 09 20 00 d8 d1 82 00 10 c0 00 00 01 f0 00 00 00
+90: 80 08 00 00 00 00 00 00 21 47 95 86 ef cd ab 00
+a0: 00 00 10 80 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 95 02 97 02 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00
+
+00:01.1 SMBus: nVidia Corporation MCP55 SMBus (rev a2)
+00: de 10 68 03 01 00 b0 00 a2 00 05 0c 00 00 80 00
+10: 01 fc 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 01 1c 00 00 41 1c 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 0b 01 00 00
+40: 7b 14 20 1c 01 00 02 c0 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 01 10 00 00 01 14 00 00 01 18 00 00 00 00 00 00
+70: 01 00 00 00 00 00 c8 fe 00 00 00 00 01 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: d4 30 80 00 01 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: b4 14 05 00 05 01 80 07 80 30 00 00 41 44 44 11
+f0: 5a ff 5f 3f 00 00 00 c0 10 00 00 00 00 00 00 00
+
+00:02.0 USB Controller: nVidia Corporation MCP55 USB Controller (rev a1)
+00: de 10 6c 03 07 00 b0 00 a1 10 03 0c 00 00 80 00
+10: 00 f0 02 fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 05 01 03 01
+40: 7b 14 20 1c 01 00 02 fe 00 00 00 00 00 00 00 00
+50: 98 00 00 00 1d 47 40 00 10 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00
+
+00:02.1 USB Controller: nVidia Corporation MCP55 USB Controller (rev a2)
+00: de 10 6d 03 06 00 b0 00 a2 20 03 0c 00 00 80 00
+10: 00 e0 02 fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 0a 02 03 01
+40: 7b 14 20 1c 0a 80 98 20 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 20 20 01 00 00 60 18 85 03 3c 3f 01 00 00 00 00
+70: 00 00 08 05 00 10 20 80 89 3d b6 22 77 25 04 00
+80: 01 00 02 fe 00 00 00 00 00 00 00 00 15 16 00 00
+90: 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 01 00 00 00 00 00 08 80 00 00 00 00 00 00 00 00
+b0: 00 11 22 33 44 00 00 00 ff 03 00 00 00 00 00 00
+c0: 10 10 2d 0d 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00
+
+00:04.0 IDE interface: nVidia Corporation MCP55 IDE (rev a1)
+00: de 10 6e 03 05 00 b0 00 a1 8a 01 01 00 00 00 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 01 f0 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 00 00 03 01
+40: 7b 14 20 1c 01 00 02 00 00 00 00 00 00 00 00 00
+50: 02 f0 04 00 00 00 00 00 a8 a8 a8 20 2a 00 99 20
+60: 00 00 00 c5 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 01
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 10 00 00 00 00 00 00 00
+
+00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
+00: de 10 7f 03 07 00 b0 00 a2 85 01 01 00 00 80 00
+10: f1 09 00 00 f1 0b 00 00 71 09 00 00 71 0b 00 00
+20: 01 dc 00 00 00 d0 02 fe 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 0b 01 03 01
+40: 7b 14 20 1c 01 b0 02 00 00 00 00 00 00 00 00 00
+50: 0b 68 08 80 00 00 00 00 a8 20 a8 20 66 00 20 20
+60: 00 c7 00 c7 41 0c 00 00 00 0f 06 42 00 00 00 00
+70: 2c 78 c4 40 01 10 00 00 01 10 00 00 20 00 20 80
+80: 00 00 00 c0 00 30 58 0a 00 00 28 a0 00 40 57 0a
+90: 00 00 08 90 00 00 00 00 06 00 06 10 7f 03 01 01
+a0: 12 0a 00 18 00 00 00 00 00 00 00 00 33 31 00 02
+b0: 05 cc 84 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 0a 00 0a 00 08 00 02 a8
+d0: 0a 00 02 43 42 00 00 00 00 00 00 00 00 00 00 e0
+e0: 0a 00 02 43 42 00 00 00 00 00 00 00 00 0e 22 81
+f0: 00 00 00 00 00 00 00 00 10 00 0c 00 00 00 00 00
+
+00:05.1 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
+00: de 10 7f 03 07 00 b0 00 a2 85 01 01 00 00 80 00
+10: e1 09 00 00 e1 0b 00 00 61 09 00 00 61 0b 00 00
+20: 01 c8 00 00 00 c0 02 fe 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 05 02 03 01
+40: 7b 14 20 1c 01 b0 02 00 00 00 00 00 00 00 00 00
+50: 0b 68 08 80 00 00 00 00 a8 a8 a8 a8 aa 00 99 99
+60: 00 00 00 00 41 0c 00 00 00 0f 06 42 00 00 00 00
+70: 2c 78 c4 40 01 10 00 00 01 10 00 00 20 00 20 80
+80: 00 00 00 00 ef fb fc fe 00 00 12 02 bb fb fb ff
+90: 00 00 33 21 00 00 00 00 06 00 06 10 7f 03 01 01
+a0: 12 0a 00 00 00 00 00 00 00 00 00 00 33 31 00 02
+b0: 05 cc 84 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 0a 00 0a 00 08 00 02 a8
+d0: 0a 00 02 43 42 00 00 00 00 00 00 00 80 55 00 03
+e0: 0a 00 02 43 42 00 00 00 00 00 00 00 05 04 80 04
+f0: 00 00 00 00 00 00 00 00 10 00 0c 00 00 00 00 00
+
+00:05.2 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a2)
+00: de 10 7f 03 07 00 b0 00 a2 85 01 01 00 00 80 00
+10: 01 c4 00 00 01 c0 00 00 01 bc 00 00 01 b8 00 00
+20: 01 b4 00 00 00 b0 02 fe 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 0a 03 03 01
+40: 7b 14 20 1c 01 b0 02 00 00 00 00 00 00 00 00 00
+50: 0b 68 08 80 00 00 00 00 a8 a8 a8 a8 aa 00 99 99
+60: 00 00 00 00 41 0c 00 00 00 0f 06 42 00 00 00 00
+70: 2c 78 c4 40 01 10 00 00 01 10 00 00 20 00 20 80
+80: 00 00 00 00 ff c7 ff f7 00 00 33 1d 7f f7 ff ff
+90: 00 00 10 0d 00 00 00 00 06 00 06 10 7f 03 01 01
+a0: 12 0a 00 00 00 00 00 00 00 00 00 00 33 31 00 02
+b0: 05 cc 84 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 0a 00 0a 00 08 00 02 a8
+d0: 0a 00 02 43 42 00 00 00 00 00 00 00 0f 00 20 00
+e0: 0a 00 02 43 42 00 00 00 00 00 00 00 02 80 10 01
+f0: 00 00 00 00 00 00 00 00 10 00 0c 00 00 00 00 00
+
+00:06.0 PCI bridge: nVidia Corporation MCP55 PCI bridge (rev a2)
+00: de 10 70 03 07 01 b0 00 a2 01 04 06 00 00 81 00
+10: 00 00 00 00 00 00 00 00 00 01 01 20 90 90 80 02
+20: d0 fd d0 fd e0 fd e0 fd 00 00 00 00 00 00 00 00
+30: 00 00 00 00 b8 00 00 00 00 00 00 00 ff 00 04 0a
+40: 00 00 33 07 01 00 02 00 05 00 00 00 00 00 4c 00
+50: 00 00 fe 7f 00 00 00 00 ff 1f ff 1f 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 08 00 00 a8
+90: 00 00 e0 fe 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 ff ff 00 00 0d 8c 00 00 de 10 84 cb
+c0: de 10 84 cb 03 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:06.1 Audio device: nVidia Corporation MCP55 High Definition Audio (rev a2)
+00: de 10 71 03 06 00 b0 00 a2 00 03 04 00 00 80 00
+10: 00 00 02 fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 05 02 02 05
+40: 7b 14 20 1c 01 50 02 c0 00 00 00 00 01 01 0f 00
+50: 05 6c 80 01 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 0f 00 00 00 08 00 02 a8
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 47 10 29 00 00 00 00 00 00
+
+00:08.0 Bridge: nVidia Corporation MCP55 Ethernet (rev a2)
+00: de 10 73 03 07 04 b0 00 a2 00 80 06 00 00 00 00
+10: 00 a0 02 fe 01 b0 00 00 00 90 02 fe 00 80 02 fe
+20: 00 00 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 0f 01 01 14
+40: 7b 14 20 1c 01 70 02 fe 00 01 00 00 0c 00 00 00
+50: 05 6c 87 01 00 10 e0 fe 00 00 00 00 a9 40 00 00
+60: fe 00 00 00 00 00 00 00 ff 00 00 00 08 00 02 a8
+70: 11 50 07 00 02 00 00 00 03 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 11 00 00 00 52 01 00 00 00 00 00 00
+
+00:09.0 Bridge: nVidia Corporation MCP55 Ethernet (rev a2)
+00: de 10 73 03 07 04 b0 00 a2 00 80 06 00 00 00 00
+10: 00 70 02 fe 01 ac 00 00 00 60 02 fe 00 50 02 fe
+20: 00 00 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 0f 01 01 14
+40: 7b 14 20 1c 01 70 02 fe 00 01 00 00 0c 00 00 00
+50: 05 6c 87 01 00 10 e0 fe 00 00 00 00 b1 40 00 00
+60: fe 00 00 00 00 00 00 00 ff 00 00 00 08 00 02 a8
+70: 11 50 07 00 02 00 00 00 03 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 11 00 00 00 52 01 00 00 00 00 00 00
+
+00:0a.0 PCI bridge: nVidia Corporation MCP55 PCI Express bridge (rev a2)
+00: de 10 76 03 07 04 10 00 a2 00 04 06 10 00 01 00
+10: 00 00 00 00 00 00 00 00 00 02 02 00 81 81 00 00
+20: c0 fd c0 fd b1 fd b1 fd 00 00 00 00 00 00 00 00
+30: 00 00 00 00 40 00 00 00 00 00 00 00 ff 00 04 00
+40: 0d 48 00 00 de 10 00 00 01 50 02 f8 00 00 00 00
+50: 05 60 83 00 00 00 e0 fe 00 00 00 00 41 40 00 00
+60: 08 80 00 a8 00 00 e0 fe 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 10 00 41 01 c1 84 00 00 3f 28 00 00 81 3c 11 05
+90: 00 00 81 10 00 00 00 00 c0 01 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:0c.0 PCI bridge: nVidia Corporation MCP55 PCI Express bridge (rev a2)
+00: de 10 74 03 07 04 10 00 a2 00 04 06 10 00 01 00
+10: 00 00 00 00 00 00 00 00 00 03 03 00 71 71 00 00
+20: a0 fd a0 fd 91 fd 91 fd 00 00 00 00 00 00 00 00
+30: 00 00 00 00 40 00 00 00 00 00 00 00 ff 00 04 00
+40: 0d 48 00 00 de 10 00 00 01 50 02 f8 00 00 00 00
+50: 05 60 83 00 00 00 e0 fe 00 00 00 00 49 40 00 00
+60: 08 80 00 a8 00 00 e0 fe 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 10 00 41 01 c1 84 00 00 3f 28 00 00 11 3c 11 03
+90: 00 00 41 10 00 00 00 00 c0 01 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:0d.0 PCI bridge: nVidia Corporation MCP55 PCI Express bridge (rev a2)
+00: de 10 78 03 07 04 10 00 a2 00 04 06 10 00 01 00
+10: 00 00 00 00 00 00 00 00 00 04 04 00 61 61 00 00
+20: 80 fd 80 fd 71 fd 71 fd 00 00 00 00 00 00 00 00
+30: 00 00 00 00 40 00 00 00 00 00 00 00 ff 00 04 00
+40: 0d 48 00 00 de 10 00 00 01 50 02 f8 00 00 00 00
+50: 05 60 83 00 00 00 e0 fe 00 00 00 00 51 40 00 00
+60: 08 80 00 a8 00 00 e0 fe 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 10 00 41 01 c1 84 00 00 3f 28 00 00 11 3c 11 02
+90: 00 00 41 10 00 00 00 00 c0 01 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:0e.0 PCI bridge: nVidia Corporation MCP55 PCI Express bridge (rev a2)
+00: de 10 75 03 07 04 10 00 a2 00 04 06 10 00 01 00
+10: 00 00 00 00 00 00 00 00 00 05 05 00 51 51 00 00
+20: 60 fd 60 fd 51 fd 51 fd 00 00 00 00 00 00 00 00
+30: 00 00 00 00 40 00 00 00 00 00 00 00 ff 00 04 00
+40: 0d 48 00 00 de 10 00 00 01 50 02 f8 00 00 00 00
+50: 05 60 83 00 00 00 e0 fe 00 00 00 00 59 40 00 00
+60: 08 80 00 a8 00 00 e0 fe 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 10 00 41 01 c1 84 00 00 3f 28 00 00 11 3c 11 01
+90: 00 00 81 10 00 00 00 00 c0 01 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:0f.0 PCI bridge: nVidia Corporation MCP55 PCI Express bridge (rev a2)
+00: de 10 77 03 07 04 10 00 a2 00 04 06 10 00 01 00
+10: 00 00 00 00 00 00 00 00 00 06 06 00 41 41 00 00
+20: 40 fd 40 fd 01 e8 f1 ef 00 00 00 00 00 00 00 00
+30: 00 00 00 00 40 00 00 00 00 00 00 00 ff 00 1c 00
+40: 0d 48 00 00 de 10 00 00 01 50 02 f8 00 00 00 00
+50: 05 60 83 00 00 00 e0 fe 00 00 00 00 61 40 00 00
+60: 08 80 00 a8 00 00 e0 fe 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 10 00 41 01 c1 84 00 00 1f 28 01 00 01 3d 11 00
+90: 40 00 01 31 00 00 00 00 c0 01 48 01 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
+00: 22 10 00 11 00 00 10 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00
+40: 01 01 01 00 01 01 01 00 01 01 01 00 01 01 01 00
+50: 01 01 01 00 01 01 01 00 01 01 01 00 01 01 01 00
+60: 00 00 01 00 e4 00 00 00 20 c8 0e 0f 0c 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 08 00 01 21 20 00 11 11 22 06 75 80 02 00 00 00
+90: 69 01 61 01 00 00 06 00 07 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
+00: 22 10 01 11 00 00 00 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 03 00 00 00 00 00 7f 00 00 00 00 00 01 00 00 00
+50: 00 00 00 00 02 00 00 00 00 00 00 00 03 00 00 00
+60: 00 00 00 00 04 00 00 00 00 00 00 00 05 00 00 00
+70: 00 00 00 00 06 00 00 00 00 00 00 00 07 00 00 00
+80: 03 0a 00 00 00 0b 00 00 00 00 00 00 00 00 00 00
+90: 03 00 80 00 00 ff ef 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 03 00 f4 00 00 02 fe 00
+b0: 03 00 f0 00 80 5f f0 00 00 00 00 00 00 00 00 00
+c0: 13 40 00 00 00 f0 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 03 00 00 06 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
+00: 22 10 02 11 00 00 00 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+40: 01 00 00 00 01 01 00 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: e0 3e 78 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 46 00 00 00 00 00 00 00
+80: 02 00 00 00 00 00 00 00 24 f2 7d 5d 20 13 12 00
+90: 10 08 01 00 6b 80 10 b4 39 00 00 80 00 00 00 00
+a0: eb 02 00 5d 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 35 bf fe 70 89 00 00 00 96 9f 08 86 3a 39 0c 0d
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 3a 40 0a c7 10 a5 12 a0 41 0d 90 80 52 e7 42 e0
+e0: 8c a0 c9 4a c8 51 00 c0 62 68 d0 ba a0 80 c2 84
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
+00: 22 10 03 11 00 00 10 00 00 00 00 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+30: 00 00 00 00 f0 00 00 00 00 00 00 00 00 00 00 00
+40: ff 3b 04 00 40 00 10 0a 00 00 00 00 00 00 00 00
+50: 30 b6 12 d7 e2 00 00 00 00 00 00 00 00 18 5f 3e
+60: 08 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 11 01 02 51 22 30 00 50 00 1b 00 08 1a 22 00 00
+80: 00 00 07 23 13 21 13 21 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 3e 00 00 40 87 4f 80 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 01 a7 0d 00 00 00 c0 00 25 25 25 00
+e0: 00 00 00 00 24 1a 57 00 19 17 00 00 00 00 00 00
+f0: 0f 00 10 00 00 00 00 00 00 00 00 00 b2 0f 04 00
+
+01:08.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
+00: 4c 10 23 80 06 00 10 02 00 10 00 0c 10 40 00 00
+10: 00 f0 df fd 00 80 df fd 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 7b 14 20 1c
+30: 00 00 00 00 44 00 00 00 00 00 00 00 0b 01 02 04
+40: 00 00 00 00 01 00 02 7e 00 80 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 88 00 00 00
+f0: 10 00 00 00 82 10 00 00 7b 14 20 1c 00 00 00 00
+
+01:09.0 Multimedia video controller: Brooktree Corporation Bt878 Video Capture (rev 02)
+00: 9e 10 6e 03 06 00 80 02 02 00 00 04 00 10 80 00
+10: 08 f0 ef fd 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 61 14 03 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 0a 01 10 28
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+01:09.1 Multimedia controller: Brooktree Corporation Bt878 Audio Capture (rev 02)
+00: 9e 10 78 08 06 00 80 02 02 00 80 04 00 40 80 00
+10: 08 e0 ef fd 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 61 14 03 00
+30: 00 00 00 00 00 00 00 00 00 00 00 00 0a 01 04 ff
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+06:00.0 VGA compatible controller: ATI Technologies Inc RV410 [Radeon X700 (PCIE)]
+00: 02 10 4d 5e 07 00 10 00 00 00 00 03 10 00 80 00
+10: 0c 00 00 e8 00 00 00 00 04 00 4f fd 00 00 00 00
+20: 01 4c 00 00 00 00 00 00 00 00 00 00 43 10 88 00
+30: 00 00 00 00 50 00 00 00 00 00 00 00 0b 01 00 00
+40: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 88 00
+50: 01 58 02 06 00 00 00 00 10 80 01 00 60 02 00 00
+60: 10 08 00 00 01 1d 00 00 40 00 01 11 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 05 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+06:00.1 Display controller: ATI Technologies Inc RV410 [Radeon X700 (PCIE)] (Secondary)
+00: 02 10 6d 5e 00 00 10 00 00 00 80 03 10 00 00 00
+10: 04 00 4e fd 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 89 00
+30: 00 00 00 00 50 00 00 00 00 00 00 00 ff 00 00 00
+40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 01 58 02 06 00 00 00 00 10 00 01 00 40 02 00 00
+60: 00 00 00 00 01 1d 00 00 00 00 01 11 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+
+--------------080607030409030004070007--
