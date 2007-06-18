@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763332AbXFRNLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762876AbXFRNPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763332AbXFRNLo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 09:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbXFRNLg
+	id S1762876AbXFRNPr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 09:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbXFRNPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 09:11:36 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:36271 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761652AbXFRNLf (ORCPT
+	Mon, 18 Jun 2007 09:15:40 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:6011 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbXFRNPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 09:11:35 -0400
-To: mingo@elte.hu
-CC: cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, kiran@scalex86.org
-In-reply-to: <20070618123646.GA22672@elte.hu> (message from Ingo Molnar on
-	Mon, 18 Jun 2007 14:36:46 +0200)
-Subject: Re: [BUG] long freezes on thinkpad t60
-References: <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu> <20070618081204.GA11153@elte.hu> <E1I0CY4-0006lF-00@dorka.pomaz.szeredi.hu> <20070618083109.GA23572@elte.hu> <E1I0ChN-0006nd-00@dorka.pomaz.szeredi.hu> <20070618091832.GA1860@elte.hu> <20070618093848.GA6880@elte.hu> <20070618094414.GA8261@elte.hu> <E1I0EJc-0007El-00@dorka.pomaz.szeredi.hu> <20070618123646.GA22672@elte.hu>
-Message-Id: <E1I0Gzz-0007iA-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 18 Jun 2007 15:10:27 +0200
+	Mon, 18 Jun 2007 09:15:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O5uzY4Od2qscDDit2FI5wgegLHaPScdPm5PQNsA9YqPdm9Y9/D+WNB3Us3Q2LXwgZNqKyDInyw2s6bGYJ23mlBLoYYFVLJQTVP7VthOdDBTo8hNCdOikS3s3m6lr+xLU9iLQ9i5ZTYIffOiHu+leGbQ2jIj/yAl/+shrcHkF+cw=
+Message-ID: <625fc13d0706180615t2f327b16rf648b2ee56da6ed9@mail.gmail.com>
+Date: Mon, 18 Jun 2007 08:15:37 -0500
+From: "Josh Boyer" <jwboyer@gmail.com>
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [RFC] [PATCH] selective signal ptracing
+Cc: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, john.blackwood@ccur.com,
+       linux-kernel@vger.kernel.org,
+       "Sven-Thorsten Dietrich" <sdietrich@novell.com>, bugsy@ccur.com
+In-Reply-To: <20070617012952.09F2D4D059F@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1182039062.26853.111.camel@localhost.localdomain>
+	 <20070617012952.09F2D4D059F@magilla.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > how about the patch below? Boot-tested on 32-bit. As a side-effect 
-> > > > this change also removes the 255 CPUs limit from the 32-bit kernel.
-> > > 
-> > > boot-tested on 64-bit too now.
-> > 
-> > Strange, I can't even get past the compile stage ;)
-> > 
-> >   CC      kernel/spinlock.o
-> > {standard input}: Assembler messages:
-> > {standard input}:207: Error: backward ref to unknown label "4:"
-> 
-> oh, sorry - i built it with !PREEMPT, which doesnt make use of the flags 
-> thing. I fixed the build and have cleaned up and simplified that code 
-> some more - does the patch below work for you? (it does for me on both 
-> 32-bit and 64-bit)
+On 6/16/07, Roland McGrath <roland@redhat.com> wrote:
+> > What are the issues with arch like ARM ?
+>
+> The interesting class ARM belongs to is machines that don't (or don't
+> always) have hardware support for single-step.  Maintaining the status quo
+> of how PTRACE_SINGLESTEP functions on these machines is different in
+> implementation under utrace than it is for machines that always use
+> hardware support.  That is the only special complication for ARM, and it is
+> not really very complicated.  Apparently the way I described the issue in
+> the past was easily misunderstood.
 
-Thanks.  The patch boots, and...  doesn't solve the bug.  Weird.
+That isn't just ARM.  There are some embedded PowerPC chips that lack
+an easily usable hardware single step.  Just an FYI.
 
-CPU bug?  I've upgraded the BIOS not such a long time ago.
-
-I guess now we know what the problem is, it would be pretty easy to
-create some test code, that uses two threads, one of which loops in
-lock/unlock/rep_nop and the other that tries to acquire the lock and
-measures latency.
-
-Should I try to do that?
-
-Thanks,
-Miklos
+josh
