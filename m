@@ -1,175 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760595AbXFRQfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbXFRQgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760595AbXFRQfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 12:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXFRQfY
+	id S1759983AbXFRQgt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 12:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbXFRQgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 12:35:24 -0400
-Received: from mailhost.igel.co.jp ([219.106.231.130]:39376 "EHLO
-	mailhost.igel.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752489AbXFRQfX (ORCPT
+	Mon, 18 Jun 2007 12:36:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53172 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752841AbXFRQgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 12:35:23 -0400
-X-Greylist: delayed 1235 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 12:35:23 EDT
-Date: Tue, 19 Jun 2007 01:14:40 +0900 (JST)
-Message-Id: <20070619.011440.260207451.matsu@igel.co.jp>
-To: tglx@linutronix.de
-Cc: nelsoneci@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: v2.6.21.4-rt11
-From: Katsuya MATSUBARA <matsu@igel.co.jp>
-In-Reply-To: <1182099558.8176.436.camel@chaos>
-References: <1182098605.8176.422.camel@chaos>
-	<2accc2ff0706170949j26c391aek7ed32e0e55d9a3d1@mail.gmail.com>
-	<1182099558.8176.436.camel@chaos>
-X-Mailer: Mew version 5.2 on Emacs 21.3.50 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jun 2007 12:36:42 -0400
+Date: Mon, 18 Jun 2007 09:34:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Miklos Szeredi <miklos@szeredi.hu>, cebbert@redhat.com, chris@atlee.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+In-Reply-To: <20070618081204.GA11153@elte.hu>
+Message-ID: <alpine.LFD.0.98.0706180857120.14121@woody.linux-foundation.org>
+References: <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu> <20070524144447.GA25068@elte.hu>
+ <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu>
+ <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
+ <20070616103707.GA28096@elte.hu> <E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu>
+ <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu>
+ <20070618081204.GA11153@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 17 Jun 2007 18:59:18 +0200
 
-> On Sun, 2007-06-17 at 11:49 -0500, Nelson Castillo wrote:
-> > > > There are many choices and
-> > > > I don't know what is the more friendly. By friendly I mean the one that
-> > > > is likely to be merged and that cooperate with you.
-> > >
-> > > Which choices do you mean ?
-> > 
-> > I mean implementations. I've seen lot of them but i don't know which one
-> > to try (I'm new to RT and the implementation in this thread seems to
-> > be very nice).
+On Mon, 18 Jun 2007, Ingo Molnar wrote:
 > 
-> Thanks :)
-> 
-> > > >   http://people.redhat.com/mingo/realtime-preempt/patch-2.6.21.4-rt14
-> > > >
-> > > > : undefined reference to `usecs_to_cycles'
-> > > > make: *** [.tmp_vmlinux1] Error 1
-> > >
-> > > Which ARM sub arch ?
-> > 
-> > sub arch AT91 -- (Atmel AT91RM9200 processor).
-> 
-> It lacks support for the generic timeofday and clock event layers, which
-> causes the compile breakage.
+> To test this theory, could you try the patch below, does this fix your 
+> hangs too?
 
- I am working on Renesas SuperH platforms.
- I faced the similar compile errors
- because 2.6.21.X in SH does not support GENERIC_TIME yet.
- I made a workaround patch. Is this correct?
+I really think this the the wrong approach, although *testing* it makes 
+sense.
 
- Thanks,
----
- Katsuya Matsubara @ Igel Co., Ltd
- matsu@igel.co.jp
+I think we need to handle loops that take, release, and then immediately 
+re-take differently.
+
+Such loops are _usually_ of the form where they really just release the 
+lock for some latency reason, but in this case I think it's actually just 
+a bug.
+
+That code does:
+
+	if (unlikely(p->array || task_running(rq, p))) {
+
+to decide if it needs to just unlock and repeat, but then to decide if it 
+need to *yield* it only uses *one* of those tests (namely 
+
+	preempted = !task_running(rq, p);
+	..
+	if (preempted)
+		yield();
+
+and I think that's just broken. It basically says:
+
+ - if the task is running, I will busy-loop on getting/releasing the 
+   task_rq_lock
+
+and that is the _real_ bug here.
+
+Trying to make the spinlocks do somethign else than what they do is just 
+papering over the real bug. The real bug is that anybody who just 
+busy-loops getting a lock is wasting resources so much that we should not 
+be at all surprised that some multi-core or NUMA situations will get 
+starvation.
+
+Blaming some random Core 2 hardware implementation issue that just makes 
+it show up is wrong. It's a software bug, plain and simple.
+
+So how about this diff? The diff looks big, but the *code* is actually 
+simpler and shorter, I just added tons of comments, which is what blows it 
+up.
+
+The new *code* looks like this:
+
+	repeat:
+		/* Unlocked, optimistic looping! */
+	        rq = task_rq(p);
+	        while (task_running(rq, p))
+	                cpu_relax();
+
+		/* Get the *real* values */
+	        rq = task_rq_lock(p, &flags);
+	        running = task_running(rq, p);
+	        array = p->array;
+	        task_rq_unlock(rq, &flags);
+
+		/* Check them.. */
+	        if (unlikely(running)) {
+	                cpu_relax();
+	                goto repeat;
+	        }
+
+	        if (unlikely(array)) {
+	                yield();
+	                goto repeat;
+	        }
+
+and while I haven't tested it, it looks fairly obviously correct, even if 
+it's a bit subtle.
+
+Basically, that first "while()" loop is done entirely without any locking 
+at all, and so it's possibly "incorrect", but we don't care. Both the 
+runqueue used, and the "task_running()" check might be the wrong tests, 
+but they won't oops - they just mean that we might get the wrong results 
+due to lack of locking.
+
+So then we get the proper (and careful) rq lock, and check the 
+running/runnable state _safely_. And if it turns out that our 
+quick-and-dirty and unsafe loop was wrong after all, we just go back and 
+try it all again.
+
+Safe, simple, efficient. And we don't ever hold the lock for long times, 
+and we will never *loop* by taking, releasing and re-taking the lock. 
+
+Hmm? Untested, I know. Maybe I overlooked something. But even the 
+generated assembly code looks fine (much better than it looked before!)
+
+		Linus
+
+----
+ kernel/sched.c |   69 ++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 60 insertions(+), 9 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 13cdab3..66445e1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1159,21 +1159,72 @@ void wait_task_inactive(struct task_struct *p)
+ {
+ 	unsigned long flags;
+ 	struct rq *rq;
+-	int preempted;
++	struct prio_array *array;
++	int running;
  
- diff -cr linux-2.6.21.5-rt14/kernel/hrtimer.c linux-2.6.21.5-rt14-nogt/kernel/hrtimer.c
-*** linux-2.6.21.5-rt14/kernel/hrtimer.c	2007-06-18 19:55:55.000000000 +0900
---- linux-2.6.21.5-rt14-nogt/kernel/hrtimer.c	2007-06-16 16:36:10.000000000 +0900
-***************
-*** 119,127 ****
---- 119,131 ----
-  
-  	do {
-  		seq = read_seqbegin(&xtime_lock);
-+ #ifdef CONFIG_GENERIC_TIME
-  		*ts = xtime;
-  		nsecs = __get_nsec_offset();
-  		timespec_add_ns(ts, nsecs);
-+ #else
-+ 		getnstimeofday(ts);
-+ #endif
-  		tomono = wall_to_monotonic;
-  
-  	} while (read_seqretry(&xtime_lock, seq));
-diff -cr linux-2.6.21.5-rt14/kernel/time/ntp.c linux-2.6.21.5-rt14-nogt/kernel/time/ntp.c
-*** linux-2.6.21.5-rt14/kernel/time/ntp.c	2007-06-18 19:55:56.000000000 +0900
---- linux-2.6.21.5-rt14-nogt/kernel/time/ntp.c	2007-06-16 16:37:46.000000000 +0900
-***************
-*** 120,126 ****
---- 120,128 ----
-  			 */
-  			time_interpolator_update(-NSEC_PER_SEC);
-  			time_state = TIME_OOP;
-+ #ifdef CONFIG_GENERIC_TIME
-  			warp_check_clock_was_changed();
-+ #endif
-  			clock_was_set();
-  			printk(KERN_NOTICE "Clock: inserting leap second "
-  					"23:59:60 UTC\n");
-***************
-*** 136,142 ****
---- 138,146 ----
-  			 */
-  			time_interpolator_update(NSEC_PER_SEC);
-  			time_state = TIME_WAIT;
-+ #ifdef CONFIG_GENERIC_TIME
-  			warp_check_clock_was_changed();
-+ #endif
-  			clock_was_set();
-  			printk(KERN_NOTICE "Clock: deleting leap second "
-  					"23:59:59 UTC\n");
-diff -cr linux-2.6.21.5-rt14/kernel/time.c linux-2.6.21.5-rt14-nogt/kernel/time.c
-*** linux-2.6.21.5-rt14/kernel/time.c	2007-06-18 19:55:56.000000000 +0900
---- linux-2.6.21.5-rt14-nogt/kernel/time.c	2007-06-16 16:36:10.000000000 +0900
-***************
-*** 135,141 ****
---- 135,143 ----
-  	wall_to_monotonic.tv_sec -= sys_tz.tz_minuteswest * 60;
-  	xtime.tv_sec += sys_tz.tz_minuteswest * 60;
-  	time_interpolator_reset();
-+ #ifdef CONFIG_GENERIC_TIME
-  	warp_check_clock_was_changed();
-+ #endif
-  	write_sequnlock_irq(&xtime_lock);
-  	clock_was_set();
-  }
-***************
-*** 320,326 ****
---- 322,330 ----
-  		time_esterror = NTP_PHASE_LIMIT;
-  		time_interpolator_reset();
-  	}
-+ #ifdef CONFIG_GENERIC_TIME
-  	warp_check_clock_was_changed();
-+ #endif
-  	write_sequnlock_irq(&xtime_lock);
-  	clock_was_set();
-  	return 0;
-diff -cr linux-2.6.21.5-rt14/kernel/timer.c linux-2.6.21.5-rt14-nogt/kernel/timer.c
-*** linux-2.6.21.5-rt14/kernel/timer.c	2007-06-18 19:55:56.000000000 +0900
---- linux-2.6.21.5-rt14-nogt/kernel/timer.c	2007-06-16 16:36:10.000000000 +0900
-***************
-*** 1165,1171 ****
---- 1165,1173 ----
-  	clock->cycle_accumulated = 0;
-  	clock->error = 0;
-  	timekeeping_suspended = 0;
-+ #ifdef CONFIG_GENERIC_TIME
-  	warp_check_clock_was_changed();
-+ #endif
-  	write_sequnlock_irqrestore(&xtime_lock, flags);
-  
-  	touch_softlockup_watchdog();
-***************
-*** 1728,1736 ****
---- 1730,1742 ----
-  		 * too.
-  		 */
-  
-+ #ifdef CONFIG_GENERIC_TIME
-  		tp = xtime;
-  		nsecs = __get_nsec_offset();
-  		timespec_add_ns(&tp, nsecs);
-+ #else
-+ 		getnstimeofday(&tp);
-+ #endif
-  
-  		tp.tv_sec += wall_to_monotonic.tv_sec;
-  		tp.tv_nsec += wall_to_monotonic.tv_nsec;
-
+ repeat:
++	/*
++	 * We do the initial early heuristics without holding
++	 * any task-queue locks at all. We'll only try to get
++	 * the runqueue lock when things look like they will
++	 * work out!
++	 */
++	rq = task_rq(p);
++
++	/*
++	 * If the task is actively running on another CPU
++	 * still, just relax and busy-wait without holding
++	 * any locks.
++	 *
++	 * NOTE! Since we don't hold any locks, it's not
++	 * even sure that "rq" stays as the right runqueue!
++	 * But we don't care, since "task_running()" will
++	 * return false if the runqueue has changed and p
++	 * is actually now running somewhere else!
++	 */
++	while (task_running(rq, p))
++		cpu_relax();
++
++	/*
++	 * Ok, time to look more closely! We need the rq
++	 * lock now, to be *sure*. If we're wrong, we'll
++	 * just go back and repeat.
++	 */
+ 	rq = task_rq_lock(p, &flags);
+-	/* Must be off runqueue entirely, not preempted. */
+-	if (unlikely(p->array || task_running(rq, p))) {
+-		/* If it's preempted, we yield.  It could be a while. */
+-		preempted = !task_running(rq, p);
+-		task_rq_unlock(rq, &flags);
++	running = task_running(rq, p);
++	array = p->array;
++	task_rq_unlock(rq, &flags);
++
++	/*
++	 * Was it really running after all now that we
++	 * checked with the proper locks actually held?
++	 *
++	 * Oops. Go back and try again..
++	 */
++	if (unlikely(running)) {
+ 		cpu_relax();
+-		if (preempted)
+-			yield();
+ 		goto repeat;
+ 	}
+-	task_rq_unlock(rq, &flags);
++
++	/*
++	 * It's not enough that it's not actively running,
++	 * it must be off the runqueue _entirely_, and not
++	 * preempted!
++	 *
++	 * So if it wa still runnable (but just not actively
++	 * running right now), it's preempted, and we should
++	 * yield - it could be a while.
++	 */
++	if (unlikely(array)) {
++		yield();
++		goto repeat;
++	}
++
++	/*
++	 * Ahh, all good. It wasn't running, and it wasn't
++	 * runnable, which means that it will never become
++	 * running in the future either. We're all done!
++	 */
+ }
+ 
+ /***
