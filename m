@@ -1,91 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763920AbXFROed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763659AbXFROnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763920AbXFROed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 10:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761776AbXFROe0
+	id S1763659AbXFROnj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 10:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760717AbXFROnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 10:34:26 -0400
-Received: from srv1.netkinetics.net ([206.71.148.180]:40749 "EHLO
-	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752863AbXFROeZ (ORCPT
+	Mon, 18 Jun 2007 10:43:32 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23314 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756431AbXFROnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 10:34:25 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Tim Post <tim.post@netkinetics.net>
-Reply-To: tim.post@netkinetics.net
-To: Marek Wawrzyczny <marekw1977@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200706190005.28700.marekw1977@yahoo.com.au>
-References: <1182156596l.29108l.0l@ecxwww1.reanet.de>
-	 <200706190005.28700.marekw1977@yahoo.com.au>
-Content-Type: text/plain
-Organization: Net Kinetics
-Date: Mon, 18 Jun 2007 22:32:41 +0800
-Message-Id: <1182177161.21803.1540.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.1 
+	Mon, 18 Jun 2007 10:43:31 -0400
+Message-ID: <46769A22.3030908@oracle.com>
+Date: Mon, 18 Jun 2007 07:43:46 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] blink: Only blink when parameter is set
+References: <20070617083904.GC4496@suse.de> <20070617212601.38f952fe.randy.dunlap@oracle.com> <20070618071819.GA9953@suse.de>
+In-Reply-To: <20070618071819.GA9953@suse.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - netkinetics.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-19 at 00:05 +1000, Marek Wawrzyczny wrote:
-> On Mon, 18 Jun 2007 18:49:56 Anders Larsen wrote:
-> > On Sat, 16 Jun 2007 22:54:56 -0300, Alexandre Oliva wrote:
-> > > I don't know any law that requires tivoization.
-> >
-> > Not exactly laws, but pretty close:
-> >
-> > Credit-card payment terminals are subject to strict security
-> > certification, where it has to be ensured that
+Bernhard Walle wrote:
+> * Randy Dunlap <randy.dunlap@oracle.com> [2007-06-18 06:26]:
+>>> +static int blink = 0;
+>> no need to init to 0.
 > 
-> IANAL but I think a second, probably fictional but not unrealistic scenario. A 
-> Linux-based in-car entertainment system. I believe there are laws in certain 
-> countries that require the front screens to be off when the car is in motion 
-> to prevent the driver from being distracted.
+> Does it harm?
+
+It adds space to the binary file in some cases and it is kernel
+convention not to init statics to NULL or 0 since that is already
+guaranteed for them.
+
+>>> +module_param(blink, bool, S_IRUGO);
+>>> +MODULE_PARM_DESC(blink, "Enable blinking (without that, the module does nothing)\n");
+>> unneeded "\n"
 > 
-> Assume that the hardware does not prevent the user from uploading modified 
-> software (with the restriction removed) and the user modified the system and 
-> then causes a crash with fatalities.
-> 
-> I imagine there are countries where a civil case could be brought against the 
-> manufacturer for failing to provide reasonable safeguards against disabling 
-> the safety feature.
-> 
-> Cheers,
-> 
-> Marek
-
-I can only speak from driving in the US.
-
-I haven't owned a car in years because I refuse to pay for gas, but the
-last time I owned one I believe my airbags and ABS system had fuses you
-could pull and the car didn't subsequently disable itself. 
-
-I'm not sure if things have changed, but that would most likely fall
-under some kind of requirement of diligence to make it difficult to
-defeat safety measures.
-
-Just having to remove the thing from the dash would (probably) satisfy
-the requirement.
-
-Car enthusiasts would never stand for a law that stopped them from
-modifying their stuff. It was hard enough getting us all to wear safety
-belts :)
-
-I personally like a dash board with lots of lights and stuff, especially
-when driving at night. I'd suspect most others who live in dark computer
-rooms with lots of blinking lights would too.
-
-Best,
---Tim
+> Fixed. Please use the following patch.
 
 
-
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
