@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbXFRGJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759781AbXFRGJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbXFRGJh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 02:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbXFRGJa
+	id S1759781AbXFRGJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 02:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbXFRGJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 02:09:30 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:47639 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753235AbXFRGJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 02:09:29 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de
-Subject: [patch] use __asm__ and __volatile__ in asm-x86_64/msr.h
-Date: Mon, 18 Jun 2007 02:09:36 -0400
-User-Agent: KMail/1.9.7
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 18 Jun 2007 02:09:46 -0400
+Received: from srv1.netkinetics.net ([206.71.148.180]:51637 "EHLO
+	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754974AbXFRGJp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 02:09:45 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Tim Post <tim.post@netkinetics.net>
+Reply-To: tim.post@netkinetics.net
+To: Gabor Czigola <czigola@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
+References: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
+Content-Type: text/plain
+Organization: Net Kinetics
+Date: Mon, 18 Jun 2007 14:08:03 +0800
+Message-Id: <1182146883.21796.1480.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706180209.36762.vapier@gentoo.org>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - netkinetics.net
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most of the macros in msr.h already use __asm__ and __volatile__, this patch
-brings the rest into line.  This is needed since these get exported into
-userspace (need to use strict __asm__ vs asm when gcc compiles with GNU
-extensions turned off).
+On Sun, 2007-06-17 at 19:14 +0200, Gabor Czigola wrote:
+> Hello!
+> 
+> I didn't follow the whole thread from the beginning, but I see that
+> there are pros and cons for both versions of GPL.
+> 
+> I wonder why the linux kernel development community couldn't propose
+> an own GPL draft (say v2.2) that is "as free as v2" and that includes
+> some ideas (from v3) that are considered as good (free, innovative, in
+> the spirit of whatever etc.) by the majority of the kernel developers.
+> 
+> I guess to have an own version of the GPL license could also help to
+> resolve (future) dual-licensing problems.
+> 
+> Gabor Czigola
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-diff --git a/include/asm-x86_64/msr.h b/include/asm-x86_64/msr.h
-index d5c55b8..ed15d2b 100644
---- a/include/asm-x86_64/msr.h
-+++ b/include/asm-x86_64/msr.h
-@@ -33,7 +33,7 @@
- 
- /* wrmsr with exception handling */
- #define wrmsr_safe(msr,a,b) ({ int ret__;			\
--	asm volatile("2: wrmsr ; xorl %0,%0\n"			\
-+	__asm__ __volatile__("2: wrmsr ; xorl %0,%0\n"			\
- 		     "1:\n\t"					\
- 		     ".section .fixup,\"ax\"\n\t"		\
- 		     "3:  movl %4,%0 ; jmp 1b\n\t"		\
-@@ -50,7 +50,7 @@
- 
- #define rdmsr_safe(msr,a,b) \
- 	({ int ret__;						\
--	  asm volatile ("1:       rdmsr\n"			\
-+	  __asm__ __volatile__ ("1:       rdmsr\n"			\
-                       "2:\n"					\
-                       ".section .fixup,\"ax\"\n"		\
-                       "3:       movl %4,%0\n"			\
-@@ -70,17 +70,17 @@
-      __asm__ __volatile__ ("rdtsc" : "=a" (low) : : "edx")
- 
- #define rdtscp(low,high,aux) \
--     asm volatile (".byte 0x0f,0x01,0xf9" : "=a" (low), "=d" (high), "=c" (aux))
-+     __asm__ __volatile__ (".byte 0x0f,0x01,0xf9" : "=a" (low), "=d" (high), "=c" (aux))
- 
- #define rdtscll(val) do { \
-      unsigned int __a,__d; \
--     asm volatile("rdtsc" : "=a" (__a), "=d" (__d)); \
-+     __asm__ __volatile__("rdtsc" : "=a" (__a), "=d" (__d)); \
-      (val) = ((unsigned long)__a) | (((unsigned long)__d)<<32); \
- } while(0)
- 
- #define rdtscpll(val, aux) do { \
-      unsigned long __a, __d; \
--     asm volatile (".byte 0x0f,0x01,0xf9" : "=a" (__a), "=d" (__d), "=c" (aux)); \
-+     __asm__ __volatile__ (".byte 0x0f,0x01,0xf9" : "=a" (__a), "=d" (__d), "=c" (aux)); \
-      (val) = (__d << 32) | __a; \
- } while (0)
- 
+They very well could. There are provisions (I had to dig through
+gnu.org) to find them, but you are perfecly O.K. to take the legal terms
+of the GPL and make them your own in your own license. You can't copy
+their preamble without permission, and it can have no mention of GNU in
+the license once you finish.
+
+The issue would be compatibility. You can't have licenses fighting each
+other in your project, undesirable effects could include not being able
+to merge with code that remains under the original license. 
+
+The popularity of GPL2 would make this rather impractical, but if this
+is no issue to you then there is no problem.
+
+In a kernel, its a big problem.
+
+Best,
+--Tim
+
+
