@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765797AbXFRTr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765931AbXFRTs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765797AbXFRTr3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 15:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763256AbXFRTrW
+	id S1765931AbXFRTs4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 15:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763256AbXFRTst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 15:47:22 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:44448 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763046AbXFRTrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 15:47:21 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Christoph Hellwig <hch@infradead.org>
-Subject: [patch] dont export ia64 intrin headers and sanitize asm-ia64/byteorder.h
-Date: Mon, 18 Jun 2007 15:47:34 -0400
-User-Agent: KMail/1.9.7
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com
-References: <200706180219.11164.vapier@gentoo.org> <20070618183754.GC17112@infradead.org>
-In-Reply-To: <20070618183754.GC17112@infradead.org>
+	Mon, 18 Jun 2007 15:48:49 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:60263 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762934AbXFRTss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 15:48:48 -0400
+Date: Mon, 18 Jun 2007 12:48:13 -0700
+From: Greg KH <greg@kroah.com>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
+       Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070618194813.GA11691@kroah.com>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706161817.36657.dhazelton@enter.net> <orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br> <200706162306.14516.dhazelton@enter.net> <orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br> <20070617051451.GD21478@ftp.linux.org.uk> <orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br> <20070618154549.GB6041@kroah.com> <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706181547.34793.vapier@gentoo.org>
+In-Reply-To: <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 June 2007, Christoph Hellwig wrote:
-> On Mon, Jun 18, 2007 at 02:19:10AM -0400, Mike Frysinger wrote:
-> > Since asm-ia64/gcc_intrin.h gets exported to userspace, we need to make
-> > sure to use __asm__() rather than asm() since the latter is not available
-> > when compiling with gcc with GNU extensions turned off (like -std=c99).
->
-> This header is only for kernel-internal use and should not be exported
-> to userspace at all.
+On Mon, Jun 18, 2007 at 03:20:39PM -0300, Alexandre Oliva wrote:
+> On Jun 18, 2007, Greg KH <greg@kroah.com> wrote:
+> > From the very _beginning_ of the v3 process the kernel developers
+> > have showed their objection to that section of the license, and we
+> > were told, to our face, with no uncertian terms, that it was going
+> > to stay, in one form or another, no matter what we thought or said
+> > about it.
+> 
+> This sounds about right.
+> 
+> > So, why would we want to waste our time filling out web forms after
+> > that?
+> 
+> If you're adamantly favorable to permitting any form of Tivoization
+> whatsoever, don't bother.
 
-so like the following
+For the record, I completely feel that what Tivo did was both legally
+correct[1], and the correct thing to do for their system, and would
+fight _very_ hard any attempt to change the Linux kernel's license that
+would prevent this usage model.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-diff --git a/include/asm-ia64/Kbuild b/include/asm-ia64/Kbuild
-index 4a1e48b..fc03b88 100644
---- a/include/asm-ia64/Kbuild
-+++ b/include/asm-ia64/Kbuild
-@@ -3,10 +3,7 @@ include include/asm-generic/Kbuild.asm
- header-y += break.h
- header-y += fpu.h
- header-y += fpswa.h
--header-y += gcc_intrin.h
- header-y += ia64regs.h
--header-y += intel_intrin.h
--header-y += intrinsics.h
- header-y += perfmon_default_smpl.h
- header-y += ptrace_offsets.h
- header-y += rse.h
-diff --git a/include/asm-ia64/byteorder.h b/include/asm-ia64/byteorder.h
-index 69bd41d..783e272 100644
---- a/include/asm-ia64/byteorder.h
-+++ b/include/asm-ia64/byteorder.h
-@@ -7,6 +7,9 @@
-  */
- 
- #include <asm/types.h>
-+
-+#ifdef __KERNEL__
-+
- #include <asm/intrinsics.h>
- #include <linux/compiler.h>
- 
-@@ -35,6 +38,8 @@ __ia64_swab16(__u16 x)
- #define __arch__swab32(x) __ia64_swab32(x)
- #define __arch__swab16(x) __ia64_swab16(x)
- 
-+#endif
-+
- #define __BYTEORDER_HAS_U64__
- 
- #include <linux/byteorder/little_endian.h>
+So I will not bother anymore.
 
+greg k-h
+
+[1] The FSF lawyers also agree with this.
