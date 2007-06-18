@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763546AbXFRNq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbXFRN5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763546AbXFRNq3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 09:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762327AbXFRNqX
+	id S1763458AbXFRN5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 09:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762391AbXFRN5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 09:46:23 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:16329 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760614AbXFRNqW (ORCPT
+	Mon, 18 Jun 2007 09:57:03 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:43242 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758680AbXFRN5C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 09:46:22 -0400
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-From: holzheu <holzheu@linux.vnet.ibm.com>
-Reply-To: holzheu@linux.vnet.ibm.com
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, randy.dunlap@oracle.com, gregkh@suse.de,
-       mtk-manpages@gmx.net, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       "lf_kernel_messages@linux-foundation.org" 
-	<lf_kernel_messages@linux-foundation.org>
-In-Reply-To: <20070615124034.GH9442@ucw.cz>
-References: <1181747217.29512.9.camel@localhost.localdomain>
-	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>
-	 <20070614094128.GF17819@atrey.karlin.mff.cuni.cz>
-	 <20070615124034.GH9442@ucw.cz>
+	Mon, 18 Jun 2007 09:57:02 -0400
+Subject: [GIT PATCH] SCSI bug fixes for 2.6.22-rc5
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Organization: IBM
-Date: Mon, 18 Jun 2007 15:42:34 +0200
-Message-Id: <1182174154.11400.57.camel@localhost.localdomain>
+Date: Mon, 18 Jun 2007 08:56:59 -0500
+Message-Id: <1182175019.3464.9.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+Now that we're stabilising, this is a simple push of two (fairly
+critical) bug fixes.  You can get it from:
 
-On Fri, 2007-06-15 at 12:40 +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > > Your proposal is similar to one I made to some Japanese developers
-> > > earlier this year.  I was more modest, proposing that we
-> > > 
-> > > - add an enhanced printk
-> > > 
-> > > 	xxprintk(msgid, KERN_ERR "some text %d\n", some_number);
-> >   Maybe a stupid idea but why do we want to assign these numbers by hand?
-> > I can imagine it could introduce collisions when merging tons of patches
-> > with new messages... Wouldn't it be better to compute say, 8-byte hash
-> > from the message and use it as it's identifier? We could do this
-> 
-> Why hashes? Just key it off full message, and treat it like normal
-> translation problem.
-> 
-> 'lp%d: on fire' -> 'your printer failed basic tests, you should check
-> cabling'.
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-Hmmm... What about extracting all format strings from the KMSG_DOC
-macros and storing them in a file. E.g.:
+The changelog is:
 
-  printk("lp%d: on fire");
+commit 204abf28679cd55a8e254b18965583bb1c8bc739
+Author: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Date:   Wed Jun 13 12:58:53 2007 -0700
 
-  /**
-   * message
-   *
-   * Description:
-   * Your printer failed basic tests, you should check cabling
-   ...
+    [SCSI] ESP: Don't forget to clear ESP_FLAG_RESETTING.
+    
+    esp_reset_cleanup() does everything necessary except clear
+    the flag, so we never exit resetting state.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+    Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
-  KMSG_DOC(lp, "lp%d: on fire");
+commit 29982e9acd3e81a289c73321401427d02eaa8adc
+Author: Doug Chapman <doug.chapman@hp.com>
+Date:   Mon May 7 15:59:46 2007 -0400
 
-Some build mechanism creates a file with all format strings of the
-KMSG_DOC macros:
+    [SCSI] fusion: fix for BZ 8426 - massive slowdown on SCSI CD/DVD drive
+    
+    Patch for: http://bugzilla.kernel.org/show_bug.cgi?id=8426
+    
+    A recent code cleanup that moved code from mptscsih to mptspi
+    inadvertently change the order some code was called.  This caused
+    a massive slowdown (of 150x to 300x) on the CD/DVD drive on the
+    high-end HP Integrity servers.
+    
+    Signed-off-by: Doug Chapman <doug.chapman@hp.com>
+    Acked-by: Eric Moore <eric.moore@lsi.com>
+    Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
-E.g.: cat kmsgs.txt
 
-# MSG:       "lp%d: on fire"
-# COMPONENT: lp
-# DESC:      Your printer failed basic tests, you should check cabling
+And the diffstat:
 
-Then we provide a tool e.g. "kmsg", which gets as input the actual
-kernel message and searches the message database for matching format
-strings:
+ message/fusion/mptspi.c |    8 +++++---
+ scsi/esp_scsi.c         |    1 +
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
->> kmsg "lp0: on fire"
->> Your printer ...
+James
 
-Of course, we can get duplicate hits, too.
-
-The advantage of that approach is, that we don't need additional message
-identifiers like hashes.
-
-Michael
- 
 
