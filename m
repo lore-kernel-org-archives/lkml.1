@@ -1,86 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbXFRHtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbXFRHue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbXFRHtt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 03:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbXFRHtj
+	id S1758924AbXFRHue (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 03:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbXFRHuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 03:49:39 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:37026 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750839AbXFRHti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 03:49:38 -0400
-Message-ID: <4676390E.6010202@dgreaves.com>
-Date: Mon, 18 Jun 2007 08:49:34 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
-MIME-Version: 1.0
-To: David Robinson <zxvdr.au@gmail.com>
-Cc: LVM general discussion and development <linux-lvm@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>
-Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com>
-In-Reply-To: <46751D37.5020608@dgreaves.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jun 2007 03:50:23 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:45902 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbXFRHuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 03:50:21 -0400
+To: davem@davemloft.net
+CC: viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Mon, 11 Jun 2007 11:57:27 +0200)
+Subject: Re: [PATCH] fix race in AF_UNIX
+References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
+	<20070605.224128.104032917.davem@davemloft.net>
+	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu> <20070607.184731.10907840.davem@davemloft.net> <E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
+Message-Id: <E1I0BzQ-0006gZ-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 18 Jun 2007 09:49:32 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
-> David Robinson wrote:
->> David Greaves wrote:
->>> This isn't a regression.
->>>
->>> I was seeing these problems on 2.6.21 (but 22 was in -rc so I waited 
->>> to try it).
->>> I tried 2.6.22-rc4 (with Tejun's patches) to see if it had improved - 
->>> no.
->>>
->>> Note this is a different (desktop) machine to that involved my recent 
->>> bugs.
->>>
->>> The machine will work for days (continually powered up) without a 
->>> problem and then exhibits a filesystem failure within minutes of a 
->>> resume.
+Ping Dave,
 
-<snip>
+Since there doesn't seem to be any new ideas forthcoming, can we
+please decide on either one of my two sumbitted patches?
 
-> OK, that gave me an idea.
+Thanks,
+Miklos
+
+> [CC'd Al Viro and Alan Cox, restored patch]
 > 
-> Freeze the filesystem
-> md5sum the lvm
-> hibernate
-> resume
-> md5sum the lvm
-<snip>
-> So the lvm and below looks OK...
+> > > There are races involving the garbage collector, that can throw away
+> > > perfectly good packets with AF_UNIX sockets in them.
+> > > 
+> > > The problems arise when a socket goes from installed to in-flight or
+> > > vice versa during garbage collection.  Since gc is done with a
+> > > spinlock held, this only shows up on SMP.
+> > > 
+> > > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> > 
+> > I'm going to hold off on this one for now.
+> > 
+> > Holding all of the read locks kind of defeats the purpose of using
+> > the per-socket lock.
+> > 
+> > Can't you just lock purely around the receive queue operation?
 > 
-> I'll see how it behaves now the filesystem has been frozen/thawed over 
-> the hibernate...
-
-
-And it appears to behave well. (A few hours compile/clean cycling kernel builds 
-on that filesystem were OK).
-
-
-Historically I've done:
-sync
-echo platform > /sys/power/disk
-echo disk > /sys/power/state
-# resume
-
-and had filesystem corruption (only on this machine, my other hibernating xfs 
-machines don't have this problem)
-
-So doing:
-xfs_freeze -f /scratch
-sync
-echo platform > /sys/power/disk
-echo disk > /sys/power/state
-# resume
-xfs_freeze -u /scratch
-
-Works (for now - more usage testing tonight)
-
-David
+> That's already protected by the receive queue spinlock.  The race
+> however happens _between_ pushing the root set and marking of the
+> in-flight but reachable sockets.
+> 
+> If in that space any of the AF_UNIX sockets goes from in-flight to
+> installed into a file descriptor, the garbage collector can miss it.
+> If we want to protect against this using unix_sk(s)->readlock, then we
+> have to hold all of them for the duration of the marking.
+> 
+> Al, Alan, you have more experience with this piece of code.  Do you
+> have better ideas about how to fix this?
+> 
+> Thanks,
+> Miklos
+> 
+> > Index: linux-2.6.22-rc2/net/unix/garbage.c
+> > ===================================================================
+> > --- linux-2.6.22-rc2.orig/net/unix/garbage.c	2007-06-03 23:58:11.000000000 +0200
+> > +++ linux-2.6.22-rc2/net/unix/garbage.c	2007-06-06 09:48:36.000000000 +0200
+> > @@ -186,7 +186,21 @@ void unix_gc(void)
+> >  
+> >  	forall_unix_sockets(i, s)
+> >  	{
+> > -		unix_sk(s)->gc_tree = GC_ORPHAN;
+> > +		struct unix_sock *u = unix_sk(s);
+> > +
+> > +		u->gc_tree = GC_ORPHAN;
+> > +
+> > +		/*
+> > +		 * Hold ->readlock to protect against sockets going from
+> > +		 * in-flight to installed
+> > +		 *
+> > +		 * Can't sleep on this, because
+> > +		 *   a) we are under spinlock
+> > +		 *   b) skb_recv_datagram() could be waiting for a packet that
+> > +		 *      is to be sent by this thread
+> > +		 */
+> > +		if (!mutex_trylock(&u->readlock))
+> > +			goto lock_failed;
+> >  	}
+> >  	/*
+> >  	 *	Everything is now marked
+> > @@ -207,8 +221,6 @@ void unix_gc(void)
+> >  
+> >  	forall_unix_sockets(i, s)
+> >  	{
+> > -		int open_count = 0;
+> > -
+> >  		/*
+> >  		 *	If all instances of the descriptor are not
+> >  		 *	in flight we are in use.
+> > @@ -218,10 +230,20 @@ void unix_gc(void)
+> >  		 *	In this case (see unix_create1()) we set artificial
+> >  		 *	negative inflight counter to close race window.
+> >  		 *	It is trick of course and dirty one.
+> > +		 *
+> > +		 *	Get the inflight counter first, then the open
+> > +		 *	counter.  This avoids problems if racing with
+> > +		 *	sendmsg
+> > +		 *
+> > +		 *	If just created socket is not yet attached to
+> > +		 *	a file descriptor, assume open_count of 1
+> >  		 */
+> > +		int inflight_count = atomic_read(&unix_sk(s)->inflight);
+> > +		int open_count = 1;
+> > +
+> >  		if (s->sk_socket && s->sk_socket->file)
+> >  			open_count = file_count(s->sk_socket->file);
+> > -		if (open_count > atomic_read(&unix_sk(s)->inflight))
+> > +		if (open_count > inflight_count)
+> >  			maybe_unmark_and_push(s);
+> >  	}
+> >  
+> > @@ -300,6 +322,7 @@ void unix_gc(void)
+> >  			spin_unlock(&s->sk_receive_queue.lock);
+> >  		}
+> >  		u->gc_tree = GC_ORPHAN;
+> > +		mutex_unlock(&u->readlock);
+> >  	}
+> >  	spin_unlock(&unix_table_lock);
+> >  
+> > @@ -309,4 +332,19 @@ void unix_gc(void)
+> >  
+> >  	__skb_queue_purge(&hitlist);
+> >  	mutex_unlock(&unix_gc_sem);
+> > +	return;
+> > +
+> > + lock_failed:
+> > +	{
+> > +		struct sock *s1;
+> > +		forall_unix_sockets(i, s1) {
+> > +			if (s1 == s) {
+> > +				spin_unlock(&unix_table_lock);
+> > +				mutex_unlock(&unix_gc_sem);
+> > +				return;
+> > +			}
+> > +			mutex_unlock(&unix_sk(s1)->readlock);
+> > +		}
+> > +		BUG();
+> > +	}
+> >  }
+> > 
