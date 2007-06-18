@@ -1,110 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765535AbXFRVFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbXFRVFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765535AbXFRVFb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 17:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762163AbXFRVDr
+	id S932503AbXFRVFv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 17:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762279AbXFRVDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 17:03:47 -0400
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:52768 "EHLO
+	Mon, 18 Jun 2007 17:03:48 -0400
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:52763 "EHLO
 	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759940AbXFRVDo (ORCPT
+	with ESMTP id S1760090AbXFRVDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 Jun 2007 17:03:44 -0400
-Message-Id: <20070618210342.119095947@fluff.org.uk>
+Message-Id: <20070618210342.271517227@fluff.org.uk>
 References: <20070618205620.284044146@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Mon, 18 Jun 2007 21:56:24 +0100
+Date: Mon, 18 Jun 2007 21:56:25 +0100
 From: ben@fluff.org.uk
 To: ben@fluff.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        sm5xx-devel@lists.berlios.de
 Cc: Ben Dooks <ben-linux@fluff.org>
-Subject: [patch #2 4/6] SM501: Clock updates and checks
-Content-Disposition: inline; filename=simtec-drivers-mfd-sm501-clockupdate.patch
+Subject: [patch #2 5/6] SM501: Add Documentation/SM501.txt
+Content-Disposition: inline; filename=simtec-drivers-mfd-sm501-docs.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure that the M1XCLK and MCLK are sourced from
-the same PLL (and refuse to bind the driver if they
-are not).
-
-Update the PCI to safe initialisation values, as 72MHz
-is the maximum clock for 33MHz PCI bus mastering.
+Add documentation for the SM501 in Documentation/SM501.txt
+outlining the SM501 driver.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux-2.6.21-quilt8/drivers/mfd/sm501.c
+Index: linux-2.6.21-quilt8/Documentation/SM501.txt
 ===================================================================
---- linux-2.6.21-quilt8.orig/drivers/mfd/sm501.c	2007-06-07 12:42:22.000000000 +0100
-+++ linux-2.6.21-quilt8/drivers/mfd/sm501.c	2007-06-07 13:01:02.000000000 +0100
-@@ -845,6 +845,24 @@ static void sm501_init_regs(struct sm501
- 		dev_info(sm->dev, "setting MCLK to %ld\n", init->mclk);
- 		sm501_set_clock(sm->dev, SM501_CLOCK_MCLK, init->mclk);
- 	}
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-quilt8/Documentation/SM501.txt	2007-06-13 13:12:04.000000000 +0100
+@@ -0,0 +1,66 @@
++			SM501 Driver
++			============
 +
-+}
++Copyright 2006, 2007 Simtec Electronics
 +
-+/* Check the PLL sources for the M1CLK and M1XCLK
-+ *
-+ * If the M1CLK and M1XCLKs are not sourced from the same PLL, then
-+ * there is a risk (see errata AB-5) that the SM501 will cease proper
-+ * function. If this happens, then it is likely the SM501 will
-+ * hang the system.
-+*/
++Core
++----
 +
-+static int sm501_check_clocks(struct sm501_devdata *sm)
-+{
-+	unsigned long pwrmode = readl(sm->regs + SM501_CURRENT_CLOCK);
-+	unsigned long msrc = (pwrmode & SM501_POWERMODE_M_SRC);
-+	unsigned long m1src = (pwrmode & SM501_POWERMODE_M1_SRC);
++The core driver in drivers/mfd provides common services for the
++drivers which manage the specific hardware blocks. These services
++include locking for common registers, clock control and resource
++management.
 +
-+	return ((msrc == 0 && m1src != 0) || (msrc != 0 && m1src == 0));
- }
- 
- static unsigned int sm501_mem_local[] = {
-@@ -901,6 +919,12 @@ static int sm501_init_dev(struct sm501_d
- 		}
- 	}
- 
-+	ret = sm501_check_clocks(sm);
-+	if (ret) {
-+		dev_err(sm->dev, "M1X and M clocks sourced from different PLLs\n");
-+		return -EINVAL;
-+	}
++The core registers drivers for both PCI and generic bus based
++chips via the platform device and driver system.
 +
- 	/* always create a framebuffer */
- 	sm501_register_display(sm, &mem_avail);
- 
-@@ -1034,8 +1058,12 @@ static struct sm501_initdata sm501_pci_i
- 	},
- 
- 	.devices	= SM501_USE_ALL,
--	.mclk		= 100 * MHZ,
--	.m1xclk		= 160 * MHZ,
++On detection of a device, the core initialises the chip (which may
++be specified by the platform data) and then exports the selected
++peripheral set as platform devices for the specific drivers.
 +
-+	/* Errata AB-3 says that 72MHz is the fastest available
-+	 * for 33MHZ PCI with proper bus-mastering operation */
++The core re-uses the platform device system as the platform device
++system provides enough features to support the drivers without the
++need to create a new bus-type and the associated code to go with it.
 +
-+	.mclk		= 72 * MHZ,
-+	.m1xclk		= 144 * MHZ,
- };
- 
- static struct sm501_platdata_fbsub sm501_pdata_fbsub = {
-Index: linux-2.6.21-quilt8/include/linux/sm501-regs.h
-===================================================================
---- linux-2.6.21-quilt8.orig/include/linux/sm501-regs.h	2007-06-07 12:41:34.000000000 +0100
-+++ linux-2.6.21-quilt8/include/linux/sm501-regs.h	2007-06-07 12:42:22.000000000 +0100
-@@ -64,6 +64,11 @@
- #define SM501_DEBUG_CONTROL		(0x000034)
- 
- /* power management */
-+#define SM501_POWERMODE_P2X_SRC		(1<<29)
-+#define SM501_POWERMODE_V2X_SRC		(1<<20)
-+#define SM501_POWERMODE_M_SRC		(1<<12)
-+#define SM501_POWERMODE_M1_SRC		(1<<4)
 +
- #define SM501_CURRENT_GATE		(0x000038)
- #define SM501_CURRENT_CLOCK		(0x00003C)
- #define SM501_POWER_MODE_0_GATE		(0x000040)
++Resources
++---------
++
++Each peripheral has a view of the device which is implicitly narrowed to
++the specific set of resources that peripheral requires in order to
++function correctly.
++
++The centralised memory allocation allows the driver to ensure that the
++maximum possible resource allocation can be made to the video subsystem
++as this is by-far the most resource-sensitive of the on-chip functions.
++
++The primary issue with memory allocation is that of moving the video
++buffers once a display mode is chosen. Indeed when a video mode change
++occurs the memory footprint of the video subsystem changes.
++
++Since video memory is difficult to move without changing the display
++(unless sufficient contiguous memory can be provided for the old and new
++modes simultaneously) the video driver fully utilises the memory area
++given to it by aligning fb0 to the start of the area and fb1 to the end
++of it. Any memory left over in the middle is used for the acceleration
++functions, which are transient and thus their location is less critical
++as it can be moved.
++
++
++Configuration
++-------------
++
++The platform device driver uses a set of platform data to pass
++configurations through to the core and the subsidiary drivers
++so that there can be support for more than one system carrying
++an SM501 built into a single kernel image.
++
++The PCI driver assumes that the PCI card behaves as per the Silicon
++Motion reference design.
++
++There is an errata (AB-5) affecting the selection of the
++of the M1XCLK and M1CLK frequencies. These two clocks
++must be sourced from the same PLL, although they can then
++be divided down individually. If this is not set, then SM501 may
++lock and hang the whole system. The driver will refuse to
++attach if the PLL selection is different.
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
