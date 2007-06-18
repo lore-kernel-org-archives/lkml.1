@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932232AbXFRPNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764200AbXFRPNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932232AbXFRPNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 11:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932218AbXFRPMh
+	id S1764200AbXFRPNl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 11:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226AbXFRPMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 11:12:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51570 "EHLO mx1.redhat.com"
+	Mon, 18 Jun 2007 11:12:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51569 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932209AbXFRPMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932213AbXFRPMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 Jun 2007 11:12:36 -0400
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Cc: Josef Bacik <jwhiter@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 4/4] [DLM] keep dlm from panicing when traversing rsb list in debugfs
-Date: Mon, 18 Jun 2007 15:54:30 +0100
-Message-Id: <11821784842672-git-send-email-swhiteho@redhat.com>
+Cc: Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+       David Teigland <teigland@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 2/4] [DLM] fix a couple of races
+Date: Mon, 18 Jun 2007 15:54:28 +0100
+Message-Id: <11821784801162-git-send-email-swhiteho@redhat.com>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1182178482182-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1182178478593-git-send-email-swhiteho@redhat.com>
 References: y
  <11821784703600-git-send-email-swhiteho@redhat.com>
  <1182178478593-git-send-email-swhiteho@redhat.com>
- <11821784801162-git-send-email-swhiteho@redhat.com>
- <1182178482182-git-send-email-swhiteho@redhat.com>
 MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="------------1.5.1.2"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Josef Bacik <jwhiter@redhat.com>
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
 This is a multi-part message in MIME format.
 --------------1.5.1.2
@@ -35,66 +35,72 @@ Content-Type: text/plain; charset=UTF-8; format=fixed
 Content-Transfer-Encoding: 8bit
 
 
-This problem was originally reported against GFS6.1, but the same issue exists
-in upstream DLM.  This patch keeps the rsb iterator assigning under the rsbtbl
-list lock.  Each time we process an rsb we grab a reference to it to make sure
-it is not freed out from underneath us, and then put it when we get the next rsb
-in the list or move onto another list.
+Fix two races in fs/dlm/config.c:
 
-Signed-off-by: Josef Bacik <jwhiter@redhat.com>
+(1) Grab the configfs subsystem semaphore before calling
+config_group_find_obj() in get_space(). This solves a potential race
+between get_space() and concurrent mkdir(2) or rmdir(2).
+
+(2) Grab a reference on the found config_item _while_ holding the configfs
+subsystem semaphore in get_comm(), and not after it. This solves a
+potential race between get_comm() and concurrent rmdir(2).
+
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Signed-off-by: David Teigland <teigland@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/dlm/debug_fs.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+ fs/dlm/config.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 --------------1.5.1.2
-Content-Type: text/x-patch; name="b366510ec8e4fcf5a918a0c9fc1ba967d543838b.diff"
+Content-Type: text/x-patch; name="1f692e48dd1f3fa00629c69b2e34ab35c9929b45.diff"
 Content-Transfer-Encoding: 8bit
-Content-Disposition: inline; filename="b366510ec8e4fcf5a918a0c9fc1ba967d543838b.diff"
+Content-Disposition: inline; filename="1f692e48dd1f3fa00629c69b2e34ab35c9929b45.diff"
 
-diff --git a/fs/dlm/debug_fs.c b/fs/dlm/debug_fs.c
-index 61ba670..9e27a16 100644
---- a/fs/dlm/debug_fs.c
-+++ b/fs/dlm/debug_fs.c
-@@ -17,6 +17,7 @@
- #include <linux/debugfs.h>
+diff --git a/fs/dlm/config.c b/fs/dlm/config.c
+index 822abdc..5a3d390 100644
+--- a/fs/dlm/config.c
++++ b/fs/dlm/config.c
+@@ -748,9 +748,16 @@ static ssize_t node_weight_write(struct node *nd, const char *buf, size_t len)
  
- #include "dlm_internal.h"
-+#include "lock.h"
+ static struct space *get_space(char *name)
+ {
++	struct config_item *i;
++
+ 	if (!space_list)
+ 		return NULL;
+-	return to_space(config_group_find_obj(space_list, name));
++
++	down(&space_list->cg_subsys->su_sem);
++	i = config_group_find_obj(space_list, name);
++	up(&space_list->cg_subsys->su_sem);
++
++	return to_space(i);
+ }
  
- #define DLM_DEBUG_BUF_LEN 4096
- static char debug_buf[DLM_DEBUG_BUF_LEN];
-@@ -166,6 +167,9 @@ static int rsb_iter_next(struct rsb_iter *ri)
- 			read_lock(&ls->ls_rsbtbl[i].lock);
- 			if (!list_empty(&ls->ls_rsbtbl[i].list)) {
- 				ri->next = ls->ls_rsbtbl[i].list.next;
-+				ri->rsb = list_entry(ri->next, struct dlm_rsb,
-+							res_hashchain);
-+				dlm_hold_rsb(ri->rsb);
- 				read_unlock(&ls->ls_rsbtbl[i].lock);
- 				break;
- 			}
-@@ -176,6 +180,7 @@ static int rsb_iter_next(struct rsb_iter *ri)
- 		if (ri->entry >= ls->ls_rsbtbl_size)
- 			return 1;
- 	} else {
-+		struct dlm_rsb *old = ri->rsb;
- 		i = ri->entry;
- 		read_lock(&ls->ls_rsbtbl[i].lock);
- 		ri->next = ri->next->next;
-@@ -184,11 +189,13 @@ static int rsb_iter_next(struct rsb_iter *ri)
- 			ri->next = NULL;
- 			ri->entry++;
- 			read_unlock(&ls->ls_rsbtbl[i].lock);
-+			dlm_put_rsb(old);
- 			goto top;
-                 }
-+		ri->rsb = list_entry(ri->next, struct dlm_rsb, res_hashchain);
- 		read_unlock(&ls->ls_rsbtbl[i].lock);
-+		dlm_put_rsb(old);
+ static void put_space(struct space *sp)
+@@ -776,20 +783,20 @@ static struct comm *get_comm(int nodeid, struct sockaddr_storage *addr)
+ 			if (cm->nodeid != nodeid)
+ 				continue;
+ 			found = 1;
++			config_item_get(i);
+ 			break;
+ 		} else {
+ 			if (!cm->addr_count ||
+ 			    memcmp(cm->addr[0], addr, sizeof(*addr)))
+ 				continue;
+ 			found = 1;
++			config_item_get(i);
+ 			break;
+ 		}
  	}
--	ri->rsb = list_entry(ri->next, struct dlm_rsb, res_hashchain);
+ 	up(&clusters_root.subsys.su_sem);
  
- 	return 0;
+-	if (found)
+-		config_item_get(i);
+-	else
++	if (!found)
+ 		cm = NULL;
+ 	return cm;
  }
 
 --------------1.5.1.2--
