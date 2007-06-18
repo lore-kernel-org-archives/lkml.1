@@ -1,99 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbXFREoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbXFREtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbXFREoD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 00:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXFREnx
+	id S1755968AbXFREtp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 00:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbXFREti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 00:43:53 -0400
-Received: from gw.goop.org ([64.81.55.164]:52107 "EHLO mail.goop.org"
+	Mon, 18 Jun 2007 00:49:38 -0400
+Received: from holomorphy.com ([66.93.40.71]:42709 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752370AbXFREnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 00:43:52 -0400
-Message-ID: <46760D87.2000502@goop.org>
-Date: Sun, 17 Jun 2007 21:43:51 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1752514AbXFREti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 00:49:38 -0400
+Date: Sun, 17 Jun 2007 21:50:45 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Please revert 21564fd2a3deb48200b595332f9ed4c9f311f2a7
-References: <20070617214231.GA3588@stusta.de>
-In-Reply-To: <20070617214231.GA3588@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       hch@infradead.org
+Subject: Re: [patch 00/14] Page cache cleanup in anticipation of Large Blocksize support
+Message-ID: <20070618045045.GH6909@holomorphy.com>
+References: <20070614193839.878721298@sgi.com> <20070614130645.cabdff1b.akpm@linux-foundation.org> <Pine.LNX.4.64.0706141411180.1579@schroedinger.engr.sgi.com> <20070614143248.736312f8.akpm@linux-foundation.org> <1182043500.2743.7.camel@laptopd505.fenrus.org> <20070617050255.GM11166@waste.org> <Pine.LNX.4.64.0706171907360.26680@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706171907360.26680@schroedinger.engr.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Linus, please revert commit 21564fd2a3deb48200b595332f9ed4c9f311f2a7
->
-> It's not acceptable since illegal modules should definitely not get 
-> write access to paravirt_ops.
->   
+On Sun, 17 Jun 2007, Matt Mackall wrote:
+>> Is it? Last I looked it had reverted to handing out reverse-contiguous
+>> pages.
 
-What's the concern?  That a module will update the pv_ops structure to
-repoint the function?  In practice that won't work because inline
-patching will have already happened, so all the callsites will have
-direct calls to the appropriate function.
+On Sun, Jun 17, 2007 at 07:08:41PM -0700, Christoph Lameter wrote:
+> I thought that was fixed? Bill Irwin was working on it.
+> But the contiguous pages usually only work shortly after boot. After 
+> awhile memory gets sufficiently scrambled that the coalescing in the I/O 
+> layer becomes ineffective.
 
-> Andi forwarded it although the following people had already NAK'ed it:
-> - Christoph Hellwig [1]
-> - Peter Zijlstra [2]
-> - Alan Cox [3]
->
-> Considering that Andi forwarded it 2 days after he himself said a 
-> different solution was pending [4] I assume he mistakenly sent it for 
-> inclusion in your tree.
->   
+It fell off the bottom of my priority queue, sorry.
 
-We played with some ideas, but they all turned out way too ugly to live. 
 
-> Reverting is safe since it simply re-establishes the 2.6.21 status quo.
->   
-
-Well, not really.  It breaks any non-GPL module when CONFIG_PARAVIRT is
-enabled, even though the same module would work fine otherwise.  That's
-a pretty large regression.
-
-I'm not really sure what the concerns are with exporting paravirt_ops as
-a non-GPL symbol.
-
-I think the basic arguments are:
-
-    security - it makes an obvious place to hook things in.  Perhaps,
-    but in practice the patching code will replace all the indirect
-    calls with either inline code or a direct call to the proper
-    function.  Once that's happened, changing the structure will have no
-    effect.
-
-    license - it makes GPL-only functions visible to non-GPL modules. 
-    This is largely moot, since in the non-PARAVIRT case most of the
-    functions in question are exported from the kernel as inline code in
-    headers anyway, and so are available to all modules anyway.  In
-    either case (ie PARAVIRT or no), non-inlined GPL functions will
-    still be unavailable to non-GPL modules, and will still cause errors
-    at insmod time.  If a module decides to directly access paravirt_ops
-    (which is never a supported API, for anyone), then they could get
-    access to GPL code without raising a complaint - but it would be
-    very fragile piece of code, and definitely easily broken (it would
-    be not much different from  jumping into the kernel at a fixed
-    address because it "knows" a particular function is there).
-
-It would be possible to arrange for paravirt_ops to be largely cleared
-out once patching has happened, so that anyone looking at it wouldn't
-get any useful information anyway (we'd need to keep a non-exported copy
-around for patching modules, but that's OK).
-
-Or, alternatively, we could wrap parts of struct paravirt_ops with
-#ifdef MODULE to obscure the entrypoints from modules.  They would still
-be able to get around this, of course, but it makes the intent clear
-("thou shalt not play with these").  But I think its overkill, ugly, and
-doesn't really achieve much in practice.
-
-    J
-
+-- wli
