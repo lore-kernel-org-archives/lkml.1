@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbXFRVfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbXFRVgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933017AbXFRVfx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 17:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765659AbXFRVfH
+	id S932998AbXFRVgh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 17:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764763AbXFRVg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 17:35:07 -0400
-Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:42773 "EHLO
-	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765049AbXFRVfE (ORCPT
+	Mon, 18 Jun 2007 17:36:27 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:48977
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762608AbXFRVg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 17:35:04 -0400
-Date: Mon, 18 Jun 2007 23:25:24 +0200
-From: Thomas Glanzmann <thomas@glanzmann.de>
-To: carlo@alinoe.com, Linus Torvalds <torvalds@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>,
-       GIT <git@vger.kernel.org>
-Subject: GIT Packages for Debian Etch
-Message-ID: <20070618212524.GC16393@cip.informatik.uni-erlangen.de>
-Mail-Followup-To: Thomas Glanzmann <thomas@glanzmann.de>,
-	carlo@alinoe.com, Linus Torvalds <torvalds@osdl.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>,
-	GIT <git@vger.kernel.org>
+	Mon, 18 Jun 2007 17:36:26 -0400
+Date: Mon, 18 Jun 2007 14:36:21 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: David Schwartz <davids@webmaster.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <ory7ih9dba.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706181433530.14890@asgard.lang.hm>
+References: <MDEHLPKNGKAHNMBLJOLKCECMELAC.davids@webmaster.com>
+ <ory7ih9dba.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-05-02)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-a friend of mine always builds the Debian Packages from unstable for
-Debian Etch. I have on all my machines the following line in
-/etc/apt/sources.list:
+On Mon, 18 Jun 2007, Alexandre Oliva wrote:
 
-        deb http://rmdir.de/~michael/git/ ./
+> On Jun 18, 2007, "David Schwartz" <davids@webmaster.com> wrote:
+>
+>>>> Sure, and you use the hardware to stop me from modifying the
+>>>> Linux on your
+>>>> laptop.
+>
+>>> Do I?  How so?
+>
+>> Any number of ways. For example, you probably don't connect the serial ports
+>> to a device I have access to.
+>
+> But you're not the user of the software on my laptop.  I am.
 
-apt-get update; apt-get dist-upgrade
+ahh, but by your own argument you aren't
 
-and you're up2speed.
+the software on your laptop is owned by people like Linus, Al Viro, David 
+M, Alan Cox, etc.
 
-If you don't trust that packages it is very easy to build them yourself:
+they have the right to put a license on that software that would require 
+you to give them access to your hardware (after all, that's the argument 
+that you are useing to justify requireing Tivo to give you access to their 
+hardware)
 
-        wget http://ftp.debian.org/debian/pool/main/g/git-core/git-core_1.5.2.1-1.dsc
-        wget http://ftp.debian.org/debian/pool/main/g/git-core/git-core_1.5.2.1.orig.tar.gz
-        wget http://ftp.debian.org/debian/pool/main/g/git-core/git-core_1.5.2.1-1.diff.gz
-        dpkg-source -x git-core_1.5.2.1-1.dsc
-        cd git-core-1.5.2.1/
-        fakeroot debian/rules binary
-
-It runs the whole test suite and only contiues producing debs if they're good
-to go. It might be possible that you have to install some build dependencies by
-yourself. If some new git version hits unstable you can get the references for
-the three files above from:
-
-        http://packages.debian.org/git-core
-                => unstable
-                => scroll to end of page
-                => Source Packages
-                => Source Package: git-core, Download: [dsc] ...
-
-        Thomas
+David Lang
