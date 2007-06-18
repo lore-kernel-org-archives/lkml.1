@@ -1,61 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759934AbXFRI4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbXFRI47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759934AbXFRI4T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 04:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbXFRI4L
+	id S1760107AbXFRI47 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 04:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXFRI4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 04:56:11 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:37053 "EHLO smtp.wsc.cz"
+	Mon, 18 Jun 2007 04:56:52 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:37059 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755784AbXFRI4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 04:56:10 -0400
-Message-id: <11171260732566729370@wsc.cz>
+	id S1756146AbXFRI4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 04:56:50 -0400
+Message-id: <5240209912675324358@wsc.cz>
 In-reply-to: <29285162611339719891@wsc.cz>
-Subject: [PATCH 4/5] pci_ids, add atheros and 3com_2 vendors
+Subject: [PATCH 5/5] pci_ids, remove double or more empty lines
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
 Cc: Greg KH <greg@kroah.com>
-Date: Mon, 18 Jun 2007 10:56:11 +0200 (CEST)
+Date: Mon, 18 Jun 2007 10:56:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pci_ids, add atheros and 3com_2 vendors
-
-Atheros is wifi vendor. 3com_2 (0xa727) is an vendor id for one card with
-ath chip.
+pci_ids, remove two or more empty lines
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit 9aec913bf7bedc252b466f9d8022abe5d9eae449
-tree 9b1eb9cf33e1689f9ff5bab4b73bc9833f3a7098
-parent 6e779d054a804b16394dacb669facc3b1da8aae8
-author Jiri Slaby <jirislaby@gmail.com> Sat, 16 Jun 2007 17:39:03 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Mon, 18 Jun 2007 10:46:42 +0200
+commit d8c9e4ff7507e189984e7adce8f0a6358517512a
+tree dc6b13e2e5b6d97fa371bae323508bba1156a5af
+parent 9aec913bf7bedc252b466f9d8022abe5d9eae449
+author Jiri Slaby <jirislaby@gmail.com> Mon, 18 Jun 2007 10:47:59 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Mon, 18 Jun 2007 10:47:59 +0200
 
- include/linux/pci_ids.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ include/linux/pci_ids.h |   48 -----------------------------------------------
+ 1 files changed, 0 insertions(+), 48 deletions(-)
 
 diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 19a5977..012fd6e 100644
+index 012fd6e..c281d64 100644
 --- a/include/linux/pci_ids.h
 +++ b/include/linux/pci_ids.h
-@@ -2060,6 +2060,8 @@
- #define PCI_DEVICE_ID_BCM1250_PCI	0x0001
- #define PCI_DEVICE_ID_BCM1250_HT	0x0002
+@@ -735,7 +735,6 @@
+ #define PCI_DEVICE_ID_ELSA_MICROLINK	0x1000
+ #define PCI_DEVICE_ID_ELSA_QS3000	0x3000
  
-+#define PCI_VENDOR_ID_ATHEROS		0x168c
-+
- #define PCI_VENDOR_ID_NETCELL		0x169c
- #define PCI_DEVICE_ID_REVOLUTION	0x0044
+-
+ #define PCI_VENDOR_ID_BUSLOGIC		      0x104B
+ #define PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER_NC 0x0140
+ #define PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER    0x1040
+@@ -781,7 +780,6 @@
  
-@@ -2412,6 +2414,8 @@
- #define PCI_DEVICE_ID_NETMOS_9845	0x9845
- #define PCI_DEVICE_ID_NETMOS_9855	0x9855
+ #define PCI_VENDOR_ID_SONY		0x104d
  
-+#define PCI_VENDOR_ID_3COM_2		0xa727
-+
- #define PCI_SUBVENDOR_ID_EXSYS		0xd84d
- #define PCI_SUBDEVICE_ID_EXSYS_4014	0x4014
- #define PCI_SUBDEVICE_ID_EXSYS_4055	0x4055
+-
+ /* Winbond have two vendor IDs! See 0x10ad as well */
+ #define PCI_VENDOR_ID_WINBOND2		0x1050
+ #define PCI_DEVICE_ID_WINBOND2_89C940F	0x5a5a
+@@ -819,7 +817,6 @@
+ #define PCI_DEVICE_ID_PROMISE_20276	0x5275
+ #define PCI_DEVICE_ID_PROMISE_20277	0x7275
+ 
+-
+ #define PCI_VENDOR_ID_UMC		0x1060
+ #define PCI_DEVICE_ID_UMC_UM8673F	0x0101
+ #define PCI_DEVICE_ID_UMC_UM8886BF	0x673a
+@@ -838,7 +835,6 @@
+ #define PCI_DEVICE_ID_MYLEX_DAC960_BA	0xBA56
+ #define PCI_DEVICE_ID_MYLEX_DAC960_GEM	0xB166
+ 
+-
+ #define PCI_VENDOR_ID_APPLE		0x106b
+ #define PCI_DEVICE_ID_APPLE_BANDIT	0x0001
+ #define PCI_DEVICE_ID_APPLE_HYDRA	0x000e
+@@ -874,7 +870,6 @@
+ #define PCI_DEVICE_ID_YAMAHA_744	0x0010
+ #define PCI_DEVICE_ID_YAMAHA_754	0x0012
+ 
+-
+ #define PCI_VENDOR_ID_QLOGIC		0x1077
+ #define PCI_DEVICE_ID_QLOGIC_ISP10160	0x1016
+ #define PCI_DEVICE_ID_QLOGIC_ISP1020	0x1020
+@@ -905,12 +900,9 @@
+ #define PCI_DEVICE_ID_CYRIX_5530_AUDIO	0x0103
+ #define PCI_DEVICE_ID_CYRIX_5530_VIDEO	0x0104
+ 
+-
+-
+ #define PCI_VENDOR_ID_CONTAQ		0x1080
+ #define PCI_DEVICE_ID_CONTAQ_82C693	0xc693
+ 
+-
+ #define PCI_VENDOR_ID_OLICOM		0x108d
+ #define PCI_DEVICE_ID_OLICOM_OC2325	0x0012
+ #define PCI_DEVICE_ID_OLICOM_OC2183	0x0013
+@@ -942,23 +934,19 @@
+ #define PCI_DEVICE_ID_SII_3112		0x3112
+ #define PCI_DEVICE_ID_SII_1210SA	0x0240
+ 
+-
+ #define PCI_VENDOR_ID_BROOKTREE		0x109e
+ #define PCI_DEVICE_ID_BROOKTREE_878	0x0878
+ #define PCI_DEVICE_ID_BROOKTREE_879	0x0879
+ 
+-
+ #define PCI_VENDOR_ID_SGI		0x10a9
+ #define PCI_DEVICE_ID_SGI_IOC3		0x0003
+ #define PCI_DEVICE_ID_SGI_LITHIUM	0x1002
+ #define PCI_DEVICE_ID_SGI_IOC4		0x100a
+ 
+-
+ #define PCI_VENDOR_ID_WINBOND		0x10ad
+ #define PCI_DEVICE_ID_WINBOND_82C105	0x0105
+ #define PCI_DEVICE_ID_WINBOND_83C553	0x0565
+ 
+-
+ #define PCI_VENDOR_ID_PLX		0x10b5
+ #define PCI_DEVICE_ID_PLX_R685		0x1030
+ #define PCI_DEVICE_ID_PLX_ROMULUS	0x106a
+@@ -992,7 +980,6 @@
+ #define PCI_DEVICE_ID_3COM_3CR990SVR97	0x9909
+ #define PCI_DEVICE_ID_3COM_3CR990SVR	0x990a
+ 
+-
+ #define PCI_VENDOR_ID_AL		0x10b9
+ #define PCI_DEVICE_ID_AL_M1533		0x1533
+ #define PCI_DEVICE_ID_AL_M1535 		0x1535
+@@ -1015,18 +1002,14 @@
+ #define PCI_DEVICE_ID_AL_M5451		0x5451
+ #define PCI_DEVICE_ID_AL_M7101		0x7101
+ 
+-
+-
+ #define PCI_VENDOR_ID_NEOMAGIC		0x10c8
+ #define PCI_DEVICE_ID_NEOMAGIC_NM256AV_AUDIO 0x8005
+ #define PCI_DEVICE_ID_NEOMAGIC_NM256ZX_AUDIO 0x8006
+ #define PCI_DEVICE_ID_NEOMAGIC_NM256XL_PLUS_AUDIO 0x8016
+ 
+-
+ #define PCI_VENDOR_ID_TCONRAD		0x10da
+ #define PCI_DEVICE_ID_TCONRAD_TOKENRING	0x0508
+ 
+-
+ #define PCI_VENDOR_ID_NVIDIA			0x10de
+ #define PCI_DEVICE_ID_NVIDIA_TNT		0x0020
+ #define PCI_DEVICE_ID_NVIDIA_TNT2		0x0028
+@@ -1245,9 +1228,6 @@
+ #define PCI_DEVICE_ID_IMS_TT128		0x9128
+ #define PCI_DEVICE_ID_IMS_TT3D		0x9135
+ 
+-
+-
+-
+ #define PCI_VENDOR_ID_INTERG		0x10ea
+ #define PCI_DEVICE_ID_INTERG_1682	0x1682
+ #define PCI_DEVICE_ID_INTERG_2000	0x2000
+@@ -1266,7 +1246,6 @@
+ #define PCI_DEVICE_ID_XILINX_HAMMERFALL_DSP 0x3fc5
+ #define PCI_DEVICE_ID_XILINX_HAMMERFALL_DSP_MADI 0x3fc6
+ 
+-
+ #define PCI_VENDOR_ID_INIT		0x1101
+ 
+ #define PCI_VENDOR_ID_CREATIVE		0x1102 /* duplicate: ECTIVA */
+@@ -1361,7 +1340,6 @@
+ #define PCI_VENDOR_ID_SIEMENS           0x110A
+ #define PCI_DEVICE_ID_SIEMENS_DSCC4     0x2102
+ 
+-
+ #define PCI_VENDOR_ID_VORTEX		0x1119
+ #define PCI_DEVICE_ID_VORTEX_GDT60x0	0x0000
+ #define PCI_DEVICE_ID_VORTEX_GDT6000B	0x0001
+@@ -1396,7 +1374,6 @@
+ #define PCI_VENDOR_ID_FORE		0x1127
+ #define PCI_DEVICE_ID_FORE_PCA200E	0x0300
+ 
+-
+ #define PCI_VENDOR_ID_PHILIPS		0x1131
+ #define PCI_DEVICE_ID_PHILIPS_SAA7146	0x7146
+ #define PCI_DEVICE_ID_PHILIPS_SAA9730	0x9730
+@@ -1415,7 +1392,6 @@
+ #define PCI_DEVICE_ID_ZIATECH_5550_HC	0x5550
+  
+ 
+-
+ #define PCI_VENDOR_ID_SYSKONNECT	0x1148
+ #define PCI_DEVICE_ID_SYSKONNECT_TR	0x4200
+ #define PCI_DEVICE_ID_SYSKONNECT_GE	0x4300
+@@ -1423,7 +1399,6 @@
+ #define PCI_DEVICE_ID_SYSKONNECT_9DXX	0x4400
+ #define PCI_DEVICE_ID_SYSKONNECT_9MXX	0x4500
+ 
+-
+ #define PCI_VENDOR_ID_DIGI		0x114f
+ #define PCI_DEVICE_ID_DIGI_DF_M_IOM2_E	0x0070
+ #define PCI_DEVICE_ID_DIGI_DF_M_E	0x0071
+@@ -1434,12 +1409,10 @@
+ #define PCI_DEVICE_ID_NEO_2RJ45         0x00CA
+ #define PCI_DEVICE_ID_NEO_2RJ45PRI      0x00CB
+ 
+-
+ #define PCI_VENDOR_ID_XIRCOM		0x115d
+ #define PCI_DEVICE_ID_XIRCOM_RBM56G	0x0101
+ #define PCI_DEVICE_ID_XIRCOM_X3201_MDM	0x0103
+ 
+-
+ #define PCI_VENDOR_ID_SERVERWORKS	  0x1166
+ #define PCI_DEVICE_ID_SERVERWORKS_HE	  0x0008
+ #define PCI_DEVICE_ID_SERVERWORKS_LE	  0x0009
+@@ -1508,7 +1481,6 @@
+ #define PCI_DEVICE_ID_ZEITNET_1221	0x0001
+ #define PCI_DEVICE_ID_ZEITNET_1225	0x0002
+ 
+-
+ #define PCI_VENDOR_ID_FUJITSU_ME	0x119e
+ #define PCI_DEVICE_ID_FUJITSU_FS155	0x0001
+ #define PCI_DEVICE_ID_FUJITSU_FS50	0x0003
+@@ -1526,28 +1498,23 @@
+ #define PCI_DEVICE_ID_V3_V960		0x0001
+ #define PCI_DEVICE_ID_V3_V351		0x0002
+ 
+-
+ #define PCI_VENDOR_ID_ATT		0x11c1
+ #define PCI_DEVICE_ID_ATT_VENUS_MODEM	0x480
+ 
+-
+ #define PCI_VENDOR_ID_SPECIALIX		0x11cb
+ #define PCI_DEVICE_ID_SPECIALIX_IO8	0x2000
+ #define PCI_DEVICE_ID_SPECIALIX_RIO	0x8000
+ #define PCI_SUBDEVICE_ID_SPECIALIX_SPEED4 0xa004
+ 
+-
+ #define PCI_VENDOR_ID_ANALOG_DEVICES	0x11d4
+ #define PCI_DEVICE_ID_AD1889JS		0x1889
+ 
+-
+ #define PCI_DEVICE_ID_SEGA_BBA		0x1234
+ 
+ #define PCI_VENDOR_ID_ZORAN		0x11de
+ #define PCI_DEVICE_ID_ZORAN_36057	0x6057
+ #define PCI_DEVICE_ID_ZORAN_36120	0x6120
+ 
+-
+ #define PCI_VENDOR_ID_COMPEX		0x11f6
+ #define PCI_DEVICE_ID_COMPEX_ENET100VG4	0x0112
+ 
+@@ -1606,8 +1573,6 @@
+ #define PCI_DEVICE_ID_3DFX_VOODOO3	0x0005
+ #define PCI_DEVICE_ID_3DFX_VOODOO5	0x0009
+ 
+-
+-
+ #define PCI_VENDOR_ID_AVM		0x1244
+ #define PCI_DEVICE_ID_AVM_B1		0x0700
+ #define PCI_DEVICE_ID_AVM_C4		0x0800
+@@ -1616,7 +1581,6 @@
+ #define PCI_DEVICE_ID_AVM_C2		0x1100
+ #define PCI_DEVICE_ID_AVM_T1		0x1200
+ 
+-
+ #define PCI_VENDOR_ID_STALLION		0x124d
+ 
+ /* Allied Telesyn */
+@@ -1639,7 +1603,6 @@
+ #define PCI_VENDOR_ID_SATSAGEM		0x1267
+ #define PCI_DEVICE_ID_SATSAGEM_NICCY	0x1016
+ 
+-
+ #define PCI_VENDOR_ID_ENSONIQ		0x1274
+ #define PCI_DEVICE_ID_ENSONIQ_CT5880	0x5880
+ #define PCI_DEVICE_ID_ENSONIQ_ES1370	0x5000
+@@ -1662,7 +1625,6 @@
+ 
+ #define PCI_VENDOR_ID_ALTEON		0x12ae
+ 
+-
+ #define PCI_SUBVENDOR_ID_CONNECT_TECH			0x12c4
+ #define PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232		0x0001
+ #define PCI_SUBDEVICE_ID_CONNECT_TECH_BH4_232		0x0002
+@@ -1693,7 +1655,6 @@
+ #define PCI_SUBDEVICE_ID_CONNECT_TECH_PCI_UART_4_485	0x0331
+ #define PCI_SUBDEVICE_ID_CONNECT_TECH_PCI_UART_8_485	0x0332
+ 
+-
+ #define PCI_VENDOR_ID_NVIDIA_SGS	0x12d2
+ #define PCI_DEVICE_ID_NVIDIA_SGS_RIVA128 0x0018
+ 
+@@ -1803,7 +1764,6 @@
+ #define PCI_DEVICE_ID_LMC_SSI		0x0005
+ #define PCI_DEVICE_ID_LMC_T1		0x0006
+ 
+-
+ #define PCI_VENDOR_ID_NETGEAR		0x1385
+ #define PCI_DEVICE_ID_NETGEAR_GA620	0x620a
+ 
+@@ -2020,7 +1980,6 @@
+ #define PCI_SUBDEVICE_ID_PCI_RAS4       0xf001
+ #define PCI_SUBDEVICE_ID_PCI_RAS8       0xf010
+ 
+-
+ #define PCI_VENDOR_ID_SYBA		0x1592
+ #define PCI_DEVICE_ID_SYBA_2P_EPP	0x0782
+ #define PCI_DEVICE_ID_SYBA_1P_ECP	0x0783
+@@ -2044,7 +2003,6 @@
+ 
+ #define PCI_VENDOR_ID_PDC		0x15e9
+ 
+-
+ #define PCI_VENDOR_ID_FARSITE           0x1619
+ #define PCI_DEVICE_ID_FARSITE_T2P       0x0400
+ #define PCI_DEVICE_ID_FARSITE_T4P       0x0440
+@@ -2100,7 +2058,6 @@
+ #define PCI_DEVICE_ID_HERC_WIN		0x5732
+ #define PCI_DEVICE_ID_HERC_UNI		0x5832
+ 
+-
+ #define PCI_VENDOR_ID_SITECOM		0x182d
+ #define PCI_DEVICE_ID_SITECOM_DC105V2	0x3069
+ 
+@@ -2136,12 +2093,9 @@
+ #define PCI_DEVICE_ID_3DLABS_PERMEDIA2	0x0007
+ #define PCI_DEVICE_ID_3DLABS_PERMEDIA2V	0x0009
+ 
+-
+ #define PCI_VENDOR_ID_AKS		0x416c
+ #define PCI_DEVICE_ID_AKS_ALADDINCARD	0x0100
+ 
+-
+-
+ #define PCI_VENDOR_ID_S3		0x5333
+ #define PCI_DEVICE_ID_S3_TRIO		0x8811
+ #define PCI_DEVICE_ID_S3_868		0x8880
+@@ -2153,7 +2107,6 @@
+ #define PCI_VENDOR_ID_DUNORD		0x5544
+ #define PCI_DEVICE_ID_DUNORD_I3000	0x0001
+ 
+-
+ #define PCI_VENDOR_ID_DCI		0x6666
+ #define PCI_DEVICE_ID_DCI_PCCOM4	0x0001
+ #define PCI_DEVICE_ID_DCI_PCCOM8	0x0002
+@@ -2398,7 +2351,6 @@
+ #define PCI_DEVICE_ID_ADAPTEC2_OBSIDIAN   0x0500
+ #define PCI_DEVICE_ID_ADAPTEC2_SCAMP	0x0503
+ 
+-
+ #define PCI_VENDOR_ID_HOLTEK		0x9412
+ #define PCI_DEVICE_ID_HOLTEK_6565	0x6565
+ 
