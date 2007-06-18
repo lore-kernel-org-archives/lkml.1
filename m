@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbXFRQhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbXFRQjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbXFRQhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 12:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbXFRQhl
+	id S1762157AbXFRQjk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 12:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757716AbXFRQjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 12:37:41 -0400
-Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:44210
-	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754833AbXFRQhk (ORCPT
+	Mon, 18 Jun 2007 12:39:32 -0400
+Received: from ccerelbas04.cce.hp.com ([161.114.21.107]:39547 "EHLO
+	ccerelbas04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbXFRQjb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 12:37:40 -0400
-Message-ID: <4676B4B9.9030002@hawkeye.stone.uk.eu.org>
-Date: Mon, 18 Jun 2007 17:37:13 +0100
-From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Mon, 18 Jun 2007 12:39:31 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Bryan Henderson <hbryan@us.ibm.com>
-CC: alan <alan@clueserver.org>, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-References: <OFC119F96F.A721E445-ON882572FE.0055140A-882572FE.00571482@us.ibm.com>
-In-Reply-To: <OFC119F96F.A721E445-ON882572FE.0055140A-882572FE.00571482@us.ibm.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
+Date: Mon, 18 Jun 2007 16:39:28 -0000
+Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8C015CF43A@G3W0639.americas.hpqcorp.net>
+In-Reply-To: <20070618043037.GA14758@in.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
+Thread-Index: AcexYXNskNxZTSulTNSrIjMr3lrYwwAY0UGw
+References: <20070614153119.GC32137@hmsreliant.homelinux.net> <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net> <20070614192523.GB1110@hmsreliant.homelinux.net> <20070618043037.GA14758@in.ibm.com>
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: <vgoyal@in.ibm.com>, "Neil Horman" <nhorman@tuxdriver.com>
+Cc: <linux-kernel@vger.kernel.org>, "ISS StorageDev" <iss_storagedev@hp.com>,
+       <akpm@linux-foundation.org>,
+       "SCSI Mailing List" <linux-scsi@vger.kernel.org>
+X-OriginalArrivalTime: 18 Jun 2007 16:39:29.0878 (UTC) FILETIME=[3DEB2F60:01C7B1C7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Henderson wrote:
->> Part of the problem is that "whenever you modify a file"
->> is ill-defined, or rather, if you were to take the literal meaning of it
->> you'd end up with an unmanageable number of revisions.
-> 
-> Let me expand on that.  Do you want to save a revision every time the user 
-> types in an editor?  Every time he runs a "save" command?  Every time a 
-> program does a write() system call?  Every time a program closes a 
-> modified file?  If you're adding to a C program, is every draft you 
-> compile a revision, or just the final modification after the bugs are 
-> worked out?
-> 
-> When I was very new to coding, I used VMS and thought the automatic 
-> revisioning would be a great thing because it would save me when I 
-> modified a program and later regretted it.  The system made a revision 
-> every time I exited the editor.  But I soon found that the "previous 
-> revision" to which I wanted to revert was always many editings back, since 
-> I spent a lot of time trying to make the regrettable code work before 
-> giving up.  VMS kept a fixed number of revisions per file.  But keeping 20 
-> versions of other files would have been wasteful of disk space, directory 
-> listing space, etc.
-> 
-> Later, I discovered what I think are superior alternatives:  RCS-style 
-> version management on top of the filesystem, and automatic versioning 
-> based on time instead of count of "modifications."  For example, make a 
-> copy of every changed file every hour and keep it for a day and keep one 
-> of those for a week, and keep one of those for a month, etc.  This works 
-> even without snapshot technology and even without sub-file deltas.  But of 
-> course, it's better with those.
+Vivek wrote: 
 
->From what I can see this seems to be the consesus (and it sound very
-sensible to me).
+> 
+> I think this is not the right usage of reset_devices 
+> parameter. This parameter instructs the driver to reset the 
+> device before going ahead with rest of the initialization 
+> before as underlying device might not be in a sane state. 
+> kexec/kdump is one of the usages and this can also be useful 
+> in the case of BIOS not doing its job.
+> 
+> When I had proposed crash_boot parameter for kexec/kdump 
+> purposes, that time andrew had suggested that he is afraid 
+> that driver authors will use this parameter to solve all kind 
+> of problems. 
+> 
+> I think we should stick to the theme of the parameter and 
+> implement the reset routine for cciss driver instead of 
+> simply returning back. Consider the case of hypothetical 
+> scenario where somebody booted the kernel with reset_device 
+> parameter (because of unreliable bios) and if there is a 
+> problem on kernel side that after it issues the command it 
+> lost track of that (because of kernel bug) then driver will 
+> never catch that bug as upon receiving the response it will 
+> simply ignore that.
+> 
+> Mike, you know most about this device. Can you please help 
+> out with implementing a reset routing for it?
+> 
+Vivek
+I think I finally have an idea that will work. (`bout time!) We actually
+have 2 different issues. One is that there may outstanding commands on
+the controller when the kdump kernel initializes. Our SAS controllers
+support the reset message defined in the open CISS spec which will
+(hopefully) resolve this issue. The second problem is that I cannot
+allocate my MSI-X vectors because I couldn't free the vectors then
+disable MSI. So the cciss driver would most likely panic at that time.
+My idea for this is to put the card into INTx mode rather than MSI or
+MSI-X. That should the 2nd issue.
+I haven't tested the 64xx series to see if they support the reset
+message. I should to write the code today, maybe test by tomorrow and
+then send something upstream.
 
-The question remains is where to implement versioning: directly in
-individual filesystems or in the vfs code so all filesystems can use it?
-
-Jack
+mikem
