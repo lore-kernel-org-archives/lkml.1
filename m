@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760126AbXFRIWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbXFRIYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760126AbXFRIWm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 04:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXFRIWf
+	id S1757343AbXFRIYM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 04:24:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbXFRIX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 04:22:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53371 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755161AbXFRIWe (ORCPT
+	Mon, 18 Jun 2007 04:23:58 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:36723 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755454AbXFRIX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 04:22:34 -0400
-Date: Mon, 18 Jun 2007 01:20:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>, Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, cebbert@redhat.com, chris@atlee.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       torvalds@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-Id: <20070618012055.81a7c837.akpm@linux-foundation.org>
-In-Reply-To: <20070618081204.GA11153@elte.hu>
-References: <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu>
-	<20070524144447.GA25068@elte.hu>
-	<E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu>
-	<20070524210153.GB19672@elte.hu>
-	<E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu>
-	<E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
-	<20070616103707.GA28096@elte.hu>
-	<E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu>
-	<20070618064343.GA31113@elte.hu>
-	<E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu>
-	<20070618081204.GA11153@elte.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jun 2007 04:23:57 -0400
+Date: Mon, 18 Jun 2007 10:23:43 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: Re: [patch] use __asm__ rather than asm in asm-s390/ptrace.h
+Message-ID: <20070618082343.GB3580@osiris.boeblingen.de.ibm.com>
+References: <200706180223.07122.vapier@gentoo.org> <20070618073605.GA3580@osiris.boeblingen.de.ibm.com> <1182154518.3335.4.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182154518.3335.4.camel@localhost>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007 10:12:04 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Jun 18, 2007 at 10:15:18AM +0200, Martin Schwidefsky wrote:
+> On Mon, 2007-06-18 at 09:36 +0200, Heiko Carstens wrote:
+> > Hmm.. spka is a sort of priviledged instruction and shouldn't be
+> > user space visible.
+> > I will move it so it's under #ifdef __KERNEL__.
+> 
+> Yes, I think this is better. On a side node, why did we add psw_set_key
+> to ptrace.h? processor.h would have made more sense, no? It sets the key
+> in the psw, it is not usable in userspace and ptrace doesn't provide an
+> interface for reading/writing to the psw key. So a patch that moves the
+> inline to processor.h alongside __load_psw and __load_psw_mask would be
+> my solution.
 
-> ---------------------------------------------------->
-> Subject: [patch] x86: fix spin-loop starvation bug
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> Miklos Szeredi reported very long pauses (several seconds, sometimes 
-> more) on his T60 (with a Core2Duo) which he managed to track down to 
-> wait_task_inactive()'s open-coded busy-loop. He observed that an 
-> interrupt on one core tries to acquire the runqueue-lock but does not 
-> succeed in doing so for a very long time - while wait_task_inactive() on 
-> the other core loops waiting for the first core to deschedule a task 
-> (which it wont do while spinning in an interrupt handler).
-> 
-> The problem is: both the spin_lock() code and the wait_task_inactive() 
-> loop uses cpu_relax()/rep_nop(), so in theory the CPU should have 
-> guaranteed MESI-fairness to the two cores - but that didnt happen: one 
-> of the cores was able to monopolize the cacheline that holds the 
-> runqueue lock, for extended periods of time.
-> 
-> This patch changes the spin-loop to assert an atomic op after every REP 
-> NOP instance - this will cause the CPU to express its "MESI interest" in 
-> that cacheline after every REP NOP.
-
-Kiran, if you're still able to reproduce that zone->lru_lock starvation problem,
-this would be a good one to try...
+Yes. Moved it to processor.h instead :)
