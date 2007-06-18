@@ -1,116 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765314AbXFRSV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765281AbXFRSYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765314AbXFRSV6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763303AbXFRSVu
+	id S1765281AbXFRSYA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762433AbXFRSXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:21:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43934 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763266AbXFRSVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:21:49 -0400
-To: Greg KH <greg@kroah.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
-       Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706161817.36657.dhazelton@enter.net>
-	<orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706162306.14516.dhazelton@enter.net>
-	<orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070617051451.GD21478@ftp.linux.org.uk>
-	<orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070618154549.GB6041@kroah.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Mon, 18 Jun 2007 15:20:39 -0300
-In-Reply-To: <20070618154549.GB6041@kroah.com> (Greg KH's message of "Mon\, 18 Jun 2007 08\:45\:49 -0700")
-Message-ID: <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Mon, 18 Jun 2007 14:23:54 -0400
+Received: from www19.your-server.de ([213.133.104.19]:4630 "EHLO
+	www19.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762123AbXFRSXx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 14:23:53 -0400
+From: Uli Luckas <u.luckas@road.de>
+Organization: Road GmbH
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm 2/2] PM: Disable usermode helper before hibernation and suspend
+User-Agent: KMail/1.9.7
+References: <200706042325.28965.rjw@sisk.pl> <200706181251.10170.u.luckas@road.de> <200706181715.15017.rjw@sisk.pl>
+In-Reply-To: <200706181715.15017.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Length: 7905
+Date: Mon, 18 Jun 2007 20:23:45 +0200
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706182023.45984.u.luckas@road.de>
+X-Authenticated-Sender: webmaster@road.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, Greg KH <greg@kroah.com> wrote:
+On Monday, 18. June 2007, you wrote:
+> On Monday, 18 June 2007 12:51, Uli Luckas wrote:
+> > On Sunday, 17. June 2007, you wrote:
+> > > On Friday, 15 June 2007 23:36, Rafael J. Wysocki wrote:
+> > > > On Friday, 15 June 2007 15:08, Uli Luckas wrote:
+> > > > > On Monday, 4. June 2007, Rafael J. Wysocki wrote:
+> > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > >
+> > > > > > Use a hibernation and suspend notifier to disable the user mode
+> > > > > > helper before a hibernation/suspend and enable it after the
+> > > > > > operation.
+> > > > >
+> > > > > Hi Rafael,
+> > > > > I have a couple of questions, regarding this patch ...
+> > > > >
+> > > > > 2) how does your patch prevent wait_for_completion(&done) to hang
+> > > > > during freezing if usermodehelper_pm_callback is called _after_ the
+> > > > > above check?
+> > > >
+> > > > It doesn't.  Once the helper is running, we can't distinguish it from
+> > > > any other user land process.
+> > > >
+> > > > Still, it narrows the window quite a bit.
+> > >
+> > > Okay, I think we can help it a bit.  Please tell me what you think of
+> > > the following patch (on top of 2.6.22-rc4-mm2).
+> >
+> > Hi Rafael,
+> > Thanks for your work. I haven't found the time to actually test your
+> > patch but in general it looks like a valid aproach.
+> > I think there is one problem though. You need to have your wait queue
+> > woken up when you update (atomic_dec) running_helpers. Otherwise you end
+> > up always waiting the full RUNNING_HELPERS_TIMEOUT.
+>
+> Yeah, right.  I tend to forget about obvious things. :-(
+>
+Great. As far as I can see, this patch should now fix the situation except 
+under heavy load where it would abort the attempted suspend. I can live with 
+that and it is a whole lot better than it was before - Thanks.
 
-> On Sun, Jun 17, 2007 at 02:56:24AM -0300, Alexandre Oliva wrote:
->> 
->> If you want your opinions to stand a chance to make a difference, the
->> right place to provide them is gplv3.fsf.org/comments, and time is
->> running short.
+> Besides, I think that the _pm_callback need not be compiled if CONFIG_PM is
+> unset.  
+>
+Should work but is probably beneath what you intended to do. I'll comment 
+further down...
 
-> If you honestly think that the "anti-tivo" clause in GPLv3 will be
-> removed just because we start to add more comments to that page, then
-> you are sorely mistaken.
+> If you can, please have a look at the next version of the patch 
+> (appended).
+>
+One more topic to keep in mind for the future. None of the callers of 
+call_usermode_helper* expect a return value of EBUSY nor do they handle it 
+correctly. If auto loading of a module for example fails, a permanent error 
+is usually assumed and no retry attempts are made. 
 
-I agree that adding comments wouldn't accomplish this.
+> Greetings,
+> Rafael
+>
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/kmod.c |   76
+> ++++++++++++++++++++++++++++++++++++++++++++++++++-------- 1 file changed,
+> 66 insertions(+), 10 deletions(-)
+>
+> Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
+> +++ linux-2.6.22-rc4-mm2/kernel/kmod.c
+> @@ -41,14 +41,6 @@ extern int max_threads;
+>
+>  static struct workqueue_struct *khelper_wq;
+>
+> -/*
+> - * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe()
+> exit - * immediately returning -EBUSY.  Used for preventing user land
+> processes from - * being created after the user land has been frozen during
+> a system-wide - * hibernation or suspend operation.
+> - */
+> -static int usermodehelper_disabled;
+> -
+>  #ifdef CONFIG_KMOD
+>
+>  /*
+> @@ -275,6 +267,30 @@ static void __call_usermodehelper(struct
+>  	}
+>  }
+>
+> +#ifdef CONFIG_PM
+> +/*
+> + * If set and if call_usermodehelper_exec() is supposed to wait, it will
+> exit + * immediately returning -EBUSY (used for preventing user land
+> processes from + * being created after the user land has been frozen during
+> a system-wide + * hibernation or suspend operation).
+> + */
+> +static int usermodehelper_disabled;
+> +
+> +/* Number of helpers running */
+> +static atomic_t running_helpers = ATOMIC_INIT(0);
+> +
+> +/*
+> + * Wait queue head used by usermodehelper_pm_callback() to wait for all
+> running + * helpers to finish.
+> + */
+> +static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
+> +
+> +/*
+> + * Time to wait for running_helpers to become zero before the setting of
+> + * usermodehelper_disabled in usermodehelper_pm_callback() fails
+> + */
+> +#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
+> +
+>  static int usermodehelper_pm_callback(struct notifier_block *nfb,
+>  					unsigned long action,
+>  					void *ignored)
+> @@ -283,7 +299,15 @@ static int usermodehelper_pm_callback(st
+>  	case PM_HIBERNATION_PREPARE:
+>  	case PM_SUSPEND_PREPARE:
+>  		usermodehelper_disabled = 1;
+> -		return NOTIFY_OK;
+> +		wait_event_timeout(running_helpers_waitq,
+> +					atomic_read(&running_helpers) == 0,
+> +					RUNNING_HELPERS_TIMEOUT);
+> +		if (atomic_read(&running_helpers) == 0) {
+> +			return NOTIFY_OK;
+> +		} else {
+> +			usermodehelper_disabled = 0;
+> +			return NOTIFY_BAD;
+> +		}
+>  	case PM_POST_HIBERNATION:
+>  	case PM_POST_SUSPEND:
+>  		usermodehelper_disabled = 0;
+> @@ -293,6 +317,36 @@ static int usermodehelper_pm_callback(st
+>  	return NOTIFY_DONE;
+>  }
+>
+> +static void new_helper(void)
+> +{
+> +	atomic_inc(&running_helpers);
+> +}
+> +
+> +static void helper_finished(void)
+> +{
+> +	if (atomic_dec_and_test(&running_helpers))
+> +		wake_up(&running_helpers_waitq);
+> +}
+> +
+> +#else /* CONFIG_PM */
+> +#define usermodehelper_disabled	0
+> +
+> +static inline int usermodehelper_pm_callback(struct notifier_block *nfb,
+          ^^^^^^
+This kind of implies, the compiler might optimize this function away. Further 
+down you call "pm_notifier(usermodehelper_pm_callback, 0);", thereby passing 
+a pointer to usermodehelper_pm_callback which can't be inlined nor optimized 
+away. If instead you had an inline function 
+register_usermodehelper_pm_callback which called pm_notifier if CONFIG_PM was 
+defined and did nothing otherwise...
 
-But many objections were about the wording, about cases that perhaps
-shouldn't be covered, and these could make a difference.
+> +						unsigned long action,
+> +						void *ignored)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline void new_helper(void)
+> +{
+> +}
+> +
+> +static inline void helper_finished(void)
+> +{
+> +}
+> +#endif /* CONFIG_PM */
+> +
+>  /**
+>   * call_usermodehelper_setup - prepare to call a usermode helper
+>   * @path - path to usermode executable
+> @@ -397,12 +451,13 @@ int call_usermodehelper_exec(struct subp
+>  	DECLARE_COMPLETION_ONSTACK(done);
+>  	int retval;
+>
+> +	new_helper();
+>  	if (sub_info->path[0] == '\0') {
+>  		retval = 0;
+>  		goto out;
+>  	}
+>
+> -	if (!khelper_wq || usermodehelper_disabled) {
+> +	if (!khelper_wq || (wait != UMH_NO_WAIT && usermodehelper_disabled)) {
+>  		retval = -EBUSY;
+>  		goto out;
+>  	}
+> @@ -418,6 +473,7 @@ int call_usermodehelper_exec(struct subp
+>
+>    out:
+>  	call_usermodehelper_freeinfo(sub_info);
+> +	helper_finished();
+>  	return retval;
+>  }
+>  EXPORT_SYMBOL(call_usermodehelper_exec);
 
-> From the very _beginning_ of the v3 process the kernel developers
-> have showed their objection to that section of the license, and we
-> were told, to our face, with no uncertian terms, that it was going
-> to stay, in one form or another, no matter what we thought or said
-> about it.
-
-This sounds about right.
-
-> So, why would we want to waste our time filling out web forms after
-> that?
-
-If you're adamantly favorable to permitting any form of Tivoization
-whatsoever, don't bother.
-
-Others who aren't so fundamentalist as to reject anti-tivozation on
-ideological grounds, in spite of evidence that such measures would
-advance the very pragmatic interests they claim to place above
-ideology, might be willing to help shape these provisions so
-that they don't hurt those who respect users' freedoms, but accomplish
-the goal of keeping Free Software Free.
-
-
-Seriously, looking only at the downside of anti-tivoization (tivoizer
-might turn us down), without even acknowledging that, should the
-tivoizer change practice and respect users' freedoms, you'd be able to
-get far more contributions from all those users, is typical minimax
-strategy.  That's the worst case for the prisoner's dilemma.  That's
-not pareto optimal.  It may not be a losing strategy, but it's not the
-best strategy for everyone.
-
-
-Every time you enable someone to disrespect other users' freedoms WRT
-your software, you cut yourself out of some contributions that user
-could make.  Even if you completely disregard the moral and ethical
-aspects of software freedom, the open source mentality inherently
-depends on the notion of respect for others' freedoms.  You only reap
-the benefits of open source when the user gets the freedoms respected.
-That's why preventing people from hiding source code, from using other
-technical measures, and from using copyright, patents and
-anti-circumvention laws, to stop or decrease the possibility or the
-incentive for a user to contribute to your community is not only a
-great ethical and moral stance, it is also self-beneficial, in the
-very sense that Linus and others claim.
-
-
-So although I like to highlight the moral and ethical aspects, and
-others like to highlight the self-beneficial mechanics of the system,
-they are really two sides of the same coin.
-
-And if you didn't think so, if you didn't believe in increasing the
-incentive and enablement for a user to cooperate with you by means of
-stopping others from removing such incentive or possibilities, you
-wouldn't be using a license that established such conditions, you'd be
-using a more liberal license.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+
+------- ROAD ...the handyPC Company - - -  ) ) )
+
+Uli Luckas
+Software Development
+
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing directors: Hans-Peter Constien, Hubertus von Streit
