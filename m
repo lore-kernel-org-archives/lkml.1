@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765352AbXFRTOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764834AbXFRTTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765352AbXFRTOn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 15:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762714AbXFRTOf
+	id S1764834AbXFRTTV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 15:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761454AbXFRTTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 15:14:35 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:53528 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762015AbXFRTOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 15:14:34 -0400
-Message-ID: <4676D97E.4000403@dgreaves.com>
-Date: Mon, 18 Jun 2007 20:14:06 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+	Mon, 18 Jun 2007 15:19:13 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60691 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760318AbXFRTTM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 15:19:12 -0400
+Date: Mon, 18 Jun 2007 12:19:05 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       suresh.b.siddha@intel.com
+Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
+In-Reply-To: <6bffcb0e0706181209p49f4ae86xce5418b7c9b3edbb@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706181217350.8899@schroedinger.engr.sgi.com>
+References: <20070618095838.238615343@sgi.com>  <46767346.2040108@googlemail.com>
+  <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com> 
+ <6bffcb0e0706181038j107e2357o89c525261cf671a@mail.gmail.com> 
+ <Pine.LNX.4.64.0706181102280.6596@schroedinger.engr.sgi.com> 
+ <6bffcb0e0706181158l739864e0t6fb5bc564444f23c@mail.gmail.com> 
+ <Pine.LNX.4.64.0706181159430.1896@schroedinger.engr.sgi.com>
+ <6bffcb0e0706181209p49f4ae86xce5418b7c9b3edbb@mail.gmail.com>
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-Cc: David Robinson <zxvdr.au@gmail.com>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>
-Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com>
-In-Reply-To: <20070618145007.GE85884050@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, just an quick ack
+Stupid me. n on both sides of the comparison. Tried to run your script 
+here but I cannot trigger it.
 
-When I resumed tonight (having done a freeze/thaw over the suspend) some libata 
-errors threw up during the resume and there was an eventual hard hang. Maybe I 
-spoke to soon?
+Next attempt: Sorry for the churn.
 
-I'm going to have to do some more testing...
+SLUB: Fix behavior if the text output of list_locations overflows PAGE_SIZE
 
-David Chinner wrote:
-> On Mon, Jun 18, 2007 at 08:49:34AM +0100, David Greaves wrote:
->> David Greaves wrote:
->> So doing:
->> xfs_freeze -f /scratch
->> sync
->> echo platform > /sys/power/disk
->> echo disk > /sys/power/state
->> # resume
->> xfs_freeze -u /scratch
->>
->> Works (for now - more usage testing tonight)
-> 
-> Verrry interesting.
-Good :)
+If slabs are allocated or freed from a large set of call sites (typical
+for the kmalloc area) then we may create more output than fits into
+a single PAGE and sysfs only gives us one page. The output should be
+truncated. This patch fixes the checks to do the truncation properly.
 
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-> What you were seeing was an XFS shutdown occurring because the free space
-> btree was corrupted. IOWs, the process of suspend/resume has resulted
-> in either bad data being written to disk, the correct data not being
-> written to disk or the cached block being corrupted in memory.
-That's the kind of thing I was suspecting, yes.
-
-> If you run xfs_check on the filesystem after it has shut down after a resume,
-> can you tell us if it reports on-disk corruption? Note: do not run xfs_repair
-> to check this - it does not check the free space btrees; instead it simply
-> rebuilds them from scratch. If xfs_check reports an error, then run xfs_repair
-> to fix it up.
-OK, I can try this tonight...
-
-> FWIW, I'm on record stating that "sync" is not sufficient to quiesce an XFS
-> filesystem for a suspend/resume to work safely and have argued that the only
-> safe thing to do is freeze the filesystem before suspend and thaw it after
-> resume. This is why I originally asked you to test that with the other problem
-> that you reported. Up until this point in time, there's been no evidence to
-> prove either side of the argument......
-> 
-> Cheers,
-> 
-> Dave.
-
+Index: linux-2.6.22-rc4-mm2/mm/slub.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-18 12:13:48.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-18 12:15:10.000000000 -0700
+@@ -3649,13 +3649,15 @@ static int list_locations(struct kmem_ca
+ 			n += sprintf(buf + n, " pid=%ld",
+ 				l->min_pid);
+ 
+-		if (num_online_cpus() > 1 && !cpus_empty(l->cpus)) {
++		if (num_online_cpus() > 1 && !cpus_empty(l->cpus) &&
++				n < PAGE_SIZE - 60) {
+ 			n += sprintf(buf + n, " cpus=");
+ 			n += cpulist_scnprintf(buf + n, PAGE_SIZE - n - 50,
+ 					l->cpus);
+ 		}
+ 
+-		if (num_online_nodes() > 1 && !nodes_empty(l->nodes)) {
++		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
++				n < PAGE_SIZE - 60) {
+ 			n += sprintf(buf + n, " nodes=");
+ 			n += nodelist_scnprintf(buf + n, PAGE_SIZE - n - 50,
+ 					l->nodes);
