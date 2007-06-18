@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765931AbXFRTs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765608AbXFRTux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765931AbXFRTs4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 15:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763256AbXFRTst
+	id S1765608AbXFRTux (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 15:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763324AbXFRTup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 15:48:49 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:60263 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762934AbXFRTss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 15:48:48 -0400
-Date: Mon, 18 Jun 2007 12:48:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
-       Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+	Mon, 18 Jun 2007 15:50:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45959 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760583AbXFRTuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 15:50:44 -0400
+To: david@lang.hm
+Cc: Anders Larsen <al@alarsen.net>, Ingo Molnar <mingo@elte.hu>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070618194813.GA11691@kroah.com>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706161817.36657.dhazelton@enter.net> <orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br> <200706162306.14516.dhazelton@enter.net> <orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br> <20070617051451.GD21478@ftp.linux.org.uk> <orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br> <20070618154549.GB6041@kroah.com> <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <1182156596l.29108l.0l@ecxwww1.reanet.de>
+	<or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706181202580.12717@asgard.lang.hm>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Mon, 18 Jun 2007 16:50:12 -0300
+In-Reply-To: <Pine.LNX.4.64.0706181202580.12717@asgard.lang.hm> (david@lang.hm's message of "Mon\, 18 Jun 2007 12\:07\:57 -0700 \(PDT\)")
+Message-ID: <orbqfdavpn.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 03:20:39PM -0300, Alexandre Oliva wrote:
-> On Jun 18, 2007, Greg KH <greg@kroah.com> wrote:
-> > From the very _beginning_ of the v3 process the kernel developers
-> > have showed their objection to that section of the license, and we
-> > were told, to our face, with no uncertian terms, that it was going
-> > to stay, in one form or another, no matter what we thought or said
-> > about it.
-> 
-> This sounds about right.
-> 
-> > So, why would we want to waste our time filling out web forms after
-> > that?
-> 
-> If you're adamantly favorable to permitting any form of Tivoization
-> whatsoever, don't bother.
+On Jun 18, 2007, david@lang.hm wrote:
 
-For the record, I completely feel that what Tivo did was both legally
-correct[1], and the correct thing to do for their system, and would
-fight _very_ hard any attempt to change the Linux kernel's license that
-would prevent this usage model.
+> they want to prevent anyone from modifying the credit card machine to
+> store copies of all the card info locally.
 
-So I will not bother anymore.
+I see.  Thanks for enlightening me.
 
-greg k-h
+> you don't really answer this issue. since these boxes are required to
+> be sealed and physically anti-tamper, changing the ROM is not
+> acceptable.
 
-[1] The FSF lawyers also agree with this.
+Given the ROM exception in GPLv3, I guess you could seal and
+anti-tamper it as much as you want, and leave the ROM at such a place
+in which it's easily replaceable but with signature checking and all
+such that the user doesn't install ROM that is not authorized by you.
+
+This would be against the spirit of the GPL, but I don't know whether
+it could be interpreted as disrespecting some other provision of the
+letter of GPLv3.  Maybe it could.  Something for lawyers to decide,
+and IANAL.  Something the GPLv3 folks would like to take into account,
+even if the outcome may be not quite what you'd like ;-)
+
+Thanks again for the information,
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
