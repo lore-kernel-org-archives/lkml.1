@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbXFRUIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764409AbXFRUJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932443AbXFRUIX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763117AbXFRUIG
+	id S1764409AbXFRUJI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760357AbXFRUIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:08:06 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:6020 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763600AbXFRUIE (ORCPT
+	Mon, 18 Jun 2007 16:08:54 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:61902 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762142AbXFRUIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:08:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=WtEWWfrcjVz9nGMSM1Awrv4TXy/fZRfKk4L/TofYJMrjQJtXD5t6ItCyBRVnqmdREBr2V8JIjWt7SFN7d/q1GQwsYfDquv24WCBvBJQugVncHy/wjIi5tTNdrZvByejsJvGhQfDgZwTopWiF2gV3J9KuLQd79M/GcemlwR2j6qY=
-Message-ID: <84144f020706181308v689254dl80a5dd42ba6014c4@mail.gmail.com>
-Date: Mon, 18 Jun 2007 23:08:03 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "clameter@sgi.com" <clameter@sgi.com>
-Subject: Re: [patch 03/26] Slab allocators: Consistent ZERO_SIZE_PTR support and NULL result semantics
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, suresh.b.siddha@intel.com
-In-Reply-To: <20070618095914.097484951@sgi.com>
+	Mon, 18 Jun 2007 16:08:53 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070618095838.238615343@sgi.com>
-	 <20070618095914.097484951@sgi.com>
-X-Google-Sender-Auth: 8a52f0646e91e20b
+Message-ID: <18038.58959.395499.718380@stoffel.org>
+Date: Mon, 18 Jun 2007 16:08:47 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+In-Reply-To: <4676C2D6.8030708@vlnb.net>
+References: <20070612161029.GB28279@think.oraclecorp.com>
+	<4676C2D6.8030708@vlnb.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/18/07, clameter@sgi.com <clameter@sgi.com> wrote:
-> Define ZERO_OR_NULL_PTR macro to be able to remove the checks
-> from the allocators. Move ZERO_SIZE_PTR related stuff into slab.h.
->
-> Make ZERO_SIZE_PTR work for all slab allocators and get rid of the
-> WARN_ON_ONCE(size == 0) that is still remaining in SLAB.
->
-> Make slub return NULL like the other allocators if a too large
-> memory segment is requested via __kmalloc.
+>>>>> "Vladislav" == Vladislav Bolkhovitin <vst@vlnb.net> writes:
 
-Looks good to me.
+>> The basic list of features looks like this:
+>> 
+>> * Extent based file storage (2^64 max file size)
+>> * Space efficient packing of small files
+>> * Space efficient indexed directories
+>> * Dynamic inode allocation
+>> * Writable snapshots
+>> * Subvolumes (separate internal filesystem roots)
+>> - Object level mirroring and striping
+>> * Checksums on data and metadata (multiple algorithms available)
+>> - Strong integration with device mapper for multiple device support
+>> - Online filesystem check
+>> * Very fast offline filesystem check
+>> - Efficient incremental backup and FS mirroring
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Vladislav> I would also suggest one more feature: support for block
+Vladislav> level de-duplication. I mean:
+
+Vladislav> 1. Ability for Btrfs to have blocks in several files to
+Vladislav> point to the same block on disk
+
+Yikes!  I'd be *very* wary of this feature.  It's going to be
+computationally expensive to do, and it's going to make the entire
+filesystem more fragile, since now one bit of corruption means that
+possibly all files with that block are now toast.  
+
+There would need to be some serious parity checking done here to make
+me feel confortable with such a system.  
+
+Vladislav> 2. Support for new syscall or IOCTL to de-duplicate as a
+Vladislav> single transaction two or more blocks on disk, i.e. link
+Vladislav> them to one of them and free others
+
+Do you want it per-block, or per-file?  
+
+Vladislav> 3. De-de-duplicate blocks on disk, i.e. copy them on write
+
+You mean that if two files are sharing blocks and one gets written to,
+then the changes are copied to a new block and the pointers updated?
+Sure, that's a integral part of the concest.
+
+Vladislav> I suppose that de-duplication itself would be done by some
+Vladislav> user space process that would scan files, determine blocks
+Vladislav> with the same data and then de-duplicate them by using
+Vladislav> syscall or IOCTL (2).
+
+Lots of work... where do you keep the metadata then?  In the
+filesystem?  
+
+Vladislav> That would be very usable feature, which in most cases
+Vladislav> would allow to shrink occupied disk space on 50-90%.
+
+Maybe.  It's reliability I'd be concerned about here.
+
+John
