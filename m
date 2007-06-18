@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765428AbXFRSjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765457AbXFRSlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765428AbXFRSjm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761290AbXFRSjf
+	id S1765457AbXFRSlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764010AbXFRSlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:39:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47573 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761776AbXFRSje (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:39:34 -0400
-Date: Mon, 18 Jun 2007 19:39:30 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>, Mike Frysinger <vapier@gentoo.org>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, rmk@arm.linux.org.uk
-Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
-Message-ID: <20070618183930.GA17479@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-	rmk@arm.linux.org.uk
-References: <200706171833.29046.vapier@gentoo.org> <20070618183450.GA17112@infradead.org>
+	Mon, 18 Jun 2007 14:41:13 -0400
+Received: from bee.hiwaay.net ([216.180.54.11]:19834 "EHLO bee.hiwaay.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762073AbXFRSlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 14:41:12 -0400
+Date: Mon, 18 Jun 2007 13:41:09 -0500
+From: Chris Adams <cmadams@hiwaay.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070618184109.GA1210728@hiwaay.net>
+References: <fa.toMqQ3LqoQn6Xh51bVordO8WMVc@ifi.uio.no> <fa.S7TtURxpneesx5OvHH3PsGMA/6I@ifi.uio.no> <fa.FCPGQxJuO8s/Srp6aUwojWeKBWQ@ifi.uio.no> <fa.CT3b+p3Ki2+O+ri7hJPZXsp4NLI@ifi.uio.no> <fa.odGxpxwBnim1al2UmlWzWtOzvQA@ifi.uio.no>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070618183450.GA17112@infradead.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <Pine.LNX.4.64.0706181122410.12717@asgard.lang.hm>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 07:34:50PM +0100, Christoph Hellwig wrote:
-> On Sun, Jun 17, 2007 at 06:33:28PM -0400, Mike Frysinger wrote:
-> > This changes asm() to __asm__() and volatile to __volatile__ so that these
-> > headers can be used with gcc's -std=c99.
-> 
-> We should not allow inline assemly in the exported part of userspace headers
-> at all.  These headers must only include defintions for the kernel <-> user
-> ABI, and should not include code at all.
+Once upon a time,  <david@lang.hm> said:
+>do you realize that redhat uses checksums or signatures to check the 
+>validity of their CD's?
+>
+>try to burn a redhat image with the -pad option which adds a chunk of 0's 
+>to the end of the image and try to boot it.
 
-this should have been a reply to the hdrcheck thread, but given the
-cc list of this one is a superset of that I hope everyone can find it anyway.
+It'll boot and run just fine.  The checksum is simply an optional
+integrity check (you can bypass it by choosing "Skip" when it prompts to
+test your CD/DVD).
+
+>I seriously doubt if redhat tells you how to how to generate such a 
+>checksum/signature.
+
+You are seriously wrong then.  The tool is in the anaconda package, and
+there are docs on using it both there and many places on the web.
