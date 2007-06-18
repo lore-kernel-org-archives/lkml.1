@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbXFRFYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbXFRFaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757352AbXFRFYR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 01:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbXFRFYE
+	id S1757323AbXFRFaS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 01:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbXFRFaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 01:24:04 -0400
-Received: from srv1.netkinetics.net ([206.71.148.180]:56474 "EHLO
-	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbXFRFYD (ORCPT
+	Mon, 18 Jun 2007 01:30:07 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:46218 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752412AbXFRFaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 01:24:03 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Tim Post <tim.post@netkinetics.net>
-Reply-To: tim.post@netkinetics.net
-To: david@lang.hm
-Cc: Alexandre Oliva <aoliva@redhat.com>, Bernd Petrovitsch <bernd@firmix.at>,
-       Gabor Czigola <czigola@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706171408260.31541@asgard.lang.hm>
-References: <3a0f49600706171014m6bc9af34s9dda0ea282a4d63@mail.gmail.com>
-	 <orfy4qh0mc.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <1182112097.3800.3.camel@gimli.at.home>
-	 <orfy4qffyj.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <Pine.LNX.4.64.0706171408260.31541@asgard.lang.hm>
-Content-Type: text/plain
-Organization: Net Kinetics
-Date: Mon, 18 Jun 2007 13:22:17 +0800
-Message-Id: <1182144137.21797.1449.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.1 
+	Mon, 18 Jun 2007 01:30:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=dwFB7TYRueDtD1oCehMRS7z7sqH/juLalBziP4bfRZElBJCyOSBHf95VhlaLtveB2YO7rJxeN1St0er9MW/oKQ6nWbLXfTid6p4XNOcQQ41tEujTx3d5gHBkAbaEEaBj6DTtTDXPPiOReIywCCZ6zKw1zHt/tFdLR6PfYVjTeTQ=
+Message-ID: <46761858.7080208@gmail.com>
+Date: Mon, 18 Jun 2007 14:30:00 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Massimiliano Hofer <max@nucleus.it>
+CC: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Florin Iucha <florin@iucha.net>, Robert Hancock <hancockr@shaw.ca>
+Subject: Re: spurious completions during NCQ?
+References: <fa.Nigm+GFAuAW+QzfgqTUfmHJoFfU@ifi.uio.no> <20070608131157.GH30661@iucha.net> <20070608162802.7d5bc66a@the-village.bc.nu> <200706150951.58586.max@nucleus.it>
+In-Reply-To: <200706150951.58586.max@nucleus.it>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - netkinetics.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-17 at 14:13 -0700, david@lang.hm wrote:
-> you argue that it is evil for tivo to produce a pice of hardware that they 
-> can modify and the user can't
+Massimiliano Hofer wrote:
+> On Friday 8 June 2007, Alan Cox wrote:
 > 
-> but you then argue that it's a good thing for the FSF to produce a license 
-> that they can modify and others can't
+>>> 	Model Number:       HITACHI HTS541680J9SA00
+>>> 	Serial Number:      SB******I57L4A
+>> This one is already blacklisted in the windows drivers.
+> 
+> I have the same problem with this drive (shipped with a Thinkpad Z61m):
+> 
+>         Model Number:       HITACHI HTS541612J9SA00
+>         Firmware Revision:  SBDIC7JP
+> 
+> It reported several dozen spurious completions over a few days, but I can't 
+> find any corruption. Is it really dangerous? I understand this clearly is a 
+> firmware bug, but I'm not sure how to interpret the drive behavior.
+> I can perform any test you like, if you find it useful.
 
-They can't modify the license that you used. They can make a new license
-which you may optionally use at your discretion.
+It has _slight_ change of being dangerous and is just in violation of
+the protocol.  No real data corruption case reported yet tho.  Till now
+most drives which report such problems had stinky NCQ implementation
+anyway - slow, buggy, blacklisted in the other OS, etc...  I'll submit a
+patch to blacklist the drive.
 
-Once you release the code under the GPL(x), that is it. The only person
-who can change that is you or perhaps some bizarre court order. But it
-would still be you changing it, even if your hand was forced to do so.
+Thanks.
 
-Your copyright is your signing mechanism. Once you do it, its a done
-deed. That is the whole reason Linus chose GPL2 to begin with, I
-believe :)
-
-You and _only_ you are the one. Its like a biometric lock.
-
-Best,
---Tim
-
-
+-- 
+tejun
