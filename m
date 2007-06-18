@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764369AbXFRPmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764194AbXFRPqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764369AbXFRPmY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 11:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762651AbXFRPmS
+	id S1764194AbXFRPqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 11:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbXFRPq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 11:42:18 -0400
-Received: from web51404.mail.re2.yahoo.com ([206.190.38.183]:24373 "HELO
-	web51404.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756169AbXFRPmR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 11:42:17 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 11:42:17 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=nL39A2xObPtBRH4JPTVHYWuhsZs1jY1tjaXK8E+4/66Mf9lS+lfvQlmMjiposp/OWwB//M3i/iSw1UY2t2XZpwOZnDeRGPBYdYoCkchrzQXQ56CIJSCRFKX90XKvHwrATvVKoqevDbAbquUFIrtVZQS6I9+lQ3APrtmEuD95xUc=;
-X-YMail-OSG: AXXY63YVM1me8ASAUOBl0q2.0iyJ7keRDs7jjtm9LC8ZMkktWC4KkDuUbw2YPVgY66yFJZmhnWYL03jTbrqQQlYbrzMb6dghT40sepZk7pWeFXb08fk6sodPWDwELw--
-X-Mailer: YahooMailRC/651.29 YahooMailWebService/0.7.41.16
-Date: Mon, 18 Jun 2007 08:35:35 -0700 (PDT)
-From: Joerg Pommnitz <pommnitz@yahoo.com>
-Subject: Stable identification of identical USB hardware
-To: linux-kernel@vger.kernel.org, linux-usb-users@lists.sourceforge.net
+	Mon, 18 Jun 2007 11:46:28 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:56668 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753105AbXFRPq2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 11:46:28 -0400
+Date: Mon, 18 Jun 2007 08:45:49 -0700
+From: Greg KH <greg@kroah.com>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Daniel Hazelton <dhazelton@enter.net>,
+       Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070618154549.GB6041@kroah.com>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706161817.36657.dhazelton@enter.net> <orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br> <200706162306.14516.dhazelton@enter.net> <orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br> <20070617051451.GD21478@ftp.linux.org.uk> <orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <157636.91774.qm@web51404.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
-I want to be able to distinguish between two (or more) mostly identical USB serial devices. The devices in question are UMTS modems. AFAIK they are identical except for the SIM card and the point of attachment. Externally the cards are CardBus devices with an integrated USB host adapter. The actual UMTS device is (internally) connected to the USB host adapter.
+On Sun, Jun 17, 2007 at 02:56:24AM -0300, Alexandre Oliva wrote:
+> 
+> If you want your opinions to stand a chance to make a difference, the
+> right place to provide them is gplv3.fsf.org/comments, and time is
+> running short.
 
-If I have to cardbus sockets, how do I get from what I know ("the card is in socket 0") to "I have to talk to ttyUSB2 to talk to the card"? I suspect I have to follow the thread from /sys/bus/pci to /sys/bus/usb/devices, but how exactly?
+If you honestly think that the "anti-tivo" clause in GPLv3 will be
+removed just because we start to add more comments to that page, then
+you are sorely mistaken.  From the very _beginning_ of the v3 process
+the kernel developers have showed their objection to that section of the
+license, and we were told, to our face, with no uncertian terms, that it
+was going to stay, in one form or another, no matter what we thought or
+said about it.
 
-Thanks in advance and kind regards
-  Joerg
+So, why would we want to waste our time filling out web forms after
+that?
 
-__________________________________________________
-Do You Yahoo!?
-Sie sind Spam leid? Yahoo! Mail verfügt über einen herausragenden Schutz gegen Massenmails. 
-http://mail.yahoo.com 
+greg k-h
