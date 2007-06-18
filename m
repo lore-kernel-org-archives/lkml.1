@@ -1,76 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761831AbXFRKAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbXFRKBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761831AbXFRKAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 06:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759944AbXFRJ7U
+	id S1761755AbXFRKBG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 06:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760350AbXFRJ7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:59:20 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58620 "EHLO
+	Mon, 18 Jun 2007 05:59:21 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47911 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758774AbXFRJ7P (ORCPT
+	with ESMTP id S1758990AbXFRJ7P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 Jun 2007 05:59:15 -0400
-Message-Id: <20070618095838.238615343@sgi.com>
+Message-Id: <20070618095914.862238426@sgi.com>
+References: <20070618095838.238615343@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 18 Jun 2007 02:58:38 -0700
+Date: Mon, 18 Jun 2007 02:58:44 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: suresh.b.siddha@intel.com
-Subject: [patch 00/26] Current slab allocator / SLUB patch queue
+Subject: [patch 06/26] Slab allocators: Replace explicit zeroing with __GFP_ZERO
+Content-Disposition: inline; filename=slab_use_gfpzero_for_kmalloc_node
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These contain the following groups of patches:
+kmalloc_node() and kmem_cache_alloc_node() were not available in
+a zeroing variant in the past. But with __GFP_ZERO it is possible
+now to do zeroing while allocating.
 
-1. Slab allocator code consolidation and fixing of inconsistencies
+Use __GFP_ZERO to remove the explicit clearing of memory via memset whereever
+we can.
 
-This makes ZERO_SIZE_PTR generic so that it works in all
-slab allocators.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-It adds __GFP_ZERO support to all slab allocators and
-cleans up the zeroing in the slabs and provides modifications
-to remove explicit zeroing following kmalloc_node and
-kmem_cache_alloc_node calls.
+---
+ block/as-iosched.c       |    3 +--
+ block/cfq-iosched.c      |   18 +++++++++---------
+ block/deadline-iosched.c |    3 +--
+ block/elevator.c         |    3 +--
+ block/genhd.c            |    8 ++++----
+ block/ll_rw_blk.c        |    4 ++--
+ drivers/ide/ide-probe.c  |    4 ++--
+ kernel/timer.c           |    4 ++--
+ lib/genalloc.c           |    3 +--
+ mm/allocpercpu.c         |    9 +++------
+ mm/mempool.c             |    3 +--
+ mm/vmalloc.c             |    6 +++---
+ 12 files changed, 30 insertions(+), 38 deletions(-)
 
-2. SLUB improvements
-
-Inline some small functions to reduce code size. Some more memory
-optimizations using CONFIG_SLUB_DEBUG. Changes to handling of the
-slub_lock and an optimization of runtime determination of kmalloc slabs
-(replaces ilog2 patch that failed with gcc 3.3 on powerpc).
-
-3. Slab defragmentation
-
-This is V3 of the patchset with the one fix for the locking problem that
-showed up during testing.
-
-4. Performance optimizations
-
-These patches have a long history since the early drafts of SLUB. The
-problem with these patches is that they require the touching of additional
-cachelines (only for read) and SLUB was designed for minimal cacheline
-touching. In doing so we may be able to remove cacheline bouncing in
-particular for remote alloc/ free situations where I have had reports of
-issues that I was not able to confirm for lack of specificity. The tradeoffs
-here are not clear. Certainly the larger cacheline footprint will hurt the
-casual slab user somewhat but it will benefit processes that perform these
-local/remote alloc/free operations.
-
-I'd appreciate if someone could evaluate these.
-
-The complete patchset against 2.6.22-rc4-mm2 is available at
-
-http://ftp.kernel.org/pub/linux/kernel/people/christoph/slub/2.6.22-rc4-mm2
-
-Tested on
-
-x86_64 SMP
-x86_64 NUMA emulation
-IA64 emulator
-Altix 64p/128G NUMA system.
-Altix 8p/6G asymmetric NUMA system.
-
+Index: linux-2.6.22-rc4-mm2/block/as-iosched.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/block/as-iosched.c	2007-06-17 15:46:35.000000000 -0700
++++ linux-2.6.22-rc4-mm2/block/as-iosched.c	2007-06-17 15:46:59.000000000 -0700
+@@ -1322,10 +1322,9 @@ static void *as_init_queue(request_queue
+ {
+ 	struct as_data *ad;
+ 
+-	ad = kmalloc_node(sizeof(*ad), GFP_KERNEL, q->node);
++	ad = kmalloc_node(sizeof(*ad), GFP_KERNEL | __GFP_ZERO, q->node);
+ 	if (!ad)
+ 		return NULL;
+-	memset(ad, 0, sizeof(*ad));
+ 
+ 	ad->q = q; /* Identify what queue the data belongs to */
+ 
+Index: linux-2.6.22-rc4-mm2/block/cfq-iosched.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/block/cfq-iosched.c	2007-06-17 15:42:50.000000000 -0700
++++ linux-2.6.22-rc4-mm2/block/cfq-iosched.c	2007-06-17 15:47:21.000000000 -0700
+@@ -1249,9 +1249,9 @@ cfq_alloc_io_context(struct cfq_data *cf
+ {
+ 	struct cfq_io_context *cic;
+ 
+-	cic = kmem_cache_alloc_node(cfq_ioc_pool, gfp_mask, cfqd->queue->node);
++	cic = kmem_cache_alloc_node(cfq_ioc_pool, gfp_mask | __GFP_ZERO,
++							cfqd->queue->node);
+ 	if (cic) {
+-		memset(cic, 0, sizeof(*cic));
+ 		cic->last_end_request = jiffies;
+ 		INIT_LIST_HEAD(&cic->queue_list);
+ 		cic->dtor = cfq_free_io_context;
+@@ -1374,17 +1374,19 @@ retry:
+ 			 * free memory.
+ 			 */
+ 			spin_unlock_irq(cfqd->queue->queue_lock);
+-			new_cfqq = kmem_cache_alloc_node(cfq_pool, gfp_mask|__GFP_NOFAIL, cfqd->queue->node);
++			new_cfqq = kmem_cache_alloc_node(cfq_pool,
++					gfp_mask | __GFP_NOFAIL | __GFP_ZERO,
++					cfqd->queue->node);
+ 			spin_lock_irq(cfqd->queue->queue_lock);
+ 			goto retry;
+ 		} else {
+-			cfqq = kmem_cache_alloc_node(cfq_pool, gfp_mask, cfqd->queue->node);
++			cfqq = kmem_cache_alloc_node(cfq_pool,
++					gfp_mask | __GFP_ZERO,
++					cfqd->queue->node);
+ 			if (!cfqq)
+ 				goto out;
+ 		}
+ 
+-		memset(cfqq, 0, sizeof(*cfqq));
+-
+ 		RB_CLEAR_NODE(&cfqq->rb_node);
+ 		INIT_LIST_HEAD(&cfqq->fifo);
+ 
+@@ -2046,12 +2048,10 @@ static void *cfq_init_queue(request_queu
+ {
+ 	struct cfq_data *cfqd;
+ 
+-	cfqd = kmalloc_node(sizeof(*cfqd), GFP_KERNEL, q->node);
++	cfqd = kmalloc_node(sizeof(*cfqd), GFP_KERNEL | __GFP_ZERO, q->node);
+ 	if (!cfqd)
+ 		return NULL;
+ 
+-	memset(cfqd, 0, sizeof(*cfqd));
+-
+ 	cfqd->service_tree = CFQ_RB_ROOT;
+ 	INIT_LIST_HEAD(&cfqd->cic_list);
+ 
+Index: linux-2.6.22-rc4-mm2/block/deadline-iosched.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/block/deadline-iosched.c	2007-06-17 15:47:37.000000000 -0700
++++ linux-2.6.22-rc4-mm2/block/deadline-iosched.c	2007-06-17 15:47:47.000000000 -0700
+@@ -360,10 +360,9 @@ static void *deadline_init_queue(request
+ {
+ 	struct deadline_data *dd;
+ 
+-	dd = kmalloc_node(sizeof(*dd), GFP_KERNEL, q->node);
++	dd = kmalloc_node(sizeof(*dd), GFP_KERNEL | __GFP_ZERO, q->node);
+ 	if (!dd)
+ 		return NULL;
+-	memset(dd, 0, sizeof(*dd));
+ 
+ 	INIT_LIST_HEAD(&dd->fifo_list[READ]);
+ 	INIT_LIST_HEAD(&dd->fifo_list[WRITE]);
+Index: linux-2.6.22-rc4-mm2/block/elevator.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/block/elevator.c	2007-06-17 15:47:57.000000000 -0700
++++ linux-2.6.22-rc4-mm2/block/elevator.c	2007-06-17 15:48:07.000000000 -0700
+@@ -177,11 +177,10 @@ static elevator_t *elevator_alloc(reques
+ 	elevator_t *eq;
+ 	int i;
+ 
+-	eq = kmalloc_node(sizeof(elevator_t), GFP_KERNEL, q->node);
++	eq = kmalloc_node(sizeof(elevator_t), GFP_KERNEL | __GFP_ZERO, q->node);
+ 	if (unlikely(!eq))
+ 		goto err;
+ 
+-	memset(eq, 0, sizeof(*eq));
+ 	eq->ops = &e->ops;
+ 	eq->elevator_type = e;
+ 	kobject_init(&eq->kobj);
+Index: linux-2.6.22-rc4-mm2/block/genhd.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/block/genhd.c	2007-06-17 15:48:27.000000000 -0700
++++ linux-2.6.22-rc4-mm2/block/genhd.c	2007-06-17 15:49:03.000000000 -0700
+@@ -726,21 +726,21 @@ struct gendisk *alloc_disk_node(int mino
+ {
+ 	struct gendisk *disk;
+ 
+-	disk = kmalloc_node(sizeof(struct gendisk), GFP_KERNEL, node_id);
++	disk = kmalloc_node(sizeof(struct gendisk),
++				GFP_KERNEL | __GFP_ZERO, node_id);
+ 	if (disk) {
+-		memset(disk, 0, sizeof(struct gendisk));
+ 		if (!init_disk_stats(disk)) {
+ 			kfree(disk);
+ 			return NULL;
+ 		}
+ 		if (minors > 1) {
+ 			int size = (minors - 1) * sizeof(struct hd_struct *);
+-			disk->part = kmalloc_node(size, GFP_KERNEL, node_id);
++			disk->part = kmalloc_node(size,
++				GFP_KERNEL | __GFP_ZERO, node_id);
+ 			if (!disk->part) {
+ 				kfree(disk);
+ 				return NULL;
+ 			}
+-			memset(disk->part, 0, size);
+ 		}
+ 		disk->minors = minors;
+ 		kobj_set_kset_s(disk,block_subsys);
+Index: linux-2.6.22-rc4-mm2/block/ll_rw_blk.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/block/ll_rw_blk.c	2007-06-17 15:44:27.000000000 -0700
++++ linux-2.6.22-rc4-mm2/block/ll_rw_blk.c	2007-06-17 15:45:03.000000000 -0700
+@@ -1828,11 +1828,11 @@ request_queue_t *blk_alloc_queue_node(gf
+ {
+ 	request_queue_t *q;
+ 
+-	q = kmem_cache_alloc_node(requestq_cachep, gfp_mask, node_id);
++	q = kmem_cache_alloc_node(requestq_cachep,
++				gfp_mask | __GFP_ZERO, node_id);
+ 	if (!q)
+ 		return NULL;
+ 
+-	memset(q, 0, sizeof(*q));
+ 	init_timer(&q->unplug_timer);
+ 
+ 	snprintf(q->kobj.name, KOBJ_NAME_LEN, "%s", "queue");
+Index: linux-2.6.22-rc4-mm2/drivers/ide/ide-probe.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/drivers/ide/ide-probe.c	2007-06-17 15:49:57.000000000 -0700
++++ linux-2.6.22-rc4-mm2/drivers/ide/ide-probe.c	2007-06-17 15:50:13.000000000 -0700
+@@ -1073,14 +1073,14 @@ static int init_irq (ide_hwif_t *hwif)
+ 		hwgroup->hwif->next = hwif;
+ 		spin_unlock_irq(&ide_lock);
+ 	} else {
+-		hwgroup = kmalloc_node(sizeof(ide_hwgroup_t), GFP_KERNEL,
++		hwgroup = kmalloc_node(sizeof(ide_hwgroup_t),
++					GFP_KERNEL | __GFP_ZERO,
+ 					hwif_to_node(hwif->drives[0].hwif));
+ 		if (!hwgroup)
+ 	       		goto out_up;
+ 
+ 		hwif->hwgroup = hwgroup;
+ 
+-		memset(hwgroup, 0, sizeof(ide_hwgroup_t));
+ 		hwgroup->hwif     = hwif->next = hwif;
+ 		hwgroup->rq       = NULL;
+ 		hwgroup->handler  = NULL;
+Index: linux-2.6.22-rc4-mm2/kernel/timer.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/timer.c	2007-06-17 15:50:50.000000000 -0700
++++ linux-2.6.22-rc4-mm2/kernel/timer.c	2007-06-17 15:51:16.000000000 -0700
+@@ -1221,7 +1221,8 @@ static int __devinit init_timers_cpu(int
+ 			/*
+ 			 * The APs use this path later in boot
+ 			 */
+-			base = kmalloc_node(sizeof(*base), GFP_KERNEL,
++			base = kmalloc_node(sizeof(*base),
++						GFP_KERNEL | __GFP_ZERO,
+ 						cpu_to_node(cpu));
+ 			if (!base)
+ 				return -ENOMEM;
+@@ -1232,7 +1233,6 @@ static int __devinit init_timers_cpu(int
+ 				kfree(base);
+ 				return -ENOMEM;
+ 			}
+-			memset(base, 0, sizeof(*base));
+ 			per_cpu(tvec_bases, cpu) = base;
+ 		} else {
+ 			/*
+Index: linux-2.6.22-rc4-mm2/lib/genalloc.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/lib/genalloc.c	2007-06-17 15:51:38.000000000 -0700
++++ linux-2.6.22-rc4-mm2/lib/genalloc.c	2007-06-17 15:51:56.000000000 -0700
+@@ -54,11 +54,10 @@ int gen_pool_add(struct gen_pool *pool, 
+ 	int nbytes = sizeof(struct gen_pool_chunk) +
+ 				(nbits + BITS_PER_BYTE - 1) / BITS_PER_BYTE;
+ 
+-	chunk = kmalloc_node(nbytes, GFP_KERNEL, nid);
++	chunk = kmalloc_node(nbytes, GFP_KERNEL | __GFP_ZERO, nid);
+ 	if (unlikely(chunk == NULL))
+ 		return -1;
+ 
+-	memset(chunk, 0, nbytes);
+ 	spin_lock_init(&chunk->lock);
+ 	chunk->start_addr = addr;
+ 	chunk->end_addr = addr + size;
+Index: linux-2.6.22-rc4-mm2/mm/allocpercpu.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/mm/allocpercpu.c	2007-06-17 15:52:19.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/allocpercpu.c	2007-06-17 15:52:38.000000000 -0700
+@@ -53,12 +53,9 @@ void *percpu_populate(void *__pdata, siz
+ 	int node = cpu_to_node(cpu);
+ 
+ 	BUG_ON(pdata->ptrs[cpu]);
+-	if (node_online(node)) {
+-		/* FIXME: kzalloc_node(size, gfp, node) */
+-		pdata->ptrs[cpu] = kmalloc_node(size, gfp, node);
+-		if (pdata->ptrs[cpu])
+-			memset(pdata->ptrs[cpu], 0, size);
+-	} else
++	if (node_online(node))
++		pdata->ptrs[cpu] = kmalloc_node(size, gfp|__GFP_ZERO, node);
++	else
+ 		pdata->ptrs[cpu] = kzalloc(size, gfp);
+ 	return pdata->ptrs[cpu];
+ }
+Index: linux-2.6.22-rc4-mm2/mm/mempool.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/mm/mempool.c	2007-06-17 15:52:52.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/mempool.c	2007-06-17 15:53:19.000000000 -0700
+@@ -62,10 +62,9 @@ mempool_t *mempool_create_node(int min_n
+ 			mempool_free_t *free_fn, void *pool_data, int node_id)
+ {
+ 	mempool_t *pool;
+-	pool = kmalloc_node(sizeof(*pool), GFP_KERNEL, node_id);
++	pool = kmalloc_node(sizeof(*pool), GFP_KERNEL | __GFP_ZERO, node_id);
+ 	if (!pool)
+ 		return NULL;
+-	memset(pool, 0, sizeof(*pool));
+ 	pool->elements = kmalloc_node(min_nr * sizeof(void *),
+ 					GFP_KERNEL, node_id);
+ 	if (!pool->elements) {
+Index: linux-2.6.22-rc4-mm2/mm/vmalloc.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/mm/vmalloc.c	2007-06-17 15:57:18.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/vmalloc.c	2007-06-17 16:03:38.000000000 -0700
+@@ -434,11 +434,12 @@ void *__vmalloc_area_node(struct vm_stru
+ 	area->nr_pages = nr_pages;
+ 	/* Please note that the recursion is strictly bounded. */
+ 	if (array_size > PAGE_SIZE) {
+-		pages = __vmalloc_node(array_size, gfp_mask, PAGE_KERNEL, node);
++		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
++					PAGE_KERNEL, node);
+ 		area->flags |= VM_VPAGES;
+ 	} else {
+ 		pages = kmalloc_node(array_size,
+-				(gfp_mask & GFP_LEVEL_MASK),
++				(gfp_mask & GFP_LEVEL_MASK) | __GFP_ZERO,
+ 				node);
+ 	}
+ 	area->pages = pages;
+@@ -447,7 +448,6 @@ void *__vmalloc_area_node(struct vm_stru
+ 		kfree(area);
+ 		return NULL;
+ 	}
+-	memset(area->pages, 0, array_size);
+ 
+ 	for (i = 0; i < area->nr_pages; i++) {
+ 		if (node < 0)
 
 -- 
