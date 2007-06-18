@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933308AbXFRV5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933263AbXFRV7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933308AbXFRV5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 17:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933194AbXFRV5U
+	id S933263AbXFRV7w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 17:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763730AbXFRV7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 17:57:20 -0400
-Received: from THUNK.ORG ([69.25.196.29]:56912 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933183AbXFRV5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 17:57:18 -0400
-Date: Mon, 18 Jun 2007 17:56:29 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Greg KH <greg@kroah.com>
-Cc: Alexandre Oliva <aoliva@redhat.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, postmaster@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070618215629.GA2062@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-	Alexandre Oliva <aoliva@redhat.com>,
-	Al Viro <viro@ftp.linux.org.uk>,
-	Daniel Hazelton <dhazelton@enter.net>,
-	Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	debian developer <debiandev@gmail.com>, david@lang.hm,
-	Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	postmaster@vger.kernel.org
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706161817.36657.dhazelton@enter.net> <orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br> <200706162306.14516.dhazelton@enter.net> <orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br> <20070617051451.GD21478@ftp.linux.org.uk> <orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br> <20070618154549.GB6041@kroah.com> <orabuxcefc.fsf@oliva.athome.lsd.ic.unicamp.br> <20070618194813.GA11691@kroah.com>
+	Mon, 18 Jun 2007 17:59:45 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:17361 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763296AbXFRV7o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 17:59:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=B1YwiO7oX/MEib6SekFELfyKVCaX96I/quH81UjczU4/o+4Wutf71iJxaG2ejNJOA1Gp1zrpwYKFYuE7zK1BO2qUuc1gMx5TB9KDUUzvuXAulDrhy4M6Jyutv/UIV4Jkw/pTZpCfk6Y6rvzbOeu92rf0RINI7xACZovjp5PAE5w=
+Message-ID: <29495f1d0706181459t67ec0371i4b6ffcf7ac991dea@mail.gmail.com>
+Date: Mon, 18 Jun 2007 14:59:42 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Chris Wright" <chrisw@sous-sol.org>
+Subject: Re: Linux 2.6.21.5
+Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+In-Reply-To: <20070611201418.GA3723@sequoia.sous-sol.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070618194813.GA11691@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <20070611201418.GA3723@sequoia.sous-sol.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 12:48:13PM -0700, Greg KH wrote:
-> > > So, why would we want to waste our time filling out web forms after
-> > > that?
-> > 
-> > If you're adamantly favorable to permitting any form of Tivoization
-> > whatsoever, don't bother.
-> 
-> For the record, I completely feel that what Tivo did was both legally
-> correct[1], and the correct thing to do for their system, and would
-> fight _very_ hard any attempt to change the Linux kernel's license that
-> would prevent this usage model.
-> 
-> So I will not bother anymore.
+On 6/11/07, Chris Wright <chrisw@sous-sol.org> wrote:
+> We (the -stable team) are announcing the release of the 2.6.21.5 kernel.
+> This has a variety of important fixes, see below for the summary.
+>
+> I'll also be replying to this message with a copy of the patch between
+> 2.6.21.4 and 2.6.21.5
+>
+> The updated 2.6.21.y git tree can be found at:
+>         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git
+> and can be browsed at the normal kernel.org git web browser:
+>         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.21.y.git;a=summary
 
-Linus has spoken, Greg K-H has spoken, many other people spoken ---
-and yet Alexandre keeps on speaking, and speaking, and speaking....
+While linux-2.6.21.y is moving forward, it would appear that
+linux-2.6-stable is back several releases?
 
-It's pretty clear no one is convincing anyone, and that everyone
-understands their position, and are happy with it, and so all we're
-doing now is wasting bandwidth.
+http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git;a=summary
+shows 2.6.21.1 as the last 2.6.21.Y release. Is that intentional?
 
-Can we please end this thread?  
-
-Please?
-
-						- Ted
+Thanks,
+Nish
