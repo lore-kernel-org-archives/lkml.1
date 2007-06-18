@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764554AbXFRTJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764910AbXFRTJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764554AbXFRTJL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 15:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbXFRTI6
+	id S1764910AbXFRTJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 15:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764433AbXFRTJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 15:08:58 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:59773
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760286AbXFRTI5 (ORCPT
+	Mon, 18 Jun 2007 15:09:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:47394 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764092AbXFRTJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 15:08:57 -0400
-Date: Mon, 18 Jun 2007 12:07:57 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Anders Larsen <al@alarsen.net>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706181202580.12717@asgard.lang.hm>
-References: <1182156596l.29108l.0l@ecxwww1.reanet.de>
- <or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Mon, 18 Jun 2007 15:09:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OUyM41GkCDECgPYlH0Q/O5d42YKprMw6DX2u5jE24we1jINwlj0rKvbSr61vqOJpYAPlzQU+1EVIZDnWKtgGg5vBl8ldxK3mRKjCvBOU8wy51EJ/OVUG26zaPcR+nFs8CXzhj6Sbq1O2v53J5IE93SHee7eBjg5mPKJgNEvK3zE=
+Message-ID: <6bffcb0e0706181209p49f4ae86xce5418b7c9b3edbb@mail.gmail.com>
+Date: Mon, 18 Jun 2007 21:09:04 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       suresh.b.siddha@intel.com
+In-Reply-To: <Pine.LNX.4.64.0706181159430.1896@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070618095838.238615343@sgi.com>
+	 <46767346.2040108@googlemail.com>
+	 <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com>
+	 <6bffcb0e0706181038j107e2357o89c525261cf671a@mail.gmail.com>
+	 <Pine.LNX.4.64.0706181102280.6596@schroedinger.engr.sgi.com>
+	 <6bffcb0e0706181158l739864e0t6fb5bc564444f23c@mail.gmail.com>
+	 <Pine.LNX.4.64.0706181159430.1896@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007, Alexandre Oliva wrote:
+On 18/06/07, Christoph Lameter <clameter@sgi.com> wrote:
+> On Mon, 18 Jun 2007, Michal Piotrowski wrote:
+>
+> > Still the same.
+>
+> Is it still exactly the same strack trace?
 
-> On Jun 18, 2007, Anders Larsen <al@alarsen.net> wrote:
->
->> On Sat, 16 Jun 2007 22:54:56 -0300, Alexandre Oliva wrote:
->>> I don't know any law that requires tivoization.
->
->> Not exactly laws, but pretty close:
->
->> Credit-card payment terminals are subject to strict security
->> certification, where it has to be ensured that
->
->> a) the user cannot tinker with the device without rendering it unusable
->> for its original purpose (electronic payments), and
->
-> I think GPLv3 has that covered:
->
->  Network access may be denied when the modification itself materially
->  and adversely affects the operation of the network or violates the
->  rules and protocols for communication across the network.
->
-> I've been sufficiently annoyed by credit card transactions that cannot
-> be completed for network-down reasons that I believe such devices
-> depend on network access to perform the original purpose, and even
-> though IANAL I think that cutting off network access in case the
-> software no longer complies with the regulations is permitted by the
-> license.
+Not exactly the same
+[<c0480d4b>] list_locations+0x257/0x2ad
+is the only difference
 
-you misunderstand the reason for these rules.
+ l *list_locations+0x257
+0xc1080d4b is in list_locations (mm/slub.c:3655).
+3650                                    l->min_pid);
+3651
+3652                    if (num_online_cpus() > 1 && !cpus_empty(l->cpus) &&
+3653                                    n < PAGE_SIZE - n - 60) {
+3654                            n += sprintf(buf + n, " cpus=");
+3655                            n += cpulist_scnprintf(buf + n,
+PAGE_SIZE - n - 50,
+3656                                            l->cpus);
+3657                    }
+3658
+3659                    if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
 
-they want to prevent anyone from modifying the credit card machine to 
-store copies of all the card info locally. this modification would not 
-affect what goes over the wire at all. so your exception doesn't apply
 
->> b) the manufacturer is able to update the device _in_ _the_ _field_.
->
-> If the above is not enough, you could always use ROM.  Sure, if you
-> can replace the ROM, so can the user, and this just goes to show how
-> short-sighted the alleged prohibitions on user tinkering with the
-> software are.  Sure, it would be more costly, but it's not like the
-> law (or the agreements in place) *mandate* tivoization.
+> There could be multiple issue
+> if we overflow PAGE_SIZE there.
 
-you don't really answer this issue. since these boxes are required to be 
-sealed and physically anti-tamper, changing the ROM is not acceptable.
+Regards,
+Michal
 
-David Lang
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
