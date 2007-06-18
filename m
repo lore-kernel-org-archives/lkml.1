@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933504AbXFRWs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933550AbXFRWu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933504AbXFRWs2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 18:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762815AbXFRWsT
+	id S933550AbXFRWu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 18:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbXFRWuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 18:48:19 -0400
-Received: from mail.samba.org ([66.70.73.150]:51116 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762944AbXFRWsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 18:48:18 -0400
-Date: Mon, 18 Jun 2007 15:48:15 -0700
-From: Jeremy Allison <jra@samba.org>
-To: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
-       alan <alan@clueserver.org>, Bodo Eggert <7eggert@gmx.de>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-Message-ID: <20070618224815.GM1152@samba1>
-Reply-To: Jeremy Allison <jra@samba.org>
-References: <8wsCC-3wf-21@gated-at.bofh.it> <8wsW4-3UY-3@gated-at.bofh.it> <8wJal-3KA-1@gated-at.bofh.it> <8xm22-4Ql-1@gated-at.bofh.it> <8xq5G-32l-7@gated-at.bofh.it> <8xs7w-69W-21@gated-at.bofh.it> <E1I0OFQ-0001B9-7Z@be1.lrz> <Pine.LNX.4.64.0706181406250.25913@blackbox.fnordora.org> <4676F9A2.6010007@zytor.com> <20070618221021.GB2062@thunk.org>
+	Mon, 18 Jun 2007 18:50:15 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:41773 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932546AbXFRWuN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 18:50:13 -0400
+Date: Tue, 19 Jun 2007 00:50:09 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com, lethal@linux-sh.org,
+       y-goto@jp.fujitsu.com
+Subject: Re: 2.6.22-rc5 regression
+Message-ID: <20070618225009.GE13538@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com, lethal@linux-sh.org,
+	y-goto@jp.fujitsu.com
+References: <20070617182254.GA17595@alinoe.com> <20070617195805.GA6125@alinoe.com> <20070617214905.GA6207@alinoe.com> <alpine.LFD.0.98.0706180950130.14121@woody.linux-foundation.org> <20070618181225.GB8054@alinoe.com> <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org> <20070618195415.GA7481@alinoe.com> <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070618221021.GB2062@thunk.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 06:10:21PM -0400, Theodore Tso wrote:
-> On Mon, Jun 18, 2007 at 02:31:14PM -0700, H. Peter Anvin wrote:
-> > And that makes them different from extended attributes, how?
-> > 
-> > Both of these really are nothing but ad hocky syntactic sugar for
-> > directories, sometimes combined with in-filesystem support for small
-> > data items.
+On Mon, Jun 18, 2007 at 01:42:18PM -0700, Linus Torvalds wrote:
+> You really do want to use git-1.5.x these days.
 > 
-> There's a good discussion of the issues involved in my LCA 2006
-> presentation....  which doesn't seem to be on the LCA 2006 site.  Hrm.
-> I'll have to ask that this be fixed.  In any case, here it is:
-> 
-> 	http://thunk.org/tytso/forkdepot.odp
+> It does look like 1.4.4.4 may have a bug, although I'm really surprised: 
+> we've certainly tweaked stuff in bisection, but I and others have used 
+> "git bisect" since long before the git-1.4 days, and it has always worked 
+> ok. So I wonder if it's something specific to that debian build.
 
-Did you ever code up forkdepot ? Just wondering ?
+Well, it does indeed.
 
-Just because I now agree with you that streams are
-a bad idea doesn't mean the pressure to support them
-in some way in Samba has gone away :-).
+Without changing ANYTHING to my linux-2.6 source tree - I just
+installed git 1.5.2.1 and now it behaves the way you describe.
 
-Jeremy.
+Conclusion: the weird behaviour that you think was wrong is
+totally due to git 1.4.4.4.
+
+I'll redo the bisect with this new git.
+
+-- 
+Carlo Wood <carlo@alinoe.com>
