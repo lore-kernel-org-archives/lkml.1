@@ -1,63 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbXFRJXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbXFRJ2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbXFRJXs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 05:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbXFRJXm
+	id S1759596AbXFRJ2b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 05:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXFRJ2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:23:42 -0400
-Received: from mail2.ameuro.de ([195.140.232.8]:57682 "EHLO mail2.ameuro.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752634AbXFRJXl convert rfc822-to-8bit (ORCPT
+	Mon, 18 Jun 2007 05:28:24 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:44027 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753946AbXFRJ2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 05:23:41 -0400
-X-Greylist: delayed 1995 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 05:23:41 EDT
-Date: Mon, 18 Jun 2007 10:49:56 +0200
-From: Anders Larsen <al@alarsen.net>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Balsa 2.3.14
-Message-Id: <1182156596l.29108l.0l@ecxwww1.reanet.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-X-AEV-Kundenmail-Information: AEV Virus and Spam Secure Mail System
-X-AEV-Kundenmail-SpamCheck: 
-X-MailScanner-From: al@alarsen.net
+	Mon, 18 Jun 2007 05:28:23 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: Mel Gorman <mel@csn.ul.ie>, kamezawa.hiroyu@jp.fujitsu.com,
+       clameter@sgi.com
+Message-Id: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/7] Memory Compaction v2
+Date: Mon, 18 Jun 2007 10:28:21 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Jun 2007 22:54:56 -0300, Alexandre Oliva wrote:
+This is V2 for the memory compaction patches. They depend on the two starting
+patches from the memory hot-remove patchset which I've included here as the
+first patch. All comments are welcome and they should be in a state useful
+for wider testing.
 
-> I don't know any law that requires tivoization.
+Changelog since V1
+o Bug fix when checking if a given node ID is valid or not
+o Using latest patch from Kame-san to compact memory in-kernel
+o Added trigger for direct compaction instead of direct reclaim
+o Obey watermarks in split_pagebuddy_pages()
+o Do not call lru_add_drain_all() frequently
 
-Not exactly laws, but pretty close:
+The patchset implements memory compaction for the page allocator reducing
+external fragmentation so that free memory exists as fewer, but larger
+contiguous blocks. Instead of being a full defragmentation solution,
+this focuses exclusively on pages that are movable via the page migration
+mechanism.
 
-Credit-card payment terminals are subject to strict security
-certification, where it has to be ensured that
+The compaction mechanism operates within a zone and moves movable pages
+towards the higher PFNs. Grouping pages by mobility biases the location
+of unmovable pages is biased towards the lower addresses, so the strategies
+work in conjunction.
 
-a) the user cannot tinker with the device without rendering it unusable
-for its original purpose (electronic payments), and
+A full compaction run involves two scanners operating within a zone - a
+migration and a free scanner. The migration scanner starts at the beginning
+of a zone and finds all movable pages within one pageblock_nr_pages-sized
+area and isolates them on a migratepages list. The free scanner begins at
+the end of the zone and searches on a per-area basis for enough free pages to
+migrate all the pages on the migratepages list. As each area is respecively
+migrated or exhaused of free pages, the scanners are advanced one area.
+A compaction run completes within a zone when the two scanners meet.
 
-b) the manufacturer is able to update the device _in_ _the_ _field_.
+This is what /proc/buddyinfo looks like before and after a compaction run.
 
-Those are hard requirements imposed by the banks and credit-card companies.
+mel@arnold:~/results$ cat before-buddyinfo.txt 
+Node 0, zone      DMA    150     33      6      4      2      1      1      1      1      0      0 
+Node 0, zone   Normal   7901   3005   2205   1511    758    245     34      3      0      1      0 
 
-We _are_ allowed to disclose the source code (and we do, of course) so
-that it can be used for other purposes, and of course the user can modify
-it. But there's just no way she would be (legally) able to run the
-modified software in the same device for the original purpose.
+mel@arnold:~/results$ cat after-buddyinfo.txt 
+Node 0, zone      DMA    150     33      6      4      2      1      1      1      1      0      0 
+Node 0, zone   Normal   1900   1187    609    325    228    178    110     32      6      4     24 
 
-With the (current draft of) GPLv3 we could not legally use Linux on such
-devices.
+Memory compaction may be triggered explicitly by writing a node number to
+/proc/sys/vm/compact_node. When a process fails to allocate a high-order
+page, it may compact memory in an attempt to satisfy the allocation. Explicit
+compaction does not finish until the two scanners meet. Direct compaction
+ends if a suitable page becomes available.
 
-Cheers
- Anders
+The first patch is a rollup from the memory hot-remove patchset. The two
+patches after that are changes to page migration. The second patch allows
+CONFIG_MIGRATION to be set without CONFIG_NUMA.  The third patch allows
+LRU pages to be isolated in batch instead of acquiring and releasing the
+LRU lock a lot.
 
+The fourth patch exports some metrics on external fragmentation which
+are relevant to memory compaction. The fifth patch is what implements
+memory compaction for a single zone. The sixth patch enables a node to be
+compacted explicitly by writing to a special file in /proc and the final
+patch implements direct compaction.
 
+This version of the patchset should be usable on all machines and I
+consider it ready for testing. It's passed tests here on x86, x86_64 and
+ppc64 machines.
+
+Here are some outstanding items on a TODO list in
+no particular order.
+
+o Have split_pagebuddy_order make blocks MOVABLE when the free page order
+  is greater than pageblock_order
+o Avoid racing with other allocators when direct compaction by taking the page
+  the moment it becomes free
+o Implement compaction_debug boot-time option like slub_debug
+o Implement compaction_disable boot-time option just in case
+o Investigate using debugfs as the manual compaction trigger instead of proc
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
