@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762556AbXFRLcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762184AbXFRLdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762556AbXFRLcs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 07:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760916AbXFRLcl
+	id S1762184AbXFRLdV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 07:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761062AbXFRLdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 07:32:41 -0400
-Received: from il.qumranet.com ([82.166.9.18]:47997 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760775AbXFRLcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 07:32:41 -0400
-Message-ID: <46766D57.8040206@qumranet.com>
-Date: Mon, 18 Jun 2007 14:32:39 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 18 Jun 2007 07:33:10 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:56942 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760823AbXFRLdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 07:33:08 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Mon, 18 Jun 2007 07:30:43 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Magnus Naeslund <mag@kite.se>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: ARC-1260: No space left on device, when there is (or should be)
+ free space left
+In-Reply-To: <4676679E.5040901@kite.se>
+Message-ID: <Pine.LNX.4.64.0706180730320.14972@localhost.localdomain>
+References: <4676679E.5040901@kite.se>
 MIME-Version: 1.0
-To: Luca Tettamanti <kronos.it@gmail.com>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] kvm: Fix x86 emulator writeback
-References: <20070613204948.GA14710@dreamland.darkstar.lan> <4670FBB5.70707@qumranet.com> <20070614225324.GA4088@dreamland.darkstar.lan> <20070614231359.GA5705@dreamland.darkstar.lan> <68676e00706141627s3cb87391sa0ee6711d2f7933f@mail.gmail.com> <467256AA.1040001@qumranet.com> <20070615214915.GA10536@dreamland.darkstar.lan> <4673949B.1070505@qumranet.com> <20070617151452.GA21971@dreamland.darkstar.lan> <4675523C.9020703@qumranet.com> <20070617165201.GA23885@dreamland.darkstar.lan> <46765954.60102@qumranet.com>
-In-Reply-To: <46765954.60102@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Luca Tettamanti wrote:
->> When the old value and new one are the same the emulator skips the
->> write; this is undesiderable when the destination is a MMIO area and the
->> write shall be performed regardless of the previous value. This
->> optimization breaks e.g. a Linux guest APIC compiled without
->> X86_GOOD_APIC.
->>
->> Remove the check and always perform the writeback stage in the
->> emulation.
->>
->>   
+On Mon, 18 Jun 2007, Magnus Naeslund wrote:
+
+> It seems I have a problem accessing the whole device, it filled up too quickly.
+> I thought I was avoiding the 2tb limit when not using any partition tables, shame on me :)
 >
-> Unfortunately, this kills Windows XP (first run with a guest crash, 
-> second with a host oops), so I reverted it.  I'd guess some operation  
-> which doesn't need writeback ends up in the modified code.  
-> Previously, the check caused it to skip writeback, but now it writes 
-> back random memory, causing a crash.
+> # df -B 1 /dev/sdb
+> Filesystem           1B-blocks      Used Available Use% Mounted on
+> /dev/sdb             5999417057280 1908287229952 4091129827328  32% /storage/disk1
 >
+> (Ok here I have 68% free space on our 5.5TB device)
 
-There are comments around like
+$ df -i
 
->     /* Disable writeback. */
->     dst.orig_val = dst.val;
-
-Best option is probably to add an explicit disable_writeback flag and 
-set it there.
-
+rday
 -- 
-error compiling committee.c: too many arguments to function
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
