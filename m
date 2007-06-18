@@ -1,116 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760277AbXFRJ2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbXFRJ3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760277AbXFRJ2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 05:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbXFRJ2n
+	id S1760129AbXFRJ3d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 05:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758127AbXFRJ3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:28:43 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:44040 "EHLO
+	Mon, 18 Jun 2007 05:29:24 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:44067 "EHLO
 	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755015AbXFRJ2m (ORCPT
+	with ESMTP id S1760651AbXFRJ3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 05:28:42 -0400
+	Mon, 18 Jun 2007 05:29:23 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: Mel Gorman <mel@csn.ul.ie>, kamezawa.hiroyu@jp.fujitsu.com,
        clameter@sgi.com
-Message-Id: <20070618092841.7790.48917.sendpatchset@skynet.skynet.ie>
+Message-Id: <20070618092921.7790.78151.sendpatchset@skynet.skynet.ie>
 In-Reply-To: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie>
 References: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 1/7] KAMEZAWA Hiroyuki hot-remove patches
-Date: Mon, 18 Jun 2007 10:28:41 +0100 (IST)
+Subject: [PATCH 3/7] Introduce isolate_lru_page_nolock() as a lockless version of isolate_lru_page()
+Date: Mon, 18 Jun 2007 10:29:21 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is a rollup of two patches from KAMEZAWA Hiroyuki. A slightly later
-version exists but this is the one I tested with and it checks page_mapped()
-with the RCU lock held.
+Migration uses isolate_lru_page() to isolate an LRU page. This acquires
+the zone->lru_lock to safely remove the page and place it on a private
+list. However, this prevents the caller from batching up isolation of
+multiple pages.  This patch introduces a nolock version of isolate_lru_page()
+for callers that are aware of the locking requirements.
 
-Patch 1 is "page migration by kernel v5."
-Patch 2 is "isolate lru page race fix."
-
-Changelog V5->V6
- - removed dummy_vma and uses rcu_read_lock().
-
-In usual, migrate_pages(page,,) is called with holoding mm->sem by systemcall.
-(mm here is a mm_struct which maps the migration target page.)
-This semaphore helps avoiding some race conditions.
-
-But, if we want to migrate a page by some kernel codes, we have to avoid
-some races. This patch adds check code for following race condition.
-
-1. A page which is not mapped can be target of migration. Then, we have
-   to check page_mapped() before calling try_to_unmap().
-
-2. anon_vma can be freed while page is unmapped, but page->mapping remains as
-   it was. We drop page->mapcount to be 0. Then we cannot trust page->mapping.
-   So, use rcu_read_lock() to prevent anon_vma pointed by page->mapping will
-   not be freed during migration.
-
-release_pages() in mm/swap.c changes page_count() to be 0
-without removing PageLRU flag...
-
-This means isolate_lru_page() can see a page, PageLRU() && page_count(page)==0..
-This is BUG. (get_page() will be called against count=0 page.)
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Acked-by: Andy Whitcroft <apw@shadowen.org>
 ---
 
- migrate.c |   19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
+ include/linux/migrate.h |    8 +++++++-
+ mm/migrate.c            |   36 +++++++++++++++++++++++++++---------
+ 2 files changed, 34 insertions(+), 10 deletions(-)
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc4-mm2-clean/mm/migrate.c linux-2.6.22-rc4-mm2-005_migrationkernel/mm/migrate.c
---- linux-2.6.22-rc4-mm2-clean/mm/migrate.c	2007-06-13 23:43:12.000000000 +0100
-+++ linux-2.6.22-rc4-mm2-005_migrationkernel/mm/migrate.c	2007-06-15 16:25:31.000000000 +0100
-@@ -49,9 +49,8 @@ int isolate_lru_page(struct page *page, 
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc4-mm2-015_migration_flatmem/include/linux/migrate.h linux-2.6.22-rc4-mm2-020_isolate_nolock/include/linux/migrate.h
+--- linux-2.6.22-rc4-mm2-015_migration_flatmem/include/linux/migrate.h	2007-06-15 16:25:37.000000000 +0100
++++ linux-2.6.22-rc4-mm2-020_isolate_nolock/include/linux/migrate.h	2007-06-15 16:25:46.000000000 +0100
+@@ -27,6 +27,8 @@ static inline int vma_migratable(struct 
+ #endif
+ 
+ #ifdef CONFIG_MIGRATION
++extern int locked_isolate_lru_page(struct zone *zone, struct page *p,
++						struct list_head *pagelist);
+ extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
+ extern int putback_lru_pages(struct list_head *l);
+ extern int migrate_page(struct address_space *,
+@@ -41,7 +43,11 @@ extern int migrate_vmas(struct mm_struct
+ 		const nodemask_t *from, const nodemask_t *to,
+ 		unsigned long flags);
+ #else
+-
++static inline int locked_isolate_lru_page(struct zone *zone, struct page *p,
++						struct list_head *list)
++{
++	return -ENOSYS;
++}
+ static inline int isolate_lru_page(struct page *p, struct list_head *list)
+ 					{ return -ENOSYS; }
+ static inline int putback_lru_pages(struct list_head *l) { return 0; }
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc4-mm2-015_migration_flatmem/mm/migrate.c linux-2.6.22-rc4-mm2-020_isolate_nolock/mm/migrate.c
+--- linux-2.6.22-rc4-mm2-015_migration_flatmem/mm/migrate.c	2007-06-15 16:25:31.000000000 +0100
++++ linux-2.6.22-rc4-mm2-020_isolate_nolock/mm/migrate.c	2007-06-15 16:25:46.000000000 +0100
+@@ -41,6 +41,32 @@
+  *  -EBUSY: page not on LRU list
+  *  0: page removed from LRU list and added to the specified list.
+  */
++int locked_isolate_lru_page(struct zone *zone, struct page *page,
++						struct list_head *pagelist)
++{
++	int ret = -EBUSY;
++
++	if (PageLRU(page) && get_page_unless_zero(page)) {
++		ret = 0;
++		ClearPageLRU(page);
++		if (PageActive(page))
++			del_page_from_active_list(zone, page);
++		else
++			del_page_from_inactive_list(zone, page);
++		list_add_tail(&page->lru, pagelist);
++	}
++
++	return ret;
++}
++
++/*
++ * Acquire the zone->lru_lock and isolate one page from the LRU lists. If
++ * successful put it onto the indicated list with elevated page count.
++ *
++ * Result:
++ *  -EBUSY: page not on LRU list
++ *  0: page removed from LRU list and added to the specified list.
++ */
+ int isolate_lru_page(struct page *page, struct list_head *pagelist)
+ {
+ 	int ret = -EBUSY;
+@@ -49,15 +75,7 @@ int isolate_lru_page(struct page *page, 
  		struct zone *zone = page_zone(page);
  
  		spin_lock_irq(&zone->lru_lock);
--		if (PageLRU(page)) {
-+		if (PageLRU(page) && get_page_unless_zero(page)) {
- 			ret = 0;
--			get_page(page);
- 			ClearPageLRU(page);
- 			if (PageActive(page))
- 				del_page_from_active_list(zone, page);
-@@ -612,6 +611,7 @@ static int unmap_and_move(new_page_t get
- 	int rc = 0;
- 	int *result = NULL;
- 	struct page *newpage = get_new_page(page, private, &result);
-+	int rcu_locked = 0;
- 
- 	if (!newpage)
- 		return -ENOMEM;
-@@ -632,18 +632,27 @@ static int unmap_and_move(new_page_t get
- 			goto unlock;
- 		wait_on_page_writeback(page);
+-		if (PageLRU(page) && get_page_unless_zero(page)) {
+-			ret = 0;
+-			ClearPageLRU(page);
+-			if (PageActive(page))
+-				del_page_from_active_list(zone, page);
+-			else
+-				del_page_from_inactive_list(zone, page);
+-			list_add_tail(&page->lru, pagelist);
+-		}
++		ret = locked_isolate_lru_page(zone, page, pagelist);
+ 		spin_unlock_irq(&zone->lru_lock);
  	}
--
-+	/* anon_vma should not be freed while migration. */
-+	if (PageAnon(page)) {
-+		rcu_read_lock();
-+		rcu_locked = 1;
-+	}
- 	/*
- 	 * Establish migration ptes or remove ptes
- 	 */
--	try_to_unmap(page, 1);
- 	if (!page_mapped(page))
--		rc = move_to_new_page(newpage, page);
-+		goto unlock;
-+
-+	try_to_unmap(page, 1);
-+	rc = move_to_new_page(newpage, page);
- 
- 	if (rc)
- 		remove_migration_ptes(page, page);
- 
- unlock:
-+	if (rcu_locked)
-+		rcu_read_unlock();
-+
- 	unlock_page(page);
- 
- 	if (rc != -EAGAIN) {
+ 	return ret;
