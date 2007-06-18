@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbXFRJS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbXFRJXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759956AbXFRJS5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 05:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbXFRJSu
+	id S1759472AbXFRJXs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 05:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbXFRJXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:18:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41721 "EHLO mx2.mail.elte.hu"
+	Mon, 18 Jun 2007 05:23:42 -0400
+Received: from mail2.ameuro.de ([195.140.232.8]:57682 "EHLO mail2.ameuro.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757286AbXFRJSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 05:18:50 -0400
-Date: Mon, 18 Jun 2007 11:18:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, kiran@scalex86.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070618091832.GA1860@elte.hu>
-References: <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu> <20070616103707.GA28096@elte.hu> <E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu> <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu> <20070618081204.GA11153@elte.hu> <E1I0CY4-0006lF-00@dorka.pomaz.szeredi.hu> <20070618083109.GA23572@elte.hu> <E1I0ChN-0006nd-00@dorka.pomaz.szeredi.hu>
+	id S1752634AbXFRJXl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 05:23:41 -0400
+X-Greylist: delayed 1995 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 05:23:41 EDT
+Date: Mon, 18 Jun 2007 10:49:56 +0200
+From: Anders Larsen <al@alarsen.net>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+X-Mailer: Balsa 2.3.14
+Message-Id: <1182156596l.29108l.0l@ecxwww1.reanet.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1I0ChN-0006nd-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8BIT
+X-AEV-Kundenmail-Information: AEV Virus and Spam Secure Mail System
+X-AEV-Kundenmail-SpamCheck: 
+X-MailScanner-From: al@alarsen.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 16 Jun 2007 22:54:56 -0300, Alexandre Oliva wrote:
 
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
+> I don't know any law that requires tivoization.
 
-> > > > This change causes the memory access of the "easy" spin-loop portion 
-> > > > to be more agressive: after the REP; NOP we'd not do the 'easy-loop' 
-> > > > with a simple CMPB, but we'd re-attempt the atomic op.
-> > > 
-> > > It looks as if this is going to overflow of the lock counter, no?
-> > 
-> > hm, what do you mean? There's no lock counter.
-> 
-> I mean, the repeated calls to decb will pretty soon make lock->slock 
-> wrap around.
+Not exactly laws, but pretty close:
 
-ugh, indeed, bad thinko on my part. I'll rework this.
+Credit-card payment terminals are subject to strict security
+certification, where it has to be ensured that
 
-	Ingo
+a) the user cannot tinker with the device without rendering it unusable
+for its original purpose (electronic payments), and
+
+b) the manufacturer is able to update the device _in_ _the_ _field_.
+
+Those are hard requirements imposed by the banks and credit-card companies.
+
+We _are_ allowed to disclose the source code (and we do, of course) so
+that it can be used for other purposes, and of course the user can modify
+it. But there's just no way she would be (legally) able to run the
+modified software in the same device for the original purpose.
+
+With the (current draft of) GPLv3 we could not legally use Linux on such
+devices.
+
+Cheers
+ Anders
+
+
