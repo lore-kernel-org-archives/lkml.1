@@ -1,97 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932392AbXFRUx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932779AbXFRUxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932392AbXFRUx2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763321AbXFRUxV
+	id S932779AbXFRUxz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764938AbXFRUxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:53:21 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:3587 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763119AbXFRUxU (ORCPT
+	Mon, 18 Jun 2007 16:53:45 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:43037
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762072AbXFRUxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:53:20 -0400
-Message-ID: <4676F0B9.3080408@fr.ibm.com>
-Date: Mon, 18 Jun 2007 22:53:13 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 18 Jun 2007 16:53:44 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: mea culpa on the meaning of Tivoization (was: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3)
+Date: Mon, 18 Jun 2007 16:53:56 -0400
+User-Agent: KMail/1.9.6
+Cc: Alexandre Oliva <aoliva@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Robin Getz <rgetz@blackfin.uclinux.org>,
+       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <orabuyfa7i.fsf_-_@oliva.athome.lsd.ic.unicamp.br> <20070618005041.6c51a368@the-village.bc.nu>
+In-Reply-To: <20070618005041.6c51a368@the-village.bc.nu>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: [PATCH -mm] add a kmem_cache for nsproxy objects
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706181653.57713.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It should improve performance in some scenarii where a lot of 
-these nsproxy objects are created by unsharing namespaces. This is
-a typical use of virtual servers that are being created or entered.
+On Sunday 17 June 2007 19:50:41 Alan Cox wrote:
+> That's a nice definition but one I can see being sort of abusable
+> depending how you read it. We head ever more into the disposable computer
+> era where as a vendor putting the code on ROM is cheap and upgrades don't
+> matter (throw it away get a new one).
 
-This is also a good tool to find leaks and gather statistics on
-namespace usage.
+I'm waiting for cereal boxes in the store to have a display covering the 
+entire front side which changes every 30 seconds, with all the circuitry to 
+drive it taking up a few square milimeters and a small watch battery to power 
+it for six months ala the blinky LEDs of today.
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
----
- kernel/nsproxy.c |   21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
+This should be economicaly feasible in what, 10 years?  15?  (There are all 
+sorts of weird problems to solve like coming up with a battery that's not 
+only cheap enough but which you won't get in trouble putting millions of in 
+landfills.  Fuel cell might be more environmentally friendly depending on 
+your catalysts...)
 
-Index: 2.6.22-rc4-mm2/kernel/nsproxy.c
-===================================================================
---- 2.6.22-rc4-mm2.orig/kernel/nsproxy.c
-+++ 2.6.22-rc4-mm2/kernel/nsproxy.c
-@@ -21,6 +21,8 @@
- #include <linux/utsname.h>
- #include <linux/pid_namespace.h>
- 
-+static struct kmem_cache *nsproxy_cachep;
-+
- struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
- 
- static inline void get_nsproxy(struct nsproxy *ns)
-@@ -43,9 +45,11 @@ static inline struct nsproxy *clone_nspr
- {
- 	struct nsproxy *ns;
- 
--	ns = kmemdup(orig, sizeof(struct nsproxy), GFP_KERNEL);
--	if (ns)
-+	ns = kmem_cache_alloc(nsproxy_cachep, GFP_KERNEL);
-+	if (ns) {
-+		memcpy(ns, orig, sizeof(struct nsproxy));
- 		atomic_set(&ns->count, 1);
-+	}
- 	return ns;
- }
- 
-@@ -109,7 +113,7 @@ out_uts:
- 	if (new_nsp->mnt_ns)
- 		put_mnt_ns(new_nsp->mnt_ns);
- out_ns:
--	kfree(new_nsp);
-+	kmem_cache_free(nsproxy_cachep, new_nsp);
- 	return ERR_PTR(err);
- }
- 
-@@ -160,7 +164,7 @@ void free_nsproxy(struct nsproxy *ns)
- 		put_pid_ns(ns->pid_ns);
- 	if (ns->user_ns)
- 		put_user_ns(ns->user_ns);
--	kfree(ns);
-+	kmem_cache_free(nsproxy_cachep, ns);
- }
- 
- /*
-@@ -191,3 +195,12 @@ int unshare_nsproxy_namespaces(unsigned 
- 	}
- 	return err;
- }
-+
-+static int __init nsproxy_cache_init(void)
-+{
-+	nsproxy_cachep = kmem_cache_create("nsproxy", sizeof(struct nsproxy),
-+					   0, SLAB_PANIC, NULL, NULL);
-+	return 0;
-+}
-+
-+module_init(nsproxy_cache_init);
+We haven't even brushed against the "disposable computer era" compared to 
+what's coming.  Most of us will probably live to see happy meal toys capable 
+of running Linux, and that's just a _start_.
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
