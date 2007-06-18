@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764997AbXFRSK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765032AbXFRSLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764997AbXFRSK4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762073AbXFRSKs
+	id S1765032AbXFRSLb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbXFRSLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:10:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54015 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762062AbXFRSKr (ORCPT
+	Mon, 18 Jun 2007 14:11:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53599 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761790AbXFRSLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:10:47 -0400
-Date: Mon, 18 Jun 2007 11:09:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070614235004.GA14952@elte.hu> <20070615011012.6c09066e@the-village.bc.nu>
- <20070615012623.GA25189@elte.hu> <20070615101007.0cbfd078@the-village.bc.nu>
- <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de>
- <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk>
- <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
- <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
- <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
- <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 18 Jun 2007 14:11:22 -0400
+Date: Mon, 18 Jun 2007 19:11:01 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Arjan van de Ven <arjan@infradead.org>, Mike Frysinger <vapier@gentoo.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, rmk@arm.linux.org.uk
+Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
+Message-ID: <20070618181101.GA15922@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+	rmk@arm.linux.org.uk
+References: <200706171833.29046.vapier@gentoo.org> <1182120674.22999.4.camel@laptopd505.fenrus.org> <200706180124.25574.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706180124.25574.arnd@arndb.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 17 Jun 2007, Alexandre Oliva wrote:
-> > 	What Tivo did is *good* in my opinion!
+On Mon, Jun 18, 2007 at 01:24:24AM +0200, Arnd Bergmann wrote:
+> On Monday 18 June 2007, Arjan van de Ven wrote:
+> > 
+> > On Sun, 2007-06-17 at 18:33 -0400, Mike Frysinger wrote:
+> > > This changes asm() to __asm__() and volatile to __volatile__ so that these
+> > > headers can be used with gcc's -std=c99.
+> > 
+> > hmm but the kernel doesn't use -std=c99...
 > 
-> > Can't you get that through your skull?
-> 
-> No.  I disagree.  We can agree to disagree on that.
+> The byteorder headers are exported to user space through
+> include/asm-generic/Kbuild.asm, and they are used by a number
+> of other exported headers, so they should work with any
+> gcc flags that a user might want to use.
 
-Sorry, no we cannot. You seem to not accept that "in my opinion".
+No, they should not be exported and the headers using them
+should be fixed to not require this.  Userspace has it's own
+endianess handling already.
 
-That's not somethign we can disagree on. My opinion is _mine_ to state. 
-There's no room for disagreement. It's my opinion, and your "agreement" is 
-not optional.
-
-So when I say "I think what Tivo did is good", then you'd better just say, 
-"ok, that's your opinion, and I respect you for it".
-
-Otherwise you're a douche-bag and an idiot.
-
-And once you realize that _I_ think that Tivo did is good, you have to 
-accept that I think that the GPLv3 is the worse license in my opinion.
-
-So stop blathering about anything else.
-
-Just accept it. Just repeat after me: "Linus thinks that the GPLv3 is a 
-bad license, and Linus is not confused".
-
-Don't call me "confused". Don't bother talking about what _you_ think, or 
-what the FSF thinks is the "spirit". Don't say that you cannot understand 
-it. 
-
-Because if you cannot understand it, the only thing it shows is _your_ 
-lack of understanding.
-
-		Linus
