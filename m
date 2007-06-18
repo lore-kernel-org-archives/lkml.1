@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932956AbXFRVuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933049AbXFRVux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932956AbXFRVuJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 17:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764088AbXFRVtz
+	id S933049AbXFRVux (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 17:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763296AbXFRVuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 17:49:55 -0400
-Received: from pan.madism.org ([88.191.52.104]:40245 "EHLO hermes.madism.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763953AbXFRVty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 17:49:54 -0400
-X-Greylist: delayed 1328 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 17:49:53 EDT
-Date: Mon, 18 Jun 2007 22:27:41 +0100
-From: Pierre Habouzit <madcoder@debian.org>
-To: Thomas Glanzmann <thomas@glanzmann.de>, carlo@alinoe.com,
-       Linus Torvalds <torvalds@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>,
-       GIT <git@vger.kernel.org>
-Subject: Re: GIT Packages for Debian Etch
-Message-ID: <20070618212741.GA5938@artemis.internal.dc7.debconf.org>
-Mail-Followup-To: Thomas Glanzmann <thomas@glanzmann.de>, carlo@alinoe.com,
-	Linus Torvalds <torvalds@osdl.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>,
-	GIT <git@vger.kernel.org>
-References: <20070618212524.GC16393@cip.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Q68bSM7Ycu6FN28Q";
-	protocol="application/pgp-signature"; micalg=SHA1
-Content-Disposition: inline
-In-Reply-To: <20070618212524.GC16393@cip.informatik.uni-erlangen.de>
-X-Face: $(^e[V4D-[`f2EmMGz@fgWK!e.B~2g.{08lKPU(nc1J~z\4B>*JEVq:E]7G-\6$Ycr4<;Z!|VY6Grt]+RsS$IMV)f>2)M="tY:ZPcU;&%it2D81X^kNya0=L]"vZmLP+UmKhgq+u*\.dJ8G!N&=EvlD
-User-Agent: Madmutt/devel (Linux)
+	Mon, 18 Jun 2007 17:50:46 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51502 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762553AbXFRVup (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 17:50:45 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch-mm 00/25] High resolution timer updates and x86_64 support - V2
+In-Reply-To: Your message of "Mon, 18 Jun 2007 13:24:33 PDT."
+             <653FFBB4508B9042B5D43DC9E18836F501091308@scsmsx415.amr.corp.intel.com>
+From: Valdis.Kletnieks@vt.edu
+References: <653FFBB4508B9042B5D43DC9E18836F501091308@scsmsx415.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1182203384_14795P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 18 Jun 2007 17:49:44 -0400
+Message-ID: <18748.1182203384@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1182203384_14795P
+Content-Type: text/plain; charset=us-ascii
 
---Q68bSM7Ycu6FN28Q
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 18 Jun 2007 13:24:33 PDT, "Pallipadi, Venkatesh" said:
 
-On Mon, Jun 18, 2007 at 11:25:24PM +0200, Thomas Glanzmann wrote:
-> Hello,
-> a friend of mine always builds the Debian Packages from unstable for
-> Debian Etch. I have on all my machines the following line in
-> /etc/apt/sources.list:
->=20
->         deb http://rmdir.de/~michael/git/ ./
+> >state2/time: -159524787
+> >state2/usage: 15007443
+> >
+> 
+> The problem is powertop only understands /proc/acpi/processor/CPU*/power
+> for
+> and not /sys..cpuidle for the moment.
+> 
+> I had a patch in recent cpuidle fixes series that makes /proc interface
+> active
+> again with cpuidle which should correct this. Those patches are not in
+> rc4-mm2-hrt4, but are there in latest rc4-hrt and rc5-hrt series.
 
-  FWIW there is even simpler: I maintain a backport on
-www.backports.org. Which is a semi-official service driven by Debian
-Developers.
+OK, so I've got a 32/64 bug that isn't the cause of *this* issue because
+powertop isn't looking at the broken value.
 
-Cheers,
---=20
-=C2=B7O=C2=B7  Pierre Habouzit
-=C2=B7=C2=B7O                                                madcoder@debia=
-n.org
-OOO                                                http://www.madism.org
+A quick check shows that the keep_proc_acpi_power_around_001.patch from
+rc5-hrt will apply to rc4-mm2-hrt - I'll give that a try tonight and report
+back...
 
---Q68bSM7Ycu6FN28Q
+
+--==_Exmh_1182203384_14795P
 Content-Type: application/pgp-signature
-Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQBGdvjNvGr7W6HudhwRAj6WAJ9ykN43ePDvw0G5T9fvvQh8bMBUAQCeKrQ4
-DrfxIN1mc0wDh4RbLwSdyk4=
-=vrbt
+iD8DBQFGdv33cC3lWbTT17ARAsgHAJ9jmDPFMHYwplmukdbEGijE1UXfogCfZG+M
+vDGt35pShodNiVKNnZv0htM=
+=JEk2
 -----END PGP SIGNATURE-----
 
---Q68bSM7Ycu6FN28Q--
+--==_Exmh_1182203384_14795P--
