@@ -1,95 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764270AbXFRR7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764663AbXFRSAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764270AbXFRR7a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 13:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760029AbXFRR7X
+	id S1764663AbXFRSAn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760029AbXFRSAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 13:59:23 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37769 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758762AbXFRR7W (ORCPT
+	Mon, 18 Jun 2007 14:00:34 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:60566 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756037AbXFRSAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 13:59:22 -0400
-Date: Mon, 18 Jun 2007 10:59:21 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       suresh.b.siddha@intel.com, pwil3058@bigpond.net.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: v2.6.21.4-rt11
-In-Reply-To: <20070618173558.GA17865@linux.vnet.ibm.com>
-Message-ID: <Pine.LNX.4.64.0706181054530.6596@schroedinger.engr.sgi.com>
-References: <20070613185522.GA27335@elte.hu> <20070613233910.GJ8125@linux.vnet.ibm.com>
- <20070615144535.GA12078@elte.hu> <20070615151452.GC9301@linux.vnet.ibm.com>
- <20070615195545.GA28872@elte.hu> <20070616011605.GH9301@linux.vnet.ibm.com>
- <20070616084434.GG2559@linux.vnet.ibm.com> <20070616161213.GA2994@linux.vnet.ibm.com>
- <20070618151215.GA9750@linux.vnet.ibm.com> <Pine.LNX.4.64.0706180948250.4751@schroedinger.engr.sgi.com>
- <20070618173558.GA17865@linux.vnet.ibm.com>
+	Mon, 18 Jun 2007 14:00:34 -0400
+Message-ID: <4676C838.1020006@zytor.com>
+Date: Mon, 18 Jun 2007 11:00:24 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: 7eggert@gmx.de
+CC: Michael Kerrisk <mtk-manpages@gmx.net>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: man-pages-2.57 is released
+References: <8x3Cc-1LD-13@gated-at.bofh.it> <E1I0HsK-0000of-5v@be1.lrz>
+In-Reply-To: <E1I0HsK-0000of-5v@be1.lrz>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007, Srivatsa Vaddagiri wrote:
-
-> On Mon, Jun 18, 2007 at 09:54:18AM -0700, Christoph Lameter wrote:
-> > The nodes-level domain looks for internode balances between up to 16 
-> > nodes. It is not restricted to a single node.
+Bodo Eggert wrote:
 > 
-> I was mostly speaking with the example system in mind (4-node 4-cpu
-> box), but yes, node-level domain does look for imbalance across max 16
-> nodes as you mention.
+> BTW1: linux/arch/i386/kernel/ioport.c still states having 8K of bitmaps to
+> be excessive (and implicitely and now wrongly as not being done). Since
+> there should only be few processes requiring iopl, the 8K should not be
+> excessive. We need a native speaker to change this text, at least not me
+> right now.
 > 
-> Both node and all-node domains don't have SD_BALANCE_NEWIDLE set, which
-> means idle_balance() will stop looking for imbalance beyonds its own
-> node. Based on the observed balance within its own node, IMO,
-> idle_balance() should not cause ->next_balance to be reset.
 
-I think the check in idle_balance needs to be modified.
+That text almost certainly dates back to when every process had a bitmap.
 
-If the domain *does not* have SD_BALANCE_NEWIDLE set then
-next_balance must still be set right. Does this patch fix it?
+Unfortunately, in a case of utter design braindamage, you can't have the
+I/O bitmap be more than 2^16 bytes away from the base of the TSS, so
+fixing that took a long time.
 
-
-
-Scheduler: Fix next_interval determination in idle_balance().
-
-The intervals of domains that do not have SD_BALANCE_NEWIDLE must
-be considered for the calculation of the time of the next balance. 
-Otherwise we may defer rebalancing forever.
-
-Signed-off-by: Christop Lameter <clameter@sgi.com>
-
-Index: linux-2.6.22-rc4-mm2/kernel/sched.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/kernel/sched.c	2007-06-18 10:56:31.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/kernel/sched.c	2007-06-18 10:57:10.000000000 -0700
-@@ -2493,17 +2493,16 @@ static void idle_balance(int this_cpu, s
- 	unsigned long next_balance = jiffies + 60 *  HZ;
- 
- 	for_each_domain(this_cpu, sd) {
--		if (sd->flags & SD_BALANCE_NEWIDLE) {
-+		if (sd->flags & SD_BALANCE_NEWIDLE)
- 			/* If we've pulled tasks over stop searching: */
- 			pulled_task = load_balance_newidle(this_cpu,
- 							this_rq, sd);
--			if (time_after(next_balance,
--				  sd->last_balance + sd->balance_interval))
--				next_balance = sd->last_balance
--						+ sd->balance_interval;
--			if (pulled_task)
--				break;
--		}
-+		if (time_after(next_balance,
-+			  sd->last_balance + sd->balance_interval))
-+			next_balance = sd->last_balance
-+					+ sd->balance_interval;
-+		if (pulled_task)
-+			break;
- 	}
- 	if (!pulled_task)
- 		/*
+	-hpa
