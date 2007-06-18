@@ -1,46 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764051AbXFRRh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764298AbXFRRic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764051AbXFRRh5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 13:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759983AbXFRRhu
+	id S1764298AbXFRRic (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 13:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759391AbXFRRiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 13:37:50 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:10485 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752923AbXFRRht (ORCPT
+	Mon, 18 Jun 2007 13:38:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:51896 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759091AbXFRRiX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 13:37:49 -0400
-Date: Mon, 18 Jun 2007 19:37:45 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       eric@anholt.net, zhenyu.z.wang@intel.com
-Subject: Re: [AGPGART] intel_agp: use table for device probe
-Message-ID: <20070618173745.GA8054@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Dave Airlie <airlied@gmail.com>, Dave Jones <davej@redhat.com>,
-	linux-kernel@vger.kernel.org, eric@anholt.net,
-	zhenyu.z.wang@intel.com
-References: <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com> <20070617223649.GA31587@alinoe.com> <20070617224918.GC12483@redhat.com> <20070618000643.GA1375@alinoe.com> <20070618001627.GA18598@redhat.com> <21d7e9970706171757n4709383cv7a39a66103edc370@mail.gmail.com> <20070618015636.GA8561@alinoe.com> <21d7e9970706171918p19bc3b13ta747dc76d2677345@mail.gmail.com>
+	Mon, 18 Jun 2007 13:38:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qKf9VHzeymwixpK8OvvetcgYmfdP4O2z4VZcrsW790vJlTooYXsRgggqtikc4xM6VySgYTLrnduFDt/n7A9t4V+BD/jfd3xA6pgnmJ08EAD5rkzReQAQhx2GiAK4lvQpo1+IcQI3aHZI4KBK0clJSM1zkJrfP79nXdLBQmrQbwE=
+Message-ID: <6bffcb0e0706181038j107e2357o89c525261cf671a@mail.gmail.com>
+Date: Mon, 18 Jun 2007 19:38:22 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       suresh.b.siddha@intel.com
+In-Reply-To: <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <21d7e9970706171918p19bc3b13ta747dc76d2677345@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070618095838.238615343@sgi.com>
+	 <46767346.2040108@googlemail.com>
+	 <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 12:18:32PM +1000, Dave Airlie wrote:
-> Well it was more for davej's benefit, in theory for your machine with
-> a PCIE graphics card you don't need agpgart enabled at all granted it
-> shouldn't screw up if it is..
+On 18/06/07, Christoph Lameter <clameter@sgi.com> wrote:
+> On Mon, 18 Jun 2007, Michal Piotrowski wrote:
+>
+> > Result:
+> >
+> > [  212.247759] WARNING: at lib/vsprintf.c:280 vsnprintf()
+> > [  212.253263]  [<c04052ad>] dump_trace+0x63/0x1eb
+> > [  212.259042]  [<c040544f>] show_trace_log_lvl+0x1a/0x2f
+> > [  212.266672]  [<c040608d>] show_trace+0x12/0x14
+> > [  212.271622]  [<c04060a5>] dump_stack+0x16/0x18
+> > [  212.276663]  [<c050d512>] vsnprintf+0x6b/0x48c
+> > [  212.281325]  [<c050d9f0>] scnprintf+0x20/0x2d
+> > [  212.286707]  [<c0508dbc>] bitmap_scnlistprintf+0xa8/0xec
+> > [  212.292508]  [<c0480d40>] list_locations+0x24c/0x2a2
+> > [  212.298241]  [<c0480dde>] alloc_calls_show+0x1f/0x26
+> > [  212.303459]  [<c047e72e>] slab_attr_show+0x1c/0x20
+> > [  212.309469]  [<c04c1cf9>] sysfs_read_file+0x94/0x105
+> > [  212.315519]  [<c0485933>] vfs_read+0xcf/0x158
+> > [  212.320215]  [<c0485d99>] sys_read+0x3d/0x72
+> > [  212.327539]  [<c040420c>] syscall_call+0x7/0xb
+> > [  212.332203]  [<b7f74410>] 0xb7f74410
+> > [  212.336229]  =======================
+> >
+> > Unfortunately, I don't know which file was cat'ed
+>
+> The dump shows that it was alloc_calls. But the issue is not related to
+> this patchset.
+>
+> Looks like we overflowed the buffer available for /sys output. The calls
+> in list_location to format cpulist and node lists attempt to allow very
+> long lists by trying to calculate how many bytes are remaining in the
+> page. If we are beyond the space left over by them then we may pass a
+> negative size to the scn_printf functions.
+>
+> So we need to check first if there are enough bytes remaining before
+> doing the calculation of how many remaining bytes can be used to
+> format these lists.
+>
+> Does this patch fix the issue?
+>
 
-I can't disable it though.
+Unfortunately no.
 
-I am not THAT much interested in disabling it however as long as I
-get help here to debug this. I am interested in finding out what is
-causing the crash, can't stand it to have a bug on my machine without
-knowing what it is ;)
+AFAIR I didn't see it in 2.6.22-rc4-mm2
+
+Regards,
+Michal
 
 -- 
-Carlo Wood <carlo@alinoe.com>
+LOG
+http://www.stardust.webpages.pl/log/
