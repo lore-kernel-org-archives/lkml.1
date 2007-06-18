@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbXFRN5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbXFRN5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763458AbXFRN5S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 09:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762391AbXFRN5D
+	id S1763606AbXFRN5x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 09:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760884AbXFRN5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 09:57:03 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:43242 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758680AbXFRN5C (ORCPT
+	Mon, 18 Jun 2007 09:57:46 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:54697 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758916AbXFRN5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 09:57:02 -0400
-Subject: [GIT PATCH] SCSI bug fixes for 2.6.22-rc5
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	Mon, 18 Jun 2007 09:57:44 -0400
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+From: holzheu <holzheu@linux.vnet.ibm.com>
+Reply-To: holzheu@linux.vnet.ibm.com
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Gerrit Huizenga <gh@us.ibm.com>, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       "lf_kernel_messages@linux-foundation.org" 
+	<lf_kernel_messages@linux-foundation.org>,
+       pavel@ucw.cz
+In-Reply-To: <1182172374.28566.1.camel@laptopd505.fenrus.org>
+References: <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
+	 <1182171354.11400.40.camel@localhost.localdomain>
+	 <1182172374.28566.1.camel@laptopd505.fenrus.org>
 Content-Type: text/plain
-Date: Mon, 18 Jun 2007 08:56:59 -0500
-Message-Id: <1182175019.3464.9.camel@mulgrave.il.steeleye.com>
+Organization: IBM
+Date: Mon, 18 Jun 2007 15:53:56 +0200
+Message-Id: <1182174836.11400.64.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that we're stabilising, this is a simple push of two (fairly
-critical) bug fixes.  You can get it from:
+On Mon, 2007-06-18 at 06:12 -0700, Arjan van de Ven wrote:
+> On Mon, 2007-06-18 at 14:55 +0200, holzheu wrote:
+> > Hi Gerrit,
+> > 
+> > The common thing of your and our approach is, that we need an ID to
+> > identify a message either by:
+> 
+> 
+> Maybe I am missing something big, but why is an ID needed?
+> The message IS the ID right? That's the only thing that is robust
+> against code moving about....
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+Yes. As already discussed with Pavel, it is one option to use the format
+string of the message as message ID. The disadvantage compared to
+message IDs like hashes is, that format strings might be even less
+unique than hashes and it's probably less convenient for searching by
+operators.
 
-The changelog is:
+An operator has to issue either:
 
-commit 204abf28679cd55a8e254b18965583bb1c8bc739
-Author: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Date:   Wed Jun 13 12:58:53 2007 -0700
+>> info lp.4711
+or
+>> info "lp0: on fire"
 
-    [SCSI] ESP: Don't forget to clear ESP_FLAG_RESETTING.
-    
-    esp_reset_cleanup() does everything necessary except clear
-    the flag, so we never exit resetting state.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-    Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
-
-commit 29982e9acd3e81a289c73321401427d02eaa8adc
-Author: Doug Chapman <doug.chapman@hp.com>
-Date:   Mon May 7 15:59:46 2007 -0400
-
-    [SCSI] fusion: fix for BZ 8426 - massive slowdown on SCSI CD/DVD drive
-    
-    Patch for: http://bugzilla.kernel.org/show_bug.cgi?id=8426
-    
-    A recent code cleanup that moved code from mptscsih to mptspi
-    inadvertently change the order some code was called.  This caused
-    a massive slowdown (of 150x to 300x) on the CD/DVD drive on the
-    high-end HP Integrity servers.
-    
-    Signed-off-by: Doug Chapman <doug.chapman@hp.com>
-    Acked-by: Eric Moore <eric.moore@lsi.com>
-    Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
-
-
-And the diffstat:
-
- message/fusion/mptspi.c |    8 +++++---
- scsi/esp_scsi.c         |    1 +
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-James
-
+Michael
 
