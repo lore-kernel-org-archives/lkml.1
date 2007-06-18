@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764298AbXFRRic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763558AbXFRRm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764298AbXFRRic (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 13:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759391AbXFRRiY
+	id S1763558AbXFRRm1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 13:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756150AbXFRRmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 13:38:24 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:51896 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759091AbXFRRiX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 13:38:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qKf9VHzeymwixpK8OvvetcgYmfdP4O2z4VZcrsW790vJlTooYXsRgggqtikc4xM6VySgYTLrnduFDt/n7A9t4V+BD/jfd3xA6pgnmJ08EAD5rkzReQAQhx2GiAK4lvQpo1+IcQI3aHZI4KBK0clJSM1zkJrfP79nXdLBQmrQbwE=
-Message-ID: <6bffcb0e0706181038j107e2357o89c525261cf671a@mail.gmail.com>
-Date: Mon, 18 Jun 2007 19:38:22 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       suresh.b.siddha@intel.com
-In-Reply-To: <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com>
+	Mon, 18 Jun 2007 13:42:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57984 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042AbXFRRmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 13:42:18 -0400
+Message-ID: <4676C3F5.5070501@redhat.com>
+Date: Mon, 18 Jun 2007 13:42:13 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Carlo Wood <carlo@alinoe.com>, Dave Airlie <airlied@gmail.com>,
+       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+References: <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com> <20070617223649.GA31587@alinoe.com> <20070617224918.GC12483@redhat.com> <20070618000643.GA1375@alinoe.com> <20070618001627.GA18598@redhat.com> <21d7e9970706171757n4709383cv7a39a66103edc370@mail.gmail.com> <20070618015636.GA8561@alinoe.com> <20070618023726.GA7594@zhen-devel.sh.intel.com>
+In-Reply-To: <20070618023726.GA7594@zhen-devel.sh.intel.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070618095838.238615343@sgi.com>
-	 <46767346.2040108@googlemail.com>
-	 <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18/06/07, Christoph Lameter <clameter@sgi.com> wrote:
-> On Mon, 18 Jun 2007, Michal Piotrowski wrote:
->
-> > Result:
-> >
-> > [  212.247759] WARNING: at lib/vsprintf.c:280 vsnprintf()
-> > [  212.253263]  [<c04052ad>] dump_trace+0x63/0x1eb
-> > [  212.259042]  [<c040544f>] show_trace_log_lvl+0x1a/0x2f
-> > [  212.266672]  [<c040608d>] show_trace+0x12/0x14
-> > [  212.271622]  [<c04060a5>] dump_stack+0x16/0x18
-> > [  212.276663]  [<c050d512>] vsnprintf+0x6b/0x48c
-> > [  212.281325]  [<c050d9f0>] scnprintf+0x20/0x2d
-> > [  212.286707]  [<c0508dbc>] bitmap_scnlistprintf+0xa8/0xec
-> > [  212.292508]  [<c0480d40>] list_locations+0x24c/0x2a2
-> > [  212.298241]  [<c0480dde>] alloc_calls_show+0x1f/0x26
-> > [  212.303459]  [<c047e72e>] slab_attr_show+0x1c/0x20
-> > [  212.309469]  [<c04c1cf9>] sysfs_read_file+0x94/0x105
-> > [  212.315519]  [<c0485933>] vfs_read+0xcf/0x158
-> > [  212.320215]  [<c0485d99>] sys_read+0x3d/0x72
-> > [  212.327539]  [<c040420c>] syscall_call+0x7/0xb
-> > [  212.332203]  [<b7f74410>] 0xb7f74410
-> > [  212.336229]  =======================
-> >
-> > Unfortunately, I don't know which file was cat'ed
->
-> The dump shows that it was alloc_calls. But the issue is not related to
-> this patchset.
->
-> Looks like we overflowed the buffer available for /sys output. The calls
-> in list_location to format cpulist and node lists attempt to allow very
-> long lists by trying to calculate how many bytes are remaining in the
-> page. If we are beyond the space left over by them then we may pass a
-> negative size to the scn_printf functions.
->
-> So we need to check first if there are enough bytes remaining before
-> doing the calculation of how many remaining bytes can be used to
-> format these lists.
->
-> Does this patch fix the issue?
->
+On 06/17/2007 10:37 PM, Wang Zhenyu wrote:
+> On 2007.06.18 03:56:36 +0000, Carlo Wood wrote:
+>> On Mon, Jun 18, 2007 at 10:57:38AM +1000, Dave Airlie wrote:
+>>>> Right now, I'm at a loss to explain the corruption, so it's
+>>>> difficult to suggest what to try.
+>>> The thing is here, this is PCIE, so if there is a GPU plugged into the
+>>> PCIE 16x slot in theory the main onboard graphics should disable, AGP
+>>> code is used to control the GART for the onboard chip, in this case a
+>>> plugged in card will  not use AGP, I wonder have Intel tested with a
+>>> pcie card in place...
+> 
+> Agree. We seem to always enable AGP even IGD is disabled or not exists,
+> other card should not depend on this module ever.
+> 
+>> That is Chinese for me :/.
+>> Do you want me to try something?
+> 
+> Carlo, I've just built latest kernel git tree on a Dell 965G box and
+> have a NV card plugged-in. It boots fine.
+> 
+> Linux agpgart interface v0.102 (c) Dave Jones
+> agpgart: Detected an Intel 965G Chipset.
+> agpgart: AGP aperture is 256M @ 0x0
+> 
+> I don't know why it hangs your machine when loading this module, it should
+> just not bother anything. But from your last "modprobe: ..." line, it seems
+> there's really badness somewhere, do you have serial console to see more
+> in the message?
 
-Unfortunately no.
+There are also these bug reports:
 
-AFAIR I didn't see it in 2.6.22-rc4-mm2
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229913
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242101
