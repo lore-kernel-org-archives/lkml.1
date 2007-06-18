@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbXFRGeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbXFRGeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759448AbXFRGeK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 02:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbXFRGd5
+	id S1758678AbXFRGeb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 02:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbXFRGeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 02:33:57 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41793 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755315AbXFRGd4 (ORCPT
+	Mon, 18 Jun 2007 02:34:04 -0400
+Received: from paragon.brong.net ([66.232.154.163]:54122 "EHLO
+	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757550AbXFRGeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 02:33:56 -0400
-Date: Mon, 18 Jun 2007 15:33:21 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Paul Mundt <lethal@linux-sh.org>, Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: More __meminit annotations.
-In-Reply-To: <20070618055842.GA17858@linux-sh.org>
-References: <20070618143943.B108.Y-GOTO@jp.fujitsu.com> <20070618055842.GA17858@linux-sh.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070618151544.B10A.Y-GOTO@jp.fujitsu.com>
+	Mon, 18 Jun 2007 02:34:03 -0400
+Date: Mon, 18 Jun 2007 16:33:57 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Chris Adams <cmadams@hiwaay.net>
+Cc: Bron Gondwana <brong@fastmail.fm>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070618063357.GA26311@brong.net>
+References: <fa.toMqQ3LqoQn6Xh51bVordO8WMVc@ifi.uio.no> <fa.EmnDne9QndTLcw7NAzc83tWplMI@ifi.uio.no> <fa.G+0vGcF8U8pcd6ozkdhKGsQ/dDs@ifi.uio.no> <fa.8bXRW7nY7z5eXVZxCxUgra+gbb8@ifi.uio.no> <fa.qtDtq+aSKlNweTqHtKcy/Gj5PXg@ifi.uio.no> <20070617215840.GA1217855@hiwaay.net> <20070617232221.GB14098@brong.net> <20070618004538.GA1283823@hiwaay.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070618004538.GA1283823@hiwaay.net>
+Organization: brong.net
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Jun 18, 2007 at 02:49:24PM +0900, Yasunori Goto wrote:
-> > > -static inline unsigned long zone_absent_pages_in_node(int nid,
-> > > +static inline unsigned long __meminit zone_absent_pages_in_node(int nid,
-> > >  						unsigned long zone_type,
-> > >  						unsigned long *zholes_size)
-> > >  {
+On Sun, Jun 17, 2007 at 07:45:38PM -0500, Chris Adams wrote:
+> Once upon a time, Bron Gondwana <brong@fastmail.fm> said:
+> > To be fair here, this could also be accomplished by having to flip a
+> > physical switch on the router, especially if you did something funky
+> > like:
 > > 
-> > I thought __meminit is not effective for these static functions,
-> > because they are inlined function. So, it depends on caller's 
-> > defenition. Is it wrong? 
+> > [---] push this button for a 5 minute access pass to upload new
+> >       software through physical cable port 1.
 > > 
-> Ah, that's possible, I hadn't considered that. It seems to be a bit more
-> obvious what the intention is if it's annotated, especially as this is
-> the convention that's used by the rest of mm/page_alloc.c. A bit more
-> consistent, if nothing more.
+> > More complex, but not unreasonable.
+> 
+> Well, there is no restriction on putting files on the routing engine's
+> storage devices (flash and hard drive); it is running OpenSSH, so
+> scp/sftp work fine, and you can drop to a shell easily.  The restriction
+> is that the kernel won't run unsigned binaries.
+> 
+> Also, flipping physical switches is pretty much an unreasonable
+> expectation for core router operation.  These are often in other
+> locations, sometimes other telcos' central offices (where you have to
+> pay to have "remote hands" do something and then hope they don't screw
+> it up).  You can easily go the entire life of a device where the primary
+> operators never physically see the device.
 
-I'm not sure which is intended. I found some functions define both
-__init and inline in kernel tree. And probably, some functions don't
-do it. So, it seems there is no convention.
+Every server I run is like that, but if something is important enough I
+can remote control a robot over to push the button for me (actually, I
+think they implement this under the hood by having a human read the
+ticket I submit and go push the button for me manually, but that could
+be my imagination.  So long as the button gets pushed the black box is
+functioning)
 
-I'm Okay if you prefer both defined. :-)
-
-
--- 
-Yasunori Goto 
-
-
+Bron.
