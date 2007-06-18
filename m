@@ -1,48 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932804AbXFRUQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932835AbXFRURW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932804AbXFRUQt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932772AbXFRUQg
+	id S932835AbXFRURW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932777AbXFRUQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:16:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:58266 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932763AbXFRUQe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:16:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=SkK215kP4DE2tQC5MsgfCR4WUD6keOJy4ITtfXKpLatkBRTOuv33bm7K9p7ktcO/yRjdhqtQyRbeG5vUxFGe1VMPu6AD6+1ppjC8kml0auuLY/brdtIsNF/+b2i88KgrJnChuZ+4awxdTW4Y5ff39i2526y2DorB73at1UFcolE=
-Message-ID: <84144f020706181316u70145db2i786641d265e5bc42@mail.gmail.com>
-Date: Mon, 18 Jun 2007 23:16:33 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "clameter@sgi.com" <clameter@sgi.com>
-Subject: Re: [patch 05/26] Slab allocators: Cleanup zeroing allocations
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, suresh.b.siddha@intel.com
-In-Reply-To: <20070618095914.622685354@sgi.com>
+	Mon, 18 Jun 2007 16:16:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54074 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932604AbXFRUQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 16:16:40 -0400
+Message-ID: <4676E812.1050000@redhat.com>
+Date: Mon, 18 Jun 2007 16:16:18 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, prasanna@in.ibm.com, ananth@in.ibm.com
+Subject: Re: [patch 4/8] Immediate Value - i386 Optimization; kprobes
+References: <20070615202310.178466032@polymtl.ca> <4676D2A9.6090403@redhat.com> <20070618115632.7aca8c0f.akpm@linux-foundation.org> <200706182132.56559.ak@suse.de>
+In-Reply-To: <200706182132.56559.ak@suse.de>
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070618095838.238615343@sgi.com>
-	 <20070618095914.622685354@sgi.com>
-X-Google-Sender-Auth: 7510020b22cd2ef3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/18/07, clameter@sgi.com <clameter@sgi.com> wrote:
-> +static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
-> +{
-> +       return kmem_cache_alloc(k, flags | __GFP_ZERO);
-> +}
-> +
-> +static inline void *__kzalloc(int size, gfp_t flags)
-> +{
-> +       return kmalloc(size, flags | __GFP_ZERO);
-> +}
+On 06/18/2007 03:32 PM, Andi Kleen wrote:
+> 
+> But for 2.6.22 as a quick fix it might be better to just
+> make KPROBES dependent on !DEBUG_RODATA. That would be a one liner.
 
-Hmm, did you check kernel text size before and after this change?
-Setting the __GFP_ZERO flag at every kzalloc call-site seems like a
-bad idea.
+Yeah, that's probably best for now.
+
