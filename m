@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763659AbXFROnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763973AbXFROpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763659AbXFROnj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 10:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760717AbXFROnc
+	id S1763973AbXFROpH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 10:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762989AbXFROo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 10:43:32 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:23314 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756431AbXFROnb (ORCPT
+	Mon, 18 Jun 2007 10:44:57 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:56225 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762982AbXFROo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 10:43:31 -0400
-Message-ID: <46769A22.3030908@oracle.com>
-Date: Mon, 18 Jun 2007 07:43:46 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Mon, 18 Jun 2007 10:44:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uc+3MqaFKllB83zaSQ2eKfDA19+QMlwU1mHtBrdN9C14INc7vWcHxO+HUbaT0czLfSzVIoc7QvNSPwVGXd9wEpo32Pge0vDPdJiaU4d0SdI96sinCe60Wa1guvOGljK5SnaacZElP+1koEHWuqX/nGD37uE8SQ+wH4kwHrbZZRA=
+Message-ID: <9c21eeae0706180744v5ad9a1a3s10da42c6d6f61637@mail.gmail.com>
+Date: Mon, 18 Jun 2007 07:44:56 -0700
+From: "David Brown" <dmlb2000@gmail.com>
+To: "Goswin von Brederlow" <brederlo@informatik.uni-tuebingen.de>
+Subject: Re: [fuse-devel] FS block count, size and seek offset?
+Cc: fuse-devel@lists.sourceforge.net,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <87645lr69g.fsf@informatik.uni-tuebingen.de>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] blink: Only blink when parameter is set
-References: <20070617083904.GC4496@suse.de> <20070617212601.38f952fe.randy.dunlap@oracle.com> <20070618071819.GA9953@suse.de>
-In-Reply-To: <20070618071819.GA9953@suse.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <9c21eeae0706171428u5a9ff79rad2b2083d3436d7f@mail.gmail.com>
+	 <87645lr69g.fsf@informatik.uni-tuebingen.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernhard Walle wrote:
-> * Randy Dunlap <randy.dunlap@oracle.com> [2007-06-18 06:26]:
->>> +static int blink = 0;
->> no need to init to 0.
-> 
-> Does it harm?
+> Why don't you use the existing fuse-unionfs?
 
-It adds space to the binary file in some cases and it is kernel
-convention not to init statics to NULL or 0 since that is already
-guaranteed for them.
+I thought about doing this but it would need to be modified somehow
+and even then my users would look to me to fix issues and I don't like
+trying to find hard bugs in other peoples code.
 
->>> +module_param(blink, bool, S_IRUGO);
->>> +MODULE_PARM_DESC(blink, "Enable blinking (without that, the module does nothing)\n");
->> unneeded "\n"
-> 
-> Fixed. Please use the following patch.
+Also, there's a lot of functionality that funionfs has but I don't
+need and the extra code would get in the way attempting to modify or
+debug issues.
 
+What I want is fairly specific and I've not seen anything out there to do it.
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Thanks,
+- David Brown
