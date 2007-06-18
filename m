@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbXFRU57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXFRU7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932905AbXFRU57 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760830AbXFRU5t
+	id S932908AbXFRU7U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763449AbXFRU7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:57:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57818 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763449AbXFRU5s (ORCPT
+	Mon, 18 Jun 2007 16:59:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33887 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764150AbXFRU7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:57:48 -0400
-Date: Mon, 18 Jun 2007 13:57:27 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] debugfs: create file error handling
-Message-ID: <20070618205727.GA14857@kroah.com>
-References: <20070618134132.463a6699@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070618134132.463a6699@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Mon, 18 Jun 2007 16:59:06 -0400
+Date: Mon, 18 Jun 2007 22:04:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linas@austin.ibm.com (Linas Vepstas)
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+Message-ID: <20070618220441.3a3af8ca@the-village.bc.nu>
+In-Reply-To: <20070618204601.GF5836@austin.ibm.com>
+References: <20070618175713.GD5836@austin.ibm.com>
+	<20070618212704.394912b8@the-village.bc.nu>
+	<20070618204601.GF5836@austin.ibm.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 01:41:32PM -0700, Stephen Hemminger wrote:
-> Shouldn't Debugfs file routines should either return NULL or use ERR_PTR()
-> not mixed? The following patch changes the create routines to
-> propagate return values.
-> 
-> --- a/fs/debugfs/file.c	2007-05-30 10:32:32.000000000 -0700
-> +++ b/fs/debugfs/file.c	2007-06-18 13:38:01.000000000 -0700
-> @@ -83,12 +83,11 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_u8, debugfs
->   * This function will return a pointer to a dentry if it succeeds.  This
->   * pointer must be passed to the debugfs_remove() function when the file is
->   * to be removed (no automatic cleanup happens if your module is unloaded,
-> - * you are responsible here.)  If an error occurs, %NULL will be returned.
-> + * you are responsible here.)
->   *
-> - * If debugfs is not enabled in the kernel, the value -%ENODEV will be
-> - * returned.  It is not wise to check for this value, but rather, check for
-> - * %NULL or !%NULL instead as to eliminate the need for #ifdef in the calling
-> - * code.
-> + * If an error occurs, an invalid pointer will be returned, use
-> + * the function IS_ERR() to check. The error code can be extracted
-> + * with PTR_ERR().
+> So what do you suggest? (I could buy an alternate ide controller,
+> and hope that goes away, or just buy a different hard drive. But
+> that's beside the point).
 
-No, you are forgetting the issue when debugfs is not enabled in the
-kernel.
+The DMA timeout itself could be all sorts of things - crap driver, crap
+hardware, PCI bus contention, noise, problem disk, phase of the moon.
 
-The goal is not to return -ENODEV when it's not configured in, to make
-it "simpler" to handle that case.
+> I can prepare a patch, but only with a lot of guidance. I can test 
+> & debug, I'm highly motivated just right now ... 
 
-Check the lkml archives for previous times this has come up and example
-code to use to handle the error cases properly.
+If you've got a nice repeatable problem please try using the libata
+driver. That handles the error paths differently and doesn't try a FIFO
+drain which might matter in this case I guess.
 
-I agree it isn't the "simplest" way, and if you can suggest something
-that is easier, and allow for the code to "easily" determine the option
-isn't built in that would be great.
-
-thanks,
-
-greg k-h
+Alan
