@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765573AbXFRU3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764880AbXFRUbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765573AbXFRU3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763626AbXFRU3M
+	id S1764880AbXFRUbi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763626AbXFRUb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:29:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32924 "EHLO mx1.redhat.com"
+	Mon, 18 Jun 2007 16:31:27 -0400
+Received: from THUNK.ORG ([69.25.196.29]:50068 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763683AbXFRU3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:29:11 -0400
-Date: Mon, 18 Jun 2007 16:28:49 -0400
-From: Dave Jones <davej@redhat.com>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, davej@codemonkey.org.uk
-Subject: Re: cpufreq: too long transition latency
-Message-ID: <20070618202849.GA27690@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Meelis Roos <mroos@linux.ee>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	davej@codemonkey.org.uk
-References: <Pine.SOC.4.64.0706182315470.11208@math>
+	id S1763572AbXFRUb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 16:31:26 -0400
+Date: Mon, 18 Jun 2007 16:30:33 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jeremy Allison <jra@samba.org>
+Cc: alan <alan@clueserver.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+Message-ID: <20070618203033.GD24189@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jeremy Allison <jra@samba.org>, alan <alan@clueserver.org>,
+	=?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Jack Stone <jack@hawkeye.stone.uk.eu.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	akpm@linux-foundation.org, viro@zeniv.linux.org.uk
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org> <20070616145337.GA13391@lazybastard.org> <20070618094524.GF5181@schatzie.adilger.int> <20070618140143.GD30244@thunk.org> <Pine.LNX.4.64.0706180907580.22137@blackbox.fnordora.org> <20070618172955.GB24189@thunk.org> <20070618173342.GB1152@samba1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0706182315470.11208@math>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070618173342.GB1152@samba1>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 11:23:27PM +0300, Meelis Roos wrote:
- > I have the following messages in my laptops dmesg
- > 
- > ondemand governor failed to load due to too long transition latency
- > 
- > and activating ondemand governor fails. This seems to be introduced in 
- > 2.6.22-rc* series - I seem to remember that 2.6.21 was OK but can not 
- > test at the moment.
- > 
- > Laptop is IBM X20, 440BX chipset, Pentium III (Coppermine). Config and 
- > full dmesg are below.
+On Mon, Jun 18, 2007 at 10:33:42AM -0700, Jeremy Allison wrote:
+> 
+> Yeah, ok - but do you have to rub my nose in it every chance you get ?
+> 
+> :-) :-).
 
-speedstep-ich takes a long time to transition.
-as ondemand can change speeds frequently, this can cause unacceptable
-slowdowns, so it prevents itself from being used.
+Well, I just want to make sure people know that Samba isn't asking for
+it any more, and I don't know of any current requests outstanding from
+any of the userspace projects.  So there's no one we need to ship off
+to the re-education camps about why filesystem fork/streams are a bad
+idea.  :-)
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+						- Ted
