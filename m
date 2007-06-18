@@ -1,98 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbXFRBvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbXFRB4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760951AbXFRBvl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 21:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbXFRBvb
+	id S1754459AbXFRB4p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 21:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbXFRB4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 21:51:31 -0400
-Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:21081 "HELO
-	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756441AbXFRBva (ORCPT
+	Sun, 17 Jun 2007 21:56:38 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:19734 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750898AbXFRB4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 21:51:30 -0400
-X-YMail-OSG: O0ltwV4VM1nTyMo79BUEi.HgGmyJtz7gkdxoHmbb4bCl2G94vxmlDQJMyR_.EJigAOFtkqqHxQ--
-X-RocketYMMF: rancidfat
-Date: Sun, 17 Jun 2007 18:51:29 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-To: James Morris <jmorris@namei.org>, Casey Schaufler <casey@schaufler-ca.com>
-Cc: Greg KH <greg@kroah.com>, Pavel Machek <pavel@ucw.cz>,
-       Crispin Cowan <crispin@novell.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <Line.LNX.4.64.0706152334570.30443@localhost.localdomain>
+	Sun, 17 Jun 2007 21:56:37 -0400
+Date: Mon, 18 Jun 2007 03:56:36 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com
+Subject: Re: [AGPGART] intel_agp: use table for device probe
+Message-ID: <20070618015636.GA8561@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Dave Airlie <airlied@gmail.com>, Dave Jones <davej@redhat.com>,
+	linux-kernel@vger.kernel.org, eric@anholt.net,
+	zhenyu.z.wang@intel.com
+References: <20070617190714.GA18115@redhat.com> <20070617195901.GA5689@alinoe.com> <20070617204904.GB3430@redhat.com> <20070617211338.GA24771@alinoe.com> <20070617213355.GC3430@redhat.com> <20070617223649.GA31587@alinoe.com> <20070617224918.GC12483@redhat.com> <20070618000643.GA1375@alinoe.com> <20070618001627.GA18598@redhat.com> <21d7e9970706171757n4709383cv7a39a66103edc370@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <822529.74206.qm@web36601.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21d7e9970706171757n4709383cv7a39a66103edc370@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- James Morris <jmorris@namei.org> wrote:
-
-> On Fri, 15 Jun 2007, Casey Schaufler wrote:
+On Mon, Jun 18, 2007 at 10:57:38AM +1000, Dave Airlie wrote:
+> >Right now, I'm at a loss to explain the corruption, so it's
+> >difficult to suggest what to try.
 > 
-> > 
-> > --- James Morris <jmorris@namei.org> wrote:
-> > 
-> > > On my system, it takes about 1.2 seconds to label a fully checked out 
-> > > kernel source tree with ~23,000 files in this manner
-> > 
-> > That's an eternity for that many files to be improperly labeled.
-> > If, and the "if" didn't originate with me, your policy is
-> > demonstrably correct (how do you do that?) for all domains
-> > you could claim that the action is safe, if not ideal. 
-> > I can't say if an evaluation team would buy the "safe"
-> > argument. They've been known to balk before.
-> 
-> To clarify:
-> 
-> We are discussing a scheme where the underlying SELinux labeling policy 
-> always ensures a safe label on a file, and then relabeling newly created 
-> files according to their pathnames.
+> The thing is here, this is PCIE, so if there is a GPU plugged into the
+> PCIE 16x slot in theory the main onboard graphics should disable, AGP
+> code is used to control the GART for the onboard chip, in this case a
+> plugged in card will  not use AGP, I wonder have Intel tested with a
+> pcie card in place...
 
-To counter clarify:
+That is Chinese for me :/.
+Do you want me to try something?
 
-You are saying two things:
-1. The policy always ensures a safe label.
-2. Files can be relabeled in a reasonable and timely manner.
-
-I have no questions about 2. It's a hack, but you've already
-acknowledged that and it will work, allowing for some potential
-cases where someone is overeager about getting a file-in-transition.
-
-Regarding 1: This is a founding premise of the arguement, that
-the "policy" is written correctly such that there is no case
-where a file gets created with an unsafe label. Given the external
-nature of the policy, and the number of attributes used within
-the policy, and the overall sophistication of the policy mechanism,
-how does one ...
-
-    a. know that a label is "safe"
-    b. know that a file will get a "safe" label
-    c. know that the policy is "correctly" written as required
-
-The question is not if fixxerupperd can set things right.
-The question is about the properly written policy that is
-required to make the mechanism worth discussing.
-
-> There is no expectation that this scheme would be submitted for 
-> certification.
-
-De-nial.
-
-> Its purpose is to merely to provide pathname-based 
-> labeling outside of the kernel.
-
-If you already have an in-kernel labeling scheme that you
-trust to make the world safe until you get around to doing
-the labeling externally you can argue that it's good enough.
-But, to quote Cinderella's Stepmother, "I said "if"".
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+-- 
+Carlo Wood <carlo@alinoe.com>
