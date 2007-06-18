@@ -1,64 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765979AbXFRTAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXFRTAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765979AbXFRTAU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 15:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764887AbXFRTAA
+	id S932247AbXFRTAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 15:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765956AbXFRTAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 15:00:00 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:20146 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762640AbXFRS77 (ORCPT
+	Mon, 18 Jun 2007 15:00:13 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59394 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765885AbXFRTAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:59:59 -0400
-Date: Mon, 18 Jun 2007 12:01:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Quota netlink interface
-Message-Id: <20070618120103.2807b78d.randy.dunlap@oracle.com>
-In-Reply-To: <20070618121455.GI9319@duck.suse.cz>
-References: <20070618121455.GI9319@duck.suse.cz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Mon, 18 Jun 2007 15:00:11 -0400
+Date: Mon, 18 Jun 2007 12:00:10 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       suresh.b.siddha@intel.com
+Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
+In-Reply-To: <6bffcb0e0706181158l739864e0t6fb5bc564444f23c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706181159430.1896@schroedinger.engr.sgi.com>
+References: <20070618095838.238615343@sgi.com>  <46767346.2040108@googlemail.com>
+  <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com> 
+ <6bffcb0e0706181038j107e2357o89c525261cf671a@mail.gmail.com> 
+ <Pine.LNX.4.64.0706181102280.6596@schroedinger.engr.sgi.com>
+ <6bffcb0e0706181158l739864e0t6fb5bc564444f23c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007 14:14:55 +0200 Jan Kara wrote:
+On Mon, 18 Jun 2007, Michal Piotrowski wrote:
 
->   Hello,
-> 
->   I've written a patch implementing quota netlink interface. Whenever some
-> event happens (like user exceeding softlimit), a message is sent to
-> userpace. Then, in userspace we can decide what to do with the message -
-> print it to console, show a dialog or whatever... I've also written a new
-> daemon that listens to netlink and sends the received message to DBus and/or
-> to the console the user has last written to.
->   If somebody is interested in trying it out, he can checkout latest
-> quota-tools CVS and I can provide him with the modified libnl providing
-> better support for generic netlink handling.
+> Still the same.
 
+Is it still exactly the same strack trace? There could be multiple issue 
+if we overflow PAGE_SIZE there.
 
-+config QUOTA_NETLINK_INTERFACE
-+	bool "Report quota messages through netlink interface"
-+	depends on QUOTA
-+	select NET
-+	help
-+	  If you say Y here, quota warnings (about exceeding softlimit, reaching
-+	  hardlimit, etc.) will be reported through netlink interface. If unsure,
-+	  say Y.
-
-
-Using "select" is either evil or OK, but only OK for "library-type" code.
-It should never be used to pull in a complete subsystem like NET does
-(even though SCSI_NETLINK does this same thing, sadly).
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
