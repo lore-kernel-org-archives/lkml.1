@@ -1,79 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbXFRQjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbXFRQqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762157AbXFRQjk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 12:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757716AbXFRQjc
+	id S1760853AbXFRQqV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 12:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbXFRQqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 12:39:32 -0400
-Received: from ccerelbas04.cce.hp.com ([161.114.21.107]:39547 "EHLO
-	ccerelbas04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706AbXFRQjb convert rfc822-to-8bit (ORCPT
+	Mon, 18 Jun 2007 12:46:13 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48449 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754363AbXFRQqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 12:39:31 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 18 Jun 2007 12:46:12 -0400
+Date: Mon, 18 Jun 2007 09:46:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       suresh.b.siddha@intel.com
+Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
+In-Reply-To: <46767346.2040108@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com>
+References: <20070618095838.238615343@sgi.com> <46767346.2040108@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
-Date: Mon, 18 Jun 2007 16:39:28 -0000
-Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8C015CF43A@G3W0639.americas.hpqcorp.net>
-In-Reply-To: <20070618043037.GA14758@in.ibm.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
-Thread-Index: AcexYXNskNxZTSulTNSrIjMr3lrYwwAY0UGw
-References: <20070614153119.GC32137@hmsreliant.homelinux.net> <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net> <20070614192523.GB1110@hmsreliant.homelinux.net> <20070618043037.GA14758@in.ibm.com>
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: <vgoyal@in.ibm.com>, "Neil Horman" <nhorman@tuxdriver.com>
-Cc: <linux-kernel@vger.kernel.org>, "ISS StorageDev" <iss_storagedev@hp.com>,
-       <akpm@linux-foundation.org>,
-       "SCSI Mailing List" <linux-scsi@vger.kernel.org>
-X-OriginalArrivalTime: 18 Jun 2007 16:39:29.0878 (UTC) FILETIME=[3DEB2F60:01C7B1C7]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek wrote: 
+On Mon, 18 Jun 2007, Michal Piotrowski wrote:
 
+> Result:
 > 
-> I think this is not the right usage of reset_devices 
-> parameter. This parameter instructs the driver to reset the 
-> device before going ahead with rest of the initialization 
-> before as underlying device might not be in a sane state. 
-> kexec/kdump is one of the usages and this can also be useful 
-> in the case of BIOS not doing its job.
+> [  212.247759] WARNING: at lib/vsprintf.c:280 vsnprintf()
+> [  212.253263]  [<c04052ad>] dump_trace+0x63/0x1eb
+> [  212.259042]  [<c040544f>] show_trace_log_lvl+0x1a/0x2f
+> [  212.266672]  [<c040608d>] show_trace+0x12/0x14
+> [  212.271622]  [<c04060a5>] dump_stack+0x16/0x18
+> [  212.276663]  [<c050d512>] vsnprintf+0x6b/0x48c
+> [  212.281325]  [<c050d9f0>] scnprintf+0x20/0x2d
+> [  212.286707]  [<c0508dbc>] bitmap_scnlistprintf+0xa8/0xec
+> [  212.292508]  [<c0480d40>] list_locations+0x24c/0x2a2
+> [  212.298241]  [<c0480dde>] alloc_calls_show+0x1f/0x26
+> [  212.303459]  [<c047e72e>] slab_attr_show+0x1c/0x20
+> [  212.309469]  [<c04c1cf9>] sysfs_read_file+0x94/0x105
+> [  212.315519]  [<c0485933>] vfs_read+0xcf/0x158
+> [  212.320215]  [<c0485d99>] sys_read+0x3d/0x72
+> [  212.327539]  [<c040420c>] syscall_call+0x7/0xb
+> [  212.332203]  [<b7f74410>] 0xb7f74410
+> [  212.336229]  =======================
 > 
-> When I had proposed crash_boot parameter for kexec/kdump 
-> purposes, that time andrew had suggested that he is afraid 
-> that driver authors will use this parameter to solve all kind 
-> of problems. 
-> 
-> I think we should stick to the theme of the parameter and 
-> implement the reset routine for cciss driver instead of 
-> simply returning back. Consider the case of hypothetical 
-> scenario where somebody booted the kernel with reset_device 
-> parameter (because of unreliable bios) and if there is a 
-> problem on kernel side that after it issues the command it 
-> lost track of that (because of kernel bug) then driver will 
-> never catch that bug as upon receiving the response it will 
-> simply ignore that.
-> 
-> Mike, you know most about this device. Can you please help 
-> out with implementing a reset routing for it?
-> 
-Vivek
-I think I finally have an idea that will work. (`bout time!) We actually
-have 2 different issues. One is that there may outstanding commands on
-the controller when the kdump kernel initializes. Our SAS controllers
-support the reset message defined in the open CISS spec which will
-(hopefully) resolve this issue. The second problem is that I cannot
-allocate my MSI-X vectors because I couldn't free the vectors then
-disable MSI. So the cciss driver would most likely panic at that time.
-My idea for this is to put the card into INTx mode rather than MSI or
-MSI-X. That should the 2nd issue.
-I haven't tested the 64xx series to see if they support the reset
-message. I should to write the code today, maybe test by tomorrow and
-then send something upstream.
+> Unfortunately, I don't know which file was cat'ed
 
-mikem
+The dump shows that it was alloc_calls. But the issue is not related to 
+this patchset.
+
+Looks like we overflowed the buffer available for /sys output. The calls 
+in list_location to format cpulist and node lists attempt to allow very
+long lists by trying to calculate how many bytes are remaining in the 
+page. If we are beyond the space left over by them then we may pass a
+negative size to the scn_printf functions.
+
+So we need to check first if there are enough bytes remaining before
+doing the calculation of how many remaining bytes can be used to
+format these lists.
+
+Does this patch fix the issue?
+
+Index: linux-2.6.22-rc4-mm2/mm/slub.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-18 09:37:41.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-18 09:44:38.000000000 -0700
+@@ -3649,13 +3649,15 @@ static int list_locations(struct kmem_ca
+ 			n += sprintf(buf + n, " pid=%ld",
+ 				l->min_pid);
+ 
+-		if (num_online_cpus() > 1 && !cpus_empty(l->cpus)) {
++		if (num_online_cpus() > 1 && !cpus_empty(l->cpus) &&
++				n < PAGE_SIZE - n - 57) {
+ 			n += sprintf(buf + n, " cpus=");
+ 			n += cpulist_scnprintf(buf + n, PAGE_SIZE - n - 50,
+ 					l->cpus);
+ 		}
+ 
+-		if (num_online_nodes() > 1 && !nodes_empty(l->nodes)) {
++		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
++				n < PAGE_SIZE - n - 57) {
+ 			n += sprintf(buf + n, " nodes=");
+ 			n += nodelist_scnprintf(buf + n, PAGE_SIZE - n - 50,
+ 					l->nodes);
+
+
+
+
+
