@@ -1,103 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbXFREaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbXFREoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbXFREaz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 00:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbXFREas
+	id S1755993AbXFREoD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 00:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbXFREnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 00:30:48 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:58876 "EHLO e6.ny.us.ibm.com"
+	Mon, 18 Jun 2007 00:43:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:52107 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752870AbXFREar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 00:30:47 -0400
-Date: Mon, 18 Jun 2007 10:00:37 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>, linux-kernel@vger.kernel.org,
-       ISS StorageDev <iss_storagedev@hp.com>, akpm@linux-foundation.org
-Subject: Re: [PATCH] cciss: force ignore of responses to unsent scsi commands after kexec reboot
-Message-ID: <20070618043037.GA14758@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070614153119.GC32137@hmsreliant.homelinux.net> <226E1C65E4F6164E8EA5FD3CC913AE8C0156B740@G3W0639.americas.hpqcorp.net> <20070614192523.GB1110@hmsreliant.homelinux.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070614192523.GB1110@hmsreliant.homelinux.net>
-User-Agent: Mutt/1.5.11
+	id S1752370AbXFREnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 00:43:52 -0400
+Message-ID: <46760D87.2000502@goop.org>
+Date: Sun, 17 Jun 2007 21:43:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Please revert 21564fd2a3deb48200b595332f9ed4c9f311f2a7
+References: <20070617214231.GA3588@stusta.de>
+In-Reply-To: <20070617214231.GA3588@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 14, 2007 at 03:25:23PM -0400, Neil Horman wrote:
-> On Thu, Jun 14, 2007 at 06:16:03PM -0000, Miller, Mike (OS Dev) wrote:
-> >  
-> > 
-> > > -----Original Message-----
-> > > From: Neil Horman [mailto:nhorman@tuxdriver.com] 
-> > > Sent: Thursday, June 14, 2007 10:31 AM
-> > > To: linux-kernel@vger.kernel.org
-> > > Cc: Miller, Mike (OS Dev); ISS StorageDev; 
-> > > akpm@linux-foundation.org; nhorman@tuxdriver.com
-> > > Subject: [PATCH] cciss: force ignore of responses to unsent 
-> > > scsi commands after kexec reboot
-> > > 
-> > > Hey -
-> > > 	cciss hardware currently can continue to send responses 
-> > > to scsi commands after the host system has undergone a kexec 
-> > > reboot.  The way the drier is currently written, reception of 
-> > > these commands results in a BUG halt, since it can't match 
-> > > the response to any issued command since the boot.  This 
-> > > patch corrects that by using the kexec reset_devices command 
-> > > line paramter to force ignore any commands that it cant correlate.
-> > > 
-> > > Regards
-> > > Neil
-> > > 
-> > > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> > > 
-> > > 
-> > >  cciss.c |    8 ++++++++
-> > >  1 file changed, 8 insertions(+)
-> > > 
-> > > 
-> > > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c 
-> > > index 5acc6c4..ec1c1d2 100644
-> > > --- a/drivers/block/cciss.c
-> > > +++ b/drivers/block/cciss.c
-> > > @@ -2131,6 +2131,14 @@ static int add_sendcmd_reject(__u8 
-> > > cmd, int ctlr, unsigned long complete)
-> > >  		       ctlr, complete);
-> > >  		/* not much we can do. */
-> > >  #ifdef CONFIG_CISS_SCSI_TAPE
-> > > +		/* We might get notification of completion of commands
-> > > +		 * which we never issued in this kernel if this boot is
-> > > +		 * taking place after previous kernel's crash. Simply
-> > > +		 * ignore the commands in this case.
-> > > +		 */
-> > > +		if (reset_devices)
-> > > +			return 0;
-> > > +
-> > >  		return 1;
-> > >  	}
+Adrian Bunk wrote:
+> Linus, please revert commit 21564fd2a3deb48200b595332f9ed4c9f311f2a7
+>
+> It's not acceptable since illegal modules should definitely not get 
+> write access to paravirt_ops.
+>   
 
-I think this is not the right usage of reset_devices parameter. This
-parameter instructs the driver to reset the device before going ahead
-with rest of the initialization before as underlying device might not
-be in a sane state. kexec/kdump is one of the usages and this can also
-be useful in the case of BIOS not doing its job.
+What's the concern?  That a module will update the pv_ops structure to
+repoint the function?  In practice that won't work because inline
+patching will have already happened, so all the callsites will have
+direct calls to the appropriate function.
 
-When I had proposed crash_boot parameter for kexec/kdump purposes, that time
-andrew had suggested that he is afraid that driver authors will use this
-parameter to solve all kind of problems. 
+> Andi forwarded it although the following people had already NAK'ed it:
+> - Christoph Hellwig [1]
+> - Peter Zijlstra [2]
+> - Alan Cox [3]
+>
+> Considering that Andi forwarded it 2 days after he himself said a 
+> different solution was pending [4] I assume he mistakenly sent it for 
+> inclusion in your tree.
+>   
 
-I think we should stick to the theme of the parameter and implement the
-reset routine for cciss driver instead of simply returning back. Consider
-the case of hypothetical scenario where somebody booted the kernel with
-reset_device parameter (because of unreliable bios) and if there is a problem
-on kernel side that after it issues the command it lost track of that
-(because of kernel bug) then driver will never catch that bug as upon receiving
-the response it will simply ignore that.
+We played with some ideas, but they all turned out way too ugly to live. 
 
-Mike, you know most about this device. Can you please help out with 
-implementing a reset routing for it?
+> Reverting is safe since it simply re-establishes the 2.6.21 status quo.
+>   
 
-Thanks
-Vivek
+Well, not really.  It breaks any non-GPL module when CONFIG_PARAVIRT is
+enabled, even though the same module would work fine otherwise.  That's
+a pretty large regression.
+
+I'm not really sure what the concerns are with exporting paravirt_ops as
+a non-GPL symbol.
+
+I think the basic arguments are:
+
+    security - it makes an obvious place to hook things in.  Perhaps,
+    but in practice the patching code will replace all the indirect
+    calls with either inline code or a direct call to the proper
+    function.  Once that's happened, changing the structure will have no
+    effect.
+
+    license - it makes GPL-only functions visible to non-GPL modules. 
+    This is largely moot, since in the non-PARAVIRT case most of the
+    functions in question are exported from the kernel as inline code in
+    headers anyway, and so are available to all modules anyway.  In
+    either case (ie PARAVIRT or no), non-inlined GPL functions will
+    still be unavailable to non-GPL modules, and will still cause errors
+    at insmod time.  If a module decides to directly access paravirt_ops
+    (which is never a supported API, for anyone), then they could get
+    access to GPL code without raising a complaint - but it would be
+    very fragile piece of code, and definitely easily broken (it would
+    be not much different from  jumping into the kernel at a fixed
+    address because it "knows" a particular function is there).
+
+It would be possible to arrange for paravirt_ops to be largely cleared
+out once patching has happened, so that anyone looking at it wouldn't
+get any useful information anyway (we'd need to keep a non-exported copy
+around for patching modules, but that's OK).
+
+Or, alternatively, we could wrap parts of struct paravirt_ops with
+#ifdef MODULE to obscure the entrypoints from modules.  They would still
+be able to get around this, of course, but it makes the intent clear
+("thou shalt not play with these").  But I think its overkill, ugly, and
+doesn't really achieve much in practice.
+
+    J
+
