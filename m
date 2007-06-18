@@ -1,44 +1,454 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbXFRJsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760725AbXFRJxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761435AbXFRJsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 05:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761364AbXFRJsF
+	id S1760725AbXFRJxI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 05:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758265AbXFRJw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:48:05 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:28975 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761320AbXFRJsD (ORCPT
+	Mon, 18 Jun 2007 05:52:56 -0400
+Received: from tayrelbas01.tay.hp.com ([161.114.80.244]:57990 "EHLO
+	tayrelbas01.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755015AbXFRJwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 05:48:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id;
-        b=Ok11usrLRl2yCMtfL/3FyamTEwsMOrDIv1E/GuIxqCJHYYj4xGwGVb12UG+wTmCWq4Ls4RrVF+qRHPJXKqL123vohqeicbc79sRRWQjoLOykwOxULqzRMVeVF1RCgY8xBpUbjELuTZqxa5/F5m+nJN2l6xR5USPQcc/A+yQxslI=
-From: Denis Cheng <crquan@gmail.com>
-To: trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] the memset operation on a automatic array variable
-	should be optimized out by data initialization
-Date: Mon, 18 Jun 2007 02:48:02 -0700 (PDT)
-Message-ID: <467654d2.14da600a.3067.ffffbc11@mx.google.com>
+	Mon, 18 Jun 2007 05:52:55 -0400
+Date: Mon, 18 Jun 2007 02:52:38 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
+       perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
+       levon@movementarian.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Separate performance counter reservation from nmi watchdog
+Message-ID: <20070618095238.GC20759@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070612150246.GJ32163@frankl.hpl.hp.com> <20070612190730.GA6978@atjola.homenet> <20070613014136.GA2386@atjola.homenet> <20070613164632.GA8674@atjola.homenet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070613164632.GA8674@atjola.homenet>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is there some comments on this?
+Hello Bjorn,
 
-Signed-Off-By: Denis Cheng <crquan@gmail.com>
+Sorry for the delay in my reponse.
 
---
+> > From: Björn Steinbrink <B.Steinbrink@gmx.de>
+> > 
+> > Separate the performance counter reservation system from the nmi
+> > watchdog to allow usage of all performance counters even if the nmi
+> > watchdog is not used.
+> > 
 
---- arch/x86_64/mm/init.c.orig	2007-06-07 10:08:04.000000000 +0800
-+++ arch/x86_64/mm/init.c	2007-06-18 14:43:15.000000000 +0800
-@@ -406,8 +406,7 @@ void __cpuinit zap_low_mappings(int cpu)
- #ifndef CONFIG_NUMA
- void __init paging_init(void)
- {
--	unsigned long max_zone_pfns[MAX_NR_ZONES];
--	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-+	unsigned long max_zone_pfns[MAX_NR_ZONES] = { 0, };
- 	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
- 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
- 	max_zone_pfns[ZONE_NORMAL] = end_pfn;
+I think it is a good idea to separate the counter allocator from NMI
+becuase as you said they are/will be use used by more than the NMI
+watchdog. Thus, I think you should drop the stirng nmi from the
+routines. I would also povide a separate header file for this allocator.
+
+
+> > Fixed the reservation of the wrong performance counter for the PerfMon
+> > based nmi watchdog along the way.
+> > 
+> > Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
+> > ---
+> > diff --git a/arch/i386/kernel/apic.c b/arch/i386/kernel/apic.c
+> > index 67824f3..88b74e3 100644
+> > --- a/arch/i386/kernel/apic.c
+> > +++ b/arch/i386/kernel/apic.c
+> > @@ -1009,6 +1009,7 @@ void __devinit setup_local_APIC(void)
+> >  	value |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
+> >  	apic_write_around(APIC_LVTT, value);
+> >  
+> > +	probe_performance_counters();
+> >  	setup_apic_nmi_watchdog(NULL);
+> >  	apic_pm_activate();
+> >  }
+> > diff --git a/arch/i386/kernel/cpu/Makefile b/arch/i386/kernel/cpu/Makefile
+> > index 74f27a4..882364d 100644
+> > --- a/arch/i386/kernel/cpu/Makefile
+> > +++ b/arch/i386/kernel/cpu/Makefile
+> > @@ -18,4 +18,4 @@ obj-$(CONFIG_X86_MCE)	+=	mcheck/
+> >  obj-$(CONFIG_MTRR)	+= 	mtrr/
+> >  obj-$(CONFIG_CPU_FREQ)	+=	cpufreq/
+> >  
+> > -obj-$(CONFIG_X86_LOCAL_APIC) += perfctr-watchdog.o
+> > +obj-$(CONFIG_X86_LOCAL_APIC) += perfctr.o perfctr-watchdog.o
+> > diff --git a/arch/i386/kernel/cpu/perfctr-watchdog.c b/arch/i386/kernel/cpu/perfctr-watchdog.c
+> > index 2b04c8f..6187097 100644
+> > --- a/arch/i386/kernel/cpu/perfctr-watchdog.c
+> > +++ b/arch/i386/kernel/cpu/perfctr-watchdog.c
+> > @@ -8,9 +8,7 @@
+> >     Original code for K7/P6 written by Keith Owens */
+> >  
+> >  #include <linux/percpu.h>
+> > -#include <linux/module.h>
+> >  #include <linux/kernel.h>
+> > -#include <linux/bitops.h>
+> >  #include <linux/smp.h>
+> >  #include <linux/nmi.h>
+> >  #include <asm/apic.h>
+> > @@ -36,105 +34,8 @@ struct wd_ops {
+> >  
+> >  static struct wd_ops *wd_ops;
+> >  
+> > -/* this number is calculated from Intel's MSR_P4_CRU_ESCR5 register and it's
+> > - * offset from MSR_P4_BSU_ESCR0.  It will be the max for all platforms (for now)
+> > - */
+> > -#define NMI_MAX_COUNTER_BITS 66
+> > -
+> > -/* perfctr_nmi_owner tracks the ownership of the perfctr registers:
+> > - * evtsel_nmi_owner tracks the ownership of the event selection
+> > - * - different performance counters/ event selection may be reserved for
+> > - *   different subsystems this reservation system just tries to coordinate
+> > - *   things a little
+> > - */
+> > -static DECLARE_BITMAP(perfctr_nmi_owner, NMI_MAX_COUNTER_BITS);
+> > -static DECLARE_BITMAP(evntsel_nmi_owner, NMI_MAX_COUNTER_BITS);
+> > -
+> >  static DEFINE_PER_CPU(struct nmi_watchdog_ctlblk, nmi_watchdog_ctlblk);
+> >  
+> > -/* converts an msr to an appropriate reservation bit */
+> > -static inline unsigned int nmi_perfctr_msr_to_bit(unsigned int msr)
+> > -{
+> > -	return wd_ops ? msr - wd_ops->perfctr : 0;
+> > -}
+> > -
+> > -/* converts an msr to an appropriate reservation bit */
+> > -/* returns the bit offset of the event selection register */
+> > -static inline unsigned int nmi_evntsel_msr_to_bit(unsigned int msr)
+> > -{
+> > -	return wd_ops ? msr - wd_ops->evntsel : 0;
+> > -}
+> > -
+> > -/* checks for a bit availability (hack for oprofile) */
+> > -int avail_to_resrv_perfctr_nmi_bit(unsigned int counter)
+> > -{
+> > -	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > -
+> > -	return (!test_bit(counter, perfctr_nmi_owner));
+> > -}
+> > -
+> > -/* checks the an msr for availability */
+> > -int avail_to_resrv_perfctr_nmi(unsigned int msr)
+> > -{
+> > -	unsigned int counter;
+> > -
+> > -	counter = nmi_perfctr_msr_to_bit(msr);
+> > -	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > -
+> > -	return (!test_bit(counter, perfctr_nmi_owner));
+> > -}
+> > -
+> > -int reserve_perfctr_nmi(unsigned int msr)
+> > -{
+> > -	unsigned int counter;
+> > -
+> > -	counter = nmi_perfctr_msr_to_bit(msr);
+> > -	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > -
+> > -	if (!test_and_set_bit(counter, perfctr_nmi_owner))
+> > -		return 1;
+> > -	return 0;
+> > -}
+> > -
+> > -void release_perfctr_nmi(unsigned int msr)
+> > -{
+> > -	unsigned int counter;
+> > -
+> > -	counter = nmi_perfctr_msr_to_bit(msr);
+> > -	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > -
+> > -	clear_bit(counter, perfctr_nmi_owner);
+> > -}
+> > -
+> > -int reserve_evntsel_nmi(unsigned int msr)
+> > -{
+> > -	unsigned int counter;
+> > -
+> > -	counter = nmi_evntsel_msr_to_bit(msr);
+> > -	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > -
+> > -	if (!test_and_set_bit(counter, evntsel_nmi_owner))
+> > -		return 1;
+> > -	return 0;
+> > -}
+> > -
+> > -void release_evntsel_nmi(unsigned int msr)
+> > -{
+> > -	unsigned int counter;
+> > -
+> > -	counter = nmi_evntsel_msr_to_bit(msr);
+> > -	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > -
+> > -	clear_bit(counter, evntsel_nmi_owner);
+> > -}
+> > -
+> > -EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi);
+> > -EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi_bit);
+> > -EXPORT_SYMBOL(reserve_perfctr_nmi);
+> > -EXPORT_SYMBOL(release_perfctr_nmi);
+> > -EXPORT_SYMBOL(reserve_evntsel_nmi);
+> > -EXPORT_SYMBOL(release_evntsel_nmi);
+> > -
+> >  void disable_lapic_nmi_watchdog(void)
+> >  {
+> >  	BUG_ON(nmi_watchdog != NMI_LOCAL_APIC);
+> > @@ -568,8 +469,8 @@ static struct wd_ops intel_arch_wd_ops = {
+> >  	.setup = setup_intel_arch_watchdog,
+> >  	.rearm = p6_rearm,
+> >  	.stop = single_msr_stop_watchdog,
+> > -	.perfctr = MSR_ARCH_PERFMON_PERFCTR0,
+> > -	.evntsel = MSR_ARCH_PERFMON_EVENTSEL0,
+> > +	.perfctr = MSR_ARCH_PERFMON_PERFCTR1,
+> > +	.evntsel = MSR_ARCH_PERFMON_EVENTSEL1,
+> >  };
+> >  
+> >  static void probe_nmi_watchdog(void)
+> > diff --git a/arch/i386/kernel/cpu/perfctr.c b/arch/i386/kernel/cpu/perfctr.c
+> > new file mode 100644
+> > index 0000000..63e68a3
+> > --- /dev/null
+> > +++ b/arch/i386/kernel/cpu/perfctr.c
+> > @@ -0,0 +1,175 @@
+> > +#include <linux/bitops.h>
+> > +#include <linux/module.h>
+> > +#include <asm/msr-index.h>
+> > +#include <asm/intel_arch_perfmon.h>
+> > +
+> > +struct perfctr_base_regs {
+> > +	unsigned int perfctr;
+> > +	unsigned int evntsel;
+> > +};
+> > +
+> > +static struct perfctr_base_regs *perfctr_base_regs;
+> > +
+> > +static struct perfctr_base_regs k7_base_regs = {
+> > +	.perfctr = MSR_K7_PERFCTR0,
+> > +	.evntsel = MSR_K7_EVNTSEL0
+> > +};
+> > +
+> > +static struct perfctr_base_regs p4_base_regs = {
+> > +	.perfctr = MSR_P4_BPU_PERFCTR0,
+> > +	.evntsel = MSR_P4_BSU_ESCR0
+> > +};
+> > +
+> > +static struct perfctr_base_regs p6_base_regs = {
+> > +	.perfctr = MSR_P6_PERFCTR0,
+> > +	.evntsel = MSR_P6_EVNTSEL0
+> > +};
+> > +
+> > +static struct perfctr_base_regs arch_perfmon_base_regs = {
+> > +	.perfctr = MSR_ARCH_PERFMON_PERFCTR0,
+> > +	.evntsel = MSR_ARCH_PERFMON_EVENTSEL0
+> > +};
+> > +
+> > +/* this number is calculated from Intel's MSR_P4_CRU_ESCR5 register and it's
+> > + * offset from MSR_P4_BSU_ESCR0.  It will be the max for all platforms (for now)
+> > + */
+> > +#define NMI_MAX_COUNTER_BITS 66
+> > +
+> > +/* perfctr_nmi_owner tracks the ownership of the perfctr registers:
+> > + * evtsel_nmi_owner tracks the ownership of the event selection
+> > + * - different performance counters/ event selection may be reserved for
+> > + *   different subsystems this reservation system just tries to coordinate
+> > + *   things a little
+> > + */
+> > +static DECLARE_BITMAP(perfctr_nmi_owner, NMI_MAX_COUNTER_BITS);
+> > +static DECLARE_BITMAP(evntsel_nmi_owner, NMI_MAX_COUNTER_BITS);
+> > +
+> > +void __devinit probe_performance_counters(void)
+> > +{
+> > +	switch (boot_cpu_data.x86_vendor) {
+> > +	case X86_VENDOR_AMD:
+> > +		if (boot_cpu_data.x86 != 6 && boot_cpu_data.x86 != 15 &&
+> > +		    boot_cpu_data.x86 != 16)
+> > +			return;
+> > +
+> > +		perfctr_base_regs = &k7_base_regs;
+> > +		break;
+> > +
+> > +	case X86_VENDOR_INTEL:
+> > +		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
+> > +			perfctr_base_regs = &arch_perfmon_base_regs;
+> > +			break;
+> > +		}
+> > +		switch (boot_cpu_data.x86) {
+> > +		case 6:
+> > +			perfctr_base_regs = &p6_base_regs;
+> > +			break;
+> > +
+> > +		case 15:
+> > +			perfctr_base_regs = &p4_base_regs;
+> > +			break;
+> > +		}
+> > +		break;
+> > +	}
+> > +}
+> > +
+> > +/* converts an msr to an appropriate reservation bit */
+> > +static inline unsigned int nmi_perfctr_msr_to_bit(unsigned int msr)
+> > +{
+> > +	return msr - perfctr_base_regs->perfctr;
+> > +}
+> > +
+> > +/* converts an msr to an appropriate reservation bit */
+> > +/* returns the bit offset of the event selection register */
+> > +static inline unsigned int nmi_evntsel_msr_to_bit(unsigned int msr)
+> > +{
+> > +	return msr - perfctr_base_regs->evntsel;
+> > +}
+> > +
+> > +/* checks for a bit availability (hack for oprofile) */
+> > +int avail_to_resrv_perfctr_nmi_bit(unsigned int counter)
+> > +{
+> > +	if (!perfctr_base_regs)
+> > +		return 0;
+> > +
+> > +	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > +
+> > +	return (!test_bit(counter, perfctr_nmi_owner));
+> > +}
+> > +
+> > +/* checks the an msr for availability */
+> > +int avail_to_resrv_perfctr_nmi(unsigned int msr)
+> > +{
+> > +	unsigned int counter;
+> > +
+> > +	if (!perfctr_base_regs)
+> > +		return 0;
+> > +
+> > +	counter = nmi_perfctr_msr_to_bit(msr);
+> > +	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > +
+> > +	return (!test_bit(counter, perfctr_nmi_owner));
+> > +}
+> > +
+> > +int reserve_perfctr_nmi(unsigned int msr)
+> > +{
+> > +	unsigned int counter;
+> > +
+> > +	if (!perfctr_base_regs)
+> > +		return 0;
+> > +
+> > +	counter = nmi_perfctr_msr_to_bit(msr);
+> > +	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > +
+> > +	if (!test_and_set_bit(counter, perfctr_nmi_owner))
+> > +		return 1;
+> > +	return 0;
+> > +}
+> > +
+> > +void release_perfctr_nmi(unsigned int msr)
+> > +{
+> > +	unsigned int counter;
+> > +
+> > +	if (!perfctr_base_regs)
+> > +		return 0;
+> > +
+> > +	counter = nmi_perfctr_msr_to_bit(msr);
+> > +	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > +
+> > +	clear_bit(counter, perfctr_nmi_owner);
+> > +}
+> > +
+> > +int reserve_evntsel_nmi(unsigned int msr)
+> > +{
+> > +	unsigned int counter;
+> > +
+> > +	if (!perfctr_base_regs)
+> > +		return 0;
+> > +
+> > +	counter = nmi_evntsel_msr_to_bit(msr);
+> > +	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > +
+> > +	if (!test_and_set_bit(counter, evntsel_nmi_owner))
+> > +		return 1;
+> > +	return 0;
+> > +}
+> > +
+> > +void release_evntsel_nmi(unsigned int msr)
+> > +{
+> > +	unsigned int counter;
+> > +
+> > +	if (!perfctr_base_regs)
+> > +		return 0;
+> > +
+> > +	counter = nmi_evntsel_msr_to_bit(msr);
+> > +	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+> > +
+> > +	clear_bit(counter, evntsel_nmi_owner);
+> > +}
+> > +
+> > +EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi);
+> > +EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi_bit);
+> > +EXPORT_SYMBOL(reserve_perfctr_nmi);
+> > +EXPORT_SYMBOL(release_perfctr_nmi);
+> > +EXPORT_SYMBOL(reserve_evntsel_nmi);
+> > +EXPORT_SYMBOL(release_evntsel_nmi);
+> > diff --git a/arch/x86_64/kernel/Makefile b/arch/x86_64/kernel/Makefile
+> > index de1de8a..cc7587d 100644
+> > --- a/arch/x86_64/kernel/Makefile
+> > +++ b/arch/x86_64/kernel/Makefile
+> > @@ -9,7 +9,7 @@ obj-y	:= process.o signal.o entry.o traps.o irq.o \
+> >  		x8664_ksyms.o i387.o syscall.o vsyscall.o \
+> >  		setup64.o bootflag.o e820.o reboot.o quirks.o i8237.o \
+> >  		pci-dma.o pci-nommu.o alternative.o hpet.o tsc.o bugs.o \
+> > -		perfctr-watchdog.o
+> > +		perfctr.o perfctr-watchdog.o
+> >  
+> >  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+> >  obj-$(CONFIG_X86_MCE)		+= mce.o therm_throt.o
+> > @@ -60,4 +60,5 @@ i8237-y				+= ../../i386/kernel/i8237.o
+> >  msr-$(subst m,y,$(CONFIG_X86_MSR))  += ../../i386/kernel/msr.o
+> >  alternative-y			+= ../../i386/kernel/alternative.o
+> >  pcspeaker-y			+= ../../i386/kernel/pcspeaker.o
+> > +perfctr-y			+= ../../i386/kernel/cpu/perfctr.o
+> >  perfctr-watchdog-y		+= ../../i386/kernel/cpu/perfctr-watchdog.o
+> > diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
+> > index 1b0e07b..892ebf8 100644
+> > --- a/arch/x86_64/kernel/apic.c
+> > +++ b/arch/x86_64/kernel/apic.c
+> > @@ -453,6 +453,7 @@ void __cpuinit setup_local_APIC (void)
+> >  			oldvalue, value);
+> >  	}
+> >  
+> > +	probe_performance_counters();
+> >  	nmi_watchdog_default();
+> >  	setup_apic_nmi_watchdog(NULL);
+> >  	apic_pm_activate();
+> > diff --git a/include/asm-i386/nmi.h b/include/asm-i386/nmi.h
+> > index fb1e133..736af6f 100644
+> > --- a/include/asm-i386/nmi.h
+> > +++ b/include/asm-i386/nmi.h
+> > @@ -18,6 +18,7 @@
+> >  int do_nmi_callback(struct pt_regs *regs, int cpu);
+> >  
+> >  extern int nmi_watchdog_enabled;
+> > +extern void probe_performance_counters(void);
+> >  extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
+> >  extern int avail_to_resrv_perfctr_nmi(unsigned int);
+> >  extern int reserve_perfctr_nmi(unsigned int);
+> > diff --git a/include/asm-x86_64/nmi.h b/include/asm-x86_64/nmi.h
+> > index d0a7f53..d45fc62 100644
+> > --- a/include/asm-x86_64/nmi.h
+> > +++ b/include/asm-x86_64/nmi.h
+> > @@ -46,6 +46,7 @@ extern int unknown_nmi_panic;
+> >  extern int nmi_watchdog_enabled;
+> >  
+> >  extern int check_nmi_watchdog(void);
+> > +extern void probe_performance_counters(void);
+> >  extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
+> >  extern int avail_to_resrv_perfctr_nmi(unsigned int);
+> >  extern int reserve_perfctr_nmi(unsigned int);
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+
+-Stephane
