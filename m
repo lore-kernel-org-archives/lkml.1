@@ -1,206 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759058AbXFRIMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbXFRINl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759058AbXFRIMo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 04:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbXFRIM3
+	id S1759979AbXFRINl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 04:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbXFRINc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 04:12:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49692 "EHLO mx3.mail.elte.hu"
+	Mon, 18 Jun 2007 04:13:32 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:17028 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753653AbXFRIM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 04:12:28 -0400
-Date: Mon, 18 Jun 2007 10:12:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070618081204.GA11153@elte.hu>
-References: <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu> <20070524144447.GA25068@elte.hu> <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu> <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu> <20070616103707.GA28096@elte.hu> <E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu> <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754202AbXFRINb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 04:13:31 -0400
+From: Vasily Tarasov <vtaras@openvz.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kirill Korotaev <dev@sw.ru>
+Cc: Vasily Averin <vvs@sw.ru>
+Cc: OpenVZ Developers ML <devel@openvz.org>
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>
+Cc: Natalie Protasevich <nataliep@google.com>
+Cc: Jan Kara <jack@suse.cz>
+Subject: [PATCH] diskquota: 32bit quota tools on 64bit architectures
+Date: Mon, 18 Jun 2007 12:21:47 +0400
+Message-Id: <1182154907.197287.4324.nullmailer@white.sw.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Vasily Tarasov <vtaras@openvz.org>
 
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
+This patch should be applied after Arnd Bergmann's patch,
+that intoduces new compat types: 
+http://lkml.org/lkml/2007/6/15/98
 
-> My previous attempt was just commenting out parts of your patch.  But 
-> maybe it's more logical to move the barrier to immediately after the 
-> unlock.
-> 
-> With this patch I can't reproduce the problem, which may not mean very 
-> much, since it was rather a "fragile" bug anyway.  But at least the 
-> fix looks pretty harmless.
+OpenVZ Linux kernel team has discovered the problem 
+with 32bit quota tools working on 64bit architectures.
+In 2.6.10 kernel sys32_quotactl() function was replaced by sys_quotactl() with
+the comment "sys_quotactl seems to be 32/64bit clean, enable it for 32bit"
+However this isn't right. Look at if_dqblk structure:
 
->  		task_rq_unlock(rq, &flags);
-> +		/*
-> +		 * Without this barrier, wait_task_inactive() can starve
-> +		 * waiters of rq->lock (observed on Core2Duo)
-> +		 */
-> +		smp_mb();
->  		cpu_relax();
+struct if_dqblk {
+        __u64 dqb_bhardlimit;
+        __u64 dqb_bsoftlimit;
+        __u64 dqb_curspace;
+        __u64 dqb_ihardlimit;
+        __u64 dqb_isoftlimit;
+        __u64 dqb_curinodes;
+        __u64 dqb_btime;
+        __u64 dqb_itime;
+        __u32 dqb_valid;
+};
 
-yeah. The problem is, that the open-coded loop there is totally fine, 
-and we have similar loops elsewhere, so this problem could hit us again, 
-in an even harder to debug place! Since this affects our basic SMP 
-primitives, quite some caution is warranted i think.
+For 32 bit quota tools sizeof(if_dqblk) == 0x44.
+But for 64 bit kernel its size is 0x48, 'cause of alignment!
+Thus we got a problem. Attached patch reintroduce sys32_quotactl() function,
+that handles this and related situations.
 
-So ... to inquire about the scope of the problem, another possibility 
-would be for the _spin loop_ being 'too nice', not wait_task_inactive() 
-being too agressive!
+Signed-off-by: Vasily Tarasov <vtaras@openvz.org>
 
-To test this theory, could you try the patch below, does this fix your 
-hangs too? This change causes the memory access of the "easy" spin-loop 
-portion to be more agressive: after the REP; NOP we'd not do the 
-'easy-loop' with a simple CMPB, but we'd re-attempt the atomic op. (in 
-theory the non-LOCK-ed memory accesses should have a similar effect, but 
-maybe the Core2Duo has some special optimization for non-LOCK-ed 
-cacheline accesses that causes cacheline starvation?)
-
-	Ingo
-
----------------------------------------------------->
-Subject: [patch] x86: fix spin-loop starvation bug
-From: Ingo Molnar <mingo@elte.hu>
-
-Miklos Szeredi reported very long pauses (several seconds, sometimes 
-more) on his T60 (with a Core2Duo) which he managed to track down to 
-wait_task_inactive()'s open-coded busy-loop. He observed that an 
-interrupt on one core tries to acquire the runqueue-lock but does not 
-succeed in doing so for a very long time - while wait_task_inactive() on 
-the other core loops waiting for the first core to deschedule a task 
-(which it wont do while spinning in an interrupt handler).
-
-The problem is: both the spin_lock() code and the wait_task_inactive() 
-loop uses cpu_relax()/rep_nop(), so in theory the CPU should have 
-guaranteed MESI-fairness to the two cores - but that didnt happen: one 
-of the cores was able to monopolize the cacheline that holds the 
-runqueue lock, for extended periods of time.
-
-This patch changes the spin-loop to assert an atomic op after every REP 
-NOP instance - this will cause the CPU to express its "MESI interest" in 
-that cacheline after every REP NOP.
-
-Reported-and-debugged-by: Miklos Szeredi <miklos@szeredi.hu>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/asm-i386/spinlock.h    |   16 ++++------------
- include/asm-x86_64/processor.h |    8 ++++++--
- include/asm-x86_64/spinlock.h  |   15 +++------------
- 3 files changed, 13 insertions(+), 26 deletions(-)
 
-Index: linux-cfs-2.6.22-rc5.q/include/asm-i386/spinlock.h
-===================================================================
---- linux-cfs-2.6.22-rc5.q.orig/include/asm-i386/spinlock.h
-+++ linux-cfs-2.6.22-rc5.q/include/asm-i386/spinlock.h
-@@ -37,10 +37,7 @@ static inline void __raw_spin_lock(raw_s
- 	asm volatile("\n1:\t"
- 		     LOCK_PREFIX " ; decb %0\n\t"
- 		     "jns 3f\n"
--		     "2:\t"
--		     "rep;nop\n\t"
--		     "cmpb $0,%0\n\t"
--		     "jle 2b\n\t"
-+		     "rep; nop\n\t"
- 		     "jmp 1b\n"
- 		     "3:\n\t"
- 		     : "+m" (lock->slock) : : "memory");
-@@ -65,21 +62,16 @@ static inline void __raw_spin_lock_flags
- 		"testl $0x200, %[flags]\n\t"
- 		"jz 4f\n\t"
- 		STI_STRING "\n"
--		"3:\t"
--		"rep;nop\n\t"
--		"cmpb $0, %[slock]\n\t"
--		"jle 3b\n\t"
-+		"rep; nop\n\t"
- 		CLI_STRING "\n\t"
- 		"jmp 1b\n"
- 		"4:\t"
--		"rep;nop\n\t"
--		"cmpb $0, %[slock]\n\t"
--		"jg 1b\n\t"
-+		"rep; nop\n\t"
- 		"jmp 4b\n"
- 		"5:\n\t"
- 		: [slock] "+m" (lock->slock)
- 		: [flags] "r" (flags)
--	 	  CLI_STI_INPUT_ARGS
-+		  CLI_STI_INPUT_ARGS
- 		: "memory" CLI_STI_CLOBBERS);
+In OpenVZ technology 32 bit Virtual Environments over 
+64 bit OS are common, hence we have customers, that complains on this bad quota
+behaviour: 
+
+# /usr/bin/quota
+quota: error while getting quota from /dev/sda1 for 0: Success
+
+The reason is caused above.
+
+--- linux-2.6.22-rc4-fixed/arch/x86_64/ia32/ia32entry.S.orig	2007-06-14 15:55:24.000000000 +0400
++++ linux-2.6.22-rc4-fixed/arch/x86_64/ia32/ia32entry.S	2007-06-14 16:22:52.000000000 +0400
+@@ -526,7 +526,7 @@ ia32_sys_call_table:
+ 	.quad sys_init_module
+ 	.quad sys_delete_module
+ 	.quad quiet_ni_syscall		/* 130  get_kernel_syms */
+-	.quad sys_quotactl
++	.quad sys32_quotactl
+ 	.quad sys_getpgid
+ 	.quad sys_fchdir
+ 	.quad quiet_ni_syscall	/* bdflush */
+--- linux-2.6.22-rc4-fixed/arch/ia64/ia32/ia32_entry.S.orig	2007-06-14 15:55:24.000000000 +0400
++++ linux-2.6.22-rc4-fixed/arch/ia64/ia32/ia32_entry.S	2007-06-14 16:22:52.000000000 +0400
+@@ -304,7 +304,7 @@ ia32_syscall_table:
+ 	data8 sys_ni_syscall	/* init_module */
+ 	data8 sys_ni_syscall	/* delete_module */
+ 	data8 sys_ni_syscall	/* get_kernel_syms */  /* 130 */
+-	data8 sys_quotactl
++	data8 sys32_quotactl
+ 	data8 sys_getpgid
+ 	data8 sys_fchdir
+ 	data8 sys_ni_syscall	/* sys_bdflush */
+--- linux-2.6.22-rc4-fixed/fs/quota.c.orig	2007-06-14 15:55:26.000000000 +0400
++++ linux-2.6.22-rc4-fixed/fs/quota.c	2007-06-18 12:00:56.000000000 +0400
+@@ -10,12 +10,14 @@
+ #include <linux/slab.h>
+ #include <asm/current.h>
+ #include <asm/uaccess.h>
++#include <asm/compat.h>
+ #include <linux/kernel.h>
+ #include <linux/security.h>
+ #include <linux/syscalls.h>
+ #include <linux/buffer_head.h>
+ #include <linux/capability.h>
+ #include <linux/quotaops.h>
++#include <linux/types.h>
+ 
+ /* Check validity of generic quotactl commands */
+ static int generic_quotactl_valid(struct super_block *sb, int type, int cmd, qid_t id)
+@@ -384,3 +386,119 @@ asmlinkage long sys_quotactl(unsigned in
+ 
+ 	return ret;
  }
- #endif
-Index: linux-cfs-2.6.22-rc5.q/include/asm-x86_64/processor.h
-===================================================================
---- linux-cfs-2.6.22-rc5.q.orig/include/asm-x86_64/processor.h
-+++ linux-cfs-2.6.22-rc5.q/include/asm-x86_64/processor.h
-@@ -358,7 +358,7 @@ struct extended_sigtable {
- /* REP NOP (PAUSE) is a good thing to insert into busy-wait loops. */
- static inline void rep_nop(void)
- {
--	__asm__ __volatile__("rep;nop": : :"memory");
-+	__asm__ __volatile__("rep; nop" : : : "memory");
- }
- 
- /* Stop speculative execution */
-@@ -389,7 +389,11 @@ static inline void prefetchw(void *x) 
- 
- #define spin_lock_prefetch(x)  prefetchw(x)
- 
--#define cpu_relax()   rep_nop()
-+static inline void cpu_relax(void)
++
++#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
++/*
++ * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
++ * and is necessary due to alignment problems.
++ */
++struct compat_if_dqblk {
++	compat_u64 dqb_bhardlimit;
++	compat_u64 dqb_bsoftlimit;
++	compat_u64 dqb_curspace;
++	compat_u64 dqb_ihardlimit;
++	compat_u64 dqb_isoftlimit;
++	compat_u64 dqb_curinodes;
++	compat_u64 dqb_btime;
++	compat_u64 dqb_itime;
++	compat_uint_t dqb_valid;
++};
++
++/* XFS structures */
++struct compat_fs_qfilestat {
++	compat_u64 dqb_bhardlimit;
++	compat_u64 qfs_nblks;
++	compat_uint_t qfs_nextents;
++};
++
++struct compat_fs_quota_stat {
++	__s8		qs_version;
++	__u16		qs_flags;
++	__s8		qs_pad;
++	struct compat_fs_qfilestat	qs_uquota;
++	struct compat_fs_qfilestat	qs_gquota;
++	compat_uint_t	qs_incoredqs;
++	compat_int_t	qs_btimelimit;
++	compat_int_t	qs_itimelimit;
++	compat_int_t	qs_rtbtimelimit;
++	__u16		qs_bwarnlimit;
++	__u16		qs_iwarnlimit;
++};
++
++asmlinkage long sys32_quotactl(unsigned int cmd, const char __user *special,
++						qid_t id, void __user *addr)
 +{
-+	smp_mb(); /* Core2Duo needs this to not starve other cores */
-+	rep_nop();
++	unsigned int cmds;
++	struct if_dqblk __user *dqblk;
++	struct compat_if_dqblk __user *compat_dqblk;
++	struct fs_quota_stat __user *fsqstat;
++	struct compat_fs_quota_stat __user *compat_fsqstat;
++	compat_uint_t data;
++	u16 xdata;
++	long ret;
++
++	cmds = cmd >> SUBCMDSHIFT;
++
++	switch (cmds) {
++	case Q_GETQUOTA:
++		dqblk = compat_alloc_user_space(sizeof(struct if_dqblk));
++		compat_dqblk = addr;
++		ret = sys_quotactl(cmd, special, id, dqblk);
++		if (ret)
++			break;
++		if (copy_in_user(compat_dqblk, dqblk, sizeof(*compat_dqblk)) ||
++			get_user(data, &dqblk->dqb_valid) ||
++			put_user(data, &compat_dqblk->dqb_valid))
++			ret = -EFAULT;
++		break;
++	case Q_SETQUOTA:
++		dqblk = compat_alloc_user_space(sizeof(struct if_dqblk));
++		compat_dqblk = addr;
++		ret = -EFAULT;
++		if (copy_in_user(dqblk, compat_dqblk, sizeof(*compat_dqblk)) ||
++			get_user(data, &compat_dqblk->dqb_valid) ||
++			put_user(data, &dqblk->dqb_valid))
++			break;
++		ret = sys_quotactl(cmd, special, id, dqblk);
++		break;
++	case Q_XGETQSTAT:
++		fsqstat = compat_alloc_user_space(sizeof(struct fs_quota_stat));
++		compat_fsqstat = addr;
++		ret = sys_quotactl(cmd, special, id, fsqstat);
++		if (ret)
++			break;
++		ret = -EFAULT;
++		/* Copying qs_version, qs_flags, qs_pad */
++		if (copy_in_user(compat_fsqstat, fsqstat,
++			offsetof(struct compat_fs_quota_stat, qs_uquota)))
++			break;
++		/* Copying qs_uquota */
++		if (copy_in_user(&compat_fsqstat->qs_uquota,
++			&fsqstat->qs_uquota,
++			sizeof(compat_fsqstat->qs_uquota)) ||
++			get_user(data, &fsqstat->qs_uquota.qfs_nextents) ||
++			put_user(data, &compat_fsqstat->qs_uquota.qfs_nextents))
++			break;
++		/* Copying qs_gquota */
++		if (copy_in_user(&compat_fsqstat->qs_gquota,
++			&fsqstat->qs_gquota,
++			sizeof(compat_fsqstat->qs_gquota)) ||
++			get_user(data, &fsqstat->qs_gquota.qfs_nextents) ||
++			put_user(data, &compat_fsqstat->qs_gquota.qfs_nextents))
++			break;
++		/* Copying the rest */
++		if (copy_in_user(&compat_fsqstat->qs_incoredqs,
++			&fsqstat->qs_incoredqs,
++			sizeof(struct compat_fs_quota_stat) -
++			offsetof(struct compat_fs_quota_stat, qs_incoredqs)) ||
++			get_user(xdata, &fsqstat->qs_iwarnlimit) ||
++			put_user(xdata, &compat_fsqstat->qs_iwarnlimit))
++			break;
++		ret = 0;
++		break;
++	default:
++		ret = sys_quotactl(cmd, special, id, addr);
++	}
++	return ret;
 +}
- 
- /*
-  *      NSC/Cyrix CPU indexed register access macros
-Index: linux-cfs-2.6.22-rc5.q/include/asm-x86_64/spinlock.h
-===================================================================
---- linux-cfs-2.6.22-rc5.q.orig/include/asm-x86_64/spinlock.h
-+++ linux-cfs-2.6.22-rc5.q/include/asm-x86_64/spinlock.h
-@@ -28,10 +28,7 @@ static inline void __raw_spin_lock(raw_s
- 		"\n1:\t"
- 		LOCK_PREFIX " ; decl %0\n\t"
- 		"jns 2f\n"
--		"3:\n"
--		"rep;nop\n\t"
--		"cmpl $0,%0\n\t"
--		"jle 3b\n\t"
-+		"rep; nop\n\t"
- 		"jmp 1b\n"
- 		"2:\t" : "=m" (lock->slock) : : "memory");
- }
-@@ -49,16 +46,10 @@ static inline void __raw_spin_lock_flags
- 		"testl $0x200, %1\n\t"	/* interrupts were disabled? */
- 		"jz 4f\n\t"
- 	        "sti\n"
--		"3:\t"
--		"rep;nop\n\t"
--		"cmpl $0, %0\n\t"
--		"jle 3b\n\t"
-+		"rep; nop\n\t"
- 		"cli\n\t"
- 		"jmp 1b\n"
--		"4:\t"
--		"rep;nop\n\t"
--		"cmpl $0, %0\n\t"
--		"jg 1b\n\t"
-+		"rep; nop\n\t"
- 		"jmp 4b\n"
- 		"5:\n\t"
- 		: "+m" (lock->slock) : "r" ((unsigned)flags) : "memory");
++#endif
