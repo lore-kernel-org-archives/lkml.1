@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbXFRGD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbXFRGF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758878AbXFRGD4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 02:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbXFRGDt
+	id S1759247AbXFRGF7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 02:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbXFRGFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 02:03:49 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:55633 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbXFRGDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 02:03:48 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       bryan.wu@analog.com, ak@suse.de
-Subject: [patch] hide cond_syscall behind __KERNEL__ for Blackfin/x86_64
-Date: Mon, 18 Jun 2007 02:03:54 -0400
-User-Agent: KMail/1.9.7
+	Mon, 18 Jun 2007 02:05:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:48212 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754854AbXFRGFu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 02:05:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=G2HGdhnco/PUW4iaqRaXXN5P6VG8V5rtDmRY7s/Q92TSy8mUh5swF00g2ZBpbanU+tgpE2q/dmLtai49Akq8aK4o3+ohuzeCVexgdg/lABWGLtGsbUMI8UxYRvg0XUOXMy6zQ4KDTTidO12uO2Y6bnRKR6Ln/1J66LpfC0vZde0=
+Message-ID: <467620B6.6020003@gmail.com>
+Date: Mon, 18 Jun 2007 15:05:42 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Rodney Gordon II <meff@spherevision.org>
+CC: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [BUG] libata IT821X driver still fails! Hard-freezes system.
+References: <1181810536.5335.13.camel@ghreen.sphere>
+In-Reply-To: <1181810536.5335.13.camel@ghreen.sphere>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706180203.55443.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This brings Blackfin and x86_64 into line with all other architectures by only
-defining cond_syscall() when __KERNEL__ is defined.
+Rodney Gordon II wrote:
+> This is the screen image I took with my digital camera when bootup
+> freezes:
+> http://spherevision.org/sync/visual/itefreeze.jpg
+> 
+> After this freeze, not even SysRq commands work.
+> On a side-note, the non-libata drivers boot up, but throw tons of DMA
+> errors after one DVD burn.
+> 
+> The kernel I tested this on (newest I would try) is 2.6.22-rc4 with and
+> without cfs16. I am willing to test out patches if I can get this darn
+> controller working.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-diff --git a/include/asm-blackfin/unistd.h b/include/asm-blackfin/unistd.h
-index 4df8790..0df9f2d 100644
---- a/include/asm-blackfin/unistd.h
-+++ b/include/asm-blackfin/unistd.h
-@@ -369,7 +369,6 @@
- #define __ARCH_WANT_SYS_NICE
- #define __ARCH_WANT_SYS_RT_SIGACTION
- #define __ARCH_WANT_SYS_RT_SIGSUSPEND
--#endif
- 
- /*
-  * "Conditional" syscalls
-@@ -379,4 +378,6 @@
-  */
- #define cond_syscall(x) asm(".weak\t_" #x "\n\t.set\t_" #x ",_sys_ni_syscall");
- 
-+#endif	/* __KERNEL__ */
-+
- #endif				/* __ASM_BFIN_UNISTD_H */
-diff --git a/include/asm-x86_64/unistd.h b/include/asm-x86_64/unistd.h
-index ae1ed05..f5d627c 100644
---- a/include/asm-x86_64/unistd.h
-+++ b/include/asm-x86_64/unistd.h
-@@ -674,6 +674,7 @@ asmlinkage long sys_rt_sigaction(int sig,
- #endif	/* __KERNEL__ */
- #endif	/* __NO_STUBS */
- 
-+#ifdef __KERNEL__
- /*
-  * "Conditional" syscalls
-  *
-@@ -681,5 +682,6 @@ asmlinkage long sys_rt_sigaction(int sig,
-  * but it doesn't work on all toolchains, so we just do it by hand
-  */
- #define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
-+#endif	/* __KERNEL__ */
- 
- #endif /* _ASM_X86_64_UNISTD_H_ */
+Does ide it821x driver work?  (drivers -> ata/atapi/mfm/rll support ->
+it821x ide support)
+
+-- 
+tejun
