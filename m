@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbXFRUyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932869AbXFRUzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932800AbXFRUyh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765001AbXFRUyZ
+	id S932869AbXFRUzp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765353AbXFRUzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:54:25 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:38579
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763402AbXFRUyX (ORCPT
+	Mon, 18 Jun 2007 16:55:35 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:61907 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765258AbXFRUzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:54:23 -0400
-Date: Mon, 18 Jun 2007 13:52:04 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Brendan Conoboy <blc@redhat.com>
-cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Neil Brown <neilb@suse.de>, Wakko Warner <wakko@animx.eu.org>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-In-Reply-To: <4676D8DE.3050903@redhat.com>
-Message-ID: <Pine.LNX.4.64.0706181349290.14890@asgard.lang.hm>
-References: <18034.479.256870.600360@notabene.brown>
- <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown>
- <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown>
- <Pine.LNX.4.64.0706160037220.7557@asgard.lang.hm> <4676BEC2.7090809@redhat.com>
- <Pine.LNX.4.64.0706181026170.12717@asgard.lang.hm> <20070618180327.GP10008@csclub.uwaterloo.ca>
- <Pine.LNX.4.64.0706181111020.12717@asgard.lang.hm> <20070618183324.GL10006@csclub.uwaterloo.ca>
- <Pine.LNX.4.64.0706181138210.12717@asgard.lang.hm> <4676D8DE.3050903@redhat.com>
+	Mon, 18 Jun 2007 16:55:33 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Versioning file system
+To: alan <alan@clueserver.org>, Theodore Tso <tytso@mit.edu>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Reply-To: 7eggert@gmx.de
+Date: Mon, 18 Jun 2007 22:54:52 +0200
+References: <8wst3-3kh-31@gated-at.bofh.it> <8wsCC-3wf-21@gated-at.bofh.it> <8wsW4-3UY-3@gated-at.bofh.it> <8wJal-3KA-1@gated-at.bofh.it> <8xm22-4Ql-1@gated-at.bofh.it> <8xq5G-32l-7@gated-at.bofh.it> <8xs7w-69W-21@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <E1I0OFQ-0001B9-7Z@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+b27SKG8W7RPz4AkwdDjnyzwFL8PmROfPPGUf
+ FzRGcfVRnwhuBukmuYQyXBiUrhV2Ty02yQWSXR7Y/tvosfrOt5
+ oD5sqf5nfY5D0B7MvdA0A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007, Brendan Conoboy wrote:
+alan <alan@clueserver.org> wrote:
 
-> david@lang.hm wrote:
->>  yes, sorry, ultra 320 wide.
->
-> Exactly how many channels and drives?
+> I just wish that people would learn from the mistakes of others.  The
+> MacOS is a prime example of why you do not want to use a forked
+> filesystem, yet some people still seem to think it is a good idea.
+> (Forked filesystems tend to be fragile and do not play well with
+> non-forked filesystems.)
 
-one channel, 2 OS drives plus the 45 drives in the array.
+What's the conceptual difference between forks and extended user attributes?
+-- 
+"Unix policy is to not stop root from doing stupid things because
+that would also stop him from doing clever things." - Andi Kleen
 
-yes I realize that there will be bottlenecks with this, the large capacity 
-is to handle longer history (it's going to be a 30TB circular buffer being 
-fed by a pair of OC-12 links)
-
-it appears that my big mistake was not understanding what /proc/mdstat is 
-telling me.
-
-David Lang
+"It's such a fine line between stupid and clever" - Derek Smalls
