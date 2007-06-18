@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbXFRJpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbXFRJpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761053AbXFRJpO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 05:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758809AbXFRJo6
+	id S1761309AbXFRJpk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 05:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758883AbXFRJpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:44:58 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:41172 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752720AbXFRJo5 (ORCPT
+	Mon, 18 Jun 2007 05:45:30 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:35778 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758825AbXFRJp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 05:44:57 -0400
-To: davem@davemloft.net
-CC: akpm@linux-foundation.org, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20070618.023520.102546505.davem@davemloft.net> (message from
-	David Miller on Mon, 18 Jun 2007 02:35:20 -0700 (PDT))
-Subject: Re: [PATCH] fix race in AF_UNIX
-References: <E1I0CTH-0006k3-00@dorka.pomaz.szeredi.hu>
-	<20070618.021813.105401188.davem@davemloft.net>
-	<E1I0DYW-0006uZ-00@dorka.pomaz.szeredi.hu> <20070618.023520.102546505.davem@davemloft.net>
-Message-Id: <E1I0DmJ-0006yg-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 18 Jun 2007 11:44:07 +0200
+	Mon, 18 Jun 2007 05:45:28 -0400
+Date: Mon, 18 Jun 2007 03:45:24 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: alan <alan@clueserver.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+Message-ID: <20070618094524.GF5181@schatzie.adilger.int>
+Mail-Followup-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+	alan <alan@clueserver.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	Jack Stone <jack@hawkeye.stone.uk.eu.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	akpm@linux-foundation.org, viro@zeniv.linux.org.uk
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org> <20070616145337.GA13391@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070616145337.GA13391@lazybastard.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > And is anyone working on a better patch?
-> > > 
-> > > I have no idea.
-> > > 
-> > > > Those patches aren't "bad" in the correctness sense.  So IMO any one
-> > > > of them is better, than having that bug in there.
-> > > 
-> > > You're adding a very serious performance regression, which is
-> > > about as bad as the bug itself.
+On Jun 16, 2007  16:53 +0200, Jörn Engel wrote:
+> On Fri, 15 June 2007 15:51:07 -0700, alan wrote:
+> > >Thus, in the end it turns out that this stuff is better handled by
+> > >explicit version-control systems (which require explicit operations to
+> > >manage revisions) and atomic snapshots (for backup.)
 > > 
-> > No, correctness always trumps performance.
+> > ZFS is the cool new thing in that space.  Too bad the license makes it 
+> > hard to incorporate it into the kernel.
 > 
-> To a point.  There is no black and white in this world.
+> It may be the coolest, but there are others as well.  Btrfs looks good,
+> nilfs finally has a cleaner and may be worth a try, logfs will get
+> snapshots sooner or later.  Heck, even my crusty old cowlinks can be
+> viewed as snapshots.
 > 
-> > Lost packets on an AF_UNIX socket are _unexceptable_, and this is
-> > definitely not a theoretical problem.
-> 
-> A lot of people will consider having all of their AF_UNIX sockets on
-> their 64 cpu system just stop when garbage collection runs to be
-> unacceptable as well.
+> If one has spare cycles to waste, working on one of those makes more
+> sense than implementing file versioning.
 
-Garbage collection only ever happens, if the app is sending AF_UNIX
-sockets over AF_UNIX sockets.  Which is a rather rare case.  And which
-is basically why this bug went unnoticed for so long.
+Too bad everyone is spending time on 10 similar-but-slightly-different
+filesystems.  This will likely end up with a bunch of filesystems that
+implement some easy subset of features, but will not get polished for
+users or have a full set of features implemented (e.g. ACL, quota, fsck,
+etc).  While I don't think there is a single answer to every question,
+it does seem that the number of filesystem projects has climbed lately.
 
-So my second patch only affects the performance of _exactly_ those
-apps which might well be bitten by the bug itself.
+Maybe there should be a BOF at OLS to merge these filesystem projects
+(btrfs, chunkfs, tilefs, logfs, etc) into a single project with multiple
+people working on getting it solid, scalable (parallel readers/writers on
+lots of CPUs), robust (checksums, failure localization), recoverable, etc.
+I thought Val's FS summits were designed to get developers to collaborate,
+but it seems everyone has gone back to their corners to work on their own
+filesystem?
 
-> Secondarily, this bug has been around for years and nobody noticed.
-> The world will not explode if this bug takes a few more days or
-> even a week to work out.  Let's do it right instead of ramming
-> arbitrary turds into the kernel.
+Working on getting hooks into DM/MD so that the filesystem and RAID layers
+can move beyond "ignorance is bliss" when talking to each other would be
+great.  Not rebuilding empty parts of the fs, limit parity resync to parts
+of the fs that were in the previous transaction, use fs-supplied checksums
+to verify on-disk data is correct, use RAID geometry when doing allocations,
+etc.
 
-Fine, but just wishing a bug to get fixed won't accomplish anything.
-I've spent a fair amount of time debugging this thing, and I'm out of
-ideas.  Really.  So unless somebody steps up to look at this, it won't
-_ever_ get fixed.
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
-Miklos
