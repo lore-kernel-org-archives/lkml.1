@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765829AbXFRS6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765896AbXFRS7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765829AbXFRS6T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764639AbXFRS6I
+	id S1765896AbXFRS7H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763504AbXFRS64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:58:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56321 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763832AbXFRS6F convert rfc822-to-8bit (ORCPT
+	Mon, 18 Jun 2007 14:58:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:26097 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762100AbXFRS6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:58:05 -0400
-To: =?utf-8?Q?Hans-J=C3=BCrgen?= Koch <hjk@linutronix.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
-       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: mea culpa on the meaning of Tivoization
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070618005041.6c51a368@the-village.bc.nu>
-	<orabuydqs8.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706180922.26630.hjk@linutronix.de>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Mon, 18 Jun 2007 15:55:37 -0300
-In-Reply-To: <200706180922.26630.hjk@linutronix.de> (=?utf-8?Q?=22Hans-J?=
- =?utf-8?Q?=C3=BCrgen?= Koch"'s message of "Mon\, 18 Jun 2007 09\:22\:26
- +0200")
-Message-ID: <orwsy1ay8m.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Mon, 18 Jun 2007 14:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=raNyav95xc+BX4/Fi1M4Xvwu8vXgDLU0N5ROkaKENcRTAnXO68NfL2XgkH3SA6M6PUJIHLGrGmKvbW0RnIjKFZYjoFTMojMHmtcNKjFzbL7uGYTCufQav5nwg/22x2iS1z3qHrRrK0LFLgA1bM3eojkrD23jDF7Embkms6/hhu4=
+Message-ID: <6bffcb0e0706181158l739864e0t6fb5bc564444f23c@mail.gmail.com>
+Date: Mon, 18 Jun 2007 20:58:54 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       suresh.b.siddha@intel.com
+In-Reply-To: <Pine.LNX.4.64.0706181102280.6596@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070618095838.238615343@sgi.com>
+	 <46767346.2040108@googlemail.com>
+	 <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com>
+	 <6bffcb0e0706181038j107e2357o89c525261cf671a@mail.gmail.com>
+	 <Pine.LNX.4.64.0706181102280.6596@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, Hans-Jürgen Koch <hjk@linutronix.de> wrote:
+On 18/06/07, Christoph Lameter <clameter@sgi.com> wrote:
+> On Mon, 18 Jun 2007, Michal Piotrowski wrote:
+>
+> > > Does this patch fix the issue?
+> > Unfortunately no.
+> >
+> > AFAIR I didn't see it in 2.6.22-rc4-mm2
+>
+> Seems that I miscounted. We need a larger safe area.
+>
 
-> So, if a manufacturer used a ROM instead of a flash memory with the
-> intention to make software modifications impossible, then it is bad,
-> and when he did it for economical reasons, then it is a "natural barrier"?
+Still the same.
 
-This sounds about right to me.
-
-Intent is very significant, but then, what vendor would justify the
-choice of ROM as "intent to prevent modifications", if this amounted
-to copyright infringement?
-
-Vendor would be entitled to the benefit of the doubt as to the
-motivations in this case, so it would likely be unenforceable anyway.
+Regards,
+Michal
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+LOG
+http://www.stardust.webpages.pl/log/
