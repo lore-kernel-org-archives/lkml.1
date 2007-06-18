@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765837AbXFRVpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932312AbXFRVrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765837AbXFRVpk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 17:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762815AbXFRVpc
+	id S932312AbXFRVrf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 17:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762350AbXFRVr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 17:45:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58436 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761691AbXFRVpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 17:45:32 -0400
-To: david@lang.hm
-Cc: Anders Larsen <al@alarsen.net>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <1182156596l.29108l.0l@ecxwww1.reanet.de>
-	<or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706181202580.12717@asgard.lang.hm>
-	<orbqfdavpn.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706181343320.14890@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Mon, 18 Jun 2007 18:45:02 -0300
-In-Reply-To: <Pine.LNX.4.64.0706181343320.14890@asgard.lang.hm> (david@lang.hm's message of "Mon\, 18 Jun 2007 13\:46\:15 -0700 \(PDT\)")
-Message-ID: <orlkeh9btt.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Mon, 18 Jun 2007 17:47:28 -0400
+Received: from qb-out-0506.google.com ([72.14.204.225]:2481 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762146AbXFRVr1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 17:47:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=qNE5AgEnXZ6hGm8Hb7Po4CEA28xnq3XHIudZAbpDKb5oMVNWofsEhiOx3Gr88KGdNnbJwBRvnZeDuT2iN85skwMx0mF2Zn66Jazvsco8jqR8oPPOok3omofGEGsHiNTK44g0A27rfzNqW4VCvXAkc2oH/1H03leu3Lg02M5xIyc=
+To: linux-kernel@vger.kernel.org
+Subject: Re: GPLv3 dispute solution - new open source license?
+Date: Mon, 18 Jun 2007 17:47:23 -0400
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706181747.23230.yurimxpxman@gmail.com>
+From: Joshua David Williams <yurimxpxman.lkml@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, david@lang.hm wrote:
+On 6/18/07, H. Peter Anvin <hpa@zytor.com> wrote:
 
-> On Mon, 18 Jun 2007, Alexandre Oliva wrote:
->> On Jun 18, 2007, david@lang.hm wrote:
->> 
->>> they want to prevent anyone from modifying the credit card machine to
->>> store copies of all the card info locally.
->> 
->> I see.  Thanks for enlightening me.
->> 
->>> you don't really answer this issue. since these boxes are required to
->>> be sealed and physically anti-tamper, changing the ROM is not
->>> acceptable.
->> 
->> Given the ROM exception in GPLv3, I guess you could seal and
->> anti-tamper it as much as you want, and leave the ROM at such a place
->> in which it's easily replaceable but with signature checking and all
->> such that the user doesn't install ROM that is not authorized by you.
+> You probably don't want do design a license without involving a
+> competent lawyer.  We don't expect lawyers to write kernel code, either.
 
-> 'sealed, but easy to replace ROM containing the programming' is a
-> contridiction.
+True enough, and I realized this when I wrote my initial post, but it's not 
+what I wrote so much as the concept. I haven't seen the idea come up in any 
+threads, so I thought I'd throw it out there.
 
-> if a local person can easily replace the programming it doesn't meet
-> the PCI requirements and therefor you just cannot use GPLv3 code for
-> this sort of application.
+Open source and free software are clearly two different things, so it doesn't 
+make sense that an open source project would use a free software license. The 
+FSF has made it very clear that their objectives are very different from 
+ours.
 
-How can someone easily replace the programming if there's signature
-checking and all?
+The GPLv2 is a great license, but it's not perfect. The FSF recognised several 
+of the problems when they introduced the first public draft of v3. Since they 
+are heading in an opposite direction from the open source community, I 
+believe that we are now facing a clear dividing line between the two camps. 
+We cannot cling to the fifteen year-old license forever, expecting to never 
+be burnt.
 
-The sealing of the ROMmed software is accomplished by other means, but
-it's there.  I shall mention that I'm not endorsing or recommending
-this practice, it might very well be copyright infringement even under
-GPLv1 and v2.
+If we can't adopt the GPLv3, it seems obvious to me that we need our own 
+solution.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+It's a commonly known fact that most intruders come in through Windows.
