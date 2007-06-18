@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762874AbXFRNLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763332AbXFRNLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762874AbXFRNLQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 09:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbXFRNLD
+	id S1763332AbXFRNLo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 09:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbXFRNLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 09:11:03 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:59395 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761339AbXFRNLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 09:11:01 -0400
-Date: Mon, 18 Jun 2007 15:11:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Gerrit Huizenga <gh@us.ibm.com>
-Cc: holzheu@linux.vnet.ibm.com, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       "lf_kernel_messages@linux-foundation.org" 
-	<lf_kernel_messages@linux-foundation.org>
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-Message-ID: <20070618131157.GA23229@uranus.ravnborg.org>
-References: <1181817533.10064.18.camel@localhost.localdomain> <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 18 Jun 2007 09:11:36 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:36271 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761652AbXFRNLf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 09:11:35 -0400
+To: mingo@elte.hu
+CC: cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, kiran@scalex86.org
+In-reply-to: <20070618123646.GA22672@elte.hu> (message from Ingo Molnar on
+	Mon, 18 Jun 2007 14:36:46 +0200)
+Subject: Re: [BUG] long freezes on thinkpad t60
+References: <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu> <20070618081204.GA11153@elte.hu> <E1I0CY4-0006lF-00@dorka.pomaz.szeredi.hu> <20070618083109.GA23572@elte.hu> <E1I0ChN-0006nd-00@dorka.pomaz.szeredi.hu> <20070618091832.GA1860@elte.hu> <20070618093848.GA6880@elte.hu> <20070618094414.GA8261@elte.hu> <E1I0EJc-0007El-00@dorka.pomaz.szeredi.hu> <20070618123646.GA22672@elte.hu>
+Message-Id: <E1I0Gzz-0007iA-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 18 Jun 2007 15:10:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 15, 2007 at 11:42:15AM -0700, Gerrit Huizenga wrote:
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > how about the patch below? Boot-tested on 32-bit. As a side-effect 
+> > > > this change also removes the 255 CPUs limit from the 32-bit kernel.
+> > > 
+> > > boot-tested on 64-bit too now.
+> > 
+> > Strange, I can't even get past the compile stage ;)
+> > 
+> >   CC      kernel/spinlock.o
+> > {standard input}: Assembler messages:
+> > {standard input}:207: Error: backward ref to unknown label "4:"
 > 
-> Andrew mentioned a mechanism for adding a subsystem tag or other tag
-> which helps disambiguate the message, either in the message file or in
-> the end user documentation (e.g. the Message Pedia/mPedia that the Japanese
-> have already created with ~350 messages, and a total of ~700 targetted
-> by the end of the year).
-> 
-> That tag could be appended to the beginning of the printk, to the end of
-> the printk, or even in a formatted comment at the end of the printk that
-> the tool could extract.
+> oh, sorry - i built it with !PREEMPT, which doesnt make use of the flags 
+> thing. I fixed the build and have cleaned up and simplified that code 
+> some more - does the patch below work for you? (it does for me on both 
+> 32-bit and 64-bit)
 
-The best way to maintain such a subsystem tag most be supported by
-kbuild. So say we have the subsystem "scsi" then we can set this subsystem
-tag in drivers/scsi/Makefile and let drivers/scsi/arm/Makefile inherit
-this vaule doing nothing.
+Thanks.  The patch boots, and...  doesn't solve the bug.  Weird.
 
-Addign the subsystem tag to the printk could than be done using the
-C preprocessor and we are all fine.
+CPU bug?  I've upgraded the BIOS not such a long time ago.
 
-If we go by the kernel-doc way to document kernel messages (the few that
-actually needs additional explanation) then we need to teach kernel-doc
-to collect the same subsystem tag but that should be doable.
+I guess now we know what the problem is, it would be pretty easy to
+create some test code, that uses two threads, one of which loops in
+lock/unlock/rep_nop and the other that tries to acquire the lock and
+measures latency.
 
-	Sam
+Should I try to do that?
+
+Thanks,
+Miklos
