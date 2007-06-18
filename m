@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763690AbXFROHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbXFROOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763690AbXFROHO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 10:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762669AbXFROHD
+	id S1763642AbXFROOo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 10:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760884AbXFROOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 10:07:03 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:59818 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762614AbXFROHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 10:07:01 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: man-pages-2.57 is released
-To: Michael Kerrisk <mtk-manpages@gmx.net>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Reply-To: 7eggert@gmx.de
-Date: Mon, 18 Jun 2007 16:06:36 +0200
-References: <8x3Cc-1LD-13@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Mon, 18 Jun 2007 10:14:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59644 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754690AbXFROOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 10:14:35 -0400
+Message-ID: <467692DA.8050601@redhat.com>
+Date: Mon, 18 Jun 2007 07:12:42 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1I0HsK-0000of-5v@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX183CHhdd+Q2A6JCxIOTRLpoOaCLYDpkqQ3yDxo
- if/0Ix7+5Af+2mTWHytwSsYkwgQcmdrM+a39CX5j1w1PLEJ5G1
- rF00kQ+UYcmBCgInrO3gA==
+To: Pierre Peiffer <pierre.peiffer@bull.net>
+CC: Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@osdl.org>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] Futex: Revert the non-functional REQUEUE_PI
+References: <1182107470.8176.455.camel@chaos> <46766552.3080803@bull.net>
+In-Reply-To: <46766552.3080803@bull.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk <mtk-manpages@gmx.net> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> ./man2/ioperm.2
->      FIXME is the following ("Only the first 0x3ff I/O ports can be
->      specified in this manner") still true?  Looking at changes in
->      include/asm-i386/processor.h between 2.4 and 2.6 suggests
->      that the limit is different in 2.6.
+Pierre Peiffer wrote:
+> Once again, it's a pity that people didn't spent time to comment on this
+> when I was working on this.
 
-You now have the full 64Kb port bitmap (8 KB).
+It was no accusation.  IMO this is how it should work.  The problems
+became visible only once the code was being used.  This is what the
+current model allows: we find problems and since the development cycle
+requires changes to be added at the beginning we have time to back
+changes out again.  No harm done.
 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-BTW1: linux/arch/i386/kernel/ioport.c still states having 8K of bitmaps to
-be excessive (and implicitely and now wrongly as not being done). Since
-there should only be few processes requiring iopl, the 8K should not be
-excessive. We need a native speaker to change this text, at least not me
-right now.
-
-CC Linus, because he admitted fiddeling with this file. (No MAINTAINER found)
-
-
-BTW2: My (possibly outdated) iopl manpage states that you'll need to be root
-change the iopl, but you only need CAP_SYS_RAWIO in order to increase the
-iopl.
--- 
-Have you ever noticed that the Klingons are all speaking unix?
-"Grep ls awk chmod."   "Mknod ksh tar imap."
-"Wall fsck yacc!"     (that last is obviously a curse of some sort)
-        -- Gandalf  Parker
+iD8DBQFGdpLa2ijCOnn/RHQRArfeAJ941sp77rF4BN6heEZvB/E6Tx29KwCeI34f
+um8soonlsK4Lp1k+t0WHzhM=
+=9v8e
+-----END PGP SIGNATURE-----
