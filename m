@@ -1,238 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbXFRJ77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbXFRKA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761639AbXFRJ77 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 05:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760049AbXFRJ7R
+	id S1761665AbXFRKA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 06:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760126AbXFRJ7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 05:59:17 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47892 "EHLO
+	Mon, 18 Jun 2007 05:59:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47902 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758434AbXFRJ7P (ORCPT
+	with ESMTP id S1758465AbXFRJ7P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 Jun 2007 05:59:15 -0400
-Message-Id: <20070618095913.872115919@sgi.com>
+Message-Id: <20070618095914.622685354@sgi.com>
 References: <20070618095838.238615343@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 18 Jun 2007 02:58:40 -0700
+Date: Mon, 18 Jun 2007 02:58:43 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: suresh.b.siddha@intel.com
-Subject: [patch 02/26] Slab allocators: Consolidate code for krealloc in mm/util.c
-Content-Disposition: inline; filename=slab_allocators_consolidate_krealloc
+Subject: [patch 05/26] Slab allocators: Cleanup zeroing allocations
+Content-Disposition: inline; filename=slab_remove_shortcut
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The size of a kmalloc object is readily available via ksize().
-ksize is provided by all allocators and thus we canb implement
-krealloc in a generic way.
-
-Implement krealloc in mm/util.c and drop slab specific implementations
-of krealloc.
+It becomes now easy to support the zeroing allocs with generic inline functions
+in slab.h. Provide inline definitions to allow the continued use of
+kzalloc, kmem_cache_zalloc etc but remove other definitions of zeroing functions
+from the slab allocators and util.c.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- mm/slab.c |   46 ----------------------------------------------
- mm/slob.c |   33 ---------------------------------
- mm/slub.c |   37 -------------------------------------
- mm/util.c |   34 ++++++++++++++++++++++++++++++++++
- 4 files changed, 34 insertions(+), 116 deletions(-)
+ include/linux/slab.h     |   36 ++++++++++++++++++++++++------------
+ include/linux/slab_def.h |   30 ------------------------------
+ include/linux/slub_def.h |   13 -------------
+ mm/slab.c                |   17 -----------------
+ mm/slob.c                |   10 ----------
+ mm/slub.c                |   11 -----------
+ mm/util.c                |   14 --------------
+ 7 files changed, 24 insertions(+), 107 deletions(-)
 
-Index: linux-2.6.22-rc4-mm2/mm/slab.c
+Index: linux-2.6.22-rc4-mm2/include/linux/slab.h
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/slab.c	2007-06-16 18:58:02.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/slab.c	2007-06-16 18:58:10.000000000 -0700
-@@ -3715,52 +3715,6 @@ EXPORT_SYMBOL(__kmalloc);
+--- linux-2.6.22-rc4-mm2.orig/include/linux/slab.h	2007-06-17 18:08:09.000000000 -0700
++++ linux-2.6.22-rc4-mm2/include/linux/slab.h	2007-06-17 18:11:59.000000000 -0700
+@@ -58,7 +58,6 @@ struct kmem_cache *kmem_cache_create(con
+ void kmem_cache_destroy(struct kmem_cache *);
+ int kmem_cache_shrink(struct kmem_cache *);
+ void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+-void *kmem_cache_zalloc(struct kmem_cache *, gfp_t);
+ void kmem_cache_free(struct kmem_cache *, void *);
+ unsigned int kmem_cache_size(struct kmem_cache *);
+ const char *kmem_cache_name(struct kmem_cache *);
+@@ -105,7 +104,6 @@ static inline void *kmem_cache_alloc_nod
+  * Common kmalloc functions provided by all allocators
+  */
+ void *__kmalloc(size_t, gfp_t);
+-void *__kzalloc(size_t, gfp_t);
+ void * __must_check krealloc(const void *, size_t, gfp_t);
+ void kfree(const void *);
+ size_t ksize(const void *);
+@@ -120,7 +118,7 @@ static inline void *kcalloc(size_t n, si
+ {
+ 	if (n != 0 && size > ULONG_MAX / n)
+ 		return NULL;
+-	return __kzalloc(n * size, flags);
++	return __kmalloc(n * size, flags | __GFP_ZERO);
+ }
+ 
+ /*
+@@ -192,15 +190,6 @@ static inline void *kmalloc(size_t size,
+ 	return __kmalloc(size, flags);
+ }
+ 
+-/**
+- * kzalloc - allocate memory. The memory is set to zero.
+- * @size: how many bytes of memory are required.
+- * @flags: the type of memory to allocate (see kmalloc).
+- */
+-static inline void *kzalloc(size_t size, gfp_t flags)
+-{
+-	return __kzalloc(size, flags);
+-}
  #endif
  
- /**
-- * krealloc - reallocate memory. The contents will remain unchanged.
-- * @p: object to reallocate memory for.
-- * @new_size: how many bytes of memory are required.
-- * @flags: the type of memory to allocate.
-- *
-- * The contents of the object pointed to are preserved up to the
-- * lesser of the new and old sizes.  If @p is %NULL, krealloc()
-- * behaves exactly like kmalloc().  If @size is 0 and @p is not a
-- * %NULL pointer, the object pointed to is freed.
-- */
--void *krealloc(const void *p, size_t new_size, gfp_t flags)
+ #ifndef CONFIG_NUMA
+@@ -258,6 +247,29 @@ extern void *__kmalloc_node_track_caller
+ 
+ #endif /* DEBUG_SLAB */
+ 
++/*
++ * Shortcuts
++ */
++static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
++{
++	return kmem_cache_alloc(k, flags | __GFP_ZERO);
++}
++
++static inline void *__kzalloc(int size, gfp_t flags)
++{
++	return kmalloc(size, flags | __GFP_ZERO);
++}
++
++/**
++ * kzalloc - allocate memory. The memory is set to zero.
++ * @size: how many bytes of memory are required.
++ * @flags: the type of memory to allocate (see kmalloc).
++ */
++static inline void *kzalloc(size_t size, gfp_t flags)
++{
++	return kmalloc(size, flags | __GFP_ZERO);
++}
++
+ #endif	/* __KERNEL__ */
+ #endif	/* _LINUX_SLAB_H */
+ 
+Index: linux-2.6.22-rc4-mm2/include/linux/slab_def.h
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/include/linux/slab_def.h	2007-06-17 18:08:09.000000000 -0700
++++ linux-2.6.22-rc4-mm2/include/linux/slab_def.h	2007-06-17 18:11:59.000000000 -0700
+@@ -55,36 +55,6 @@ found:
+ 	return __kmalloc(size, flags);
+ }
+ 
+-static inline void *kzalloc(size_t size, gfp_t flags)
 -{
--	struct kmem_cache *cache, *new_cache;
--	void *ret;
+-	if (__builtin_constant_p(size)) {
+-		int i = 0;
 -
--	if (unlikely(!p))
--		return kmalloc_track_caller(new_size, flags);
+-		if (!size)
+-			return ZERO_SIZE_PTR;
 -
--	if (unlikely(!new_size)) {
--		kfree(p);
--		return NULL;
+-#define CACHE(x) \
+-		if (size <= x) \
+-			goto found; \
+-		else \
+-			i++;
+-#include "kmalloc_sizes.h"
+-#undef CACHE
+-		{
+-			extern void __you_cannot_kzalloc_that_much(void);
+-			__you_cannot_kzalloc_that_much();
+-		}
+-found:
+-#ifdef CONFIG_ZONE_DMA
+-		if (flags & GFP_DMA)
+-			return kmem_cache_zalloc(malloc_sizes[i].cs_dmacachep,
+-						flags);
+-#endif
+-		return kmem_cache_zalloc(malloc_sizes[i].cs_cachep, flags);
 -	}
+-	return __kzalloc(size, flags);
+-}
 -
--	cache = virt_to_cache(p);
--	new_cache = __find_general_cachep(new_size, flags);
+ #ifdef CONFIG_NUMA
+ extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
+ 
+Index: linux-2.6.22-rc4-mm2/include/linux/slub_def.h
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/include/linux/slub_def.h	2007-06-17 18:08:09.000000000 -0700
++++ linux-2.6.22-rc4-mm2/include/linux/slub_def.h	2007-06-17 18:11:59.000000000 -0700
+@@ -173,19 +173,6 @@ static inline void *kmalloc(size_t size,
+ 		return __kmalloc(size, flags);
+ }
+ 
+-static inline void *kzalloc(size_t size, gfp_t flags)
+-{
+-	if (__builtin_constant_p(size) && !(flags & SLUB_DMA)) {
+-		struct kmem_cache *s = kmalloc_slab(size);
 -
--	/*
-- 	 * If new size fits in the current cache, bail out.
-- 	 */
--	if (likely(cache == new_cache))
--		return (void *)p;
+-		if (!s)
+-			return ZERO_SIZE_PTR;
 -
--	/*
-- 	 * We are on the slow-path here so do not use __cache_alloc
-- 	 * because it bloats kernel text.
-- 	 */
--	ret = kmalloc_track_caller(new_size, flags);
--	if (ret) {
--		memcpy(ret, p, min(new_size, ksize(p)));
--		kfree(p);
--	}
+-		return kmem_cache_zalloc(s, flags);
+-	} else
+-		return __kzalloc(size, flags);
+-}
+-
+ #ifdef CONFIG_NUMA
+ extern void *__kmalloc_node(size_t size, gfp_t flags, int node);
+ 
+Index: linux-2.6.22-rc4-mm2/mm/slab.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/mm/slab.c	2007-06-17 18:11:55.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slab.c	2007-06-17 18:11:59.000000000 -0700
+@@ -3578,23 +3578,6 @@ void *kmem_cache_alloc(struct kmem_cache
+ EXPORT_SYMBOL(kmem_cache_alloc);
+ 
+ /**
+- * kmem_cache_zalloc - Allocate an object. The memory is set to zero.
+- * @cache: The cache to allocate from.
+- * @flags: See kmalloc().
+- *
+- * Allocate an object from this cache and set the allocated memory to zero.
+- * The flags are only relevant if the cache has no available objects.
+- */
+-void *kmem_cache_zalloc(struct kmem_cache *cache, gfp_t flags)
+-{
+-	void *ret = __cache_alloc(cache, flags, __builtin_return_address(0));
+-	if (ret)
+-		memset(ret, 0, obj_size(cache));
 -	return ret;
 -}
--EXPORT_SYMBOL(krealloc);
+-EXPORT_SYMBOL(kmem_cache_zalloc);
 -
 -/**
-  * kmem_cache_free - Deallocate an object
-  * @cachep: The cache the allocation was from.
-  * @objp: The previously allocated object.
+  * kmem_ptr_validate - check if an untrusted pointer might
+  *	be a slab entry.
+  * @cachep: the cache we're checking against
 Index: linux-2.6.22-rc4-mm2/mm/slob.c
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/slob.c	2007-06-16 18:58:02.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/slob.c	2007-06-16 18:58:10.000000000 -0700
-@@ -407,39 +407,6 @@ void *__kmalloc(size_t size, gfp_t gfp)
+--- linux-2.6.22-rc4-mm2.orig/mm/slob.c	2007-06-17 18:10:47.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slob.c	2007-06-17 18:11:59.000000000 -0700
+@@ -505,16 +505,6 @@ void *kmem_cache_alloc(struct kmem_cache
  }
- EXPORT_SYMBOL(__kmalloc);
+ EXPORT_SYMBOL(kmem_cache_alloc);
  
--/**
-- * krealloc - reallocate memory. The contents will remain unchanged.
-- *
-- * @p: object to reallocate memory for.
-- * @new_size: how many bytes of memory are required.
-- * @flags: the type of memory to allocate.
-- *
-- * The contents of the object pointed to are preserved up to the
-- * lesser of the new and old sizes.  If @p is %NULL, krealloc()
-- * behaves exactly like kmalloc().  If @size is 0 and @p is not a
-- * %NULL pointer, the object pointed to is freed.
-- */
--void *krealloc(const void *p, size_t new_size, gfp_t flags)
+-void *kmem_cache_zalloc(struct kmem_cache *c, gfp_t flags)
 -{
--	void *ret;
+-	void *ret = kmem_cache_alloc(c, flags);
+-	if (ret)
+-		memset(ret, 0, c->size);
 -
--	if (unlikely(!p))
--		return kmalloc_track_caller(new_size, flags);
--
--	if (unlikely(!new_size)) {
--		kfree(p);
--		return NULL;
--	}
--
--	ret = kmalloc_track_caller(new_size, flags);
--	if (ret) {
--		memcpy(ret, p, min(new_size, ksize(p)));
--		kfree(p);
--	}
 -	return ret;
 -}
--EXPORT_SYMBOL(krealloc);
+-EXPORT_SYMBOL(kmem_cache_zalloc);
 -
- void kfree(const void *block)
+ static void __kmem_cache_free(void *b, int size)
  {
- 	struct slob_page *sp;
+ 	if (size < PAGE_SIZE)
 Index: linux-2.6.22-rc4-mm2/mm/slub.c
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-16 18:58:02.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-16 18:58:10.000000000 -0700
-@@ -2476,43 +2476,6 @@ int kmem_cache_shrink(struct kmem_cache 
+--- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-17 18:10:47.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-17 18:11:59.000000000 -0700
+@@ -2664,17 +2664,6 @@ err:
  }
- EXPORT_SYMBOL(kmem_cache_shrink);
+ EXPORT_SYMBOL(kmem_cache_create);
  
--/**
-- * krealloc - reallocate memory. The contents will remain unchanged.
-- * @p: object to reallocate memory for.
-- * @new_size: how many bytes of memory are required.
-- * @flags: the type of memory to allocate.
-- *
-- * The contents of the object pointed to are preserved up to the
-- * lesser of the new and old sizes.  If @p is %NULL, krealloc()
-- * behaves exactly like kmalloc().  If @size is 0 and @p is not a
-- * %NULL pointer, the object pointed to is freed.
-- */
--void *krealloc(const void *p, size_t new_size, gfp_t flags)
+-void *kmem_cache_zalloc(struct kmem_cache *s, gfp_t flags)
 -{
--	void *ret;
--	size_t ks;
+-	void *x;
 -
--	if (unlikely(!p || p == ZERO_SIZE_PTR))
--		return kmalloc(new_size, flags);
--
--	if (unlikely(!new_size)) {
--		kfree(p);
--		return ZERO_SIZE_PTR;
--	}
--
--	ks = ksize(p);
--	if (ks >= new_size)
--		return (void *)p;
--
--	ret = kmalloc(new_size, flags);
--	if (ret) {
--		memcpy(ret, p, min(new_size, ks));
--		kfree(p);
--	}
--	return ret;
+-	x = slab_alloc(s, flags, -1, __builtin_return_address(0), 0);
+-	if (x)
+-		memset(x, 0, s->objsize);
+-	return x;
 -}
--EXPORT_SYMBOL(krealloc);
+-EXPORT_SYMBOL(kmem_cache_zalloc);
 -
- /********************************************************************
-  *			Basic setup of slabs
-  *******************************************************************/
+ #ifdef CONFIG_SMP
+ /*
+  * Use the cpu notifier to insure that the cpu slabs are flushed when
 Index: linux-2.6.22-rc4-mm2/mm/util.c
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/util.c	2007-06-16 18:58:02.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/util.c	2007-06-16 19:01:26.000000000 -0700
-@@ -81,6 +81,40 @@ void *kmemdup(const void *src, size_t le
- }
- EXPORT_SYMBOL(kmemdup);
+--- linux-2.6.22-rc4-mm2.orig/mm/util.c	2007-06-17 18:08:09.000000000 -0700
++++ linux-2.6.22-rc4-mm2/mm/util.c	2007-06-17 18:11:59.000000000 -0700
+@@ -5,20 +5,6 @@
+ #include <asm/uaccess.h>
  
-+/**
-+ * krealloc - reallocate memory. The contents will remain unchanged.
-+ * @p: object to reallocate memory for.
-+ * @new_size: how many bytes of memory are required.
-+ * @flags: the type of memory to allocate.
-+ *
-+ * The contents of the object pointed to are preserved up to the
-+ * lesser of the new and old sizes.  If @p is %NULL, krealloc()
-+ * behaves exactly like kmalloc().  If @size is 0 and @p is not a
-+ * %NULL pointer, the object pointed to is freed.
-+ */
-+void *krealloc(const void *p, size_t new_size, gfp_t flags)
-+{
-+	void *ret;
-+	size_t ks;
-+
-+	if (unlikely(!new_size)) {
-+		kfree(p);
-+		return NULL;
-+	}
-+
-+	ks = ksize(p);
-+	if (ks >= new_size)
-+		return (void *)p;
-+
-+	ret = kmalloc_track_caller(new_size, flags);
-+	if (ret) {
-+		memcpy(ret, p, min(new_size, ks));
-+		kfree(p);
-+	}
-+	return ret;
-+}
-+EXPORT_SYMBOL(krealloc);
-+
- /*
-  * strndup_user - duplicate an existing string from user space
-  * @s: The string to duplicate
+ /**
+- * __kzalloc - allocate memory. The memory is set to zero.
+- * @size: how many bytes of memory are required.
+- * @flags: the type of memory to allocate.
+- */
+-void *__kzalloc(size_t size, gfp_t flags)
+-{
+-	void *ret = kmalloc_track_caller(size, flags);
+-	if (ret)
+-		memset(ret, 0, size);
+-	return ret;
+-}
+-EXPORT_SYMBOL(__kzalloc);
+-
+-/**
+  * kstrdup - allocate space for and copy an existing string
+  * @s: the string to duplicate
+  * @gfp: the GFP mask used in the kmalloc() call when allocating memory
 
 -- 
