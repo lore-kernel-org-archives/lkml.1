@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbXFRAH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbXFRAK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760693AbXFRAH7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 20:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbXFRAHw
+	id S1759503AbXFRAK5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 20:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXFRAKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 20:07:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:40768 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbXFRAHv (ORCPT
+	Sun, 17 Jun 2007 20:10:50 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:65292 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751377AbXFRAKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 20:07:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=PetjM3u+HQzvEcedXQKJ56d2Ezc1lI9WHzbWQsxflqekGhDN3sPDAF33nfZuOuxj5xNviDpwa3B8F4wC098Y4IDBE/D7lLuSR5mgfbXEB4ItlKRpoVGctVWjU2ZVTPhnkjxX/LpVUNx7BqBXPD6X1AmljAlgWbRYFnj5hLMAsyo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: How to improve the quality of the kernel?
-Date: Mon, 18 Jun 2007 02:22:55 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Oleg Verych <olecom@flower.upol.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org> <200706172349.08813.bzolnier@gmail.com> <4675C083.6080409@s5r6.in-berlin.de>
-In-Reply-To: <4675C083.6080409@s5r6.in-berlin.de>
+	Sun, 17 Jun 2007 20:10:50 -0400
+Date: Mon, 18 Jun 2007 02:10:49 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Paul Mundt <lethal@linux-sh.org>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org, eric@anholt.net, zhenyu.z.wang@intel.com,
+       y-goto@jp.fujitsu.com, torvalds@linux-foundation.org
+Subject: Re: 2.6.22-rc5 regression
+Message-ID: <20070618001049.GB1375@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Paul Mundt <lethal@linux-sh.org>, Dave Jones <davej@redhat.com>,
+	linux-kernel@vger.kernel.org, eric@anholt.net,
+	zhenyu.z.wang@intel.com, y-goto@jp.fujitsu.com,
+	torvalds@linux-foundation.org
+References: <20070617182254.GA17595@alinoe.com> <20070617195805.GA6125@alinoe.com> <20070617214905.GA6207@alinoe.com> <20070617231858.GB27460@linux-sh.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706180222.55282.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070617231858.GB27460@linux-sh.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 June 2007, Stefan Richter wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > despite the fact that audit takes
-> > more time/knowledge then making the patch you will end up with zero credit
-> > if patch turns out to be (luckily) correct.  Even if you find out issues
-> > and report them you are still on mercy of author for being credited
+On Mon, Jun 18, 2007 at 08:18:58AM +0900, Paul Mundt wrote:
+> The obvious question of course is whether actually reverting this
+> changeset fixes your problem? I would be very surprised if it did.
+
+Having a git commit Id, like d09c6b809432668371b5de9102f4f9aa6a7c79cc,
+how can I create a .diff file from that?
+
+> If it does make a difference, please provide the values for
+> CONFIG_HOTPLUG, CONFIG_MEMORY_HOTPLUG and CONFIG_HOTPLUG_CPU from your
+> .config.
 > 
-> If we introduce a "Reviewed-by" with reasonably clear semantics
-> (different from Signed-off-by; e.g. the reviewer is not a middle-man in
-> patch forwarding; the reviewer might have had remaining reservations...
-> very similar to but not entirely the same as "Acked-by" as currently
-> defined in -mm) --- and also make the already somewhat established
-> "Tested-by" more official, --- then the maintainers could start to make
-> it a habit to add Reviewed-by and Tested-by.
+> I would wager that you only have CONFIG_HOTPLUG=y, in which case, the
+> only difference over previous kernels will be that zone_batchlist() is no
+> longer flagged as __init, and so it won't be freed -- this was the reason
+> for the "special section" comment in the changeset, as currently it's
+> left hanging around for folks that aren't doing cpu/memory hotplug, since
+> __devinit was the closest that both cpu and memory hotplug had in common.
 > 
-> Plus, reviewers and testers could formally reply with Reviewed-by and
-> Tested-by lines to patch postings and even could explicitly ask the
-> maintainer to add these lines.
+> I can't imagine that this would impact you at all, though.
 
-Sounds great.
+I think git bisect made an error... as you can see for yourself
+with the list of tested git Id's that I gave - it didn't test
+both sides of that patch imho. If you tell me how to extract a patch
+then I'll manually unapply it to some failing kernel revisions and
+see if that makes a difference.
 
-> > so from personal POV you are much better to wait and fix issues after they
-> > hit mainline kernel.  You have to choose between being a good citizen and
-> > preventing kernel regressions or being bastard and getting the credit. ;)
-> > 
-> > If you happen to be maintainer of the affected code the choice is similar
-> > with more pros for letting the patch in especially if you can't afford the
-> > time to do audit (and by being maintainer you are guaranteed to be heavily
-> > time constrained).
-> 
-> I don't think that a maintainer (who signs off on patches after all) can
-> easily afford to take the "bastard approach".  I may be naive.
-
-Well, I'm not doing it myself but I find it tempting... ;)
-
-In case of being maintainer "bastard approach" is more about not discouraging
-developers by holding patches for too long than about getting credit.
-
-Bart
+-- 
+Carlo Wood <carlo@alinoe.com>
