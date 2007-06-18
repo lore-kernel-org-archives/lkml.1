@@ -1,63 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762800AbXFRL5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763024AbXFRL6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762800AbXFRL5E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 07:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761418AbXFRL4w
+	id S1763024AbXFRL6n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 07:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761679AbXFRL6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 07:56:52 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53477 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761394AbXFRL4v (ORCPT
+	Mon, 18 Jun 2007 07:58:36 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:48822 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761266AbXFRL6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 07:56:51 -0400
-Date: Mon, 18 Jun 2007 13:01:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Thomas Graf <tgraf@suug.ch>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, davem@davemloft.net,
-       akpm@linux-foundation.org, viro@ftp.linux.org.uk,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix race in AF_UNIX
-Message-ID: <20070618130152.50215201@the-village.bc.nu>
-In-Reply-To: <20070618104340.GZ521@postel.suug.ch>
-References: <E1I0CTH-0006k3-00@dorka.pomaz.szeredi.hu>
-	<20070618.021813.105401188.davem@davemloft.net>
-	<E1I0DYW-0006uZ-00@dorka.pomaz.szeredi.hu>
-	<20070618.023520.102546505.davem@davemloft.net>
-	<E1I0DmJ-0006yg-00@dorka.pomaz.szeredi.hu>
-	<20070618103241.GX521@postel.suug.ch>
-	<E1I0EdX-0007Ia-00@dorka.pomaz.szeredi.hu>
-	<20070618104340.GZ521@postel.suug.ch>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jun 2007 07:58:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=AYmATDgzIjV7shOnx7bybKMXAoW0V4rxrSSfPrcU3rBAY7tBVHiQcUF5gDbi+orBWYprtCzhppcSdKuuWLsj9Tn5V0yhPAHjinsAVC0zLaMuGy841tM7qk4N7769IH6pyWzOd+y/3ioDBvk3dklsKSuxWks8Fe4S1vesxhKxdBc=
+Message-ID: <46767346.2040108@googlemail.com>
+Date: Mon, 18 Jun 2007 13:57:58 +0200
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: clameter@sgi.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       suresh.b.siddha@intel.com
+Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
+References: <20070618095838.238615343@sgi.com>
+In-Reply-To: <20070618095838.238615343@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007 12:43:40 +0200
-Thomas Graf <tgraf@suug.ch> wrote:
+Hi,
 
-> * Miklos Szeredi <miklos@szeredi.hu> 2007-06-18 12:39
-> > You are wrong.  Look in unix_release_sock():
-> > 
-> > 	if (atomic_read(&unix_tot_inflight))
-> > 		unix_gc();		/* Garbage collect fds */
-> > 
-> > 
-> > unix_tot_inflight is the number of AF_UNIX sockets currently being
-> > transferred over some AF_UNIX sockets.
-> > 
-> > That means that just sending (non-unix socket) fds over unix sockets
-> > will never invoke the gc.
+clameter@sgi.com pisze:
+> These contain the following groups of patches:
 > 
-> That's what I meant, I'm sorry, I should have written unix socket
-> file descriptor to not leave any room for misinterpretation.
+> 1. Slab allocator code consolidation and fixing of inconsistencies
+> 
+> This makes ZERO_SIZE_PTR generic so that it works in all
+> slab allocators.
+> 
+> It adds __GFP_ZERO support to all slab allocators and
+> cleans up the zeroing in the slabs and provides modifications
+> to remove explicit zeroing following kmalloc_node and
+> kmem_cache_alloc_node calls.
+> 
+> 2. SLUB improvements
+> 
+> Inline some small functions to reduce code size. Some more memory
+> optimizations using CONFIG_SLUB_DEBUG. Changes to handling of the
+> slub_lock and an optimization of runtime determination of kmalloc slabs
+> (replaces ilog2 patch that failed with gcc 3.3 on powerpc).
+> 
+> 3. Slab defragmentation
+> 
+> This is V3 of the patchset with the one fix for the locking problem that
+> showed up during testing.
+> 
+> 4. Performance optimizations
+> 
+> These patches have a long history since the early drafts of SLUB. The
+> problem with these patches is that they require the touching of additional
+> cachelines (only for read) and SLUB was designed for minimal cacheline
+> touching. In doing so we may be able to remove cacheline bouncing in
+> particular for remote alloc/ free situations where I have had reports of
+> issues that I was not able to confirm for lack of specificity. The tradeoffs
+> here are not clear. Certainly the larger cacheline footprint will hurt the
+> casual slab user somewhat but it will benefit processes that perform these
+> local/remote alloc/free operations.
+> 
+> I'd appreciate if someone could evaluate these.
+> 
+> The complete patchset against 2.6.22-rc4-mm2 is available at
+> 
+> http://ftp.kernel.org/pub/linux/kernel/people/christoph/slub/2.6.22-rc4-mm2
+> 
+> Tested on
+> 
+> x86_64 SMP
+> x86_64 NUMA emulation
+> IA64 emulator
+> Altix 64p/128G NUMA system.
+> Altix 8p/6G asymmetric NUMA system.
+> 
+> 
 
-You can bound the worst case on this and I think stay within the specs
-(as the specs don't say a lot about it). One way would be to make
-unix_gc() kick off a thread/tasklet and if the last unix_gc was within 5
-seconds then use a timer to defer it - that prevents any user driven
-"lets cause a ton of gc" cases.
+Testcase:
+
+#! /bin/sh
+
+for i in `find /sys/ -type f`
+do
+    echo "wy¶wietlam $i"
+    sudo cat $i > /dev/null
+#    sleep 1s
+done
+
+Result:
+
+[  212.247759] WARNING: at lib/vsprintf.c:280 vsnprintf()
+[  212.253263]  [<c04052ad>] dump_trace+0x63/0x1eb
+[  212.259042]  [<c040544f>] show_trace_log_lvl+0x1a/0x2f
+[  212.266672]  [<c040608d>] show_trace+0x12/0x14
+[  212.271622]  [<c04060a5>] dump_stack+0x16/0x18
+[  212.276663]  [<c050d512>] vsnprintf+0x6b/0x48c
+[  212.281325]  [<c050d9f0>] scnprintf+0x20/0x2d
+[  212.286707]  [<c0508dbc>] bitmap_scnlistprintf+0xa8/0xec
+[  212.292508]  [<c0480d40>] list_locations+0x24c/0x2a2
+[  212.298241]  [<c0480dde>] alloc_calls_show+0x1f/0x26
+[  212.303459]  [<c047e72e>] slab_attr_show+0x1c/0x20
+[  212.309469]  [<c04c1cf9>] sysfs_read_file+0x94/0x105
+[  212.315519]  [<c0485933>] vfs_read+0xcf/0x158
+[  212.320215]  [<c0485d99>] sys_read+0x3d/0x72
+[  212.327539]  [<c040420c>] syscall_call+0x7/0xb
+[  212.332203]  [<b7f74410>] 0xb7f74410
+[  212.336229]  =======================
+
+Unfortunately, I don't know which file was cat'ed
+
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm2-slub/slub-config
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc4-mm2-slub/slub-dmesg
+
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
