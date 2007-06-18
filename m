@@ -1,94 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbXFRQqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759173AbXFRQwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760853AbXFRQqV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 12:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbXFRQqN
+	id S1759173AbXFRQwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 12:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbXFRQwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 12:46:13 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48449 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754363AbXFRQqM (ORCPT
+	Mon, 18 Jun 2007 12:52:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:42382 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbXFRQwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 12:46:12 -0400
-Date: Mon, 18 Jun 2007 09:46:11 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       suresh.b.siddha@intel.com
-Subject: Re: [patch 00/26] Current slab allocator / SLUB patch queue
-In-Reply-To: <46767346.2040108@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0706180936280.4751@schroedinger.engr.sgi.com>
-References: <20070618095838.238615343@sgi.com> <46767346.2040108@googlemail.com>
+	Mon, 18 Jun 2007 12:52:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QsnZ9+fmHEKIP1bQORdw3hTYXCIB/UFy4Yg9mbVXavtWAOjdqvicou5X1aBXmD6Az49MWWmt/vgpJNpGSjf9s2MOwDAo33Ip2jvgNPn9eWj3Mjhxh+J7AM7+ljWDkxYPFdsHceFLDBlSctHuAxdYEGPcxuzq1UUku9hAckvreRA=
+Message-ID: <29495f1d0706180951r2b7d0fe1gdcc0158011baf637@mail.gmail.com>
+Date: Mon, 18 Jun 2007 09:51:59 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Jason Baron" <jbaron@redhat.com>
+Subject: Re: [PATCH] madvise_need_mmap_write() usage
+Cc: "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au,
+       "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0706181132020.23021@dhcp83-20.boston.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0706151118150.11498@dhcp83-20.boston.redhat.com>
+	 <20070616194130.GA6681@infradead.org>
+	 <Pine.LNX.4.64.0706181132020.23021@dhcp83-20.boston.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007, Michal Piotrowski wrote:
+On 6/18/07, Jason Baron <jbaron@redhat.com> wrote:
+>
+> On Sat, 16 Jun 2007, Christoph Hellwig wrote:
+>
+> > On Fri, Jun 15, 2007 at 11:20:31AM -0400, Jason Baron wrote:
+> > > hi,
+> > >
+> > > i was just looking at the new madvise_need_mmap_write() call...can we
+> > > avoid an extra case statement and function call as follows?
+> >
+> > Sounds like a good idea, but please move the assignment out of the
+> > conditional.
+> >
+>
+> ok, here's an updated version:
 
-> Result:
-> 
-> [  212.247759] WARNING: at lib/vsprintf.c:280 vsnprintf()
-> [  212.253263]  [<c04052ad>] dump_trace+0x63/0x1eb
-> [  212.259042]  [<c040544f>] show_trace_log_lvl+0x1a/0x2f
-> [  212.266672]  [<c040608d>] show_trace+0x12/0x14
-> [  212.271622]  [<c04060a5>] dump_stack+0x16/0x18
-> [  212.276663]  [<c050d512>] vsnprintf+0x6b/0x48c
-> [  212.281325]  [<c050d9f0>] scnprintf+0x20/0x2d
-> [  212.286707]  [<c0508dbc>] bitmap_scnlistprintf+0xa8/0xec
-> [  212.292508]  [<c0480d40>] list_locations+0x24c/0x2a2
-> [  212.298241]  [<c0480dde>] alloc_calls_show+0x1f/0x26
-> [  212.303459]  [<c047e72e>] slab_attr_show+0x1c/0x20
-> [  212.309469]  [<c04c1cf9>] sysfs_read_file+0x94/0x105
-> [  212.315519]  [<c0485933>] vfs_read+0xcf/0x158
-> [  212.320215]  [<c0485d99>] sys_read+0x3d/0x72
-> [  212.327539]  [<c040420c>] syscall_call+0x7/0xb
-> [  212.332203]  [<b7f74410>] 0xb7f74410
-> [  212.336229]  =======================
-> 
-> Unfortunately, I don't know which file was cat'ed
+You should always append the full patch, both the diff and the
+rationale, I think. Even though it's quoted above, might make less
+work for Andrew to pull in.
 
-The dump shows that it was alloc_calls. But the issue is not related to 
-this patchset.
-
-Looks like we overflowed the buffer available for /sys output. The calls 
-in list_location to format cpulist and node lists attempt to allow very
-long lists by trying to calculate how many bytes are remaining in the 
-page. If we are beyond the space left over by them then we may pass a
-negative size to the scn_printf functions.
-
-So we need to check first if there are enough bytes remaining before
-doing the calculation of how many remaining bytes can be used to
-format these lists.
-
-Does this patch fix the issue?
-
-Index: linux-2.6.22-rc4-mm2/mm/slub.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-18 09:37:41.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-18 09:44:38.000000000 -0700
-@@ -3649,13 +3649,15 @@ static int list_locations(struct kmem_ca
- 			n += sprintf(buf + n, " pid=%ld",
- 				l->min_pid);
- 
--		if (num_online_cpus() > 1 && !cpus_empty(l->cpus)) {
-+		if (num_online_cpus() > 1 && !cpus_empty(l->cpus) &&
-+				n < PAGE_SIZE - n - 57) {
- 			n += sprintf(buf + n, " cpus=");
- 			n += cpulist_scnprintf(buf + n, PAGE_SIZE - n - 50,
- 					l->cpus);
- 		}
- 
--		if (num_online_nodes() > 1 && !nodes_empty(l->nodes)) {
-+		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
-+				n < PAGE_SIZE - n - 57) {
- 			n += sprintf(buf + n, " nodes=");
- 			n += nodelist_scnprintf(buf + n, PAGE_SIZE - n - 50,
- 					l->nodes);
-
-
-
-
-
+Thanks,
+Nish
