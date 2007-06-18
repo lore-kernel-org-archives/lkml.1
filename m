@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759660AbXFRIVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760126AbXFRIWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759660AbXFRIVU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 04:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbXFRIVL
+	id S1760126AbXFRIWm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 04:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXFRIWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 04:21:11 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:53633 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754675AbXFRIVJ (ORCPT
+	Mon, 18 Jun 2007 04:22:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53371 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755161AbXFRIWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 04:21:09 -0400
-To: davem@davemloft.net
-CC: viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20070618.005711.21897961.davem@davemloft.net> (message from
-	David Miller on Mon, 18 Jun 2007 00:57:11 -0700 (PDT))
-Subject: Re: [PATCH] fix race in AF_UNIX
-References: <20070607.184731.10907840.davem@davemloft.net>
-	<E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
-	<E1I0BzQ-0006gZ-00@dorka.pomaz.szeredi.hu> <20070618.005711.21897961.davem@davemloft.net>
-Message-Id: <E1I0CTH-0006k3-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 18 Jun 2007 10:20:23 +0200
+	Mon, 18 Jun 2007 04:22:34 -0400
+Date: Mon, 18 Jun 2007 01:20:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>, Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, cebbert@redhat.com, chris@atlee.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       torvalds@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-Id: <20070618012055.81a7c837.akpm@linux-foundation.org>
+In-Reply-To: <20070618081204.GA11153@elte.hu>
+References: <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu>
+	<20070524144447.GA25068@elte.hu>
+	<E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu>
+	<20070524210153.GB19672@elte.hu>
+	<E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu>
+	<E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu>
+	<20070616103707.GA28096@elte.hu>
+	<E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu>
+	<20070618064343.GA31113@elte.hu>
+	<E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu>
+	<20070618081204.GA11153@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Miklos Szeredi <miklos@szeredi.hu>
-> Date: Mon, 18 Jun 2007 09:49:32 +0200
+On Mon, 18 Jun 2007 10:12:04 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+
+> ---------------------------------------------------->
+> Subject: [patch] x86: fix spin-loop starvation bug
+> From: Ingo Molnar <mingo@elte.hu>
 > 
-> > Ping Dave,
-> > 
-> > Since there doesn't seem to be any new ideas forthcoming, can we
-> > please decide on either one of my two sumbitted patches?
+> Miklos Szeredi reported very long pauses (several seconds, sometimes 
+> more) on his T60 (with a Core2Duo) which he managed to track down to 
+> wait_task_inactive()'s open-coded busy-loop. He observed that an 
+> interrupt on one core tries to acquire the runqueue-lock but does not 
+> succeed in doing so for a very long time - while wait_task_inactive() on 
+> the other core loops waiting for the first core to deschedule a task 
+> (which it wont do while spinning in an interrupt handler).
 > 
-> You just need to be patient, we can't just put a bad patch
-> in because a better one has not been suggested yet :-)
+> The problem is: both the spin_lock() code and the wait_task_inactive() 
+> loop uses cpu_relax()/rep_nop(), so in theory the CPU should have 
+> guaranteed MESI-fairness to the two cores - but that didnt happen: one 
+> of the cores was able to monopolize the cacheline that holds the 
+> runqueue lock, for extended periods of time.
+> 
+> This patch changes the spin-loop to assert an atomic op after every REP 
+> NOP instance - this will cause the CPU to express its "MESI interest" in 
+> that cacheline after every REP NOP.
 
-And is anyone working on a better patch?
-
-Those patches aren't "bad" in the correctness sense.  So IMO any one
-of them is better, than having that bug in there.
-
-Miklos
+Kiran, if you're still able to reproduce that zone->lru_lock starvation problem,
+this would be a good one to try...
