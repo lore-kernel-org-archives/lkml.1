@@ -1,45 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764134AbXFRUWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbXFRUW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764134AbXFRUWI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760773AbXFRUVz
+	id S932503AbXFRUW2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764213AbXFRUWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:21:55 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35374 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754263AbXFRUVy (ORCPT
+	Mon, 18 Jun 2007 16:22:11 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37251 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764101AbXFRUWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:21:54 -0400
-Date: Mon, 18 Jun 2007 21:27:04 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linas@austin.ibm.com (Linas Vepstas)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
-Message-ID: <20070618212704.394912b8@the-village.bc.nu>
-In-Reply-To: <20070618175713.GD5836@austin.ibm.com>
-References: <20070618175713.GD5836@austin.ibm.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Jun 2007 16:22:09 -0400
+Date: Mon, 18 Jun 2007 13:22:08 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: linux-mm@kvack.org, wli@holomorphy.com, lee.schermerhorn@hp.com
+cc: linux-kernel@vger.kernel.org
+Subject: Some thoughts on memory policies
+Message-ID: <Pine.LNX.4.64.0706181257010.13154@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ide_dma_timeout_retry() in ide-io.c 
->   prints the "hdc: DMA Timeout error" then calls
->   HWIF(drive)->ide_dma_end(drive);
->     which returns, and then calls 
->   hwif->INB(IDE_STATUS_REG) which is needed as an argument to ide_error()
-> 
-> But this hangs! -- The INB never returns.
-> Now:  hwif->INB = ide_inb; in ide-iops.c
+I think we are getting into more and more of a mess with the existing 
+memory policies. The refcount issue with shmem is just one bad symptom of 
+it. Memory policies were intended to be process based and 
+taking them out of that context causes various issues.
 
-Yep and the I/O cycle never completes so the box hangs. This occurs if
-the drive blows up and never switches IORDY to indicate completion. The
-hpt will also do this sometimes if it gets addled by a confused drive,
-while an intel one often won't.
+I have thought for a long time that we need something to replace memory 
+policies especially since the requirements on memory policies go far 
+beyond just being process based. So some requirements and ideas about 
+memory policies.
 
-Alan
+1. Memory policies must be attachable to a variety of objects
+
+- Device drivers may need to control memory allocations in
+  devices either because their DMA engines can only reach a
+  subsection of the system or because memory transfer
+  performance is superior in certain nodes of the system.
+
+- Process. This is the classic usage scenario
+
+- File / Socket. One may have particular reasons to place
+  objects on a set of nodes because of how the threads of
+  an application are spread out in the system.
+
+- Cpuset / Container. Some simple support is there with
+  memory spreading today. That could be made more universal.
+
+- System policies. The system policy is currently not
+  modifiable. It may be useful to be able to set this.
+  Small NUMA systems may want to run with interleave by default 
+
+- Address range. For the virtual memory address range
+  this is included in todays functionality but one may also
+  want to control the physical address range to make sure
+  f.e. that memory is allocated in an area where a device
+  can reach it.
+
+- Memory policies need to be attachable to types of pages.
+  F.e. executable pages of a threaded application are best
+  spread (or replicated) whereas the stack and the data may
+  best be allocated in a node local way.
+  Useful categories that I can think of
+  Stack, Data, Filebacked pages, Anonymous Memory,
+  Shared memory, Page tables, Slabs, Mlocked pages and
+  huge pages.
+
+  Maybe a set of global policies would be useful for these
+  categories. Andy hacked subsystem memory policies into
+  shmem and it seems that we are now trying to do the same
+  for hugepages. Maybe we could get to a consistent scheme
+  here?
+
+2. Memory policies need to support additional constraints
+
+- Restriction to a set of nodes. That is what we have today.
+
+- Restriction to a container or cpuset. Maybe restriction
+  to a set of containers?
+
+- Strict vs no strict allocations. A strict allocation needs
+  to fail if the constraints cannot be met. A non strict
+  allocation can fall back.
+
+- Order of allocation. Higher order pages may require
+  different allocation constraints? This is like a
+  generalization of huge page policies.
+
+- Locality placement. These are node local, interleave etc.
+
+3. Additional flags
+
+- Automigrate flag so that memory touched by a process
+  is moved to a memory location that has best performance.
+
+- Page order flag that determines the preferred allocation
+  order. Maybe useful in connection with the large blocksize
+  patch to control anonymous memory orders.
+
+- Replicate flags so that memory is replicated.
+
+4. Policy combinations
+
+We need some way to combine policies in a systematic way. The current
+hieracy from System->cpuset->proces->memory range does not longer
+work if a process can use policies set up in shmem or huge pages.
+Some consistent scheme to combine memory policies would also need
+to be able to synthesize different policies. I.e. automigrate
+can be combined with node local or interleave and a cpuset constraint.
+
+5. Management tools
+
+If we make the policies more versatile then we need the proper
+management tools in user space to set and display these policies
+in such a way that they can be managed by the end user. The esoteric
+nature of memory policy semantics makes them difficult to comprehend.
+
+6. GFP_xx flags may actually be considered as a form of policy
+
+i.e. GFP_THISNODE is essentially a one node cpuset.
+
+GFP_DMA and GFP_DMA32 are physical address range constraints.
+
+GFP_HARDWALL is a strict vs. nonstrict distinction.
+
+
+7. Allocators must change
+
+Right now the policy is set by the process context which is bad because
+one cannot specify a memory policy for an allocation. It must be possible
+to pass a memory policy to the allocators and then get the memory 
+requested.
+
+
+I wish we could come up with some universal scheme that encompasses all
+of the functionality we want and that makes memory more manageable....
+
+
