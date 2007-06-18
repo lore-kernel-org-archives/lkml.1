@@ -1,154 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932311AbXFRVNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765785AbXFRVPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932311AbXFRVNR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 17:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762198AbXFRVNG
+	id S1765785AbXFRVPN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 17:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762492AbXFRVPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 17:13:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49290 "EHLO mx1.redhat.com"
+	Mon, 18 Jun 2007 17:15:01 -0400
+Received: from mga03.intel.com ([143.182.124.21]:16968 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760606AbXFRVNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 17:13:05 -0400
-To: "David Schwartz" <davids@webmaster.com>
-Cc: "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <MDEHLPKNGKAHNMBLJOLKCECMELAC.davids@webmaster.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Mon, 18 Jun 2007 18:12:57 -0300
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCECMELAC.davids@webmaster.com> (David Schwartz's message of "Mon\, 18 Jun 2007 13\:13\:51 -0700")
-Message-ID: <ory7ih9dba.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1760951AbXFRVPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 17:15:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,436,1175497200"; 
+   d="scan'208";a="240541001"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI userland access non-mmap APIs, kernel access to legacy space
+Date: Mon, 18 Jun 2007 14:14:24 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-pci@atrey.karlin.mff.cuni.cz,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
+       Ian Romanick <idr@us.ibm.com>, Jeff Garzik <jgarzik@pobox.com>,
+       Kyle McMartin <kyle@mcmartin.ca>
+References: <1182133004.26853.229.camel@localhost.localdomain>
+In-Reply-To: <1182133004.26853.229.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706181414.25647.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, "David Schwartz" <davids@webmaster.com> wrote:
+On Sunday, June 17, 2007 7:16:44 Benjamin Herrenschmidt wrote:
+> Hi folks !
+>
+> Before I start actually writing code, I want to do a quick brain dump
+> here to see if there are any objections.
+>
+> So a problem we have is that on non-x86, we expect to be able to
+> access PCI IO space via mmap'ing of sysfs based "resource" files.
+>
+> However, there are various PCI host bridges out there that don't make
+> that a practical solution. So far, I have two cases on ppc of bridges
+> that either use indirect access for the IO space or require specific
+> HW workarounds on accesses that involve spinlocks (to properly deal
+> with the non-posted aspect of IO transactions). In addition, Lennert
+> tells me that similar issues exist on ARM.
+>
+> Thus, I would like to introduce an additional read/write interface to
+> sysfs "resource" files (and then get Ian's libpciaccess use that when
+> mmap is unavailable).
+>
+> In fact, it's funny in a way becauase the "legacy" files interface is
+> already read/write based (exclusively even, mmap isn't supported) for
+> legacy IOs.
+>
+> I beleive that doing so is better than trying to extend /dev/port to
+> understand multiple domains, >64K IO space, etc... etc...., because
+> you don't have to understand all the remapping tricks that the
+> operating system might be doing behind the scene, just open the
+> resource file (or the legacy file of that bus for legacy accesses)
+> and read/write to it.
+>
+> Any objection ?
 
->> > Sure, and you use the hardware to stop me from modifying the
->> > Linux on your
->> > laptop.
+Sounds like a good idea.  Originally, the "legacy_io" file was 
+implemented this way because I knew of machines that couldn't properly 
+handle it as a mmappable interface.  But when I pinged people about the 
+resource files, I didn't hear anything, so they were just done with 
+mmap.
 
->> Do I?  How so?
+But adding read/write is fine with me.  In fact, having read/write hooks 
+for the memory backed resource files is also nice, since it makes 
+dealing with them on the command line a bit easier.
 
-> Any number of ways. For example, you probably don't connect the serial ports
-> to a device I have access to.
+> Also, while at it, I would like to introduce a pair of in-kernel
+> interfaces:
 
-But you're not the user of the software on my laptop.  I am.
+What's the other half of the pair?
 
-> I'm sorry, who is "the user"? Who exactly is supposed to be able to install
-> and run modified versions? How does the GPLv3 specify who is supposed to be
-> authorized to do this?
+> int pci_translate_legacy_resource(struct pci_bus *bus, struct
+> resource *res);
+>
+> Which takes a resource containing an absolute legacy range on that
+> bus (for example, an IO resource with the VGA port numbers, or a
+> memory resource with the VGA text mode aperture). That resource is
+> then "converted" for the given PCI bus. For x86, that function would
+> boil down to "return 0;".
+>
+> The reason is that on multiple domains machines, it's actually not
+> trivial to figure out where the legacy space of a given domain is
+> mapped, if available at all. The above function is a way to solve
+> that problem, allowing things like vgacon to work in multi-domains
+> setup without half of the current arch specific hacks in there.
+>
+> That would be also allowed to fail (some platforms can't give access
+> to legacy memory or legacy IOs at all).
+>
+> We could probably even implement the pci sysfs "legacy" interface on
+> top of these as well, thus making it generic to all platforms.
+>
+> Any objection there too ?
 
-Aah, good question.  Here's what the draft says about this:
+Yeah, sounds like a good additional abstraction for that interface.  
+Should make porting it to other arches easier (I talked with kyle about 
+this last week, so maybe this'll give him motivation to do it for 
+parisc).
 
-  Mere interaction with a user through a computer network, with no
-  transfer of a copy, is not conveying.
-
-The requirements as to "installation information" apply to conveying
-the program along with a user product.
-
-
-> How exactly does the GPLv3 specify who should and should not be able to
-> change the software on a particular physical machine?
-
-IANAL, but my understanding is that (paraphrasing), when you convey
-the software along with a user product, you must permit the recipient
-of the software to install and run modified versions of the software
-in the user product as well.
-
->> A condition that is
->> arguably already encoded in the "no further restrictions to the rights
->> granted" by the license" and to the requirement for complete
->> corresponding source code to accompany the binary.
-
-> Except that the "right" to upload the software on some particular piece of
-> hardware was *never* a right granted by the GPL, nor could it be.
-
-It is a restriction on adapting the software installed in the machine,
-and a restriction on running the software on that machine.  You can
-argue these are not granted by GPLv2.  You may be right.  But per the
-spirit of the GPL, they should be protected, and so GPLv3 fixes the
-legal conditions such that they are.
-
-> That *HAS* to be a right granted by whatever authority controls the
-> use of that hardware.
-
-What if the authority that controls the use of the hardware is
-forbidding from restricting this possibility by law?  By contractual
-provisions?  By a patent license?  By a copyright license?
-
-> It's totally obvious that who gets to install what software on a
-> given piece of hardware is determined by the person who creates/owns
-> that hardware and they have to authorize anyone else to change it.
-
-If who creates and who owns are different people, who gets to decide it?
-
-> It is not. The GPL was never about who was allowed to modify the
-> software on particular pieces of hardware. It was about the lack of
-> *legal* obstacles to your doing so.
-
-GPL has never been concerned *only* about *legal* obstacles.  In fact,
-the only obstacle GPLv1 addressed by name was not a legal, but a
-technical obstacle: denying access to source code.  Your distinction
-is flawed.
-
->> Both are means to disrespect users' freedoms.
-
-> The freedom to control what software runs on someone else's hardware?!
-
-Freedom to control the software you use on the hardware you use it.
-
-Someone else's hardware is just a distraction.  You're not a user of
-software on someone else's hardware.  You have no rights over that.
-
-> And I think they change it utterly by treating one piece of hardware
-> different from others for GPL purposes.
-
-No, it's tivoization that does this.
-
-Tivoizers say "hey, you can still modify and run the software, just
-not on *this* hardware".
-
-GPLv3 says you must make this artificial distinction.  You must not
-place barriers on the freedoms of the user WRT to the GPLv3 software
-they use on the hardware you sold/rented/leased/lent/gave them along
-with the GPLv3 software you meant them to use.
-
-You can't waive your hands to escape your obligations saying "you can
-run it elsewhere", in just the same way you can't escape your GPLv2
-obligations to provide source code saying "you can download it
-elsewhere"
-
-> GPL was always about equal freedom to use the software on *ALL*
-> hardware, not special rights to use it on one piece of hardware.
-
-Exactly.  But tivoizers are making these distinctions, trying to frame
-their hardware as somehow special, even though the users that receive
-the hardware with the software become users of the software on that
-very hardware, and that's why they must be able to enjoy the freedoms
-on that very hardware.  Not being able to enjoy them elsewhere could
-defensibly be not the vendor's fault.  Not being able to enjoy them on
-that hardware is obviously the result of choices made by the vendor,
-since the vendor *could* put the software there and get it to run.
-Why couldn't the user?
-
-> More importantly, the change in scope to claim rights over things
-> that are not derivative works and do not include any GPL'd code is
-> so massive that it's a change in spirit, IMO.
-
-Show how patents whose licenses are implicitly granted under GPLv2 are
-derivative works and your argument might begin to make sense.
-
-
-Oh, and user products that GPLv3 talks about *do* include GPLv3 code,
-otherwise the license is irrelevant for them, since GPLv3 code is not
-being conveyed.  I guess you meant something else when you wrote "do
-not include any GPL'ed code".
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Jesse
