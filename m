@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbXFRFfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757797AbXFRFlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbXFRFfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 01:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbXFRFfY
+	id S1757797AbXFRFlW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 01:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbXFRFlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 01:35:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47036 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751303AbXFRFfX (ORCPT
+	Mon, 18 Jun 2007 01:41:14 -0400
+Received: from srv1.netkinetics.net ([206.71.148.180]:58695 "EHLO
+	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbXFRFlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 01:35:23 -0400
-Date: Sun, 17 Jun 2007 22:34:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] make hdrscheck.sh force __asm__ in exported headers
-Message-Id: <20070617223436.2125b1a4.akpm@linux-foundation.org>
-In-Reply-To: <200706180117.46809.vapier@gentoo.org>
-References: <200706171854.24763.vapier@gentoo.org>
-	<20070617221140.f1564f92.akpm@linux-foundation.org>
-	<200706180117.46809.vapier@gentoo.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 18 Jun 2007 01:41:13 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Tim Post <tim.post@netkinetics.net>
+Reply-To: tim.post@netkinetics.net
+To: Al Boldi <a1426z@gawab.com>
+Cc: Alexandre Oliva <aoliva@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200706180108.22065.a1426z@gawab.com>
+References: <200706172319.22381.a1426z@gawab.com>
+	 <ork5u2fgpz.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <200706180108.22065.a1426z@gawab.com>
+Content-Type: text/plain
+Organization: Net Kinetics
+Date: Mon, 18 Jun 2007 13:39:32 +0800
+Message-Id: <1182145172.21797.1462.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.4.1 
 Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - netkinetics.net
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007 01:17:46 -0400 Mike Frysinger <vapier@gentoo.org> wrote:
-
-> On Monday 18 June 2007, Andrew Morton wrote:
-> > On Sun, 17 Jun 2007 18:54:24 -0400 Mike Frysinger <vapier@gentoo.org> wrote:
-> > > This updates scripts/hdrschecks.sh by grepping for asm() constructs and
-> > > rejecting them in favor of __asm__() in exported headers.
+On Mon, 2007-06-18 at 01:08 +0300, Al Boldi wrote:
+> Alexandre Oliva wrote:
+> > On Jun 17, 2007, Al Boldi <a1426z@gawab.com> wrote:
+> > > Under what circumstances would it be possible to receive permission for
+> > > modification?
 > >
-> > And does the kernel pass these checks?
+> > You have to ask the copyright holder.
+> >
+> > Affero did just that, and so the Affero GPL was born.
+> >
+> > Just don't assume the FSF will grant such permissions lightly.
 > 
-> nope ... should i audit the arches before this gets merged ?
+> But wouldn't this be against the spirit of the GPL?
 
-Yes please.  I'd rather not break things in this fashion: it causes a storm
-of emails which I need to redirect to the appropriate maintainers who then
-take an arbitrarily long time to do anything.  Meanwhile lots of testers
-get impacted and this reduces the testing level of all the other thousands
-of patches in there.
+This may be helpful to you :
 
-> > Which architectures have been tested?
-> 
-> i386 passes, blackfin/x86_64 fail a simple asm/unistd.h, and x86_64 fails a 
-> bunch in asm/msr.h, but last time i tried to patch that, the maintainer said 
-> they were going to be hiding a bunch of that stuff anyways
+http://www.gnu.org/licenses/gpl-faq.html#ModifyGPL
 
-Well I would prefer that we merge as many fixes as poss into -mm before
-merging this patch - to reduce the impact on testers.
+It describes the scenario and how to go about doing it.
 
-If these fixes are "wrong" but work then that's fine.  I just keep spamming
-the maintainer with the wrong-but-works patch until he wakes up and fixes
-it for real.
-
-
-Also, your changelog sucks:
-
-  This updates scripts/hdrschecks.sh by grepping for asm() constructs and
-  rejecting them in favor of __asm__() in exported headers.
-
-well OK.  But for what reason?  We can see a lot of pain in this patch but
-no gain.  The changelog should tell us what the benefit is, so we can make
-informed tradeoff decisions.
+Best,
+--Tim
 
