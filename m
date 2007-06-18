@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933387AbXFRWK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933584AbXFRWLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933387AbXFRWK5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 18:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763039AbXFRWKt
+	id S933584AbXFRWLn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 18:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763039AbXFRWLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 18:10:49 -0400
-Received: from mga09.intel.com ([134.134.136.24]:35111 "EHLO mga09.intel.com"
+	Mon, 18 Jun 2007 18:11:32 -0400
+Received: from THUNK.ORG ([69.25.196.29]:53172 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762815AbXFRWKs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 18:10:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,436,1175497200"; 
-   d="scan'208";a="97788116"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1763025AbXFRWLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 18:11:31 -0400
+Date: Mon, 18 Jun 2007 18:10:21 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: alan <alan@clueserver.org>, Bodo Eggert <7eggert@gmx.de>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+Message-ID: <20070618221021.GB2062@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"H. Peter Anvin" <hpa@zytor.com>, alan <alan@clueserver.org>,
+	Bodo Eggert <7eggert@gmx.de>,
+	=?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+	Jack Stone <jack@hawkeye.stone.uk.eu.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	akpm@linux-foundation.org, viro@zeniv.linux.org.uk
+References: <8wst3-3kh-31@gated-at.bofh.it> <8wsCC-3wf-21@gated-at.bofh.it> <8wsW4-3UY-3@gated-at.bofh.it> <8wJal-3KA-1@gated-at.bofh.it> <8xm22-4Ql-1@gated-at.bofh.it> <8xq5G-32l-7@gated-at.bofh.it> <8xs7w-69W-21@gated-at.bofh.it> <E1I0OFQ-0001B9-7Z@be1.lrz> <Pine.LNX.4.64.0706181406250.25913@blackbox.fnordora.org> <4676F9A2.6010007@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [patch-mm 00/25] High resolution timer updates and x86_64 support - V2
-Date: Mon, 18 Jun 2007 15:10:45 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F5010913F8@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <18748.1182203384@turing-police.cc.vt.edu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch-mm 00/25] High resolution timer updates and x86_64 support - V2
-Thread-Index: Acex8qBEw95sj2eyQLaL/MHRoWbJHgAAri0A
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: <Valdis.Kletnieks@vt.edu>
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       "LKML" <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Arjan van de Ven" <arjan@infradead.org>
-X-OriginalArrivalTime: 18 Jun 2007 22:10:46.0289 (UTC) FILETIME=[852ED010:01C7B1F5]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4676F9A2.6010007@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Mon, Jun 18, 2007 at 02:31:14PM -0700, H. Peter Anvin wrote:
+> And that makes them different from extended attributes, how?
+> 
+> Both of these really are nothing but ad hocky syntactic sugar for
+> directories, sometimes combined with in-filesystem support for small
+> data items.
 
->-----Original Message-----
->From: Valdis.Kletnieks@vt.edu [mailto:Valdis.Kletnieks@vt.edu] 
->Sent: Monday, June 18, 2007 2:50 PM
->To: Pallipadi, Venkatesh
->Cc: Thomas Gleixner; LKML; Andrew Morton; Ingo Molnar; Andi 
->Kleen; Chris Wright; Arjan van de Ven
->Subject: Re: [patch-mm 00/25] High resolution timer updates 
->and x86_64 support - V2
->
->On Mon, 18 Jun 2007 13:24:33 PDT, "Pallipadi, Venkatesh" said:
->
->> >state2/time: -159524787
->> >state2/usage: 15007443
->> >
->> 
->> The problem is powertop only understands 
->/proc/acpi/processor/CPU*/power
->> for
->> and not /sys..cpuidle for the moment.
->> 
->> I had a patch in recent cpuidle fixes series that makes 
->/proc interface
->> active
->> again with cpuidle which should correct this. Those patches 
->are not in
->> rc4-mm2-hrt4, but are there in latest rc4-hrt and rc5-hrt series.
->
->OK, so I've got a 32/64 bug that isn't the cause of *this* 
->issue because
->powertop isn't looking at the broken value.
->
+There's a good discussion of the issues involved in my LCA 2006
+presentation....  which doesn't seem to be on the LCA 2006 site.  Hrm.
+I'll have to ask that this be fixed.  In any case, here it is:
 
-Yes. The output does indicate a bug in cpuidle /sysfs part. Will look at
-sysfs output of cpuidle and fix those issues soon.
+	http://thunk.org/tytso/forkdepot.odp
 
-Thanks,
-Venki
+						- Ted
+
+
