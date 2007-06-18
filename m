@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932766AbXFRUq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765705AbXFRUuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932766AbXFRUq4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763705AbXFRUqq
+	id S1765705AbXFRUuc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762633AbXFRUuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:46:46 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:39723
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764677AbXFRUqp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:46:45 -0400
-Date: Mon, 18 Jun 2007 13:46:15 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Anders Larsen <al@alarsen.net>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <orbqfdavpn.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706181343320.14890@asgard.lang.hm>
-References: <1182156596l.29108l.0l@ecxwww1.reanet.de>
- <or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706181202580.12717@asgard.lang.hm>
- <orbqfdavpn.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Mon, 18 Jun 2007 16:50:23 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:55703 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763318AbXFRUuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 16:50:22 -0400
+Date: Mon, 18 Jun 2007 16:50:00 -0400
+To: Theodore Tso <tytso@mit.edu>, Jeremy Allison <jra@samba.org>,
+       alan <alan@clueserver.org>,
+       =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+Message-ID: <20070618205000.GL2334@fieldses.org>
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <467314E2.9010306@zytor.com> <Pine.LNX.4.64.0706151547200.27993@blackbox.fnordora.org> <20070616145337.GA13391@lazybastard.org> <20070618094524.GF5181@schatzie.adilger.int> <20070618140143.GD30244@thunk.org> <Pine.LNX.4.64.0706180907580.22137@blackbox.fnordora.org> <20070618172955.GB24189@thunk.org> <20070618173342.GB1152@samba1> <20070618203033.GD24189@thunk.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070618203033.GD24189@thunk.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007, Alexandre Oliva wrote:
+On Mon, Jun 18, 2007 at 04:30:33PM -0400, Theodore Tso wrote:
+> Well, I just want to make sure people know that Samba isn't asking for
+> it any more, and I don't know of any current requests outstanding from
+> any of the userspace projects.  So there's no one we need to ship off
+> to the re-education camps about why filesystem fork/streams are a bad
+> idea.  :-)
 
-> On Jun 18, 2007, david@lang.hm wrote:
->
->> they want to prevent anyone from modifying the credit card machine to
->> store copies of all the card info locally.
->
-> I see.  Thanks for enlightening me.
->
->> you don't really answer this issue. since these boxes are required to
->> be sealed and physically anti-tamper, changing the ROM is not
->> acceptable.
->
-> Given the ROM exception in GPLv3, I guess you could seal and
-> anti-tamper it as much as you want, and leave the ROM at such a place
-> in which it's easily replaceable but with signature checking and all
-> such that the user doesn't install ROM that is not authorized by you.
+NFSv4 also has support for "named attributes"/forks/streams.  As far as
+I can recall, though, the only requests I've seen for it (aside from
+people just running through NFSv4 feature checklists) have been from
+people that really just wanted extended attributes.
 
-'sealed, but easy to replace ROM containing the programming' is a 
-contridiction.
+And it'd probably actually be pretty easy to extend the v4 protocol to
+support extended attributes if someone wanted to.
 
-if a local person can easily replace the programming it doesn't meet the 
-PCI requirements and therefor you just cannot use GPLv3 code for this sort 
-of application.
-
-David Lang
+--b.
