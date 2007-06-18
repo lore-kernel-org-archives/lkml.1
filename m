@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbXFRSKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764997AbXFRSK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764943AbXFRSKI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 14:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761790AbXFRSJ5
+	id S1764997AbXFRSK4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 14:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762073AbXFRSKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 14:09:57 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:47429 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760828AbXFRSJ4 (ORCPT
+	Mon, 18 Jun 2007 14:10:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54015 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762062AbXFRSKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 14:09:56 -0400
-Message-ID: <4676C78D.8040208@zytor.com>
-Date: Mon, 18 Jun 2007 10:57:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 18 Jun 2007 14:10:47 -0400
+Date: Mon, 18 Jun 2007 11:09:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614235004.GA14952@elte.hu> <20070615011012.6c09066e@the-village.bc.nu>
+ <20070615012623.GA25189@elte.hu> <20070615101007.0cbfd078@the-village.bc.nu>
+ <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de>
+ <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk>
+ <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+ <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+ <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+ <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Mike Frysinger <vapier@gentoo.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       rmk@arm.linux.org.uk
-Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
-References: <fa.Xa4Tv0RVV3kUIdHC69Jp/LpQPcg@ifi.uio.no> <fa.D5W5QzyAnzzOD5Ln35+YDQKzWsE@ifi.uio.no> <fa.XhJVn2uLXM0A6yjcYTr2E44DELQ@ifi.uio.no> <fa.tGqwq8EAmSwz5rSn2D2AkvD+yt0@ifi.uio.no> <46769643.7010106@shaw.ca>
-In-Reply-To: <46769643.7010106@shaw.ca>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> 
-> If we expect userspace apps to include them, then I would vote for no,
-> not for anything outside of #ifdef __KERNEL__ in exported headers. Keep
-> in mind also that C++ apps may need to include these as well and those
-> extensions don't always play well in C++ mode. (Last instance I ran into
-> was the ioctl argument checking macros _IOR, _IOW, etc. that create
-> non-compiling code if you use them in a C++ program.)
-> 
 
-Some of the actual ioctl macros generate silently wrong code if you use
-them in a C program.
 
-	-hpa
+On Sun, 17 Jun 2007, Alexandre Oliva wrote:
+> > 	What Tivo did is *good* in my opinion!
+> 
+> > Can't you get that through your skull?
+> 
+> No.  I disagree.  We can agree to disagree on that.
+
+Sorry, no we cannot. You seem to not accept that "in my opinion".
+
+That's not somethign we can disagree on. My opinion is _mine_ to state. 
+There's no room for disagreement. It's my opinion, and your "agreement" is 
+not optional.
+
+So when I say "I think what Tivo did is good", then you'd better just say, 
+"ok, that's your opinion, and I respect you for it".
+
+Otherwise you're a douche-bag and an idiot.
+
+And once you realize that _I_ think that Tivo did is good, you have to 
+accept that I think that the GPLv3 is the worse license in my opinion.
+
+So stop blathering about anything else.
+
+Just accept it. Just repeat after me: "Linus thinks that the GPLv3 is a 
+bad license, and Linus is not confused".
+
+Don't call me "confused". Don't bother talking about what _you_ think, or 
+what the FSF thinks is the "spirit". Don't say that you cannot understand 
+it. 
+
+Because if you cannot understand it, the only thing it shows is _your_ 
+lack of understanding.
+
+		Linus
