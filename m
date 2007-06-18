@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbXFRHg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760872AbXFRHgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759981AbXFRHg0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 03:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXFRHgQ
+	id S1760872AbXFRHgl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 03:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759983AbXFRHg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 03:36:16 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:58167 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755342AbXFRHgP (ORCPT
+	Mon, 18 Jun 2007 03:36:26 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:46932 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759477AbXFRHgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 03:36:15 -0400
-Message-ID: <467635D8.5060202@zytor.com>
-Date: Mon, 18 Jun 2007 00:35:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
+	Mon, 18 Jun 2007 03:36:24 -0400
+Date: Mon, 18 Jun 2007 09:36:05 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: Mike Frysinger <vapier@gentoo.org>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de
-Subject: Re: [patch] use __asm__ and __volatile__ in asm-x86_64/msr.h
-References: <200706180209.36762.vapier@gentoo.org>
-In-Reply-To: <200706180209.36762.vapier@gentoo.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch] use __asm__ rather than asm in asm-s390/ptrace.h
+Message-ID: <20070618073605.GA3580@osiris.boeblingen.de.ibm.com>
+References: <200706180223.07122.vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706180223.07122.vapier@gentoo.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> Most of the macros in msr.h already use __asm__ and __volatile__, this patch
-> brings the rest into line.  This is needed since these get exported into
-> userspace (need to use strict __asm__ vs asm when gcc compiles with GNU
-> extensions turned off).
+On Mon, Jun 18, 2007 at 02:23:06AM -0400, Mike Frysinger wrote:
+> Since asm-s390/ptrace.h is exported to userspace, we need to make sure we use
+> __asm__() rather than asm() as the latter is disabled when gcc compiles with
+> GNU extensions turned off (like -std=c99).
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 > ---
-> diff --git a/include/asm-x86_64/msr.h b/include/asm-x86_64/msr.h
-> index d5c55b8..ed15d2b 100644
-> --- a/include/asm-x86_64/msr.h
-> +++ b/include/asm-x86_64/msr.h
-> @@ -33,7 +33,7 @@
->  
->  /* wrmsr with exception handling */
->  #define wrmsr_safe(msr,a,b) ({ int ret__;			\
-> -	asm volatile("2: wrmsr ; xorl %0,%0\n"			\
-> +	__asm__ __volatile__("2: wrmsr ; xorl %0,%0\n"			\
->  		     "1:\n\t"					\
->  		     ".section .fixup,\"ax\"\n\t"		\
->  		     "3:  movl %4,%0 ; jmp 1b\n\t"		\
-> @@ -50,7 +50,7 @@
->  
->  #define rdmsr_safe(msr,a,b) \
->  	({ int ret__;						\
-> -	  asm volatile ("1:       rdmsr\n"			\
-> +	  __asm__ __volatile__ ("1:       rdmsr\n"			\
->                        "2:\n"					\
->                        ".section .fixup,\"ax\"\n"		\
->                        "3:       movl %4,%0\n"			\
+> diff --git a/include/asm-s390/ptrace.h b/include/asm-s390/ptrace.h
+> index fa6ca87..4add355 100644
+> --- a/include/asm-s390/ptrace.h
+> +++ b/include/asm-s390/ptrace.h
+> @@ -475,7 +475,7 @@ extern void show_regs(struct pt_regs * regs);
+>  static inline void
+>  psw_set_key(unsigned int key)
+>  {
+> -	asm volatile("spka 0(%0)" : : "d" (key));
+> +	__asm__ __volatile__("spka 0(%0)" : : "d" (key));
+>  }
+> 
+>  #endif /* __ASSEMBLY__ */
 
-NAK.
-
-This is wrong for two reasons:
-
-- MSRs are not accessible in user space.
-- .section .fixup is not applicable to user space.
-
-Anything MSR-related should be protected by __KERNEL__ instead.
-
-This NAK doesn't apply to rdtsc* and rdpmc* changes, however, as those
-instructions are legitimate in userspace.
-
-	-hpa
+Hmm.. spka is a sort of priviledged instruction and shouldn't be
+user space visible.
+I will move it so it's under #ifdef __KERNEL__.
