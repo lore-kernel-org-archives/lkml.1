@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbXFRApm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761315AbXFRApz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761314AbXFRApm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Jun 2007 20:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXFRApf
+	id S1761315AbXFRApz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Jun 2007 20:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761380AbXFRApn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Jun 2007 20:45:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34672 "EHLO mx1.redhat.com"
+	Sun, 17 Jun 2007 20:45:43 -0400
+Received: from bee.hiwaay.net ([216.180.54.11]:6338 "EHLO bee.hiwaay.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbXFRApe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Jun 2007 20:45:34 -0400
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
+	id S1759483AbXFRApm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Jun 2007 20:45:42 -0400
+Date: Sun, 17 Jun 2007 19:45:38 -0500
+From: Chris Adams <cmadams@hiwaay.net>
+To: Bron Gondwana <brong@fastmail.fm>
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <20070615101007.0cbfd078@the-village.bc.nu>
-	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4673CA7C.5040207@t-online.de>
-	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616181902.GB21478@ftp.linux.org.uk>
-	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
-	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070617234014.GA4542@v2.random>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Sun, 17 Jun 2007 21:44:30 -0300
-In-Reply-To: <20070617234014.GA4542@v2.random> (Andrea Arcangeli's message of "Mon\, 18 Jun 2007 01\:40\:14 +0200")
-Message-ID: <orhcp6drbl.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
+Message-ID: <20070618004538.GA1283823@hiwaay.net>
+References: <fa.toMqQ3LqoQn6Xh51bVordO8WMVc@ifi.uio.no> <fa.EmnDne9QndTLcw7NAzc83tWplMI@ifi.uio.no> <fa.G+0vGcF8U8pcd6ozkdhKGsQ/dDs@ifi.uio.no> <fa.8bXRW7nY7z5eXVZxCxUgra+gbb8@ifi.uio.no> <fa.qtDtq+aSKlNweTqHtKcy/Gj5PXg@ifi.uio.no> <20070617215840.GA1217855@hiwaay.net> <20070617232221.GB14098@brong.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070617232221.GB14098@brong.net>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 17, 2007, Andrea Arcangeli <andrea@suse.de> wrote:
+Once upon a time, Bron Gondwana <brong@fastmail.fm> said:
+> To be fair here, this could also be accomplished by having to flip a
+> physical switch on the router, especially if you did something funky
+> like:
+> 
+> [---] push this button for a 5 minute access pass to upload new
+>       software through physical cable port 1.
+> 
+> More complex, but not unreasonable.
 
-> Open source licenses shouldn't forbid usages, not even the blatantly
-> unethical ones, "evil" is not tangible (I guess everything would be
-> easier in life if it was).
+Well, there is no restriction on putting files on the routing engine's
+storage devices (flash and hard drive); it is running OpenSSH, so
+scp/sftp work fine, and you can drop to a shell easily.  The restriction
+is that the kernel won't run unsigned binaries.
 
-Since you mention Open source...
-
-What if I showed you that tivoization discriminates against field of
-endeavor?
-
-  http://opensource.org/docs/osd
-
-  6. No Discrimination Against Fields of Endeavor
-
-  The license must not restrict anyone from making use of the program
-  in a specific field of endeavor. For example, it may not restrict
-  the program from being used in a business, or from being used for
-  genetic research.
-
-Wait, TiVo, you're saying I cannot use this modified version of the
-program to do $whatever in this computer you sold me, and that's
-solely because you don't want to let me?
-
-Is this forceful restriction on how or where the program can be used
-not a discrimination against fields of endeavor?
-
-It's not a restriction imposed by the license of the program, but it
-is a restriction imposed by the manufacturer of the equipment that
-distributes the program, therefore, the conditions under which the
-program is distributed are not only non-Free Software, they also fail
-to meet the Open Source definition.
-
-Neat, huh?
+Also, flipping physical switches is pretty much an unreasonable
+expectation for core router operation.  These are often in other
+locations, sometimes other telcos' central offices (where you have to
+pay to have "remote hands" do something and then hope they don't screw
+it up).  You can easily go the entire life of a device where the primary
+operators never physically see the device.
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Chris Adams <cmadams@hiwaay.net>
+Systems and Network Administrator - HiWAAY Internet Services
+I don't speak for anybody but myself - that's enough trouble.
