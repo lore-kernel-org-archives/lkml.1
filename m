@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762788AbXFRLKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbXFRLOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762788AbXFRLKa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 07:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760961AbXFRLKW
+	id S1761680AbXFRLOm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 07:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbXFRLOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 07:10:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43728 "EHLO mx1.redhat.com"
+	Mon, 18 Jun 2007 07:14:35 -0400
+Received: from mail4.kite.se ([212.214.165.225]:57739 "EHLO mail4.kite.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760227AbXFRLKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 07:10:21 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070616091514.8e5dc1d3.akpm@linux-foundation.org>
-References: <20070616091514.8e5dc1d3.akpm@linux-foundation.org> <20070607164003.24322.51086.stgit@warthog.cambridge.redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, trond.myklebust@fys.uio.no,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] NFS: Make NFS root work again
-X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
-Date: Mon, 18 Jun 2007 12:09:35 +0100
-Message-ID: <22425.1182164975@redhat.com>
+	id S1752306AbXFRLOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 07:14:35 -0400
+X-Greylist: delayed 376 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 07:14:35 EDT
+Message-ID: <4676679E.5040901@kite.se>
+Date: Mon, 18 Jun 2007 13:08:14 +0200
+From: Magnus Naeslund <mag@kite.se>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: ARC-1260: No space left on device, when there is (or should be) free
+ space left
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+It seems I have a problem accessing the whole device, it filled up too quickly.
+I thought I was avoiding the 2tb limit when not using any partition tables, shame on me :)
 
-> What is not working, and how does this patch fix it?
+# df -B 1 /dev/sdb
+Filesystem           1B-blocks      Used Available Use% Mounted on
+/dev/sdb             5999417057280 1908287229952 4091129827328  32% /storage/disk1
 
-It turns out that this patch is unnecessary.  The problem had to do with the
-initcalling of default_rootfs() (or lack of initcalling in this case).  I
-fixed vmlinux.lds.S and it works now.
+(Ok here I have 68% free space on our 5.5TB device)
 
-David
+# echo zzz > /storage/disk1/dummy
+/storage/disk1/dummy: No space left on device
+
+(But here it seems to think the device is full)
+
+It's an amd64 based system running 2.6.21.5.
+Please tell me if you need more information!
+
+Regards,
+Magnus
+
