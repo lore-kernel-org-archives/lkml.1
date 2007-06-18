@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933795AbXFRXhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbXFRXkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933795AbXFRXhR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 19:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932953AbXFRXhA
+	id S933679AbXFRXkc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 19:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932173AbXFRXkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 19:37:00 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:33023 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932509AbXFRXg7 (ORCPT
+	Mon, 18 Jun 2007 19:40:24 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43409
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932113AbXFRXkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 19:36:59 -0400
-X-IronPort-AV: i="4.16,436,1175497200"; 
-   d="scan'208"; a="495441618:sNHT45767920"
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Thomas Glanzmann <thomas@glanzmann.de>, carlo@alinoe.com,
-       Linus Torvalds <torvalds@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Michael Gernoth <simigern@cip.informatik.uni-erlangen.de>,
-       GIT <git@vger.kernel.org>
-Subject: Re: GIT Packages for Debian Etch
-X-Message-Flag: Warning: May contain useful information
-References: <20070618212524.GC16393@cip.informatik.uni-erlangen.de>
-	<Pine.LNX.4.64.0706181617060.18601@schroedinger.engr.sgi.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 18 Jun 2007 16:36:56 -0700
-In-Reply-To: <Pine.LNX.4.64.0706181617060.18601@schroedinger.engr.sgi.com> (Christoph Lameter's message of "Mon, 18 Jun 2007 16:18:32 -0700 (PDT)")
-Message-ID: <adavedkesx3.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Mon, 18 Jun 2007 19:40:24 -0400
+Date: Mon, 18 Jun 2007 16:39:20 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Johannes Stezenbach <js@linuxtv.org>
+cc: Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <20070618232549.GA22170@linuxtv.org>
+Message-ID: <Pine.LNX.4.64.0706181634560.14890@asgard.lang.hm>
+References: <4673CA7C.5040207@t-online.de> <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070616181902.GB21478@ftp.linux.org.uk> <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+ <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+ <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br> <20070618155016.GA31892@linuxtv.org>
+ <or645lcdg7.fsf@oliva.athome.lsd.ic.unicamp.br> <20070618232549.GA22170@linuxtv.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Jun 2007 23:36:57.0002 (UTC) FILETIME=[8F2B00A0:01C7B201]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Is there some way you can feed that into Debian please? Why the go around 
- > through a separate repository? The maintainer of git-core is not actively 
- > maintaining the package?
+On Tue, 19 Jun 2007, Johannes Stezenbach wrote:
 
-No.  The current version of git in Debian is 1.5.2.1, a little out of
-date from the current 1.5.2.2 but not too bad.  However, Debian Etch
-was already released with an older version of git.  Debian
-testing/Lenny (the next release, which is still being developed) does
-not have the latest version of git yet because it is blocked waiting
-for the next version of curl as well as a few other problems.
+> On Mon, Jun 18, 2007, Alexandre Oliva wrote:
+>>
+>> People talk a lot about TiVo here, but do they the faintest idea of
+>> how the conversations with TiVo are proceeding?  I thought so...
+>
+> Oh, if you know something we don't, could you please fill us in?
+> And who was it who coined the "Tivoization" term, thus putting
+> TiVo into focus?
 
- - R.
+what conversations are going on?
+
+Tivo checked years ago and were told that what they were going to do was 
+Ok. I don't know thatanyone is talking too Tivo about anything. they are 
+just screaming about how evil Tivo is at every public opportunity.
+
+David Lang
+
+>> But since the software is good, and moving to another software would be 
+>> costly in various dimentions, the vendor has an incentive to stick with 
+>> the software they have.
+
+but if regulations or other contracts require tamper-resistant hardware 
+they have no choices other then to fork the existing GPLv2 versions or 
+switch to alternate options for anything that switches to GPLv3
+
+David Lang
