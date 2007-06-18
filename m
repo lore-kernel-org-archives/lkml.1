@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765978AbXFRUMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbXFRUMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765978AbXFRUMQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 16:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762514AbXFRUMD
+	id S932470AbXFRUMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 16:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764397AbXFRUMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 16:12:03 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:8276 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761420AbXFRUMB (ORCPT
+	Mon, 18 Jun 2007 16:12:32 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:16730 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764361AbXFRUMb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 16:12:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=oCCsqpygoB4ClXpjroS7Ni0nnWOpT3aCM/4Hih/duqowRPy+sAodBSK04sCGQfAmwYmYMd25EGkzCKN+NzCQ+Z+hX0CQHrrMAFxk5CTolmu9ZQ4TP6MYhftW1T0ogMU8EkpYLuxXGvSkx9aVD7yxlp84AGwVesaVHs45YBiUtE8=
-Message-ID: <84144f020706181311u2bb10658i3869f7aeb8e29f8e@mail.gmail.com>
-Date: Mon, 18 Jun 2007 23:11:59 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "clameter@sgi.com" <clameter@sgi.com>
-Subject: Re: [patch 04/26] Slab allocators: Support __GFP_ZERO in all allocators.
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, suresh.b.siddha@intel.com
-In-Reply-To: <20070618095914.332369986@sgi.com>
+	Mon, 18 Jun 2007 16:12:31 -0400
+Message-ID: <4676E725.6010708@fr.ibm.com>
+Date: Mon, 18 Jun 2007 22:12:21 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Badari Pulavarty <pbadari@us.ibm.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] fix refcounting of nsproxy object when unshared
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070618095838.238615343@sgi.com>
-	 <20070618095914.332369986@sgi.com>
-X-Google-Sender-Auth: dca86d43a423246f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/18/07, clameter@sgi.com <clameter@sgi.com> wrote:
-> A kernel convention for many allocators is that if __GFP_ZERO is passed to
-> an allocator then the allocated memory should be zeroed.
->
-> This is currently not supported by the slab allocators. The inconsistency
-> makes it difficult to implement in derived allocators such as in the uncached
-> allocator and the pool allocators.
+When a namespace is unshared, a refcount on the previous nsproxy is
+abusively taken, leading to a memory leak of nsproxy objects. 
+ 
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
 
-[snip]
+---
+ kernel/nsproxy.c |   10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-> So add the necessary logic to all slab allocators to support __GFP_ZERO.
-
-Looks good to me.
-
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Index: 2.6.22-rc5/kernel/nsproxy.c
+===================================================================
+--- 2.6.22-rc5.orig/kernel/nsproxy.c
++++ 2.6.22-rc5/kernel/nsproxy.c
+@@ -145,13 +145,11 @@ void free_nsproxy(struct nsproxy *ns)
+ 
+ /*
+  * Called from unshare. Unshare all the namespaces part of nsproxy.
+- * On sucess, returns the new nsproxy and a reference to old nsproxy
+- * to make sure it stays around.
++ * On success, returns the new nsproxy.
+  */
+ int unshare_nsproxy_namespaces(unsigned long unshare_flags,
+ 		struct nsproxy **new_nsp, struct fs_struct *new_fs)
+ {
+-	struct nsproxy *old_ns = current->nsproxy;
+ 	int err = 0;
+ 
+ 	if (!(unshare_flags & (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC)))
+@@ -170,13 +168,9 @@ int unshare_nsproxy_namespaces(unsigned 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+-	get_nsproxy(old_ns);
+-
+ 	*new_nsp = create_new_namespaces(unshare_flags, current,
+ 				new_fs ? new_fs : current->fs);
+-	if (IS_ERR(*new_nsp)) {
++	if (IS_ERR(*new_nsp))
+ 		err = PTR_ERR(*new_nsp);
+-		put_nsproxy(old_ns);
+-	}
+ 	return err;
+ }
