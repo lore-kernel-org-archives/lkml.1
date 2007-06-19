@@ -1,80 +1,366 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbXFSMj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbXFSMkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbXFSMj5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 08:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXFSMjr
+	id S1759207AbXFSMkX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 08:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758475AbXFSMj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 08:39:47 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:50528 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756260AbXFSMjq (ORCPT
+	Tue, 19 Jun 2007 08:39:58 -0400
+Received: from tayrelbas04.tay.hp.com ([161.114.80.247]:60405 "EHLO
+	tayrelbas04.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758839AbXFSMj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 08:39:46 -0400
-Message-ID: <4677CE85.6080002@anagramm.de>
-Date: Tue, 19 Jun 2007 14:39:33 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jarek Poplawski <jarkao2@o2.pl>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [ANNOUNCE] Linux Kernel =?UTF-8?B?VGVzdGVy4oCZcyBHdWlkZSB2MC4=?=
- =?UTF-8?B?My1yYzE=?=
-References: <4676E707.8020109@googlemail.com>
-In-Reply-To: <4676E707.8020109@googlemail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX19Mgq0QkJUA3+qP+xYF+zx+UqGpJbM4p4I5gW9
- OgosGaEVr9SjqZkJ1IHuhncfD7VSJAwq0YwsTgUMUVm+zY02bK
- AqFi6IU3rlptiAbeJCJhg==
+	Tue, 19 Jun 2007 08:39:56 -0400
+Date: Tue, 19 Jun 2007 05:39:51 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/8] 2.6.22-rc3 perfmon2 : IBS implementation for AMD64
+Message-ID: <20070619123951.GC23051@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070614215818.509851000@localhost> <20070615093330.944272000@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070615093330.944272000@localhost>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Michal, Rafael!
+Robert,
 
-Good work!
-Some (minor) comments below.
+I applied this patch to my tree.
+thanks.
 
-Michal Piotrowski schrieb:
-> Hi,
+On Fri, Jun 15, 2007 at 06:58:11PM +0200, Robert Richter wrote:
+> Debug messages added for better debugging.
 > 
-> We are pleased to announce the availability of "Linux Kernel Tester's 
-> Guide" v0.3-rc1.
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
 > 
-> This short guide describes the basics of kernel testing. The handbook is 
-> divided into six chapters:
+> Index: linux-2.6.22-rc3/perfmon/perfmon_file.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/perfmon/perfmon_file.c
+> +++ linux-2.6.22-rc3/perfmon/perfmon_file.c
+> @@ -192,6 +192,8 @@ static int pfm_mmap(struct file *file, s
+>  	unsigned long flags;
+>  	int ret;
+>  
+> +	PFM_DBG("pfm_file_ops");
+> +
+>  	ctx  = file->private_data;
+>  	size = (vma->vm_end - vma->vm_start);
+>  
+> @@ -332,6 +334,8 @@ static ssize_t pfm_read(struct file *fil
+>  	union pfarg_msg msg_buf;
+>  	int non_block, ret;
+>  
+> +	PFM_DBG("pfm_file_ops");
+> +
+>  	ctx = filp->private_data;
+>  	if (ctx == NULL) {
+>  		PFM_ERR("no ctx for pfm_read");
+> @@ -375,6 +379,8 @@ static unsigned int pfm_poll(struct file
+>  	unsigned long flags;
+>  	unsigned int mask = 0;
+>  
+> +	PFM_DBG("pfm_file_ops");
+> +
+>  	if (filp->f_op != &pfm_file_ops) {
+>  		PFM_ERR("pfm_poll bad magic");
+>  		return 0;
+> @@ -449,6 +455,8 @@ static int pfm_fasync(int fd, struct fil
+>  	struct pfm_context *ctx;
+>  	int ret;
+>  
+> +	PFM_DBG("pfm_file_ops");
+> +
+>  	ctx = filp->private_data;
+>  	if (ctx == NULL) {
+>  		PFM_ERR("pfm_fasync no ctx");
+> @@ -611,6 +619,8 @@ static int pfm_close(struct inode *inode
+>  {
+>  	struct pfm_context *ctx;
+>  
+> +	PFM_DBG("pfm_file_ops");
+> +
+>  	ctx = filp->private_data;
+>  	if (ctx == NULL) {
+>  		PFM_ERR("no ctx");
+> @@ -621,6 +631,8 @@ static int pfm_close(struct inode *inode
+>  
+>  static int pfm_no_open(struct inode *irrelevant, struct file *dontcare)
+>  {
+> +	PFM_DBG("pfm_file_ops");
+> +
+>  	return -ENXIO;
+>  }
+>  
+> @@ -637,6 +649,8 @@ static int pfm_flush(struct file *filp, 
+>  {
+>  	struct pfm_context *ctx;
+>  
+> +	PFM_DBG("pfm_file_ops");
+> +
+>  	ctx = filp->private_data;
+>  	if (ctx == NULL) {
+>  		PFM_ERR("pfm_flush no ctx");
+> Index: linux-2.6.22-rc3/perfmon/perfmon_syscalls.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/perfmon/perfmon_syscalls.c
+> +++ linux-2.6.22-rc3/perfmon/perfmon_syscalls.c
+> @@ -403,6 +403,8 @@ asmlinkage long sys_pfm_create_context(s
+>  	void *fmt_arg = NULL;
+>  	int ret;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	if (atomic_read(&perfmon_disabled))
+>  		return -ENOSYS;
+>  
+> @@ -433,8 +435,12 @@ asmlinkage long sys_pfm_write_pmcs(int f
+>  	size_t sz;
+>  	int ret, fput_needed;
+>  
+> -	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
+> +	PFM_DBG("syscall");
+> +
+> +	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq)) {
+> +                PFM_DBG("invalid arg count %d", count);
+>  		return -EINVAL;
+> +	}
+>  
+>  	sz = count*sizeof(*ureq);
+>  
+> @@ -475,6 +481,8 @@ asmlinkage long sys_pfm_write_pmcs(int f
+>  		kfree(fptr);
+>  error:
+>  	fput_light(filp, fput_needed);
+> +	if (ret)
+> +		PFM_DBG("failed: errno=%d", -ret);
+>  
+>  	return ret;
+>  }
+> @@ -490,6 +498,8 @@ asmlinkage long sys_pfm_write_pmds(int f
+>  	size_t sz;
+>  	int ret, fput_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
+>  		return -EINVAL;
+>  
+> @@ -543,6 +553,8 @@ asmlinkage long sys_pfm_read_pmds(int fd
+>  	size_t sz;
+>  	int ret, fput_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
+>  		return -EINVAL;
+>  
+> @@ -591,6 +603,8 @@ asmlinkage long sys_pfm_restart(int fd)
+>  	unsigned long flags;
+>  	int ret, fput_needed, complete_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	filp = fget_light(fd, &fput_needed);
+>  	if (unlikely(filp == NULL)) {
+>  		PFM_DBG("invalid fd %d", fd);
+> @@ -647,6 +661,8 @@ asmlinkage long sys_pfm_stop(int fd)
+>  	unsigned long flags;
+>  	int ret, fput_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	filp = fget_light(fd, &fput_needed);
+>  	if (unlikely(filp == NULL)) {
+>  		PFM_DBG("invalid fd %d", fd);
+> @@ -682,6 +698,8 @@ asmlinkage long sys_pfm_start(int fd, st
+>  	unsigned long flags;
+>  	int ret, fput_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	filp = fget_light(fd, &fput_needed);
+>  	if (unlikely(filp == NULL)) {
+>  		PFM_DBG("invalid fd %d", fd);
+> @@ -724,6 +742,8 @@ asmlinkage long sys_pfm_load_context(int
+>  	struct pfarg_load req;
+>  	int ret, fput_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	if (copy_from_user(&req, ureq, sizeof(req)))
+>  		return -EFAULT;
+>  
+> @@ -792,6 +812,8 @@ asmlinkage long sys_pfm_unload_context(i
+>  	int is_system, can_release = 0;
+>  	u32 cpu;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	filp = fget_light(fd, &fput_needed);
+>  	if (unlikely(filp == NULL)) {
+>  		PFM_DBG("invalid fd %d", fd);
+> @@ -834,6 +856,8 @@ asmlinkage long sys_pfm_create_evtsets(i
+>  	size_t sz;
+>  	int ret, fput_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
+>  		return -EINVAL;
+>  
+> @@ -890,6 +914,8 @@ asmlinkage long  sys_pfm_getinfo_evtsets
+>  	size_t sz;
+>  	int ret, fput_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
+>  		return -EINVAL;
+>  
+> @@ -932,6 +958,8 @@ asmlinkage long  sys_pfm_getinfo_evtsets
+>  	kfree(fptr);
+>  error:
+>  	fput_light(filp, fput_needed);
+> +	if (ret)
+> +		PFM_DBG("failed: errno=%d", -ret);
+>  	return ret;
+>  }
+>  
+> @@ -945,6 +973,8 @@ asmlinkage long sys_pfm_delete_evtsets(i
+>  	size_t sz;
+>  	int ret, fput_needed;
+>  
+> +	PFM_DBG("syscall");
+> +
+>  	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
+>  		return -EINVAL;
+>  
+> Index: linux-2.6.22-rc3/perfmon/perfmon_rw.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/perfmon/perfmon_rw.c
+> +++ linux-2.6.22-rc3/perfmon/perfmon_rw.c
+> @@ -474,7 +474,7 @@ int __pfm_write_pmcs(struct pfm_context 
+>  	return 0;
+>  error:
+>  	pfm_retflag_set(req->reg_flags, error_code);
+> -	PFM_DBG("set%u pmc%u error=%d", set_id, cnum, error_code);
+> +	PFM_DBG("set%u pmc%u error=0x%08x", set_id, cnum, error_code);
+>  	return ret;
+>  }
+>  
+> Index: linux-2.6.22-rc3/include/asm-i386/perfmon.h
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/include/asm-i386/perfmon.h
+> +++ linux-2.6.22-rc3/include/asm-i386/perfmon.h
+> @@ -140,6 +140,10 @@ static inline void pfm_arch_write_pmc(st
+>  	if (ctx && ctx->flags.started == 0)
+>  		return;
+>  
+> +	PFM_DBG_ovfl("pfm_arch_write_pmc(0x%016Lx, 0x%016Lx)",
+> +		     (unsigned long long) pfm_pmu_conf->pmc_desc[cnum].hw_addr,
+> +		     (unsigned long long) value);
+> +	BUG_ON(pfm_pmu_conf->pmc_desc[cnum].type & PFM_REG_V);
+>  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
+>  		__pfm_write_reg_p4(&arch_info->pmc_addrs[cnum], value);
+>  	else
+> @@ -155,6 +159,10 @@ static inline void pfm_arch_write_pmd(st
+>  	if (pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_C64)
+>  		value |= ~pfm_pmu_conf->ovfl_mask;
+>  
+> +	PFM_DBG_ovfl("pfm_arch_write_pmd(0x%016Lx, 0x%016Lx)",
+> +		     (unsigned long long) pfm_pmu_conf->pmd_desc[cnum].hw_addr,
+> +		     (unsigned long long) value);
+> +	BUG_ON(pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_V);
+>  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
+>  		__pfm_write_reg_p4(&arch_info->pmd_addrs[cnum], value);
+>  	else
+> @@ -165,10 +173,14 @@ static inline u64 pfm_arch_read_pmd(stru
+>  {
+>  	struct pfm_arch_pmu_info *arch_info = pfm_pmu_conf->arch_info;
+>  	u64 tmp;
+> +	BUG_ON(pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_V);
+>  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
+>  		__pfm_read_reg_p4(&arch_info->pmd_addrs[cnum], &tmp);
+>  	else
+>  		rdmsrl(pfm_pmu_conf->pmd_desc[cnum].hw_addr, tmp);
+> +	PFM_DBG_ovfl("pfm_arch_read_pmd(0x%016Lx) = 0x%016Lx",
+> +		     (unsigned long long) pfm_pmu_conf->pmd_desc[cnum].hw_addr,
+> +		     (unsigned long long) tmp);
+>  	return tmp;
+>  }
+>  
+> @@ -176,10 +188,14 @@ static inline u64 pfm_arch_read_pmc(stru
+>  {
+>  	struct pfm_arch_pmu_info *arch_info = pfm_pmu_conf->arch_info;
+>  	u64 tmp;
+> +	BUG_ON(pfm_pmu_conf->pmc_desc[cnum].type & PFM_REG_V);
+>  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
+>  		__pfm_read_reg_p4(&arch_info->pmc_addrs[cnum], &tmp);
+>  	else
+>  		rdmsrl(pfm_pmu_conf->pmc_desc[cnum].hw_addr, tmp);
+> +        PFM_DBG_ovfl("pfm_arch_read_pmc(0x%016Lx) = 0x%016Lx",
+> +		     (unsigned long long) pfm_pmu_conf->pmc_desc[cnum].hw_addr,
+> +		     (unsigned long long) tmp);
+>  	return tmp;
+>  }
+>  
+> Index: linux-2.6.22-rc3/perfmon/perfmon.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/perfmon/perfmon.c
+> +++ linux-2.6.22-rc3/perfmon/perfmon.c
+> @@ -865,7 +865,8 @@ int __init pfm_init(void)
+>  {
+>  	int ret;
+>  
+> -	PFM_LOG("version %u.%u", PFM_VERSION_MAJ, PFM_VERSION_MIN);
+> +	PFM_LOG("version %u.%u, compiled: " __DATE__ ", " __TIME__,
+> +		PFM_VERSION_MAJ, PFM_VERSION_MIN);
+>  
+>  	pfm_ctx_cachep = kmem_cache_create("pfm_context",
+>  				   sizeof(struct pfm_context)+PFM_ARCH_CTX_SIZE,
+> Index: linux-2.6.22-rc3/perfmon/perfmon_intr.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/perfmon/perfmon_intr.c
+> +++ linux-2.6.22-rc3/perfmon/perfmon_intr.c
+> @@ -170,6 +170,7 @@ static void pfm_overflow_handler(struct 
+>  		 * check for overflow condition
+>  		 */
+>  		if (likely(old_val > new_val)) {
+> +			PFM_DBG_ovfl("64 bit overflow of PMD%d", i);
+>  			has_64b_ovfl = 1;
+>  			if (has_ovfl_sw && ovfl_thres > 0) {
+>  				if (ovfl_thres == 1)
+> @@ -188,11 +189,13 @@ static void pfm_overflow_handler(struct 
+>  				  max_pmd);
+>  
+>  		} else {
+> +			PFM_DBG_ovfl("Hardware counter overflow of PMD%d=0x%04llx",
+> +				i, new_val);
+>  			/* only keep track of 64-bit overflows */
+>  			__clear_bit(i, ulp(pend_ovfls));
+>  			/*
+> -		 	 * on some PMU, it may be necessary to re-arm the PMD
+> -		 	 */
+> +			 * on some PMU, it may be necessary to re-arm the PMD
+> +			 */
+>  			pfm_arch_ovfl_reset_pmd(ctx, i);
+>  		}
+>  
 > 
-> 1 The kernel, patches, trees and compilation
->  1.1 The kernel
+> --
+> AMD Saxony, Dresden, Germany
+> Operating System Research Center
+> email: robert.richter@amd.com
+> 
+> 
+> 
 
-I would prefer to use a -rc in the examples and not one of the
-stable 2.6.x.y kernels.
-
->  1.2 Patches
->  1.3 Ketchup
-
-I would prefer using git in the examples.
-There is no such thing as "apt-get" in generic linux.
-
-> Any comments, suggestions and patches are welcome.
-
-There is just too less time to test the kernel much in
-detail. It would be fine to have the whole book as
-./test-my-system-now-but-dont-ask-me.sh ;-)
-
-Good luck,
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+
+-Stephane
