@@ -1,75 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbXFSFaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbXFSFgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758501AbXFSFaL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 01:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXFSF36
+	id S1758106AbXFSFgq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 01:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXFSFgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 01:29:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38144 "EHLO mx1.redhat.com"
+	Tue, 19 Jun 2007 01:36:36 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51780 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751960AbXFSF35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 01:29:57 -0400
-To: "Kevin Bowling" <lkml@kev009.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
-	<ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
-	<or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
-	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<11f674920706181818w693148a4u5bc01a5a380aeca5@mail.gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 02:29:50 -0300
-In-Reply-To: <11f674920706181818w693148a4u5bc01a5a380aeca5@mail.gmail.com> (Kevin Bowling's message of "Mon\, 18 Jun 2007 18\:18\:33 -0700")
-Message-ID: <orlkeg5x69.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752311AbXFSFgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 01:36:35 -0400
+Subject: Re: [PATCH] relay-file-read-start-pos-fix.patch
+From: Tom Zanussi <zanussi@us.ibm.com>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Cc: David Wilder <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
+       systemtap@sources.redhat.com,
+       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi Oshima <soshima@redhat.com>, Hideo Aoki <haoki@redhat.com>
+In-Reply-To: <467750E9.4090808@hitachi.com>
+References: <4676109F.8020202@us.ibm.com>  <467750E9.4090808@hitachi.com>
+Content-Type: text/plain
+Date: Tue, 19 Jun 2007 00:35:00 -0500
+Message-Id: <1182231301.30702.82.camel@ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, "Kevin Bowling" <lkml@kev009.com> wrote:
+On Tue, 2007-06-19 at 12:43 +0900, Masami Hiramatsu wrote:
+> Hi David and Tom,
+> 
+> David Wilder wrote:
+> > This patch fixes a bug in the relay read interface causing the number
+> > of consumed bytes to be set incorrectly. 
+> 
+> Thank you. Your patch fixes one of my concerns.
+> However there is another bug I found.
+> When I use relayfs with "overwrite" mode, read() still set incorrect
+> number of consumed bytes.
+> I tried to fix that. Please review it.
 
-> Legitimate laws and practices require that certain devices not be
-> modified by end users.  Therefore TiVo fails and contributions
-> cease.
+Hi,
 
-I've never denied this possibility.
+Could you send more info on how to reproduce the problem you're seeing?
+And does this patch fix it?
 
-But how about all the other devices that are being tivoized that do
-NOT require this?
+Thanks,
 
-Are people just blind to this possibility?  Or does it really not
-exist, and I'm the first who ever though of it?
+Tom
 
->> Yes.  This is one option that doesn't bring any benefits to anyone.
->> It maintains the status quo for users and the community, but it loses
->> the ability for the vendor to upgrade, fix or otherwise control the
->> users.  Bad for the vendor.
 
-> And users.  Don't spin the facts.
+> 
+> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+> 
+> ---
+>  kernel/relay.c |    8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.22-rc4-mm2/kernel/relay.c
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/kernel/relay.c	2007-06-13 20:22:02.000000000 +0900
+> +++ linux-2.6.22-rc4-mm2/kernel/relay.c	2007-06-18 23:00:54.000000000 +0900
+> @@ -812,7 +812,10 @@
+>  	}
+> 
+>  	buf->bytes_consumed += bytes_consumed;
+> -	read_subbuf = read_pos / buf->chan->subbuf_size;
+> +	if (!read_pos)
+> +		read_subbuf = buf->subbufs_consumed;
+> +	else
+> +		read_subbuf = read_pos / buf->chan->subbuf_size;
+>  	if (buf->bytes_consumed + buf->padding[read_subbuf] == subbuf_size) {
+>  		if ((read_subbuf == buf->subbufs_produced % n_subbufs) &&
+>  		    (buf->offset == subbuf_size))
+> @@ -841,8 +844,9 @@
+>  	}
+> 
+>  	if (unlikely(produced - consumed >= n_subbufs)) {
+> -		consumed = (produced / n_subbufs) * n_subbufs;
+> +		consumed = produced - n_subbufs + 1;
+>  		buf->subbufs_consumed = consumed;
+> +		buf->bytes_consumed = 0;
+>  	}
+>  	
+>  	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
+> 
+> 
+> 
+> 
 
-How is it good that the vendor can downgrade the software behind the
-user's back?
 
-Oh, yeah, right, it could upgrade it too.
-
-> You are advocating things which hurt the end user,
-
-Actually, no.  I'm advocating for respect for users' freedoms.
-Whoever choose not to do that gets slightly hurt in the process, as an
-incentive for respecting users' freedoms.  And yes, when the users'
-freedoms are not respected (the cases you mentioned), that's bad for
-the user, no doubt.  And bad for the community as well.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
