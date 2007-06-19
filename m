@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbXFSTEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932395AbXFSTFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932354AbXFSTEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764131AbXFSTEi
+	id S932395AbXFSTFW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932215AbXFSTE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:04:38 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:58676 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932201AbXFSTEh (ORCPT
+	Tue, 19 Jun 2007 15:04:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47065 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932390AbXFSTE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:04:37 -0400
-Date: Tue, 19 Jun 2007 15:04:36 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Paul Walmsley <paul@booyaka.com>
-cc: Oliver Neukum <oliver@neukum.org>,
-       "Renato S. Yamane" <renatoyamane@mandic.com.br>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       Chuck Ebbert <cebbert@redhat.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] Error -71 on device descriptor read/all
-In-Reply-To: <Pine.LNX.4.64.0706191134160.12843@utopia.booyaka.com>
-Message-ID: <Pine.LNX.4.44L0.0706191502090.2552-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 19 Jun 2007 15:04:57 -0400
+Date: Tue, 19 Jun 2007 20:04:54 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH] remove usage of memmem from scripts/kallsyms.c
+Message-ID: <20070619190454.GB3830@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Paulo Marques <pmarques@grupopie.com>,
+	Andrew Morton <akpm@osdl.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Mike Frysinger <vapier@gentoo.org>
+References: <4678013C.5090402@grupopie.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4678013C.5090402@grupopie.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Paul Walmsley wrote:
-
-> On Tue, 19 Jun 2007, Oliver Neukum wrote:
+On Tue, Jun 19, 2007 at 05:15:56PM +0100, Paulo Marques wrote:
 > 
-> > Am Dienstag, 19. Juni 2007 schrieb Chuck Ebbert:
-> >
-> >> Try disabling CONFIG_USB_SUSPEND
-> >>
-> >> [usb developers: what are the drawbacks of doing this?]
-> >
-> > Increased power consumption.
+> The only in-kernel user of "memmem" is scripts/kallsyms.c and it only 
+> uses it to find tokens that are 2 bytes in size. It is trivial to 
+> replace it with a simple function that finds 2-byte tokens.
 > 
-> speaking of CONFIG_USB_SUSPEND, I've encountered at least one device -- a 
-> Canon EOS 5D camera -- that, after the bus suspends, must be powercycled 
-> in order to return the camera's interrupt endpoints to a functional state. 
-> How are these types of problems handled, currently?  Is this something for 
-> a blacklist?
+> This should help users from systems that don't have the memmem GNU 
+> extension available.
 
-There are a few possible approaches.  One is indeed a blacklist, to 
-prevent the camera from automatically being suspended.  Another is to 
-prevent it by changing a device parameter in sysfs.
-
-Note that neither of these will help if you do a suspend-to-RAM.  That 
-suspends everything.
-
-Alan Stern
+Please add a comment describing why it's there so that it's not ripped
+out again by the first janitor looking over the code.
 
