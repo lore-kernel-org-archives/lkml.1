@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbXFSWOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757753AbXFSWPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757515AbXFSWOA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbXFSWNw
+	id S1757753AbXFSWPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbXFSWP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:13:52 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:39591 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332AbXFSWNv (ORCPT
+	Tue, 19 Jun 2007 18:15:27 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:35423 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbXFSWP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:13:51 -0400
-Message-ID: <4678550D.6070705@zytor.com>
-Date: Tue, 19 Jun 2007 15:13:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 19 Jun 2007 18:15:26 -0400
+Date: Wed, 20 Jun 2007 00:15:28 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix section mismatch in chipsfb
+Message-ID: <20070619221528.GA22413@aepfle.de>
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Chris Snook <csnook@redhat.com>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk, alan <alan@clueserver.org>
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com> <20070619204317.GR10008@csclub.uwaterloo.ca> <Pine.LNX.4.64.0706191505130.26701@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706191505130.26701@asgard.lang.hm>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> 
-> the only trouble I ever had with the .snapshot approach is when tar or
-> find would decend down into the .snapshot when I didn't really intend
-> for it to do so.
-> 
+Maybe this is the correct fix:
 
-Netapp optionally made .snapshot not show up in readdir, which solved
-that problem.
+WARNING: drivers/built-in.o(.text+0x8742a): Section mismatch: reference to .init.data:chipsfb_fix (between 'chipsfb_pci_init' and 'chipsfb_set_par')
+WARNING: drivers/built-in.o(.text+0x87432): Section mismatch: reference to .init.data:chipsfb_fix (between 'chipsfb_pci_init' and 'chipsfb_set_par')
+WARNING: drivers/built-in.o(.text+0x87442): Section mismatch: reference to .init.data:chipsfb_var (between 'chipsfb_pci_init' and 'chipsfb_set_par')
+WARNING: drivers/built-in.o(.text+0x8744a): Section mismatch: reference to .init.data:chipsfb_var (between 'chipsfb_pci_init' and 'chipsfb_set_par')
 
-I have a bigger issue with it starting with only one dot, which is
-traditionally used for user configuration information.  I think
-..snapshot would have been a better choice, and by extension leaving
-double-dot filenames as filesystem namespace (I know that contradicts
-POSIX, but the only namespace available in POSIX is /../ which is a
-global namespace.)
+init_chips is only called from chipsfb_pci_init
+chipsfb_fix and chipsfb_var are only referenced from init_chips
 
-	-hpa
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+
+--- a/drivers/video/chipsfb.c
++++ b/drivers/video/chipsfb.c
+@@ -292,7 +292,7 @@ static void __init chips_hw_init(void)
+ 		write_fr(chips_init_fr[i].addr, chips_init_fr[i].data);
+ }
+ 
+-static struct fb_fix_screeninfo chipsfb_fix __initdata = {
++static struct fb_fix_screeninfo chipsfb_fix __devinitdata = {
+ 	.id =		"C&T 65550",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_PSEUDOCOLOR,
+@@ -309,7 +309,7 @@ static struct fb_fix_screeninfo chipsfb_
+ 	.smem_len =	0x100000,	/* 1MB */
+ };
+ 
+-static struct fb_var_screeninfo chipsfb_var __initdata = {
++static struct fb_var_screeninfo chipsfb_var __devinitdata = {
+ 	.xres = 800,
+ 	.yres = 600,
+ 	.xres_virtual = 800,
+@@ -330,7 +330,7 @@ static struct fb_var_screeninfo chipsfb_
+ 	.vsync_len = 8,
+ };
+ 
+-static void __init init_chips(struct fb_info *p, unsigned long addr)
++static void __devinit init_chips(struct fb_info *p, unsigned long addr)
+ {
+ 	memset(p->screen_base, 0, 0x100000);
+ 
