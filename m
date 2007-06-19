@@ -1,52 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbXFSO2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbXFSObu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbXFSO2D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:28:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXFSO1w
+	id S1757556AbXFSObu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbXFSObl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:27:52 -0400
-Received: from mail.screens.ru ([213.234.233.54]:56539 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753523AbXFSO1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:27:51 -0400
-Date: Tue, 19 Jun 2007 18:27:30 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, pbadari@us.ibm.com,
-       containers@lists.osdl.org, ebiederm@xmission.com, serue@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] create_new_namespaces: fix improper return of NULL
-Message-ID: <20070619142730.GA27361@tv-sign.ru>
-References: <200705090245.l492jZwD008756@shell0.pdx.osdl.net> <20070616191742.GA13434@MAIL.13thfloor.at> <20070617143830.GA379@tv-sign.ru> <20070617163004.GA553@tv-sign.ru> <20070619135129.GA27343@tv-sign.ru> <4677E28C.5050304@fr.ibm.com>
+	Tue, 19 Jun 2007 10:31:41 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:47423 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754790AbXFSObk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 10:31:40 -0400
+Date: Tue, 19 Jun 2007 20:01:57 +0530
+From: "S. P. Prasanna" <prasanna@in.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       ananth@in.ibm.com
+Subject: Re: [patch 2/2] kprobes x86_64 quick fix mark-ro-data
+Message-ID: <20070619143156.GB5478@in.ibm.com>
+Reply-To: prasanna@in.ibm.com
+References: <20070615202310.178466032@polymtl.ca> <4676D2A9.6090403@redhat.com> <20070618115632.7aca8c0f.akpm@linux-foundation.org> <200706182132.56559.ak@suse.de> <20070619100644.GA5478@in.ibm.com> <20070619100810.GA301@in.ibm.com> <1182259288.3014.7.camel@laptopd505.fenrus.org> <20070619133020.GA22368@Krystal> <1182260670.3014.10.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4677E28C.5050304@fr.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1182260670.3014.10.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/19, Cedric Le Goater wrote:
->
-> Oleg Nesterov wrote:
-> > Untested.
-> > 
-> > dup_mnt_ns() and clone_uts_ns() return NULL on failure. This is wrong,
-> > create_new_namespaces() uses ERR_PTR() to catch an error. This means
-> > that the subsequent create_new_namespaces() will hit BUG_ON() in
-> > copy_mnt_ns() or copy_utsname().
+On Tue, Jun 19, 2007 at 06:44:30AM -0700, Arjan van de Ven wrote:
+> On Tue, 2007-06-19 at 09:30 -0400, Mathieu Desnoyers wrote:
+> > * Arjan van de Ven (arjan@infradead.org) wrote:
+> > > On Tue, 2007-06-19 at 15:38 +0530, S. P. Prasanna wrote:
+> > > > This patch is a quick fix for x86_64 to enable kprobes only if DEBUG_RODATA is
+> > > > not configured. Since DEBUG_RODATA markes the kernel text pages as read-only.
+> > > 
+> > > 
+> > > it does??
+> > > 
+> > > I don't seem to be able to find this in the source code..... 
+> > > 
 > 
-> I sent one just like it :
+> > See arch/x86_64/mm/init.c:mark_rodata_ro().
 > 
-> 	http://lkml.org/lkml/2007/6/12/142
+> eh woops
+> 
+> 
+> PATCH] x86: tighten kernel image page access rights
+> author
+> Jan Beulich <jbeulich@novell.com>
+> 
+> Wed, 2 May 2007 17:27:10 +0000
+> (19:27 +0200)
+> committer
+> Andi Kleen <andi@basil.nowhere.org>
+> 
+> Wed, 2 May 2007 17:27:10 +0000
+> (19:27 +0200)
+> commit
+> 6fb14755a676282a4e6caa05a08c92db8e45cfff
+> 
+> 
+> changed it to include text (even though Andi vetoed that before when I
+> asked for it on grounds of breaking kprobes)... sounds this really wants
+> to be a 2nd config option to seperatedly do code and data.
 
-Ah, thanks.
+Something like having a seperate config option and a routine
+to mark kernel text as read execute only.
+And call mark_rwtext_ro() if CONFIG_DEBUG_ROTEXT is enabled
+below in mark_rodata_ro().
 
-Your patch is more complete, it also fixes kernel/user_namespace.c (which
-I don't see in 2.6.22-rc5). I don't this this fix is urgent, so...
+/* this code is for i386 architecture*/
+static inline void mark_rwtext_ro(void)
+{
+	unsigned long start = PFN_ALIGN(_text);
+	unsigned long size = PFN_ALIGN(_etext) - start;
 
-Andrew, please ignore this patch.
+#ifdef CONFIG_HOTPLUG_CPU
+	/* It must still be possible to apply SMP alternatives. */
+	if (num_possible_cpus() <= 1)
+#endif
+	{
+		change_page_attr(virt_to_page(start),
+		                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
+		printk("Write protecting the kernel text: %luk\n", size >> 10);
+	}
+	/*
+	 * global_flush_tlb() will be called after marking the data as readonly.
+	 */
+}
 
-Oleg.
+#ifdef CONFIG_DEBUG_RODATA
 
+void mark_rodata_ro(void)
+{
+....
+
+#ifdef CONFIG_DEBUG_ROTEXT
+	mark_rwtext_ro();
+#endif
+....
+
+}
+
+Thanks
+Prasanna
+-- 
+Prasanna S.P.
+Linux Technology Center
+India Software Labs, IBM Bangalore
+Email: prasanna@in.ibm.com
+Ph: 91-80-41776329
