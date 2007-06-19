@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758573AbXFSMjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbXFSMj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758573AbXFSMjc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 08:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbXFSMjY
+	id S1755210AbXFSMj5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 08:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXFSMjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 08:39:24 -0400
-Received: from ccerelbas01.cce.hp.com ([161.114.21.104]:33314 "EHLO
-	ccerelbas01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756152AbXFSMjX (ORCPT
+	Tue, 19 Jun 2007 08:39:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:50528 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756260AbXFSMjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 08:39:23 -0400
-Date: Tue, 19 Jun 2007 05:39:15 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/8] 2.6.22-rc3 perfmon2 : IBS implementation for AMD64
-Message-ID: <20070619123915.GB23051@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070614215818.509851000@localhost> <20070615093330.845322000@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070615093330.845322000@localhost>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
+	Tue, 19 Jun 2007 08:39:46 -0400
+Message-ID: <4677CE85.6080002@anagramm.de>
+Date: Tue, 19 Jun 2007 14:39:33 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jarek Poplawski <jarkao2@o2.pl>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [ANNOUNCE] Linux Kernel =?UTF-8?B?VGVzdGVy4oCZcyBHdWlkZSB2MC4=?=
+ =?UTF-8?B?My1yYzE=?=
+References: <4676E707.8020109@googlemail.com>
+In-Reply-To: <4676E707.8020109@googlemail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX19Mgq0QkJUA3+qP+xYF+zx+UqGpJbM4p4I5gW9
+ OgosGaEVr9SjqZkJ1IHuhncfD7VSJAwq0YwsTgUMUVm+zY02bK
+ AqFi6IU3rlptiAbeJCJhg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert,
+Hello, Michal, Rafael!
 
-I applied this patch to my tree.
-Thanks.
+Good work!
+Some (minor) comments below.
 
-On Fri, Jun 15, 2007 at 06:57:30PM +0200, Robert Richter wrote:
-> This patch implements Barcelona CPU detection.
+Michal Piotrowski schrieb:
+> Hi,
 > 
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> We are pleased to announce the availability of "Linux Kernel Tester's 
+> Guide" v0.3-rc1.
 > 
-> Index: linux-2.6.22-rc3/arch/i386/perfmon/perfmon.c
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/arch/i386/perfmon/perfmon.c
-> +++ linux-2.6.22-rc3/arch/i386/perfmon/perfmon.c
-> @@ -1059,6 +1059,7 @@ char *pfm_arch_get_pmu_module_name(void)
->  			goto try_arch;
->  		}
->  	case 15:
-> +	case 16:
->  		/* All Opteron processors */
->  		if (cpu_data->x86_vendor == X86_VENDOR_AMD)
->  			return "perfmon_k8";
-> Index: linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/arch/x86_64/perfmon/perfmon_k8.c
-> +++ linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
-> @@ -307,7 +307,12 @@ static int pfm_k8_probe_pmu(void)
->  		return -1;
->  	}
->  
-> -	if (current_cpu_data.x86 != 15) {
-> +	switch (current_cpu_data.x86) {
-> +	case 15:
-> +	case 16:
-> +		PFM_INFO("found family=%d", current_cpu_data.x86);
-> +		break;
-> +	default:
->  		PFM_INFO("unsupported family=%d", current_cpu_data.x86);
->  		return -1;
->  	}
+> This short guide describes the basics of kernel testing. The handbook is 
+> divided into six chapters:
 > 
-> --
-> AMD Saxony, Dresden, Germany
-> Operating System Research Center
-> email: robert.richter@amd.com
-> 
-> 
-> 
+> 1 The kernel, patches, trees and compilation
+>  1.1 The kernel
 
+I would prefer to use a -rc in the examples and not one of the
+stable 2.6.x.y kernels.
+
+>  1.2 Patches
+>  1.3 Ketchup
+
+I would prefer using git in the examples.
+There is no such thing as "apt-get" in generic linux.
+
+> Any comments, suggestions and patches are welcome.
+
+There is just too less time to test the kernel much in
+detail. It would be fine to have the whole book as
+./test-my-system-now-but-dont-ask-me.sh ;-)
+
+Good luck,
 -- 
-
--Stephane
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
