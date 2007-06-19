@@ -1,79 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbXFSWJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbXFSWMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757380AbXFSWJc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbXFSWJZ
+	id S1756822AbXFSWMg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXFSWM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:09:25 -0400
-Received: from www.osadl.org ([213.239.205.134]:33563 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753459AbXFSWJY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:09:24 -0400
-From: =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: mea culpa on the meaning of Tivoization
-Date: Wed, 20 Jun 2007 00:08:34 +0200
-User-Agent: KMail/1.9.5
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
-       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <200706191022.21869.hjk@linutronix.de> <orbqfb3icl.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orbqfb3icl.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Tue, 19 Jun 2007 18:12:27 -0400
+Received: from mga02.intel.com ([134.134.136.20]:11157 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752332AbXFSWM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 18:12:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,439,1175497200"; 
+   d="scan'208";a="256478207"
+Date: Tue, 19 Jun 2007 15:08:12 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
+Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
+Message-ID: <20070619220812.GG7160@linux-os.sc.intel.com>
+References: <20070606231642.GH13751@tree.beaverton.ibm.com> <20070608005726.GO17143@linux-os.sc.intel.com> <20070618223819.GD9751@tree.beaverton.ibm.com> <20070618235434.GB7160@linux-os.sc.intel.com> <20070619005136.GF9751@tree.beaverton.ibm.com> <m1sl8nn82i.fsf@ebiederm.dsl.xmission.com> <20070619180003.GE7160@linux-os.sc.intel.com> <20070619190637.GL9751@tree.beaverton.ibm.com> <20070619195927.GF7160@linux-os.sc.intel.com> <20070619204929.GM9751@tree.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706200008.35152.hjk@linutronix.de>
+In-Reply-To: <20070619204929.GM9751@tree.beaverton.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 19 Juni 2007 20:32 schrieb Alexandre Oliva:
-> On Jun 19, 2007, Hans-Jürgen Koch <hjk@linutronix.de> wrote:
+On Tue, Jun 19, 2007 at 01:49:30PM -0700, Darrick J. Wong wrote:
 > 
-> > Am Dienstag 19 Juni 2007 04:46 schrieb Alexandre Oliva:
-> >> The distrust for the FSF led to this very short-sighted decision of
-> >> painting the Linux community into a corner from which it is very
-> >> unlikely to be able to ever leave, no matter how badly it turns out to
-> >> be needed.  
-> 
-> > I'm neither in a corner nor do I feel the need for a different license.
-> 
-> Yes.  Some day you may.  And then what will you or anyone else be able
-> to do about it?
+> This fixes the problem!  Hurrah!
 
-A lot of awful things could happen to you or me _tomorrow_. Are you prepared
-for everything? I'm not. If I'd try to be prepared for every possible 
-disaster, you'd rightly call me mentally ill.
+Great!  Andrew, please include the appended patch in -mm.
 
-Even if my code is used on a Tivo-like device, I can sleep well and don't
-need a different license. These are the _normal_ grey areas that _every_
-license or law contains. 
+----
+Subject: [patch] x86_64, irq: use mask/unmask and proper locking in fixup_irqs
+From: Suresh Siddha <suresh.b.siddha@intel.com>
 
-> 
-> >> Let's just hope it never is, or that some influx of 
-> >> long-sighted comes in 
-> 
-> > Kernel programmers are short-sighted? What kind of arrogance is that?
-> 
-> It's just stating the obvious.  The upgrade path is a nightmare.
+Force irq migration path during cpu offline, is not using proper
+locks and irq_chip mask/unmask routines. This will result in
+some races(especially the device generating the interrupt can see
+some inconsistent state, resulting in issues like stuck irq,..).
 
-Well, maybe. Maybe this is a topic that needs further discussion.
-But I don't find it very important as we're not in a situation where
-we urgently need a new license.
+Appended patch fixes the issue by taking proper lock and
+encapsulating irq_chip set_affinity() with a mask() before and an
+unmask() after.
 
-[...]
+This fixes a MSI irq stuck issue reported by Darrick Wong.
 
-Hans
+There are several more general bugs in this area(irq migration in the
+process context). For example,
 
+1. Possibility of missing edge triggered irq.
+2. Reliable method of migrating level triggered irq in the process context.
 
+We plan to look and close these in the near future.
 
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Reported-by: Darrick Wong <djwong@us.ibm.com>
+---
+
+diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
+index 3eaceac..55b2733 100644
+--- a/arch/x86_64/kernel/irq.c
++++ b/arch/x86_64/kernel/irq.c
+@@ -144,17 +144,41 @@ void fixup_irqs(cpumask_t map)
+ 
+ 	for (irq = 0; irq < NR_IRQS; irq++) {
+ 		cpumask_t mask;
++		int break_affinity = 0;
++		int set_affinity = 1;
++
+ 		if (irq == 2)
+ 			continue;
+ 
++		/* interrupt's are disabled at this point */
++		spin_lock(&irq_desc[irq].lock);
++
++		if (!irq_has_action(irq) ||
++		    cpus_equal(irq_desc[irq].affinity, map)) {
++			spin_unlock(&irq_desc[irq].lock);
++			continue;
++		}
++
+ 		cpus_and(mask, irq_desc[irq].affinity, map);
+-		if (any_online_cpu(mask) == NR_CPUS) {
+-			printk("Breaking affinity for irq %i\n", irq);
++		if (cpus_empty(mask)) {
++			break_affinity = 1;
+ 			mask = map;
+ 		}
++
++		irq_desc[irq].chip->mask(irq);
++
+ 		if (irq_desc[irq].chip->set_affinity)
+ 			irq_desc[irq].chip->set_affinity(irq, mask);
+-		else if (irq_desc[irq].action && !(warned++))
++		else if (!(warned++))
++			set_affinity = 0;
++
++		irq_desc[irq].chip->unmask(irq);
++
++		spin_unlock(&irq_desc[irq].lock);
++
++		if (break_affinity && set_affinity)
++			printk("Broke affinity for irq %i\n", irq);
++		else if (!set_affinity)
+ 			printk("Cannot set affinity for irq %i\n", irq);
+ 	}
+ 
