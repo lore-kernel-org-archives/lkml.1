@@ -1,88 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbXFSOkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbXFSOkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbXFSOkM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXFSOj6
+	id S1756039AbXFSOkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbXFSOkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:39:58 -0400
-Received: from snowcat.de ([89.31.32.98]:4429 "EHLO snowcat.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751200AbXFSOj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:39:58 -0400
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 1/1] Char: istallion, init+locking fixes (try 2)
-Organization: Disorganized
-From: Ingo Korb <ml@akana.de>
-In-Reply-To: <467788D0.4060802@gmail.com> (Jiri Slaby's message of "Tue, 19
- Jun 2007 09:42:08 +0200")
-References: <uir9l9e1j.fsf@dragon.akana.de> <467788D0.4060802@gmail.com>
-Date: Tue, 19 Jun 2007 16:39:45 +0200
-Message-ID: <uabuw9ff2.fsf_-_@dragon.akana.de>
-User-Agent: Gnus/5.1002 (Gnus v5.10.2) Emacs/21.3 (windows-nt)
+	Tue, 19 Jun 2007 10:40:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:13027 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbXFSOkB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 10:40:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QlR5AsYUOAsJt0bpQxfwBLRE4ev7GxtkzRlW72OrrpoQtOhR7JQ3SgvIgoYnpLoli+TAGzk0KO0sLTZGbrMicXFUZrZgaQI18j0sTue2C6NgoBCq6H4j1afhNRtO/2PAM5uTx7aId5DOe9DyvzpcChgn/vJuNpCy26G8RqDZpPk=
+Message-ID: <a781481a0706190740w14ae94f1r1ea8449524c5fb99@mail.gmail.com>
+Date: Tue, 19 Jun 2007 20:10:00 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Keiichi KII" <k-keiichi@bx.jp.nec.com>
+Subject: Re: [RFC][PATCH -mm take5 4/7] using symlink for the net_device
+Cc: "Matt Mackall" <mpm@selenic.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <4677AA23.1080708@bx.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:21:070619:alan@lxorguk.ukuu.org.uk::KkADvnsBuJMLvOM6:0000000000000
-	000000000000000000000000BEmt
-X-Hashcash: 1:21:070619:linux-kernel@vger.kernel.org::aKQRoUVz7DHmhsPd:000000000
-	000000000000000000000000IWXN
-X-Hashcash: 1:21:070619:akpm@linux-foundation.org::oD7U0VOoWZ9A51Pt:000000000000
-	0000000000000000000000008kWU
-X-Hashcash: 1:21:070619:jirislaby@gmail.com::5jin3l63/qFEhsiQ:000000000000000000
-	000000000000000000000000Egdg
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466FC455.5060001@bx.jp.nec.com> <466FC6ED.9060208@bx.jp.nec.com>
+	 <a781481a0706130949j7b35e33ds9cda5d8a551c9d7d@mail.gmail.com>
+	 <a781481a0706131203g405a4407y1212bb397f14e8eb@mail.gmail.com>
+	 <4677AA23.1080708@bx.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move brdp->iosize assignment in stli_initecp up a few lines to stop the
-driver from requesting an I/O region of length 0.
+Hi,
 
-Remove spin_lock_irqsave/spin_unlock_irqrestore from __stli_sendcmd as
-all users of that function take the lock already.
+On 6/19/07, Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+> Hello Satyam,
+>
+> > and this is why we have to use the dual-list mechanism to react to the net
+> > device rename. This isn't so obvious, a comment at the point where you
+> > declare modify_target_list would be nice? (BTW temporary_list would be
+> > a better name for that, IMO)
+>
+> All right, my patches are short of comments. So, I will add comments
+> to the ambiguous codes.
+>
+> > Ok, so reading through the code makes it obvious that this mutex is used
+> > to protect against the following race:
+> >
+> > Thread #1                               Thread #2
+> > =========                               =========
+> >
+> > [ NETDEV_CHANGENAME notifier ]          [ ioctl(NETCON_REMOVE_TARGET) ]
+> >
+> > netconsole_event()
+> > move from target_list to temp list
+> > work on temp list
+> >                                        kobject_unregister()
+> >                                        -> release_target()
+> >                                           -> remove_target()
+> > move back to target_list
+> >
+> > Which would mean a deleted/removed target added back => *boom*
+> >
+> > But, the race still hasn't been closed properly!
+> >
+> > You're taking the mutex only around "work on temp list" which is
+> > insufficient, you need to ensure atomicity inside netconsole_event()
+> > _completely_ like this (renaming netdev_change_sem to
+> > netdev_changename_mtx):
+>
+> After the target moves from target_list to temporary_list,
+> the kobject_unregister() of possible raced target isn't called
+> in ioctl(NETCON_REMOVE_TARGET) because the target_list doesn't contain
+> the target .
 
-Signed-off-by: Ingo Korb <ml@akana.de>
----
-diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
-index 7b279d1..becba24 100644
---- a/drivers/char/istallion.c
-+++ b/drivers/char/istallion.c
-@@ -2166,14 +2166,10 @@ static void __stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigne
- 	cdkhdr_t __iomem *hdrp;
- 	cdkctrl_t __iomem *cp;
- 	unsigned char __iomem *bits;
--	unsigned long flags;
--
--	spin_lock_irqsave(&brd_lock, flags);
- 
- 	if (test_bit(ST_CMDING, &portp->state)) {
- 		printk(KERN_ERR "STALLION: command already busy, cmd=%x!\n",
- 				(int) cmd);
--		spin_unlock_irqrestore(&brd_lock, flags);
- 		return;
- 	}
- 
-@@ -2194,7 +2190,6 @@ static void __stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigne
- 	writeb(readb(bits) | portp->portbit, bits);
- 	set_bit(ST_CMDING, &portp->state);
- 	EBRDDISABLE(brdp);
--	spin_unlock_irqrestore(&brd_lock, flags);
- }
- 
- static void stli_sendcmd(struct stlibrd *brdp, struct stliport *portp, unsigned long cmd, void *arg, int size, int copyback)
-@@ -3218,13 +3213,13 @@ static int stli_initecp(struct stlibrd *brdp)
- 		goto err;
- 	}
- 
-+	brdp->iosize = ECP_IOSIZE;
-+
- 	if (!request_region(brdp->iobase, brdp->iosize, "istallion")) {
- 		retval = -EIO;
- 		goto err;
- 	}
- 
--	brdp->iosize = ECP_IOSIZE;
--
- /*
-  *	Based on the specific board type setup the common vars to access
-  *	and enable shared memory. Set all board specific information now
+Hum, then why have we introduced that lock (netdev_change_sem)
+in the first place, as in what exactly is it protecting?
 
+In any case, however, the point to extend the critical section here
+to encapsulate all the three parts still stands. We wouldn't want
+ioctl(NETCON_REMOVE_TARGET) on the specified target to
+return without removing the target that the user specified just
+because that target's ethernet interface happens to be currently
+undergoing a name change. The correct behaviour would be to
+sleep on a mutex till the renaming has completed (which will
+then relinquish the mutex) and then (after acquiring the mutex)
+proceed to remove it, IMHO.
+
+> >> +static char *make_netdev_class_name(char *netdev_name)
+> >> +{
+> >> +       char *name;
+> >> +
+> >> +       name = kasprintf(GFP_KERNEL, "net:%s", netdev_name);
+> >
+> > Why the "net:" prefix in the filename?
+>
+> Because I drew upon dev_change_name() method in net/core/dev.c.
+> The device_rename() in the above function makes use of same prefix
+> related to netdev.
+
+I think you're referring to make_class_name() here? That seems to
+be somewhat bulkier than simply being a wrapper over kasprintf()
+like the make_netdev_class_name() here. I'd definitely recommend
+not obfuscating this simple functionality here.
+
+Thanks,
+Satyam
