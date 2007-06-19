@@ -1,146 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765323AbXFSTys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765364AbXFST4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765323AbXFSTys (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763999AbXFSTyj
+	id S1765364AbXFST4z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763862AbXFST4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:54:39 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:45323 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763241AbXFSTyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:54:37 -0400
-Date: Tue, 19 Jun 2007 21:54:31 +0200 (MEST)
-Message-Id: <200706191954.l5JJsVl9002671@alkaid.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 2.6.22-rc5 2/2] sata_promise: SATA hotplug support
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 19 Jun 2007 15:56:48 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34370 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763144AbXFST4r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 15:56:47 -0400
+Date: Tue, 19 Jun 2007 12:57:07 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH 2/2] UML - Add stack usage monitoring
+Message-Id: <20070619125707.84cf73fd.randy.dunlap@oracle.com>
+In-Reply-To: <20070619195003.GA11718@c2.user-mode-linux.org>
+References: <20070619184245.GA10567@c2.user-mode-linux.org>
+	<20070619115422.de61abd5.akpm@linux-foundation.org>
+	<20070619195003.GA11718@c2.user-mode-linux.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables hotplugging of SATA devices in the
-sata_promise driver. It's been tested successfully on
-both first- and second-generation Promise SATA chips:
-SATA150 TX2plus, SATAII150 TX2plus, SATA300 TX2plus,
-and SATA300 TX4.
+On Tue, 19 Jun 2007 15:50:03 -0400 Jeff Dike wrote:
 
-The only quirk I've seen is that hotplugging (insertion)
-on the first-generation SATA150 TX2plus requires a lengthier
-EH sequence than on the second-generation chips.
-On the second-generation chips a simple soft reset seems
-to suffice, but on the first-generation chip there's a
-"port is slow to respond" after the initial soft reset,
-after which libata issues a hard reset, and then the
-device is recognised.
+> Add a machanism to see how much of a kernel stack is used.  This
+> allocates zeroed stacks and sees where the lowest non-zero byte is on
+> process exit.  It keeps track of the lowest value and logs values as
+> they get lower.
+> 
+> Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+> --
+>  arch/um/Kconfig.debug        |    9 +++++++++
+>  arch/um/defconfig            |    1 +
+>  arch/um/kernel/process.c     |   29 +++++++++++++++++++++++++++++
+>  include/asm-um/thread_info.h |   16 ++++++++++++++++
+>  4 files changed, 55 insertions(+)
+> 
+> Index: linux-2.6.21-mm/arch/um/Kconfig.debug
+> ===================================================================
+> --- linux-2.6.21-mm.orig/arch/um/Kconfig.debug	2007-06-19 14:06:36.000000000 -0400
+> +++ linux-2.6.21-mm/arch/um/Kconfig.debug	2007-06-19 14:06:44.000000000 -0400
+> @@ -47,4 +47,13 @@ config GCOV
+>          If you're involved in UML kernel development and want to use gcov,
+>          say Y.  If you're unsure, say N.
+>  
+> +config DEBUG_STACK_USAGE
+> +	bool "Stack utilization instrumentation"
+> +	default N
+> +	help
+> +	Track the maximum kernel stack usage - this will look at each
+> +	kernel stack at process exit and log it if it's the deepest
+> +	stack seen so far.
 
-The hotplug checks are high up in the interrupt handling
-path, not deep down in error_intr as in ahci/sata_sil24.
-That's because the chip doesn't signal hotplug status changes
-in the per-port status register: instead a global register
-contains hotplug control and status flags for all ports.
-I considered following the ahci/sata_sil24 structure, but
-that would have required non-trivial changes to the interrupt
-handling path, so I chose to keep the hotplug changes simple
-and unobtrusive.
+Kconfig help text is indented 2 more spaces (by convention or
+CodingStyle).
 
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
---
-This patch depends on patch 1/2: sata_promise: cleanups.
+> +
+> +	This option will slow down process creation and destruction somewhat.
+>  endmenu
+> Index: linux-2.6.21-mm/arch/um/kernel/process.c
+> ===================================================================
+> --- linux-2.6.21-mm.orig/arch/um/kernel/process.c	2007-06-19 14:06:36.000000000 -0400
+> +++ linux-2.6.21-mm/arch/um/kernel/process.c	2007-06-19 15:48:20.000000000 -0400
+> @@ -411,3 +411,32 @@ unsigned long arch_align_stack(unsigned 
+>  	return sp & ~0xf;
+>  }
+>  #endif
+> +
+> +#ifdef CONFIG_DEBUG_STACK_USAGE
+> +
+> +static DEFINE_SPINLOCK(low_water_lock);
+> +static int lowest_to_date = THREAD_SIZE;
+> +
+> +void check_stack_usage(struct thread_info *s)
+> +{
+> +	unsigned int *stack, *p, *end;
+> +	int left;
+> +
+> +	stack = (unsigned int *) (s + 1);
+> +	end = (unsigned int *) ((unsigned long) s + THREAD_SIZE);
+> +	for (p = stack; p < end; p++) {
+> +		if(*p != 0)
 
-Changes since the preliminary version:
-- cleanups
-- added testing on the first-generation SATA150 TX2plus
+		if (*p != NULL)
+or
+		if (*p)
 
- drivers/ata/sata_promise.c |   40 +++++++++++++++++++++++++++++++++++-----
- 1 files changed, 35 insertions(+), 5 deletions(-)
+> +			break;
+> +	}
+> +
+> +	left = (p - stack) * sizeof(*p);
+> +
+> +	spin_lock(&low_water_lock);
+> +	if (left < lowest_to_date) {
+> +		printk("Greatest stack depth - %d bytes left\n", left);
 
---- linux-2.6.22-rc5/drivers/ata/sata_promise.c.~1~	2007-06-19 20:40:28.000000000 +0200
-+++ linux-2.6.22-rc5/drivers/ata/sata_promise.c	2007-06-19 20:41:36.000000000 +0200
-@@ -45,7 +45,7 @@
- #include "sata_promise.h"
- 
- #define DRV_NAME	"sata_promise"
--#define DRV_VERSION	"2.08"
-+#define DRV_VERSION	"2.09"
- 
- enum {
- 	PDC_MAX_PORTS		= 4,
-@@ -716,6 +716,9 @@ static irqreturn_t pdc_interrupt (int ir
- 	unsigned int i, tmp;
- 	unsigned int handled = 0;
- 	void __iomem *mmio_base;
-+	unsigned int hotplug_offset, ata_no;
-+	u32 hotplug_status;
-+	int is_sataii_tx4;
- 
- 	VPRINTK("ENTER\n");
- 
-@@ -726,10 +729,20 @@ static irqreturn_t pdc_interrupt (int ir
- 
- 	mmio_base = host->iomap[PDC_MMIO_BAR];
- 
-+	/* read and clear hotplug flags for all ports */
-+	if (host->ports[0]->flags & PDC_FLAG_GEN_II)
-+		hotplug_offset = PDC2_SATA_PLUG_CSR;
-+	else
-+		hotplug_offset = PDC_SATA_PLUG_CSR;
-+	hotplug_status = readl(mmio_base + hotplug_offset);
-+	if (hotplug_status & 0xff)
-+		writel(hotplug_status | 0xff, mmio_base + hotplug_offset);
-+	hotplug_status &= 0xff;	/* clear uninteresting bits */
-+
- 	/* reading should also clear interrupts */
- 	mask = readl(mmio_base + PDC_INT_SEQMASK);
- 
--	if (mask == 0xffffffff) {
-+	if (mask == 0xffffffff && hotplug_status == 0) {
- 		VPRINTK("QUICK EXIT 2\n");
- 		return IRQ_NONE;
- 	}
-@@ -737,16 +750,33 @@ static irqreturn_t pdc_interrupt (int ir
- 	spin_lock(&host->lock);
- 
- 	mask &= 0xffff;		/* only 16 tags possible */
--	if (!mask) {
-+	if (mask == 0 && hotplug_status == 0) {
- 		VPRINTK("QUICK EXIT 3\n");
- 		goto done_irq;
- 	}
- 
- 	writel(mask, mmio_base + PDC_INT_SEQMASK);
- 
-+	is_sataii_tx4 = pdc_is_sataii_tx4(host->ports[0]->flags);
-+
- 	for (i = 0; i < host->n_ports; i++) {
- 		VPRINTK("port %u\n", i);
- 		ap = host->ports[i];
-+
-+		/* check for a plug or unplug event */
-+		ata_no = pdc_port_no_to_ata_no(i, is_sataii_tx4);
-+		tmp = hotplug_status & (0x11 << ata_no);
-+		if (tmp && ap &&
-+		    !(ap->flags & ATA_FLAG_DISABLED)) {
-+			struct ata_eh_info *ehi = &ap->eh_info;
-+			ata_ehi_clear_desc(ehi);
-+			ata_ehi_hotplugged(ehi);
-+			ata_ehi_push_desc(ehi, "hotplug_status %#x", tmp);
-+			ata_port_freeze(ap);
-+			continue;
-+		}
-+
-+		/* check for a packet interrupt */
- 		tmp = mask & (1 << (i + 1));
- 		if (tmp && ap &&
- 		    !(ap->flags & ATA_FLAG_DISABLED)) {
-@@ -902,9 +932,9 @@ static void pdc_host_init(struct ata_hos
- 	tmp = readl(mmio + hotplug_offset);
- 	writel(tmp | 0xff, mmio + hotplug_offset);
- 
--	/* mask plug/unplug ints */
-+	/* unmask plug/unplug ints */
- 	tmp = readl(mmio + hotplug_offset);
--	writel(tmp | 0xff0000, mmio + hotplug_offset);
-+	writel(tmp & ~0xff0000, mmio + hotplug_offset);
- 
- 	/* don't initialise TBG or SLEW on 2nd generation chips */
- 	if (is_gen2)
+Does UML need/use KERN_* facility levels in printk() calls?
+
+> +		lowest_to_date = left;
+> +	}
+> +	spin_unlock(&low_water_lock);
+> +}
+> +
+> +#endif
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
