@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbXFSNt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbXFSNwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbXFSNt7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 09:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750755AbXFSNtw
+	id S1753709AbXFSNwK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 09:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbXFSNv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 09:49:52 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:46901 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbXFSNtw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 09:49:52 -0400
-Date: Tue, 19 Jun 2007 15:51:02 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Trilok Soni <soni.trilok@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
+	Tue, 19 Jun 2007 09:51:57 -0400
+Received: from mail.screens.ru ([213.234.233.54]:46012 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750788AbXFSNv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 09:51:57 -0400
+Date: Tue, 19 Jun 2007 17:51:29 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Herbert Poetzl <herbert@13thfloor.at>, pbadari@us.ibm.com, clg@fr.ibm.com,
+       containers@lists.osdl.org, ebiederm@xmission.com, serue@us.ibm.com,
        linux-kernel@vger.kernel.org
-Message-ID: <20070619135102.GH4374@enneenne.com>
-References: <5d5443650706190428q341a50a1obae68b2565d0ed7@mail.gmail.com> <20070619121020.GA8902@enneenne.com> <20070619153940.0e120fb0@hyperion.delvare>
-MIME-Version: 1.0
+Subject: [PATCH] create_new_namespaces: fix improper return of NULL
+Message-ID: <20070619135129.GA27343@tv-sign.ru>
+References: <200705090245.l492jZwD008756@shell0.pdx.osdl.net> <20070616191742.GA13434@MAIL.13thfloor.at> <20070617143830.GA379@tv-sign.ru> <20070617163004.GA553@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070619153940.0e120fb0@hyperion.delvare>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [i2c] [PATCH] I2C: TSL2550 support.
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <20070617163004.GA553@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 03:39:40PM +0200, Jean Delvare wrote:
-> Hi Rodolfo,
-> 
-> On Tue, 19 Jun 2007 14:10:20 +0200, Rodolfo Giometti wrote:
-> > Add support for Taos TSL2550 ambient light sensors.
-> > (http://www.taosinc.com/product_detail.asp?cateid=4&proid=18).
-> > 
-> > Signed-off-by: Rodolfo Giometti <giometti@linux.it>
-> 
-> Did you ever read my review of your driver?
-> http://lists.lm-sensors.org/pipermail/i2c/2007-February/000824.html
+Untested.
 
-No! I missed it!
+dup_mnt_ns() and clone_uts_ns() return NULL on failure. This is wrong,
+create_new_namespaces() uses ERR_PTR() to catch an error. This means
+that the subsequent create_new_namespaces() will hit BUG_ON() in
+copy_mnt_ns() or copy_utsname().
 
-> I'm asking because you never replied and I don't see any of my
-> suggestions implemented in this new version of your driver.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-I'm very sorry for that... :'(
+--- ns/fs/namespace.c~1_NS_NULL	2007-05-21 13:57:56.000000000 +0400
++++ ns/fs/namespace.c	2007-06-19 17:26:35.000000000 +0400
+@@ -1457,7 +1457,7 @@ static struct mnt_namespace *dup_mnt_ns(
+ 
+ 	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
+ 	if (!new_ns)
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	atomic_set(&new_ns->count, 1);
+ 	INIT_LIST_HEAD(&new_ns->list);
+@@ -1471,7 +1471,7 @@ static struct mnt_namespace *dup_mnt_ns(
+ 	if (!new_ns->root) {
+ 		up_write(&namespace_sem);
+ 		kfree(new_ns);
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 	}
+ 	spin_lock(&vfsmount_lock);
+ 	list_add_tail(&new_ns->list, &new_ns->root->mnt_list);
+--- ns/kernel/utsname.c~1_NS_NULL	2007-05-21 13:57:59.000000000 +0400
++++ ns/kernel/utsname.c	2007-06-19 17:35:22.000000000 +0400
+@@ -13,6 +13,7 @@
+ #include <linux/uts.h>
+ #include <linux/utsname.h>
+ #include <linux/version.h>
++#include <linux/err.h>
+ 
+ /*
+  * Clone a new ns copying an original utsname, setting refcount to 1
+@@ -24,10 +25,11 @@ static struct uts_namespace *clone_uts_n
+ 	struct uts_namespace *ns;
+ 
+ 	ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
+-	if (ns) {
+-		memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
+-		kref_init(&ns->kref);
+-	}
++	if (!ns)
++		return ERR_PTR(-ENOMEM);
++
++	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
++	kref_init(&ns->kref);
+ 	return ns;
+ }
+ 
 
-Let me fix your suggestions and I send again my patch.
-
-Ciao,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
