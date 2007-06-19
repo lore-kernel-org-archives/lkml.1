@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbXFSXXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbXFSXY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756950AbXFSXXe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 19:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbXFSXX3
+	id S1758139AbXFSXY5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 19:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXFSXYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 19:23:29 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:20008 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526AbXFSXX2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 19:23:28 -0400
-X-IronPort-AV: i="4.16,440,1175486400"; 
-   d="scan'208"; a="42717447:sNHT31318329"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Bernd Schmidt" <bernds_cb1@t-online.de>
-Subject: Re: [PATCH, RFD]: Unbreak no-mmu mmap
-Date: Tue, 19 Jun 2007 19:26:19 -0400
-User-Agent: KMail/1.9.5
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David Howells" <dhowells@redhat.com>,
-       "Wu, Bryan" <Bryan.Wu@analog.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Greg Ungerer" <gerg@snapgear.com>
-References: <46695F6D.5050600@t-online.de>
-In-Reply-To: <46695F6D.5050600@t-online.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 19 Jun 2007 19:24:50 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36071 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754393AbXFSXYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 19:24:50 -0400
+Subject: Re: Fix signalfd interaction with thread-private signals
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070619140646.GB27343@tv-sign.ru>
+References: <1182064500.2798.6.camel@entropy>
+	 <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com>
+	 <1182108399.3794.4.camel@entropy>
+	 <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
+	 <1182125303.3794.8.camel@entropy>
+	 <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com>
+	 <1182127391.26853.207.camel@localhost.localdomain>
+	 <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
+	 <20070619091452.GA94@tv-sign.ru>
+	 <1182254988.26853.334.camel@localhost.localdomain>
+	 <20070619140646.GB27343@tv-sign.ru>
+Content-Type: text/plain
+Date: Wed, 20 Jun 2007 09:24:33 +1000
+Message-Id: <1182295473.26853.386.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706191926.20210.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 19 Jun 2007 23:23:23.0606 (UTC) FILETIME=[D4C25F60:01C7B2C8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 8 Jun 2007 09:53, Bernd Schmidt pondered:
-> Here's a patch to move nommu mmap/munmap ever so slightly closer to mmu
-> behaviour.  The motivation for this is to be able to deselect uClibc's
-> UCLIBC_UCLINUX_BROKEN_MUNMAP config option, which speeds up malloc a
-> fair bit.  I'm interested in comments whether this is a good direction
-> to go.  The patch is against Linus' tree as of a few minutes ago.
+On Tue, 2007-06-19 at 18:06 +0400, Oleg Nesterov wrote:
+> On 06/19, Benjamin Herrenschmidt wrote:
+> >
+> > On Tue, 2007-06-19 at 13:14 +0400, Oleg Nesterov wrote:
+> > 
+> > > The commited "Fix signalfd interaction with thread-private signals"
+> > > (commit caec4e8dc85e0644ec24aeb36285e1ba02da58cc) doesn't implement
+> > > this.
+> > 
+> > Indeed, if you want what Davide described, you need to also change
+> > signalfd side. The patch I did merely prevents another thread from
+> > dequeuing somebody else private signals.
+> 
+> Yes I see, but why do we need this change? Yes, we can dequeue SIGSEGV
+> from another thread. Just don't do it if you have a handler for SIGSEGV?
 
-I'm assuming that since no one had any large objections, that this is OK, and 
-we should send to Andrew to live in -mm for awhile?
+Well, for such synchronous signals, it's a fairly stupid idea,
+especially since you can't predict who will get it. Signals such as SEGV
+are forced-in, which means they are force-unblocked. Thus, you can't
+know for sure whome of signalfd or the target thread will get it first,
+depending on who catches the siglock first I suppose. In one case,
+you'll manage to steal it, in the other, you'll thread will be killed.
 
--Robin
+Ben.
+
+
