@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbXFSWwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761411AbXFSWww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761287AbXFSWwg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760879AbXFSWwN
+	id S1761411AbXFSWww (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbXFSWwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:52:13 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:10122 "EHLO
-	outbound3-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761119AbXFSWwK (ORCPT
+	Tue, 19 Jun 2007 18:52:25 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:54615 "EHLO
+	outbound8-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760760AbXFSWwX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:52:10 -0400
+	Tue, 19 Jun 2007 18:52:23 -0400
 X-BigFish: VP
 X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
 X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Wed, 20 Jun 2007 00:52:25 +0200
+Date: Wed, 20 Jun 2007 00:50:11 +0200
 From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
 To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [PATCH 12/12] acpi: select ACPI_EC for SONY_LAPTOP
-Message-ID: <20070619225225.GN5193@alberich.amd.com>
+Subject: [PATCH 6/12] acpi: fix compile warnings
+Message-ID: <20070619225011.GH5193@alberich.amd.com>
 MIME-Version: 1.0
 User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Jun 2007 22:51:29.0374 (UTC)
- FILETIME=[5FC9BFE0:01C7B2C4]
-X-WSS-ID: 6A6681851S4852509-01-01
+X-OriginalArrivalTime: 19 Jun 2007 22:49:14.0840 (UTC)
+ FILETIME=[0F997D80:01C7B2C4]
+X-WSS-ID: 6A6682E71S4852301-01-01
 Content-Type: text/plain;
  charset=us-ascii
 Content-Disposition: inline
@@ -30,28 +30,28 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix kernel build problem as SONY_LAPTOP depends on ACPI_EC.
+Fix compile warnings:
+
+ drivers/acpi/bus.c: In function 'acpi_bus_get_power':
+ drivers/acpi/bus.c:162: warning: implicit declaration of function 'acpi_power_get_inferred_state'
+ drivers/acpi/bus.c: In function 'acpi_bus_set_power':
+ drivers/acpi/bus.c:232: warning: implicit declaration of function 'acpi_power_transition'
 
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- drivers/misc/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 0d6f369..463fa41 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -119,6 +119,7 @@ config MSI_LAPTOP
- config SONY_LAPTOP
- 	tristate "Sony Laptop Extras"
- 	depends on X86 && ACPI
-+	select ACPI_EC
- 	select BACKLIGHT_CLASS_DEVICE
- 	  ---help---
- 	  This mini-driver drives the SNC and SPIC devices present in the ACPI
--- 
-1.5.0.7
-
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index b4a9ea5..e01dca1 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -43,6 +43,8 @@ ACPI_MODULE_NAME("bus");
+ #ifdef	CONFIG_X86
+ extern void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger);
+ #endif
++extern int acpi_power_get_inferred_state(struct acpi_device *);
++extern int acpi_power_transition(struct acpi_device *, int);
+ 
+ struct acpi_device *acpi_root;
+ struct proc_dir_entry *acpi_root_dir;
 
 
 
