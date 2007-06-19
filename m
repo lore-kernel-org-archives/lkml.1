@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759731AbXFSPk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbXFSPmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759731AbXFSPk7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbXFSPkw
+	id S1760011AbXFSPmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbXFSPmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:40:52 -0400
-Received: from smtp-01b.mandic.com.br ([200.225.81.136]:42775 "EHLO
-	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757108AbXFSPkv (ORCPT
+	Tue, 19 Jun 2007 11:42:04 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:29296 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757599AbXFSPmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:40:51 -0400
-Message-ID: <4677F820.5020207@mandic.com.br>
-Date: Tue, 19 Jun 2007 12:37:04 -0300
-From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 19 Jun 2007 11:42:01 -0400
+Message-ID: <4677F942.6080909@fr.ibm.com>
+Date: Tue, 19 Jun 2007 17:41:54 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Jiri Kosina <jikos@jikos.cz>
-Subject: Re: Error -71 on device descriptor read/all
-References: <4677EBF8.5020104@mandic.com.br> <Pine.LNX.4.64.0706191657050.3068@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0706191657050.3068@twin.jikos.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, pbadari@us.ibm.com,
+       containers@lists.osdl.org, ebiederm@xmission.com, serue@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] create_new_namespaces: fix improper return of NULL
+References: <200705090245.l492jZwD008756@shell0.pdx.osdl.net> <20070616191742.GA13434@MAIL.13thfloor.at> <20070617143830.GA379@tv-sign.ru> <20070617163004.GA553@tv-sign.ru> <20070619135129.GA27343@tv-sign.ru> <4677E28C.5050304@fr.ibm.com> <20070619142730.GA27361@tv-sign.ru>
+In-Reply-To: <20070619142730.GA27361@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Tue, 19 Jun 2007, Renato S. Yamane wrote:
->> I see this in dmesg:
->> usb 1-1: device descriptor read/all, error -71
+Oleg Nesterov wrote:
+> On 06/19, Cedric Le Goater wrote:
+>> Oleg Nesterov wrote:
+>>> Untested.
+>>>
+>>> dup_mnt_ns() and clone_uts_ns() return NULL on failure. This is wrong,
+>>> create_new_namespaces() uses ERR_PTR() to catch an error. This means
+>>> that the subsequent create_new_namespaces() will hit BUG_ON() in
+>>> copy_mnt_ns() or copy_utsname().
+>> I sent one just like it :
+>>
+>> 	http://lkml.org/lkml/2007/6/12/142
 > 
-> Is this a USB 2.0 high-speed device?
+> Ah, thanks.
+> 
+> Your patch is more complete, it also fixes kernel/user_namespace.c (which
+> I don't see in 2.6.22-rc5). I don't this this fix is urgent, so...
 
-lspci -v | grep 1d.7
-00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 
-Family) USB2 EHCI Controller (rev 04) (prog-if 20 [EHCI])
+This patch applies on top of previous i've sent to andrew. 
+kernel/user_namespace.c should be in -mm.
 
-My machine is a Laptop Toshiba M45-S355
+Thanks,
 
-> Don't you for example have USB 
-> extension cable too long to work on-high speed?
-
-My only USB device is a mouse (Microsoft Notebook Optical Mouse) without 
-extension cable (I use original cable, with less than 3 feets).
-
-> I guess the situation improves when you force USB 1.1 (i.e. rmmod 
-> ehci_hcd), right?
-
-#rmmode ehci_hcd
-#tail /var/log/messages
-
-kernel: ehci_hcd 0000:00:1d.7: remove, state 4
-kernel: usb usb5: USB disconnect, address 1
-kernel: ehci_hcd 0000:00:1d.7: USB bus 5 deregistered
-kernel: ACPI: PCI interrupt for device 0000:00:1d.7 disabled
-
-I don't see any error (-71).
-
-#modprobe ehci_hcd
-#tail /var/log/messages
-kernel: ACPI: PCI Interrupt 0000:00:1d.7[A] -> Link [LNKH] -> GSI 10 
-(level, low) -> IRQ 10
-kernel: ehci_hcd 0000:00:1d.7: EHCI Host Controller
-kernel: ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
-kernel: ehci_hcd 0000:00:1d.7: debug port 1
-kernel: ehci_hcd 0000:00:1d.7: irq 10, io mem 0xf4000000
-kernel: ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 
-2004
-kernel: usb usb5: configuration #1 chosen from 1 choice
-kernel: hub 5-0:1.0: USB hub found
-kernel: hub 5-0:1.0: 8 ports detected
-kernel: usb 1-1: USB disconnect, address 4
-kernel: usb 1-1: new low speed USB device using uhci_hcd and address 5
-kernel: usb 1-1: configuration #1 chosen from 1 choice
-kernel: input: Microsoft Microsoft 3-Button Mouse with IntelliEye? as 
-/class/input/input8
-kernel: input: USB HID v1.00 Mouse [Microsoft Microsoft 3-Button Mouse 
-with IntelliEye?] on usb-0000:00:1d.0-1
-
-This error is present only in dmesg, see below (line 8):
-
-PCI: Setting latency timer of device 0000:00:1d.7 to 64
-ehci_hcd 0000:00:1d.7: EHCI Host Controller
-ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
-ehci_hcd 0000:00:1d.7: debug port 1
-PCI: cache line size of 32 is not supported by device 0000:00:1d.7
-ehci_hcd 0000:00:1d.7: irq 10, io mem 0xf4000000
-ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-usb 1-1: device descriptor read/all, error -71
-usb usb5: configuration #1 chosen from 1 choice
-hub 5-0:1.0: USB hub found
-hub 5-0:1.0: 8 ports detected
-Clocksource tsc unstable (delta = -194969704 ns)
-ACPI: PCI Interrupt Link [LNKG] enabled at IRQ 6
-PCI: setting IRQ 6 as level-triggered
-
-Best regards,
-Renato
+C. 
