@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbXFSPmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbXFSPtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760011AbXFSPmR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758125AbXFSPmE
+	id S1758740AbXFSPtq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXFSPth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:42:04 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:29296 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757599AbXFSPmB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:42:01 -0400
-Message-ID: <4677F942.6080909@fr.ibm.com>
-Date: Tue, 19 Jun 2007 17:41:54 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 19 Jun 2007 11:49:37 -0400
+Received: from h155.mvista.com ([63.81.120.155]:38165 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752806AbXFSPtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 11:49:36 -0400
+Message-ID: <4677FB77.1050903@ru.mvista.com>
+Date: Tue, 19 Jun 2007 19:51:19 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, pbadari@us.ibm.com,
-       containers@lists.osdl.org, ebiederm@xmission.com, serue@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] create_new_namespaces: fix improper return of NULL
-References: <200705090245.l492jZwD008756@shell0.pdx.osdl.net> <20070616191742.GA13434@MAIL.13thfloor.at> <20070617143830.GA379@tv-sign.ru> <20070617163004.GA553@tv-sign.ru> <20070619135129.GA27343@tv-sign.ru> <4677E28C.5050304@fr.ibm.com> <20070619142730.GA27361@tv-sign.ru>
-In-Reply-To: <20070619142730.GA27361@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mark Lord <lkml@rtr.ca>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Linas Vepstas <linas@austin.ibm.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+References: <20070618175713.GD5836@austin.ibm.com>	<20070618212704.394912b8@the-village.bc.nu>	<20070618204601.GF5836@austin.ibm.com>	<20070618220441.3a3af8ca@the-village.bc.nu>	<4677E3BC.3040307@ru.mvista.com> <20070619151919.79c79af1@the-village.bc.nu> <4677E726.1080602@ru.mvista.com> <4677F881.6060200@rtr.ca>
+In-Reply-To: <4677F881.6060200@rtr.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 06/19, Cedric Le Goater wrote:
->> Oleg Nesterov wrote:
->>> Untested.
->>>
->>> dup_mnt_ns() and clone_uts_ns() return NULL on failure. This is wrong,
->>> create_new_namespaces() uses ERR_PTR() to catch an error. This means
->>> that the subsequent create_new_namespaces() will hit BUG_ON() in
->>> copy_mnt_ns() or copy_utsname().
->> I sent one just like it :
->>
->> 	http://lkml.org/lkml/2007/6/12/142
-> 
-> Ah, thanks.
-> 
-> Your patch is more complete, it also fixes kernel/user_namespace.c (which
-> I don't see in 2.6.22-rc5). I don't this this fix is urgent, so...
+Mark Lord wrote:
 
-This patch applies on top of previous i've sent to andrew. 
-kernel/user_namespace.c should be in -mm.
+>>>>>> I can prepare a patch, but only with a lot of guidance. I can test 
+>>>>>> & debug, I'm highly motivated just right now ... 
 
-Thanks,
+>>>>> If you've got a nice repeatable problem please try using the libata
+>>>>> driver. That handles the error paths differently and doesn't try a 
+>>>>> FIFO
+>>>>> drain which might matter in this case I guess.
 
-C. 
+>>>>    FIFO drain for DMA commands?
+
+>>> Welcome to the old IDE layer which I am so glad I left behind 8)
+
+>>> ide_ata_error will try and do a PIO flush regardless of the command type
+>>> if DRQ_STAT is asserted. See ide_dma_intr -> ide_error -> ...
+
+>>    Indeed... but the thing is we don't know what's asserted in this 
+>> case -- remember, it's reading the status register that locks 
+>> everything up...
+
+> Exactly.  And IORDY shouldn't really apply there,
+> unless some nitwit standards person wrote it into a spec..
+
+    Wrote what? IORDY throttling does *apply* to both data and non-data 
+register accesses, of course.
+
+> -ml
+
+MBR, Sergei
