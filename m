@@ -1,196 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765794AbXFSDM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbXFSDPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765794AbXFSDM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 23:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762458AbXFSDMO
+	id S932748AbXFSDPd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 23:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763135AbXFSDP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 23:12:14 -0400
-Received: from smtpout.mac.com ([17.250.248.178]:59237 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759420AbXFSDML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 23:12:11 -0400
-In-Reply-To: <OF7FA807A1.64C0D5AF-ON882572FE.0061B34C-882572FE.00628322@us.ibm.com>
-References: <OF7FA807A1.64C0D5AF-ON882572FE.0061B34C-882572FE.00628322@us.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6E9A6F9E-8948-40F2-9129-1F1491D49D83@mac.com>
-Cc: Jack Stone <jack@hawkeye.stone.uk.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, alan <alan@clueserver.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-fsdevel@vger.kernel.org,
-       LKML Kernel <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, git@vger.kernel.org
+	Mon, 18 Jun 2007 23:15:26 -0400
+Received: from keil-draco.com ([216.193.185.50]:50657 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762088AbXFSDPZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 23:15:25 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alexandre Oliva <aoliva@redhat.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Mon, 18 Jun 2007 23:15:11 -0400
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706181945.16343.dhazelton@enter.net> <orvedk8zpa.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orvedk8zpa.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Versioning file system
-Date: Mon, 18 Jun 2007 23:10:42 -0400
-To: Bryan Henderson <hbryan@us.ibm.com>
-X-Mailer: Apple Mail (2.752.2)
+Content-Disposition: inline
+Message-Id: <200706182315.11466.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, at 13:56:05, Bryan Henderson wrote:
->> The question remains is where to implement versioning: directly in  
->> individual filesystems or in the vfs code so all filesystems can  
->> use it?
+On Monday 18 June 2007 22:06:57 Alexandre Oliva wrote:
+> On Jun 18, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+> > On Monday 18 June 2007 19:31:30 Alexandre Oliva wrote:
+> >> On Jun 18, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> >>
+> >> Actually, just think of how many times you've heard the argument "I
+> >> can't give you the source code for this driver/firmware/etc under the
+> >> GPLv2 because the law says so."
+> >
+> > Sorry to tell you this, but anyone that makes a modification to GPLv2
+> > covered code and distributes that modification is bound by the license.
 >
-> Or not in the kernel at all.  I've been doing versioning of the  
-> types I described for years with user space code and I don't  
-> remember feeling that I compromised in order not to involve the  
-> kernel.
+> Of course I know that.  I'm not the one making those arguments.
+> And then, not all of those pieces of code are indeed moficiations of
+> GPLv2-covered code, so your objection is off target.
+
+I had a parsing error with your statement. My mind made the jump to "they are 
+doing it with GPLv2 code" - meaculpa.
+
+> >> > b) I think you're simply wrong in your math. I think more people
+> >> > like the middle-ground and not-frothing-at-the-mouth spirit of "open
+> >> > source" over the religious dogma of "free software".
+> >>
+> >> It looks like the math you're talking about is in no way related with
+> >> anything I've argued about.  You seem to be thinking about the number
+> >> of people who claim to be on the "free software" or "open source"
+> >> sides, but I can't fathom in what way this is related with whether you
+> >> get more or less contributions from users as a consequence of users'
+> >> being permitted to tinker with the free software in their own devices.
+> >
+> > "More Developers" (either "Free Software" or "Open Source") == "More
+> > Contributions"
+> >
+> > That equation is very simple to understand - claiming its wrong is
+> > impossible.
 >
-> Of course, if you want to do it with snapshots and COW, you'll have  
-> to ask where in the kernel to put that, but that's not a file  
-> versioning question; it's the larger snapshot question.
+> YES!  Thank you!  This is exactly the point I'm trying to make.
+>
+> Now can you please explain this to Linus in terms that his brain won't
+> dismiss as "coming from a fundamentalist"?
 
-What I think would be particularly interesting in this domain is  
-something similar in concept to GIT, except in a file-system:
-   1) Redundancy is easy, you just ensure that you have at least "N"  
-distributed copies of each object, where "N" is some function of the  
-object itself.
-   2) Network replication is easy, you look up objects based on the  
-SHA-1 stored in the parent directory entry and cache them where  
-needed (IE: make the "N" function above dynamic based on frequency of  
-access on a given computer).
-   3) Snapshots are easy and cheap; an RO snapshot is a tag and an RW  
-snapshot is a branch.  These can be easily converted between.
-   4) Compression is easy; you can compress objects based on any  
-arbitrary configurable criteria and the filesystem will record  
-whether or not an object is compressed.  You can also compress  
-differently when archiving objects to secondary storage.
-   5) Streaming fsck-like verification is easy; ensure the hash name  
-field matches the actual hash of the object.
-   6) Fsck is easy since rollback is trivial, you can always revert  
-to an older tree to boot and start up services before attempting  
-resurrection of lost objects and trees in the background.
-   7) Multiple-drive or multiple-host storage pools are easy:  Think  
-the git "alternates" file.
-   8) Network filesystem load-balancing is easy; SHA-1s are  
-essentially random so you can just assign SHA-1 prefixes to different  
-systems for data storage and your data is automatically split up.
+No need. Linus already understands the equation, and also the secondary fact 
+that most home users are not developers. However, companies like TiVO do 
+employ developers. This is why the equation works.
 
+> > Apparently because you can't admit that a good reason *IS* a good reason
+> > when it conflicts with your belief that the FSF is correct.
+>
+> No, seriously.  Linus is disputing the equation above, dismissing my
+> various attempts to show it to him, whenever it appears in teh context
+> of tivoization, apparently because it doesn't match his moral belief
+> that tivoization ought to be permitted on his moral grounds.
 
-Other issues:
+Actually you are in error here. You are saying "More home users == More 
+Developers" when the ratio of home users to developers isn't all that high. 
+(small set of facts: "Hacker" == "Developer" (in most cases, where the term, 
+as defined in the Jargon File, can actually be applied), "Home User" * 0.10 
+(ie: 10%) == "Developer" (approximately, and the correlation may be 
+lower). "TiVO" == "Developers" (note the plural - they do employ more than 
+one person for development))
 
-Q. How do you deal with block allocation?
-A. Same way other filesystems deal with block allocation.  Reference- 
-counting gets tricky, especially across a network, but it's easy to  
-play it safe with simple cross-network refcount-journalling.  Since  
-the _only_ thing that needs journalling is the refcounts and block- 
-free data, you need at most a megabyte or two of journal.  If in  
-doubt, it's easy to play it safe and keep an extra refcount around  
-for an in-the-background consistency check later on.  When networked- 
-gitfs systems crash, you just assume they still have all the  
-refcounts they had at the moment they died, and compare notes when  
-they start back up again.  If a node has a cached copy of data on its  
-local disk then it can just nonatomically increment the refcount for  
-that object in its own RAM (ordered with respect to disk-flushes, of  
-course) and tell its peers at some point.  A node should probably  
-cache most of its working set on local disk for efficiency; it's  
-trivially verified against updates from other nodes and provides an  
-easy way to keep refcounts for such data.  If a node increments the  
-refcount on such data and dies before getting that info out to its  
-peers, then when it starts up again its peers will just be told that  
-it has a "new" node with insufficient replication and they will clone  
-it out again properly.  For networked refcount-increments you can do  
-one of 2 things: (1) Tell at least X many peers and wait for them to  
-sync the update out to disk, or (2) Get the object from any peer (at  
-least one of whom hopefully has it in RAM) and save it to local disk  
-with an increased refcount.
+So "TiVO", even though they are walking all over the freedoms you love, means 
+more *guaranteed* developers than the potential pool from the users of their 
+boxes. (the pool of potential developers among the millions of TiVO users is 
+actually miniscule, despite the size of the sample)
 
-Q. How do you actually delete things?
-A. Just replace all the to-be-erased tree and commit objects before a  
-specified point with "History erased" objects with their SHA-1's  
-magically set to that of the erased objects.  If you want you may  
-delete only the "tree" objects and leave the commits intact.  If you  
-delete a whole linear segment of history then you can just use a  
-single "History erased" commit object with its parent pointed to the  
-object before the erased segment.  Probably needs some form of back- 
-reference storage to make it efficient; not sure how expensive that  
-would be.  This would allow making a bunch of snapshots and purging  
-them logarithmically based on passage of time.  For instance, you  
-might have snapshots of every 5 minutes for the last hour, every 30  
-minutes for the last day, every 4 hours for the last week, every day  
-for the last month, once per week for the last year, once per month  
-for the last 5 years, and once per year beyond that.
+However, you do make a good argument. But when you look at the statistics[1] 
+they don't hold water.
 
-That's pretty impressive data-recovery resolution, and it accounts  
-for only 200 unique commits after it's been running for 10 years.
+> > PS: I know I've said I'm done with this conversation, but this is like a
+> > bad habit. I just couldn't help myself.
+>
+> You've helped me a lot while at that.  Thanks!
+>
+> I hope this helps others fundamentalist anti-fundamentalists :-) see
+> reason too.
 
-Q. How do you archive data?
-A. Same as deleting, except instead of a "History erased" object you  
-would use a "History archived" object with a little bit of string  
-data to indicate which volume it's stored on (and where on the  
-volume).  When you stick that volume into the system you could easily  
-tell the kernel to use it as an alternate for the given storage group.
+I love that phrase!
 
-Q. What enforces data integrity?
-A. Ensure that a new tree object and its associated sub objects are  
-on disk before you delete the old one.  Doesn't need any actual full  
-syncs at all, just barriers.  If you replace the tree object before  
-write-out is complete then just skip writing the old one and write  
-the new one in its place.
+But seriously, all I did was stop trying to give fully reasoned counters 
+(complete with examples) and state the simple truth.
 
-Q. What consists of a "commit"?
-A. Anything the administrator wants to define it as.  Useful  
-algorithms include: "Once per x Mbyte of page dirtying", "Once per 5  
-min", "Only when sync() or fsync() are called", "Only when gitfs- 
-commit is called".  You could even combine them:  "Every x Mbyte of  
-page dirtying or every 5 minutes, whichever is shorter (or longer,  
-depending on admin requirements)".  There would also be appropriate  
-syscalls to trigger appropriate git-like behavior.  Network- 
-accessible gitfs would want to have mechanisms to trigger commits  
-based on activity on other systems (needs more thought).
+DRH
+[1] "There are three types of lies - lies, damn lies and statistics" - 
+Attribution uncertain (Benjamin Disraeli, Mark Twain and Alfred Marshal are 
+all said to have issued this famous quotation)
 
-Q. How do you access old versions?
-A. Mount another instance of the filesystem with an SHA-1 ID, a tag- 
-name, or a branch-name in a special mount option.  Should be user  
-accessible with some restrictions (needs more thought).
+PS: I've beaten the addiction! This post was to clarify some things that were 
+either misunderstood or stood a chance of being twisted to mean something 
+other than what I intended. (not that anyone did the latter)
 
-Q. How do you deal with conflicts on networked filesystems.
-A. Once again, however the administrator wants to deal with them.   
-Options:
-    1)  Forcibly create a new branch for the conflicted tree.
-    2)  Attempt to merge changes using the standard git-merge semantics
-    3)  Merge independent changes to different files and pick one for  
-changes to the same file
-    4)  Your Algorithm Here(TM).  GIT makes it easy to extend  
-conflict-resolution.
-
-Q. How do you deal with little scattered changes in big (or sparse)  
-files?
-A. Two questions, two answers:  For sparse files, git would need  
-extending to understand (and hash) the nature of the sparse-ness.   
-For big files, you should be able to introduce a "compound-file"  
-datatype and configure git to deal with specific X-Mbyte chunks of it  
-independently.  This might not be a bad idea for native git as well.   
-Would need system-specific configuration.
-
-Q. How do you prevent massive data consumption by spurious tiny changes
-A. You have a few options:
-    1)  Configure your commit algorithm as above to not commit so often
-    2)  Configure a stepped commit-discard algorithm as described  
-above in the "How do you delete things" question
-    3)  Archive unused data to secondary storage more often
-
-Q. What about all the unanswered questions?
-A. These are all the ones I could think of off the top of my head but  
-there are at least a hundred more.  I'm pretty sure these are some of  
-the most significant ones.
-
-Q. That's a great idea and I'll implement it right away!
-A. Yay!  (but that's not a question :-D)  Good luck and happy hacking.
-
-Q. That's a stupid idea and would never ever work!
-A. Thanks for your useful input! (but that's not a question either)   
-I'm sure anybody who takes up a project like this will consider such  
-opinions.
-
-Q. *flamage*
-A. I'm glad you have such strong opinions, feel free to to continue  
-to spam my /dev/null device (and that's also not a question).
-
-All opinions and comments welcomed.
-
-Cheers,
-Kyle Moffett
-
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
