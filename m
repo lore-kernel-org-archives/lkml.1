@@ -1,32 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbXFSMMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbXFSMYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757452AbXFSMMg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 08:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbXFSMMa
+	id S1757247AbXFSMYW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 08:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXFSMYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 08:12:30 -0400
-Received: from savages.net ([66.93.39.24]:37039 "EHLO mail.savages.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756244AbXFSMM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 08:12:29 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 08:12:29 EDT
-Message-ID: <4677C702.6050102@savages.net>
-Date: Tue, 19 Jun 2007 05:07:30 -0700
-From: Shaun Savage <savages@savages.net>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: How do you allocate huge pages.
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 Jun 2007 08:24:14 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:43850 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753162AbXFSMYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 08:24:13 -0400
+Date: Tue, 19 Jun 2007 14:24:04 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: tino.keitel@gmx.de, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] Re: rtc_cmos: error after first write to wakealarm
+Message-ID: <20070619142404.42dcdc3c@inspiron>
+In-Reply-To: <20070615070319.GA19455@dose.home.local>
+References: <20070615063308.GA18089@dose.home.local>
+	<20070615155904.1d1da892.yoichi_yuasa@tripeaks.co.jp>
+	<20070615070319.GA19455@dose.home.local>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Fri, 15 Jun 2007 09:03:19 +0200
+Tino Keitel <tino.keitel@gmx.de> wrote:
 
-I am trying to allocate very large memory within the kernel. I want to
-start by allocating one huge (4M) page and using that as buffer space.
+> > > I have the following strange behaviour with rtc_cmos:
+> > > 
+> > > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> > > bash: echo: write error: Device or resource busy
+> > > $ rmmod rtc_cmos
+> > > $ modprobe rtc_cmos
+> > > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> > > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> > > bash: echo: write error: Device or resource busy
+> > > $
+> > 
+> > If the alarm has already been enabled, you cannot set the next alarm. 
+> > You should disable first.
+> 
+> Ah, ok.
+>   
+> Where is the documentation that describes that I have to disable it
+> first, and how to do this? A migration document for /proc/acpi/alarm   
+> users would be nice, too.
 
-How do you do this?
+ Well, I guess there is no documentation. Maybe we could add
+ a dev_warn with an explicit message.
 
-shaun
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
