@@ -1,72 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764817AbXFSDXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXFSDZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764817AbXFSDXO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 23:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762585AbXFSDW7
+	id S933290AbXFSDZo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 23:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764748AbXFSDZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 23:22:59 -0400
-Received: from smtp161.iad.emailsrvr.com ([207.97.245.161]:37415 "EHLO
-	smtp161.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760918AbXFSDW6 (ORCPT
+	Mon, 18 Jun 2007 23:25:37 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50707 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761311AbXFSDZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 23:22:58 -0400
-Message-ID: <46774BD3.6010605@gentoo.org>
-Date: Mon, 18 Jun 2007 23:21:55 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070618)
-MIME-Version: 1.0
+	Mon, 18 Jun 2007 23:25:36 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
 To: Alexandre Oliva <aoliva@redhat.com>
-CC: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
+Subject: Re: mea culpa on the meaning of Tivoization
+Date: Mon, 18 Jun 2007 23:25:21 -0400
+User-Agent: KMail/1.9.6
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070615072322.GA7594@brong.net>	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616021630.GA30660@brong.net>	<orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616103130.GD32405@brong.net>	<orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616233251.GA17270@brong.net> <ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
+       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <200706181808.18007.dhazelton@enter.net> <orabuw8xdb.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orabuw8xdb.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706182325.22067.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let's take a certain class of medical devices into account: ones that 
-are absolutely definitely for medical treatment, but are not life 
-threatening if they fail.
+On Monday 18 June 2007 22:57:20 Alexandre Oliva wrote:
+> On Jun 18, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+> > On Monday 18 June 2007 17:31:47 Alexandre Oliva wrote:
+> >> And if you look at GPLv3dd1 or dd2 IIRC, that's how it started.  For
+> >> some reason, the FSF turned it into the more lax (in some senses)
+> >> installation information for user products in dd3.  Maybe they decided
+> >> that the argument about the signature being effectively part of the
+> >> executable, and therefore the key being effectively part of the source
+> >> code, was less likely to be upheld in a court of law than this
+> >> alternate phrasing.  All in all, the effect is the same AFAICT, and
+> >> the spirit is being complied with.
+> >
+> > But the change has some massive problems.
+>
+> Such as?  Is the effect really any different?
 
-Say, a dental treatment device -- if the device produces a crown or 
-bridge that doesn't fit properly, the dentist says "nope" and throws it 
-away. No harm done.
+I haven't looked at it, in depth, today but one of the problems I saw was the 
+apparent loopholes in the text. No specifics, but I remember thinking "a 
+lawyer would have a field day with this - dozens of ways they could sidestep 
+these issues"
 
-Alexandre Oliva wrote:
-> There may be business models that require the ability to make changes.
+> > If dd1 or dd2 was clearly and concisely written such that the
+> > conditions were not open to a different interpretation without
+> > creative re-definition of words then changes would not be
+> > needed. (I'm still working on the version I mentioned - give me a
+> > bit, writing english in such a way that a lawyer can't twist it to
+> > mean whatever they are paid to make it mean is difficult.)
+>
+> It's very difficult and, worse, it might turn out to be unenforceable.
+> You'd have to count on signing keys being copyrightable, and they are
+> unlikely to be, and on signatures being derived works of both, which
+> is a tough call.  The whole idea resonates very well with the spirit
+> of the license, but we need more than that, we need it to be very
+> likely to work.  I suspect this is why the FSF has decided to take
+> another route to achieve the same (AFAICT) effect.
 
-I'd say that its sensible for the manufacturer to attempt to retain this 
-ability in every case. You never know what's going to go wrong, so it's 
-a plus to have this option so that you can roll out some types of fixes 
-without going bankrupt.
+Agreed. I'm still stuck trying to keep the language concise and understandable 
+without delving into the descriptive flights of fancy I enjoy. (I write a lot 
+more fiction than I do code, even though I started writing code a long time 
+before I started on fiction)
 
-Now, for medical devices, this is tricky stuff: medical devices require 
-all sorts of certifications, so modifying your product after you have 
-certified it has it's complications. However, despite all the 
-regulations it's realistic to be able to do this, and it does happen. 
-Hell, windows-based devices in this field download new antivirus 
-definitions and run windows update every few days.
+> >> I don't see how this is different from refraining from accepting
+> >> contributions under any other license, except that you can't use
+> >> license incompatibility to reason it out as an impossibility you
+> >> established for yourself in just the very same way.
+> >
+> > I think there was more to it than that, but the point doesn't
+> > matter. If the license used on contributed code *isn't* completely
+> > compatible with the license on the project it can't be used
+> > anyway. (doesn't the GPLv3 cover situations like that?)
+>
+> I'm not sure what you're asking.  GPLv3 covers additional permissions,
+> that are really no different from dual-licensing, so anyone can choose
+> to drop them when combining with works (including their own) that
+> don't offer such additional permissions.
 
-> Then it's fair to enable the user to make changes as well, such that
-> they don't become dependent on the vendor
+What I was getting at, here, is that the GPLv3 isn't backwards compatible with 
+GPLv2, because you aren't allowed to remove rights from the GPLv3. Remember, 
+there are rights encoded in the GPLv3 that don't appear in v2. In fact, if 
+you want to use GPLv3 code in a GPLv2 project you have to use GPLv3. For some 
+projects, like the Linux Kernel, the upgrade is impossible to accomplish.
 
-Now this is where the regulations get really heavy. If the user is 
-offered the ability to modify the device, theres *no way* it would get 
-certified. Your business is dead - you do not have a product you can 
-sell. In such case, the license has completely excluded free software 
-from the market and everyone is forced to use completely closed systems.
+> >> My objection was mainly about the "forcing".  FSF's stance is about
+> >> educating users as to the moral and ethical reasons, such that they
+> >> reject non-Free Software, while at the same time providing software
+> >> authors with means to stop others from hurting users, by depriving
+> >> them of the freedoms they're morally entitled to have.
+> >
+> > Hrm... When I first hit the end of this massive sentence I was really
+> > confused. Took about five minutes for me to remember that "morally
+> > entitled" is based on the morals promoted by the FSF.
+>
+> Yes.  And the 'them' after the last comma refers to the users, not the
+> authors (although they can be users too), in case it's not clear ;-)
+>
+> :-D
+
+Yes. I almost replied "-ENOPARSE" because, when I first read it, I parsed it 
+as "by depriving [the authors] of the freedoms they're morally entitled to 
+have". When my brain finally rebooted after that bought of idiocy I was able 
+to parse it properly.
+
+DRH
+
+> > Everyone that has been part of this discussion - my personal code of
+> > morals will not let me get away without this: "Forgive me if, in the heat
+> > of the moment, I offended any of you."
+>
+> FWIW, I never felt offended by you, but I second your request and
+> extend it to all participants in the thread too, particularly to Ingo,
+> to whom I remember having directed some harsh words.
 
 
-I realise that the latest GPLv3 draft would not pose restrictions here, 
-as such devices would not be classified as consumer products. That said, 
-talking purely in terms of business models and fairness: there ARE 
-decent reasons for manufacturer lockdown in some industries.
 
-Daniel
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
