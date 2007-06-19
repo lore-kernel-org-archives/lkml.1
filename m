@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbXFSOO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbXFSOPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbXFSOO1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXFSOOS
+	id S1756839AbXFSOPp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbXFSOPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:14:18 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39534 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752462AbXFSOOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:14:16 -0400
-Date: Tue, 19 Jun 2007 15:19:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Linas Vepstas <linas@austin.ibm.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
-Message-ID: <20070619151919.79c79af1@the-village.bc.nu>
-In-Reply-To: <4677E3BC.3040307@ru.mvista.com>
-References: <20070618175713.GD5836@austin.ibm.com>
-	<20070618212704.394912b8@the-village.bc.nu>
-	<20070618204601.GF5836@austin.ibm.com>
-	<20070618220441.3a3af8ca@the-village.bc.nu>
-	<4677E3BC.3040307@ru.mvista.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 19 Jun 2007 10:15:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40849 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753859AbXFSOPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 10:15:35 -0400
+Date: Tue, 19 Jun 2007 16:15:28 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Andries.Brouwer@cwi.nl
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mount-2.12r-ggk.tar.gz
+Message-ID: <20070619141528.GS7226@petra.dvoda.cz>
+References: <200706191238.l5JCcxg14300@apps.cwi.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706191238.l5JCcxg14300@apps.cwi.nl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007 18:10:04 +0400
-Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+On Tue, Jun 19, 2007 at 02:38:59PM +0200, Andries.Brouwer@cwi.nl wrote:
+> The present situation of util-linux and mount is not quite clear to me.
+> On kernel.org under utils/util-linux nothing has happened for over a year,
+> and there is also an empty utils/util-linux-ng.
 
-> Hello.
-> 
-> Alan Cox wrote:
-> >>I can prepare a patch, but only with a lot of guidance. I can test 
-> >>& debug, I'm highly motivated just right now ... 
-> 
-> > If you've got a nice repeatable problem please try using the libata
-> > driver. That handles the error paths differently and doesn't try a FIFO
-> > drain which might matter in this case I guess.
-> 
->     FIFO drain for DMA commands?
+ We use GIT for development, the utils/util-linux-ng is for releases.
 
-Welcome to the old IDE layer which I am so glad I left behind 8)
+  http://git.kernel.org/?p=utils/util-linux-ng/util-linux-ng.git
+  http://userweb.kernel.org/~kzak/util-linux-ng/
+  http://vger.kernel.org/vger-lists.html#util-linux-ng
 
-ide_ata_error will try and do a PIO flush regardless of the command type
-if DRQ_STAT is asserted. See ide_dma_intr -> ide_error -> ...
+> Anyway, Dirk Gerrits, René Gabriël and Peter Kooijmans sent me
+> a patch to add support for shared subtrees to the mount from
+> util-linux 2.12r, and I put up the result for ftp at
+> ftp://ftp.win.tue.nl/pub/linux-local/utils/mount/mount-2.12r-ggk.tar.gz
 
-Alan
+ Hmm.. some distributions and also util-linux-ng already use Ram Pai's
+ shared subtrees patch:
+
+ http://git.kernel.org/?p=utils/util-linux-ng/util-linux-ng.git;a=commitdiff;h=389fbea536e4308d9475fa2a89e53e188ce8a0e3
+
+> [By the way, this shared subtree stuff is a bit messy,
+> and impossible to support correctly by mount without help
+> from the kernel. So far the shared/slave/unbindable status
+> of mounts is not visible in /proc/mounts or /proc/$$/mountstats.
+
+ Unfortunately, you're right.
+
+ We need something like /proc/PID/mounts_propagation
+ (see 2nd patch in):
+ http://www.mail-archive.com/util-linux-ng@vger.kernel.org/msg00136.html
+
+> The above mount makes a feeble attempt to record these flags
+> in /etc/mtab, but will fail in any nontrivial situation.]
+
+ I don't think that mtab is a good place for this shared subtree
+ stuff. The mtab needs to die.
+
+    Karel
+
+-- 
+ Karel Zak  <kzak@redhat.com>
