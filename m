@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbXFSIqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbXFSIrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757967AbXFSIqy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 04:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755574AbXFSIpY
+	id S1757909AbXFSIrV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 04:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbXFSIp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 04:45:24 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:37642 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbXFSIpP (ORCPT
+	Tue, 19 Jun 2007 04:45:26 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:55643 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754667AbXFSIpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Jun 2007 04:45:15 -0400
-Message-Id: <20070619084642.673859525@de.ibm.com>
+Message-Id: <20070619084643.095486838@de.ibm.com>
 References: <20070619084516.457715754@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 19 Jun 2007 10:45:21 +0200
+Date: Tue, 19 Jun 2007 10:45:22 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 5/6] Move psw_set_key.
-Content-Disposition: inline; filename=005-set-key.diff
+Subject: [patch 6/6] Add oops_enter()/oops_exit() calls to die().
+Content-Disposition: inline; filename=006-oops-enter.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-Move psw_set_key() from ptrace.h to processor.h which is a more
-suitable place for it. In addition the moves makes the function
-invisible to user space.
+This is mainly to switch off all potentially debugging stuff that
+won't report anything useful after an oops happened.
+Besided that setting pause_on_oops will work too, but doesn't make
+too much sense on s390.
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/kernel/traps.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ include/asm-s390/processor.h |    5 +++++
+ include/asm-s390/ptrace.h    |    9 +--------
+ 2 files changed, 6 insertions(+), 8 deletions(-)
 
-Index: quilt-2.6/arch/s390/kernel/traps.c
+Index: quilt-2.6/include/asm-s390/processor.h
 ===================================================================
---- quilt-2.6.orig/arch/s390/kernel/traps.c
-+++ quilt-2.6/arch/s390/kernel/traps.c
-@@ -253,20 +253,22 @@ void die(const char * str, struct pt_reg
- {
- 	static int die_counter;
- 
-+	oops_enter();
- 	debug_stop_all();
- 	console_verbose();
- 	spin_lock_irq(&die_lock);
- 	bust_spinlocks(1);
- 	printk("%s: %04lx [#%d]\n", str, err & 0xffff, ++die_counter);
- 	print_modules();
--        show_regs(regs);
-+	show_regs(regs);
- 	bust_spinlocks(0);
--        spin_unlock_irq(&die_lock);
-+	spin_unlock_irq(&die_lock);
- 	if (in_interrupt())
- 		panic("Fatal exception in interrupt");
- 	if (panic_on_oops)
- 		panic("Fatal exception: panic_on_oops");
--        do_exit(SIGSEGV);
-+	oops_exit();
-+	do_exit(SIGSEGV);
+--- quilt-2.6.orig/include/asm-s390/processor.h
++++ quilt-2.6/include/asm-s390/processor.h
+@@ -216,6 +216,11 @@ static inline void cpu_relax(void)
+ 	barrier();
  }
  
- static void inline
++static inline void psw_set_key(unsigned int key)
++{
++	asm volatile("spka 0(%0)" : : "d" (key));
++}
++
+ /*
+  * Set PSW to specified value.
+  */
+Index: quilt-2.6/include/asm-s390/ptrace.h
+===================================================================
+--- quilt-2.6.orig/include/asm-s390/ptrace.h
++++ quilt-2.6/include/asm-s390/ptrace.h
+@@ -470,14 +470,7 @@ struct user_regs_struct
+ #define regs_return_value(regs)((regs)->gprs[2])
+ #define profile_pc(regs) instruction_pointer(regs)
+ extern void show_regs(struct pt_regs * regs);
+-#endif
+-
+-static inline void
+-psw_set_key(unsigned int key)
+-{
+-	asm volatile("spka 0(%0)" : : "d" (key));
+-}
+-
++#endif /* __KERNEL__ */
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _S390_PTRACE_H */
 
 -- 
 blue skies,
