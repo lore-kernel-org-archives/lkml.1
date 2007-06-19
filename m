@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759594AbXFSFkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760593AbXFSFmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759594AbXFSFkg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 01:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXFSFk3
+	id S1760593AbXFSFmQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 01:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXFSFmC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 01:40:29 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37691 "EHLO e4.ny.us.ibm.com"
+	Tue, 19 Jun 2007 01:42:02 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40553 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752559AbXFSFk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 01:40:29 -0400
-Date: Tue, 19 Jun 2007 11:19:01 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>, pwil3058@bigpond.net.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: v2.6.21.4-rt11
-Message-ID: <20070619054901.GA10981@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070615195545.GA28872@elte.hu> <20070616011605.GH9301@linux.vnet.ibm.com> <20070616084434.GG2559@linux.vnet.ibm.com> <20070616161213.GA2994@linux.vnet.ibm.com> <20070618151215.GA9750@linux.vnet.ibm.com> <Pine.LNX.4.64.0706180948250.4751@schroedinger.engr.sgi.com> <20070618173558.GA17865@linux.vnet.ibm.com> <Pine.LNX.4.64.0706181054530.6596@schroedinger.engr.sgi.com> <20070619021558.GD7160@linux-os.sc.intel.com> <Pine.LNX.4.64.0706182040500.30213@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	id S1752559AbXFSFmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 01:42:00 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
+	<ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
+	<or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
+	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070619012517.GL14788@delft.aura.cs.cmu.edu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Tue, 19 Jun 2007 02:40:59 -0300
+In-Reply-To: <20070619012517.GL14788@delft.aura.cs.cmu.edu> (Jan Harkes's message of "Mon\, 18 Jun 2007 21\:25\:17 -0400")
+Message-ID: <orbqfc5wno.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706182040500.30213@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 08:46:03PM -0700, Christoph Lameter wrote:
-> @@ -2493,17 +2493,18 @@ static void idle_balance(int this_cpu, s
->  	unsigned long next_balance = jiffies + 60 *  HZ;
-> 
->  	for_each_domain(this_cpu, sd) {
-> -		if (sd->flags & SD_BALANCE_NEWIDLE) {
-> +		unsigned long interval;
-> +
+On Jun 18, 2007, Jan Harkes <jaharkes@cs.cmu.edu> wrote:
 
-Do we need a :
+> Not really, Tivo could simply sell you a box without any installed
+> software.
 
-		if (!(sd->flags & SD_LOAD_BALANCE))
-			continue;
+Yes.
 
-here?
+> The actual software is mailed to you on a credit card sized
+> ROM when you activate service.
 
-Otherwise patch look good and fixes the problem Paul observed earlier.
-
-> +		if (sd->flags & SD_BALANCE_NEWIDLE)
->  			/* If we've pulled tasks over stop searching: */
-> -			pulled_task = load_balance_newidle(this_cpu,
-> -							this_rq, sd);
-> -			if (time_after(next_balance,
-> -				  sd->last_balance + sd->balance_interval))
-> -				next_balance = sd->last_balance
-> -						+ sd->balance_interval;
-> -			if (pulled_task)
-> -				break;
-> -		}
-> +			pulled_task = load_balance_newidle(this_cpu,this_rq, sd);
-> +
-> +		interval = msecs_to_jiffies(sd->balance_interval);
+If that's a separate transaction, then yes, I believe it would not be
+convered under the terms of GPLv3, but IANAL.  There might be some
+catch about intent, and also about contractual obligations in the
+hardware sale to provide the software (coupons anyone? :-) or some
+such.
 
 
-> +		if (time_after(next_balance,
-> +			  sd->last_balance + interval))
-> +			next_balance = sd->last_balance + interval;
-> +		if (pulled_task)
-> +			break;
->  	}
->  	if (!pulled_task)
->  		/*
+But then, that you sell specialized devices with say only MIT-licensed
+software shouldn't stop you from selling CD-ROMs with GPLed software,
+even if those CD-ROMs could possibly run on that device.
+
+
+The GPLv3 won't remove every way in which people who want/need to stop
+the user from making changes to the software could accomplishing this
+(ROM).  It will just make this a bit more inconvenient, such that
+vendors that have the option respect users' freedoms, and those that
+find it too inconvenient respect the wishes of users who don't want
+their software turned non-free.
 
 -- 
-Regards,
-vatsa
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
