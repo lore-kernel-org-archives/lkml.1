@@ -1,51 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbXFSHo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbXFSHrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755839AbXFSHo3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 03:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXFSHoW
+	id S1754123AbXFSHrn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 03:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXFSHre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 03:44:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:35179 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbXFSHoV (ORCPT
+	Tue, 19 Jun 2007 03:47:34 -0400
+Received: from ananke.telenet-ops.be ([195.130.137.78]:55983 "EHLO
+	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbXFSHrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 03:44:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=OeMiGlWG6HapkX18qHhTPhJMQxyUrYi4pIPqaz1Cuj6w91Yez1yCG/B8r3kG3R/wMJ8phEARN2JmZKsDf9cL8H0hAK+dKrX60GRbOWS1qwCGOsYS56dXk8jE/vMu/y3fDJ/ldI6KW8q0iFIzwhH6cvACVpuWq6rvQ1n/4grN5Ec=
-Message-ID: <46778958.2040903@gmail.com>
-Date: Tue, 19 Jun 2007 09:44:24 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 19 Jun 2007 03:47:32 -0400
+X-Greylist: delayed 154562 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 03:47:32 EDT
+Date: Tue, 19 Jun 2007 09:47:28 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "James E.J. Bottomley" <James.Bottomley@SteelEye.com>
+cc: Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
+       Kars de Jong <jongk@linux-m68k.org>, Richard Hirst <rhirst@levanta.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-m68k@vger.kernel.org
+Subject: Re: [patch 0/5] m68k 53c700 SCSI
+In-Reply-To: <20070617124704.800461751@mail.of.borg>
+Message-ID: <Pine.LNX.4.64.0706190942180.3234@anakin>
+References: <20070617124704.800461751@mail.of.borg>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Thierry Merle <thierry.merle@free.fr>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-References: <2172422218943432279@wsc.cz> <466131CB.20301@free.fr> <6872422218943432279_1@wsc.cz> <200706190941.47459.oliver@neukum.org>
-In-Reply-To: <200706190941.47459.oliver@neukum.org>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum napsal(a):
-> Am Freitag, 15. Juni 2007 schrieb Jiri Slaby:
->> +struct stk11xx_frame_buf {
->> +       void *data;
->> +       volatile int filled;
->> +       struct stk11xx_frame_buf *next;
->> +};
->> +
-> 
-> What's the "volatile" doing here?
+	Hi James,
 
-removed (s/volatile/unsigned/), thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+On Sun, 17 Jun 2007, Geert Uytterhoeven wrote:
+> These patches add support for m68k to the 53c700 SCSI core and introduce new
+> drivers for various m68k hardware using this 53c700 SCSI core, to replace the
+> just removed drivers using the old 53c7xx SCSI core.
+> 
+>   [1] [PATCH] 53c700 scsi: m68k support for the 53c700 SCSI core
+>   [2] [PATCH] 53c700 scsi: m68k BVME6000 NCR53C710 SCSI
+>   [3] [PATCH] 53c700 scsi: m68k MVME16x NCR53C710 SCSI
+>   [4] [PATCH] 53c700 scsi: Amiga 4000T NCR53c710 SCSI
+>   [5] [PATCH] 53c700 scsi: Amiga Zorro NCR53c710 SCSI
+> 
+> Please apply for 2.6.23. Thx!
+
+Apparently I made some major mistakes when preparing these patches.
+Here are the fixes.
+---
+
+Fixup m68k 53c700 drivers:
+  - a4000t.c: Add missing include, needed in some configurations
+  - bvme6000_scsi.c: Kill bogus opening brace
+  - zorro7xx.c: Remove MODULE_DEVICE_TABLE, it should be part of another
+                patch
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/scsi/a4000t.c        |    1 +
+ drivers/scsi/bvme6000_scsi.c |    2 +-
+ drivers/scsi/zorro7xx.c      |    1 -
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/scsi/a4000t.c
++++ b/drivers/scsi/a4000t.c
+@@ -12,6 +12,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
++#include <asm/amigahw.h>
+ #include <asm/amigaints.h>
+ #include <scsi/scsi_host.h>
+ #include <scsi/scsi_transport_spi.h>
+--- a/drivers/scsi/bvme6000_scsi.c
++++ b/drivers/scsi/bvme6000_scsi.c
+@@ -112,7 +112,7 @@ static int __init bvme6000_scsi_init(voi
+ 	int err;
+ 
+ 	err = driver_register(&bvme6000_scsi_driver);
+-	if (err) {
++	if (err)
+ 		return err;
+ 
+ 	bvme6000_scsi_device = platform_device_register_simple("bvme6000-scsi",
+--- a/drivers/scsi/zorro7xx.c
++++ b/drivers/scsi/zorro7xx.c
+@@ -65,7 +65,6 @@ static struct zorro_device_id zorro7xx_z
+ 	},
+ 	{ 0 }
+ };
+-MODULE_DEVICE_TABLE(zorro, zorro7xx_zorro_tbl);
+ 
+ static int __devinit zorro7xx_init_one(struct zorro_dev *z,
+ 				       const struct zorro_device_id *ent)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
