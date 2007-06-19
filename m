@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbXFSEUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbXFSEWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbXFSEUI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 00:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXFSET6
+	id S1754704AbXFSEWx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 00:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXFSEWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 00:19:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37093 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbXFSET5 (ORCPT
+	Tue, 19 Jun 2007 00:22:46 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:47437 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750978AbXFSEWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 00:19:57 -0400
-Date: Tue, 19 Jun 2007 05:15:27 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Mike Frysinger <vapier@gentoo.org>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, rmk@arm.linux.org.uk
-Subject: Re: [patch] use __asm__ and __volatile__ in i386/arm/s390 byteorder.h
-Message-ID: <20070619041527.GA7224@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Sam Ravnborg <sam@ravnborg.org>, Mike Frysinger <vapier@gentoo.org>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-	linux-s390@vger.kernel.org, rmk@arm.linux.org.uk
-References: <200706171833.29046.vapier@gentoo.org> <20070618183450.GA17112@infradead.org> <20070618190009.GB25340@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Tue, 19 Jun 2007 00:22:45 -0400
+Date: Mon, 18 Jun 2007 21:22:02 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Miklos Szeredi <miklos@szeredi.hu>,
+       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, torvalds@linux-foundation.org, shai@scalex86.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070619042201.GA13854@localdomain>
+References: <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu> <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu> <20070616103707.GA28096@elte.hu> <E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu> <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu> <20070618081204.GA11153@elte.hu> <20070618012055.81a7c837.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070618190009.GB25340@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070618012055.81a7c837.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 09:00:09PM +0200, Sam Ravnborg wrote:
-> Do you imply that if we see asm or __asm__ in user space headers we ougth
-> to warn about it?
-> Seems at least sensible to me but if we introduce such a check we should
-> kill all offenders first - which Mike's patches seems to trigger for some part.
+On Mon, Jun 18, 2007 at 01:20:55AM -0700, Andrew Morton wrote:
+> On Mon, 18 Jun 2007 10:12:04 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > ---------------------------------------------------->
+> > Subject: [patch] x86: fix spin-loop starvation bug
+> > From: Ingo Molnar <mingo@elte.hu>
+> > 
+> > Miklos Szeredi reported very long pauses (several seconds, sometimes 
+> > more) on his T60 (with a Core2Duo) which he managed to track down to 
+> > wait_task_inactive()'s open-coded busy-loop. He observed that an 
+> > interrupt on one core tries to acquire the runqueue-lock but does not 
+> > succeed in doing so for a very long time - while wait_task_inactive() on 
+> > the other core loops waiting for the first core to deschedule a task 
+> > (which it wont do while spinning in an interrupt handler).
+> > 
+> > The problem is: both the spin_lock() code and the wait_task_inactive() 
+> > loop uses cpu_relax()/rep_nop(), so in theory the CPU should have 
+> > guaranteed MESI-fairness to the two cores - but that didnt happen: one 
+> > of the cores was able to monopolize the cacheline that holds the 
+> > runqueue lock, for extended periods of time.
+> > 
+> > This patch changes the spin-loop to assert an atomic op after every REP 
+> > NOP instance - this will cause the CPU to express its "MESI interest" in 
+> > that cacheline after every REP NOP.
+> 
+> Kiran, if you're still able to reproduce that zone->lru_lock starvation problem,
+> this would be a good one to try...
 
-Yes, we should kill the offenders first.  Some of Mike's patches are moving
-nicely in that directions.  The biggest problem from my POV is byteawap.h
-that gets dragged in in various places right now and needs to be sorted out.
+We tried this approach a week back (speak of co-incidences), and it did not
+help the problem.  I'd changed calls to the zone->lru_lock spin_lock
+to do spin_trylock in a while loop with cpu_relax instead.  It did not help,
+This was on top of 2.6.17 kernels.  But the good news is 2.6.21, as
+is does not have the starvation issue -- that is, zone->lru_lock does not
+seem to get contended that much under the same workload.
 
+However, this was not on the same hardware I reported zone->lru_lock
+contention on (8 socket dual core opteron).  I don't have access to it 
+anymore :(
+
+Thanks,
+Kiran
