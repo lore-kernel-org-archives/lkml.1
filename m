@@ -1,79 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbXFSNr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbXFSNse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbXFSNr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 09:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbXFSNru
+	id S1754050AbXFSNse (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 09:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbXFSNs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 09:47:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33713 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbXFSNrt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 09:47:49 -0400
-Subject: Re: [patch 2/2] kprobes x86_64 quick fix mark-ro-data
-From: Arjan van de Ven <arjan@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: prasanna@in.ibm.com, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       ananth@in.ibm.com
-In-Reply-To: <20070619133020.GA22368@Krystal>
-References: <20070615202310.178466032@polymtl.ca>
-	 <4676D2A9.6090403@redhat.com>
-	 <20070618115632.7aca8c0f.akpm@linux-foundation.org>
-	 <200706182132.56559.ak@suse.de> <20070619100644.GA5478@in.ibm.com>
-	 <20070619100810.GA301@in.ibm.com>
-	 <1182259288.3014.7.camel@laptopd505.fenrus.org>
-	 <20070619133020.GA22368@Krystal>
+	Tue, 19 Jun 2007 09:48:26 -0400
+Received: from nn7.de ([85.214.94.156]:46359 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751660AbXFSNsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 09:48:25 -0400
+Subject: ata1: soft resetting port
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux-ide <linux-ide@vger.kernel.org>
 Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 19 Jun 2007 06:44:30 -0700
-Message-Id: <1182260670.3014.10.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Tue, 19 Jun 2007 15:48:22 +0200
+Message-Id: <1182260902.14805.60.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-19 at 09:30 -0400, Mathieu Desnoyers wrote:
-> * Arjan van de Ven (arjan@infradead.org) wrote:
-> > On Tue, 2007-06-19 at 15:38 +0530, S. P. Prasanna wrote:
-> > > This patch is a quick fix for x86_64 to enable kprobes only if DEBUG_RODATA is
-> > > not configured. Since DEBUG_RODATA markes the kernel text pages as read-only.
-> > 
-> > 
-> > it does??
-> > 
-> > I don't seem to be able to find this in the source code..... 
-> > 
+Dear List,
 
-> See arch/x86_64/mm/init.c:mark_rodata_ro().
+since the switch to 
 
-eh woops
+CONFIG_ATA=y
+CONFIG_ATA_ACPI=y
+CONFIG_ATA_PIIX=y,
+
+the ATA_PIIX driver manages both, internal sata disk aswell as cd/dvd
+rom. However I am being flooded with the error messages below (well they
+appear from time to time, dominating dmesg). 
+
+This happens on kernel 2.6.22-rc5, I am copying relevant parts from dmesg:
+
+libata version 2.21 loaded.
+ata_piix 0000:00:1f.1: version 2.11
+ata1: PATA max UDMA/133 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x000140c0 irq 14
+ata2: PATA max UDMA/133 cmd 0x00010170 ctl 0x00010376 bmdma 0x000140c8 irq 15
+ata1.00: ATAPI: HL-DT-ST DVDRW GWA4080M, AA26, max UDMA/33
+ata1.00: configured for UDMA/33
+ATA: abnormal status 0x7F on port 0x00010177
+scsi 0:0:0:0: CD-ROM            HL-DT-ST DVDRW GWA4080M   AA26 PQ: 0 ANSI: 5
+sr0: scsi3-mmc drive: 24x/24x writer cd/rw xa/form2 cdda tray
+sr 0:0:0:0: Attached scsi CD-ROM sr0
+sr 0:0:0:0: Attached scsi generic sg0 type 5
+ata_piix 0000:00:1f.2: MAP [ P0 P2 XX XX ]
+ata_piix 0000:00:1f.2: invalid MAP value 0
+PCI: Setting latency timer of device 0000:00:1f.2 to 64
+scsi2 : ata_piix
+scsi3 : ata_piix
+ata3: SATA max UDMA/133 cmd 0x000140d8 ctl 0x000140f6 bmdma 0x00014020 irq 0
+ata4: SATA max UDMA/133 cmd 0x000140d0 ctl 0x000140f2 bmdma 0x00014028 irq 0
+ata3.01: ata_hpa_resize 1: sectors = 234441648, hpa_sectors = 234441648
+ata3.01: ATA-7: ST9120821AS, 7.01, max UDMA/133
+ata3.01: 234441648 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata3.01: ata_hpa_resize 1: sectors = 234441648, hpa_sectors = 234441648
+ata3.01: configured for UDMA/133
+ATA: abnormal status 0x7F on port 0x000140d7
 
 
-PATCH] x86: tighten kernel image page access rights
-author
-Jan Beulich <jbeulich@novell.com>
-
-Wed, 2 May 2007 17:27:10 +0000
-(19:27 +0200)
-committer
-Andi Kleen <andi@basil.nowhere.org>
-
-Wed, 2 May 2007 17:27:10 +0000
-(19:27 +0200)
-commit
-6fb14755a676282a4e6caa05a08c92db8e45cfff
+the actual errors:
 
 
-changed it to include text (even though Andi vetoed that before when I
-asked for it on grounds of breaking kprobes)... sounds this really wants
-to be a 2nd config option to seperatedly do code and data.
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+ata1.00: cmd a0/00:00:00:00:20/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0 
+         res 51/24:03:00:00:20/00:00:00:00:00/a0 Emask 0x1 (device error)
+ata1.00: configured for UDMA/33
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
+ata1.00: (BMDMA stat 0x5)
+ata1.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x25 data 8 in
+         res 00/24:03:00:00:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
+ata1: soft resetting port
+ata1.00: configured for UDMA/33
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
+ata1.00: cmd a0/00:00:00:00:20/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0 
+         res 00/24:03:00:00:20/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
+ata1: soft resetting port
+ata1.00: configured for UDMA/33
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
+ata1.00: (BMDMA stat 0x5)
+ata1.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x25 data 8 in
+         res 00/24:03:00:00:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
+ata1: soft resetting port
+ata1.00: configured for UDMA/33
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
+ata1.00: (BMDMA stat 0x5)
+ata1.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x43 data 12 in
+         res 00/24:03:00:00:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
+ata1: soft resetting port
+ata1.00: configured for UDMA/33
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+ata1.00: cmd a0/00:00:00:00:20/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0 
+         res 51/24:03:00:00:20/00:00:00:00:00/a0 Emask 0x1 (device error)
+ata1.00: configured for UDMA/33
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+ata1.00: (BMDMA stat 0x5)
+ata1.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x25 data 8 in
+         res 51/24:03:00:00:00/00:00:00:00:00/a0 Emask 0x1 (device error)
+ata1.00: configured for UDMA/33
+ata1: EH complete
+ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
+ata1.00: (BMDMA stat 0x5)
+ata1.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x43 data 12 in
+         res 00/24:03:00:00:00/00:00:00:00:00/a0 Emask 0x2 (HSM violation)
+ata1: soft resetting port
 
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
