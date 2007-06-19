@@ -1,45 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765327AbXFSAKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765613AbXFSAL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765327AbXFSAKc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 20:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbXFSAKY
+	id S1765613AbXFSAL0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 20:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762336AbXFSALT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 20:10:24 -0400
-Received: from adsl-216-102-214-42.dsl.snfc21.pacbell.net ([216.102.214.42]:50010
-	"EHLO cynthia.pants.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155AbXFSAKX (ORCPT
+	Mon, 18 Jun 2007 20:11:19 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:12873 "EHLO
+	outbound7-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755559AbXFSALS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 20:10:23 -0400
-X-Greylist: delayed 2235 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 20:10:23 EDT
-Date: Mon, 18 Jun 2007 14:24:23 -0700
-From: Brad Boyer <flar@allandria.com>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Theodore Tso <tytso@mit.edu>, "H. Peter Anvin" <hpa@zytor.com>,
-       alan <alan@clueserver.org>, Bodo Eggert <7eggert@gmx.de>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-Message-ID: <20070618212423.GB19713@cynthia.pants.nu>
-References: <8wsW4-3UY-3@gated-at.bofh.it> <8wJal-3KA-1@gated-at.bofh.it> <8xm22-4Ql-1@gated-at.bofh.it> <8xq5G-32l-7@gated-at.bofh.it> <8xs7w-69W-21@gated-at.bofh.it> <E1I0OFQ-0001B9-7Z@be1.lrz> <Pine.LNX.4.64.0706181406250.25913@blackbox.fnordora.org> <4676F9A2.6010007@zytor.com> <20070618221021.GB2062@thunk.org> <20070618222656.GB25089@lazybastard.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070618222656.GB25089@lazybastard.org>
-User-Agent: Mutt/1.5.9i
+	Mon, 18 Jun 2007 20:11:18 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <46771F9F.40608@am.sony.com>
+Date: Mon, 18 Jun 2007 17:13:19 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: Gerrit Huizenga <gh@us.ibm.com>
+CC: holzheu@linux.vnet.ibm.com, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       "lf_kernel_messages@linux-foundation.org" 
+	<lf_kernel_messages@linux-foundation.org>
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+References: <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
+In-Reply-To: <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Jun 2007 00:10:51.0209 (UTC) FILETIME=[4BA65B90:01C7B206]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 12:26:57AM +0200, Jörn Engel wrote:
-> Pointless here means that _I_ don't see the point.  Maybe there are
-> valid uses for extended attributes.  If there are, noone has explained
-> them to me yet.
+Gerrit Huizenga wrote:
+> Further, yet another kernel config option could allow distros to output
+> the calculated MD5 sum to be printed, much like we do with timestamps
+> today.
 
-The users of extended attributes that I've dealt with are ACL support
-and SELinux. These both use extended attributes under the covers. It's
-just not immediately obvious if you aren't looking.
+> Comments?
 
-	Brad Boyer
-	flar@allandria.com
+Would the compiled-in text then also become replaceable?
+Or is the MD5 sum output expected to be in addition to
+the regular English message?
+
+If message replacement at compile-time is supported, this
+could allow for creating "short" versions of the messages,
+which could have a beneficial impact on kernel size.
+
+Right now, it is possible to completely disable printks
+and re-claim about 100K of memory.  However, in some
+embedded configurations, even if you are space-constrained
+it's desirable to retain some of the printks, for in-field
+debugging.  Thus not very many embedded developers
+disable printks completely, even though the option has
+been supported for a while.  (That, and many aren't caught
+up to the kernel version where it was introduced (2.6.10) :-)
+
+But compressed messages (shortened text through abbreviations,
+or just outputting the ID alone, etc.) could save SOME
+of the space, in trade for less readability.  Heck, just
+removing all vowels would probably save 10k, and not
+hurt readability that much.
+
+Finally, for testing, it's handy to also
+have automatic translation generators.
+At a former company I worked for, they had translators
+that would output:
+ * all messages shortened by 20%
+ * all messages lengthened by 20%
+ * every message converted to pig-latin
+
+These were mostly used for testing if the strings broke
+screen real-estate constraints (which don't apply to
+kernel messages).  But the automatic translators
+would sometimes catch messages with weird attributes.
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
