@@ -1,34 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764509AbXFSB4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbXFSB43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764509AbXFSB4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 21:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758907AbXFSB4I
+	id S1760653AbXFSB43 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 21:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760946AbXFSB4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 21:56:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34357 "EHLO
+	Mon, 18 Jun 2007 21:56:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34366 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757514AbXFSB4H (ORCPT
+	with ESMTP id S1760693AbXFSB4N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 21:56:07 -0400
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
+	Mon, 18 Jun 2007 21:56:13 -0400
+Subject: Re: [patch-mm 00/25] High resolution timer updates and x86_64
+	support - V2
 From: Arjan van de Ven <arjan@infradead.org>
-To: holzheu@linux.vnet.ibm.com
-Cc: Gerrit Huizenga <gh@us.ibm.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       "lf_kernel_messages@linux-foundation.org" 
-	<lf_kernel_messages@linux-foundation.org>,
-       pavel@ucw.cz
-In-Reply-To: <1182174836.11400.64.camel@localhost.localdomain>
-References: <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
-	 <1182171354.11400.40.camel@localhost.localdomain>
-	 <1182172374.28566.1.camel@laptopd505.fenrus.org>
-	 <1182174836.11400.64.camel@localhost.localdomain>
+To: Valdis.Kletnieks@vt.edu
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <6972.1182197191@turing-police.cc.vt.edu>
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
+	 <6972.1182197191@turing-police.cc.vt.edu>
 Content-Type: text/plain
 Organization: Intel International BV
-Date: Mon, 18 Jun 2007 18:36:22 -0700
-Message-Id: <1182216982.3014.1.camel@laptopd505.fenrus.org>
+Date: Mon, 18 Jun 2007 18:52:58 -0700
+Message-Id: <1182217979.3014.3.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
@@ -37,42 +33,37 @@ X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafl
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-18 at 15:53 +0200, holzheu wrote:
-> On Mon, 2007-06-18 at 06:12 -0700, Arjan van de Ven wrote:
-> > On Mon, 2007-06-18 at 14:55 +0200, holzheu wrote:
-> > > Hi Gerrit,
-> > > 
-> > > The common thing of your and our approach is, that we need an ID to
-> > > identify a message either by:
+On Mon, 2007-06-18 at 16:06 -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Sat, 16 Jun 2007 10:36:00 -0000, Thomas Gleixner said:
+> > The following patch series contains:
 > > 
+> > - dyntick bugfixes for -mm (caused by the cpuidle changes in ACPI)
 > > 
-> > Maybe I am missing something big, but why is an ID needed?
-> > The message IS the ID right? That's the only thing that is robust
-> > against code moving about....
+> > - updates and improvements to high resolution timer / dynticks 
+> > 
+> > - high resolution timer / dynticks support for x86_64
 > 
-> Yes. As already discussed with Pavel, it is one option to use the format
-> string of the message as message ID. The disadvantage compared to
-> message IDs like hashes is, that format strings might be even less
-> unique than hashes 
-
-if the hash comes from the string in the first place I have a hard time
-believing that.
-
-> and it's probably less convenient for searching by
-> operators.
-
-I'm not convinced of that...
-
+> Am running with the 22-rc4-mm2-hrt4 patch on my Latitude D820.  Mostly seems
+> to work, but for some reason the Intel 'powertop' util thinks it's 100% busy:
 > 
-> An operator has to issue either:
+>      PowerTOP version 1.7       (C) 2007 Intel Corporation
 > 
-> >> info lp.4711
-> or
-> >> info "lp0: on fire"
+> Cn          Avg residency (5s)          P-states (frequencies)
+> C0 (cpu running)        (100.0%)
+> C1                0.0ms ( 0.0%)         2.00 Ghz     0.0%
+> C2                0.0ms ( 0.0%)         1.67 Ghz     0.0%
+> C3                0.0ms ( 0.0%)         1333 Mhz     0.0%
+>                                         1000 Mhz   100.0%
+> 
+> In reality:
 
-well.... surely the messages are caught by some userspace program,
-right? (like syslog).. that can do the lookup and make it all
-conveniently lookup-able and cross-referencable etc etc....
+
+looks like something broke the /proc/acpi/processor/*/power file
+data....
+
+can you check in that file to see if there is actual C-state time
+accounting going on?
+(it is in mainline, so if it's not then it's an -mm or -hrt bug)
 
 -- 
 if you want to mail me at work (you don't), use arjan (at) linux.intel.com
