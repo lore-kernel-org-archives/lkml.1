@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934034AbXFSU22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934188AbXFSUbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934034AbXFSU22 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 16:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764078AbXFSU2T
+	id S934188AbXFSUbo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 16:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbXFSUbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 16:28:19 -0400
-Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:52973
-	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759611AbXFSU2S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 16:28:18 -0400
-Message-ID: <46783C44.1040200@hawkeye.stone.uk.eu.org>
-Date: Tue, 19 Jun 2007 21:27:48 +0100
-From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Tue, 19 Jun 2007 16:31:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59742 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932133AbXFSUbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 16:31:33 -0400
+Message-ID: <46783D1C.5030408@redhat.com>
+Date: Tue, 19 Jun 2007 16:31:24 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Chris Snook <csnook@redhat.com>
+To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
 CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       "H. Peter Anvin" <hpa@zytor.com>, alan <alan@clueserver.org>
+       alan <alan@clueserver.org>
 Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com> <4678292B.6000804@hawkeye.stone.uk.eu.org> <4678369C.7070908@redhat.com> <467837AB.4030607@hawkeye.stone.uk.eu.org> <4678395B.4010805@redhat.com>
-In-Reply-To: <4678395B.4010805@redhat.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com> <467829C4.5020101@zytor.com> <46782AA5.2000108@hawkeye.stone.uk.eu.org> <46783847.1020205@redhat.com> <46783939.7000308@hawkeye.stone.uk.eu.org>
+In-Reply-To: <46783939.7000308@hawkeye.stone.uk.eu.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
- > Okay, so now you have to modify ls, cp, tar, and thousands of other
-> applications to be aware of the versioning, otherwise you can't use it.
+Jack Stone wrote:
+> Chris Snook wrote:
+>> Jack Stone wrote:
+>>> H. Peter Anvin wrote:
+>>>> Chris Snook wrote:
+>>>>> I pointed out NetApp's .snapshot directories because that's a method
+>>>>> that uses legal path character, but doesn't break anything.  With this
+>>>>> method, userspace tools will have to be taught that : is suddenly a
+>>>>> special character.
+>>>> Not to mention that the character historically used for this purpose is
+>>>> ; (semicolon.)
+>>> But that would cause havoc with shells which use ; to seperate commands.
+>>> Using ; would defiantly break userspace
+>>>
+>>> Jack
+>>>
+>> I can escape the semicolon just fine in bash.  In fact, tab-completion
+>> will do this automatically.  That's really a non-issue.  It just means
+>> that anyone who wants to use this feature would have to know what
+>> they're doing, which I believe is your goal, right?
 > 
-> Please don't get hung up on the interface.  This is a really cool
-> feature that will require some serious engineering work to make it work
-> right.  There's no need to reinvent hidden files as well, since we
-> already have a decades-old standard for that.
+> I didn't realise this. Would ; break userspace if it was used as the
+> delimiter?
 
-I realise that but the way this is designed has quickly become a pain in
-the past. I think that it would be easier to implement somthing like
-what was suggested in this email:
+I have no idea.  I've never written a file management utility or library, so I 
+don't know if they handle those specially.
 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0706.2/1156.html
+> This discussion may be academic as this design is looking less and less
+> useful/workable.
 
-I'm thinking of writing a simple proof of concept version and then
-seeing what people think from there.
+Well, I'd argue that the most interesting part of this idea is how it works on 
+the inside.  You can implement arbitrarily impractical interfaces to test it out 
+as long as your code is modular enough to implement a community-agreeable 
+interface once it's ready for a wider audience.
 
-Jack
+	-- Chris
