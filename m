@@ -1,187 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbXFSFUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbXFSFXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757681AbXFSFUD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 01:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbXFSFTt
+	id S1758501AbXFSFXb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 01:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXFSFXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 01:19:49 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:41000 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752545AbXFSFTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 01:19:47 -0400
-X-Greylist: delayed 65928 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 01:19:47 EDT
-Date: Tue, 19 Jun 2007 07:27:40 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070619052740.GA1649@ff.dom.local>
-References: <4bacf17f0706161435g1bb7c08bpd427901f64d57fa@mail.gmail.com> <20070618110849.GA2450@ff.dom.local> <20070618081000.14da5186@localhost.localdomain>
-Mime-Version: 1.0
+	Tue, 19 Jun 2007 01:23:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36808 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752908AbXFSFXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 01:23:23 -0400
+To: "David Schwartz" <davids@webmaster.com>
+Cc: "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <MDEHLPKNGKAHNMBLJOLKGEFEELAC.davids@webmaster.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Tue, 19 Jun 2007 02:23:14 -0300
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEFEELAC.davids@webmaster.com> (David Schwartz's message of "Mon\, 18 Jun 2007 19\:17\:39 -0700")
+Message-ID: <orps3s5xh9.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070618081000.14da5186@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 08:10:00AM -0700, Stephen Hemminger wrote:
-> On Mon, 18 Jun 2007 13:08:49 +0200
-> Jarek Poplawski <jarkao2@o2.pl> wrote:
-...
-> > It looks like skge driver enables different device than probbed.
-> > Maybe you've something old/wrong about eth0/eth1 in /etc configs?
-> 
-> More likely it is just user level device renaming. Most distro's
-> rename devices (if needed) using udev.
+On Jun 18, 2007, "David Schwartz" <davids@webmaster.com> wrote:
 
-I hope you're right, and the problem is resolved already, but for
-historical reasons I'd notice the original message with quite a lot
-of configs is available on linux-kernel.
+> Why is the fact that only the root user can load a kernel module not a
+> further restriction?
 
-Regards,
-Jarek P.
+Because the user (under whose control the computer is, be it person or
+company) set up the root password herself?
 
-> 
-> > You can also try with netdev= or pci= kernel parameters.
-> 
-> Bad idea. 
-> 
-> > If no result - resend it, please - maybe with some debugging on
-> > (modinfo skge). BTW - netdev seems to be preferred for this.
-> 
-> What is the contents of /proc/interrupts
+>> > The GPL was never, until GPLv3, about who gets to make
+>> > authorization decisions.
 
---->
+>> I can agree with that.  As long as the authorization decisions are not
+>> used as means to deprive users' of the freedoms that must not be
+>> restricted, they can be whatever the distributor fancies.
 
-> On 16-06-2007 23:35, Marcin .lusarz wrote:
-...
-> joi ~ # cat /proc/interrupts ; sleep 5; cat /proc/interrupts
->           CPU0
->  0:     891160   IO-APIC-edge      timer
->  1:       2218   IO-APIC-edge      i8042
->  8:          2   IO-APIC-edge      rtc
->  9:          1   IO-APIC-fasteoi   acpi
-> 12:       9110   IO-APIC-edge      i8042
-> 14:          0   IO-APIC-edge      libata
-> 15:        122   IO-APIC-edge      libata
-> 17:         12   IO-APIC-fasteoi   eth1, eth0
-> 18:      57275   IO-APIC-fasteoi   bttv0
-> 20:      18810   IO-APIC-fasteoi   libata
-> 21:          0   IO-APIC-fasteoi   ehci_hcd:usb1
-> 22:      77945   IO-APIC-fasteoi   VIA8237
-> NMI:          0
-> LOC:     890924
-> ERR:          0
->           CPU0
->  0:     896221   IO-APIC-edge      timer
->  1:       2219   IO-APIC-edge      i8042
->  8:          2   IO-APIC-edge      rtc
->  9:          1   IO-APIC-fasteoi   acpi
-> 12:       9110   IO-APIC-edge      i8042
-> 14:          0   IO-APIC-edge      libata
-> 15:        122   IO-APIC-edge      libata
-> 17:         12   IO-APIC-fasteoi   eth1, eth0
-> 18:      57654   IO-APIC-fasteoi   bttv0
-> 20:      18813   IO-APIC-fasteoi   libata
-> 21:          0   IO-APIC-fasteoi   ehci_hcd:usb1
-> 22:      78421   IO-APIC-fasteoi   VIA8237
-> NMI:          0
-> LOC:     895984
-> ERR:          0
-> 
-> joi ~ # cat /proc/ioports
-> 0000-001f : dma1
-> 0020-0021 : pic1
-> 0040-0043 : timer0
-> 0050-0053 : timer1
-> 0060-006f : keyboard
-> 0070-0077 : rtc
-> 0080-008f : dma page reg
-> 00a0-00a1 : pic2
-> 00c0-00df : dma2
-> 00f0-00ff : fpu
-> 0170-0177 : 0000:00:0f.1
->  0170-0177 : libata
-> 01f0-01f7 : 0000:00:0f.1
->  01f0-01f7 : libata
-> 0290-0297 : pnp 00:09
-> 02f8-02ff : serial
-> 0376-0376 : 0000:00:0f.1
->  0376-0376 : libata
-> 03c0-03df : vesafb
-> 03f6-03f6 : 0000:00:0f.1
->  03f6-03f6 : libata
-> 03f8-03ff : serial
-> 0400-0407 : vt596_smbus
-> 0680-06ff : pnp 00:09
-> 0800-0803 : ACPI PM1a_EVT_BLK
-> 0804-0805 : ACPI PM1a_CNT_BLK
-> 0808-080b : ACPI PM_TMR
-> 0810-0815 : ACPI CPU throttle
-> 0820-0823 : ACPI GPE0_BLK
-> 0cf8-0cff : PCI conf1
-> 1000-10ff : 0000:00:11.6
-> a800-a8ff : 0000:00:0a.0
->  a800-a8ff : skge
-> b000-b01f : 0000:00:0c.0
->  b000-b01f : ne2k-pci
-> b400-b4ff : 0000:00:0f.0
->  b400-b4ff : sata_via
-> b800-b80f : 0000:00:0f.0
->  b800-b80f : sata_via
-> c000-c003 : 0000:00:0f.0
->  c000-c003 : sata_via
-> c400-c407 : 0000:00:0f.0
->  c400-c407 : sata_via
-> c800-c803 : 0000:00:0f.0
->  c800-c803 : sata_via
-> d000-d007 : 0000:00:0f.0
->  d000-d007 : sata_via
-> d400-d41f : 0000:00:10.0
-> d800-d81f : 0000:00:10.1
-> e000-e01f : 0000:00:10.2
-> e400-e41f : 0000:00:10.3
-> e800-e8ff : 0000:00:11.5
->  e800-e8ff : VIA8237
-> fc00-fc0f : 0000:00:0f.1
->  fc00-fc0f : libata
-> 
-> joi ~ # cat /proc/iomem
-> 00000000-0009fbff : System RAM
-> 0009fc00-0009ffff : reserved
-> 000c0000-000dffff : pnp 00:0e
-> 000e4000-000fffff : reserved
-> 00100000-3ffaffff : System RAM
->  00200000-0059ebc7 : Kernel code
->  0059ebc8-0077248f : Kernel data
-> 3ffb0000-3ffbffff : ACPI Tables
-> 3ffc0000-3ffeffff : ACPI Non-volatile Storage
-> 3fff0000-3fffffff : reserved
-> e8000000-ebffffff : 0000:00:00.0
->  e8000000-ebffffff : aperture
-> efe00000-efe00fff : 0000:00:0d.0
->  efe00000-efe00fff : bttv0
-> eff00000-eff00fff : 0000:00:0d.1
-> f0000000-f9ffffff : PCI Bus #01
->  f0000000-f7ffffff : 0000:01:00.0
->    f0000000-f7ffffff : vesafb
-> faa00000-faa1ffff : 0000:00:0a.0
-> fab00000-fab03fff : 0000:00:0a.0
->  fab00000-fab03fff : skge
-> fac00000-fac07fff : 0000:00:0c.0
-> fae00000-fae000ff : 0000:00:10.4
->  fae00000-fae000ff : ehci_hcd
-> faf00000-fbffffff : PCI Bus #01
->  faf00000-faf1ffff : 0000:01:00.0
->  fb000000-fbffffff : 0000:01:00.0
-> fec00000-fec00fff : IOAPIC 0
->  fec00000-fec00fff : pnp 00:0b
-> fee00000-fee00fff : Local APIC
-> ff780000-ffffffff : reserved
-> 
-> joi ~ # cat /proc/sys/kernel/tainted
-> 0
-...
+> Right, which is the freedom to modify the software. The freedom to get the
+> source code. The freedom to use the source code however you want, absent
+> legitimate authorization decisions to the contrary.
+
+What makes them lawful, given the "no further restrictions"?
+
+> However, "you can't load your modified sofware on *MY* hardware" is
+> not a further restriction.
+
+As long as you didn't hand me the hardware along with the software,
+for me to become a user of the software on that hardware, I agree.
+
+>> >> Tivoizers say "hey, you can still modify and run the software, just
+>> >> not on *this* hardware".
+
+>> Tivoization is treating the hardware that comes along with the
+>> software as if it was different from others.  But it isn't.
+
+> Of course it is. They have the authorization right on that hardware, and
+> they don't have that right on my laptop.
+
+Ok, I stand corrected.  They have that right.
+
+However, since they distribute GPLed software along with the hardware,
+such that I'd be a user of the software on that hardware, they should
+not impose further restrictions on my freedoms that the GPL stands to
+defend WRT the GPLed software.  So, they must not use their
+authorization right to deny me, the user of the software, in the
+hardware that they meant me to use the software, the freedom to adapt
+the software for my own needs, and run it for any purpose.
+
+> That would mean it doesn't permit the distribute to state "BTW, you can't
+> install, modify or run this software on *OUR* computers that run our
+> corporate network".
+
+No, because the user is not becoming a user of the software on their
+own computers.  Only in the computer that was shipped along with the
+software.
+
+> Don't you see how obviously absurd that is?
+
+Yes, it would be, if it were so.
+
+>> The "no further restrictions" applies equally to all computers.
+>> It's not just because you have some control over some particular
+>> hardware that you deliver along with the software that you're
+>> entitled to use that to limit the user's freedoms.
+
+> I agree. However, that doesn't mean that people who own or control
+> particular pieces of hardware can't put authorization barriers that
+> prevent you from running whatever software you want on thos pieces
+> of hardware.
+
+That's correct, as long as they didn't give me that hardware with
+GPLed software in it.  The moment they do, I become recipient and user
+of GPLed software in that computer, and they should relinquish their
+power to impose restrictions on my exercise of the freedoms WRT that
+software.  And there's no reason whatsoever to exclude restrictions
+such as those implemented by means of authorization.
+
+>> > Which is a massive departure from the previous GPL spirit which
+>> > was about being able to use the software on *ANY* hardware you
+>> > controlled, not some special pieces more than others.
+
+>> It doesn't make the sold hardware special.  How come you think it
+>> does?
+
+> Because it becomes the only piece of hardware in the entire universe on
+> which the GPL gives you the right to run the software. On every other piece
+> of hardware, you must obtain that right from whoever owns the right to
+> decide what software runs on that hardware.
+
+I see.  Good point.  Agreed.  That hardware is indeed special.  Per
+the GPL, it's the only one in which the distributor must NOT exercise
+any restraints whatsoever on my exercise of the freedoms.
+
+Which in turns makes it non-special, in that, from the point of both
+the distributor and the user, it becomes just like any other random
+piece of hardware: the distributor doesn't limit the freedoms the user
+had, and the user isn't limited in enjoying the freedoms she had.
+
+>> It's exactly the opposite.  It just says the distributor can't
+>> make the hardware special, so as to restrain the users' freedoms that
+>> are inseparable from the software.
+
+> Don't you see that the rule that "this one thing cannot be special" makes
+> that one thing special since everything else *can* be special.
+
+It took me several attempts to understand what you meant.  Yes.  It's
+special in that it can't be made special.  Poof, there goes the
+universe ;-)
+
+>> > Because that is not a right the vendor chooses to give to the user.
+
+>> As in, the vendor can turn to the user and sue her for patent
+>> infringement, after distributing GPLed software to her, just because
+>> the use of the patent is not a right the vendor chooses to give to the
+>> user?
+
+> I don't know what patent you are talking about.
+
+I'm talking about the implicit patent licenses that arise from
+distributing software under GPLv2.
+
+>> > You may dislike this decision, but it's not irrational.
+
+>> I never said it was irrational.  I just said it's a further
+>> restriction on the exercise of the freedoms that must accompany the
+>> software wherever it goes.
+
+> No more than having to be 'root' to load a kernel module. You are free to
+> remove it from any hardware for which you have the right to choose what
+> software runs.
+
+Yup.  And I get that right (because the distributor must not stop me)
+when I receive software under the GPL along with the computer in which
+I'm expected to use it.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
