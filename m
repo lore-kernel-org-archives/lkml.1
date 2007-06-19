@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbXFSP3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbXFSPbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759150AbXFSP3e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbXFSP3U
+	id S1759067AbXFSPbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbXFSPbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:29:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53665 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753685AbXFSP3S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:29:18 -0400
-Date: Tue, 19 Jun 2007 08:23:02 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jay Vosburgh <fubar@us.ibm.com>, "David S. Miller" <davem@davemloft.net>
-Cc: Dan Aloni <da-x@monatomic.org>,
-       Chad Tindel <ctindel@users.sourceforge.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bonding-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Why is this patch not in 2.6.22-rc5?
-Message-ID: <20070619082302.4b9a5c27@localhost.localdomain>
-In-Reply-To: <15712.1181795790@death>
-References: <1178862045.3979.33.camel@kane-linux>
-	<20070511092519.1f34ab34@freepuppy>
-	<1179130660.3881.23.camel@kane-linux>
-	<20070514085840.17a343f7@freepuppy>
-	<20070613094521.GA8860@localdomain>
-	<20070613155335.47111c67@localhost>
-	<15712.1181795790@death>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 11:31:36 -0400
+Received: from mx1.suse.de ([195.135.220.2]:46220 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756315AbXFSPbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 11:31:35 -0400
+Date: Tue, 19 Jun 2007 08:31:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: linux-kernel@vger.kernel.org, TripleX Chung <xxx.phy@gmail.com>,
+       Maggie Chen <chenqi@beyondsoft.com>
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+Message-ID: <20070619153111.GA24521@suse.de>
+References: <11822628633463-git-send-email-leoli@freescale.com> <989B956029373F45A0B8AF0297081890D82D5F@zch01exm26.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <989B956029373F45A0B8AF0297081890D82D5F@zch01exm26.fsl.freescale.net>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jun 2007 21:36:30 -0700
-Jay Vosburgh <fubar@us.ibm.com> wrote:
+On Tue, Jun 19, 2007 at 11:26:36PM +0800, Li Yang-r58472 wrote:
+> Hi all,
+> 
+> I hope this document can get into the kernel tree.  As I read through
+> the discussion about Japanese translation, there are quite some
+> arguments that one cannot do kernel development effectively without
+> solid English skill.  As a non-native English speaker, I would say that
+> it is much easier to understand technical terms and effectively discuss
+> technical matters.  But community policies and politics are different
+> things.  They will be very painful for one who doesn't really grasp
+> English well.  IMHO, having these policy documents in different
+> languages will greatly help these non-native speakers to contribute,
+> hence greatly benefit the Linux kernel community itself.
 
-> 
-> 	The following patch (based on a patch from Stephen Hemminger
-> <shemminger@linux-foundation.org>) removes use after free conditions in
-> the unregister path for the bonding master.  Without this patch, an
-> operation of the form "echo -bond0 > /sys/class/net/bonding_masters"
-> would trigger a NULL pointer dereference in sysfs.  I was not able to
-> induce the failure with the non-sysfs code path, but for consistency I
-> updated that code as well.
-> 
-> 	I also did some testing of the bonding /proc file being open
-> while the bond is being deleted, and didn't see any problems there.
-> 
-> Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
-	
-Hey David, this patch fixes one of the bugs listed in 2.6.22-rc5
-list. Jay submitted last week but it hasn't made it upstream.
+I see no reason why it can not go in, I'll add it to my queue and you
+will get an automated email when it is applied.
+
+thanks,
+
+greg k-h
