@@ -1,133 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbXFSDZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765542AbXFSDqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933290AbXFSDZo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 23:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764748AbXFSDZh
+	id S1765542AbXFSDqT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 23:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760653AbXFSDqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 23:25:37 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50707 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761311AbXFSDZg (ORCPT
+	Mon, 18 Jun 2007 23:46:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57697 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760017AbXFSDqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 23:25:36 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: mea culpa on the meaning of Tivoization
-Date: Mon, 18 Jun 2007 23:25:21 -0400
-User-Agent: KMail/1.9.6
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
-       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <200706181808.18007.dhazelton@enter.net> <orabuw8xdb.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orabuw8xdb.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Mon, 18 Jun 2007 23:46:08 -0400
+Date: Mon, 18 Jun 2007 20:46:03 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>, pwil3058@bigpond.net.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: v2.6.21.4-rt11
+In-Reply-To: <20070619021558.GD7160@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0706182040500.30213@schroedinger.engr.sgi.com>
+References: <20070615144535.GA12078@elte.hu> <20070615151452.GC9301@linux.vnet.ibm.com>
+ <20070615195545.GA28872@elte.hu> <20070616011605.GH9301@linux.vnet.ibm.com>
+ <20070616084434.GG2559@linux.vnet.ibm.com> <20070616161213.GA2994@linux.vnet.ibm.com>
+ <20070618151215.GA9750@linux.vnet.ibm.com> <Pine.LNX.4.64.0706180948250.4751@schroedinger.engr.sgi.com>
+ <20070618173558.GA17865@linux.vnet.ibm.com> <Pine.LNX.4.64.0706181054530.6596@schroedinger.engr.sgi.com>
+ <20070619021558.GD7160@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706182325.22067.dhazelton@enter.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 June 2007 22:57:20 Alexandre Oliva wrote:
-> On Jun 18, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Monday 18 June 2007 17:31:47 Alexandre Oliva wrote:
-> >> And if you look at GPLv3dd1 or dd2 IIRC, that's how it started.  For
-> >> some reason, the FSF turned it into the more lax (in some senses)
-> >> installation information for user products in dd3.  Maybe they decided
-> >> that the argument about the signature being effectively part of the
-> >> executable, and therefore the key being effectively part of the source
-> >> code, was less likely to be upheld in a court of law than this
-> >> alternate phrasing.  All in all, the effect is the same AFAICT, and
-> >> the spirit is being complied with.
-> >
-> > But the change has some massive problems.
->
-> Such as?  Is the effect really any different?
+On Mon, 18 Jun 2007, Siddha, Suresh B wrote:
 
-I haven't looked at it, in depth, today but one of the problems I saw was the 
-apparent loopholes in the text. No specifics, but I remember thinking "a 
-lawyer would have a field day with this - dozens of ways they could sidestep 
-these issues"
+> > +		if (time_after(next_balance,
+> > +			  sd->last_balance + sd->balance_interval))
+> > +			next_balance = sd->last_balance
+> > +					+ sd->balance_interval;
+> 
+> don't we have to do, msecs_to_jiffies(sd->balance_interval)?
 
-> > If dd1 or dd2 was clearly and concisely written such that the
-> > conditions were not open to a different interpretation without
-> > creative re-definition of words then changes would not be
-> > needed. (I'm still working on the version I mentioned - give me a
-> > bit, writing english in such a way that a lawyer can't twist it to
-> > mean whatever they are paid to make it mean is difficult.)
->
-> It's very difficult and, worse, it might turn out to be unenforceable.
-> You'd have to count on signing keys being copyrightable, and they are
-> unlikely to be, and on signatures being derived works of both, which
-> is a tough call.  The whole idea resonates very well with the spirit
-> of the license, but we need more than that, we need it to be very
-> likely to work.  I suspect this is why the FSF has decided to take
-> another route to achieve the same (AFAICT) effect.
+Well that is certainly a bug here. Is this better?
 
-Agreed. I'm still stuck trying to keep the language concise and understandable 
-without delving into the descriptive flights of fancy I enjoy. (I write a lot 
-more fiction than I do code, even though I started writing code a long time 
-before I started on fiction)
+Scheduler: Fix next_interval determination in idle_balance().
 
-> >> I don't see how this is different from refraining from accepting
-> >> contributions under any other license, except that you can't use
-> >> license incompatibility to reason it out as an impossibility you
-> >> established for yourself in just the very same way.
-> >
-> > I think there was more to it than that, but the point doesn't
-> > matter. If the license used on contributed code *isn't* completely
-> > compatible with the license on the project it can't be used
-> > anyway. (doesn't the GPLv3 cover situations like that?)
->
-> I'm not sure what you're asking.  GPLv3 covers additional permissions,
-> that are really no different from dual-licensing, so anyone can choose
-> to drop them when combining with works (including their own) that
-> don't offer such additional permissions.
+The intervals of domains that do not have SD_BALANCE_NEWIDLE must
+be considered for the calculation of the time of the next balance.
+Otherwise we may defer rebalancing forever.
 
-What I was getting at, here, is that the GPLv3 isn't backwards compatible with 
-GPLv2, because you aren't allowed to remove rights from the GPLv3. Remember, 
-there are rights encoded in the GPLv3 that don't appear in v2. In fact, if 
-you want to use GPLv3 code in a GPLv2 project you have to use GPLv3. For some 
-projects, like the Linux Kernel, the upgrade is impossible to accomplish.
+Siddha also spotted that the conversion of the balance interval
+to jiffies is missing. Fix that to.
 
-> >> My objection was mainly about the "forcing".  FSF's stance is about
-> >> educating users as to the moral and ethical reasons, such that they
-> >> reject non-Free Software, while at the same time providing software
-> >> authors with means to stop others from hurting users, by depriving
-> >> them of the freedoms they're morally entitled to have.
-> >
-> > Hrm... When I first hit the end of this massive sentence I was really
-> > confused. Took about five minutes for me to remember that "morally
-> > entitled" is based on the morals promoted by the FSF.
->
-> Yes.  And the 'them' after the last comma refers to the users, not the
-> authors (although they can be users too), in case it's not clear ;-)
->
-> :-D
+Signed-off-by: Christop Lameter <clameter@sgi.com>
 
-Yes. I almost replied "-ENOPARSE" because, when I first read it, I parsed it 
-as "by depriving [the authors] of the freedoms they're morally entitled to 
-have". When my brain finally rebooted after that bought of idiocy I was able 
-to parse it properly.
+Index: linux-2.6.22-rc4-mm2/kernel/sched.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/sched.c	2007-06-18 20:41:46.000000000 -0700
++++ linux-2.6.22-rc4-mm2/kernel/sched.c	2007-06-18 20:44:00.000000000 -0700
+@@ -2493,17 +2493,18 @@ static void idle_balance(int this_cpu, s
+ 	unsigned long next_balance = jiffies + 60 *  HZ;
+ 
+ 	for_each_domain(this_cpu, sd) {
+-		if (sd->flags & SD_BALANCE_NEWIDLE) {
++		unsigned long interval;
++
++		if (sd->flags & SD_BALANCE_NEWIDLE)
+ 			/* If we've pulled tasks over stop searching: */
+-			pulled_task = load_balance_newidle(this_cpu,
+-							this_rq, sd);
+-			if (time_after(next_balance,
+-				  sd->last_balance + sd->balance_interval))
+-				next_balance = sd->last_balance
+-						+ sd->balance_interval;
+-			if (pulled_task)
+-				break;
+-		}
++			pulled_task = load_balance_newidle(this_cpu,this_rq, sd);
++
++		interval = msecs_to_jiffies(sd->balance_interval);
++		if (time_after(next_balance,
++			  sd->last_balance + interval))
++			next_balance = sd->last_balance + interval;
++		if (pulled_task)
++			break;
+ 	}
+ 	if (!pulled_task)
+ 		/*
 
-DRH
-
-> > Everyone that has been part of this discussion - my personal code of
-> > morals will not let me get away without this: "Forgive me if, in the heat
-> > of the moment, I offended any of you."
->
-> FWIW, I never felt offended by you, but I second your request and
-> extend it to all participants in the thread too, particularly to Ingo,
-> to whom I remember having directed some harsh words.
-
-
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
