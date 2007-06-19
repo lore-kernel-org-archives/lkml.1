@@ -1,59 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbXFSSl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762283AbXFSSnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762133AbXFSSl6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 14:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761959AbXFSSls
+	id S1762283AbXFSSnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 14:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758787AbXFSSnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 14:41:48 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:35274 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756636AbXFSSlr (ORCPT
+	Tue, 19 Jun 2007 14:43:07 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:53308 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760770AbXFSSnG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 14:41:47 -0400
-MIME-Version: 1.0
+	Tue, 19 Jun 2007 14:43:06 -0400
+Date: Tue, 19 Jun 2007 14:42:44 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 0/2] UML stack tweaks
+Message-ID: <20070619184244.GA10557@c2.user-mode-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18040.9056.755569.67029@stoffel.org>
-Date: Tue, 19 Jun 2007 14:41:36 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tim.c.chen@linux.intel.com, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Change in default vm_dirty_ratio
-In-Reply-To: <20070618164711.9de1c38e.akpm@linux-foundation.org>
-References: <1182201271.4883.22.camel@localhost.localdomain>
-	<20070618164711.9de1c38e.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Andrew" == Andrew Morton <akpm@linux-foundation.org> writes:
+These can wait till 2.6.23.
 
-Andrew> On Mon, 18 Jun 2007 14:14:30 -0700
-Andrew> Tim Chen <tim.c.chen@linux.intel.com> wrote:
+They use get_free_page instead of kmalloc to allocate kernel stacks
+and add some stack usage monitoring under CONFIG_DEBUG_STACK_USAGE.
 
->> IOZone write drops by about 60% when test file size is 50 percent of
->> memory.  Rand-write drops by 90%. 
+				Jeff
 
-Andrew> heh.
-
-Andrew> (Or is that an inappropriate reaction?)
-
->> Is there a good reason for turning down the default dirty ratio?
-
-Andrew> It seems too large.  Memory sizes are going up faster than
-Andrew> disk throughput and it seems wrong to keep vast amounts of
-Andrew> dirty data floating about in memory like this.  It can cause
-Andrew> long stalls while the system writes back huge amounts of data
-Andrew> and is generally ill-behaved.
-
-Shouldn't the vm_dirty_ratio be based on the speed of the device, and
-not the size of memory?  So slower devices can't keep as much in
-memory as fast devices?  That would seem to be a better metric.  And
-of course those with hundreds of disks will then complain we're taking
-too much memory as well, even though they can handle it.  
-
-So per-device vm_dirty_ratio, capped with a vm_dirty_total_ratio seems
-to be what we want, right?
-
-John
+-- 
+Work email - jdike at linux dot intel dot com
