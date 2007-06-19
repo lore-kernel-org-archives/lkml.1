@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbXFSVrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbXFSVtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbXFSVrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbXFSVrG
+	id S1756814AbXFSVtO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbXFSVtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:47:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57621 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752515AbXFSVrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:47:03 -0400
-To: david@lang.hm
-Cc: Daniel Drake <dsd@gentoo.org>, Bron Gondwana <brong@fastmail.fm>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
-	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615072322.GA7594@brong.net>
-	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616021630.GA30660@brong.net>
-	<orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616103130.GD32405@brong.net>
-	<orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616233251.GA17270@brong.net>
-	<ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<46774BD3.6010605@gentoo.org>
-	<ory7ig4h24.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706191404060.26701@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 18:46:16 -0300
-In-Reply-To: <Pine.LNX.4.64.0706191404060.26701@asgard.lang.hm> (david@lang.hm's message of "Tue\, 19 Jun 2007 14\:07\:18 -0700 \(PDT\)")
-Message-ID: <orr6o7zkgn.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Tue, 19 Jun 2007 17:49:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44376 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752744AbXFSVs7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 17:48:59 -0400
+Date: Tue, 19 Jun 2007 14:48:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: And now for something _totally_ different: Linux v2.6.22-rc5
+In-Reply-To: <200706192337.49505.m.kozlowski@tuxland.pl>
+Message-ID: <alpine.LFD.0.98.0706191443460.3593@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
+ <200706192337.49505.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, david@lang.hm wrote:
-
-> On Tue, 19 Jun 2007, Alexandre Oliva wrote:
->> On Jun 19, 2007, Daniel Drake <dsd@gentoo.org> wrote:
->> 
->>> I realise that the latest GPLv3 draft would not pose restrictions
->>> here, as such devices would not be classified as consumer
->>> products.
->> 
->> And even if they were, there's always ROM.
->> 
->> I don't know whether hardware seals that state "once you break this
->> seal, law prohibits the use of this device with human patients".
-
-> once you break the seal the device is no longer certified. an
-> uncertified device cannot be used.
-
-Yup.  That's the law.
-
-At which point it's not the hardware vendor imposing the restriction,
-so this use is perfectly acceptable.
 
 
-One could presumably implement similar seals in software.  Nothing
-wrong with a signature used to indicate that the device has been
-tampered with.  Even a led somewhere that reflects this status.
+On Tue, 19 Jun 2007, Mariusz Kozlowski wrote:
+> 
+> 	MAINTAINERS says riscom8 is orphaned so not sure
+> if anybody cares. Spotted this when playing with modprobe
+> walking /lib/modules/`uname -r`/kernel in a loop ;)
 
-None of this prevents the user from enjoying the freedoms he's
-entitled to, according to the laws of the place where he lives.
+Oh wow.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+I wonder why it does that. The code literally does:
+
+        save_flags(flags);
+        cli();
+        tty_unregister_driver(riscom_driver);
+        put_tty_driver(riscom_driver);
+        restore_flags(flags);
+
+and I don't see the point.
+
+(And that's what then causes the warning: tty_unregister_driver will 
+eventually get a mutex, but the caller had disabled hardware interrupts..
+
+I see absolutely *zero* reason for that whole save_flags/cli/restore_flags 
+dance at all, so I think the right thing to do is to just remove it.
+
+I'm Cc'ing Alan, in case he cares. 
+
+Mariusz, if you actually *use* the dang thing, and really care, you can 
+send me a tested patch. I can pretty much guarantee that removing those 
+irq games won't make things any worse, but no way am I going to just 
+remove it on my own without any users or any testing.
+
+		Linus
