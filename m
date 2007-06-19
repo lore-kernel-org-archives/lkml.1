@@ -1,211 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbXFSNwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXFSNyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754718AbXFSNwt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 09:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXFSNwl
+	id S1753996AbXFSNyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 09:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXFSNyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 09:52:41 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:34835 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbXFSNwk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 09:52:40 -0400
-Date: Tue, 19 Jun 2007 16:05:12 +0200
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Bligh <mbligh@mbligh.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
-Message-ID: <20070619140512.GA19904@flower.upol.cz>
-References: <4675C083.6080409@s5r6.in-berlin.de> <20070617220927.99ebc1ee.akpm@linux-foundation.org> <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca> <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070619124855.GB12950@stusta.de>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+	Tue, 19 Jun 2007 09:54:09 -0400
+Received: from smtp.ono.com ([62.42.230.12]:5248 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751643AbXFSNyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 09:54:07 -0400
+Date: Tue, 19 Jun 2007 15:53:57 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc4-mm2
+Message-ID: <20070619155357.0741dd22@werewolf-wl>
+In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.9.2cvs70 (GTK+ 2.11.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Dropping noise for Debbugs, because interested people may join via Gmane]
-
-On Tue, Jun 19, 2007 at 02:48:55PM +0200, Adrian Bunk wrote:
-> On Tue, Jun 19, 2007 at 06:06:47AM +0200, Oleg Verych wrote:
-> > [Dear Debbug developers, i wish your ideas will be useful.]
-> > 
-> > * From: Linus Torvalds
-> > * Newsgroups: gmane.linux.kernel
-> > * Date: Mon, 18 Jun 2007 17:09:37 -0700 (PDT)
-> > >
-> > > On Mon, 18 Jun 2007, Martin Bligh wrote:
-> > >> 
-> > >> Sorry to be a wet blanket, but I've seen those sort of things
-> > >> before, and they just don't seem to work, especially in the
-> > >> environment we're in with such a massive diversity of hardware.
-> > >
-> > > I do agree. It _sounds_ like a great idea to try to control the flow of 
-> > > patches better,
-> > 
-> > There were some ideas, i will try to summarize:
-> > 
-> > * New Patches (or sets) need tracking, review, testing
-> > 
-> >   Zero (tracking) done by sending (To, or bcc) [RFC] patch to something
-> >   like submit@pts.e-mail.example.com (like BTS now). Notifications will
-> >   be sent to intrested maintainers (if meta-information is ok) or testers
-> >   (see below)
-> > 
-> >   First is mostly done by maintainers or interested individuals.
-> >   Result is "Acked-by" and "Cc" entries in the next patch sent. Due to
-> >   lack of tracking this things are done manually, are generally in
-> >   trusted manner. But bad like <200706172053.41806.bzolnier@gmail.com>
-> >   sometimes happens.
-> 
-> The goal is to get all patches for a maintained subsystem submitted to 
-> Linus by the maintainer.
-> 
-> >   When patch in sent to this PTS, your lovely
-> >   checkpatch/check-whatever-crap-has-being-sent tools can be set up as
-> >   gatekeepers, thus making impossible stupid errors with MIME coding,
-> >   line wrapping, whatever style you've came up with now in checking
-> >   sent crap.
-> 
-> The -mm kernel already implements what your proposed PTS would do.
-
-Having all-in-one patchset, like -mm is easy thing to provide
-interested parties with "you know what you have -- crazy development"
-
-However [P]TS is tracking, recording, organizing tool. {1} Andrew's cron
-daemon easily can run script to check status of particular patch (cc,
-tested-by, acked-by). If patch have no TS ID, Andrew's watchdog is
-barking back to patch originator (with polite asking to send patch as:
-
-* TS as "To:" target
-* patch author as "Cc:" target, this is useful to require:
-  . author can check that copy himself with text-only pager program
-    (to see any MIME coding crap)
-  . preventing SPAM
-* maybe somebody else in Cc or Bcc.)
-
-> Plus it gives testers more or less all patches currently pending 
-> inclusion into Linus' tree in one kernel they can test.
-
-Crazy development{0}. Somebody knows, that comprehensively testing
-hibernation is their thing. I don't care about it, i care about foo, bar.
-Thus i can apply for example lguest patches and implement and test new
-asm-offset replacement, *easily*. Somebody, as you know, likes new fancy
-file system, and no-way other. Let them be happy testing that thing
-*easily*. Because another fancy NO_MHz will hang their testing bench
-right after best ever speed results were recorded.
-
-> The problem are more social problems like patches Andrew has never heard 
-> of before getting into Linus' tree during the merge window.
-
-Linus' watchdog, as well, asking for valid patch id, or just doesn't
-care (in similar manner Linus does :).
-
-So far no human is involved in social things. Do you agree?
-
-Human power is worth and needed in particular patch discussion and
-testing under the participation (by Cc, acking, test-ok *e-mails*) of
-tracking system.
-
-> >...
-> > |-*- Feature Needed -*-
-> >   Addition, needed is hardware user tested have/had/used. Currently
-> >   ``reportbug'' tool includes packed specific and system specific
-> >   additions automaticly gathered and inserted to e-mail sent to BTS.
-> >   (e.g. <http://permalink.gmane.org/gmane.linux.debian.devel.kernel/29740>)
-> 
-> The problem is that most problems don't occur on one well-defined 
-> kind of hardware - patches often break in exactly the areas the patch
-> author expected no problems in.
-
-I tried to test that new fancy FS, and couldn't boot because of
-yet-another ACPI crap. See theme{0}?
-
-Overall testing, like Andrew does, is doubtless brave thing, but he have
-more time after {1}, isn't it?
-
-> And in many cases a patch for a device driver was written due to a bug 
-> report - in such cases a tester with the hardware in question is already 
-> available.
-
-Tracking all possible testers (for next driver update, for example) is
-in question.
+On Wed, 6 Jun 2007 22:03:13 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
 
 > 
-> >...
-> > > but in the end, it needs to also be easy and painfree to the people
-> > > involved, and also make sure that any added workflow doesn't require
-> > > even *more* load and expertise on the already often overworked 
-> > > maintainers..
-> > 
-> > Experienced BTS users and developers. Please, correct me if i'm wrong.
-> > At least e-mail part of Debian's BTS and whole idea of it is *exactly*
-> > what is needed. Bugzilla fans, you can still use you useless pet,
-> > because Debian developers have done things, to track and e-mail states
-> > of bugs: <http://permalink.gmane.org/gmane.linux.debian.devel.kernel/29736>
-> >...
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
 > 
-> "useless pet"?
-> Be serious.
-> How many open source projects use Bugzilla and how many use the Debian BTS?
-> And then start thinking about why the "useless pet" has so many more 
-> user...
-
-I might be stupid, but i faced it. On my amd64 512M laptop i *cannot* run
-mozillka any more, for example! And i don't care, because Linus said his
-opinion and i fully agree with him.
-
-> The Debian BTS requires you to either write emails with control messages 
-> or generating control messages with external tools.
-
-Awesome!!! Are you wrote this reply to me by 
-
-> In Bugzilla the same works through a web interface.
-
-web interface? If you did .........</dev/random dd bs=1 count=13.....
-Actually you didn't ;)
-
-> I know both the Debian BTS and Bugzilla and although they are quite 
-> different they both are reasonable tools for their purpose.
-
-As you just might have seen here, i was talking about organizing,
-tracking, hopefully saving and redirecting useful main power. And i don't
-bother search e-mails i saw about Bugzilla's BD from many other prominent
-developers. I just know that, not from my dream or physical vacuum.
-
-Basic concept of Debian BTS is what i've discovered after many useless
-hours i spent in Bugzilla. And this is mainly because of one basic
-important thing, that nobody acknowledged (for newbies, like me):
-
-* E-Mail with useful MUAs, after it got reliable delivery MTAs with qmail
-  (or exim) is the main communication toolset.
-
-Can't you see that from Linux's patch sending policy?
-
-I also what to reply to myself about why LKML was established and
-USENET (news) was abandoned.
-
-To control and to keep running *your* _main communication toolset_
-(read as "your user,developer feedback").
-
-I just couldn't realize that, because i grew up in free web e-mail, after
-having set up my own server with MTA and real e-mail and after
-discovering Gmane (really mind-blowing evolution of the e-mail system!)
-
-> cu
-> Adrian
+> - Basically a bugfixed version of 2.6.22-rc4-mm1.  None of the subsystem
+>   trees were repulled, several bad patches were dropped, a few were fixed.
 > 
-> -- 
-____
+
+I get this warning when I plug a USB stick:
+
+Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: new high speed USB device using ehci_hcd and address 4
+Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: new device found, idVendor=090c, idProduct=1000
+Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: new device strings: Mfr=1, Product=2, SerialNumber=3
+Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: Product: USBDrive
+Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: Manufacturer: LG
+Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: SerialNumber: AA04012700012034
+Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: configuration #1 chosen from 1 choice
+Jun 19 15:50:53 werewolf-wl kernel: scsi7 : SCSI emulation for USB Mass Storage devices
+Jun 19 15:50:53 werewolf-wl kernel: usb-storage: device found at 4
+Jun 19 15:50:53 werewolf-wl kernel: usb-storage: waiting for device to settle before scanning
+Jun 19 15:50:58 werewolf-wl kernel: WARNING: at drivers/usb/core/urb.c:293 usb_submit_urb()
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_submit_urb+491/513] usb_submit_urb+0x1eb/0x201
+Jun 19 15:50:58 werewolf-wl kernel:  [<c02724be>] usb_submit_urb+0x1eb/0x201
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_sg_init+580/609] usb_sg_init+0x244/0x261
+Jun 19 15:50:58 werewolf-wl kernel:  [<c027408b>] usb_sg_init+0x244/0x261
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_sg_wait+175/326] usb_sg_wait+0xaf/0x146
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0273c12>] usb_sg_wait+0xaf/0x146
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_bulk_transfer_sg+149/220] usb_stor_bulk_transfer_sg+0x95/0xdc
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_bulk_transfer_buf+71/114] usb_stor_bulk_transfer_buf+0x47/0x72
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0285afe>] usb_stor_bulk_transfer_buf+0x47/0x72
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_Bulk_transport+293/617] usb_stor_Bulk_transport+0x125/0x269
+Jun 19 15:50:58 werewolf-wl kernel:  [<c02860a9>] usb_stor_Bulk_transport+0x125/0x269
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+0/425] usb_stor_control_thread+0x0/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0286d5f>] usb_stor_control_thread+0x0/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_invoke_transport+21/659] usb_stor_invoke_transport+0x15/0x293
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0286202>] usb_stor_invoke_transport+0x15/0x293
+Jun 19 15:50:58 werewolf-wl kernel:  [__wake_up_locked+31/33] __wake_up_locked+0x1f/0x21
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0113a23>] __wake_up_locked+0x1f/0x21
+Jun 19 15:50:58 werewolf-wl kernel:  [__down_interruptible+236/270] __down_interruptible+0xec/0x10e
+Jun 19 15:50:58 werewolf-wl kernel:  [<c02f682a>] __down_interruptible+0xec/0x10e
+Jun 19 15:50:58 werewolf-wl kernel:  [default_wake_function+0/12] default_wake_function+0x0/0xc
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0116d65>] default_wake_function+0x0/0xc
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+0/425] usb_stor_control_thread+0x0/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0286d5f>] usb_stor_control_thread+0x0/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+0/425] usb_stor_control_thread+0x0/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0286d5f>] usb_stor_control_thread+0x0/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+315/425] usb_stor_control_thread+0x13b/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0286e9a>] usb_stor_control_thread+0x13b/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [kthread+0/86] kthread+0x0/0x56
+Jun 19 15:50:58 werewolf-wl kernel:  [<c012de72>] kthread+0x0/0x56
+Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+0/425] usb_stor_control_thread+0x0/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [<c0286d5f>] usb_stor_control_thread+0x0/0x1a9
+Jun 19 15:50:58 werewolf-wl kernel:  [kthread+52/86] kthread+0x34/0x56
+Jun 19 15:50:58 werewolf-wl kernel:  [<c012dea6>] kthread+0x34/0x56
+Jun 19 15:50:58 werewolf-wl kernel:  [kthread+0/86] kthread+0x0/0x56
+Jun 19 15:50:58 werewolf-wl kernel:  [<c012de72>] kthread+0x0/0x56
+Jun 19 15:50:58 werewolf-wl kernel:  [kernel_thread_helper+7/20] kernel_thread_helper+0x7/0x14
+Jun 19 15:50:58 werewolf-wl kernel:  [<c01033e3>] kernel_thread_helper+0x7/0x14
+Jun 19 15:50:58 werewolf-wl kernel:  =======================
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.0 (Cooker) for i586
+Linux 2.6.21-jam07 (gcc 4.1.2 20070302 (4.1.2-1mdv2007.1)) SMP PREEMPT
+09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
