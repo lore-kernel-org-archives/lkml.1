@@ -1,206 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933831AbXFSTyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765323AbXFSTys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933831AbXFSTyF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933120AbXFSTxn
+	id S1765323AbXFSTys (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763999AbXFSTyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:53:43 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:45303 "EHLO aun.it.uu.se"
+	Tue, 19 Jun 2007 15:54:39 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:45323 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932716AbXFSTxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:53:41 -0400
-Date: Tue, 19 Jun 2007 21:53:30 +0200 (MEST)
-Message-Id: <200706191953.l5JJrU4K002663@alkaid.it.uu.se>
+	id S1763241AbXFSTyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 15:54:37 -0400
+Date: Tue, 19 Jun 2007 21:54:31 +0200 (MEST)
+Message-Id: <200706191954.l5JJsVl9002671@alkaid.it.uu.se>
 From: Mikael Pettersson <mikpe@it.uu.se>
 To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 2.6.22-rc5 1/2] sata_promise: cleanups
+Subject: [PATCH 2.6.22-rc5 2/2] sata_promise: SATA hotplug support
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch applies some trivial cleanups to sata_promise:
-- repair whitespace damage
-- correct comment at board_2057x_pata definition
-- pull SATAII TX4 support code out to separate functions
-- rename ata_nr to ata_no for consistency with libata's port_no
-- remove some init-time debug printks (requested by Jeff)
+This patch enables hotplugging of SATA devices in the
+sata_promise driver. It's been tested successfully on
+both first- and second-generation Promise SATA chips:
+SATA150 TX2plus, SATAII150 TX2plus, SATA300 TX2plus,
+and SATA300 TX4.
 
-This patch should cause no behavioural changes, except for
-the removed printks.
+The only quirk I've seen is that hotplugging (insertion)
+on the first-generation SATA150 TX2plus requires a lengthier
+EH sequence than on the second-generation chips.
+On the second-generation chips a simple soft reset seems
+to suffice, but on the first-generation chip there's a
+"port is slow to respond" after the initial soft reset,
+after which libata issues a hard reset, and then the
+device is recognised.
+
+The hotplug checks are high up in the interrupt handling
+path, not deep down in error_intr as in ahci/sata_sil24.
+That's because the chip doesn't signal hotplug status changes
+in the per-port status register: instead a global register
+contains hotplug control and status flags for all ports.
+I considered following the ahci/sata_sil24 structure, but
+that would have required non-trivial changes to the interrupt
+handling path, so I chose to keep the hotplug changes simple
+and unobtrusive.
 
 Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 --
- drivers/ata/sata_promise.c |   56 ++++++++++++++++++---------------------------
- 1 files changed, 23 insertions(+), 33 deletions(-)
+This patch depends on patch 1/2: sata_promise: cleanups.
 
---- linux-2.6.22-rc5/drivers/ata/sata_promise.c.~1~	2007-06-19 20:38:13.000000000 +0200
-+++ linux-2.6.22-rc5/drivers/ata/sata_promise.c	2007-06-19 20:40:28.000000000 +0200
-@@ -45,8 +45,7 @@
+Changes since the preliminary version:
+- cleanups
+- added testing on the first-generation SATA150 TX2plus
+
+ drivers/ata/sata_promise.c |   40 +++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 35 insertions(+), 5 deletions(-)
+
+--- linux-2.6.22-rc5/drivers/ata/sata_promise.c.~1~	2007-06-19 20:40:28.000000000 +0200
++++ linux-2.6.22-rc5/drivers/ata/sata_promise.c	2007-06-19 20:41:36.000000000 +0200
+@@ -45,7 +45,7 @@
  #include "sata_promise.h"
  
  #define DRV_NAME	"sata_promise"
--#define DRV_VERSION	"2.07"
--
-+#define DRV_VERSION	"2.08"
+-#define DRV_VERSION	"2.08"
++#define DRV_VERSION	"2.09"
  
  enum {
  	PDC_MAX_PORTS		= 4,
-@@ -94,7 +93,7 @@ enum {
- 	board_20319		= 2,	/* FastTrak S150 TX4 */
- 	board_20619		= 3,	/* FastTrak TX4000 */
- 	board_2057x		= 4,	/* SATAII150 Tx2plus */
--	board_2057x_pata	= 5,	/* SATAII150 Tx2plus */
-+	board_2057x_pata	= 5,	/* SATAII150 Tx2plus PATA port */
- 	board_40518		= 6,	/* SATAII150 Tx4 */
- 
- 	PDC_HAS_PATA		= (1 << 1), /* PDC20375/20575 has PATA */
-@@ -124,7 +123,6 @@ enum {
- 	PDC_FLAG_4_PORTS	= (1 << 26), /* 4 ports */
- };
- 
--
- struct pdc_port_priv {
- 	u8			*pkt;
- 	dma_addr_t		pkt_dma;
-@@ -340,7 +338,6 @@ static const struct pci_device_id pdc_at
- 	{ }	/* terminate list */
- };
- 
--
- static struct pci_driver pdc_ata_pci_driver = {
- 	.name			= DRV_NAME,
- 	.id_table		= pdc_ata_pci_tbl,
-@@ -348,7 +345,6 @@ static struct pci_driver pdc_ata_pci_dri
- 	.remove			= ata_pci_remove_one,
- };
- 
--
- static int pdc_common_port_start(struct ata_port *ap)
- {
- 	struct device *dev = ap->host->dev;
-@@ -438,7 +434,6 @@ static u32 pdc_sata_scr_read (struct ata
- 	return readl(ap->ioaddr.scr_addr + (sc_reg * 4));
- }
- 
--
- static void pdc_sata_scr_write (struct ata_port *ap, unsigned int sc_reg,
- 			       u32 val)
- {
-@@ -657,8 +652,8 @@ static void pdc_error_intr(struct ata_po
- 	ata_port_abort(ap);
- }
- 
--static inline unsigned int pdc_host_intr( struct ata_port *ap,
--                                          struct ata_queued_cmd *qc)
-+static inline unsigned int pdc_host_intr(struct ata_port *ap,
-+					 struct ata_queued_cmd *qc)
- {
+@@ -716,6 +716,9 @@ static irqreturn_t pdc_interrupt (int ir
+ 	unsigned int i, tmp;
  	unsigned int handled = 0;
- 	void __iomem *port_mmio = ap->ioaddr.cmd_addr;
-@@ -685,10 +680,10 @@ static inline unsigned int pdc_host_intr
- 		handled = 1;
- 		break;
+ 	void __iomem *mmio_base;
++	unsigned int hotplug_offset, ata_no;
++	u32 hotplug_status;
++	int is_sataii_tx4;
  
--        default:
-+	default:
- 		ap->stats.idle_irq++;
- 		break;
--        }
-+	}
+ 	VPRINTK("ENTER\n");
  
- 	return handled;
- }
-@@ -701,6 +696,18 @@ static void pdc_irq_clear(struct ata_por
- 	readl(mmio + PDC_INT_SEQMASK);
- }
+@@ -726,10 +729,20 @@ static irqreturn_t pdc_interrupt (int ir
  
-+static inline int pdc_is_sataii_tx4(unsigned long flags)
-+{
-+	const unsigned long mask = PDC_FLAG_GEN_II | PDC_FLAG_4_PORTS;
-+	return (flags & mask) == mask;
-+}
+ 	mmio_base = host->iomap[PDC_MMIO_BAR];
+ 
++	/* read and clear hotplug flags for all ports */
++	if (host->ports[0]->flags & PDC_FLAG_GEN_II)
++		hotplug_offset = PDC2_SATA_PLUG_CSR;
++	else
++		hotplug_offset = PDC_SATA_PLUG_CSR;
++	hotplug_status = readl(mmio_base + hotplug_offset);
++	if (hotplug_status & 0xff)
++		writel(hotplug_status | 0xff, mmio_base + hotplug_offset);
++	hotplug_status &= 0xff;	/* clear uninteresting bits */
 +
-+static inline unsigned int pdc_port_no_to_ata_no(unsigned int port_no, int is_sataii_tx4)
-+{
-+	static const unsigned char sataii_tx4_port_remap[4] = { 3, 1, 0, 2};
-+	return is_sataii_tx4 ? sataii_tx4_port_remap[port_no] : port_no;
-+}
-+
- static irqreturn_t pdc_interrupt (int irq, void *dev_instance)
- {
- 	struct ata_host *host = dev_instance;
-@@ -807,7 +814,6 @@ static void pdc_tf_load_mmio(struct ata_
- 	ata_tf_load(ap, tf);
- }
+ 	/* reading should also clear interrupts */
+ 	mask = readl(mmio_base + PDC_INT_SEQMASK);
  
--
- static void pdc_exec_command_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
- {
- 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
-@@ -867,7 +873,6 @@ static void pdc_ata_setup_port(struct at
- 	ap->ioaddr.scr_addr		= scr_addr;
- }
+-	if (mask == 0xffffffff) {
++	if (mask == 0xffffffff && hotplug_status == 0) {
+ 		VPRINTK("QUICK EXIT 2\n");
+ 		return IRQ_NONE;
+ 	}
+@@ -737,16 +750,33 @@ static irqreturn_t pdc_interrupt (int ir
+ 	spin_lock(&host->lock);
  
--
- static void pdc_host_init(struct ata_host *host)
- {
- 	void __iomem *mmio = host->iomap[PDC_MMIO_BAR];
-@@ -955,10 +960,8 @@ static int pdc_ata_init_one (struct pci_
- 
- 	if (pi->flags & PDC_FLAG_SATA_PATA) {
- 		u8 tmp = readb(base + PDC_FLASH_CTL+1);
--		if (!(tmp & 0x80)) {
-+		if (!(tmp & 0x80))
- 			ppi[n_ports++] = pi + 1;
--			dev_printk(KERN_INFO, &pdev->dev, "PATA port found\n");
--		}
+ 	mask &= 0xffff;		/* only 16 tags possible */
+-	if (!mask) {
++	if (mask == 0 && hotplug_status == 0) {
+ 		VPRINTK("QUICK EXIT 3\n");
+ 		goto done_irq;
  	}
  
- 	host = ata_host_alloc_pinfo(&pdev->dev, ppi, n_ports);
-@@ -968,22 +971,12 @@ static int pdc_ata_init_one (struct pci_
- 	}
- 	host->iomap = pcim_iomap_table(pdev);
+ 	writel(mask, mmio_base + PDC_INT_SEQMASK);
  
--	is_sataii_tx4 = 0;
--	if ((pi->flags & (PDC_FLAG_GEN_II|PDC_FLAG_4_PORTS)) == (PDC_FLAG_GEN_II|PDC_FLAG_4_PORTS)) {
--		is_sataii_tx4 = 1;
--		dev_printk(KERN_INFO, &pdev->dev, "applying SATAII TX4 port numbering workaround\n");
--	}
-+	is_sataii_tx4 = pdc_is_sataii_tx4(pi->flags);
++	is_sataii_tx4 = pdc_is_sataii_tx4(host->ports[0]->flags);
++
  	for (i = 0; i < host->n_ports; i++) {
--		static const unsigned char sataii_tx4_port_remap[4] = { 3, 1, 0, 2};
--		int ata_nr;
--
--		ata_nr = i;
--		if (is_sataii_tx4)
--			ata_nr = sataii_tx4_port_remap[i];
--
-+		unsigned int ata_no = pdc_port_no_to_ata_no(i, is_sataii_tx4);
- 		pdc_ata_setup_port(host->ports[i],
--				   base + 0x200 + ata_nr * 0x80,
--				   base + 0x400 + ata_nr * 0x100);
-+				   base + 0x200 + ata_no * 0x80,
-+				   base + 0x400 + ata_no * 0x100);
- 	}
+ 		VPRINTK("port %u\n", i);
+ 		ap = host->ports[i];
++
++		/* check for a plug or unplug event */
++		ata_no = pdc_port_no_to_ata_no(i, is_sataii_tx4);
++		tmp = hotplug_status & (0x11 << ata_no);
++		if (tmp && ap &&
++		    !(ap->flags & ATA_FLAG_DISABLED)) {
++			struct ata_eh_info *ehi = &ap->eh_info;
++			ata_ehi_clear_desc(ehi);
++			ata_ehi_hotplugged(ehi);
++			ata_ehi_push_desc(ehi, "hotplug_status %#x", tmp);
++			ata_port_freeze(ap);
++			continue;
++		}
++
++		/* check for a packet interrupt */
+ 		tmp = mask & (1 << (i + 1));
+ 		if (tmp && ap &&
+ 		    !(ap->flags & ATA_FLAG_DISABLED)) {
+@@ -902,9 +932,9 @@ static void pdc_host_init(struct ata_hos
+ 	tmp = readl(mmio + hotplug_offset);
+ 	writel(tmp | 0xff, mmio + hotplug_offset);
  
- 	/* initialize adapter */
-@@ -1002,19 +995,16 @@ static int pdc_ata_init_one (struct pci_
- 				 &pdc_ata_sht);
- }
+-	/* mask plug/unplug ints */
++	/* unmask plug/unplug ints */
+ 	tmp = readl(mmio + hotplug_offset);
+-	writel(tmp | 0xff0000, mmio + hotplug_offset);
++	writel(tmp & ~0xff0000, mmio + hotplug_offset);
  
--
- static int __init pdc_ata_init(void)
- {
- 	return pci_register_driver(&pdc_ata_pci_driver);
- }
- 
--
- static void __exit pdc_ata_exit(void)
- {
- 	pci_unregister_driver(&pdc_ata_pci_driver);
- }
- 
--
- MODULE_AUTHOR("Jeff Garzik");
- MODULE_DESCRIPTION("Promise ATA TX2/TX4/TX4000 low-level driver");
- MODULE_LICENSE("GPL");
+ 	/* don't initialise TBG or SLEW on 2nd generation chips */
+ 	if (is_gen2)
