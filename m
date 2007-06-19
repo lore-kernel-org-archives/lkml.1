@@ -1,116 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764692AbXFSS71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764818AbXFSS7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764692AbXFSS71 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 14:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757633AbXFSS7M
+	id S1764818AbXFSS7r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 14:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764107AbXFSS7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 14:59:12 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33924 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1763576AbXFSS7K (ORCPT
+	Tue, 19 Jun 2007 14:59:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:20819 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764228AbXFSS7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 14:59:10 -0400
-Date: Tue, 19 Jun 2007 14:59:08 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>,
-       Jiri Kosina <jikos@jikos.cz>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] Error -71 on device descriptor read/all
-In-Reply-To: <Pine.LNX.4.64.0706191751490.3068@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.44L0.0706191456030.2552-100000@iolanthe.rowland.org>
+	Tue, 19 Jun 2007 14:59:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hqrJxbIZGHu7yIPelqjUcGkoBS25Ccq+wp/546x+zvDAp7IYjWqUIfRLv21H1Gu6TwOzUlczW8BocXE3Qh/JDfNxim5A+QIbIvS2+nRMarCSfynh4xVLIQ0qn2aem9pjyVWExrbCMUWGiCZ0VzxcQGeRr0PJSYvF9c5nQ6MFdKY=
+Message-ID: <d120d5000706191159w29ebd0dajbd6cb9ac78d4faa2@mail.gmail.com>
+Date: Tue, 19 Jun 2007 14:59:34 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: Writing a driver for a legacy serial device
+Cc: LKML <linux-kernel@vger.kernel.org>, "Vojtech Pavlik" <vojtech@ucw.cz>
+In-Reply-To: <20070619190502.05d4e0c8@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070619190502.05d4e0c8@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Jiri Kosina wrote:
+Hi Jean,
 
-> [ OK, it probably seems like a faulty hardware (controller or the device 
->   itself), which is not able to run at high speed, but runs nicely on full 
->   speed. Do you have a chance to try another high speed device in this 
->   machine to check whether it works?
-> 
->   Adding linux-usb-devel into CC , just in case, and leaving the full 
->   original message below ]
-> 
-> On Tue, 19 Jun 2007, Renato S. Yamane wrote:
-> 
-> > Jiri Kosina wrote:
-> > > On Tue, 19 Jun 2007, Renato S. Yamane wrote:
-> > > > I see this in dmesg:
-> > > > usb 1-1: device descriptor read/all, error -71
-> > > 
-> > > Is this a USB 2.0 high-speed device?
-> > 
-> > lspci -v | grep 1d.7
-> > 00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family)
-> > USB2 EHCI Controller (rev 04) (prog-if 20 [EHCI])
-> > 
-> > My machine is a Laptop Toshiba M45-S355
-> > 
-> > > Don't you for example have USB extension cable too long to work on-high
-> > > speed?
-> > 
-> > My only USB device is a mouse (Microsoft Notebook Optical Mouse) without
-> > extension cable (I use original cable, with less than 3 feets).
-> > 
-> > > I guess the situation improves when you force USB 1.1 (i.e. rmmod ehci_hcd),
-> > > right?
-> > 
-> > #rmmode ehci_hcd
-> > #tail /var/log/messages
-> > 
-> > kernel: ehci_hcd 0000:00:1d.7: remove, state 4
-> > kernel: usb usb5: USB disconnect, address 1
-> > kernel: ehci_hcd 0000:00:1d.7: USB bus 5 deregistered
-> > kernel: ACPI: PCI interrupt for device 0000:00:1d.7 disabled
-> > 
-> > I don't see any error (-71).
-> > 
-> > #modprobe ehci_hcd
-> > #tail /var/log/messages
-> > kernel: ACPI: PCI Interrupt 0000:00:1d.7[A] -> Link [LNKH] -> GSI 10 (level,
-> > low) -> IRQ 10
-> > kernel: ehci_hcd 0000:00:1d.7: EHCI Host Controller
-> > kernel: ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
-> > kernel: ehci_hcd 0000:00:1d.7: debug port 1
-> > kernel: ehci_hcd 0000:00:1d.7: irq 10, io mem 0xf4000000
-> > kernel: ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 
-> > 2004
-> > kernel: usb usb5: configuration #1 chosen from 1 choice
-> > kernel: hub 5-0:1.0: USB hub found
-> > kernel: hub 5-0:1.0: 8 ports detected
-> > kernel: usb 1-1: USB disconnect, address 4
-> > kernel: usb 1-1: new low speed USB device using uhci_hcd and address 5
-> > kernel: usb 1-1: configuration #1 chosen from 1 choice
-> > kernel: input: Microsoft Microsoft 3-Button Mouse with IntelliEye? as 
-> > /class/input/input8
-> > kernel: input: USB HID v1.00 Mouse [Microsoft Microsoft 3-Button Mouse with
-> > IntelliEye?] on usb-0000:00:1d.0-1
-> > 
-> > This error is present only in dmesg, see below (line 8):
-> > 
-> > PCI: Setting latency timer of device 0000:00:1d.7 to 64
-> > ehci_hcd 0000:00:1d.7: EHCI Host Controller
-> > ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
-> > ehci_hcd 0000:00:1d.7: debug port 1
-> > PCI: cache line size of 32 is not supported by device 0000:00:1d.7
-> > ehci_hcd 0000:00:1d.7: irq 10, io mem 0xf4000000
-> > ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-> > usb 1-1: device descriptor read/all, error -71
-> > usb usb5: configuration #1 chosen from 1 choice
-> > hub 5-0:1.0: USB hub found
-> > hub 5-0:1.0: 8 ports detected
-> > Clocksource tsc unstable (delta = -194969704 ns)
-> > ACPI: PCI Interrupt Link [LNKG] enabled at IRQ 6
-> > PCI: setting IRQ 6 as level-triggered
+On 6/19/07, Jean Delvare <khali@linux-fr.org> wrote:
+> Hi all,
+>
+> I want to write a Linux kernel driver for a device which connects to
+> the legacy serial port. I started writing a driver, however I am
+> already stuck at the very beginning. The .connect function of my serial
+> driver is never called, and I just don't get why. I couldn't find any
+> documentation about writing such a legacy driver in Documentation nor
+> in LDD3. Is there anyone out there which could lend a helping hand?
+>
+> I know that the device and my serial port both work. I can talk to the
+> device using minicom just fine. I have the following drivers loaded:
+>
+> $ lsmod | grep 8250
+> 8250_pnp               11648  0
+> 8250                   23464  1 8250_pnp
+> serial_core            19392  1 8250
+>
+> Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing disabled
+> 00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+>
+> But I need to implement my driver in kernel space. My code looks like
+> this:
+>
+> static struct serio_device_id taos_serio_ids[] = {
+>        {
+>                .type   = SERIO_RS232,
+>                .proto  = SERIO_ANY,
+>                .id     = SERIO_ANY,
+>                .extra  = SERIO_ANY,
+>        },
+>        { 0 }
+> };
+> MODULE_DEVICE_TABLE(serio, taos_serio_ids);
+>
+> static struct serio_driver taos_drv = {
+>        .driver         = {
+>                .name   = "taos-evm",
+>        },
+>        .description    = "TAOS evaluation module driver",
+>        .id_table       = taos_serio_ids,
+>        .connect        = taos_connect,
+>        .disconnect     = taos_disconnect,
+>        .interrupt      = taos_interrupt,
+> };
+>
+> static int __init taos_init(void)
+> {
+>        return serio_register_driver(&taos_drv);
+> }
+>
+> static void __exit taos_exit(void)
+> {
+>        serio_unregister_driver(&taos_drv);
+> }
+>
+> The problem is that taos_connect is never called. I suppose that I need
+> different values for .type, .proto or .id, except that I just don't
+> know what to put there. I tried a few random values without success.
+> What's the trick?
+>
 
-Does the mouse work correctly, even with ehci-hcd loaded?
+You need to load serport modue and play with inputattach utility.
 
-If it does then don't worry about the -71 error.  It appears to be 
-transient and it's not necessarily fatal.
-
-Alan Stern
-
+-- 
+Dmitry
