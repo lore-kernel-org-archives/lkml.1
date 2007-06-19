@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbXFSP0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbXFSP2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757599AbXFSP0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXFSP0H
+	id S1758246AbXFSP2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXFSP2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:26:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2885 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754273AbXFSP0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:26:05 -0400
-Date: Tue, 19 Jun 2007 15:25:55 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp>
-Cc: crispin@novell.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,pathname matching
-Message-ID: <20070619152555.GB5127@ucw.cz>
-References: <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <200706160948.FEH12774.MTtPGSNN@I-love.SAKURA.ne.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706160948.FEH12774.MTtPGSNN@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.9i
+	Tue, 19 Jun 2007 11:28:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:33006 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755041AbXFSP2a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 11:28:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=gdX+fW8TW6ttiDK+rOvt3F9Qn2WwZ7HzIuZ+xwP7+EbX880qvZqv+kiOtAU9d7L657XNnMoLrbIXfmFqSk9SNn6r3FxEtxI3PXeEvHWrtwuB1/5nZA8bjxN5IY/AZir9hIwOL1m1zL9dBD3UMov+YA+MR5j0n9opY4spCLjAoyY=
+Message-ID: <4677F616.3080406@gmail.com>
+Date: Tue, 19 Jun 2007 19:28:22 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+CC: Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm> <f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com> <20070610160531.GA12179@kroah.com> <f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com> <20070612184110.GB7980@kroah.com> <orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org> <or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br> <20070613211432.GH10008@csclub.uwaterloo.ca> <orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614175305.GI10008@csclub.uwaterloo.ca>
+In-Reply-To: <20070614175305.GI10008@csclub.uwaterloo.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Lennart Sorensen wrote:
 
-> > In a smaller scale example, I want to share some files with a friend. I
-> > can't be bothered to set up a proper access control system, so I just mv
-> > the files to ~crispin/public_html/lookitme and in IRC say "get it now,
-> > going away in 10 minutes" and then move it out again. Yes, you can
-> > manually address this by running "restorecon ~crispin/public_html". But
-> > AA does this automatically without having to run any commands.
-> If you share ~crispin/public_html/lookitme by making a hard link,
-> does relabeling approach work?
-> I thought SELinux allows only one label for one file.
-> If AA (on the top of SELinux) tries to allow different permissions to
-> ~crispin/public_html/lookitme and its original location,
-> either one of two pathnames won't be accessible as intended, will it?
+> Well much as I don't like what Tivo did with only allowing signed
+> kernels to run, I don't see anything in the above that says they can't
 
-Yes, that's a bug/feature in AA. No, selinux will not be able to emulate that
-bug/feature. Yes, it is dangerous, as it makes AA mostly useless on
-multiuser machines.
+Well, it is not Tivo alone -- look at http://aminocom.com/ for an
+example. If you want the kernel sources pay USD 50k and we will provide
+the kernel sources, was their attitude.
 
-(ln /etc/shadow /tmp is something any user can do, and all you need is
-to exploit any daemon with access to /tmp).
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> do that.  They let you have the code and make changes to it, they just
+> don't let you put that changed stuff on the device they build.  The
+> software is free, even though the hardware is locked down.  The GPL v3
+> really seems to change the spirit to try and cover usage and hardware
+> behaviour, while the spirit of the GPL v2 seemed to me at least to
+> simply be to allow people to copy and change and use the code, and pass
+> that on to people.  It didn't have anything to do with what they did
+> with it on hardware.  Nothing prevents you from taking tivos kernel
+> changes and building your own hardware to run that code on, and as such
+> the spirit of the GPL v2 seems fulfilled.  It covers freedom of the
+> source code and resulting binaries, not of the platform you run it on.
+> The GPL v3 has a much broader coverage of what it wants to control,
+> which to me means the spirit is different.
+> 
+> I don't have a tivo, I use mythtv on my own PC.  Tivo doesn't force you
+> to buy their hardware after all.
+
+Well, it is not Tivo alone, a large chunk of the vendors do that. The
+vendors who actually do it the clean way are just few and can be counted
+very easily.
+
