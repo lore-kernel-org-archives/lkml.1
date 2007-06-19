@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXFSRjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760228AbXFSRnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760766AbXFSRjg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 13:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbXFSRj2
+	id S1760228AbXFSRnd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757708AbXFSRn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 13:39:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57640 "EHLO mx1.redhat.com"
+	Tue, 19 Jun 2007 13:43:26 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:50674 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757796AbXFSRj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 13:39:27 -0400
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Ingo Molnar" <mingo@elte.hu>,
-       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
-       david@lang.hm, "Tarkan Erimer" <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
-	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706181945.16343.dhazelton@enter.net>
-	<orvedk8zpa.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706182035420.3593@woody.linux-foundation.org>
-	<or7iq05w6g.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<84144f020706190717q33dbc5e0r5d33b550aa22bfb3@mail.gmail.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 14:28:24 -0300
-In-Reply-To: <84144f020706190717q33dbc5e0r5d33b550aa22bfb3@mail.gmail.com> (Pekka Enberg's message of "Tue\, 19 Jun 2007 17\:17\:30 +0300")
-Message-ID: <orr6o73lc7.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1753375AbXFSRnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 13:43:25 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Paulo Marques <pmarques@grupopie.com>
+Subject: Re: [PATCH] remove usage of memmem from scripts/kallsyms.c
+Date: Tue, 19 Jun 2007 13:43:48 -0400
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>
+References: <4678013C.5090402@grupopie.com>
+In-Reply-To: <4678013C.5090402@grupopie.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart1357430.r79QYMPvKu";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706191343.49025.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+--nextPart1357430.r79QYMPvKu
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Hi Alexandre,
-> On 6/19/07, Alexandre Oliva <aoliva@redhat.com> wrote:
->> Dispute this:
->> 
->> non-tivoized hardware => users can scratch their itches => more
->> contributions from these users
->> 
->> tivoized hardware => users can't scratch their itches => fewer
->> contributions from these users
+On Tuesday 19 June 2007, Paulo Marques wrote:
+> The only in-kernel user of "memmem" is scripts/kallsyms.c and it only
+> uses it to find tokens that are 2 bytes in size. It is trivial to
+> replace it with a simple function that finds 2-byte tokens.
+>
+> This should help users from systems that don't have the memmem GNU
+> extension available.
+>
+> Signed-off-by: Paulo Marques <pmarques@grupopie.com>
 
-> Maybe, but in what numbers?
+sorry for not getting back to you in the previous thread ... this is a much=
+=20
+nicer patch than what i proposed and works for me :)
 
-We'll get to that.
+Acked-by: Mike Frysinger <vapier@gentoo.org>
+=2Dmike
 
-> Furthermore, Linus has repeatedly explained to you why he (and bunch
-> of other _kernel_ hackers -- this is a thread on LKML, remember)
-> thinks it's stupid for a software license to restrict hardware
-> design choices.
+--nextPart1357430.r79QYMPvKu
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Most of these explanations carried the assumption that this would
-lower the amount of contributions he'd get.  And this is precisely the
-circular logic in their arguments, and this is why this argument is
-intended to show the initial assumption is false.  But hey, maybe I'm
-wrong, and it won't show that at all, and I'll be proved wrong, and
-then there's going to be one more very vocal defensor of your ideals.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
 
+iQIVAwUARngV1EFjO5/oN/WBAQJXyw/8CfnG8tnmC7BSIXJBWKGHiBoS5kiXsGtY
+0r71eSYv9UgNHXSJQLpWKmGTNciS/9jxoIhDhuUWaI0PmgUYYt7a6x9Ly6A9u32l
++3qljBcpEA4Ccehh5IsUYd3bjkBzGYKV2t9SisNvfSiGp/zos4qqbk52VvptUIFn
+GNviTnyiyH8jASlB04Sh6C7ftU+CqDtRYYWnhikMcwU/jQYtI/0xgdhDYc4+LImk
+jjo1TXvzO2JpceWLqG2M6MtBR3bkD3D/qPhlq5b939H54EUBpuVVrFZmAE90v0Rp
+w6W6wB7bTkHG5fHOFIX7kPCQ2bXxYkzXQ0YolIYcyC75rTESWcJqaO7WbjhRn3Pi
+bqWnFqBaZrVVIXtYGEst9jnsNZ3iNOlyiAl98Kq/aSC/nXtaG/ifjk9gRv/bCC8e
+Bv5ZSz7ZDkOySPpvbDzrAd7ENm0wLY8mqKYYQzOCgy1KBn6oXE1JdJbHiC9PqbHw
+x+AerQ2AmsrN7GiqKkR00w3izuu7NzCsMDH3jBnC4aOYoQglbhKXSsr+gfJHytIs
+8sKibcbnnVU4YksG+/AfT/leBAEQI/P+iDTrfOQjvApebNnVgrW9QHfFtQ9VZIZP
+B0m1dP6CGwiIsMn9As9/Tdkl9Gh5bTTINA66b7VR+dLtsTN8LBqrTnTYNi7MbeW1
+sv8dSjg1g3M=
+=dbXI
+-----END PGP SIGNATURE-----
 
-Now, if people want to keep on fooling themselves, I guess they can,
-as long as they don't hurt others in the process.  If they try to fool
-others, I feel it is my moral duty to intervene.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+--nextPart1357430.r79QYMPvKu--
