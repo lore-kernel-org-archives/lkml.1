@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbXFSSXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761402AbXFSSYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760916AbXFSSXd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 14:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbXFSSXZ
+	id S1761402AbXFSSYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 14:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759132AbXFSSYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 14:23:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43814 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753886AbXFSSXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 14:23:24 -0400
-To: Anders Larsen <al@alarsen.net>
-Cc: david@lang.hm, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <orbqfdavpn.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<1182244240l.11262l.0l@ecxwww1.reanet.de>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 15:23:00 -0300
-In-Reply-To: <1182244240l.11262l.0l@ecxwww1.reanet.de> (Anders Larsen's message of "Tue\, 19 Jun 2007 11\:10\:40 +0200")
-Message-ID: <orfy4n3it7.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Tue, 19 Jun 2007 14:24:34 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:44185
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757882AbXFSSYd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 14:24:33 -0400
+Date: Tue, 19 Jun 2007 11:24:30 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Chris Mason <chris.mason@oracle.com>
+cc: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>,
+       Vladislav Bolkhovitin <vst@vlnb.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+In-Reply-To: <20070619120457.GD14108@think.oraclecorp.com>
+Message-ID: <Pine.LNX.4.64.0706191121260.25045@asgard.lang.hm>
+References: <20070612161029.GB28279@think.oraclecorp.com> <4676C2D6.8030708@vlnb.net>
+ <46779DB1.7060807@draigBrady.com> <20070619120457.GD14108@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, Anders Larsen <al@alarsen.net> wrote:
+On Tue, 19 Jun 2007, Chris Mason wrote:
 
-> On 2007-06-18 21:50:12, Alexandre Oliva wrote:
->> Given the ROM exception in GPLv3, I guess you could seal and
->> anti-tamper it as much as you want, and leave the ROM at such a place
->> in which it's easily replaceable but with signature checking and all
->> such that the user doesn't install ROM that is not authorized by you.
+>>> 3. De-de-duplicate blocks on disk, i.e. copy them on write
+>>>
+>>> I suppose that de-duplication itself would be done by some user space
+>>> process that would scan files, determine blocks with the same data and
+>>> then de-duplicate them by using syscall or IOCTL (2).
+>>>
+>>> That would be very usable feature, which in most cases would allow to
+>>> shrink occupied disk space on 50-90%.
+>>
+>> Have you references for this number?
+>> In my experience one gets a lot of benefit from
+>> the much simpler process of "de-duplication" of files.
+>
+> Yes, I would expect simple hard links to be a better solution for this,
+> but the feature request is not that out of line.  I actually had plans
+> on implementing auto duplicate block reuse earlier in btrfs.
 
-> The manufacturer must be able to _remotely_ update the device
-> firmware, so as I see it (IANAL), Tivoisation _is_ a requirement.
+with COW de-duplication you can merge things that have vastly different 
+permissions. hard-links can't be used if different people have write 
+permission.
 
-If you take the Wikipedia definition of Tivoization, you'll see it's
-about copyleft software only, and no law mandates the use of copyleft
-software.  There's no end to bad laws, but a law that mandated the use
-of copyleft (=> free) software and at the same time prohibited
-modifications by the user would be a very contradictory one.
+David Lang
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
