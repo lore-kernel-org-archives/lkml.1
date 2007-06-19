@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbXFSOXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbXFSOZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbXFSOXJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXFSOW4
+	id S1756861AbXFSOZN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbXFSOZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:22:56 -0400
-Received: from h155.mvista.com ([63.81.120.155]:37739 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752516AbXFSOWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:22:55 -0400
-Message-ID: <4677E726.1080602@ru.mvista.com>
-Date: Tue, 19 Jun 2007 18:24:38 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linas Vepstas <linas@austin.ibm.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
-References: <20070618175713.GD5836@austin.ibm.com>	<20070618212704.394912b8@the-village.bc.nu>	<20070618204601.GF5836@austin.ibm.com>	<20070618220441.3a3af8ca@the-village.bc.nu>	<4677E3BC.3040307@ru.mvista.com> <20070619151919.79c79af1@the-village.bc.nu>
-In-Reply-To: <20070619151919.79c79af1@the-village.bc.nu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 10:25:01 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39832 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753039AbXFSOZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 10:25:00 -0400
+Date: Tue, 19 Jun 2007 20:03:31 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       suresh.b.siddha@intel.com, pwil3058@bigpond.net.au, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: v2.6.21.4-rt11
+Message-ID: <20070619143331.GH17865@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070613185522.GA27335@elte.hu> <20070613233910.GJ8125@linux.vnet.ibm.com> <20070615144535.GA12078@elte.hu> <20070615151452.GC9301@linux.vnet.ibm.com> <20070615195545.GA28872@elte.hu> <20070616011605.GH9301@linux.vnet.ibm.com> <20070616084434.GG2559@linux.vnet.ibm.com> <20070616161213.GA2994@linux.vnet.ibm.com> <20070618151215.GA9750@linux.vnet.ibm.com> <20070619090430.GA7471@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070619090430.GA7471@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+On Tue, Jun 19, 2007 at 11:04:30AM +0200, Ingo Molnar wrote:
+> I'm wondering, why did this trigger under CFS and not on mainline? 
+> Mainline seems to have a similar problem in idle_balance() too, or am i 
+> misreading it?
 
->>>>I can prepare a patch, but only with a lot of guidance. I can test 
->>>>& debug, I'm highly motivated just right now ... 
+The problem is there in mainline very much. I could recreate the problem
+with 2.6.22-rc5 (which doesnt have CFS) on that same hardware, with
+CONFIG_NUMA enabled.
 
->>>If you've got a nice repeatable problem please try using the libata
->>>driver. That handles the error paths differently and doesn't try a FIFO
->>>drain which might matter in this case I guess.
+Let me know if you needed anything else to be clarified.
 
->>    FIFO drain for DMA commands?
-
-> Welcome to the old IDE layer which I am so glad I left behind 8)
-
-> ide_ata_error will try and do a PIO flush regardless of the command type
-> if DRQ_STAT is asserted. See ide_dma_intr -> ide_error -> ...
-
-    Indeed... but the thing is we don't know what's asserted in this case -- 
-remember, it's reading the status register that locks everything up...
-
-> Alan
-
-MBR, Sergei
+-- 
+Regards,
+vatsa
