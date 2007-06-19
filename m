@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759528AbXFSWwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbXFSWwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759528AbXFSWwS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXFSWv5
+	id S1761287AbXFSWwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760879AbXFSWwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:51:57 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:41957
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755826AbXFSWv4 (ORCPT
+	Tue, 19 Jun 2007 18:52:13 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:10122 "EHLO
+	outbound3-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761119AbXFSWwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:51:56 -0400
-Date: Tue, 19 Jun 2007 15:50:33 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <ord4zrzhqh.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706191548010.26701@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <200706190221.09067.dhazelton@enter.net> <ork5u04f5b.fsf@oliva.athome.lsd.ic.unicamp.br>
- <200706190258.56955.dhazelton@enter.net> <or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
- <Pine.LNX.4.64.0706191413040.26701@asgard.lang.hm>
- <ord4zrzhqh.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Tue, 19 Jun 2007 18:52:10 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Wed, 20 Jun 2007 00:52:25 +0200
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [PATCH 12/12] acpi: select ACPI_EC for SONY_LAPTOP
+Message-ID: <20070619225225.GN5193@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 19 Jun 2007 22:51:29.0374 (UTC)
+ FILETIME=[5FC9BFE0:01C7B2C4]
+X-WSS-ID: 6A6681851S4852509-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Alexandre Oliva wrote:
+Fix kernel build problem as SONY_LAPTOP depends on ACPI_EC.
 
-> On Jun 19, 2007, david@lang.hm wrote:
->
->> On Tue, 19 Jun 2007, Alexandre Oliva wrote:
->>>
->>> Once again, now with clearer starting conditions (not intended to
->>> match TiVo in any way, BTW; don't get into that distraction)
->>>
->>>
->>> Vendor doesn't care about tivoizing, their business works the same
->>> either way.
->>>
->>> Vendor's employees will contribute the same, one way or another, so
->>> their contributions are out of the equation.
->
->> no, this is what you are missing.
->
-> No, this is just one of many possible situations.
->
-> You're just thinking of a different scenario, in which tivoization is
-> important for the tivoizer.  We'll get to that.
->
-> Please be patient.  Don't get the illusion that you're disputing or
-> weakening the argument with these statements.  Disputing premises of a
-> logical inference is pointless as far as disputing a larger argument
-> that this particular lemma would be a part of.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ drivers/misc/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-if a company doesn't care about tivoizing then they won't do it, it takes 
-time and money to tivoize some product and it will cause headaches for the 
-company.
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 0d6f369..463fa41 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -119,6 +119,7 @@ config MSI_LAPTOP
+ config SONY_LAPTOP
+ 	tristate "Sony Laptop Extras"
+ 	depends on X86 && ACPI
++	select ACPI_EC
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	  ---help---
+ 	  This mini-driver drives the SNC and SPIC devices present in the ACPI
+-- 
+1.5.0.7
 
-their reasons for wanting to tivoize a product may be faulty, but they 
-think that the reasons are valid or they wouldn't go to the effort.
 
-David Lang
+
+
