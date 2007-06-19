@@ -1,58 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbXFSVpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbXFSVqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbXFSVpP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbXFSVpC
+	id S1756357AbXFSVqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbXFSVqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:45:02 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54635 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751319AbXFSVpA (ORCPT
+	Tue, 19 Jun 2007 17:46:09 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34986 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbXFSVqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:45:00 -0400
-Date: Tue, 19 Jun 2007 22:50:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Chris Snook <csnook@redhat.com>, Jack Stone <jack@hawkeye.stone.uk.eu.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       alan <alan@clueserver.org>
-Subject: Re: Versioning file system
-Message-ID: <20070619225021.225d4c7e@the-village.bc.nu>
-In-Reply-To: <467829C4.5020101@zytor.com>
-References: <46731169.2090002@hawkeye.stone.uk.eu.org>
-	<4673182B.4090800@redhat.com>
-	<46739E89.1080003@hawkeye.stone.uk.eu.org>
-	<46781A5B.9090104@redhat.com>
-	<467829C4.5020101@zytor.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 17:46:08 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 19 Jun 2007 23:45:58 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update] Documentation/HOWTO: update URLs of git trees
+To: Chris Wright <chrisw@sous-sol.org>
+cc: Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070619211555.GG3457@sequoia.sous-sol.org>
+Message-ID: <tkrat.896aa9f24e1427a2@s5r6.in-berlin.de>
+References: <tkrat.eee40c572537b7ba@s5r6.in-berlin.de>
+ <20070619211555.GG3457@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007 12:08:52 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> Chris Snook wrote:
-> > I pointed out NetApp's .snapshot directories because that's a method
-> > that uses legal path character, but doesn't break anything.  With this
-> > method, userspace tools will have to be taught that : is suddenly a
-> > special character.
+On 19 Jun, Chris Wright wrote:
+> * Stefan Richter (stefanr@s5r6.in-berlin.de) wrote:
+>> +  Other kernel trees can be found listed at http://kernel.org/git and in
 > 
-> Not to mention that the character historically used for this purpose is
-> ; (semicolon.)
+> Should be http://git.kernel.org/ these days
 
-Yes but tdskb:foo.mac[1013,1013,frob];4 is *not* elegant. POSIX is very
-clear about what is acceptable as magic in a pathname, and the unix spec
-even more so.  The NetApp approach recognizes two important things
-
-1.	Old version access is the oddity not the norm
-2.	Standards behaviour is important
+Right.
 
 
-Alan
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Documentation/HOWTO: update URLs of git trees
+
+Also, remove outdated 1394 tree and mention MAINTAINERS as pointer to
+development trees.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ Documentation/HOWTO |   28 +++++++++++++---------------
+ 1 file changed, 13 insertions(+), 15 deletions(-)
+
+Index: linux-2.6.22-rc5/Documentation/HOWTO
+===================================================================
+--- linux-2.6.22-rc5.orig/Documentation/HOWTO
++++ linux-2.6.22-rc5/Documentation/HOWTO
+@@ -322,39 +322,34 @@ kernel releases as described above.
+ Here is a list of some of the different kernel trees available:
+   git trees:
+     - Kbuild development tree, Sam Ravnborg <sam@ravnborg.org>
+-	kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
++	git.kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
+ 
+     - ACPI development tree, Len Brown <len.brown@intel.com>
+-	kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
++	git.kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
+ 
+     - Block development tree, Jens Axboe <axboe@suse.de>
+-	kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
++	git.kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
+ 
+     - DRM development tree, Dave Airlie <airlied@linux.ie>
+-	kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
++	git.kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+ 
+     - ia64 development tree, Tony Luck <tony.luck@intel.com>
+-	kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+-
+-    - ieee1394 development tree, Jody McIntyre <scjody@modernduck.com>
+-	kernel.org:/pub/scm/linux/kernel/git/scjody/ieee1394.git
++	git.kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+ 
+     - infiniband, Roland Dreier <rolandd@cisco.com>
+-	kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
++	git.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
+ 
+     - libata, Jeff Garzik <jgarzik@pobox.com>
+-	kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
++	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+ 
+     - network drivers, Jeff Garzik <jgarzik@pobox.com>
+-	kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
++	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+ 
+     - pcmcia, Dominik Brodowski <linux@dominikbrodowski.net>
+-	kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
++	git.kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+ 
+     - SCSI, James Bottomley <James.Bottomley@SteelEye.com>
+-	kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+-
+-  Other git kernel trees can be found listed at http://kernel.org/git
++	git.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+ 
+   quilt trees:
+     - USB, PCI, Driver Core, and I2C, Greg Kroah-Hartman <gregkh@suse.de>
+@@ -362,6 +357,9 @@ Here is a list of some of the different 
+     - x86-64, partly i386, Andi Kleen <ak@suse.de>
+         ftp.firstfloor.org:/pub/ak/x86_64/quilt/
+ 
++  Other kernel trees can be found listed at http://git.kernel.org/ and in
++  the MAINTAINERS file.
++
+ Bug Reporting
+ -------------
+ 
+
+
+-- 
+Stefan Richter
+-=====-=-=== -==- =--==
+http://arcgraph.de/sr/
+
