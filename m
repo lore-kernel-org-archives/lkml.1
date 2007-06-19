@@ -1,357 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbXFSUZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934151AbXFSUZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762892AbXFSUZO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 16:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763992AbXFSUZA
+	id S934151AbXFSUZj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 16:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762575AbXFSUZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 16:25:00 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:56328 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763990AbXFSUY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 16:24:59 -0400
-Subject: Re: Some thoughts on memory policies
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, wli@holomorphy.com, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706181257010.13154@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706181257010.13154@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 19 Jun 2007 16:24:49 -0400
-Message-Id: <1182284690.5055.128.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 16:25:24 -0400
+Received: from ag-out-0708.google.com ([72.14.246.248]:12107 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763496AbXFSUZW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 16:25:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=SkW3hK2PIYeqwzO7KlugraIr0SS3nj31K6t5/VQTmyExKizAOAJ5ykqfOHzoq2yr0B22QWBZwH591pPVbPXq3iwStf+1KZPSA7HzJx/6qtpZzll0KDN0OClsmigyeFDlv4gpq+wyg0a819nHuL7Cj5qYgfqz3m2SeaXt4ni7BJ8=
+Date: Tue, 19 Jun 2007 22:25:24 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: kvm-devel@lists.sourceforge.net
+Cc: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, David Brown <dmlb2000@gmail.com>
+Subject: Re: [PATCH 1/2] kvm: Fix x86 emulator writeback
+Message-ID: <20070619202524.GA17672@dreamland.darkstar.lan>
+Mail-Followup-To: kvm-devel@lists.sourceforge.net,
+	Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org,
+	David Brown <dmlb2000@gmail.com>
+References: <20070614231359.GA5705@dreamland.darkstar.lan> <68676e00706141627s3cb87391sa0ee6711d2f7933f@mail.gmail.com> <467256AA.1040001@qumranet.com> <20070615214915.GA10536@dreamland.darkstar.lan> <4673949B.1070505@qumranet.com> <20070617151452.GA21971@dreamland.darkstar.lan> <4675523C.9020703@qumranet.com> <20070617165201.GA23885@dreamland.darkstar.lan> <46765954.60102@qumranet.com> <46766D57.8040206@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46766D57.8040206@qumranet.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-18 at 13:22 -0700, Christoph Lameter wrote:
-> I think we are getting into more and more of a mess with the existing 
-> memory policies. The refcount issue with shmem is just one bad symptom of 
-> it. Memory policies were intended to be process based and 
-> taking them out of that context causes various issues.
-
-I don't think memory policies are in as much of a mess as Christoph
-seems to.  Perhaps this is my ignorance showing.  Certainly, there are
-issues to be addressed--especially in the interaction of memory policies
-with containers, such as cpusets.  The shmem refcount issue may be one
-of these issues--not sure how "bad" it is.  
-
-I agree that the "process memory policy"--i.e., the one set by
-set_mempolicy()--is "process based", but I don't see the system default
-policy as process based.  The system default policy is, currently, the
-policy of last resort for any allocation.  And, [as I've discussed with
-Christoph], I view policies applied via mbind() as applying to [some
-range of] the "memory object" mapped at a specific address range.  I
-admit that this view is somewhat muddied by the fact that [private]
-anonymous segments don't actually have any actual kernel structure to
-represent them outside of a process's various anonymous VMAs and page
-table [and sometimes the swap cache]; and by the fact that the kernel
-currently ignores policy that one attempts to place on shared regular
-file mappings.  However, I think "object-based policy" is a natural
-extension of the current API and easily implemented with the current
-infrastructure.  
-
+Il Mon, Jun 18, 2007 at 02:32:39PM +0300, Avi Kivity ha scritto: 
+> >Unfortunately, this kills Windows XP (first run with a guest crash, 
+> >second with a host oops), so I reverted it.  I'd guess some operation  
+> >which doesn't need writeback ends up in the modified code.  
+> >Previously, the check caused it to skip writeback, but now it writes 
+> >back random memory, causing a crash.
+> >
 > 
-> I have thought for a long time that we need something to replace memory 
-> policies especially since the requirements on memory policies go far 
-> beyond just being process based. So some requirements and ideas about 
-> memory policies.
-
-Listing the requirements is a great idea.  But I won't go so far as to
-agree that we need to "replace memory policies" so much as rationalize
-them for all the desired uses/contexts...
-
+> There are comments around like
 > 
-> 1. Memory policies must be attachable to a variety of objects
+> >    /* Disable writeback. */
+> >    dst.orig_val = dst.val;
 > 
-> - Device drivers may need to control memory allocations in
->   devices either because their DMA engines can only reach a
->   subsection of the system or because memory transfer
->   performance is superior in certain nodes of the system.
-> 
-> - Process. This is the classic usage scenario
-> 
-> - File / Socket. One may have particular reasons to place
->   objects on a set of nodes because of how the threads of
->   an application are spread out in the system.
+> Best option is probably to add an explicit disable_writeback flag and 
+> set it there.
 
-...how the tasks/threads are spread out and how the application accesses
-the pages of the objects.  Some accesses--e.g., unmapped pages of
-files--are implicit or transparent to task.  I guess any pages
-associated with a socket would also be transparent to the application as
-well?
+I've tested this patch with linux, solaris and winxp, on a 32 bit guest.
+So far everything is fine ;)
+David, this patch should fix the lockup you're seeing.
 
-> 
-> - Cpuset / Container. Some simple support is there with
->   memory spreading today. That could be made more universal.
-
-I've said before that I viewed cpusets as administrative contraints on
-applications, where as policies are something that can be controlled by
-the application or a non-privileged user.  As cpusets evolve into more
-general "containers", I think they'll become less visible to the
-applications running within them.  The application will see the
-container as "the system"--at least, the set of system resources to
-which the application has access.  
-
-The current memory policy APIs can work in such a "containerized"
-environment if we can reconcile the policy APIs' notion of nodes with
-the set of nodes that container allows.  Perhaps we need to revisit the
-"cpumemset" proposal that provides a separate node id namespace in each
-container/cpuset.  As a minimum, I think a task should be able to query
-the set of nodes that it can use and/or have the system "do the right
-thing" if the application specifies "all possible nodes" for, say, and
-interleave policy.
-
-> 
-> - System policies. The system policy is currently not
->   modifiable. It may be useful to be able to set this.
->   Small NUMA systems may want to run with interleave by default 
-
-Agreed.  And, on our platforms, it would be useful to have a separately
-specifiable system-wide [or container-wide] default page cache policy.
-
-> 
-> - Address range. For the virtual memory address range
->   this is included in todays functionality but one may also
->   want to control the physical address range to make sure
->   f.e. that memory is allocated in an area where a device
->   can reach it.
-
-For application usage?  Does this mean something like an MPOL_MF_DMA
-flag?  
-
-One way to handle this w/o an explicit 'DMA flag for use space APIs is
-to mmap() the device that would use the memory and allow the device
-driver to allocate the memory internally with the appropriate DMA/32
-flags and map that memory into the task's address space.  I think that
-works today.
-
-What other usage scenarios are you thinking of?
-
-> 
-> - Memory policies need to be attachable to types of pages.
->   F.e. executable pages of a threaded application are best
->   spread (or replicated) whereas the stack and the data may
->   best be allocated in a node local way.
->   Useful categories that I can think of
->   Stack, Data, Filebacked pages, Anonymous Memory,
->   Shared memory, Page tables, Slabs, Mlocked pages and
->   huge pages.
-
-Rather, I would say, to "types of objects".   I think all of the "types
-of pages" you mention [except, maybe, mlocked?] can be correlated to
-some structure/object to which policy can be attached.  Regarding
-"Mlocked pages"--are you suggesting that you might want to specify that
-mlocked pages have a different policy/locality than other pages in the
-same object?
-
-Stack and data/heap can easily be handled by always defaulting the
-process policy to node local [or perhaps interleaved across the nodes in
-the container, if node local results in hot spots or other problems],
-and explicitly binding other objects of interest, if performance
-considerations warrant, using the mbind() API or by using fixed or
-heuristic defaults.
-
-> 
->   Maybe a set of global policies would be useful for these
->   categories. Andy hacked subsystem memory policies into
->   shmem and it seems that we are now trying to do the same
->   for hugepages. Maybe we could get to a consistent scheme
->   here?
-
-Christoph, I wish you wouldn't characterize Andi's shared policy
-infrastructure as a hack.  I think it provides an excellent base
-implementation for [shared] object-based policies.  It extends easily to
-any object that can be addressed by offset [page offset, hugepage
-offset, ...].  The main issue is the generic one of memory policy on
-object that can be shared by processes running in separate cpusets,
-whether the sharing is intentional or not.  
-
-> 
-> 2. Memory policies need to support additional constraints
-> 
-> - Restriction to a set of nodes. That is what we have today.
-
-See "locality placement" below.
-
-> 
-> - Restriction to a container or cpuset. Maybe restriction
->   to a set of containers?
-
-I don't know about a "set of containers", but perhaps you are referring
-to sharing of objects between applications running in different
-containers with potentially disjoint memory resources?  That is
-problematic.  We need to enumerate the use cases for this and what the
-desired behavior should be.
-
-Christoph and I discussed one scenario:  backup running in a separate
-cpuset, disjoint from an application that mmap()s a file shared and
-installs a shared policy on it [my "mapped file policy" patches would
-enable this].  If the application's cpuset contains sufficient memory
-for the application's working set, but NOT enough to hold the entire
-file, the backup running in another cpuset reading the entire file may
-push out pages of the application from it's cpuset because the object
-policy constrains the pages to be located in the application's cpuset.  
-
-> 
-> - Strict vs no strict allocations. A strict allocation needs
->   to fail if the constraints cannot be met. A non strict
->   allocation can fall back.
-
-Agreed.  And I think this needs to be explicit in the allocation
-request.  Callers requesting strict allocation [including "no wait"]
-should be prepared to handle failure of the allocation.
-
-> 
-> - Order of allocation. Higher order pages may require
->   different allocation constraints? This is like a
->   generalization of huge page policies.
-
-Agreed.  On our platform, I'd like to keep default huge page allocations
-and interleave requests off the "hardware interleaved pseudo-node" as
-that is "special" memory.  I'd like to reserve it for access only by
-explicit request.  The current model doesn't support this, but I think
-it could, with a few "small" enhancements. [TODO]
-
-> 
-> - Locality placement. These are node local, interleave etc.
-
-How is this different from "restriction to a set of nodes" in the
-context of memory policies [1st bullet in section 2]?  I tend to think
-of memory policies--whether default or explicit--as "locality placement"
-and cpusets as "constraints" or restrictions on what policies can do.
-
-> 
-> 3. Additional flags
-> 
-> - Automigrate flag so that memory touched by a process
->   is moved to a memory location that has best performance.
-
-Automigration can be turned on/off in the environment--e.g., per
-container/cpuset, but perhaps there is a use case for more explicit
-control over automigration of specific pages of an object?
-
-"Lazy migration" or "migrate on fault" is fairly easy to achieve atop
-the existing migration infrastructure.  However, it requires a fault to
-trigger the migration.  One can arrange for these faults to occur
-explicitly--e.g., via a straightforward extension to mbind() with
-MPOL_MF_MOVE and a new MPOL_MF_LAZY flag to remove the page translations
-from all page tables resulting in a fault, and possible migration, on
-next touch.  Or, one can arrange to automatically "unmap" [remove ptes
-referencing] selected types of pages when the load balancer moves a task
-to a new node.
-
-I've seen fairly dramatic reductions in real, user and system time in,
-e.g., kernel builds on a heavily loaded [STREAMS benchmark running] NUMA
-platform with automatic/lazy migration patches:   ~14% real, ~4.7% user
-and ~22% system time reductions.
-
-> 
-> - Page order flag that determines the preferred allocation
->   order. Maybe useful in connection with the large blocksize
->   patch to control anonymous memory orders.
-
-Agreed.  "requested page order" could be a component of policy, along
-with locality.
-
-> 
-> - Replicate flags so that memory is replicated.
-
-This could be a different policy mode, MPOL_REPLICATE.  Or, as with
-Nick's prototype, it could be the default behavior for read-only access
-to page cache pages when no explicit policy exists on the object [file].
-
-For "automatic, lazy replication, one would also need a fault to trigger
-the replication.  This could be achieved by removing the pte from only
-the calling task's page table via mbind(MOVE+LAZY) or automatically on
-inter-node task migration.  The resulting fault, when that corresponding
-virtual address is touched, would cause Nick's page cache replication
-infrastructure to create/use a local copy of the page.  It's "on my
-list" ...
-> 
-> 4. Policy combinations
-> 
-> We need some way to combine policies in a systematic way. The current
-> hieracy from System->cpuset->proces->memory range does not longer
-> work if a process can use policies set up in shmem or huge pages.
-> Some consistent scheme to combine memory policies would also need
-> to be able to synthesize different policies. I.e. automigrate
-> can be combined with node local or interleave and a cpuset constraint.
-
-The big issue, here, for me, is the interaction of policy on shared
-objects [shmem and shared regular file mappings] referenced from
-different containers/cpusets.   Given that we want to allow this--almost
-can't prevent it in the case of regular file access--we need to specify
-the use cases, what the desired behavior is for each such case, and
-which scenarios to optimize for.
-
-> 
-> 5. Management tools
-> 
-> If we make the policies more versatile then we need the proper
-> management tools in user space to set and display these policies
-> in such a way that they can be managed by the end user. The esoteric
-> nature of memory policy semantics makes them difficult to comprehend.
-
-/proc/<pid>/numa_maps works well [with my patches] for object mapped
-into a task's address space.  What it doesn't work so well for are:
-1) shared policy on currently unattached shmem segments and 2) shared
-policy on unmapped regular files, should my patches be accepted.  [Note,
-however, we need not retain shared policy on regular files after the
-last shared mapping is removed--my recommended persistence model.]
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index 633c2ed..9b7b0b9 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -1139,8 +1139,10 @@ static int emulator_write_phys(struct kvm_vcpu *vcpu, gpa_t gpa,
+ 		return 0;
+ 	mark_page_dirty(vcpu->kvm, gpa >> PAGE_SHIFT);
+ 	virt = kmap_atomic(page, KM_USER0);
+-	kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
+-	memcpy(virt + offset_in_page(gpa), val, bytes);
++	if (memcmp(virt + offset_in_page(gpa), val, bytes)) {
++		kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
++		memcpy(virt + offset_in_page(gpa), val, bytes);
++	}
+ 	kunmap_atomic(virt, KM_USER0);
+ 	return 1;
+ }
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index a4a8481..eb10448 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -482,6 +482,7 @@ x86_emulate_memop(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
+ 	int mode = ctxt->mode;
+ 	unsigned long modrm_ea;
+ 	int use_modrm_ea, index_reg = 0, base_reg = 0, scale, rip_relative = 0;
++	int no_wb = 0;
+ 
+ 	/* Shadow copy of register state. Committed on successful emulation. */
+ 	unsigned long _regs[NR_VCPU_REGS];
+@@ -1048,7 +1049,7 @@ done_prefixes:
+ 						      _regs[VCPU_REGS_RSP]),
+ 				     &dst.val, dst.bytes, ctxt)) != 0)
+ 				goto done;
+-			dst.val = dst.orig_val;	/* skanky: disable writeback */
++			no_wb = 1;	/* skanky: disable writeback */
+ 			break;
+ 		default:
+ 			goto cannot_emulate;
+@@ -1057,7 +1058,7 @@ done_prefixes:
+ 	}
+ 
+ writeback:
+-	if ((d & Mov) || (dst.orig_val != dst.val)) {
++	if (!no_wb) {
+ 		switch (dst.type) {
+ 		case OP_REG:
+ 			/* The 4-byte case *is* correct: in 64-bit mode we zero-extend. */
+@@ -1306,7 +1307,7 @@ twobyte_insn:
+ 
+ twobyte_special_insn:
+ 	/* Disable writeback. */
+-	dst.orig_val = dst.val;
++	no_wb = 1;
+ 	switch (b) {
+ 	case 0x09:		/* wbinvd */
+ 		break;
 
 
-> 6. GFP_xx flags may actually be considered as a form of policy
-
-Agreed.  For kernel internal allocation requests...
-
-> 
-> i.e. GFP_THISNODE is essentially a one node cpuset.
-
-sort of behaves like one, I agree.  Or like an explicit MPOL_BIND with a
-single node.
-
-> 
-> GFP_DMA and GFP_DMA32 are physical address range constraints.
-
-with platform specific locality implications...
-
-> 
-> GFP_HARDWALL is a strict vs. nonstrict distinction.
-> 
-> 
-> 7. Allocators must change
-> 
-> Right now the policy is set by the process context which is bad because
-> one cannot specify a memory policy for an allocation. It must be possible
-> to pass a memory policy to the allocators and then get the memory 
-> requested.
-
-Agreed.  In my shared/mapped file policy patches, I have factored an
-"allocate_page_pol() function out of alloc_page_vma().  The modified
-alloc_page_vma() calls get_vma_policy() [as does the current version] to
-obtain the policy at the specified address in the calling task's virtual
-address space or some default policy, and then calls alloc_page_pol() to
-allocate a page based on that policy.  I can then use the same
-alloc_page_pol() function to allocate page cache pages after looking up
-a shared policy on a mapped file or using the default policy for page
-cache allocations [currently process->system default].  Perhaps other of
-the page allocators could use alloc_page_pol() as well?
-
-> 
-> 
-> I wish we could come up with some universal scheme that encompasses all
-> of the functionality we want and that makes memory more manageable....
-
-I think it's possible and that the current mempolicy support can be
-evolved with not too much effort.  Again, the biggest issue for me is
-the reconciliation of the policies with the administrative constraints
-imposed by subsetting the system via containers/cpusets--especially for
-objects that can be referenced from more than one container.  I think
-that any reasonable, let alone "correct", solution would be
-workload/application dependent.
-
-
-Lee
-
+Luca
+-- 
+"Ci sono le balle, le megaballe e le statistiche".
+ Mark Twain
