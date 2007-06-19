@@ -1,159 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbXFSQgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbXFSQkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758653AbXFSQgV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 12:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXFSQgP
+	id S1758653AbXFSQkg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 12:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbXFSQk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 12:36:15 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:38290 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbXFSQgO (ORCPT
+	Tue, 19 Jun 2007 12:40:28 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:36187 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419AbXFSQk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 12:36:14 -0400
-Date: Tue, 19 Jun 2007 17:36:11 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 5/7] Introduce a means of compacting memory within a zone
-Message-ID: <20070619163611.GD17109@skynet.ie>
-References: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie> <20070618093002.7790.68471.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0706181010030.4751@schroedinger.engr.sgi.com>
+	Tue, 19 Jun 2007 12:40:27 -0400
+Date: Tue, 19 Jun 2007 18:53:00 +0200
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Martin Bligh <mbligh@mbligh.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
+Message-ID: <20070619165300.GD19904@flower.upol.cz>
+References: <20070617220927.99ebc1ee.akpm@linux-foundation.org> <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca> <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de> <alpine.LFD.0.98.0706190732150.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706181010030.4751@schroedinger.engr.sgi.com>
+In-Reply-To: <alpine.LFD.0.98.0706190732150.3593@woody.linux-foundation.org>
+Organization: Palacky University in Olomouc, experimental physics department.
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (18/06/07 10:18), Christoph Lameter didst pronounce:
-> On Mon, 18 Jun 2007, Mel Gorman wrote:
+Linus,
+
+On Tue, Jun 19, 2007 at 08:01:19AM -0700, Linus Torvalds wrote:
 > 
-> > +	/* Isolate free pages. This assumes the block is valid */
-> > +	for (; blockpfn < end_pfn; blockpfn++) {
-> > +		struct page *page;
-> > +		int isolated, i;
-> > +
-> > +		if (!pfn_valid_within(blockpfn))
-> > +			continue;
-> > +
-> > +		page = pfn_to_page(blockpfn);
-> > +		if (!PageBuddy(page))
-> > +			continue;
 > 
-> The name PageBuddy is getting to be misleading. Maybe rename this to
-> PageFree or so?
-> 
+> On Tue, 19 Jun 2007, Adrian Bunk wrote:
+> > 
+> > The goal is to get all patches for a maintained subsystem submitted to 
+> > Linus by the maintainer.
 
-That would be suprisingly ambiguous. per-cpu pages are free pages but are not
-PageBuddy pages. In this case, I really mean a PageBuddy page, not a free page.
+Nice quote. I'm trying to make proposition/convince Adrian, who is in
+opposition, but whole thread gets just like obeying his extreme POV...
+ 
+> But quite frankly, anybody who aims for "perfect" without taking reality 
+> into account is just not realistic. And if that's part of the goal of some 
+> "new process", then I'm not even interested in listening to people discuss 
+> it.
 
-> > +
-> > +		/* Found a free page, break it into order-0 pages */
-> > +		isolated = split_free_page(page);
-> > +		total_isolated += isolated;
-> > +		for (i = 0; i < isolated; i++) {
-> > +			list_add(&page->lru, freelist);
-> > +			page++;
-> > +		}
-> 
-> Why do you need to break them all up? Easier to coalesce later?
-> 
+I'm proposing kind of smart tracking, summarized before. I'm not an
+idealist, doing manual work. Making tools -- is what i've picked up from
+one of your mails. Thus hope of having more opinions on that.
 
-They are broken up because migration currently works on order-0 pages.
-It is easier to break them up now for compaction_alloc() to give out one
-at a time than trying to figure out how to split them up later.
+> If this plan cannot take reality into account, please stop Cc'ing me. I'm 
+> simply not interested.
 
-> > +/* Returns 1 if the page is within a block suitable for migration to */
-> > +static int pageblock_migratable(struct page *page)
-> > +{
-> > +	/* If the page is a large free page, then allow migration */
-> > +	if (PageBuddy(page) && page_order(page) >= pageblock_order)
-> > +		return 1;
-> 
-> if (PageSlab(page) && page->slab->ops->kick) {
-> 	migratable slab
-> }
-> 
-> if (page table page) {
-> 	migratable page table page?
-> }
-> 
-> etc?
-> 
-
-Not quite. pageblock_migratable() is telling if this block is suitable for
-taking free pages from so movable pages can be migrated there.  Right now
-that means checking if there are enough free pages that the whole block
-becomes MOVABLE or if the block is already being used for movable pages.
-
-The block could become movable if the decision was made to kick out slab
-pages that are located towards the end of the zone. If page tables
-become movable, then they would need to be identified here but that is
-not the case.
-
-The pageblock_migratable() function is named so that this decision can
-be easily revisited in one place.
-
-> > +		/* Try isolate the page */
-> > +		if (locked_isolate_lru_page(zone, page, migratelist) == 0)
-> > +			isolated++;
-> 
-> Support for other ways of migrating a page?
-> 
-
-When other mechanisms exist, they would be added here. Right now,
-isolate_lru_page() is the only one I am aware of.
-
-> > +static int compact_zone(struct zone *zone, struct compact_control *cc)
-> > +{
-> > +	int ret = COMPACT_INCOMPLETE;
-> > +
-> > +	/* Setup to move all movable pages to the end of the zone */
-> > +	cc->migrate_pfn = zone->zone_start_pfn;
-> > +	cc->free_pfn = cc->migrate_pfn + zone->spanned_pages;
-> > +	cc->free_pfn &= ~(pageblock_nr_pages-1);
-> > +
-> > +	for (; ret == COMPACT_INCOMPLETE; ret = compact_finished(zone, cc)) {
-> > +		isolate_migratepages(zone, cc);
-> > +
-> > +		if (!cc->nr_migratepages)
-> > +			continue;
-> > +
-> > +		/* Isolate free pages if necessary */
-> > +		if (cc->nr_freepages < cc->nr_migratepages)
-> > +			isolate_freepages(zone, cc);
-> > +
-> > +		/* Stop compacting if we cannot get enough free pages */
-> > +		if (cc->nr_freepages < cc->nr_migratepages)
-> > +			break;
-> > +
-> > +		migrate_pages(&cc->migratepages, compaction_alloc,
-> > +							(unsigned long)cc);
-> 
-> You do not need to check the result of migration? Page migration is a best 
-> effort that may fail.
-> 
-
-You're right. I used to check it for debugging purposes to make sure migration
-was actually occuring. It is not unusual still for a fair number of pages
-to fail to migrate. migration already uses a retry logic and I shouldn't
-be replicating it.
-
-More importantly, by leaving the pages on the migratelist, I potentially
-retry the same migrations over and over again wasting time and effort not
-to mention that I keep pages isolated for much longer than necessary and
-that could cause stalling problems. I should be calling putback_lru_pages()
-when migrate_pages() tells me it failed to migrate pages.
-
-I'll revisit this one. Thanks
-
-> Looks good otherwise.
-> 
-> Acked-by: Christoph Lameter <clameter@sgi.com>
-
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+This one is last at least from me. Sorry for taking you time.
+____
