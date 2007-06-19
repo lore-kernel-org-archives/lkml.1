@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765427AbXFSCjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbXFSCld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765427AbXFSCjj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 22:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760525AbXFSCjc
+	id S932337AbXFSCld (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 22:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760820AbXFSCl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 22:39:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57009 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759895AbXFSCjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 22:39:31 -0400
-To: david@lang.hm
-Cc: Joshua David Williams <yurimxpxman.lkml@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: GPLv3 dispute solution - new open source license?
-References: <200706181807.53306.yurimxpxman@gmail.com>
-	<Pine.LNX.4.64.0706181541050.14890@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Mon, 18 Jun 2007 23:39:23 -0300
-In-Reply-To: <Pine.LNX.4.64.0706181541050.14890@asgard.lang.hm> (david@lang.hm's message of "Mon\, 18 Jun 2007 15\:43\:02 -0700 \(PDT\)")
-Message-ID: <orir9k8y78.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Mon, 18 Jun 2007 22:41:26 -0400
+Received: from ihemail4.lucent.com ([135.245.0.39]:43514 "EHLO
+	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760484AbXFSCl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 22:41:26 -0400
+Message-ID: <46774252.7030500@alcatel-lucent.com>
+Date: Tue, 19 Jun 2007 10:41:22 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+CC: "Chen, Jinmin (Jinmin)" <jinminc@alcatel-lucent.com>, mikpe@it.uu.se
+Subject: Is kdb package available for 2.6 Linux on PowerPC?
+References: <4673CA7C.5040207@t-online.de>	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616181902.GB21478@ftp.linux.org.uk>	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070618155016.GA31892@linuxtv.org>	<or645lcdg7.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070618232549.GA22170@linuxtv.org>	<Pine.LNX.4.64.0706181634560.14890@asgard.lang.hm> <ormyyw8yj4.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <ormyyw8yj4.fsf@oliva.athome.lsd.ic.unicamp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Jun 2007 02:41:08.0073 (UTC) FILETIME=[4A1E9D90:01C7B21B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, david@lang.hm wrote:
+Hey Guys,
 
-> On Mon, 18 Jun 2007, Joshua David Williams wrote:
->> On 6/18/07, Carlo Wood <carlo@alinoe.com> wrote:
->> 
->>> Now, writing yet another license for the linux kernel is
->>> therefore NOT the solution - if you get my drift.
->> 
->> The new license could be written to be compatible with both versions of the
->> GPL.
+Recently, I need work on my TTY (console) driver so that it could 
+support kdb. I didn't have much experiences on linux kdb. So my 
+questions are:
 
-> no it couldn't
+1) 2.6 Linux for PowerPC could support kdb? where can I find the source 
+code?
 
-It could.  Just not as part of the same work.  I.e., it wouldn't be
-compatible in both directions, so it wouldn't make some of the most
-vocal Linux developers in that other thread happy.
+2) If 2.6 Linux for PowerPC doesn't support kdb, where could I get the 
+package and integrated it to kernel?
 
-But you could achieve one-way compatibility in various ways:
-
-GPLv2+, after GPLv3 is published, and before there's a GPLv4, is
-pretty much it.
-
-One could also come up with any license that permits use under the
-terms of the GPLv2 or the GPLv3.
-
-One could also dual-license under GPLv2 and GPLv3.
-
-FWIW, IANAL.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Thanks in advance,
+Gavin
