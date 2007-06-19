@@ -1,55 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbXFSQOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbXFSQQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758822AbXFSQOa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 12:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXFSQOX
+	id S1758908AbXFSQQP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 12:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbXFSQQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 12:14:23 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51041 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754213AbXFSQOW (ORCPT
+	Tue, 19 Jun 2007 12:16:01 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:34269 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754742AbXFSQQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 12:14:22 -0400
-Date: Tue, 19 Jun 2007 17:19:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070619171921.54811314@the-village.bc.nu>
-In-Reply-To: <4677F616.3080406@gmail.com>
-References: <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
-	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
-	<20070610160531.GA12179@kroah.com>
-	<f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
-	<20070612184110.GB7980@kroah.com>
-	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>
-	<or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070613211432.GH10008@csclub.uwaterloo.ca>
-	<orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614175305.GI10008@csclub.uwaterloo.ca>
-	<4677F616.3080406@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 12:16:00 -0400
+Message-ID: <4678013C.5090402@grupopie.com>
+Date: Tue, 19 Jun 2007 17:15:56 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <vapier@gentoo.org>
+Subject: [PATCH] remove usage of memmem from scripts/kallsyms.c
+Content-Type: multipart/mixed;
+ boundary="------------060006060405060707080204"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, it is not Tivo alone -- look at http://aminocom.com/ for an
-> example. If you want the kernel sources pay USD 50k and we will provide
-> the kernel sources, was their attitude.
+This is a multi-part message in MIME format.
+--------------060006060405060707080204
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-GPLv2 deals with that case, and they can (and should) be sued for it
-[except that US copyright law is designed for large music companies not
-people]
 
+The only in-kernel user of "memmem" is scripts/kallsyms.c and it only 
+uses it to find tokens that are 2 bytes in size. It is trivial to 
+replace it with a simple function that finds 2-byte tokens.
+
+This should help users from systems that don't have the memmem GNU 
+extension available.
+
+Signed-off-by: Paulo Marques <pmarques@grupopie.com>
+
+-- 
+Paulo Marques - www.grupopie.com
+
+"667: The neighbor of the beast."
+
+
+--------------060006060405060707080204
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch"
+
+--- ./scripts/kallsyms.c.orig	2007-06-08 12:55:49.000000000 +0100
++++ ./scripts/kallsyms.c	2007-06-08 13:19:52.000000000 +0100
+@@ -378,6 +378,17 @@ static void build_initial_tok_table(void
+ 	table_cnt = pos;
+ }
+ 
++static void *find_token(unsigned char *str, int len, unsigned char *token)
++{
++	int i;
++
++	for (i = 0; i < len - 1; i++) {
++		if (str[i] == token[0] && str[i+1] == token[1])
++			return &str[i];
++	}
++	return NULL;
++}
++
+ /* replace a given token in all the valid symbols. Use the sampled symbols
+  * to update the counts */
+ static void compress_symbols(unsigned char *str, int idx)
+@@ -391,7 +402,7 @@ static void compress_symbols(unsigned ch
+ 		p1 = table[i].sym;
+ 
+ 		/* find the token on the symbol */
+-		p2 = memmem(p1, len, str, 2);
++		p2 = find_token(p1, len, str);
+ 		if (!p2) continue;
+ 
+ 		/* decrease the counts for this symbol's tokens */
+@@ -410,7 +421,7 @@ static void compress_symbols(unsigned ch
+ 			if (size < 2) break;
+ 
+ 			/* find the token on the symbol */
+-			p2 = memmem(p1, size, str, 2);
++			p2 = find_token(p1, size, str);
+ 
+ 		} while (p2);
+ 
+
+--------------060006060405060707080204--
