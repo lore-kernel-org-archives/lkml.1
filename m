@@ -1,99 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764818AbXFSS7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764852AbXFSTBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764818AbXFSS7r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 14:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764107AbXFSS7g
+	id S1764852AbXFSTBy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764472AbXFSTBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 14:59:36 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:20819 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764228AbXFSS7f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 14:59:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hqrJxbIZGHu7yIPelqjUcGkoBS25Ccq+wp/546x+zvDAp7IYjWqUIfRLv21H1Gu6TwOzUlczW8BocXE3Qh/JDfNxim5A+QIbIvS2+nRMarCSfynh4xVLIQ0qn2aem9pjyVWExrbCMUWGiCZ0VzxcQGeRr0PJSYvF9c5nQ6MFdKY=
-Message-ID: <d120d5000706191159w29ebd0dajbd6cb9ac78d4faa2@mail.gmail.com>
-Date: Tue, 19 Jun 2007 14:59:34 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: Writing a driver for a legacy serial device
-Cc: LKML <linux-kernel@vger.kernel.org>, "Vojtech Pavlik" <vojtech@ucw.cz>
-In-Reply-To: <20070619190502.05d4e0c8@hyperion.delvare>
+	Tue, 19 Jun 2007 15:01:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51134 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764457AbXFSTBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 15:01:45 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: tim.c.chen@linux.intel.com, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Change in default vm_dirty_ratio
+References: <1182201271.4883.22.camel@localhost.localdomain>
+	<20070618164711.9de1c38e.akpm@linux-foundation.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 19 Jun 2007 21:57:44 +0200
+In-Reply-To: <20070618164711.9de1c38e.akpm@linux-foundation.org>
+Message-ID: <p73ps3rra2v.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070619190502.05d4e0c8@hyperion.delvare>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> It seems too large.  Memory sizes are going up faster than disk throughput
+> and it seems wrong to keep vast amounts of dirty data floating about in
+> memory like this.  It can cause long stalls while the system writes back
+> huge amounts of data and is generally ill-behaved.
 
-On 6/19/07, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi all,
->
-> I want to write a Linux kernel driver for a device which connects to
-> the legacy serial port. I started writing a driver, however I am
-> already stuck at the very beginning. The .connect function of my serial
-> driver is never called, and I just don't get why. I couldn't find any
-> documentation about writing such a legacy driver in Documentation nor
-> in LDD3. Is there anyone out there which could lend a helping hand?
->
-> I know that the device and my serial port both work. I can talk to the
-> device using minicom just fine. I have the following drivers loaded:
->
-> $ lsmod | grep 8250
-> 8250_pnp               11648  0
-> 8250                   23464  1 8250_pnp
-> serial_core            19392  1 8250
->
-> Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing disabled
-> 00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
->
-> But I need to implement my driver in kernel space. My code looks like
-> this:
->
-> static struct serio_device_id taos_serio_ids[] = {
->        {
->                .type   = SERIO_RS232,
->                .proto  = SERIO_ANY,
->                .id     = SERIO_ANY,
->                .extra  = SERIO_ANY,
->        },
->        { 0 }
-> };
-> MODULE_DEVICE_TABLE(serio, taos_serio_ids);
->
-> static struct serio_driver taos_drv = {
->        .driver         = {
->                .name   = "taos-evm",
->        },
->        .description    = "TAOS evaluation module driver",
->        .id_table       = taos_serio_ids,
->        .connect        = taos_connect,
->        .disconnect     = taos_disconnect,
->        .interrupt      = taos_interrupt,
-> };
->
-> static int __init taos_init(void)
-> {
->        return serio_register_driver(&taos_drv);
-> }
->
-> static void __exit taos_exit(void)
-> {
->        serio_unregister_driver(&taos_drv);
-> }
->
-> The problem is that taos_connect is never called. I suppose that I need
-> different values for .type, .proto or .id, except that I just don't
-> know what to put there. I tried a few random values without success.
-> What's the trick?
->
+A more continuous write out would be better I think. Perhaps the dirty ratio 
+needs to be per address space?
 
-You need to load serport modue and play with inputattach utility.
+> things are trivially tunable and you'd think that after all these years,
+> distro initscripts would be establishing the settings, based upon expected
+> workload, amount of memory, number and bandwidth of attached devices, etc.
 
--- 
-Dmitry
+Distro initscripts normally don't have any better clue about any of this
+than the kernel.
+
+-Andi
