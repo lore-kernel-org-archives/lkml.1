@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbXFSPbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbXFSPcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759067AbXFSPbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbXFSPbg
+	id S1759569AbXFSPcD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbXFSPbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:31:36 -0400
-Received: from mx1.suse.de ([195.135.220.2]:46220 "EHLO mx1.suse.de"
+	Tue, 19 Jun 2007 11:31:51 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:39394 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756315AbXFSPbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:31:35 -0400
-Date: Tue, 19 Jun 2007 08:31:11 -0700
-From: Greg KH <gregkh@suse.de>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: linux-kernel@vger.kernel.org, TripleX Chung <xxx.phy@gmail.com>,
-       Maggie Chen <chenqi@beyondsoft.com>
-Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Message-ID: <20070619153111.GA24521@suse.de>
-References: <11822628633463-git-send-email-leoli@freescale.com> <989B956029373F45A0B8AF0297081890D82D5F@zch01exm26.fsl.freescale.net>
+	id S1756315AbXFSPbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 11:31:50 -0400
+Message-ID: <4677F6E1.50108@dgreaves.com>
+Date: Tue, 19 Jun 2007 16:31:45 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <989B956029373F45A0B8AF0297081890D82D5F@zch01exm26.fsl.freescale.net>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       David Robinson <zxvdr.au@gmail.com>,
+       LVM general discussion and development 
+	<linux-lvm@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+References: <46744065.6060605@dgreaves.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <200706191321.07278.rjw@sisk.pl>
+In-Reply-To: <200706191321.07278.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 11:26:36PM +0800, Li Yang-r58472 wrote:
-> Hi all,
+Rafael J. Wysocki wrote:
+>> This is on 2.6.22-rc5
 > 
-> I hope this document can get into the kernel tree.  As I read through
-> the discussion about Japanese translation, there are quite some
-> arguments that one cannot do kernel development effectively without
-> solid English skill.  As a non-native English speaker, I would say that
-> it is much easier to understand technical terms and effectively discuss
-> technical matters.  But community policies and politics are different
-> things.  They will be very painful for one who doesn't really grasp
-> English well.  IMHO, having these policy documents in different
-> languages will greatly help these non-native speakers to contribute,
-> hence greatly benefit the Linux kernel community itself.
+> Is the Tejun's patch
+> 
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc5/patches/30-block-always-requeue-nonfs-requests-at-the-front.patch
+> 
+> applied on top of that?
 
-I see no reason why it can not go in, I'll add it to my queue and you
-will get an automated email when it is applied.
+2.6.22-rc5 includes it.
 
-thanks,
+(but, when I was testing rc4, I did apply this patch)
 
-greg k-h
+David
