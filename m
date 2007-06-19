@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbXFSXKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbXFSXMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbXFSXKi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 19:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbXFSXKb
+	id S1758800AbXFSXMj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 19:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbXFSXMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 19:10:31 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:15460 "EHLO
-	outbound1-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754464AbXFSXKa (ORCPT
+	Tue, 19 Jun 2007 19:12:31 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:44503 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755809AbXFSXM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 19:10:30 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Date: Wed, 20 Jun 2007 00:51:20 +0200
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 9/12] sound: fix compile error (wrong declaration of
- devinitdata)
-Message-ID: <20070619225120.GK5193@alberich.amd.com>
+	Tue, 19 Jun 2007 19:12:29 -0400
+Message-ID: <467862CD.6070009@zytor.com>
+Date: Tue, 19 Jun 2007 16:12:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Jun 2007 22:50:24.0623 (UTC)
- FILETIME=[393187F0:01C7B2C4]
-X-WSS-ID: 6A66825923K845854-03-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+To: "H. Peter Anvin" <hpa@zytor.com>, david@lang.hm,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Chris Snook <csnook@redhat.com>,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk, alan <alan@clueserver.org>
+Subject: Re: Versioning file system
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com> <20070619204317.GR10008@csclub.uwaterloo.ca> <Pine.LNX.4.64.0706191505130.26701@asgard.lang.hm> <4678550D.6070705@zytor.com> <20070619230735.GN14788@delft.aura.cs.cmu.edu>
+In-Reply-To: <20070619230735.GN14788@delft.aura.cs.cmu.edu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix compile error:
+Jan Harkes wrote:
+> 
+> Still, anything that depends on increasing the length of file or path
+> names to refer to different versions will encounter problems for long
+> file names and deep paths because there is an upper limit on file and
+> path name lengths.
+> 
 
-  CC      sound/pci/ice1712/prodigy192.o
-  sound/pci/ice1712/prodigy192.c:708: error: ak4114_controls causes a section type conflict
+Then you have the Solaris variant -- rely on openat() flags to decend
+into another namespace.
 
-... but __initdata cannot be "const".
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- sound/pci/ice1712/prodigy192.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/sound/pci/ice1712/prodigy192.c b/sound/pci/ice1712/prodigy192.c
-index f03c02c..4bae730 100644
---- a/sound/pci/ice1712/prodigy192.c
-+++ b/sound/pci/ice1712/prodigy192.c
-@@ -705,7 +705,7 @@ static int ak4114_input_sw_put(struct snd_kcontrol *kcontrol,
- }
- 
- 
--static const struct snd_kcontrol_new ak4114_controls[] __devinitdata = {
-+static struct snd_kcontrol_new ak4114_controls[] __devinitdata = {
- 	{
- 		.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 		.name = "MIODIO IEC958 Capture Input",
--- 
-1.5.0.7
-
-
-
-
+	-hpa
