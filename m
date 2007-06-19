@@ -1,66 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765958AbXFSAua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932786AbXFSAxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765958AbXFSAua (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 20:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763135AbXFSAuW
+	id S932786AbXFSAxa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 20:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763135AbXFSAxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 20:50:22 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38421 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762453AbXFSAuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 20:50:21 -0400
-Date: Mon, 18 Jun 2007 17:51:36 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
-Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
-Message-ID: <20070619005136.GF9751@tree.beaverton.ibm.com>
-References: <20070605200954.GE12782@tree.beaverton.ibm.com> <20070605211451.GG17143@linux-os.sc.intel.com> <20070605235707.GB16074@tree.beaverton.ibm.com> <20070606013759.GI17143@linux-os.sc.intel.com> <20070606185829.GA26062@tree.beaverton.ibm.com> <20070606193514.GN17143@linux-os.sc.intel.com> <20070606231642.GH13751@tree.beaverton.ibm.com> <20070608005726.GO17143@linux-os.sc.intel.com> <20070618223819.GD9751@tree.beaverton.ibm.com> <20070618235434.GB7160@linux-os.sc.intel.com>
+	Mon, 18 Jun 2007 20:53:22 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:8773 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761816AbXFSAxW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 20:53:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Mjh0kzTkUsh5Le4mfZ5Lofkqw6wO/LZqE//J3DjSkvuH4u2dQnsUUJt2lBvZG5WRd752Ir3jf8sUuLD8ap86nsjkhXWuH2OS/9qd/rDVce7AwgnWKMivHYM8SGl5Czo99sFY80BNeLPWvVN/Jot1Wj4BIAOXoXblBqI77jYLKic=
+Message-ID: <48a616c60706181753m7fefd35as7f6093d2d54ae05@mail.gmail.com>
+Date: Mon, 18 Jun 2007 20:53:19 -0400
+From: "News Letter" <newletter.yhl@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Question about a strange behavior of copy_to_user() in ioctl call
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rMWmSaSbD7nr+du9"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070618235434.GB7160@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---rMWmSaSbD7nr+du9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I need some help here to understand copy_to_user(). I encountered a
+strange copy_to_user() behavior when working on CentOS from Redhat
+(kernel version 2.6.9-22.ELsmp, x86_64 CPU).
 
-On Mon, Jun 18, 2007 at 04:54:34PM -0700, Siddha, Suresh B wrote:
+For a kernel module, I wrote a ioctl call to allow user mode program
+to get some kernel data information. When a user program called the
+ioctl, most of the time the ioctl failed with EFAULT, failed at
+copy_to_user(). It succeeded a few times after a lot of running.
 
-> > <call to set_affinity>
-> > [  256.298787] irq=3D4341 affinity=3Dd
-> > <ethernet on irq 4341 stops working>
->=20
-> And just to make sure, at this point, your MSI irq 4341 affinity
-> (/proc/irq/4341/smp_affinity) still points to '2'?
+Failed message indicated copy_to_user() returned 3840 (which is
+exactly what is asked to copy, PAGE_SIZE-256). The printed value of
+the user pointer were identical for successful ioctl calls and failed
+ioctl calls. Some relevant details are at the end of this email. I
+tried with calloc(PAGE_SIZE, 1), static buffer and automatic variable
+on stack in user mode program. They gave the same result.
 
-Actually, it's 0xD.  From the kernel's perspective the mask has been
-updated (and I even stuck a printk into set_msi_irq_affinity to verify
-that the writes are happening) but ... the hardware doesn't seem to
-reflect this.  I also tried putting read_msi_msg right afterwards to
-compare contents, though it complained about all the MSIs _except_ for
-4341.  (Of course, I could just be way off on the effectiveness of
-that.)
+I appreciate any help.
 
---D
+Best,
+Jasper
 
---rMWmSaSbD7nr+du9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+The ioctl call structure is defined as follows,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+struct ioctl_get_info
+{
+   ... /* some other information */
+   unsigned long user_pointer;
+   unsigned user_buffer_len;
+   unsigned returned_len;
+   ... /* some other information */
+};
 
-iD8DBQFGdyiYa6vRYYgWQuURAvZFAKCxNCKOpR2BRLOWJTCa2mhwxfmmkgCggQZ8
-0rZW9OwNvofFNH+sJnGQWZA=
-=NA++
------END PGP SIGNATURE-----
+Inside kernel module, a page is allocated with :
 
---rMWmSaSbD7nr+du9--
+static unsigned char *test_page;
+
+static init_test(void)
+{
+   test_page = __get_free_pages(GFP_KERNEL, 0);
+   if (!test_page)
+         .... /* some error handling */
+}
+
+static int test_ioctl(struct inode * inode, struct file * filp,
+unsigned int cmd_in, unsigned long arg)
+{
+   struct ioctl_get_info igi;
+   unsigned size;
+   unsigned long remain;
+
+  size = IOC_SIZE(cmd_in);
+  if (size != sizeof(igi))
+    ....
+
+  ... /* some sanity checking */
+
+  if (!access_ok(VERIFY_READ, (char *)arg, size))
+  {
+      printk(KERN_INFO "...");
+      return -EFAULT;
+   }
+
+   if (copy_from_user(&igi, (char *)arg, size) != 0)
+   {
+       printk(... ...)
+       return -EFAULT;
+   }
+
+   if (!access_ok(VERIFY_WRITE, (char *)igi.user_pointer, igi.user_buffer_len))
+   {
+       printk(...);
+       return -EFAULT;
+   }
+
+   size = PAGE_SIZE - 256;
+   if (size > igi.user_buffer_len)
+      size = igi.user_buffer_len;
+   printk("igi.user_pointer %p size %u\n", igi.user_pointer, size);
+   if ((remain = copy_to_user((char *)igi.user_pointer, page + 256, size)) != 0)
+   {
+      printk ("Failed to copy from user at %p remain %lu asked %u\n",
+igi.user_pointer, remain, asked);
+/* failed here */
+      return -EFAULT;
+   }
+    igi.returned_len = size;
+
+   /* copy other information */
+
+   return 0;
+}
