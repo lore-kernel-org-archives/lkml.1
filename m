@@ -1,171 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765232AbXFSTuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765316AbXFSTvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765232AbXFSTuy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760694AbXFSTup
+	id S1765316AbXFSTvb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760904AbXFSTvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:50:45 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:53579 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760518AbXFSTuo (ORCPT
+	Tue, 19 Jun 2007 15:51:23 -0400
+Received: from smtp2.Stanford.EDU ([171.67.20.25]:37685 "EHLO
+	smtp2.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757896AbXFSTvW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:50:44 -0400
-Date: Tue, 19 Jun 2007 15:50:03 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 2/2] UML - Add stack usage monitoring
-Message-ID: <20070619195003.GA11718@c2.user-mode-linux.org>
-References: <20070619184245.GA10567@c2.user-mode-linux.org> <20070619115422.de61abd5.akpm@linux-foundation.org>
+	Tue, 19 Jun 2007 15:51:22 -0400
+X-Greylist: delayed 1483 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 15:51:22 EDT
+Subject: Re: 2.6.21.5-rt15: BUG: scheduling with irqs disabled
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: nando@ccrma.Stanford.EDU, carrlane@ccrma.Stanford.EDU,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1182212425.21064.47.camel@cmn3.stanford.edu>
+References: <1182212425.21064.47.camel@cmn3.stanford.edu>
+Content-Type: text/plain
+Date: Tue, 19 Jun 2007 12:26:37 -0700
+Message-Id: <1182281197.25101.35.camel@cmn3.stanford.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070619115422.de61abd5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 11:54:22AM -0700, Andrew Morton wrote:
-> On Tue, 19 Jun 2007 14:42:45 -0400
-> Jeff Dike <jdike@addtoit.com> wrote:
-> 
-> > Add a machanism to see how much of a kernel stack is used.  This
-> > allocates zeroed stacks and sees where the lowest non-zero byte is on
-> > process exit.  It keeps track of the lowest value and logs values as
-> > they get lower.
-> > 
-> 
-> remind us again why the generic code is unsuitable?
+On Mon, 2007-06-18 at 17:20 -0700, Fernando Lopez-Lezcano wrote:
+> Hi Ingo, I'm seeing this on 2.6.21.5-rt14 and 2.6.21.5-rt15, this
+> problem did not happen in 2.6.21.3-rt9 (last I checked on this
+> hardware). The computer is an athlon x2 and eth0 is "alias eth0 skge",
+> the BUGs trigger on network activity (but not a constant stream of
+> them)...
 
-It does something different - it will tell you the greatest stack
-usage of any currently running process.  What I want to be able to do
-is run a workload and come back a few days later and see how close
-anything came to running out of stack.
-> 
-> > +	for(p = stack; p < end; p++){
-> > +		if(*p != 0)
-> > +	if(left < lowest_to_date){
-> 
-> Are there any plans to fix UML coding style?
+Seems to have been fixed in 2.6.21.5-rt17! (briefly booted into one
+machine with the new build and so far no BUGs reported). 
 
-You know I have been fixing it.  I forgot to eyeball this patch for
-style - fixed patch below.
-
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+Thanks!!!
+-- Fernando
 
 
-Add a machanism to see how much of a kernel stack is used.  This
-allocates zeroed stacks and sees where the lowest non-zero byte is on
-process exit.  It keeps track of the lowest value and logs values as
-they get lower.
+> BUG: scheduling with irqs disabled: IRQ-20/0x00000000/1246
+> caller is wait_for_completion+0x65/0x9b
+>  [<c0105f44>] dump_trace+0x64/0x105
+>  [<c0105ffd>] show_trace_log_lvl+0x18/0x2c
+>  [<c010660a>] show_trace+0xf/0x11
+>  [<c010668b>] dump_stack+0x12/0x14
+>  [<c032ba36>] schedule+0x86/0xfa
+>  [<c032bb0f>] wait_for_completion+0x65/0x9b
+>  [<c0125f24>] set_cpus_allowed+0x71/0x8f
+>  [<c012f867>] do_softirq_from_hardirq+0xbd/0xda
+>  [<c015a336>] do_irqd+0x1ff/0x24d
+>  [<c013be5c>] kthread+0xb0/0xd8
+>  [<c0105b7b>] kernel_thread_helper+0x7/0x10
+>  =======================
+> [root@cmn34 ~]# cat /proc/interrupts
+>            CPU0       CPU1
+>   0:        251          1   IO-APIC-edge      timer
+>   1:          0          2   IO-APIC-edge      i8042
+>   6:          0          6   IO-APIC-edge      floppy
+>   7:          1          0   IO-APIC-edge      parport0
+>   8:          0          1   IO-APIC-edge      rtc
+>   9:          0          0   IO-APIC-fasteoi   acpi
+>  12:          0          4   IO-APIC-edge      i8042
+>  14:          0       3724   IO-APIC-edge      ide0
+>  16:       7591       5688   IO-APIC-fasteoi   ohci_hcd:usb1, libata
+>  17:          1        238   IO-APIC-fasteoi   ohci_hcd:usb2, NVidia
+> CK8S
+>  18:          0          3   IO-APIC-fasteoi   ehci_hcd:usb3
+>  19:          0          0   IO-APIC-fasteoi   libata
+>  20:          0       3028   IO-APIC-fasteoi   eth0
+>  21:          0          2   IO-APIC-fasteoi   ohci1394, ICE1712
+>  22:      17253       5916   IO-APIC-fasteoi   radeon@pci:0000:01:00.0
+> NMI:          0          0
+> LOC:      32953      36858
+> ERR:          1
+> MIS:          0
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/Kconfig.debug        |    9 +++++++++
- arch/um/defconfig            |    1 +
- arch/um/kernel/process.c     |   29 +++++++++++++++++++++++++++++
- include/asm-um/thread_info.h |   16 ++++++++++++++++
- 4 files changed, 55 insertions(+)
 
-Index: linux-2.6.21-mm/arch/um/Kconfig.debug
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/Kconfig.debug	2007-06-19 14:06:36.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/Kconfig.debug	2007-06-19 14:06:44.000000000 -0400
-@@ -47,4 +47,13 @@ config GCOV
-         If you're involved in UML kernel development and want to use gcov,
-         say Y.  If you're unsure, say N.
- 
-+config DEBUG_STACK_USAGE
-+	bool "Stack utilization instrumentation"
-+	default N
-+	help
-+	Track the maximum kernel stack usage - this will look at each
-+	kernel stack at process exit and log it if it's the deepest
-+	stack seen so far.
-+
-+	This option will slow down process creation and destruction somewhat.
- endmenu
-Index: linux-2.6.21-mm/arch/um/kernel/process.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/kernel/process.c	2007-06-19 14:06:36.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/kernel/process.c	2007-06-19 15:48:20.000000000 -0400
-@@ -411,3 +411,32 @@ unsigned long arch_align_stack(unsigned 
- 	return sp & ~0xf;
- }
- #endif
-+
-+#ifdef CONFIG_DEBUG_STACK_USAGE
-+
-+static DEFINE_SPINLOCK(low_water_lock);
-+static int lowest_to_date = THREAD_SIZE;
-+
-+void check_stack_usage(struct thread_info *s)
-+{
-+	unsigned int *stack, *p, *end;
-+	int left;
-+
-+	stack = (unsigned int *) (s + 1);
-+	end = (unsigned int *) ((unsigned long) s + THREAD_SIZE);
-+	for (p = stack; p < end; p++) {
-+		if(*p != 0)
-+			break;
-+	}
-+
-+	left = (p - stack) * sizeof(*p);
-+
-+	spin_lock(&low_water_lock);
-+	if (left < lowest_to_date) {
-+		printk("Greatest stack depth - %d bytes left\n", left);
-+		lowest_to_date = left;
-+	}
-+	spin_unlock(&low_water_lock);
-+}
-+
-+#endif
-Index: linux-2.6.21-mm/include/asm-um/thread_info.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-um/thread_info.h	2007-06-19 14:06:36.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-um/thread_info.h	2007-06-19 14:06:44.000000000 -0400
-@@ -52,6 +52,20 @@ static inline struct thread_info *curren
- 	return ti;
- }
- 
-+#ifdef CONFIG_DEBUG_STACK_USAGE
-+
-+extern void check_stack_usage(struct thread_info *stack);
-+
-+#define alloc_thread_info(tsk) \
-+	((struct thread_info *) __get_free_pages(GFP_KERNEL | __GFP_ZERO, \
-+						 CONFIG_KERNEL_STACK_ORDER))
-+
-+#define free_thread_info(ti) ({ check_stack_usage(ti) ; \
-+			        free_pages((unsigned long)(ti), \
-+					   CONFIG_KERNEL_STACK_ORDER); })
-+
-+#else
-+
- /* thread information allocation */
- #define alloc_thread_info(tsk) \
- 	((struct thread_info *) __get_free_pages(GFP_KERNEL, \
-@@ -61,6 +75,8 @@ static inline struct thread_info *curren
- 
- #endif
- 
-+#endif
-+
- #define PREEMPT_ACTIVE		0x10000000
- 
- #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
-Index: linux-2.6.21-mm/arch/um/defconfig
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/defconfig	2007-06-19 14:06:36.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/defconfig	2007-06-19 14:06:44.000000000 -0400
-@@ -527,3 +527,4 @@ CONFIG_FORCED_INLINING=y
- # CONFIG_RCU_TORTURE_TEST is not set
- # CONFIG_GPROF is not set
- # CONFIG_GCOV is not set
-+# CONFIG_DEBUG_STACK_USAGE is not set
