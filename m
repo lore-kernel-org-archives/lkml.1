@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759963AbXFSRLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbXFSROo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759963AbXFSRLp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 13:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbXFSRLj
+	id S1760158AbXFSROo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758234AbXFSROh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 13:11:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:49806 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756811AbXFSRLi (ORCPT
+	Tue, 19 Jun 2007 13:14:37 -0400
+Received: from web52504.mail.re2.yahoo.com ([206.190.48.187]:36680 "HELO
+	web52504.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757453AbXFSROh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 13:11:38 -0400
-Date: Tue, 19 Jun 2007 19:10:54 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Egmont Koblinger <egmont@uhulinux.hu>
-cc: Bodo Eggert <7eggert@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Behdad Esfahbod <behdad@behdad.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-In-Reply-To: <20070619144230.GA14609@uhulinux.hu>
-Message-ID: <Pine.LNX.4.58.0706191906410.4651@be1.lrz>
-References: <8aT6Q-3iM-17@gated-at.bofh.it> <8xLa7-25v-5@gated-at.bofh.it>
- <E1I0eAW-0000nC-5a@be1.lrz> <20070619144230.GA14609@uhulinux.hu>
+	Tue, 19 Jun 2007 13:14:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=fZDPN6ckjHO8uj0BrTt+qPnwxkw35Cv2mkanm5tLDfj+yLZvmbKqHlWts5+SScekjeJs4GzI3mNs4sQ7I7On9/JQCsR+jY4VR9ePlB5yvytR1IuNgSjml1rD2cG88n+qG9Ai+TcTfWvZIYJ4IeSLVrxoZ9JnM/R5slHEPNwybBI=;
+X-YMail-OSG: sEZVdxQVM1mp53q9RP9qQ21Z.kFmxN2d5Qm836F6XGhLNl.5Ztb78ejKzthfEGutf2Lk2eonoytPKfjXhI2BlBw1IORWC.I7lA8T1toW5ccJlhvKFd4-
+Date: Tue, 19 Jun 2007 10:14:36 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: How would I do this? (expert tricks) OT
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0706191852360.5731@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+ejPKg20wNAnbG8PHYDjCkrUMJiOmzUI/77Fu
- rVm300q8DvM5wV1dnUfdv70tX1/seCRGZZAYEBx7OHZOqbk2cU
- qfQCpuESID1pCnB0Z+09w==
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <256797.88744.qm@web52504.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Egmont Koblinger wrote:
-> On Tue, Jun 19, 2007 at 03:54:52PM +0200, Bodo Eggert wrote:
+
+--- Jan Engelhardt <jengelh@computergmbh.de> wrote:
+
 > 
-> > Does the FLUSH DTRT by design, or does it just shrink and hide the original
-> > race?
+> On Jun 19 2007 09:48, Marc Perkel wrote:
+> >
+> >I have a server with port 25 closed. I was to be
+> able
+> >to run a script every time someone tries to connect
+> to
+> >port 25, but from the outside the port remains
+> closed.
+> >I need the script that I'm going to run get the IP
+> >address that tried to connect.
+> >
+> >I know it's off topic but it's part of an
+> experiment
+> >to stop spam. 
+> 
+> tcpdump -lni any port 25
+> iptables -p tcp --dport 25 -j NFQUEUE
+> ...
+> 
 
-<long snip>
+Thanks Jan, but I'm not sure it answers my question. I
+want to run a script every time a connection attempt
+is made in real time with the IP address as a
+parameter to the script. How would I do that? Suppose
+my script is:
 
-> But you may be right: yes, it might be a bug (or misfeature) in the FB code,
-> too. Could you please look after it? I don't think I'd be able to do it and
-> have time for this.
+iplog <ipaddress>
 
-I have neither the insight nor the time to do that. I just read the bug 
-description and drew my conclusions.
--- 
-Never stand when you can sit, never sit when you can lie down, never stay
-awake when you can sleep.
+
+
+
+       
+____________________________________________________________________________________
+Take the Internet to Go: Yahoo!Go puts the Internet in your pocket: mail, news, photos & more. 
+http://mobile.yahoo.com/go?refer=1GNXIC
