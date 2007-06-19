@@ -1,141 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbXFSHyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbXFSHz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbXFSHyv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 03:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXFSHyo
+	id S1754737AbXFSHz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 03:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXFSHzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 03:54:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:44472 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136AbXFSHyn (ORCPT
+	Tue, 19 Jun 2007 03:55:10 -0400
+Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:47723
+	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752431AbXFSHzI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 03:54:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=sapNwNyPi2q+NMfdeCG5P3uKLWeO+XkRfE4ENUXykkkCKzuI8YV3QT3lFi6ANEuqTH5z6FxoPn/6ti0FPBUEudRSknaCTqXfotQIYYfXHuN56Fn6YV4ByudEqCNVnBPZDTXQZZihe6+KSzji2mWkqAuUMTzMu5TybBCmq5iaZQg=
-Message-ID: <46778BC6.8020001@gmail.com>
-Date: Tue, 19 Jun 2007 09:54:46 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 19 Jun 2007 03:55:08 -0400
+Message-ID: <46778A7A.1080403@hawkeye.stone.uk.eu.org>
+Date: Tue, 19 Jun 2007 08:49:14 +0100
+From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-To: News Letter <newletter.yhl@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Question about a strange behavior of copy_to_user() in ioctl
- call
-References: <48a616c60706181753m7fefd35as7f6093d2d54ae05@mail.gmail.com>
-In-Reply-To: <48a616c60706181753m7fefd35as7f6093d2d54ae05@mail.gmail.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Bryan Henderson <hbryan@us.ibm.com>, akpm@linux-foundation.org,
+       alan <alan@clueserver.org>, hpa@zytor.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, git@vger.kernel.org
+Subject: Re: Versioning file system
+References: <OF7FA807A1.64C0D5AF-ON882572FE.0061B34C-882572FE.00628322@us.ibm.com> <6E9A6F9E-8948-40F2-9129-1F1491D49D83@mac.com>
+In-Reply-To: <6E9A6F9E-8948-40F2-9129-1F1491D49D83@mac.com>
 X-Enigmail-Version: 0.95.1
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-News Letter napsal(a):
-> Hi,
+Kyle Moffett wrote:
+> On Jun 18, 2007, at 13:56:05, Bryan Henderson wrote:
+>>> The question remains is where to implement versioning: directly in
+>>> individual filesystems or in the vfs code so all filesystems can use it?
+>>
+>> Or not in the kernel at all.  I've been doing versioning of the types
+>> I described for years with user space code and I don't remember
+>> feeling that I compromised in order not to involve the kernel.
+>>
+>> Of course, if you want to do it with snapshots and COW, you'll have to
+>> ask where in the kernel to put that, but that's not a file versioning
+>> question; it's the larger snapshot question.
 > 
-> I need some help here to understand copy_to_user(). I encountered a
-> strange copy_to_user() behavior when working on CentOS from Redhat
-> (kernel version 2.6.9-22.ELsmp, x86_64 CPU).
+> What I think would be particularly interesting in this domain is
+> something similar in concept to GIT, except in a file-system:
+>   1) Redundancy is easy, you just ensure that you have at least "N"
+> distributed copies of each object, where "N" is some function of the
+> object itself.
+>   2) Network replication is easy, you look up objects based on the SHA-1
+> stored in the parent directory entry and cache them where needed (IE:
+> make the "N" function above dynamic based on frequency of access on a
+> given computer).
+>   3) Snapshots are easy and cheap; an RO snapshot is a tag and an RW
+> snapshot is a branch.  These can be easily converted between.
+>   4) Compression is easy; you can compress objects based on any
+> arbitrary configurable criteria and the filesystem will record whether
+> or not an object is compressed.  You can also compress differently when
+> archiving objects to secondary storage.
+>   5) Streaming fsck-like verification is easy; ensure the hash name
+> field matches the actual hash of the object.
+>   6) Fsck is easy since rollback is trivial, you can always revert to an
+> older tree to boot and start up services before attempting resurrection
+> of lost objects and trees in the background.
+>   7) Multiple-drive or multiple-host storage pools are easy:  Think the
+> git "alternates" file.
+>   8) Network filesystem load-balancing is easy; SHA-1s are essentially
+> random so you can just assign SHA-1 prefixes to different systems for
+> data storage and your data is automatically split up.
 > 
-> For a kernel module, I wrote a ioctl call to allow user mode program
-> to get some kernel data information. When a user program called the
-> ioctl, most of the time the ioctl failed with EFAULT, failed at
-> copy_to_user(). It succeeded a few times after a lot of running.
 > 
-> Failed message indicated copy_to_user() returned 3840 (which is
-> exactly what is asked to copy, PAGE_SIZE-256). The printed value of
-> the user pointer were identical for successful ioctl calls and failed
-> ioctl calls. Some relevant details are at the end of this email. I
-> tried with calloc(PAGE_SIZE, 1), static buffer and automatic variable
-> on stack in user mode program. They gave the same result.
+> Other issues:
 > 
-> I appreciate any help.
+> Q. How do you deal with block allocation?
+> A. Same way other filesystems deal with block allocation. 
+> Reference-counting gets tricky, especially across a network, but it's
+> easy to play it safe with simple cross-network refcount-journalling. 
+> Since the _only_ thing that needs journalling is the refcounts and
+> block-free data, you need at most a megabyte or two of journal.  If in
+> doubt, it's easy to play it safe and keep an extra refcount around for
+> an in-the-background consistency check later on.  When networked-gitfs
+> systems crash, you just assume they still have all the refcounts they
+> had at the moment they died, and compare notes when they start back up
+> again.  If a node has a cached copy of data on its local disk then it
+> can just nonatomically increment the refcount for that object in its own
+> RAM (ordered with respect to disk-flushes, of course) and tell its peers
+> at some point.  A node should probably cache most of its working set on
+> local disk for efficiency; it's trivially verified against updates from
+> other nodes and provides an easy way to keep refcounts for such data. 
+> If a node increments the refcount on such data and dies before getting
+> that info out to its peers, then when it starts up again its peers will
+> just be told that it has a "new" node with insufficient replication and
+> they will clone it out again properly.  For networked
+> refcount-increments you can do one of 2 things: (1) Tell at least X many
+> peers and wait for them to sync the update out to disk, or (2) Get the
+> object from any peer (at least one of whom hopefully has it in RAM) and
+> save it to local disk with an increased refcount.
 > 
-> Best,
-> Jasper
+> Q. How do you actually delete things?
+> A. Just replace all the to-be-erased tree and commit objects before a
+> specified point with "History erased" objects with their SHA-1's
+> magically set to that of the erased objects.  If you want you may delete
+> only the "tree" objects and leave the commits intact.  If you delete a
+> whole linear segment of history then you can just use a single "History
+> erased" commit object with its parent pointed to the object before the
+> erased segment.  Probably needs some form of back-reference storage to
+> make it efficient; not sure how expensive that would be.  This would
+> allow making a bunch of snapshots and purging them logarithmically based
+> on passage of time.  For instance, you might have snapshots of every 5
+> minutes for the last hour, every 30 minutes for the last day, every 4
+> hours for the last week, every day for the last month, once per week for
+> the last year, once per month for the last 5 years, and once per year
+> beyond that.
 > 
-> The ioctl call structure is defined as follows,
+> That's pretty impressive data-recovery resolution, and it accounts for
+> only 200 unique commits after it's been running for 10 years.
 > 
-> struct ioctl_get_info
-> {
->   ... /* some other information */
->   unsigned long user_pointer;
->   unsigned user_buffer_len;
->   unsigned returned_len;
->   ... /* some other information */
-> };
+> Q. How do you archive data?
+> A. Same as deleting, except instead of a "History erased" object you
+> would use a "History archived" object with a little bit of string data
+> to indicate which volume it's stored on (and where on the volume).  When
+> you stick that volume into the system you could easily tell the kernel
+> to use it as an alternate for the given storage group.
 > 
-> Inside kernel module, a page is allocated with :
+> Q. What enforces data integrity?
+> A. Ensure that a new tree object and its associated sub objects are on
+> disk before you delete the old one.  Doesn't need any actual full syncs
+> at all, just barriers.  If you replace the tree object before write-out
+> is complete then just skip writing the old one and write the new one in
+> its place.
 > 
-> static unsigned char *test_page;
+> Q. What consists of a "commit"?
+> A. Anything the administrator wants to define it as.  Useful algorithms
+> include: "Once per x Mbyte of page dirtying", "Once per 5 min", "Only
+> when sync() or fsync() are called", "Only when gitfs-commit is called". 
+> You could even combine them:  "Every x Mbyte of page dirtying or every 5
+> minutes, whichever is shorter (or longer, depending on admin
+> requirements)".  There would also be appropriate syscalls to trigger
+> appropriate git-like behavior.  Network-accessible gitfs would want to
+> have mechanisms to trigger commits based on activity on other systems
+> (needs more thought).
 > 
-> static init_test(void)
-> {
->   test_page = __get_free_pages(GFP_KERNEL, 0);
->   if (!test_page)
->         .... /* some error handling */
-> }
+> Q. How do you access old versions?
+> A. Mount another instance of the filesystem with an SHA-1 ID, a
+> tag-name, or a branch-name in a special mount option.  Should be user
+> accessible with some restrictions (needs more thought).
 > 
-> static int test_ioctl(struct inode * inode, struct file * filp,
-> unsigned int cmd_in, unsigned long arg)
-> {
->   struct ioctl_get_info igi;
->   unsigned size;
->   unsigned long remain;
+> Q. How do you deal with conflicts on networked filesystems.
+> A. Once again, however the administrator wants to deal with them.  Options:
+>    1)  Forcibly create a new branch for the conflicted tree.
+>    2)  Attempt to merge changes using the standard git-merge semantics
+>    3)  Merge independent changes to different files and pick one for
+> changes to the same file
+>    4)  Your Algorithm Here(TM).  GIT makes it easy to extend
+> conflict-resolution.
 > 
->  size = IOC_SIZE(cmd_in);
->  if (size != sizeof(igi))
->    ....
+> Q. How do you deal with little scattered changes in big (or sparse) files?
+> A. Two questions, two answers:  For sparse files, git would need
+> extending to understand (and hash) the nature of the sparse-ness.  For
+> big files, you should be able to introduce a "compound-file" datatype
+> and configure git to deal with specific X-Mbyte chunks of it
+> independently.  This might not be a bad idea for native git as well. 
+> Would need system-specific configuration.
 > 
->  ... /* some sanity checking */
+> Q. How do you prevent massive data consumption by spurious tiny changes
+> A. You have a few options:
+>    1)  Configure your commit algorithm as above to not commit so often
+>    2)  Configure a stepped commit-discard algorithm as described above
+> in the "How do you delete things" question
+>    3)  Archive unused data to secondary storage more often
 > 
->  if (!access_ok(VERIFY_READ, (char *)arg, size))
->  {
->      printk(KERN_INFO "...");
->      return -EFAULT;
->   }
+> Q. What about all the unanswered questions?
+> A. These are all the ones I could think of off the top of my head but
+> there are at least a hundred more.  I'm pretty sure these are some of
+> the most significant ones.
 > 
->   if (copy_from_user(&igi, (char *)arg, size) != 0)
->   {
->       printk(... ...)
->       return -EFAULT;
->   }
+> Q. That's a great idea and I'll implement it right away!
+> A. Yay!  (but that's not a question :-D)  Good luck and happy hacking.
 > 
->   if (!access_ok(VERIFY_WRITE, (char *)igi.user_pointer,
-> igi.user_buffer_len))
->   {
->       printk(...);
->       return -EFAULT;
->   }
+> Q. That's a stupid idea and would never ever work!
+> A. Thanks for your useful input! (but that's not a question either)  I'm
+> sure anybody who takes up a project like this will consider such opinions.
 > 
->   size = PAGE_SIZE - 256;
->   if (size > igi.user_buffer_len)
->      size = igi.user_buffer_len;
->   printk("igi.user_pointer %p size %u\n", igi.user_pointer, size);
+> Q. *flamage*
+> A. I'm glad you have such strong opinions, feel free to to continue to
+> spam my /dev/null device (and that's also not a question).
+> 
+> All opinions and comments welcomed.
+> 
+> Cheers,
+> Kyle Moffett
+> 
+> 
 
-Weird. Are you sure, that previous access_ok doesn't fail with this 'size', not
-the 'igi.user_buffer_len'? Anyway, you can remove these access_ok checks, since
-they are provided by copy_from/to_user after debugging.
+It sounds brilliant and I'd love to have a got at implementing it but I
+don't know enough (yet :-D) about how git works, a little research is
+called for I think.
 
->   if ((remain = copy_to_user((char *)igi.user_pointer, page + 256,
-> size)) != 0)
->   {
->      printk ("Failed to copy from user at %p remain %lu asked %u\n",
-> igi.user_pointer, remain, asked);
-> /* failed here */
->      return -EFAULT;
->   }
->    igi.returned_len = size;
-> 
->   /* copy other information */
-> 
->   return 0;
-> }
-
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Jack
