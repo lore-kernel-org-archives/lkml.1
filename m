@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbXFSOmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbXFSOnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbXFSOmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbXFSOmd
+	id S1757697AbXFSOnU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbXFSOnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:42:33 -0400
-Received: from ojjektum.uhulinux.hu ([62.112.194.64]:32786 "EHLO
-	ojjektum.uhulinux.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752376AbXFSOmd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:42:33 -0400
-Date: Tue, 19 Jun 2007 16:42:31 +0200
-From: Egmont Koblinger <egmont@uhulinux.hu>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Behdad Esfahbod <behdad@behdad.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console UTF-8 fixes
-Message-ID: <20070619144230.GA14609@uhulinux.hu>
-References: <8aT6Q-3iM-17@gated-at.bofh.it> <8xLa7-25v-5@gated-at.bofh.it> <E1I0eAW-0000nC-5a@be1.lrz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 19 Jun 2007 10:43:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41984 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752675AbXFSOnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 10:43:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Martin Bligh <mbligh@mbligh.org>
+Subject: Re: regression tracking (Re: Linux 2.6.21)
+Date: Tue, 19 Jun 2007 16:49:43 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Verych <olecom@flower.upol.cz>, Adrian Bunk <bunk@stusta.de>,
+       Andi Kleen <andi@firstfloor.org>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070426040806.GJ3468@stusta.de> <alpine.LFD.0.98.0706151618380.14121@woody.linux-foundation.org> <46772321.9080602@mbligh.org>
+In-Reply-To: <46772321.9080602@mbligh.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1I0eAW-0000nC-5a@be1.lrz>
-User-Agent: Mutt/1.5.11
+Message-Id: <200706191649.44806.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 03:54:52PM +0200, Bodo Eggert wrote:
+On Tuesday, 19 June 2007 02:28, Martin Bligh wrote:
+> Linus Torvalds wrote:
+> > 
+> > On Thu, 14 Jun 2007, Oleg Verych wrote:
+> >> I'm seeing this long (198) thread and just have no idea how it has
+> >> ended (wiki? hand-mailing?).
+> > 
+> > I'm hoping it's not "ended".
+> > 
+> > IOW, I really don't think we _resolved_ anything, although the work that 
+> > Adrian started is continuing through the wiki and other people trying to 
+> > track regressions, and that was obviously something good.
+> > 
+> > But I don't think we really know where we want to take this thing in the 
+> > long run. I think everybody wants a better bug-tracking system, but 
+> > whether something that makes people satisfied can even be built is open. 
+> > It sure doesn't seem to exist right now ;)
+> 
+> I know you hate bugzilla ... but at least I can try to make that bit
+> of the process work better.
+> 
+> The new version just rolled out does have a simple "regression" checkbox
+> (and you can search on it), which will hopefully help people keep track
+> of the ones already in bugzilla more easily.
+> 
+> Thanks to Jon T, Dave J et al. for helping to figure out methods and
+> implement them.
 
-> Does the FLUSH DTRT by design, or does it just shrink and hide the original
-> race?
+Yes, good work, thanks a lot for it!  The new interface is much better and more
+useful.
 
-I haven't deeply studied this aspect of the source, don't know what
-_exactly_ this FLUSH does, but of course I have an inner feeling about this.
-Kind of this macro does the _real_ print on the screen. It actually calls
-vc->vc_sw->con_putcs, whereas I guess vc_sw refers to the particular
-implementation (vga, fb) and con_putcs might be doing the real job.
-
-Without these two new FLUSHes the behavior was very funny: applications
-(e.g. text editors) highlighed incorrect cells, but either switching between
-VTs, or gpming over these cells corrected the display. So the logical
-content behind the scenes (reflected by /dev/vcsa*) was maintained
-correctly, the bug is somewhere when the content is first displayed.
-
-I saw that this FLUSH was already used 3 times inside do_con_write(), I
-placed it here 2 more times (when changing color attr to inverse and when
-reverting to normal). I think it cannot hurt, and apparently it fixes the
-problem.
-
-But you may be right: yes, it might be a bug (or misfeature) in the FB code,
-too. Could you please look after it? I don't think I'd be able to do it and
-have time for this.
-
-> And why wasn't VGA affected, too?
-
-I guess tt must be some difference between the actual VGA and FB code that
-is called from here. I don't know whether it's a bug in FB or just some
-difference.
-
-Perhaps it's that the FB driver's con_putcs() call uses vc->vc_attr (the
-current attr for the console) for each char cell to be printed, instead of
-the own attr values of the cells themselves. Just an idea...
+Greetings,
+Rafael
 
 
+PS
+BTW, would that be possible to create the "Hibernation/Suspend" subcategory
+of "Power Management" that I asked for some time ago, please? :-)
 
 -- 
-Egmont
+"Premature optimization is the root of all evil." - Donald Knuth
