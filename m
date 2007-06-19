@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbXFSB43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbXFSCBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760653AbXFSB43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 21:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760946AbXFSB4O
+	id S1760693AbXFSCBP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 22:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760084AbXFSCBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 21:56:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34366 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760693AbXFSB4N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 21:56:13 -0400
-Subject: Re: [patch-mm 00/25] High resolution timer updates and x86_64
-	support - V2
-From: Arjan van de Ven <arjan@infradead.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <6972.1182197191@turing-police.cc.vt.edu>
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
-	 <6972.1182197191@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 18 Jun 2007 18:52:58 -0700
-Message-Id: <1182217979.3014.3.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 18 Jun 2007 22:01:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43425 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758924AbXFSCBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 22:01:00 -0400
+To: Joshua David Williams <yurimxpxman.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706181836.53736.yurimxpxman@gmail.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Mon, 18 Jun 2007 23:00:54 -0300
+In-Reply-To: <200706181836.53736.yurimxpxman@gmail.com> (Joshua David Williams's message of "Mon\, 18 Jun 2007 18\:36\:53 -0400")
+Message-ID: <orzm2w8zzd.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-18 at 16:06 -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Sat, 16 Jun 2007 10:36:00 -0000, Thomas Gleixner said:
-> > The following patch series contains:
-> > 
-> > - dyntick bugfixes for -mm (caused by the cpuidle changes in ACPI)
-> > 
-> > - updates and improvements to high resolution timer / dynticks 
-> > 
-> > - high resolution timer / dynticks support for x86_64
-> 
-> Am running with the 22-rc4-mm2-hrt4 patch on my Latitude D820.  Mostly seems
-> to work, but for some reason the Intel 'powertop' util thinks it's 100% busy:
-> 
->      PowerTOP version 1.7       (C) 2007 Intel Corporation
-> 
-> Cn          Avg residency (5s)          P-states (frequencies)
-> C0 (cpu running)        (100.0%)
-> C1                0.0ms ( 0.0%)         2.00 Ghz     0.0%
-> C2                0.0ms ( 0.0%)         1.67 Ghz     0.0%
-> C3                0.0ms ( 0.0%)         1333 Mhz     0.0%
->                                         1000 Mhz   100.0%
-> 
-> In reality:
+On Jun 18, 2007, Joshua David Williams <yurimxpxman.lkml@gmail.com> wrote:
+
+> The Open Source Definition
+
+... derived from the Debian Free Software Guidelines, engineered to
+reflect the Free Software definition ...
+
+> wrote:
+
+>> 9. License Must Not Restrict Other Software
+
+>> Yes, the GPL is conformant with this requirement. Software linked
+>> with GPLed libraries only inherits the GPL if it forms a single work,
+>> not any software with which they are merely distributed.
+
+> The way I understand it, programs licensed under the GPLv3 are *not* open 
+> source software. FSF is so caught up in their own agenda that they're 
+> forgetting the whole point - the freedom of choice.
+
+Err...  Excuse me?  Whole point for whom?
+
+Free Software is not about freedom of choice.  That's an OSI slogan
+for "if you like, you can shoot your own foot, regardless of whether
+the shrapnel hurts people around you".
+http://www.fsfla.org/?q=en/node/139#1
+
+Free Software is about respect for the four freedoms.
 
 
-looks like something broke the /proc/acpi/processor/*/power file
-data....
+I don't think the FSF is at all concerned whether GPLv3 complies with
+the OSD.  They couldn't care less.  It was OSI that tried to create a
+definition that matched exactly the meaning of the Free Software
+definition under "more objective criteria".  We already know they
+failed, since the Reciprocal Public License is accepted as an OSS
+license, but it's a non-Free Software license.  There may be other
+examples.
 
-can you check in that file to see if there is actual C-state time
-accounting going on?
-(it is in mainline, so if it's not then it's an -mm or -hrt bug)
+
+That said, since a number of people already understand the GPLv2
+prohibits tivoization, your argument means that either the comment in
+the OSD is wrong, and GPLv2 already fails to match the OSD, or that
+GPLv3 complies with it in just the same way.
 
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
