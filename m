@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbXFSUl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbXFSUn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757495AbXFSUl4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 16:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbXFSUlf
+	id S1759728AbXFSUn0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 16:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXFSUnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 16:41:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:58673 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759326AbXFSUle (ORCPT
+	Tue, 19 Jun 2007 16:43:19 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:59109 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754135AbXFSUnS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 16:41:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=din6O+qYyUPkQwzYQ0cX3HKW3fZgM+Qvv+9nwehz5sbMzLOYf2i/tEE2Z5HSOuNX6VZlgzgtsI+R3cdv2hl19jAKgraqQj6RUFVYyzu4i3NHO5YmPJiD5Mn0+TwjbrjH00P2L+nlhJPq4T88Y+ZOnUZ6md3hO66vPxi/Vdxrpqg=
-Date: Tue, 19 Jun 2007 22:41:38 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: kvm-devel@lists.sourceforge.net
-Cc: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] kvm: avoid useless memory write when possible
-Message-ID: <20070619204138.GB18800@dreamland.darkstar.lan>
-References: <68676e00706141627s3cb87391sa0ee6711d2f7933f@mail.gmail.com> <467256AA.1040001@qumranet.com> <20070615214915.GA10536@dreamland.darkstar.lan> <4673949B.1070505@qumranet.com> <20070617151452.GA21971@dreamland.darkstar.lan> <4675523C.9020703@qumranet.com> <20070617165201.GA23885@dreamland.darkstar.lan> <46765954.60102@qumranet.com> <46766D57.8040206@qumranet.com> <20070619202524.GA17672@dreamland.darkstar.lan>
+	Tue, 19 Jun 2007 16:43:18 -0400
+Date: Tue, 19 Jun 2007 16:43:17 -0400
+To: Chris Snook <csnook@redhat.com>
+Cc: Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk, hpa@zytor.com, alan <alan@clueserver.org>
+Subject: Re: Versioning file system
+Message-ID: <20070619204317.GR10008@csclub.uwaterloo.ca>
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070619202524.GA17672@dreamland.darkstar.lan>
+In-Reply-To: <46781A5B.9090104@redhat.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When writing to normal memory and the memory area is unchanged the write
-can be safely skipped, avoiding the costly kvm_mmu_pte_write.
+On Tue, Jun 19, 2007 at 02:03:07PM -0400, Chris Snook wrote:
+> I pointed out NetApp's .snapshot directories because that's a method that 
+> uses legal path character, but doesn't break anything.  With this method, 
+> userspace tools will have to be taught that : is suddenly a special 
+> character.  Userspace already knows that files beginning with . are special 
+> and treat them specially. We don't need a new special character for every 
+>  new feature.  We've got one, and it's flexible enough to do what you want, 
+> as proven by NetApp's extremely successful implementation.  Perhaps you 
+> want a slightly different interface from what NetApp has implemented, but 
+> what you're suggesting will change the default behavior of basic tools like 
+> tar and ls.  This is not a good thing.
 
-Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
+I think I used one of those systems once (or at least another one with
+.snapshot feature).  It managed to completely avoid user space problems
+by never actually showing .snapshot in directory listings, but you could
+always cd to it or refer to it explicitly.  You never risked having tar
+or find or anything else accidentally pick it up.  Very nice interface.
 
----
- Tested with Fedora7, Solaris10 and WinXP on a 32 bit host with Intel
- CPU.
-
- drivers/kvm/kvm_main.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 633c2ed..9b7b0b9 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1139,8 +1139,10 @@ static int emulator_write_phys(struct kvm_vcpu *vcpu, gpa_t gpa,
- 		return 0;
- 	mark_page_dirty(vcpu->kvm, gpa >> PAGE_SHIFT);
- 	virt = kmap_atomic(page, KM_USER0);
--	kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
--	memcpy(virt + offset_in_page(gpa), val, bytes);
-+	if (memcmp(virt + offset_in_page(gpa), val, bytes)) {
-+		kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
-+		memcpy(virt + offset_in_page(gpa), val, bytes);
-+	}
- 	kunmap_atomic(virt, KM_USER0);
- 	return 1;
- }
-
-Luca
--- 
-Regole per la felicit?:
-1. Sii soddisfatto di quello che hai.
-2. Assicurati di avere tutto.
+--
+Len Sorensen
