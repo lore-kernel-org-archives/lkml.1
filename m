@@ -1,106 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbXFSSE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760638AbXFSSMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761127AbXFSSE0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 14:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760035AbXFSSET
+	id S1760638AbXFSSMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 14:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759084AbXFSSMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 14:04:19 -0400
-Received: from mga03.intel.com ([143.182.124.21]:21657 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760074AbXFSSES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 14:04:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,439,1175497200"; 
-   d="scan'208";a="240924261"
-Date: Tue, 19 Jun 2007 11:00:03 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
-Message-ID: <20070619180003.GE7160@linux-os.sc.intel.com>
-References: <20070605235707.GB16074@tree.beaverton.ibm.com> <20070606013759.GI17143@linux-os.sc.intel.com> <20070606185829.GA26062@tree.beaverton.ibm.com> <20070606193514.GN17143@linux-os.sc.intel.com> <20070606231642.GH13751@tree.beaverton.ibm.com> <20070608005726.GO17143@linux-os.sc.intel.com> <20070618223819.GD9751@tree.beaverton.ibm.com> <20070618235434.GB7160@linux-os.sc.intel.com> <20070619005136.GF9751@tree.beaverton.ibm.com> <m1sl8nn82i.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1sl8nn82i.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.1i
+	Tue, 19 Jun 2007 14:12:23 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:60305 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756747AbXFSSMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 14:12:21 -0400
+To: Jeff Garzik <jeff@garzik.org>
+cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       bonding-devel@lists.sourceforge.net
+Subject: [PATCH] bonding: Fix use after free in unregister path
+In-reply-to: <467817CE.80904@garzik.org> 
+References: <1178862045.3979.33.camel@kane-linux> <20070511092519.1f34ab34@freepuppy> <1179130660.3881.23.camel@kane-linux> <20070514085840.17a343f7@freepuppy> <20070613094521.GA8860@localdomain> <20070613155335.47111c67@localhost> <15712.1181795790@death> <20070619082302.4b9a5c27@localhost.localdomain> <467817CE.80904@garzik.org>
+Comments: In-reply-to Jeff Garzik <jeff@garzik.org>
+   message dated "Tue, 19 Jun 2007 13:52:14 -0400."
+X-Mailer: MH-E 8.0.3; nmh 1.1-RC4; GNU Emacs 22.0.95
+Date: Tue, 19 Jun 2007 11:12:12 -0700
+Message-ID: <24302.1182276732@death>
+From: Jay Vosburgh <fubar@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 11:54:45AM -0600, Eric W. Biederman wrote:
-> "Darrick J. Wong" <djwong@us.ibm.com> writes:
-> 
-> > On Mon, Jun 18, 2007 at 04:54:34PM -0700, Siddha, Suresh B wrote:
-> >
-> >> > <call to set_affinity>
-> >> > [  256.298787] irq=4341 affinity=d
-> >> > <ethernet on irq 4341 stops working>
-> >> 
-> >> And just to make sure, at this point, your MSI irq 4341 affinity
-> >> (/proc/irq/4341/smp_affinity) still points to '2'?
-> >
-> > Actually, it's 0xD.  From the kernel's perspective the mask has been
-> > updated (and I even stuck a printk into set_msi_irq_affinity to verify
-> > that the writes are happening) but ... the hardware doesn't seem to
-> > reflect this.  I also tried putting read_msi_msg right afterwards to
-> > compare contents, though it complained about all the MSIs _except_ for
-> > 4341.  (Of course, I could just be way off on the effectiveness of
-> > that.)
-> 
-> The fact that MSI interrupts are having problems is odd.  It is possible
-> that we still have a bug in there somewhere but msi interrupts should
-> be safe to migrate outside of irq context (no known hardware bugs).
-> As we can actually synchronize with the irq source and eliminate all
-> of the migration races.
-> 
-> The non-msi case requires hitting a hardware race that is rare enough
-> you should not normally have problems.
 
-Yep. But Darrick's seems to say, problem happens consistently.
+	The following patch (based on a patch from Stephen Hemminger
+<shemminger@linux-foundation.org>) removes use after free conditions in
+the unregister path for the bonding master.  Without this patch, an
+operation of the form "echo -bond0 > /sys/class/net/bonding_masters"
+would trigger a NULL pointer dereference in sysfs.  I was not able to
+induce the failure with the non-sysfs code path, but for consistency I
+updated that code as well.
 
-Anyhow, Darrick there is a general bug in this area, can you try this and
-see if it helps?
+	I also did some testing of the bonding /proc file being open
+while the bond is being deleted, and didn't see any problems there.
 
-diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
-index 3eaceac..a0e11c9 100644
---- a/arch/x86_64/kernel/irq.c
-+++ b/arch/x86_64/kernel/irq.c
-@@ -144,17 +144,35 @@ void fixup_irqs(cpumask_t map)
- 
- 	for (irq = 0; irq < NR_IRQS; irq++) {
- 		cpumask_t mask;
-+		int break_affinity = 0;
-+		int set_affinity = 1;
-+
- 		if (irq == 2)
- 			continue;
- 
-+		/* irq's are disabled at this point */
-+		spin_lock(&irq_desc[irq].lock);
-+
- 		cpus_and(mask, irq_desc[irq].affinity, map);
- 		if (any_online_cpu(mask) == NR_CPUS) {
--			printk("Breaking affinity for irq %i\n", irq);
-+			break_affinity = 1;
- 			mask = map;
- 		}
-+
-+		irq_desc[irq].chip->mask(irq);
-+
- 		if (irq_desc[irq].chip->set_affinity)
- 			irq_desc[irq].chip->set_affinity(irq, mask);
- 		else if (irq_desc[irq].action && !(warned++))
-+			set_affinity = 0;
-+
-+		irq_desc[irq].chip->unmask(irq);
-+
-+		spin_unlock(&irq_desc[irq].lock);
-+
-+		if (break_affinity && set_affinity)
-+			printk("Broke affinity for irq %i\n", irq);
-+		else if (!set_affinity)
- 			printk("Cannot set affinity for irq %i\n", irq);
+Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 223517d..6287ffb 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -4345,8 +4345,8 @@ static void bond_free_all(void)
+ 		bond_mc_list_destroy(bond);
+ 		/* Release the bonded slaves */
+ 		bond_release_all(bond_dev);
+-		unregister_netdevice(bond_dev);
+ 		bond_deinit(bond_dev);
++		unregister_netdevice(bond_dev);
  	}
- 
+
+ #ifdef CONFIG_PROC_FS
+diff --git a/drivers/net/bonding/bond_sysfs.c b/drivers/net/bonding/bond_sysfs.c
+index a122baa..60cccf2 100644
+--- a/drivers/net/bonding/bond_sysfs.c
++++ b/drivers/net/bonding/bond_sysfs.c
+@@ -164,9 +164,9 @@ static ssize_t bonding_store_bonds(struct class *cls, const char *buffer, size_t
+ 				printk(KERN_INFO DRV_NAME
+ 					": %s is being deleted...\n",
+ 					bond->dev->name);
+-				unregister_netdevice(bond->dev);
+ 				bond_deinit(bond->dev);
+ 		        	bond_destroy_sysfs_entry(bond);
++				unregister_netdevice(bond->dev);
+ 				rtnl_unlock();
+ 				goto out;
+ 			}
