@@ -1,101 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbXFSRT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbXFSRU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760254AbXFSRT0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 13:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757582AbXFSRTT
+	id S1760613AbXFSRU1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758876AbXFSRUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 13:19:19 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:59412 "EHLO e3.ny.us.ibm.com"
+	Tue, 19 Jun 2007 13:20:14 -0400
+Received: from verein.lst.de ([213.95.11.210]:51016 "EHLO mail.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752767AbXFSRTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 13:19:19 -0400
-From: Vernon Mauery <vernux@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [-RT] multiple streams have degraded performance
-Date: Tue, 19 Jun 2007 10:19:07 -0700
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200706182212.22633.vernux@us.ibm.com> <200706190725.30414.vernux@us.ibm.com> <1182267530.7348.367.camel@twins>
-In-Reply-To: <1182267530.7348.367.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1757066AbXFSRUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 13:20:12 -0400
+Date: Tue, 19 Jun 2007 19:19:38 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org, Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+Message-ID: <20070619171938.GA21935@lst.de>
+References: <20070615113919.142332000@pademelon.sonytel.be> <20070615120848.352093000@pademelon.sonytel.be> <20070619054324.GA18542@lst.de> <Pine.LNX.4.62.0706191450120.4069@pademelon.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706191019.08770.vernux@us.ibm.com>
+In-Reply-To: <Pine.LNX.4.62.0706191450120.4069@pademelon.sonytel.be>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 June 2007 8:38:50 am Peter Zijlstra wrote:
-> On Tue, 2007-06-19 at 07:25 -0700, Vernon Mauery wrote:
-> > On Monday 18 June 2007 11:51:38 pm Peter Zijlstra wrote:
-> > > On Mon, 2007-06-18 at 22:12 -0700, Vernon Mauery wrote:
-> > > > In looking at the performance characteristics of my network I found
-> > > > that 2.6.21.5-rt15 suffers from degraded thoughput with multiple
-> > > > threads.  The test that I did this with is simply invoking 1, 2, 4,
-> > > > and 8 instances of netperf at a time and measuring the total
-> > > > throughput.  I have two 4-way machines connected with 10GbE cards.  I
-> > > > tested several kernels (some older and some newer) and found that the
-> > > > only thing in common was that with -RT kernels the performance went
-> > > > down with concurrent streams.
-> > > >
-> > > > While the test was showing the numbers for receiving as well as
-> > > > sending, the receiving numbers are not reliable because that machine
-> > > > was running a -RT kernel for these tests.
-> > > >
-> > > > I was just wondering if anyone had seen this problem before or would
-> > > > have any idea on where to start hunting for the solution.
-> > >
-> > > could you enable CONFIG_LOCK_STAT
-> > >
-> > > echo 0 > /proc/lock_stat
-> > >
-> > > <run your test>
-> > >
-> > > and report the output of (preferably not 80 column wrapped):
-> > >
-> > > grep : /proc/lock_stat | head
-> >
-> > /proc/lock_stat stayed empty for the duration of the test.  I am guessing
-> > this means there was no lock contention.
->
-> Most likely caused by the issue below.
->
-> > I do see this on the console:
-> > BUG: scheduling with irqs disabled: IRQ-8414/0x00000000/9494
-> > caller is wait_for_completion+0x85/0xc4
-> >
-> > Call Trace:
-> >  [<ffffffff8106f3b2>] dump_trace+0xaa/0x32a
-> >  [<ffffffff8106f673>] show_trace+0x41/0x64
-> >  [<ffffffff8106f6ab>] dump_stack+0x15/0x17
-> >  [<ffffffff8106566f>] schedule+0x82/0x102
-> >  [<ffffffff81065774>] wait_for_completion+0x85/0xc4
-> >  [<ffffffff81092043>] set_cpus_allowed+0xa1/0xc8
-> >  [<ffffffff810986e2>] do_softirq_from_hardirq+0x105/0x12d
-> >  [<ffffffff810ca6cc>] do_irqd+0x2a8/0x32f
-> >  [<ffffffff8103469d>] kthread+0xf5/0x128
-> >  [<ffffffff81060f68>] child_rip+0xa/0x12
-> >
-> > INFO: lockdep is turned off.
-> >
-> > I haven't seen this until I enabled lock_stat and ran the test.
->
-> I think this is what causes the lack of output. It disables all lock
-> tracking features...
->
-> > > or otherwise if there are any highly contended network locks listed?
-> >
-> > Any other ideas for debugging this?
->
-> fixing the above bug would help :-)
->
-> Ingo says that should be fixed in -rt17, so if you could give that a
-> spin...
+On Tue, Jun 19, 2007 at 02:51:25PM +0200, Geert Uytterhoeven wrote:
+> On Tue, 19 Jun 2007, Christoph Hellwig wrote:
+> > On Fri, Jun 15, 2007 at 01:39:23PM +0200, Geert Uytterhoeven wrote:
+> > > From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> > > 
+> > > Add a Disk Storage Driver for the PS3:
+> > >   - Implemented as a block device driver with a dynamic major
+> > >   - Disk names (and partitions) are of the format ps3d%c(%u)
+> > >   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
+> > >     doesn't support scatter-gather
+> > 
+> > Looks good to me.  Only nitpicks are:
+> > 
+> >  - ps3disk_priv should probably be an inline function instead of a macro
+> 
+> I used a macro because you can do
+> 
+>     ps3disk_pri(dev) = ...;
 
-I just tested with -rt17 and the BUG message is gone, but I still don't see 
-any entries in.  I don't see any other suspicious message so I think it is 
-really strange that is not listing any locks at all.
+I'm not exactly a fan of macros used as lvalues, but if you really
+want this it can go in.
 
---Vernon
