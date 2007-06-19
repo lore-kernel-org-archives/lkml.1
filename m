@@ -1,161 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbXFSOOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbXFSOO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbXFSOOG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:14:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXFSONy
+	id S1756731AbXFSOO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXFSOOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:13:54 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:34279 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751576AbXFSONw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:13:52 -0400
-Message-ID: <4677E496.3080506@dgreaves.com>
-Date: Tue, 19 Jun 2007 15:13:42 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: David Chinner <dgc@sgi.com>, David Robinson <zxvdr.au@gmail.com>,
-       LVM general discussion and development 
-	<linux-lvm@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
-References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com>
-In-Reply-To: <4677A596.7090404@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 19 Jun 2007 10:14:18 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39534 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752462AbXFSOOQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 10:14:16 -0400
+Date: Tue, 19 Jun 2007 15:19:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Linas Vepstas <linas@austin.ibm.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+Message-ID: <20070619151919.79c79af1@the-village.bc.nu>
+In-Reply-To: <4677E3BC.3040307@ru.mvista.com>
+References: <20070618175713.GD5836@austin.ibm.com>
+	<20070618212704.394912b8@the-village.bc.nu>
+	<20070618204601.GF5836@austin.ibm.com>
+	<20070618220441.3a3af8ca@the-village.bc.nu>
+	<4677E3BC.3040307@ru.mvista.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
-again...
+On Tue, 19 Jun 2007 18:10:04 +0400
+Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
 
-> David Greaves wrote:
->>> Good :)
->> Now, not so good :)
+> Hello.
 > 
-> Oh, crap.  :-)
-<grin>
-
->> So I hibernated last night and resumed this morning.
->> Before hibernating I froze and sync'ed. After resume I thawed it. (Sorry
->> Dave)
->>
->> Here are some photos of the screen during resume. This is not 100%
->> reproducable - it seems to occur only if the system is shutdown for
->> 30mins or so.
->>
->> Tejun, I wonder if error handling during resume is problematic? I got
->> the same errors in 2.6.21. I have never seen these (or any other libata)
->> errors other than during resume.
->>
->> http://www.dgreaves.com/pub/2.6.22-rc5-resume-failure.jpg
->> (hard to read, here's one from 2.6.21
->> http://www.dgreaves.com/pub/2.6.21-resume-failure.jpg
+> Alan Cox wrote:
+> >>I can prepare a patch, but only with a lot of guidance. I can test 
+> >>& debug, I'm highly motivated just right now ... 
 > 
-> Your controller is repeatedly reporting PHY readiness changed exception.
->  Are you reading the system image from the device attached to the first
-> SATA port?
-
-Yes if you mean 1st as in the one after the zero-th ...
-
-resume=/dev/sdb4
-haze:~# swapon -s
-Filename                                Type            Size    Used    Priority
-/dev/sdb4                               partition       1004020 0       -1
-
-dmesg snippet below...
-
-sda is part of the /scratch xfs array though. SMART doesn't show any problems 
-and of course all is well other than during a resume.
-
-sda/b are on sata_sil (a cheap plugin pci card)
-
+> > If you've got a nice repeatable problem please try using the libata
+> > driver. That handles the error paths differently and doesn't try a FIFO
+> > drain which might matter in this case I guess.
 > 
->> I _think_ I've only seen the xfs problem when a resume shows these errors.
-> 
-> The error handling itself tries very hard to ensure that there is no
-> data corruption in case of errors.  All commands which experience
-> exceptions are retried but if the drive itself is doing something
-> stupid, there's only so much the driver can do.
-> 
-> How reproducible is the problem?  Does the problem go away or occur more
-> often if you change the drive you write the memory image to?
+>     FIFO drain for DMA commands?
 
-I don't think there should be activity on the sda drive during resume itself.
+Welcome to the old IDE layer which I am so glad I left behind 8)
 
-[I broke my / md mirror and am using some of that for swap/resume for now]
+ide_ata_error will try and do a PIO flush regardless of the command type
+if DRQ_STAT is asserted. See ide_dma_intr -> ide_error -> ...
 
-I did change the swap/resume device to sdd2 (different controller, onboard 
-sata_via) and there was no EH during resume. The system seemed OK, wrote a few 
-Gb of video and did a kernel compile.
-I repeated this test, no EH during resume, no problems.
-I even ran xfs_fsr, the defragment utility, to stress the fs.
-
-I retain this configuration and try again tonight but it looks like there _may_ 
-be a link between EH during resume and my problems...
-
-Of course, I don't understand why it *should* EH during resume, it doesn't 
-during boot or normal operation...
-
-Any more tests you'd like me to try?
-
-David
-
-
-dmesg snippet...
-
-sata_sil 0000:00:0a.0: version 2.2
-ACPI: PCI Interrupt 0000:00:0a.0[A] -> GSI 16 (level, low) -> IRQ 18
-scsi0 : sata_sil
-PM: Adding info for No Bus:host0
-scsi1 : sata_sil
-PM: Adding info for No Bus:host1
-ata1: SATA max UDMA/100 cmd 0xf881e080 ctl 0xf881e08a bmdma 0xf881e000 irq 0
-ata2: SATA max UDMA/100 cmd 0xf881e0c0 ctl 0xf881e0ca bmdma 0xf881e008 irq 0
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata1.00: ATA-7: Maxtor 6B200M0, BANC1980, max UDMA/100
-ata1.00: 390721968 sectors, multi 0: LBA48
-ata1.00: configured for UDMA/100
-ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-ata2.00: ata_hpa_resize 1: sectors = 312581808, hpa_sectors = 312581808
-ata2.00: ATA-6: ST3160023AS, 3.18, max UDMA/133
-ata2.00: 312581808 sectors, multi 0: LBA48
-ata2.00: ata_hpa_resize 1: sectors = 312581808, hpa_sectors = 312581808
-ata2.00: configured for UDMA/100
-PM: Adding info for No Bus:target0:0:0
-scsi 0:0:0:0: Direct-Access     ATA      Maxtor 6B200M0   BANC PQ: 0 ANSI: 5
-PM: Adding info for scsi:0:0:0:0
-sd 0:0:0:0: [sda] 390721968 512-byte hardware sectors (200050 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 0:0:0:0: [sda] 390721968 512-byte hardware sectors (200050 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-  sda: sda1
-sd 0:0:0:0: [sda] Attached SCSI disk
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-PM: Adding info for No Bus:target1:0:0
-scsi 1:0:0:0: Direct-Access     ATA      ST3160023AS      3.18 PQ: 0 ANSI: 5
-PM: Adding info for scsi:1:0:0:0
-sd 1:0:0:0: [sdb] 312581808 512-byte hardware sectors (160042 MB)
-sd 1:0:0:0: [sdb] Write Protect is off
-sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-sd 1:0:0:0: [sdb] 312581808 512-byte hardware sectors (160042 MB)
-sd 1:0:0:0: [sdb] Write Protect is off
-sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO 
-or FUA
-  sdb: sdb1 sdb2 sdb3 sdb4
-sd 1:0:0:0: [sdb] Attached SCSI disk
-sd 1:0:0:0: Attached scsi generic sg1 type 0
+Alan
