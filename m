@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbXFSJMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbXFSJOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758502AbXFSJMc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 05:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbXFSJMY
+	id S1758247AbXFSJOk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 05:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbXFSJOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 05:12:24 -0400
-Received: from mail.station1.mxsweep.com ([212.147.136.149]:4880 "EHLO
-	sc-analyser1.mxsweep.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755426AbXFSJMX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 05:12:23 -0400
-Message-ID: <46779DB1.7060807@draigBrady.com>
-Date: Tue, 19 Jun 2007 10:11:13 +0100
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20061116)
-MIME-Version: 1.0
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-CC: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-References: <20070612161029.GB28279@think.oraclecorp.com> <4676C2D6.8030708@vlnb.net>
-In-Reply-To: <4676C2D6.8030708@vlnb.net>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Mlf-Version: 5.0.3.8711
-X-Mlf-UniqueId: o200706190912490143318
+	Tue, 19 Jun 2007 05:14:33 -0400
+Received: from mail.screens.ru ([213.234.233.54]:46968 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754822AbXFSJOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 05:14:31 -0400
+Date: Tue, 19 Jun 2007 13:14:52 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix signalfd interaction with thread-private signals
+Message-ID: <20070619091452.GA94@tv-sign.ru>
+References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org> <1182064500.2798.6.camel@entropy> <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com> <1182108399.3794.4.camel@entropy> <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com> <1182125303.3794.8.camel@entropy> <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com> <1182127391.26853.207.camel@localhost.localdomain> <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin wrote:
+On 06/18, Linus Torvalds wrote:
+>
+> On Mon, 18 Jun 2007, Benjamin Herrenschmidt wrote:
+> > On Sun, 2007-06-17 at 17:20 -0700, Davide Libenzi wrote:
+> > >
+> > > Andrew or Linus, did you get Ben's patch?
+> > 
+> > It might have been missed... I can resend later today.
 > 
-> I would also suggest one more feature: support for block level
-> de-duplication. I mean:
+> I did indeed just miss it. I intended to apply it (and actually thought I 
+> had), but I see it's still just an email in that long thread. 
 > 
-> 1. Ability for Btrfs to have blocks in several files to point to the
-> same block on disk
+> (It's often a good idea to re-write the subject line and make it be that 
+> standard "[PATCH] ..description..", because that just makes it show up 
+> much better when I go through my unread emails.. Not that that is any 
+> kind of *guarantee* that I won't miss it).
 > 
-> 2. Support for new syscall or IOCTL to de-duplicate as a single
-> transaction two or more blocks on disk, i.e. link them to one of them
-> and free others
-> 
-> 3. De-de-duplicate blocks on disk, i.e. copy them on write
-> 
-> I suppose that de-duplication itself would be done by some user space
-> process that would scan files, determine blocks with the same data and
-> then de-duplicate them by using syscall or IOCTL (2).
-> 
-> That would be very usable feature, which in most cases would allow to
-> shrink occupied disk space on 50-90%.
+> Anyway, no need to re-send, it's now *really* in my queue of things to 
+> apply.
 
-Have you references for this number?
-In my experience one gets a lot of benefit from
-the much simpler process of "de-duplication" of files.
+>From another message on this thread,
 
-Note a checksum stored in file metadata,
-that is automatically invalidated on write would
-speed up user space file de duplification,
-and rsync, etc....
+	Davide Libenzi wrote:
+	>
+	> On Sun, 17 Jun 2007, Nicholas Miell wrote:
+	>
+	> > But there's still no way for multiple threads to read from a single
+	> > signalfd and get their own thread-specific signals in addition to
+	> > process-wide signals, right? I think this was agreed to be the least
+	> > surprising behavior.
+	>
+	> Multiple threads can wait on the signalfd. Each one will dequeue either
+	> its own private signals (tsk->pending) or the process shared ones
+	> (tsk->signal->shared_pending). This will be the behaviour once Ben's patch
+	> is applied.
 
-Pádraig.
+The commited "Fix signalfd interaction with thread-private signals"
+(commit caec4e8dc85e0644ec24aeb36285e1ba02da58cc) doesn't implement
+this.
+
+We can do something like
+
+	int signalfd_dequeue_signal(struct task_struct *tsk, sigset_t *mask, siginfo_t *info)
+	{
+		if (tsk->tgid == current->tgid)
+			tsk = current;
+
+		return dequeue_signal(tsk, mask, info);
+	}
+
+(still I can't understand why should we change signalfd).
+
+Oleg.
+
