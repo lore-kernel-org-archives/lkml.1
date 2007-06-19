@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbXFSMJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbXFSMKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758908AbXFSMJj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 08:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757162AbXFSMJc
+	id S1759106AbXFSMKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 08:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757149AbXFSMKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 08:09:32 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:32922 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755010AbXFSMJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 08:09:31 -0400
-Date: Tue, 19 Jun 2007 14:09:19 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, anemo@mba.ocn.ne.jp,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [rtc-linux] RTC_CLASS is still considered as EXPERIMENTAL?
-Message-ID: <20070619140919.0a273429@inspiron>
-In-Reply-To: <20070615201959.26666815@inspiron>
-References: <20070616.011037.59464869.anemo@mba.ocn.ne.jp>
-	<20070615201959.26666815@inspiron>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
+	Tue, 19 Jun 2007 08:10:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36361 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757110AbXFSMKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 08:10:06 -0400
+Subject: Re: Fix signalfd interaction with thread-private signals
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070619091452.GA94@tv-sign.ru>
+References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
+	 <1182064500.2798.6.camel@entropy>
+	 <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com>
+	 <1182108399.3794.4.camel@entropy>
+	 <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
+	 <1182125303.3794.8.camel@entropy>
+	 <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com>
+	 <1182127391.26853.207.camel@localhost.localdomain>
+	 <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
+	 <20070619091452.GA94@tv-sign.ru>
+Content-Type: text/plain
+Date: Tue, 19 Jun 2007 22:09:48 +1000
+Message-Id: <1182254988.26853.334.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Jun 2007 20:19:59 +0200
-Alessandro Zummo <alessandro.zummo@towertech.it> wrote:
+On Tue, 2007-06-19 at 13:14 +0400, Oleg Nesterov wrote:
 
-> On Sat, 16 Jun 2007 01:10:37 +0900 (JST)
-> Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> 
-> > 
-> > The generic RTC subsystem was added to kernel 2.6.17 which was
-> > released a years ago.  Since then, many drivers were added to the
-> > subsystem without major API changes, I think.
-> > 
-> > It is mature enough to remove EXPERIMENTAL label from RTC_CLASS, isn't
-> > it?
-> 
->  I'd say yes, I will submit a patch. ty.
+> The commited "Fix signalfd interaction with thread-private signals"
+> (commit caec4e8dc85e0644ec24aeb36285e1ba02da58cc) doesn't implement
+> this.
 
- RTC class is mature enough.
+Indeed, if you want what Davide described, you need to also change
+signalfd side. The patch I did merely prevents another thread from
+dequeuing somebody else private signals. As it stands, signalfd will
+still try it... and only get the shared ones. It will not however get
+the private signals of the caller if it is different from the context
+associated with the signalfd.
 
- Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
+Ben.
 
 
----
- drivers/rtc/Kconfig |    1 -
- 1 file changed, 1 deletion(-)
-
---- linux-i386.orig/drivers/rtc/Kconfig	2007-06-18 23:43:28.000000000 +0200
-+++ linux-i386/drivers/rtc/Kconfig	2007-06-19 14:06:09.000000000 +0200
-@@ -10,7 +10,6 @@ config RTC_LIB
- 
- config RTC_CLASS
- 	tristate "RTC class"
--	depends on EXPERIMENTAL
- 	default n
- 	select RTC_LIB
- 	help
