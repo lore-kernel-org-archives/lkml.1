@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764996AbXFST2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765110AbXFST3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764996AbXFST2g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763852AbXFST2a
+	id S1765110AbXFST3W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764641AbXFST3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:28:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58536 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761040AbXFST23 (ORCPT
+	Tue, 19 Jun 2007 15:29:13 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:53984
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764645AbXFST3M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:28:29 -0400
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-From: Arjan van de Ven <arjan@infradead.org>
-To: holzheu@linux.vnet.ibm.com
-Cc: Gerrit Huizenga <gh@us.ibm.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       "lf_kernel_messages@linux-foundation.org" 
-	<lf_kernel_messages@linux-foundation.org>,
-       pavel@ucw.cz
-In-Reply-To: <1182243088.11540.2.camel@localhost.localdomain>
-References: <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
-	 <1182171354.11400.40.camel@localhost.localdomain>
-	 <1182172374.28566.1.camel@laptopd505.fenrus.org>
-	 <1182174836.11400.64.camel@localhost.localdomain>
-	 <1182216982.3014.1.camel@laptopd505.fenrus.org>
-	 <1182243088.11540.2.camel@localhost.localdomain>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 19 Jun 2007 12:24:52 -0700
-Message-Id: <1182281097.2698.0.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 19 Jun 2007 15:29:12 -0400
+Date: Tue, 19 Jun 2007 12:28:02 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Phillip Susi <psusi@cfl.rr.com>
+cc: Brendan Conoboy <blc@redhat.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Neil Brown <neilb@suse.de>, Wakko Warner <wakko@animx.eu.org>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <4677F14A.5060909@cfl.rr.com>
+Message-ID: <Pine.LNX.4.64.0706191225060.25045@asgard.lang.hm>
+References: <18034.479.256870.600360@notabene.brown>
+ <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown>
+ <20070616020320.GB2002@animx.eu.org> <18035.23867.576212.859440@notabene.brown>
+ <Pine.LNX.4.64.0706160037220.7557@asgard <Pine.LNX.4.64.0706181349290.14890@asgard.lang.hm>
+ <4677F14A.5060909@cfl.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-19 at 10:51 +0200, holzheu wrote:
-> On Mon, 2007-06-18 at 18:36 -0700, Arjan van de Ven wrote:
-> > On Mon, 2007-06-18 at 15:53 +0200, holzheu wrote:
-> > > On Mon, 2007-06-18 at 06:12 -0700, Arjan van de Ven wrote:
-> > > > On Mon, 2007-06-18 at 14:55 +0200, holzheu wrote:
-> > > > > Hi Gerrit,
-> > > > > 
-> > > > > The common thing of your and our approach is, that we need an ID to
-> > > > > identify a message either by:
-> > > > 
-> > > > 
-> > > > Maybe I am missing something big, but why is an ID needed?
-> > > > The message IS the ID right? That's the only thing that is robust
-> > > > against code moving about....
-> > > 
-> > > Yes. As already discussed with Pavel, it is one option to use the format
-> > > string of the message as message ID. The disadvantage compared to
-> > > message IDs like hashes is, that format strings might be even less
-> > > unique than hashes 
-> > 
-> > if the hash comes from the string in the first place I have a hard time
-> > believing that.
-> > 
-> 
-> Just think of all messages containing %s, which can expand to every
-> possible string.
+On Tue, 19 Jun 2007, Phillip Susi wrote:
 
-of course you hash on the string before you do the format stuff....
+> david@lang.hm wrote:
+>>  one channel, 2 OS drives plus the 45 drives in the array.
+>
+> Huh?  You can only have 16 devices on a scsi bus, counting the host adapter. 
+> And I don't think you can even manage that much reliably with the newer 
+> higher speed versions, at least not without some very special cables.
 
+6 devices on the bus (2 OS drives, 3 promise drive shelves, controller 
+card)
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+>>  yes I realize that there will be bottlenecks with this, the large capacity
+>>  is to handle longer history (it's going to be a 30TB circular buffer being
+>>  fed by a pair of OC-12 links)
+>
+> Building one of those nice packet sniffers for the NSA to install on AT&Ts 
+> network eh? ;)
 
+just for going back in time to track hacker actions at a bank.
+
+I'm hopeing that once I figure out the drives the rest of the software 
+will basicly boil down to tcpdump with the right options to write to a 
+circular buffer of files.
+
+David Lang
