@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbXFSVOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXFSVOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbXFSVOX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbXFSVOQ
+	id S1757527AbXFSVOz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbXFSVOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:14:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45594 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750869AbXFSVOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:14:15 -0400
-To: Anders Larsen <al@alarsen.net>
-Cc: david@lang.hm, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <1182244240l.11262l.0l@ecxwww1.reanet.de>
-	<orfy4n3it7.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<1182283260l.4416l.0l@oscar.alarsen.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 18:13:48 -0300
-In-Reply-To: <1182283260l.4416l.0l@oscar.alarsen.net> (Anders Larsen's message of "Tue\, 19 Jun 2007 22\:01\:00 +0200")
-Message-ID: <or1wg71wc3.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Tue, 19 Jun 2007 17:14:44 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:58999 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752125AbXFSVOn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 17:14:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=e8bVNwnl/GCYwJACXFkyhYAWLIdICp39KgjNQ1alC8C5hxYkj8nc74MS+fbg7XTzWn3sDR7EoqRf38AVQ1RDZ/7ZYp6gu4R0JTnc5ShZi2R/IkliEkTll/ralPehNEt5KUNpeKXDMciIxM0kyKEHvEnywU53X2sspSRHdcnvvY8=
+Message-ID: <84144f020706191414g402143d3xdb96e03526107937@mail.gmail.com>
+Date: Wed, 20 Jun 2007 00:14:41 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH -mm] add a kmem_cache for nsproxy objects
+Cc: "Christoph Hellwig" <hch@infradead.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Cedric Le Goater" <clg@fr.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Herbert Poetzl" <herbert@13thfloor.at>,
+       "Pavel Emelianov" <xemul@openvz.org>
+In-Reply-To: <Pine.LNX.4.64.0706191225030.7008@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4676F0B9.3080408@fr.ibm.com>
+	 <20070619113501.a88bba50.akpm@linux-foundation.org>
+	 <20070619190406.GA3830@infradead.org>
+	 <Pine.LNX.4.64.0706191225030.7008@schroedinger.engr.sgi.com>
+X-Google-Sender-Auth: f40308780fe8822e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, Anders Larsen <al@alarsen.net> wrote:
+Hi Christoph x 2,
 
-> Only, your statement above seems to run counter to your previous claims
-> that the "anti-tivoisation" provisions of GPLv3 would bring _more_
-> developers to copyleft software.
+On Tue, 19 Jun 2007, Christoph Hellwig wrote:
+> > Hmm, I must have missed the macro going in.  Frankly speaking I plain hate
+> > it.  It's a rather useless obsfucation.
 
-> So which one is it?
+I hate the name, but the macro is far from useless.
 
-We might lose your contributions, that's true, I've never ever denied
-that.  And this will even have a cost for you, especially if you go
-proprietary rather than some other more liberal Free Software license,
-or stick with a GPLv2 Linux and hope it's never ruled as prohibiting
-tivoization, or move to Linux on ROM.
+On 6/19/07, Christoph Lameter <clameter@sgi.com> wrote:
+> It makes the code easier to review and reduces errors by establishing a
+> standard way of defining a slab with minimal effort. You can
+> still do the  old style and create the kmem_cache_create parameter
+> monsters that span lots of lines.
+>
+> KMEM_CACHE can do it just by specifying two parameters.
 
-But it takes only a small fraction of the tivoizers to decide to take
-out the locks, when faced with the costs mentioned above, for us to
-gain contributions from even a small fraction of their user base
-(which would then grow in hacker density as a result of
-non-tivoization) for us to end up better off.
-
-Or so I believe ;-)
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Yes and if you look at existing callers of kmem_cache_create(), you'll
+notice that most of them work _exactly_ the way the macro does. Most
+of the time you want to use default alignment and not define a
+constructor.
