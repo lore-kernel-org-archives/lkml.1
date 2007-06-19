@@ -1,42 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbXFSCld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933124AbXFSCl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932337AbXFSCld (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 22:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760820AbXFSCl0
+	id S933124AbXFSCl6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 22:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763486AbXFSCls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 22:41:26 -0400
-Received: from ihemail4.lucent.com ([135.245.0.39]:43514 "EHLO
-	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760484AbXFSCl0 (ORCPT
+	Mon, 18 Jun 2007 22:41:48 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:64671 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763381AbXFSClr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 22:41:26 -0400
-Message-ID: <46774252.7030500@alcatel-lucent.com>
-Date: Tue, 19 Jun 2007 10:41:22 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: "Chen, Jinmin (Jinmin)" <jinminc@alcatel-lucent.com>, mikpe@it.uu.se
-Subject: Is kdb package available for 2.6 Linux on PowerPC?
-References: <4673CA7C.5040207@t-online.de>	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616181902.GB21478@ftp.linux.org.uk>	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070618155016.GA31892@linuxtv.org>	<or645lcdg7.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070618232549.GA22170@linuxtv.org>	<Pine.LNX.4.64.0706181634560.14890@asgard.lang.hm> <ormyyw8yj4.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <ormyyw8yj4.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 18 Jun 2007 22:41:47 -0400
+Subject: [PATCH RT] Don't call mcount from vsyscall_fn's
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 18 Jun 2007 22:41:09 -0400
+Message-Id: <1182220869.15228.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Jun 2007 02:41:08.0073 (UTC) FILETIME=[4A1E9D90:01C7B21B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Guys,
+This bit me in the butt.
 
-Recently, I need work on my TTY (console) driver so that it could 
-support kdb. I didn't have much experiences on linux kdb. So my 
-questions are:
+I couldn't understand why my init app was segfaulting, with a kernel
+address, but a user RIP and RSP.  Well, the RIP I think was bogus, but
+the kernel address was always the start of "mcount".  Looking deeper, I
+printed out what was in the RSP (even though it was a user stack).  It
+ended up showing me that the calling address was from the VDSO area.
+Looking even further, I found the offending culprit, which was
+vread_hpet.
 
-1) 2.6 Linux for PowerPC could support kdb? where can I find the source 
-code?
+Looking at the assembly dump, I saw the vread_hpet was calling mcount,
+but I could not see it in the code. Nor could I see it in hpet.i (-E
+option of compiling).
 
-2) If 2.6 Linux for PowerPC doesn't support kdb, where could I get the 
-package and integrated it to kernel?
+Well, I guess Ingo is a magician when it comes to compiler tricks, and
+has the mcount being called by "every!!" function, unless you add the
+"notrace" option.
 
-Thanks in advance,
-Gavin
+This patch adds the notrace to vsyscall_fn, so that we don't have user
+land apps calling mcount and crashing!
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+Index: linux-2.6-rt-test/include/asm-x86_64/vsyscall.h
+===================================================================
+--- linux-2.6-rt-test.orig/include/asm-x86_64/vsyscall.h
++++ linux-2.6-rt-test/include/asm-x86_64/vsyscall.h
+@@ -22,7 +22,7 @@ enum vsyscall_num {
+ /* Definitions for CONFIG_GENERIC_TIME definitions */
+ #define __section_vsyscall_gtod_data __attribute__ \
+ 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
+-#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
++#define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn"))) notrace
+ 
+ #define VGETCPU_RDTSCP	1
+ #define VGETCPU_LSL	2
+
+
