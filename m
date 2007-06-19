@@ -1,81 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbXFSQti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbXFSQvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760230AbXFSQti (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 12:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759667AbXFSQtP
+	id S1760129AbXFSQvM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 12:51:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbXFSQu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 12:49:15 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:40703 "EHLO
+	Tue, 19 Jun 2007 12:50:59 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:40729 "EHLO
 	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759605AbXFSQtO (ORCPT
+	with ESMTP id S1757324AbXFSQu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 12:49:14 -0400
-Date: Tue, 19 Jun 2007 17:49:12 +0100
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
+	Tue, 19 Jun 2007 12:50:59 -0400
+Date: Tue, 19 Jun 2007 17:50:57 +0100
+To: Christoph Lameter <clameter@sgi.com>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Subject: Re: [PATCH 5/7] Introduce a means of compacting memory within a zone
-Message-ID: <20070619164912.GE17109@skynet.ie>
-References: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie> <20070618093002.7790.68471.sendpatchset@skynet.skynet.ie> <20070619213927.AC83.Y-GOTO@jp.fujitsu.com>
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 7/7] Compact memory directly by a process when a high-order allocation fails
+Message-ID: <20070619165057.GF17109@skynet.ie>
+References: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie> <20070618093042.7790.30669.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0706181022060.4751@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070619213927.AC83.Y-GOTO@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0706181022060.4751@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (19/06/07 21:54), Yasunori Goto didst pronounce:
-> Hi Mel-san.
-> This is very interesting feature.
-> 
-> Now, I'm testing your patches.
-> 
-> > +static int isolate_migratepages(struct zone *zone,
-> > +					struct compact_control *cc)
-> > +{
-> > +	unsigned long high_pfn, low_pfn, end_pfn, start_pfn;
-> 
-> (snip)
-> 
-> > +	/* Time to isolate some pages for migration */
-> > +	spin_lock_irq(&zone->lru_lock);
-> > +	for (; low_pfn < end_pfn; low_pfn++) {
-> > +		if (!pfn_valid_within(low_pfn))
-> > +			continue;
-> > +
-> > +		/* Get the page and skip if free */
-> > +		page = pfn_to_page(low_pfn);
-> 
-> I met panic at here on my tiger4.
+On (18/06/07 10:22), Christoph Lameter didst pronounce:
+> You are amazing.
 > 
 
-How annoying.
+Thanks! 
 
-> I compiled with CONFIG_SPARSEMEM. So, CONFIG_HOLES_IN_ZONE is not set.
-> pfn_valid_within() returns 1 every time on this configuration.
+There are still knots that need ironing out but I believe the core idea
+is solid and can be built into something useful.
 
-As it should.
+Thanks for reviewing.
 
-> (This config is for only virtual memmap)
-> But, my tiger4 box has memory holes in normal zone.
-> 
-> When it is changed to normal pfn_valid(), no panic occurs.
+> Acked-by: Christoph Lameter <clameter@sgi.com>
 > 
 
-It's because I never check if the MAX_ORDER block is valid before
-isolating. This needs to be implemented just like what
-isolate_freepages() and isolate_freepages_block() does. Change it to
-pfn_valid() for the moment and I'll have this one fixed up properly in
-the next version.
-
-> Hmmm.
-> 
-> Bye.
-
-Thanks for testing.
-
+-- 
 -- 
 Mel Gorman
 Part-time Phd Student                          Linux Technology Center
