@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXFSQN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbXFSQOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbXFSQN2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 12:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXFSQNV
+	id S1758822AbXFSQOa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 12:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXFSQOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 12:13:21 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:63760 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbXFSQNU convert rfc822-to-8bit (ORCPT
+	Tue, 19 Jun 2007 12:14:23 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51041 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754213AbXFSQOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 12:13:20 -0400
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH] Chinese translation of Documentation/HOWTO
-Date: Wed, 20 Jun 2007 00:14:59 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D82D61@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20070619153615.GA2461@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Chinese translation of Documentation/HOWTO
-Thread-Index: Aceyh2hGrPJskFxqRYuKJV2zPS/LzQAA8+ng
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "WANG Cong" <xiyou.wangcong@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>, <gregkh@suse.de>,
-       "TripleX Chung" <xxx.phy@gmail.com>,
-       "Maggie Chen" <chenqi@beyondsoft.com>, "Tejun Heo" <htejun@gmail.com>,
-       "Fengguang Wu" <fengguang.wu@gmail.com>,
-       "Chen Li-jun" <cljun@xiyou.edu.cn>
+	Tue, 19 Jun 2007 12:14:22 -0400
+Date: Tue, 19 Jun 2007 17:19:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070619171921.54811314@the-village.bc.nu>
+In-Reply-To: <4677F616.3080406@gmail.com>
+References: <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>
+	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>
+	<20070610160531.GA12179@kroah.com>
+	<f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>
+	<20070612184110.GB7980@kroah.com>
+	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>
+	<or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070613211432.GH10008@csclub.uwaterloo.ca>
+	<orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614175305.GI10008@csclub.uwaterloo.ca>
+	<4677F616.3080406@gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wangcong,
+> Well, it is not Tivo alone -- look at http://aminocom.com/ for an
+> example. If you want the kernel sources pay USD 50k and we will provide
+> the kernel sources, was their attitude.
 
-Thanks for your comments.  Most of the comments are literal.  I don't
-believe all of them are necessary as language is a matter of personal
-preference. :)  I will consider your suggestions carefully and pick up
-those which are really necessary.
+GPLv2 deals with that case, and they can (and should) be sued for it
+[except that US copyright law is designed for large music companies not
+people]
 
-- Leo
-
-> -----Original Message-----
-> From: WANG Cong [mailto:xiyou.wangcong@gmail.com]
-> Sent: Tuesday, June 19, 2007 11:36 PM
-> To: Li Yang-r58472
-> Cc: linux-kernel@vger.kernel.org; gregkh@suse.de; TripleX Chung;
-Maggie Chen;
-> Tejun Heo; Fengguang Wu; Chen Li-jun
-> Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-> 
-> On Tue, Jun 19, 2007 at 10:21:03PM +0800, Li Yang wrote:
-> >This is a Chinese translated version of Documentation/HOWTO.
-Currently
-> >Chinese involvement in Linux kernel is very low, especially comparing
-to
-> >its largest population base.  Language could be the main obstacle.
-Hope
-> >this document will help more Chinese to contribute to Linux kernel.
-> 
-> Thanks for your work!
-> 
-> I hope people here who don't understand Chinese won't mind if I
-comment the
-> following patch in Chinese. ;)
-> 
-{snip}
