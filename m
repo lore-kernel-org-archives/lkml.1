@@ -1,114 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbXFSV7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbXFSWE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152AbXFSV7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbXFSV7J
+	id S1755554AbXFSWE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbXFSWEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:59:09 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:59061 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbXFSV7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:59:08 -0400
-Date: Tue, 19 Jun 2007 14:59:02 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg KH <gregkh@suse.de>, chrisw@sous-sol.org, stable@kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch] sched: fix next_interval determination in idle_balance()
-Message-ID: <20070619215902.GM8436@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070619193903.GA15024@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070619193903.GA15024@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 19 Jun 2007 18:04:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41808
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752465AbXFSWET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 18:04:19 -0400
+Date: Tue, 19 Jun 2007 15:04:37 -0700 (PDT)
+Message-Id: <20070619.150437.38693228.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: shemminger@linux-foundation.org, fubar@us.ibm.com, da-x@monatomic.org,
+       ctindel@users.sourceforge.net, kaneshige.kenji@jp.fujitsu.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, bonding-devel@lists.sourceforge.net
+Subject: Re: Why is this patch not in 2.6.22-rc5?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <467817CE.80904@garzik.org>
+References: <15712.1181795790@death>
+	<20070619082302.4b9a5c27@localhost.localdomain>
+	<467817CE.80904@garzik.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 09:39:03PM +0200, Ingo Molnar wrote:
-> 
-> 2.6.22 must-have item - perhaps suitable for -stable too, because it was 
-> reproduced on 2.6.21.5 too.
-> 
-> ---------------------->
-> From: Christoph Lameter <clameter@sgi.com>
-> Subject: [patch] sched: fix next_interval determination in idle_balance()
-> 
-> Fix massive SMP imbalance on NUMA nodes observed on 2.6.21.5 with CFS. 
-> (and later on reproduced without CFS as well).
-> 
-> The intervals of domains that do not have SD_BALANCE_NEWIDLE must be 
-> considered for the calculation of the time of the next balance. 
-> Otherwise we may defer rebalancing forever and nodes might stay idle for 
-> very long times.
-> 
-> Siddha also spotted that the conversion of the balance interval to 
-> jiffies is missing. Fix that to.
-> 
-> From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> 
-> also continue the loop if !(sd->flags & SD_LOAD_BALANCE).
-> 
-> Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+From: Jeff Garzik <jeff@garzik.org>
+Date: Tue, 19 Jun 2007 13:52:14 -0400
 
-Retested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-Spread evenly in well under a minute on the machine that previously
-kept all of the rcutorture tasks on a single CPU forever, which is most
-definitely not the way to torture RCU.
-
-Good stuff!!!
-
-						Thanx, Paul
-
-> It did in fact trigger under all three of mainline, CFS, and -rt 
-> including CFS -- see below for a couple of emails from last Friday 
-> giving results for these three on the AMD box (where it happened) and on 
-> a single-quad NUMA-Q system (where it did not, at least not with such 
-> severity).
+> Stephen Hemminger wrote:
+> > On Wed, 13 Jun 2007 21:36:30 -0700
+> > Jay Vosburgh <fubar@us.ibm.com> wrote:
+> > 
+> >> 	The following patch (based on a patch from Stephen Hemminger
+> >> <shemminger@linux-foundation.org>) removes use after free conditions in
+> >> the unregister path for the bonding master.  Without this patch, an
+> >> operation of the form "echo -bond0 > /sys/class/net/bonding_masters"
+> >> would trigger a NULL pointer dereference in sysfs.  I was not able to
+> >> induce the failure with the non-sysfs code path, but for consistency I
+> >> updated that code as well.
+> >>
+> >> 	I also did some testing of the bonding /proc file being open
+> >> while the bond is being deleted, and didn't see any problems there.
+> >>
+> >> Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+> > 	
+> > Hey David, this patch fixes one of the bugs listed in 2.6.22-rc5
+> > list. Jay submitted last week but it hasn't made it upstream.
 > 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/sched.c |   22 +++++++++++++---------
->  1 file changed, 13 insertions(+), 9 deletions(-)
-> 
-> Index: v/kernel/sched.c
-> ===================================================================
-> --- v.orig/kernel/sched.c
-> +++ v/kernel/sched.c
-> @@ -2938,17 +2938,21 @@ static void idle_balance(int this_cpu, s
->  	unsigned long next_balance = jiffies + 60 *  HZ;
-> 
->  	for_each_domain(this_cpu, sd) {
-> -		if (sd->flags & SD_BALANCE_NEWIDLE) {
-> +		unsigned long interval;
-> +
-> +		if (!(sd->flags & SD_LOAD_BALANCE))
-> +			continue;
-> +
-> +		if (sd->flags & SD_BALANCE_NEWIDLE)
->  			/* If we've pulled tasks over stop searching: */
->  			pulled_task = load_balance_newidle(this_cpu,
-> -							this_rq, sd);
-> -			if (time_after(next_balance,
-> -				  sd->last_balance + sd->balance_interval))
-> -				next_balance = sd->last_balance
-> -						+ sd->balance_interval;
-> -			if (pulled_task)
-> -				break;
-> -		}
-> +								this_rq, sd);
-> +
-> +		interval = msecs_to_jiffies(sd->balance_interval);
-> +		if (time_after(next_balance, sd->last_balance + interval))
-> +			next_balance = sd->last_balance + interval;
-> +		if (pulled_task)
-> +			break;
->  	}
->  	if (!pulled_task)
->  		/*
+> Get him to forward it to me, like he does for other bonding patches...
+
+Yes, this patch definitely should go via Jeff, he handles merging the
+bonding bits.
