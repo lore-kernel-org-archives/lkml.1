@@ -1,90 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758355AbXFSGeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbXFSGhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758355AbXFSGeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 02:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbXFSGeI
+	id S1758781AbXFSGhN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 02:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbXFSGhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 02:34:08 -0400
-Received: from mail.rialcom.ru ([80.71.245.247]:55551 "EHLO mail.rialcom.ru"
+	Tue, 19 Jun 2007 02:37:01 -0400
+Received: from mx.laposte.net ([81.255.54.16]:49739 "EHLO mx.laposte.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753562AbXFSGeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 02:34:07 -0400
-X-Greylist: delayed 1698 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 02:34:07 EDT
-X-Spam-Flag: SKIP
-X-Spam-Yversion: Spamooborona 1.7.0
-Message-ID: <46777224.60201@clusterfs.com>
-Date: Tue, 19 Jun 2007 10:05:24 +0400
-From: Alex Tomas <alex@clusterfs.com>
-Organization: Cluster Filesystems, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070302 Fedora/1.5.0.10-1.fc6 pango-text Thunderbird/1.5.0.10 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: cmm@us.ibm.com
-CC: Dmitriy Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] ext4:fix unexpected error from ext4_reserve_global
-References: <20070614152927.GC6517@localhost.sw.ru> <1181950884.3808.16.camel@dyn9047017103.beaverton.ibm.com>
-In-Reply-To: <1181950884.3808.16.camel@dyn9047017103.beaverton.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755327AbXFSGhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 02:37:00 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: david@lang.hm
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1181998132.4388.125.camel@rousalka.dyndns.org>
+References: <64689.192.54.193.51.1181901773.squirrel@rousalka.dyndns.org>
+	 <49716.192.54.193.51.1181907924.squirrel@rousalka.dyndns.org>
+	 <1181998132.4388.125.camel@rousalka.dyndns.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2ebrixYraxzLb35pAAIL"
+Organization: Adresse perso
+Date: Tue, 19 Jun 2007 08:36:49 +0200
+Message-Id: <1182235009.17460.6.camel@rousalka.dyndns.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.3 (2.11.3-5.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK, of course.
 
-thanks, Alex
+--=-2ebrixYraxzLb35pAAIL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Mingming Cao wrote:
-> On Thu, 2007-06-14 at 19:29 +0400, Dmitriy Monakhov wrote:
->> I just cant belive my eyes then i saw this at the first time...
->> simple test: strace dd if=/dev/zero of=/mnt/file
->>
-> Thanks for reporting it. 
-> 
->> open("/dev/zero", O_RDONLY)             = 0
->> close(1)                                = 0
->> open("/mnt/test/file", O_WRONLY|O_CREAT|O_TRUNC, 0666) = 1
->> read(0, "\0\0\0\0\0\0\0\0\0"..., 512) = 512
->> write(1, "\0\0\0\0\0\0\0\0"..., 512) = 512
->> read(0, "\0\0\0\0\0\0\0\0\0"..., 512) = 512
->> write(1, "\0\0\0\0\0\0\0\0"..., 512) = -1 ENOENT (No such fil
->> e or directory)
->>
->> This strange error returned from ext4_reserve_global().
->> It's just typo because:
->> a) In fact this is 100% ENOSPC situation
->> b) simular function ext4_reserve_local() returns -ENOSPC
->>
-> I agree.
-> 
-> Patch is put in ext4 patch queue. Alex if you can Ack, that would be
-> great.
-> 
-> 
-> Thanks,
-> 
-> Mingming
->> Signed-off-by: Dmitriy Monakhov <dmonakhov@openvz.org>
->> ---
->>  fs/ext4/balloc.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
->> index 4d7bfd2..43ae8f8 100644
->> --- a/fs/ext4/balloc.c
->> +++ b/fs/ext4/balloc.c
->> @@ -1920,7 +1920,7 @@ int ext4_reserve_global(struct super_block *sb, int blocks)
->>  {
->>  	struct ext4_sb_info *sbi = EXT4_SB(sb);
->>  	struct ext4_reservation_slot *rs;
->> -	int i, rc = -ENOENT;
->> +	int i, rc = -ENOSPC;
->>  	__u64 free = 0;
->>
->>  	rs = sbi->s_reservation_slots;
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > But you're not the user of the software on my laptop.  I am.
+>=20
+> ahh, but by your own argument you aren't
+>=20
+> the software on your laptop is owned by people like Linus, Al Viro, David=
+=20
+> M, Alan Cox, etc.
 
+More accurately according to the GPL v2 theory Linus advanced the laptop
+you paid is a shared property of the laptop manufacturer (who can
+install whatever he likes without your input thanks to DRM) and the
+kernel developper (who gets the source code).
 
+You as end-user are only there to give this technical elite the money
+they need to continue their activities (I'm forcing the point? Find me
+one anti-GPL-v3 message in this thread that acknowledged the buyer/user
+had any right)
+
+This thanks to DRM which was not provided for when GPL v2 was written
+and has been retroactively declared kosher.
+
+--=20
+Nicolas Mailhot
+
+--=-2ebrixYraxzLb35pAAIL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iEYEABECAAYFAkZ3eXwACgkQI2bVKDsp8g0reQCg7/2ey1rn/kMqLC0Xr92f3nO+
+PA0AoOJKWXKSVxnwjNat0vDsZSlNafP0
+=oJj6
+-----END PGP SIGNATURE-----
+
+--=-2ebrixYraxzLb35pAAIL--
