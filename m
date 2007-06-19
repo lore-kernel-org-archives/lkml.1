@@ -1,35 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932166AbXFSTDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXFSTEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932166AbXFSTDI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763730AbXFSTC4
+	id S932244AbXFSTEV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932169AbXFSTEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:02:56 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:58746 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757595AbXFSTCz (ORCPT
+	Tue, 19 Jun 2007 15:04:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47056 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763872AbXFSTEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:02:55 -0400
-Date: Tue, 19 Jun 2007 21:02:53 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-Message-ID: <20070619190253.GA19419@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 19 Jun 2007 15:04:12 -0400
+Date: Tue, 19 Jun 2007 20:04:07 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Cedric Le Goater <clg@fr.ibm.com>, Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Herbert Poetzl <herbert@13thfloor.at>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [PATCH -mm] add a kmem_cache for nsproxy objects
+Message-ID: <20070619190406.GA3830@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Cedric Le Goater <clg@fr.ibm.com>,
+	Christoph Lameter <clameter@sgi.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Herbert Poetzl <herbert@13thfloor.at>,
+	Pavel Emelianov <xemul@openvz.org>
+References: <4676F0B9.3080408@fr.ibm.com> <20070619113501.a88bba50.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070619113501.a88bba50.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 19, 2007 at 11:35:01AM -0700, Andrew Morton wrote:
+> On Mon, 18 Jun 2007 22:53:13 +0200
+> Cedric Le Goater <clg@fr.ibm.com> wrote:
+> 
+> > +static int __init nsproxy_cache_init(void)
+> > +{
+> > +	nsproxy_cachep = kmem_cache_create("nsproxy", sizeof(struct nsproxy),
+> > +					   0, SLAB_PANIC, NULL, NULL);
+> > +	return 0;
+> > +}
+> > +
+> 
+> Christoph added this cheesy KMEM_CACHE macro.  But I don't immediately recall
+> the rationale so I'm a bit reluctant to ask people to use-the-cheesy-macro.
+> 
+> Perhaps he can remind us why it is there?
 
-What happend to __ucmpdi2 from David Woodhouse?
-google has a few hits about stuff like this on 32bit powerpc with gcc 4.1.2:
-
-ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-
-using the drivers/net/s2io* files from 2.6.21 with 2.6.22-rc5 fixes the
-compile.
-
-25805dcf9d83098cf5492117ad2669cd14cc9b24 adds two u64 >>= 48 followed by
-a switch statement (line 2889 and 6816).
+Hmm, I must have missed the macro going in.  Frankly speaking I plain hate
+it.  It's a rather useless obsfucation.
