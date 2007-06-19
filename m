@@ -1,99 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758334AbXFSNfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754942AbXFSNjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758334AbXFSNfO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 09:35:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759555AbXFSNe5
+	id S1754942AbXFSNjH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 09:39:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXFSNi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 09:34:57 -0400
-Received: from ccerelbas02.cce.hp.com ([161.114.21.105]:58436 "EHLO
-	ccerelbas02.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753880AbXFSNe4 (ORCPT
+	Tue, 19 Jun 2007 09:38:56 -0400
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:59577 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751718AbXFSNiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 09:34:56 -0400
-Date: Tue, 19 Jun 2007 06:34:47 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/8] 2.6.22-rc3 perfmon2 : IBS implementation for AMD64
-Message-ID: <20070619133447.GE23051@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070614215818.509851000@localhost> <20070615093331.168842000@localhost>
+	Tue, 19 Jun 2007 09:38:55 -0400
+Date: Tue, 19 Jun 2007 15:39:40 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Trilok Soni <soni.trilok@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [i2c] [PATCH] I2C: TSL2550 support.
+Message-ID: <20070619153940.0e120fb0@hyperion.delvare>
+In-Reply-To: <20070619121020.GA8902@enneenne.com>
+References: <5d5443650706190428q341a50a1obae68b2565d0ed7@mail.gmail.com>
+	<20070619121020.GA8902@enneenne.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070615093331.168842000@localhost>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert,
+Hi Rodolfo,
 
-This patch is not specific to perfmon. It modifies the general
-infrastructure. As such it could be submitted indepdently.
-
-I will include it in my "infrastructure" patch file for now.
-
-On Fri, Jun 15, 2007 at 06:59:28PM +0200, Robert Richter wrote:
-> This patch rearranges AMD64 MSR definitions.
+On Tue, 19 Jun 2007 14:10:20 +0200, Rodolfo Giometti wrote:
+> Add support for Taos TSL2550 ambient light sensors.
+> (http://www.taosinc.com/product_detail.asp?cateid=4&proid=18).
 > 
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
-> 
-> Index: linux-2.6.22-rc3/include/asm-i386/msr-index.h
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/include/asm-i386/msr-index.h
-> +++ linux-2.6.22-rc3/include/asm-i386/msr-index.h
-> @@ -75,6 +75,18 @@
+> Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+
+Did you ever read my review of your driver?
+http://lists.lm-sensors.org/pipermail/i2c/2007-February/000824.html
+
+I'm asking because you never replied and I don't see any of my
+suggestions implemented in this new version of your driver.
+
+> diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
+> index ea085a0..b59c013 100644
+> --- a/drivers/i2c/chips/Kconfig
+> +++ b/drivers/i2c/chips/Kconfig
+> @@ -124,4 +124,14 @@ config SENSORS_MAX6875
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called max6875.
 >  
->  /* K7/K8 MSRs. Not complete. See the architecture manual for a more
->     complete list. */
-> +
-> +/* K8 MSRs */
-> +#define MSR_K8_TOP_MEM1			0xC001001A
-> +#define MSR_K8_TOP_MEM2			0xC001001D
-> +#define MSR_K8_SYSCFG			0xC0010010
-> +#define MSR_K8_HWCR			0xC0010015
-> +#define MSR_K8_ENABLE_C1E		0xc0010055
-> +#define K8_MTRRFIXRANGE_DRAM_ENABLE	0x00040000 /* MtrrFixDramEn bit    */
-> +#define K8_MTRRFIXRANGE_DRAM_MODIFY	0x00080000 /* MtrrFixDramModEn bit */
-> +#define K8_MTRR_RDMEM_WRMEM_MASK	0x18181818 /* Mask: RdMem|WrMem    */
-> +
-> +/* K7 MSRs */
->  #define MSR_K7_EVNTSEL0			0xc0010000
->  #define MSR_K7_PERFCTR0			0xc0010004
->  #define MSR_K7_EVNTSEL1			0xc0010001
-> @@ -83,20 +95,10 @@
->  #define MSR_K7_PERFCTR2			0xc0010006
->  #define MSR_K7_EVNTSEL3			0xc0010003
->  #define MSR_K7_PERFCTR3			0xc0010007
-> -#define MSR_K8_TOP_MEM1			0xc001001a
->  #define MSR_K7_CLK_CTL			0xc001001b
-> -#define MSR_K8_TOP_MEM2			0xc001001d
-> -#define MSR_K8_SYSCFG			0xc0010010
-> -
-> -#define K8_MTRRFIXRANGE_DRAM_ENABLE	0x00040000 /* MtrrFixDramEn bit    */
-> -#define K8_MTRRFIXRANGE_DRAM_MODIFY	0x00080000 /* MtrrFixDramModEn bit */
-> -#define K8_MTRR_RDMEM_WRMEM_MASK	0x18181818 /* Mask: RdMem|WrMem    */
-> -
->  #define MSR_K7_HWCR			0xc0010015
-> -#define MSR_K8_HWCR			0xc0010015
->  #define MSR_K7_FID_VID_CTL		0xc0010041
->  #define MSR_K7_FID_VID_STATUS		0xc0010042
-> -#define MSR_K8_ENABLE_C1E		0xc0010055
->  
->  /* K6 MSRs */
->  #define MSR_K6_EFER			0xc0000080
-> 
-> --
-> AMD Saxony, Dresden, Germany
-> Operating System Research Center
-> email: robert.richter@amd.com
-> 
-> 
-> 
+> +config SENSORS_TSL2550
+> +	tristate "Taos TSL2550 ambient light sensor"
+> +	depends on I2C && EXPERIMENTAL
 
+You can now omit "I2C", it's handled at menu level.
+
+> +	help
+> +	  If you say yes here you get support for the Taos TSL2550
+> +	  ambient light sensor.
+> +
+> +	  This driver can also be built as a module.  If so, the module
+> +	  will be called tsl2550.
+> +
+>  endmenu
+
+> +static struct i2c_driver tsl2550_driver;
+> +static int __devinit tsl2550_probe(struct i2c_client *client)
+> +{
+> +	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+> +	struct tsl2550_data *data;
+> +	int *opmode, err = 0;
+> +
+> +	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE
+> +				     | I2C_FUNC_SMBUS_WRITE_BYTE_DATA)) {
+> +		err = -EIO;
+> +		goto exit;
+> +	}
+> +
+> +	data = kzalloc(sizeof(struct tsl2550_data), GFP_KERNEL);
+> +	if (!data) {
+> +		err = -ENOMEM;
+> +		goto exit;
+> +	}
+> +	data->client = client;
+> +	i2c_set_clientdata(client, data);
+> +	
+> +	/* Check platform data */
+> +	opmode = client->dev.platform_data;
+> +	if (opmode) {
+> +		if (*opmode < 0 || *opmode > 1) {
+> +			dev_err(&client->dev, "invalid operating_mode (%d)\n",
+> +					*opmode);
+> +			err = -EINVAL;
+> +			goto exit_kfree;
+> +		}
+> +		data->operating_mode = *opmode;
+> +	} else
+> +		data->operating_mode = 0;	/* default mode is standard */
+> +	dev_info(&client->dev, "%s operating mode\n",
+> +			data->operating_mode ? "extended" : "standard");
+> +
+> +	/*
+> +	 * Probe the chip. To do so we try to power up the device and then to
+> +	 * read back the 0x03 code
+> +	 */
+> +	err = i2c_smbus_write_byte(client, TSL2550_POWER_UP);
+> +	if (err < 0)
+> +		goto exit_kfree;
+> +	mdelay(1);
+> +	err = i2c_smbus_read_byte(client);
+> +	if (err != TSL2550_POWER_UP) {
+> +		err = -ENODEV;
+> +		goto exit_kfree;
+> +	}
+> +
+> +	mutex_init(&data->update_lock);
+> +
+> +	/* Initialize the TSL2550 chip */
+> +	tsl2550_init_client(client);
+> +
+> +	/* Register sysfs hooks */
+> +	err = sysfs_create_group(&client->dev.kobj, &tsl2550_attr_group);
+> +	if (err)
+> +		goto exit_kfree;
+> +
+> +	dev_info(&client->dev,
+> +		"TSL2550 I2C support enabled - ver. %s\n", DRIVER_VERSION);
+> +	dev_info(&client->dev,
+> +		"Copyright (C) 2007 Rodolfo Giometti <giometti@linux.it>\n");
+> +
+> +	return 0;
+> +
+> +exit_kfree:
+> +	kfree(data);
+
+A call to "i2c_set_clientdata(client, NULL)" at this point would be
+welcome.
+
+> +exit:
+> +	return err;
+> +}
+> +
+> +static int __devexit tsl2550_remove(struct i2c_client *client)
+> +{
+> +	sysfs_remove_group(&client->dev.kobj, &tsl2550_attr_group);
+> +
+> +	/* Power doen the device */
+> +	tsl2550_set_power_state(client, 0);
+> +
+> +	kfree(i2c_get_clientdata(client));
+
+Same here.
+
+> +
+> +	return 0;
+> +}
+
+Thanks,
 -- 
-
--Stephane
+Jean Delvare
