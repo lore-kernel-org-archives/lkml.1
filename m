@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbXFSU6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbXFSVA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758047AbXFSU6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 16:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbXFSU6O
+	id S1758530AbXFSVA4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbXFSVAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 16:58:14 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:11964 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbXFSU6N (ORCPT
+	Tue, 19 Jun 2007 17:00:49 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:21834 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752860AbXFSVAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 16:58:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=BnYmUZs/mhJgNBrkGsC31WSPoViu2NNSETbxOcae+D0DvGC1VjNauzkGvrHaGr74O2/vgXRXc6c/XjLOa4J+B/oNmLjyIX13kjME3wr5ILs7ruVsw74uBJM4fLRFffF7uzMSmwOfFTkRQ9otcIrbFBdfUX1yE7kI7xVeeREtMhQ=
-Message-ID: <84144f020706191358j1992dd50ga5d93efbd61878d6@mail.gmail.com>
-Date: Tue, 19 Jun 2007 23:58:12 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "clameter@sgi.com" <clameter@sgi.com>
-Subject: Re: [patch 11/26] SLUB: Add support for kmem_cache_ops
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, suresh.b.siddha@intel.com
-In-Reply-To: <20070618095916.083793990@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 19 Jun 2007 17:00:48 -0400
+Subject: Re: [PATCH RT] disable preemption on running show all regs.
+From: Daniel Walker <dwalker@mvista.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>
+In-Reply-To: <1182284276.15228.25.camel@localhost.localdomain>
+References: <1182284276.15228.25.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 19 Jun 2007 13:57:13 -0700
+Message-Id: <1182286634.18168.48.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070618095838.238615343@sgi.com>
-	 <20070618095916.083793990@sgi.com>
-X-Google-Sender-Auth: 821c8b5d99c6af2f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/18/07, clameter@sgi.com <clameter@sgi.com> wrote:
-> We use the parameter formerly used by the destructor to pass an optional
-> pointer to a kmem_cache_ops structure to kmem_cache_create.
->
-> kmem_cache_ops is created as empty. Later patches populate kmem_cache_ops.
+On Tue, 2007-06-19 at 16:17 -0400, Steven Rostedt wrote:
+> The show all regs sysrq uses the nmi function to do it. But this
+> function expects preemption to be off, or funny things happen.
+> 
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> 
+> Index: linux-2.6.21-rt9/drivers/char/sysrq.c
+> ===================================================================
+> --- linux-2.6.21-rt9.orig/drivers/char/sysrq.c
+> +++ linux-2.6.21-rt9/drivers/char/sysrq.c
+> @@ -213,7 +213,9 @@ static struct sysrq_key_op sysrq_showreg
+>  
+>  static void sysrq_handle_showallregs(int key, struct tty_struct *tty)
+>  {
+> +        preempt_disable();
+>  	nmi_show_all_regs();
+> +        preempt_enable();
+>  }
 
-I like kmem_cache_ops but I don't like this patch. I know its painful
-but we really want the introduction patch to fixup the API (move ctor
-to kmem_cache_ops and do the callers).
+Looks like you have a whitespace issue here.. Should be tabs, not
+spaces.
+
+Daniel
+
