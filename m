@@ -1,92 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759823AbXFSSDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbXFSSE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759823AbXFSSDg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 14:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbXFSSD2
+	id S1761127AbXFSSE0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 14:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760035AbXFSSET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 14:03:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37090 "EHLO mx1.redhat.com"
+	Tue, 19 Jun 2007 14:04:19 -0400
+Received: from mga03.intel.com ([143.182.124.21]:21657 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759913AbXFSSD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 14:03:27 -0400
-Message-ID: <46781A5B.9090104@redhat.com>
-Date: Tue, 19 Jun 2007 14:03:07 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
-       alan <alan@clueserver.org>
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org>
-In-Reply-To: <46739E89.1080003@hawkeye.stone.uk.eu.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1760074AbXFSSES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 14:04:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,439,1175497200"; 
+   d="scan'208";a="240924261"
+Date: Tue, 19 Jun 2007 11:00:03 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Device hang when offlining a CPU due to IRQ misrouting
+Message-ID: <20070619180003.GE7160@linux-os.sc.intel.com>
+References: <20070605235707.GB16074@tree.beaverton.ibm.com> <20070606013759.GI17143@linux-os.sc.intel.com> <20070606185829.GA26062@tree.beaverton.ibm.com> <20070606193514.GN17143@linux-os.sc.intel.com> <20070606231642.GH13751@tree.beaverton.ibm.com> <20070608005726.GO17143@linux-os.sc.intel.com> <20070618223819.GD9751@tree.beaverton.ibm.com> <20070618235434.GB7160@linux-os.sc.intel.com> <20070619005136.GF9751@tree.beaverton.ibm.com> <m1sl8nn82i.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1sl8nn82i.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jack Stone wrote:
-> Chris Snook wrote:
->> The underlying internal implementation of something like this wouldn't
->> be all that hard on many filesystems, but it's the interface that's the
->> problem.  The ':' character is a perfectly legal filename character, so
->> doing it that way would break things.
+On Tue, Jun 19, 2007 at 11:54:45AM -0600, Eric W. Biederman wrote:
+> "Darrick J. Wong" <djwong@us.ibm.com> writes:
 > 
-> But to work without breaking userspace it would need to be a character
-> that would pass through any path checking routines, ie be a legal path
-> character.
+> > On Mon, Jun 18, 2007 at 04:54:34PM -0700, Siddha, Suresh B wrote:
+> >
+> >> > <call to set_affinity>
+> >> > [  256.298787] irq=4341 affinity=d
+> >> > <ethernet on irq 4341 stops working>
+> >> 
+> >> And just to make sure, at this point, your MSI irq 4341 affinity
+> >> (/proc/irq/4341/smp_affinity) still points to '2'?
+> >
+> > Actually, it's 0xD.  From the kernel's perspective the mask has been
+> > updated (and I even stuck a printk into set_msi_irq_affinity to verify
+> > that the writes are happening) but ... the hardware doesn't seem to
+> > reflect this.  I also tried putting read_msi_msg right afterwards to
+> > compare contents, though it complained about all the MSIs _except_ for
+> > 4341.  (Of course, I could just be way off on the effectiveness of
+> > that.)
 > 
->> I think NetApp more or less got the interface right by putting a 
->> .snapshot directory in each directory, with time-versioned
->> subdirectories each containing snapshots of that directory's contents
->> at those points in time.  It keeps the backups under the same
->> hierarchy as the original files, to avoid permissions headaches,
->> it's accessible over NFS without modifying the client at all,
->> and it's hidden just enough to make it hard for users to do something
->> stupid.
+> The fact that MSI interrupts are having problems is odd.  It is possible
+> that we still have a bug in there somewhere but msi interrupts should
+> be safe to migrate outside of irq context (no known hardware bugs).
+> As we can actually synchronize with the irq source and eliminate all
+> of the migration races.
 > 
-> My personal implementation idea was to store lots of files for the form
-> file:revision_number (I'll keep using that until somebody sugests
-> something better) on the file system itself, with a hard link form the
-> latest version to file (this is probably not a major imporvement and
-> having the hard link coudl make it hard to implement deltas). This could
-> mean no changes to the file system itself (except maybe a flag to say
-> its versioned). The kernel would then do the translation to find the
-> correct file, and would only show the latest version to userapps not
-> requesting a specific version.
+> The non-msi case requires hitting a hardware race that is rare enough
+> you should not normally have problems.
 
-I pointed out NetApp's .snapshot directories because that's a method that uses 
-legal path character, but doesn't break anything.  With this method, userspace 
-tools will have to be taught that : is suddenly a special character.  Userspace 
-already knows that files beginning with . are special and treat them specially. 
-  We don't need a new special character for every new feature.  We've got one, 
-and it's flexible enough to do what you want, as proven by NetApp's extremely 
-successful implementation.  Perhaps you want a slightly different interface from 
-what NetApp has implemented, but what you're suggesting will change the default 
-behavior of basic tools like tar and ls.  This is not a good thing.
+Yep. But Darrick's seems to say, problem happens consistently.
 
->> If you want to do something like this (and it's generally not a bad
->> idea), make sure you do it in a way that's not going to change the
->> behavior seen by existing applications, and that is accessible to
->> unmodified remote clients.  Hidden .snapshot directories are one way, a
->> parallel /backup filesystem could be another, whatever.  If you break
->> existing apps, I won't touch it with a ten foot pole.
-> 
-> The whole interface would be designed to give existing behavior as
-> default for two reasons: users are used to opening a file and getting
-> the latest version and not to break userspace. I personally wouldn't
-> touch this either if it broke userspace. The only userspace change would
-> be the addition of tools to manage the revisions etc. Userspace could
-> later upgrade to take advantage of the new functionality but I cannot
-> see the worth in breaking it.
+Anyhow, Darrick there is a general bug in this area, can you try this and
+see if it helps?
 
-But what you're talking about *will* break userspace.  If I do an ls in a 
-directory, and get pages upon pages of versions of just one file, that's broken. 
-  If I tar up a directory and get a tarball that's hundreds of times larger than 
-it should be, that's broken.  If you want the files to be hidden from userspace 
-applications that don't know about your backup scheme, (and it sounds like you 
-do) then use the existing convention for hidden files, the prepended '.'  This 
-is the universal sign for "don't mess with me unless you know what you're doing".
-
-	-- Chris
+diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
+index 3eaceac..a0e11c9 100644
+--- a/arch/x86_64/kernel/irq.c
++++ b/arch/x86_64/kernel/irq.c
+@@ -144,17 +144,35 @@ void fixup_irqs(cpumask_t map)
+ 
+ 	for (irq = 0; irq < NR_IRQS; irq++) {
+ 		cpumask_t mask;
++		int break_affinity = 0;
++		int set_affinity = 1;
++
+ 		if (irq == 2)
+ 			continue;
+ 
++		/* irq's are disabled at this point */
++		spin_lock(&irq_desc[irq].lock);
++
+ 		cpus_and(mask, irq_desc[irq].affinity, map);
+ 		if (any_online_cpu(mask) == NR_CPUS) {
+-			printk("Breaking affinity for irq %i\n", irq);
++			break_affinity = 1;
+ 			mask = map;
+ 		}
++
++		irq_desc[irq].chip->mask(irq);
++
+ 		if (irq_desc[irq].chip->set_affinity)
+ 			irq_desc[irq].chip->set_affinity(irq, mask);
+ 		else if (irq_desc[irq].action && !(warned++))
++			set_affinity = 0;
++
++		irq_desc[irq].chip->unmask(irq);
++
++		spin_unlock(&irq_desc[irq].lock);
++
++		if (break_affinity && set_affinity)
++			printk("Broke affinity for irq %i\n", irq);
++		else if (!set_affinity)
+ 			printk("Cannot set affinity for irq %i\n", irq);
+ 	}
+ 
