@@ -1,99 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbXFSOFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbXFSOFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754718AbXFSOFU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbXFSOFJ
+	id S1755470AbXFSOFh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbXFSOF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:05:09 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:52825 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbXFSOFH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:05:07 -0400
-Message-ID: <4677E28C.5050304@fr.ibm.com>
-Date: Tue, 19 Jun 2007 16:05:00 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 19 Jun 2007 10:05:28 -0400
+Received: from h155.mvista.com ([63.81.120.155]:37604 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754840AbXFSOF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 10:05:26 -0400
+Message-ID: <4677E30B.4020101@ru.mvista.com>
+Date: Tue, 19 Jun 2007 18:07:07 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, pbadari@us.ibm.com,
-       containers@lists.osdl.org, ebiederm@xmission.com, serue@us.ibm.com,
+To: linas@austin.ibm.com
+Cc: Stuart_Hayes@Dell.com, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] create_new_namespaces: fix improper return of NULL
-References: <200705090245.l492jZwD008756@shell0.pdx.osdl.net> <20070616191742.GA13434@MAIL.13thfloor.at> <20070617143830.GA379@tv-sign.ru> <20070617163004.GA553@tv-sign.ru> <20070619135129.GA27343@tv-sign.ru>
-In-Reply-To: <20070619135129.GA27343@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+References: <20070618175713.GD5836@austin.ibm.com> <DFEF91B22ED07447AB6AA4B237F913F9B18A05@ausx3mpc125.aus.amer.dell.com>
+In-Reply-To: <DFEF91B22ED07447AB6AA4B237F913F9B18A05@ausx3mpc125.aus.amer.dell.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> Untested.
-> 
-> dup_mnt_ns() and clone_uts_ns() return NULL on failure. This is wrong,
-> create_new_namespaces() uses ERR_PTR() to catch an error. This means
-> that the subsequent create_new_namespaces() will hit BUG_ON() in
-> copy_mnt_ns() or copy_utsname().
+Hello.
 
-I sent one just like it :
+Stuart_Hayes@Dell.com wrote:
+> I think reading the IDE status register clears the interrupt in the IDE
+> device, which might be causing the drive to think it's OK to generate
+> another interrupt.
 
-	http://lkml.org/lkml/2007/6/12/142
+    This is not how IDE drives are supposed to act -- they won't proceed any 
+further until "interrupt pending" condition is cleared, so these aren't 
+supposed to be "stacked". This behavior however is not strictly specified by 
+ATA standards IIRC, but I can't readily imagine such situaltion anyway unless 
+tagged command queueing  (which is not supported by IDE core) and/or ATAPI 
+command overlapping is in action...
 
-but your changelog is worth adding. much better than mine.
+>  This could either cause it to get stuck trying to
+> service an interrupt that is never getting cleared as you suggested, or
+> possibly when the next IRQ comes in the IDE IRQ handler gets stuck
+> waiting for a spinlock that the code you're looking at already owns...?
 
-thanks,
+    I could also imagine the HPT366 chip going mad and stalling the reads if 
+the taskfile regs forever because of the incomplete DMA or even the drive 
+going mad and not replying to I/O cycles with proper -IORDY handshake (i.e. 
+holding it low all the time)...
 
-C. 
+> Perhaps a printk in the IDE IRQ handler would be informative?  It
+> wouldn't help you figure out how it got where it is, but it might help
+> you figure out why the system is hanging.
 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> 
-> --- ns/fs/namespace.c~1_NS_NULL	2007-05-21 13:57:56.000000000 +0400
-> +++ ns/fs/namespace.c	2007-06-19 17:26:35.000000000 +0400
-> @@ -1457,7 +1457,7 @@ static struct mnt_namespace *dup_mnt_ns(
-> 
->  	new_ns = kmalloc(sizeof(struct mnt_namespace), GFP_KERNEL);
->  	if (!new_ns)
-> -		return NULL;
-> +		return ERR_PTR(-ENOMEM);
-> 
->  	atomic_set(&new_ns->count, 1);
->  	INIT_LIST_HEAD(&new_ns->list);
-> @@ -1471,7 +1471,7 @@ static struct mnt_namespace *dup_mnt_ns(
->  	if (!new_ns->root) {
->  		up_write(&namespace_sem);
->  		kfree(new_ns);
-> -		return NULL;
-> +		return ERR_PTR(-ENOMEM);
->  	}
->  	spin_lock(&vfsmount_lock);
->  	list_add_tail(&new_ns->list, &new_ns->root->mnt_list);
-> --- ns/kernel/utsname.c~1_NS_NULL	2007-05-21 13:57:59.000000000 +0400
-> +++ ns/kernel/utsname.c	2007-06-19 17:35:22.000000000 +0400
-> @@ -13,6 +13,7 @@
->  #include <linux/uts.h>
->  #include <linux/utsname.h>
->  #include <linux/version.h>
-> +#include <linux/err.h>
-> 
->  /*
->   * Clone a new ns copying an original utsname, setting refcount to 1
-> @@ -24,10 +25,11 @@ static struct uts_namespace *clone_uts_n
->  	struct uts_namespace *ns;
-> 
->  	ns = kmalloc(sizeof(struct uts_namespace), GFP_KERNEL);
-> -	if (ns) {
-> -		memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
-> -		kref_init(&ns->kref);
-> -	}
-> +	if (!ns)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	memcpy(&ns->name, &old_ns->name, sizeof(ns->name));
-> +	kref_init(&ns->kref);
->  	return ns;
->  }
-> 
-> 
-> 
+> Stuart
 
+> -----Original Message-----
+> From: linux-ide-owner@vger.kernel.org
+> [mailto:linux-ide-owner@vger.kernel.org] On Behalf Of Linas Vepstas
+> Sent: Monday, June 18, 2007 12:57 PM
+> To: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: [BUG] ide dma_timer_expiry, then hard lockup
+
+> I've got a hard lockup in the ide subsystem, probably due to some irq
+> spew or something like that.
+> 
+> I've just bought a brand new Maxtor 320GB disk driver for the insane
+> price of $70 US to replace another failing drive. It works well under
+> light load; I was able to copy about 60GB to it. However, under heavy
+> load, such as reconstruction of an MD
+> RAID-1 array, it'll lock up the kernel.  Which means that my system
+> won't boot :-(
+> 
+> I'm running 2.6.21.1, although the problem seems to occur in 2.6.19 and
+> 2.6.18 too; its been there a while; I vageuly remember similar problems
+> in 2.6.5 or 2.6.10.
+> 
+> I get an
+> "hdc: dma_timer_expiry: dma status == 0x21" 
+
+    This means "DMA not complete".
+
+> and 10 seconds later,
+
+    The above condition causes another, 10 sec timeout...
+
+> "hdc: DMA Timeout error"
+
+> at which point the system is locked up hard.
+> Magic sysreq does not work at all. The hard drive activity light stays
+> fully lit.  Inserting printk's into the kernel, I find the hang to be in
+> a surprising place: 
+
+> ide_dma_timeout_retry() in ide-io.c 
+>   prints the "hdc: DMA Timeout error" then calls
+>   HWIF(drive)->ide_dma_end(drive);
+>     which returns, and then calls 
+>   hwif->INB(IDE_STATUS_REG) which is needed as an argument to
+> ide_error()
+
+> But this hangs! -- The INB never returns.
+> Now:  hwif->INB = ide_inb; in ide-iops.c
+
+> So putting a printk into ide_inb() shows that
+> the printk before the readb() is printed, and the
+> printk after the readb is not (!!)
+
+> I find this rather surpriseing, as I can't imagine how the
+> readb can fail. My current vague theory is that doing this
+> readb makes the hard drive go really nuts, and it probably
+
+    As I said, this is not the only way how it all might have gone nuts... :-)
+
+> ties some interrupt line high, and so the linux kernel 
+> gets stuck trying to handle the irq flood. I just don't know
+> enough about the i386 architecture, or about interrupts, to 
+> prove or disprove this.
+
+> Any suggestions, experiments, experimental patches, data gathering,
+> etc. is welcome. The sooner, the better... 
+
+> --linas
+
+MBR, Sergei
