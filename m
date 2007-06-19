@@ -1,100 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbXFSPN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbXFSPQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbXFSPN2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbXFSPNT
+	id S1758740AbXFSPQv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbXFSPQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:13:19 -0400
-Received: from mivlgu.ru ([81.18.140.87]:42304 "EHLO mail.mivlgu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754296AbXFSPNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:13:18 -0400
-X-Greylist: delayed 1881 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 11:13:17 EDT
-Date: Tue, 19 Jun 2007 18:41:48 +0400
-From: Sergey Vlasov <vsu@altlinux.ru>
-To: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.21.3] ppp_mppe: account for osize too small errors
- in   mppe_decompress()
-Message-Id: <20070619184148.201f2521.vsu@altlinux.ru>
-In-Reply-To: <46654796.3060800@gmail.com>
-References: <46654796.3060800@gmail.com>
-X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.6; i586-alt-linux-gnu)
+	Tue, 19 Jun 2007 11:16:42 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3117 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755338AbXFSPQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 11:16:41 -0400
+Date: Tue, 19 Jun 2007 15:16:27 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <lenb@kernel.org>, Adam Belay <abelay@novell.com>,
+       Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Shaohua Li <shaohua.li@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 8/8] cpuidle: first round of documentation updates
+Message-ID: <20070619151626.GA5127@ucw.cz>
+References: <20070606205641.GH23906@linux-os.sc.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__19_Jun_2007_18_41_48_+0400_ULA1ELEkEpHvmV1D"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070606205641.GH23906@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__19_Jun_2007_18_41_48_+0400_ULA1ELEkEpHvmV1D
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Hi!
 
-On Tue, 05 Jun 2007 22:23:02 +1100 Konstantin Sharlaimov wrote:
+> Documentation changes based on Pavel's feedback.
 
-> Prevent mppe_decompress() from generating "osize too small" errors when checking
-> for output buffer size. When receiving a packet of mru size the output buffer
-> for decrypted data is 1 byte too small since mppe_decompress() tries to account
-> for possible PFC, however later in code it is assumed no PFC.
->
-> Adjusting the check prevented there errors from occurring.
->
-> Signed-off-by: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
-> ---
-> --- linux-2.6.21.3/drivers/net/ppp_mppe.c.orig	2007-06-01 20:57:04.000000000 +1100
-> +++ linux-2.6.21.3/drivers/net/ppp_mppe.c	2007-06-05 21:46:30.000000000 +1100
-> @@ -493,14 +493,14 @@ mppe_decompress(void *arg, unsigned char
->
->  	/*
->  	 * Make sure we have enough room to decrypt the packet.
-> -	 * Note that for our test we only subtract 1 byte whereas in
-> -	 * mppe_compress() we added 2 bytes (+MPPE_OVHD);
-> -	 * this is to account for possible PFC.
-> +	 * To account for possible PFC we should only subtract 1
-> +	 * byte whereas in mppe_compress() we added 2 bytes (+MPPE_OVHD);
-> +	 * However, we assume no PFC, thus subtracting 2 bytes.
->  	 */
-> -	if (osize < isize - MPPE_OVHD - 1) {
-> +	if (osize < isize - MPPE_OVHD - 2) {
->  		printk(KERN_DEBUG "mppe_decompress[%d]: osize too small! "
->  		       "(have: %d need: %d)\n", state->unit,
-> -		       osize, isize - MPPE_OVHD - 1);
-> +		       osize, isize - MPPE_OVHD - 2);
->  		return DECOMP_ERROR;
->  	}
->  	osize = isize - MPPE_OVHD - 2;	/* assume no PFC */
+Thanks!
 
-Seems that this patch is not correct - even though the comment above
-says "assume no PFC", the subsequent code actually supports PFC:
+> -System global cpuidle information are under
+> +System global cpuidle related information and tunables are under
+>  /sys/devices/system/cpu/cpuidle
+>  
+>  The current interfaces in this directory has self-explanatory names:
+> +* current_driver_ro
+> +* current_governor_ro
 
-	/*
-	 * Do PFC decompression.
-	 * This would be nicer if we were given the actual sk_buff
-	 * instead of a char *.
-	 */
-	if ((obuf[0] & 0x01) != 0) {
-		obuf[1] = obuf[0];
-		obuf[0] = 0;
-		obuf++;
-		osize++;
-	}
+Uff, the _ro thing looks ugly to my eyes.
 
-Therefore, depending on the packet contents, the decompressor may
-really need that extra byte in the output buffer, and changing the
-check may cause buffer overflows.
+> +With cpuidle_sysfs_switch boot option (meant for developer testing)
+> +following objects are visible instead.
+>  * available_drivers
+>  * available_governors
+>  * current_driver
+>  * current_governor
 
---Signature=_Tue__19_Jun_2007_18_41_48_+0400_ULA1ELEkEpHvmV1D
-Content-Type: application/pgp-signature
+...with different files depending on config it is _very_ ugly.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
 
-iD8DBQFGd+swW82GfkQfsqIRAulFAJ9Dss/ytsPob+wIXSRw2ulIhPKXTgCghnqi
-G4xAZpbeAlOVbQpiYmD/e44=
-=EWid
------END PGP SIGNATURE-----
+>  More than one governor can be registered at the same time and
+> -user can switch between drivers using /sysfs interface.
+> +user can switch between drivers using /sysfs interface (when supported).
 
---Signature=_Tue__19_Jun_2007_18_41_48_+0400_ULA1ELEkEpHvmV1D--
+(when enabled)?
+
+> +More than one governor part is supported for developers to easily experiment
+> +with different governors. By default, most optimal governor based on your
+
+delete 'most'?
+
+							Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
