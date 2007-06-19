@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbXFSQmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbXFSQsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbXFSQmT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 12:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbXFSQmN
+	id S1758653AbXFSQsZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 12:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbXFSQsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 12:42:13 -0400
-Received: from smtp-out4.libero.it ([212.52.84.46]:60132 "EHLO
-	smtp-out4.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756917AbXFSQmM (ORCPT
+	Tue, 19 Jun 2007 12:48:17 -0400
+Received: from web52512.mail.re2.yahoo.com ([206.190.48.195]:47168 "HELO
+	web52512.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757251AbXFSQsR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 12:42:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq4HAIKjd0aXFdDMR2dsb2JhbAANhxKHbwEBP4EE
-Subject: Dual licensing
-From: Liberty <libertypo@libero.it>
+	Tue, 19 Jun 2007 12:48:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=iN03XoQ2VKtiyLDCfoZy9DYQGcOu054ox4kDQpy4w+xEja7rxUWO1swJlfn+qJYI0eABo7KvhsNfftbTvmKIQXpnKJpiRp8AEj4iOrCWrXAwtvpsu9GItehj0kAPWERKy3Fjr4QBqg6wDnUO7wuyFwEJOmGrid/6q1k/pL1OQNw=;
+X-YMail-OSG: 58IkHFQVM1nQcGsoksve1eb1mJ7LfGHwb9zCTLtyDragi8iUQK7f2Tqc4zZS.iwXPl0WRAd_7qz84BnB9aMMkUHcSjmBI5sfVWMQGBzpM7xyLoz3MAQFgV9uo1B9QfxKR3_LUeYxO7SNhj0sge.lSepR
+Date: Tue, 19 Jun 2007 09:48:16 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: How would I do this? (expert tricks) OT
 To: linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-CugefDPgT2Mf8k9XmAxX"
-Date: Tue, 19 Jun 2007 18:41:21 +0200
-Message-Id: <1182271281.21391.12.camel@liberty-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <456863.7892.qm@web52512.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have a server with port 25 closed. I was to be able
+to run a script every time someone tries to connect to
+port 25, but from the outside the port remains closed.
+I need the script that I'm going to run get the IP
+address that tried to connect.
 
---=-CugefDPgT2Mf8k9XmAxX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I know it's off topic but it's part of an experiment
+to stop spam. 
 
-I don't get it. It's really necessary to continue this rant on what
-license  the kernel should use ? I thought Linus was pretty clear on his
-choice. It's becoming ridiculous and boring. STOP THE FLAME ALREADY=20
---=20
-HOO-YA / SEMPER FIDELIS
+Thanks in advance.
 
-01COMPUTERS di OVIDIO PIRVU
-30174, CHIRIGNAGO-VE
-VIA MIRANESE 331
 
---=-CugefDPgT2Mf8k9XmAxX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iQEVAwUARngHMPTZrNBthX9QAQJy/wf/V2fj8VyI6OP6Rg541Wx+uHHKEWPPEODy
-Zy7zYox5IEE1+SzMk6R8uDqjJ/NrAdtKm490i7HCztlP8k3JgmnRMhnSyitRcBQk
-bapRwhRcNO6dP5lgyqasJHDOEWVwWF+tzzXPa29wMiFuedPl0HkVhu3OlxKFyASw
-hyLZvzVgSPOf4oZ4s0IjkmpKn7ONP3LOTsw2okbfNbIBAKJ/Zt+NfdjOaPOmnsOs
-MjpcSRfr6Wwa8/vouyXcpd4uhGaupoItx70vbsLadrFOLAhnt/zLzD1666k8YBQK
-+DLNLCghebUMq97g993cJCuSSQJsmmU2k6TUZ0cMscvttD0AjiTZTA==
-=nNhy
------END PGP SIGNATURE-----
-
---=-CugefDPgT2Mf8k9XmAxX--
+      ____________________________________________________________________________________
+Luggage? GPS? Comic books? 
+Check out fitting gifts for grads at Yahoo! Search
+http://search.yahoo.com/search?fr=oni_on_mail&p=graduation+gifts&cs=bz
