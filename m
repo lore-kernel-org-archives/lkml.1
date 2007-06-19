@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761411AbXFSWww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbXFSWxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761411AbXFSWww (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbXFSWwZ
+	id S1761147AbXFSWxK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759265AbXFSWw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:52:25 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:54615 "EHLO
+	Tue, 19 Jun 2007 18:52:28 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:54854 "EHLO
 	outbound8-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760760AbXFSWwX (ORCPT
+	by vger.kernel.org with ESMTP id S1761193AbXFSWw0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:52:23 -0400
+	Tue, 19 Jun 2007 18:52:26 -0400
 X-BigFish: VP
 X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Wed, 20 Jun 2007 00:50:11 +0200
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Date: Wed, 20 Jun 2007 00:51:45 +0200
 From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [PATCH 6/12] acpi: fix compile warnings
-Message-ID: <20070619225011.GH5193@alberich.amd.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 10/12] SLOB: fix build error if SLOB && !NUMA
+Message-ID: <20070619225145.GL5193@alberich.amd.com>
 MIME-Version: 1.0
 User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Jun 2007 22:49:14.0840 (UTC)
- FILETIME=[0F997D80:01C7B2C4]
-X-WSS-ID: 6A6682E71S4852301-01-01
+X-OriginalArrivalTime: 19 Jun 2007 22:50:48.0983 (UTC)
+ FILETIME=[47B69270:01C7B2C4]
+X-WSS-ID: 6A66825923K845854-04-01
 Content-Type: text/plain;
  charset=us-ascii
 Content-Disposition: inline
@@ -30,28 +30,43 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix compile warnings:
+Fix build error:
 
- drivers/acpi/bus.c: In function 'acpi_bus_get_power':
- drivers/acpi/bus.c:162: warning: implicit declaration of function 'acpi_power_get_inferred_state'
- drivers/acpi/bus.c: In function 'acpi_bus_set_power':
- drivers/acpi/bus.c:232: warning: implicit declaration of function 'acpi_power_transition'
+  LD      .tmp_vmlinux1
+  arch/x86_64/kernel/built-in.o: In function `__cpu_up':
+  : undefined reference to `kmalloc_node'
+  kernel/built-in.o: In function `build_sched_domains':
+  sched.c:(.text+0x41e7): undefined reference to `kmalloc_node'
+  sched.c:(.text+0x42b5): undefined reference to `kmalloc_node'
+  kernel/built-in.o: In function `timer_cpu_notify':
+  timer.c:(.init.text+0x1163): undefined reference to `kmalloc_node'
+  mm/built-in.o: In function `mempool_create_node':
+  : undefined reference to `kmalloc_node'
+  mm/built-in.o:: more undefined references to `kmalloc_node' follow
+
+... hmm, SLOB currently does not provide kmalloc_node() and friends.
 
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index b4a9ea5..e01dca1 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -43,6 +43,8 @@ ACPI_MODULE_NAME("bus");
- #ifdef	CONFIG_X86
- extern void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger);
- #endif
-+extern int acpi_power_get_inferred_state(struct acpi_device *);
-+extern int acpi_power_transition(struct acpi_device *, int);
+ init/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index a9e99f8..d4a68f6 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -576,7 +576,7 @@ config SLUB
+ 	   and has enhanced diagnostics.
  
- struct acpi_device *acpi_root;
- struct proc_dir_entry *acpi_root_dir;
+ config SLOB
+-	depends on EMBEDDED && !SPARSEMEM
++	depends on EMBEDDED && !SPARSEMEM && !NUMA
+ 	bool "SLOB (Simple Allocator)"
+ 	help
+ 	   SLOB replaces the SLAB allocator with a drastically simpler
+-- 
+1.5.0.7
+
 
 
 
