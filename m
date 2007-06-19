@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbXFSOre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbXFSO4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758378AbXFSOre (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbXFSOr1
+	id S1755382AbXFSO4X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbXFSO4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:47:27 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:47891 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbXFSOrZ (ORCPT
+	Tue, 19 Jun 2007 10:56:13 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:35604 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752293AbXFSO4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:47:25 -0400
-Date: Tue, 19 Jun 2007 16:48:46 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Trilok Soni <soni.trilok@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Message-ID: <20070619144845.GJ4374@enneenne.com>
-References: <5d5443650706190428q341a50a1obae68b2565d0ed7@mail.gmail.com> <20070619121020.GA8902@enneenne.com> <20070619153940.0e120fb0@hyperion.delvare>
+	Tue, 19 Jun 2007 10:56:12 -0400
+Date: Tue, 19 Jun 2007 09:56:08 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux@highpoint-tech.com
+Subject: bug in libata [was Re: [BUG] ide dma_timer_expiry, then hard lockup
+Message-ID: <20070619145608.GA13904@austin.ibm.com>
+References: <20070618175713.GD5836@austin.ibm.com> <20070618212704.394912b8@the-village.bc.nu> <20070618204601.GF5836@austin.ibm.com> <20070618220441.3a3af8ca@the-village.bc.nu> <20070618212238.GI5836@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070619153940.0e120fb0@hyperion.delvare>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [i2c] [PATCH] I2C: TSL2550 support.
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <20070618212238.GI5836@austin.ibm.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 03:39:40PM +0200, Jean Delvare wrote:
-> Hi Rodolfo,
-> 
-> On Tue, 19 Jun 2007 14:10:20 +0200, Rodolfo Giometti wrote:
-> > Add support for Taos TSL2550 ambient light sensors.
-> > (http://www.taosinc.com/product_detail.asp?cateid=4&proid=18).
-> > 
-> > Signed-off-by: Rodolfo Giometti <giometti@linux.it>
-> 
-> Did you ever read my review of your driver?
-> http://lists.lm-sensors.org/pipermail/i2c/2007-February/000824.html
+On Mon, Jun 18, 2007 at 04:22:38PM -0500, linas wrote:
+> On Mon, Jun 18, 2007 at 10:04:41PM +0100, Alan Cox wrote:
+> > please try using the libata
+> > driver. 
 
-Please, note that I left LUX calculation untouched since on my data
-sheet I have only such cumputation example. :(
+Its worse. I get a hard hang (sysrq doesn't work) during boot, 
+just when the system goes to read the partition table.
 
-Hope it could be ok anyway...
+Recap: this is an older dual cpu intel box, with a vintage
+HTP366 (and not a newer HPT370) on the system planar.  I'm
+testing a configration that works fine with the old ide
+drivers.
 
-Ciao,
+It looks like libata and scsi comes up. The disk is correctly
+recognized; i.e. its brand, model number & size are correctly 
+reported. printk shows that it hangs in msdos_partition, trying 
+to read the partition table. The drive light is on full-solid,
+again suggesting a possible irq storm.
 
-Rodolfo
+Same behaviour for both 2.6.22-rc5-git1 and for 2.6.22-rc4-mm2
 
--- 
+I seem to have trouble turning on scsi logging; it doesn't
+seem to generate any output ... 
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Any suggestions on how to proceed? 
+
+--linas
