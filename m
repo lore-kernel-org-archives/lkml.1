@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbXFSUEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765642AbXFSUFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763664AbXFSUEe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 16:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765483AbXFSUDu
+	id S1765642AbXFSUFu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 16:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763009AbXFSUFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 16:03:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51100 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765284AbXFSUDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 16:03:48 -0400
-Message-ID: <4678369C.7070908@redhat.com>
-Date: Tue, 19 Jun 2007 16:03:40 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 19 Jun 2007 16:05:40 -0400
+Received: from h155.mvista.com ([63.81.120.155]:39852 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762080AbXFSUFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 16:05:39 -0400
+Message-ID: <46783777.10607@ru.mvista.com>
+Date: Wed, 20 Jun 2007 00:07:19 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com> <4678292B.6000804@hawkeye.stone.uk.eu.org>
-In-Reply-To: <4678292B.6000804@hawkeye.stone.uk.eu.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linas Vepstas <linas@austin.ibm.com>, Stuart_Hayes@dell.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+References: <20070618175713.GD5836@austin.ibm.com> <4677FFF1.2010308@ru.mvista.com> <20070619164854.GR5836@austin.ibm.com> <200706192043.40298.bzolnier@gmail.com>
+In-Reply-To: <200706192043.40298.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jack Stone wrote:
-> Chris Snook wrote:
->> But what you're talking about *will* break userspace.  If I do an ls in
->> a directory, and get pages upon pages of versions of just one file,
->> that's broken.  If I tar up a directory and get a tarball that's
->> hundreds of times larger than it should be, that's broken.  If you want
->> the files to be hidden from userspace applications that don't know about
->> your backup scheme, (and it sounds like you do) then use the existing
->> convention for hidden files, the prepended '.'  This is the universal
->> sign for "don't mess with me unless you know what you're doing".
-> 
-> The idea was that if you did an ls you would get the latest version of
-> the file without the :revision_num. The only visible version would be
-> the latest version, i.e. the current system would not change. The idea
-> was that it would only show earlier versions if they were specifically
-> requested with a :revision_num suffix. In that case the
-> filesystem/kernel would need to recognise the suffix and return the
-> earlier version of the file.
-> 
-> The only userspace it would break is files with :num in their name, as I
-> haven't seen any files like that I don't think its too big a problem but
-> the way of specifiying revisions could be changed.
-> 
-> Jack
+Bartlomiej Zolnierkiewicz wrote:
 
-I have one right now:
+>>There are two distinct issues.
+>>-- libata locks up in partition table read on an hpt366+old maxtor disk
+>>   that has ben working fine for many years with old ide driver. (It
+>>   still works fine when I boot to the alternate ide-based kernel).
 
-$ ls /tmp/ksocket-csnook/kdeinit*
-/tmp/ksocket-csnook/kdeinit__0  /tmp/ksocket-csnook/kdeinit-:0
+>>-- ide driver locks up on hpt366+new maxtor disk under heavy 
+>>   i/o load. I was able to copy 60GB from old to new disk without a
+>>   problem; however, raid reconstruction locks it up, maybe after 5-15
+>>   seconds.
 
-Note, I did not pass any special arguments to ls to make it pull up that file. 
-You'd have to modify ls to make it do that.  You'd also need to modify 
-everything else out there.  There are decades of programs out there that would 
-behave differently with the interface you propose.
+>>   This probably is "hardware related"; its something that the new 
+>>   hard drive does. Given that its being sold at a big discount, it
+>>   may even be that the sellers know that this is a crappy disk. :-)
 
-The more fundamental problem with your proposed interface is that it treats a 
-filesystem like an opaque server, instead of a transparent data structure.  You 
-want files to be completely invisible to applications that don't know about it, 
-unless the user requests it.  Unfortunately, it doesn't work that way. 
-Applications ask for a directory listing, and will open the requested file if 
-and only if the filename in question appears in that listing.  If you want to 
-use this opaque server model, you'd be better served putting it in some parallel 
-file system (say, /backup) that won't interfere with naive applications 
-accessing the mundane data.  Personally, I like your idea of putting the older 
-versions in the same directory hierarchy, but I think you'd have to use .foo 
-hidden directories to do it right.
+>>   All I want is some way of resetting the disk, and continuing on.
 
-	-- Chris
+> It would be useful to see hdparm --Istdout output for *both* disks.
+
+>>I'm stalled in debugging; I'm not sue what I'm looking for.
+
+> Sergei, do you think that testing the drive with DMA disabled may
+> tell us something new?
+
+    Not sure. I'll try to come up with a patch esetting the state machine in 
+dma_timeout() method (following Alan's idea) -- HPT366 regs are different 
+enough to use the one for HPT370.
+
+> Thanks,
+> Bart
+
+MBR, Sergei
