@@ -1,94 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbXFSPjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759731AbXFSPk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759913AbXFSPjT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbXFSPjG
+	id S1759731AbXFSPk7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbXFSPkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:39:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38548 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757744AbXFSPjE (ORCPT
+	Tue, 19 Jun 2007 11:40:52 -0400
+Received: from smtp-01b.mandic.com.br ([200.225.81.136]:42775 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757108AbXFSPkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:39:04 -0400
-Subject: Re: [-RT] multiple streams have degraded performance
-From: Peter Zijlstra <peterz@infradead.org>
-To: Vernon Mauery <vernux@us.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200706190725.30414.vernux@us.ibm.com>
-References: <200706182212.22633.vernux@us.ibm.com>
-	 <1182235898.7348.361.camel@twins>  <200706190725.30414.vernux@us.ibm.com>
-Content-Type: text/plain
-Date: Tue, 19 Jun 2007 17:38:50 +0200
-Message-Id: <1182267530.7348.367.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 19 Jun 2007 11:40:51 -0400
+Message-ID: <4677F820.5020207@mandic.com.br>
+Date: Tue, 19 Jun 2007 12:37:04 -0300
+From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Jiri Kosina <jikos@jikos.cz>
+Subject: Re: Error -71 on device descriptor read/all
+References: <4677EBF8.5020104@mandic.com.br> <Pine.LNX.4.64.0706191657050.3068@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0706191657050.3068@twin.jikos.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-19 at 07:25 -0700, Vernon Mauery wrote:
-> On Monday 18 June 2007 11:51:38 pm Peter Zijlstra wrote:
-> > On Mon, 2007-06-18 at 22:12 -0700, Vernon Mauery wrote:
-> > > In looking at the performance characteristics of my network I found that
-> > > 2.6.21.5-rt15 suffers from degraded thoughput with multiple threads.  The
-> > > test that I did this with is simply invoking 1, 2, 4, and 8 instances of
-> > > netperf at a time and measuring the total throughput.  I have two 4-way
-> > > machines connected with 10GbE cards.  I tested several kernels (some
-> > > older and some newer) and found that the only thing in common was that
-> > > with -RT kernels the performance went down with concurrent streams.
-> > >
-> > > While the test was showing the numbers for receiving as well as sending,
-> > > the receiving numbers are not reliable because that machine was running a
-> > > -RT kernel for these tests.
-> > >
-> > > I was just wondering if anyone had seen this problem before or would have
-> > > any idea on where to start hunting for the solution.
-> >
-> > could you enable CONFIG_LOCK_STAT
-> >
-> > echo 0 > /proc/lock_stat
-> >
-> > <run your test>
-> >
-> > and report the output of (preferably not 80 column wrapped):
-> >
-> > grep : /proc/lock_stat | head
+Jiri Kosina wrote:
+> On Tue, 19 Jun 2007, Renato S. Yamane wrote:
+>> I see this in dmesg:
+>> usb 1-1: device descriptor read/all, error -71
 > 
-> /proc/lock_stat stayed empty for the duration of the test.  I am guessing this 
-> means there was no lock contention.
+> Is this a USB 2.0 high-speed device?
 
-Most likely caused by the issue below.
+lspci -v | grep 1d.7
+00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 
+Family) USB2 EHCI Controller (rev 04) (prog-if 20 [EHCI])
 
-> I do see this on the console:
-> BUG: scheduling with irqs disabled: IRQ-8414/0x00000000/9494
-> caller is wait_for_completion+0x85/0xc4
-> 
-> Call Trace:
->  [<ffffffff8106f3b2>] dump_trace+0xaa/0x32a
->  [<ffffffff8106f673>] show_trace+0x41/0x64
->  [<ffffffff8106f6ab>] dump_stack+0x15/0x17
->  [<ffffffff8106566f>] schedule+0x82/0x102
->  [<ffffffff81065774>] wait_for_completion+0x85/0xc4
->  [<ffffffff81092043>] set_cpus_allowed+0xa1/0xc8
->  [<ffffffff810986e2>] do_softirq_from_hardirq+0x105/0x12d
->  [<ffffffff810ca6cc>] do_irqd+0x2a8/0x32f
->  [<ffffffff8103469d>] kthread+0xf5/0x128
->  [<ffffffff81060f68>] child_rip+0xa/0x12
-> 
-> INFO: lockdep is turned off.
-> 
-> I haven't seen this until I enabled lock_stat and ran the test.
+My machine is a Laptop Toshiba M45-S355
 
-I think this is what causes the lack of output. It disables all lock
-tracking features...
+> Don't you for example have USB 
+> extension cable too long to work on-high speed?
 
-> > or otherwise if there are any highly contended network locks listed?
-> 
-> Any other ideas for debugging this?
+My only USB device is a mouse (Microsoft Notebook Optical Mouse) without 
+extension cable (I use original cable, with less than 3 feets).
 
-fixing the above bug would help :-)
+> I guess the situation improves when you force USB 1.1 (i.e. rmmod 
+> ehci_hcd), right?
 
-Ingo says that should be fixed in -rt17, so if you could give that a
-spin...
+#rmmode ehci_hcd
+#tail /var/log/messages
 
+kernel: ehci_hcd 0000:00:1d.7: remove, state 4
+kernel: usb usb5: USB disconnect, address 1
+kernel: ehci_hcd 0000:00:1d.7: USB bus 5 deregistered
+kernel: ACPI: PCI interrupt for device 0000:00:1d.7 disabled
+
+I don't see any error (-71).
+
+#modprobe ehci_hcd
+#tail /var/log/messages
+kernel: ACPI: PCI Interrupt 0000:00:1d.7[A] -> Link [LNKH] -> GSI 10 
+(level, low) -> IRQ 10
+kernel: ehci_hcd 0000:00:1d.7: EHCI Host Controller
+kernel: ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
+kernel: ehci_hcd 0000:00:1d.7: debug port 1
+kernel: ehci_hcd 0000:00:1d.7: irq 10, io mem 0xf4000000
+kernel: ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 
+2004
+kernel: usb usb5: configuration #1 chosen from 1 choice
+kernel: hub 5-0:1.0: USB hub found
+kernel: hub 5-0:1.0: 8 ports detected
+kernel: usb 1-1: USB disconnect, address 4
+kernel: usb 1-1: new low speed USB device using uhci_hcd and address 5
+kernel: usb 1-1: configuration #1 chosen from 1 choice
+kernel: input: Microsoft Microsoft 3-Button Mouse with IntelliEye? as 
+/class/input/input8
+kernel: input: USB HID v1.00 Mouse [Microsoft Microsoft 3-Button Mouse 
+with IntelliEye?] on usb-0000:00:1d.0-1
+
+This error is present only in dmesg, see below (line 8):
+
+PCI: Setting latency timer of device 0000:00:1d.7 to 64
+ehci_hcd 0000:00:1d.7: EHCI Host Controller
+ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
+ehci_hcd 0000:00:1d.7: debug port 1
+PCI: cache line size of 32 is not supported by device 0000:00:1d.7
+ehci_hcd 0000:00:1d.7: irq 10, io mem 0xf4000000
+ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+usb 1-1: device descriptor read/all, error -71
+usb usb5: configuration #1 chosen from 1 choice
+hub 5-0:1.0: USB hub found
+hub 5-0:1.0: 8 ports detected
+Clocksource tsc unstable (delta = -194969704 ns)
+ACPI: PCI Interrupt Link [LNKG] enabled at IRQ 6
+PCI: setting IRQ 6 as level-triggered
+
+Best regards,
+Renato
