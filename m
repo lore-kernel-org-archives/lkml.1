@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbXFSO13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbXFSO2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757724AbXFSO13 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 10:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbXFSO1W
+	id S1755909AbXFSO2D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 10:28:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXFSO1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 10:27:22 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:48596 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751997AbXFSO1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 10:27:21 -0400
-Message-ID: <4677E7C3.90706@s5r6.in-berlin.de>
-Date: Tue, 19 Jun 2007 16:27:15 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: Oleg Verych <olecom@flower.upol.cz>
-CC: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Bligh <mbligh@mbligh.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
-References: <4675C083.6080409@s5r6.in-berlin.de> <20070617220927.99ebc1ee.akpm@linux-foundation.org> <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca> <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de> <20070619140512.GA19904@flower.upol.cz>
-In-Reply-To: <20070619140512.GA19904@flower.upol.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 10:27:52 -0400
+Received: from mail.screens.ru ([213.234.233.54]:56539 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753523AbXFSO1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 10:27:51 -0400
+Date: Tue, 19 Jun 2007 18:27:30 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, pbadari@us.ibm.com,
+       containers@lists.osdl.org, ebiederm@xmission.com, serue@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] create_new_namespaces: fix improper return of NULL
+Message-ID: <20070619142730.GA27361@tv-sign.ru>
+References: <200705090245.l492jZwD008756@shell0.pdx.osdl.net> <20070616191742.GA13434@MAIL.13thfloor.at> <20070617143830.GA379@tv-sign.ru> <20070617163004.GA553@tv-sign.ru> <20070619135129.GA27343@tv-sign.ru> <4677E28C.5050304@fr.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4677E28C.5050304@fr.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/19/2007 4:05 PM, Oleg Verych wrote:
-> On Tue, Jun 19, 2007 at 02:48:55PM +0200, Adrian Bunk wrote:
->> The Debian BTS requires you to either write emails with control messages 
->> or generating control messages with external tools.
-...
->> In Bugzilla the same works through a web interface.
-...
-> Basic concept of Debian BTS is what i've discovered after many useless
-> hours i spent in Bugzilla. And this is mainly because of one basic
-> important thing, that nobody acknowledged (for newbies, like me):
+On 06/19, Cedric Le Goater wrote:
+>
+> Oleg Nesterov wrote:
+> > Untested.
+> > 
+> > dup_mnt_ns() and clone_uts_ns() return NULL on failure. This is wrong,
+> > create_new_namespaces() uses ERR_PTR() to catch an error. This means
+> > that the subsequent create_new_namespaces() will hit BUG_ON() in
+> > copy_mnt_ns() or copy_utsname().
 > 
-> * E-Mail with useful MUAs, after it got reliable delivery MTAs with qmail
->   (or exim) is the main communication toolset.
+> I sent one just like it :
 > 
-> Can't you see that from Linux's patch sending policy?
+> 	http://lkml.org/lkml/2007/6/12/142
 
-That's for developers, not for users.
+Ah, thanks.
 
-There are different people involved in
-  - patch handling,
-  - bug handling (bugs are reported by end-users),
-therefore don't forget that PTS and BTS have different requirements.
--- 
-Stefan Richter
--=====-=-=== -==- =--==
-http://arcgraph.de/sr/
+Your patch is more complete, it also fixes kernel/user_namespace.c (which
+I don't see in 2.6.22-rc5). I don't this this fix is urgent, so...
+
+Andrew, please ignore this patch.
+
+Oleg.
+
