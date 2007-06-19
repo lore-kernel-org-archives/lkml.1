@@ -1,152 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbXFSWTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbXFSWT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbXFSWTH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbXFSWSY
+	id S1758589AbXFSWT0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbXFSWSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:18:24 -0400
-Received: from mga02.intel.com ([134.134.136.20]:7924 "EHLO mga02.intel.com"
+	Tue, 19 Jun 2007 18:18:25 -0400
+Received: from mga01.intel.com ([192.55.52.88]:50152 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbXFSWSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753529AbXFSWSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Jun 2007 18:18:21 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,439,1175497200"; 
-   d="scan'208";a="256480251"
-Message-Id: <20070619213808.504997000@askeshav-devel.jf.intel.com>
+   d="scan'208";a="258836655"
+Message-Id: <20070619213808.798646000@askeshav-devel.jf.intel.com>
 References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 19 Jun 2007 14:37:03 -0700
+Date: Tue, 19 Jun 2007 14:37:07 -0700
 From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: ak@suse.de, gregkh@suse.de, muli@il.ibm.com, suresh.b.siddha@intel.com,
        arjan@linux.intel.com, ashok.raj@intel.com, davem@davemloft.net,
        clameter@sgi.com, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-Subject: [Intel IOMMU 02/10] PCI generic helper function
-Content-Disposition: inline; filename=pcie_port_type.patch
+Subject: [Intel IOMMU 06/10] Avoid memory allocation failures in dma map api calls
+Content-Disposition: inline; filename=intel_iommu_pf_memalloc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When devices are under a p2p bridge, upstream
-transactions get replaced by the device id of the bridge as it owns the
-PCIE transaction. Hence its necessary to setup translations on behalf of the
-bridge as well. Due to this limitation all devices under a p2p share the same
-domain in a DMAR.
+Intel IOMMU driver needs memory during DMA map calls to setup its internal
+page tables and for other data structures. As we all know that these DMA 
+map calls are mostly called in the interrupt context or with the spinlock 
+held by the upper level drivers(network/storage drivers), so in order to 
+avoid any memory allocation failure due to low memory issues,
+this patch makes memory allocation by temporarily setting PF_MEMALLOC
+flags for the current task before making memory allocation calls.
 
-We just cache the type of device, if its a native PCIe device
-or not for later use.
+We evaluated mempools as a backup when kmem_cache_alloc() fails
+and found that mempools are really not useful here because
+ 1) We don;t know for sure how much to reserve in advance
+ 2) And mempools are not useful for GFP_ATOMIC case (as we call 
+    memory alloc functions with GFP_ATOMIC)
 
-changes from previous posting
-1) fixed mostly coding style issues nothing major
+
+With PF_MEMALLOC flag set in the current->flags, the VM subsystem avoids
+any watermark checks before allocating memory thus guarantee'ing the 
+memory till the last free page. Further, looking at the code in 
+mm/page_alloc.c in __alloc_pages() function, looks like this
+flag is useful only in the non-interrupt context.
+
+If we are in the interrupt context and memory allocation in IOMMU
+driver fails for some reason, then the DMA map api's will return 
+failure and it is up to the higher level drivers to retry. Suppose,
+if upper level driver programs the controller with the buggy 
+DMA virtual address, the IOMMU will block that DMA transaction
+when that happens thus preventing any corruption to main memory.
+
+So far in our test scenario, we were unable to create
+any memory allocation failure inside dma map api calls.
 
 Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
----
- drivers/pci/pci.h    |    1 +
- drivers/pci/probe.c  |   14 ++++++++++++++
- drivers/pci/search.c |   30 ++++++++++++++++++++++++++++++
- include/linux/pci.h  |    2 ++
- 4 files changed, 47 insertions(+)
 
-Index: linux-2.6.22-rc4-mm2/drivers/pci/pci.h
+---
+ drivers/pci/intel-iommu.c |   30 ++++++++++++++++++++++++++----
+ 1 file changed, 26 insertions(+), 4 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/drivers/pci/intel-iommu.c
 ===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/pci/pci.h	2007-06-18 15:44:45.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/drivers/pci/pci.h	2007-06-18 15:45:07.000000000 -0700
-@@ -92,3 +92,4 @@
- 	return NULL;
- }
+--- linux-2.6.22-rc4-mm2.orig/drivers/pci/intel-iommu.c	2007-06-18 15:45:46.000000000 -0700
++++ linux-2.6.22-rc4-mm2/drivers/pci/intel-iommu.c	2007-06-19 13:10:29.000000000 -0700
+@@ -84,9 +84,31 @@
+ static struct kmem_cache *iommu_devinfo_cache;
+ static struct kmem_cache *iommu_iova_cache;
  
-+struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
-Index: linux-2.6.22-rc4-mm2/drivers/pci/probe.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/pci/probe.c	2007-06-18 15:44:45.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/drivers/pci/probe.c	2007-06-18 15:45:07.000000000 -0700
-@@ -851,6 +851,19 @@
- 	kfree(pci_dev);
- }
- 
-+static void set_pcie_port_type(struct pci_dev *pdev)
++static inline void *iommu_kmem_cache_alloc(struct kmem_cache *cachep)
 +{
-+	int pos;
-+	u16 reg16;
++	unsigned int flags;
++	void *vaddr;
 +
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-+	if (!pos)
-+		return;
-+	pdev->is_pcie = 1;
-+	pci_read_config_word(pdev, pos + PCI_EXP_FLAGS, &reg16);
-+	pdev->pcie_type = (reg16 & PCI_EXP_FLAGS_TYPE) >> 4;
++	/* trying to avoid low memory issues */
++	flags = current->flags & PF_MEMALLOC;
++	current->flags |= PF_MEMALLOC;
++	vaddr = kmem_cache_alloc(cachep, GFP_ATOMIC);
++	current->flags &= (~PF_MEMALLOC | flags);
++	return vaddr;
 +}
 +
- /**
-  * pci_cfg_space_size - get the configuration space size of the PCI device.
-  * @dev: PCI device
-@@ -965,6 +978,7 @@
- 	dev->device = (l >> 16) & 0xffff;
- 	dev->cfg_size = pci_cfg_space_size(dev);
- 	dev->error_state = pci_channel_io_normal;
-+	set_pcie_port_type(dev);
- 
- 	/* Assume 32-bit PCI; let 64-bit PCI cards (which are far rarer)
- 	   set this higher, assuming the system even supports it.  */
-Index: linux-2.6.22-rc4-mm2/drivers/pci/search.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/drivers/pci/search.c	2007-06-18 15:44:45.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/drivers/pci/search.c	2007-06-18 15:45:07.000000000 -0700
-@@ -14,6 +14,36 @@
- #include "pci.h"
- 
- DECLARE_RWSEM(pci_bus_sem);
-+/*
-+ * find the upstream PCIE-to-PCI bridge of a PCI device
-+ * if the device is PCIE, return NULL
-+ * if the device isn't connected to a PCIE bridge (that is its parent is a
-+ * legacy PCI bridge and the bridge is directly connected to bus 0), return its
-+ * parent
-+ */
-+struct pci_dev *
-+pci_find_upstream_pcie_bridge(struct pci_dev *pdev)
-+{
-+	struct pci_dev *tmp = NULL;
 +
-+	if (pdev->is_pcie)
-+		return NULL;
-+	while (1) {
-+		if (!pdev->bus->self)
-+			break;
-+		pdev = pdev->bus->self;
-+		/* a p2p bridge */
-+		if (!pdev->is_pcie) {
-+			tmp = pdev;
-+			continue;
-+		}
-+		/* PCI device should connect to a PCIE bridge */
-+		BUG_ON(pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE);
-+		return pdev;
-+	}
-+
-+	return tmp;
-+}
- 
- static struct pci_bus *pci_do_find_bus(struct pci_bus *bus, unsigned char busnr)
+ static inline void *alloc_pgtable_page(void)
  {
-Index: linux-2.6.22-rc4-mm2/include/linux/pci.h
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/include/linux/pci.h	2007-06-18 15:44:45.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/include/linux/pci.h	2007-06-18 15:45:07.000000000 -0700
-@@ -140,6 +140,7 @@
- 	unsigned short	subsystem_device;
- 	unsigned int	class;		/* 3 bytes: (base,sub,prog-if) */
- 	u8		hdr_type;	/* PCI header type (`multi' flag masked out) */
-+	u8		pcie_type;	/* PCI-E device/port type */
- 	u8		rom_base_reg;	/* which config register controls the ROM */
- 	u8		pin;  		/* which interrupt pin this device uses */
+-	return (void *)get_zeroed_page(GFP_ATOMIC);
++	unsigned int flags;
++	void *vaddr;
++
++	/* trying to avoid low memory issues */
++	flags = current->flags & PF_MEMALLOC;
++	current->flags |= PF_MEMALLOC;
++	vaddr = (void *)get_zeroed_page(GFP_ATOMIC);
++	current->flags &= (~PF_MEMALLOC | flags);
++	return vaddr;
+ }
  
-@@ -182,6 +183,7 @@
- 	unsigned int 	msi_enabled:1;
- 	unsigned int	msix_enabled:1;
- 	unsigned int	is_managed:1;
-+	unsigned int	is_pcie:1;
- 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
+ static inline void free_pgtable_page(void *vaddr)
+@@ -96,7 +118,7 @@
  
- 	u32		saved_config_space[16]; /* config space saved at suspend time */
+ static inline void *alloc_domain_mem(void)
+ {
+-	return kmem_cache_alloc(iommu_domain_cache, GFP_ATOMIC);
++	return iommu_kmem_cache_alloc(iommu_domain_cache);
+ }
+ 
+ static inline void free_domain_mem(void *vaddr)
+@@ -106,7 +128,7 @@
+ 
+ static inline void * alloc_devinfo_mem(void)
+ {
+-	return kmem_cache_alloc(iommu_devinfo_cache, GFP_ATOMIC);
++	return iommu_kmem_cache_alloc(iommu_devinfo_cache);
+ }
+ 
+ static inline void free_devinfo_mem(void *vaddr)
+@@ -116,7 +138,7 @@
+ 
+ struct iova *alloc_iova_mem(void)
+ {
+-	return kmem_cache_alloc(iommu_iova_cache, GFP_ATOMIC);
++	return iommu_kmem_cache_alloc(iommu_iova_cache);
+ }
+ 
+ void free_iova_mem(struct iova *iova)
 
 -- 
