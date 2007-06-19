@@ -1,94 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbXFSRGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760633AbXFSRGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760405AbXFSRGN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 13:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbXFSRF7
+	id S1760633AbXFSRGv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbXFSRGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 13:05:59 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4668 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757409AbXFSRF6 (ORCPT
+	Tue, 19 Jun 2007 13:06:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56346 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758265AbXFSRGn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 13:05:58 -0400
-Date: Tue, 19 Jun 2007 17:58:32 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Ivan Kuten <ivan.kuten@promwad.com>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Victor <andrew@sanpeople.com>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] atmel_serial: Fix break handling
-Message-ID: <20070619165832.GA19663@flint.arm.linux.org.uk>
-References: <11806398911702-git-send-email-hskinnemoen@atmel.com> <20070605140720.4bdf887a@newbox> <20070605132336.3b8a9a4e@dhcp-255-175.norway.atmel.com> <20070618132121.2d00a907@newbox> <20070618103353.GB10387@flint.arm.linux.org.uk> <20070619133605.30e7655e@newbox>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070619133605.30e7655e@newbox>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 19 Jun 2007 13:06:43 -0400
+Date: Tue, 19 Jun 2007 10:04:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+cc: Adrian Bunk <bunk@stusta.de>, Martin Bligh <mbligh@mbligh.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
+In-Reply-To: <20070619165300.GD19904@flower.upol.cz>
+Message-ID: <alpine.LFD.0.98.0706190949440.3593@woody.linux-foundation.org>
+References: <20070617220927.99ebc1ee.akpm@linux-foundation.org>
+ <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca>
+ <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com>
+ <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com>
+ <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org>
+ <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de>
+ <alpine.LFD.0.98.0706190732150.3593@woody.linux-foundation.org>
+ <20070619165300.GD19904@flower.upol.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 01:36:05PM +0300, Ivan Kuten wrote:
-> On Mon, 18 Jun 2007 11:33:54 +0100
-> Russell King wrote:
+
+
+On Tue, 19 Jun 2007, Oleg Verych wrote:
 > 
-> > On Mon, Jun 18, 2007 at 01:21:21PM +0300, Ivan Kuten wrote:
-> > > Hi Haavard,
-> > > 
-> > > I tried /dev/ttyAT3, break appeared but not the way I expected, after:
-> > > stty -F /dev/ttyAT3 brkint I get:
-> > > 
-> > > cat /proc/tty/driver/atmel_serial 
-> > > serinfo:1.0 driver revision:
-> > > 0: uart:ATMEL_SERIAL mmio:0xFEFFF200 irq:1 tx:0 rx:0 CTS|DSR|CD|RI
-> > > 1: uart:ATMEL_SERIAL mmio:0xFFFC0000 irq:6 tx:0 rx:0 CTS|DSR|CD|RI             
-> > > 2: uart:ATMEL_SERIAL mmio:0xFFFC4000 irq:7 tx:0 rx:0 RI                        
-> > > 3: uart:ATMEL_SERIAL mmio:0xFFFC8000 irq:8 tx:1530 rx:115 brk:1 RTS|DTR|DSR|CD|RI
-> > > 4: uart:ATMEL_SERIAL mmio:0xFFFCC000 irq:9 tx:0 rx:0 DSR|CD|RI  
-> > > 
-> > > brk is 1 not depending on how many breaks was sent. May be I missunderstood
-> > > "break" meaning?
-> > > I use from minicom: Main Functions : send break.........F . 
-> > 
-> > Note that if you want to use magic sysrq on ttyAT3, you need the kernel
-> > console on ttyAT3.  Since you successfully received one break event on
-> > ttyAT3, the next character should have caused a sysrq event.
-> > 
-> 
-> Yes, I added to kernel command line "console=ttyAT3,115200" . 
-> 
-> I do not receive brk event via minicom, break counter sets to 1 only if
-> I issue this command: stty -F /dev/ttyAT3 brkint 
+> I'm proposing kind of smart tracking, summarized before. I'm not an
+> idealist, doing manual work. Making tools -- is what i've picked up from
+> one of your mails. Thus hope of having more opinions on that.
 
-You won't *receive* a break event via minicom - minicom will probably
-ignore the "interrupt" signal generated by the break interrupt.  But
-aren't you _transmitting_ breaks using minicom?  Are you running
-minicom on both ends?
+Don't get me wrong, I wasn't actually responing to you personally, I was 
+actually responding mostly to the tone of this thread.
 
-Anyway, the fact that the break counter incremented to '1' _and_ you've
-set ttyAT3 to be a console means that the next character received should
-be interpreted as a magic sysrq character.
+So I was responding to things like the example from Bartlomiej about 
+missed opportunity for taking developer review into account (and btw, I 
+think a little public shaming might not be a bad idea - I believe more in 
+*social* rules than in *technical* rules), and I'm responding to some of 
+the commentary by Adrian and others about "no regressions *ever*".
 
-Also, I note that the code in atmel_serial.c couldn't care less about
-the setting of BRKINT as far as incrementing the break counter (and
-that's how it should be) so I'm not really sure what's going on with
-your setup.  BRKINT just sets ATMEL_US_RXBRK in read_status_mask, which
-is only applied to the value read from the status register _after_ we
-check the status register for a break and increment the break counter.
-So I think that the incrementing of the break counter after you set
-BRKINT is just co-incidence.
+These are things we can *wish* for. But the fact that we migth wish for 
+them doesn't actually mean that they are really good ideas to aim for in 
+practice. 
 
-In any case, I think you need to take more care when composing your
-emails.  I'm getting really confused as to what you're running at
-each end of your serial link and what the configuration actually is.
+Let me put it another way: a few weeks ago there was this big news story 
+in the New York Times about how "forgetting" is a very essential part 
+about remembering, and people passed this around as if it was a big 
+revelation. People think that people with good memories have a "good 
+thing".
 
-Please take the time to re-describe from the start what your problem
-really is, taking care to clearly identify which end is doing what,
-what hardware is at each end, how each end is configured, what it's
-running and so forth.
+And personally, I was like "Duh". 
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Good memory is not about remembering everything. Good memory is about 
+forgetting the irrelevant, so that the important stuff stands out and you 
+*can* remember it. But the big deal is that yes, you have to forget stuff, 
+and that means that you *will* miss details - but you'll hopefully miss 
+the stuff you don't care for. The keyword being "hopefully". It works most 
+of the time, but we all know we've sometimes been able to forget a detail 
+that turned out to be crucial after all.
+
+So the *stupid* response to that is "we should remember everything". It 
+misses the point. Yes, we sometimes forget even important details, but 
+it's *so* important to forget details, that the fact that our brains 
+occasionally forget things we later ended up needing is still *much* 
+preferable to trying to remember everything.
+
+The same tends to be true of bug hunting, and regression tracking. 
+
+There's a lot of "noise" there. We'll never get perfect, and I'll argue 
+that if we don't have a system that tries to actively *remove* noise, 
+we'll just be overwhelmed. But that _inevitably_ means that sometimes 
+there was actually a signal in the noise that we ended up removing, 
+because nobody saw it as anything but noise. 
+
+So I think people should concentrate on turning "noise" into "clear 
+signal", but at the same time remember that that inevitably is a "lossy" 
+transformation, and just accept the fact that it will mean that we 
+occasionally make "mistakes". 
+
+This is why I've been advocating bugzilla "forget" stuff, for example. I 
+tend to see bugzilla as a place where noise accumulates, rather than a 
+place where noise is made into a signal. 
+
+Which gets my to the real issue I have: the notion of having a process for 
+_tracking_ all the information is actually totally counter-productive, if 
+a big part of the process isn't also about throwing noise away.
+
+We don't want to "save" all the crud. I don't want "smart tracking" to 
+keep track of everything. I want "smart forgetting", so that we are only 
+left with the major signal - the stuff that matters. 
+
+		Linus
