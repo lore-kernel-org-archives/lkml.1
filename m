@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbXFSF7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbXFSGDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbXFSF7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 01:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbXFSF7Z
+	id S1755019AbXFSGDt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 02:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXFSGDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 01:59:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44557 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbXFSF7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 01:59:24 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706181945.16343.dhazelton@enter.net>
-	<orvedk8zpa.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706182315.11466.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 02:58:30 -0300
-In-Reply-To: <200706182315.11466.dhazelton@enter.net> (Daniel Hazelton's message of "Mon\, 18 Jun 2007 23\:15\:11 -0400")
-Message-ID: <or3b0o5vuh.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 19 Jun 2007 02:03:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45836
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751187AbXFSGDj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 02:03:39 -0400
+Date: Mon, 18 Jun 2007 23:03:57 -0700 (PDT)
+Message-Id: <20070618.230357.08341020.davem@davemloft.net>
+To: hch@lst.de
+Cc: alan@lxorguk.ukuu.org.uk, axboe@kernel.dk, James.Bottomley@SteelEye.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, paulus@samba.org,
+       Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070619055358.GD18542@lst.de>
+References: <20070615171545.316dfac7@the-village.bc.nu>
+	<20070615.141917.85409547.davem@davemloft.net>
+	<20070619055358.GD18542@lst.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 19 Jun 2007 07:53:58 +0200
 
-> Actually you are in error here. You are saying "More home users == More 
-> Developers" when the ratio of home users to developers isn't all that high. 
-> (small set of facts: "Hacker" == "Developer" (in most cases, where the term, 
-> as defined in the Jargon File, can actually be applied), "Home User" * 0.10 
-> (ie: 10%) == "Developer" (approximately, and the correlation may be 
-> lower). "TiVO" == "Developers" (note the plural - they do employ more than 
-> one person for development))
+> On Fri, Jun 15, 2007 at 02:19:17PM -0700, David Miller wrote:
+> > Another quirk I have to deal with is that under LDOMs you
+> > can export full disks and also just slices.  So I'll have
+> > to get down into the partition machinery to support that
+> > somehow.
+> 
+> What's the problem with that?  Partition machinery is perfectly
+> fine with just getting a raw disk without a partition table,
+> and it obviously doesn't care if the raw disk it sees is part
+> of a partition on the storage server.
 
-As I wrote in another e-mail, why makes this proportion different for
-the other conditions determined by the GPL?
+Applications care :-)
 
-I.e., what is it that makes this particular condition so allegedly
-harmful for bringing in more developers and contributions, when
-compared with the requirements on passing on source code, licensing
-necessary patents, not suing other users over patent infringement in
-the software, not invoking anti-circumvention laws, not entering
-discriminatory agreements?
+One way of managing the partition table is by asking the storage
+server for it.  It supports giving back something that looks
+like the Sun partition table layout, and also something that's
+EFI based.
 
-> So "TiVO", even though they are walking all over the freedoms you love, means 
-> more *guaranteed* developers than the potential pool from the users of their 
-> boxes. (the pool of potential developers among the millions of TiVO users is 
-> actually miniscule, despite the size of the sample)
+But the client can ignore that and read/write the partition
+table itself.
 
-> However, you do make a good argument. But when you look at the statistics[1] 
-> they don't hold water.
+What I really care about is what will work transparently for existing
+userspace.  In particular, distribution installers and existing tools
+like fdisk.
 
-Err...  I have no idea of the actual user base of TiVo, but if it's
-really in the millions, and your 10% figure above is right, this makes
-for hundreds of thousands of hackers that could be scratching their
-itches and improving Linux on TiVo boxes.
+When a slice it being exported, it's not being exported like that so
+that the client can just spam a disk label into it, it's for exporting
+one slice.  So we might want (using the scsi naming as an arbitrary
+example case) /dev/sda1 to be created but not /dev/sda
 
-How many thousand employees does TiVo have working on Linux?
+How exactly do you envision this kind of thing working?
 
-(I realize a full-time employee is a lot more than a Joe Random
-Hacker, but still, I'm keeping a ratio of 100:1 to make up for that)
-
-> PS: I've beaten the addiction!
-
-Good for you!
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Supporting the disk-server-provided partition table management
+means providing ioctls() or whatever interface to get/set
+the table.  I had one idea to intercept reads/writes to the
+first block(s) and translating those into partition management
+commands to the disk server, but that is just too ugly to live. :-)
