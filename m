@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbXFSKaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbXFSKd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbXFSKaB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 06:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXFSK3y
+	id S1758368AbXFSKd0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 06:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756465AbXFSKdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 06:29:54 -0400
-Received: from smtp.nokia.com ([131.228.20.171]:33583 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753457AbXFSK3x convert rfc822-to-8bit (ORCPT
+	Tue, 19 Jun 2007 06:33:19 -0400
+Received: from 42.242.232.72.static.reverse.layeredtech.com ([72.232.242.42]:56706
+	"EHLO secure.poehali.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756453AbXFSKdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 06:29:53 -0400
-Subject: Re: [PATCH/RFC] oops and panic message logging to MTD
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Richard Purdie <rpurdie@openedhand.com>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1182247254.5760.17.camel@localhost.localdomain>
-References: <1182184301.6074.62.camel@localhost.localdomain>
-	 <1182239749.4403.48.camel@sauron>
-	 <1182247254.5760.17.camel@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 19 Jun 2007 13:29:22 +0300
-Message-Id: <1182248962.4403.60.camel@sauron>
+	Tue, 19 Jun 2007 06:33:18 -0400
+Date: Tue, 19 Jun 2007 13:36:05 +0300
+From: Ivan Kuten <ivan.kuten@promwad.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] atmel_serial: Fix break handling
+Message-ID: <20070619133605.30e7655e@newbox>
+In-Reply-To: <20070618103353.GB10387@flint.arm.linux.org.uk>
+References: <11806398911702-git-send-email-hskinnemoen@atmel.com>
+	<20070605140720.4bdf887a@newbox>
+	<20070605132336.3b8a9a4e@dhcp-255-175.norway.atmel.com>
+	<20070618132121.2d00a907@newbox>
+	<20070618103353.GB10387@flint.arm.linux.org.uk>
+Organization: Promwad
+X-Mailer: Sylpheed-Claws 1.9.100cvs93 (GTK+ 2.8.7; i586-alt-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 19 Jun 2007 10:29:22.0696 (UTC) FILETIME=[B3D1E080:01C7B25C]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Assp-Whitelisted: Yes
+X-Assp-Envelope-From: ivan.kuten@promwad.com
+X-Assp-Intended-For: rmk+lkml@arm.linux.org.uk hskinnemoen@atmel.com
+	andrew@sanpeople.com nicolas.ferre@rfo.atmel.com patrice.vilchez@rfo.atmel.com
+	linux-kernel@vger.kernel.org
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - secure.poehali.org
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - promwad.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-19 at 11:00 +0100, Richard Purdie wrote:
-> On Tue, 2007-06-19 at 10:55 +0300, Artem Bityutskiy wrote:
-> > On Mon, 2007-06-18 at 17:31 +0100, Richard Purdie wrote:
-> > > +	if (mtd->erasesize < OOPS_PAGE_SIZE)
-> > > +		erase.len = OOPS_PAGE_SIZE;
+On Mon, 18 Jun 2007 11:33:54 +0100
+Russell King wrote:
+
+> On Mon, Jun 18, 2007 at 01:21:21PM +0300, Ivan Kuten wrote:
+> > Hi Haavard,
 > > 
-> > It seems to me that your code won't work if mtd->erasesize <
-> > OOPS_PAGE_SIZE anyway, so this check should not be here I guess.
+> > I tried /dev/ttyAT3, break appeared but not the way I expected, after:
+> > stty -F /dev/ttyAT3 brkint I get:
+> > 
+> > cat /proc/tty/driver/atmel_serial 
+> > serinfo:1.0 driver revision:
+> > 0: uart:ATMEL_SERIAL mmio:0xFEFFF200 irq:1 tx:0 rx:0 CTS|DSR|CD|RI
+> > 1: uart:ATMEL_SERIAL mmio:0xFFFC0000 irq:6 tx:0 rx:0 CTS|DSR|CD|RI             
+> > 2: uart:ATMEL_SERIAL mmio:0xFFFC4000 irq:7 tx:0 rx:0 RI                        
+> > 3: uart:ATMEL_SERIAL mmio:0xFFFC8000 irq:8 tx:1530 rx:115 brk:1 RTS|DTR|DSR|CD|RI
+> > 4: uart:ATMEL_SERIAL mmio:0xFFFCC000 irq:9 tx:0 rx:0 DSR|CD|RI  
+> > 
+> > brk is 1 not depending on how many breaks was sent. May be I missunderstood
+> > "break" meaning?
+> > I use from minicom: Main Functions : send break.........F . 
 > 
-> Its just a sanity check...
-
-Then do this once in the "add" notifier.
-
-> > Well, mtd->block_isbad() may return error, unlikely, bu still. You also
-> > ignore the error at other places.
+> Note that if you want to use magic sysrq on ttyAT3, you need the kernel
+> console on ttyAT3.  Since you successfully received one break event on
+> ttyAT3, the next character should have caused a sysrq event.
 > 
-> Ignoring that is deliberate since it doesn't really matter if the block
-> is bad or we can't read from it, the action is the same...
 
-No, bad EB is a perfectly legal thing and you should deal with it. Error
-code means that something very bad and sever is going on and you have to
-just refuse working with this device.
+Yes, I added to kernel command line "console=ttyAT3,115200" . 
 
-> > Also, do not ignore error code of mtd->block_markbad()
-> 
-> All we can do is print a warning, the action will be the same...
+I do not receive brk event via minicom, break counter sets to 1 only if I issue
+this command: stty -F /dev/ttyAT3 brkint 
 
-No, the action should be returning an error and refuse doing more work.
+Anyway I try to debug further to locate the problem.
 
-> > Also, could you please use wait_event_interruptible() instead of
-> > set_current_state() which looks better (indeed, you have wait queue, 
-> > so use wq calls).
-> 
-> That piece of code is in keeping with the rest of the mtd erase handling
-> code. Looking through the various wq macros, I don't see any which help
-> particularly in this case...
-
-Well, it is matter of taste so I do not insist. But I think
-wait_event_interruptible() is much nicer. Glance at drivers/ubi/io.c how
-it looks.
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+BR,
+Ivan
