@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbXFSRv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760879AbXFSRwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758978AbXFSRv2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 13:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760322AbXFSRu4
+	id S1760879AbXFSRwx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758097AbXFSRwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 13:50:56 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49233 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760142AbXFSRuz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 13:50:55 -0400
-Message-ID: <46781778.5000603@s5r6.in-berlin.de>
-Date: Tue, 19 Jun 2007 19:50:48 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
+	Tue, 19 Jun 2007 13:52:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33846 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755460AbXFSRwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 13:52:42 -0400
+Message-ID: <467817CE.80904@garzik.org>
+Date: Tue, 19 Jun 2007 13:52:14 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Oleg Verych <olecom@flower.upol.cz>
-CC: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Bligh <mbligh@mbligh.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Jay Vosburgh <fubar@us.ibm.com>, "David S. Miller" <davem@davemloft.net>,
+       Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
-References: <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca> <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de> <20070619140512.GA19904@flower.upol.cz> <4677E7C3.90706@s5r6.in-berlin.de> <20070619154712.GC19904@flower.upol.cz>
-In-Reply-To: <20070619154712.GC19904@flower.upol.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+       bonding-devel@lists.sourceforge.net
+Subject: Re: Why is this patch not in 2.6.22-rc5?
+References: <1178862045.3979.33.camel@kane-linux>	<20070511092519.1f34ab34@freepuppy>	<1179130660.3881.23.camel@kane-linux>	<20070514085840.17a343f7@freepuppy>	<20070613094521.GA8860@localdomain>	<20070613155335.47111c67@localhost>	<15712.1181795790@death> <20070619082302.4b9a5c27@localhost.localdomain>
+In-Reply-To: <20070619082302.4b9a5c27@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Verych wrote:
-> On Tue, Jun 19, 2007 at 04:27:15PM +0200, Stefan Richter wrote:
->> There are different people involved in
->>   - patch handling,
->>   - bug handling (bugs are reported by end-users),
->> therefore don't forget that PTS and BTS have different requirements.
+Stephen Hemminger wrote:
+> On Wed, 13 Jun 2007 21:36:30 -0700
+> Jay Vosburgh <fubar@us.ibm.com> wrote:
 > 
-> Sure. But if tracking was done, possible bugs where killed, user's bug
-> report seems to depend on that patch (bisecting), why not to have a
-> linkage here?
+>> 	The following patch (based on a patch from Stephen Hemminger
+>> <shemminger@linux-foundation.org>) removes use after free conditions in
+>> the unregister path for the bonding master.  Without this patch, an
+>> operation of the form "echo -bond0 > /sys/class/net/bonding_masters"
+>> would trigger a NULL pointer dereference in sysfs.  I was not able to
+>> induce the failure with the non-sysfs code path, but for consistency I
+>> updated that code as well.
+>>
+>> 	I also did some testing of the bonding /proc file being open
+>> while the bond is being deleted, and didn't see any problems there.
+>>
+>> Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+> 	
+> Hey David, this patch fixes one of the bugs listed in 2.6.22-rc5
+> list. Jay submitted last week but it hasn't made it upstream.
 
-Of course there are certain links between bugs and patches, and thus
-there are certain links between bug tracking and patch tracking.
+Get him to forward it to me, like he does for other bonding patches...
 
-[...]
-> Current identification of problems and patch association
-> have completely zero level of tracking or automation, while Bugzilla is
-> believed by somebody to have positive efficiency in bug tracking.
+	Jeff
 
-I, as maintainer of a small subsystem, can personally track bug--patch
-relationships with bugzilla just fine, on its near-zero level of
-automation and integration.
 
-Nevertheless, would a more integrated bug/patch tracking system help me
-improve quality of my output? ---
-a) Would it save me more time than it costs me to fit into the system
-   (time that can be invested in actual debugging)?
-   This can only be answered after trying it.
-b) Would it help me to spot mistakes in patches before I submit?
-   No.
-c) Would I get quicker feedback from testers?
-   That depends on whether such a system attracts testers and helps
-   testers to work efficiently.  This is also something that can only be
-   speculated about without trying it.
 
-The potential testers that I deal with are mostly either very
-non-technical persons, or persons which are experienced in their
-hardware/application area but *not* in kernel internals and kernel
-development procedures.
--- 
-Stefan Richter
--=====-=-=== -==- =--==
-http://arcgraph.de/sr/
