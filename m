@@ -1,112 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbXFSCsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933189AbXFSCsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932252AbXFSCsY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 22:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760820AbXFSCsQ
+	id S933189AbXFSCsp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 22:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763435AbXFSCsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 22:48:16 -0400
-Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:56848
-	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760525AbXFSCsP (ORCPT
+	Mon, 18 Jun 2007 22:48:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60789 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760820AbXFSCsb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 22:48:15 -0400
-To: davids@webmaster.com
-Cc: <david@lang.hm>, "Alexandre Oliva" <aoliva@redhat.com>,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <MDEHLPKNGKAHNMBLJOLKMEFDELAC.davids@webmaster.com>
-From: Michael Poole <mdpoole@troilus.org>
-Date: Mon, 18 Jun 2007 22:48:13 -0400
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKMEFDELAC.davids@webmaster.com> (David Schwartz's message of "Mon\, 18 Jun 2007 19\:10\:01 -0700")
-Message-ID: <87hcp4vevm.fsf@graviton.dyn.troilus.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
+	Mon, 18 Jun 2007 22:48:31 -0400
+To: =?utf-8?Q?Hans-J=C3=BCrgen?= Koch <hjk@linutronix.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
+       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: mea culpa on the meaning of Tivoization
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706182144.06825.hjk@linutronix.de>
+	<ortzt59d2r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706182331.19571.hjk@linutronix.de>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Mon, 18 Jun 2007 23:46:30 -0300
+In-Reply-To: <200706182331.19571.hjk@linutronix.de> (=?utf-8?Q?=22Hans-J?=
+ =?utf-8?Q?=C3=BCrgen?= Koch"'s message of "Mon\, 18 Jun 2007 23\:31\:19
+ +0200")
+Message-ID: <orejk88xvd.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz writes:
+On Jun 18, 2007, Hans-Jürgen Koch <hjk@linutronix.de> wrote:
 
->> David Schwartz writes:
->
->> >> First, end users buy and use the hardware in question.  It does not
->> >> belong to Tivo, so the analogy to his laptop fails there.
->
->> > No, this is incorrect. They buy *some* of the rights to the
->> > hardware but not
->> > all of them. Specifically, they do not buy the right to choose
->> > what software
->> > runs on that hardware. That right is still owned by TiVo.
->
->> Do you have a reference to the contract establishing that cession of
->> rights from the buyer to Tivo?
->
-> No, and I submit that this is at least arguably something wrong that TiVo is
-> doing. Note that Microsoft does this too when you buy an Xbox. It has
-> nothing to do with the GPL.
+> Am Montag 18 Juni 2007 23:18 schrieb Alexandre Oliva:
+>> On Jun 18, 2007, Hans-Jürgen Koch <hjk@linutronix.de> wrote:
+>> 
+>> >> Vendor would be entitled to the benefit of the doubt as to the
+>> >> motivations in this case, so it would likely be unenforceable anyway.
+>> 
+>> > Right. If GPL v3 comes out, there'll probably be a new task for
+>> > hardware development engineers: How to find excuses for hardware that
+>> > prevents software modifications and how to conceal the true intent.
+>> 
+>> Yup.  And then GPLv4 will have to plug whatever holes they find to
+>> disrespect users' freedoms.  That's how I expect the game to be
+>> played.
 
-There is a significant difference between what is a legally recognized
-right and what no one has litigated over.  I tend to not recognize the
-latter as the former until I see specific backing for the idea that
-the purported right has been recognized by law, a court, or all
-involved parties.
+> If you were right and it turned out that way, the whole GPL would
+> become so ridiculous that it won't have any of its intended effects.
 
->> To the extent that some contract
->> purports to restrict the user in ways contrary to the GPL, I suspect
->> Tivo might have a hard time defending it in court.
->
-> I agree, however, this doesn't restrict the user in ways contrary to the
-> GPL. The GPL does not say that you have to be allowed to modify the Linux
-> running on some particular piece of hardware because that is a legitimate
-> authorization decision. TiVo not letting you change the software is the same
-> as me not letting you change the software on my laptop.
+How so?  The intended effects are to protect users' freedoms, by
+requiring them to be respected.  If we keep on plugging holes as they
+appear, it will keep close to achieving its intended effects.  It's
+earlier versions of the license that will get more and more distant
+from it.
 
-I disagree that the two are the same -- for the fundamental reason
-that you have not distributed the software on your laptop to me.  Tivo
-has distributed the software on Tivo DVRs to their customers.  The act
-of distribution is governed by (in the case of Linux) copyright law
-and the GPL.
+> As far as the kernel is concerned, I expect the game's played by
+> simply keeping GPLv2. And I like it that way.
 
->> > You can argue that TiVo is being dishonest, breaking the law,
->> > being immoral,
->> > or whatever in retaining this right or in failing to disclose that they
->> > retain it. But you cannot coherently deny that TiVo retains
->> > this right when
->> > they sell certain other rights to the hardware.
->
->> By the first sale doctrine, someone who buys an item has practically
->> unlimited rights to deal with it or dispose of it as the buyer wishes.
->
-> This is solely a right against copyright claims. You would be correct if
-> TiVo were going to sue you for violating some copyright they hold in the
-> hardware or software if you modified the software.
+Just think about it...  What if, today, some law passed, or some court
+decision came up, that rendered a significant defense provision of
+GPLv2 or GPLv3 ineffective?
 
-Do you propose that Tivo would (or could) sue a customer for some
-non-copyright tort if the customer were to run a Linux kernel that has
-not been authorized by Tivo on a Tivo-manufactured DVR?  As far as I
-can tell, the legal concerns in question are all copyright issues.
+GPLv4 could plug that, and anyone using GPLvN+ would be able to switch
+to it immediately.  This wouldn't revoke previous licenses, of course,
+but further developments could be made under the newer license, and at
+least those could still be defended, and, as time elapsed, earlier
+versions of the software would become less and less relevant, to the
+point that the holes in their license also become less and less
+relevant, until copyright finally expires and they enter the public
+domain.
 
->> The only things that would restrict that are statute or a contract
->> entered as part of the sale -- most likely a EULA or other shrink-wrap
->> agreement.  Given that most such recognized agreements deal with
->> software or services rather than hardware, I am not sure a court would
->> recognize a hardware EULA as being binding.  (I suspect this is the
->> direction you were heading with the paragraph below.)
->
-> Yep, but that has nothing whatsoever to do with the GPL. The exact same
-> argument applies with the Xbox. It's about whether authorization to modify a
-> device should or must come with buying that device.
->
-> The GPL was never about allowing you to load modified software onto hardware
-> where the legitimate creators/owners of that hardware say, "no, you may not
-> modify the software running on this hardware".
 
-True.  The GPL always about allowing someone to modify software that
-they received from someone else.  Tivo's Linux kernel images qualify
-both as softare that they distribute to others and software that is
-loaded onto hardware that they created.  The concern at hand is not
-about hardware that Tivo owns or software that Tivo never distributes
--- except where it is also source code for software that they *do*
-distribute.
+The distrust for the FSF led to this very short-sighted decision of
+painting the Linux community into a corner from which it is very
+unlikely to be able to ever leave, no matter how badly it turns out to
+be needed.  Let's just hope it never is, or that some influx of
+long-sighted comes in and introduces mechanisms for the license of
+Linux to be patched, should this ever be needed.  I'm not even talking
+about GPLv2+, there are many other ways to accomplish this, that I've
+already mentioned in another posting in another recent huge thread.
 
-Michael Poole
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
