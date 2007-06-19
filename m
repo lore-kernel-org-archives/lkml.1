@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763096AbXFSSs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbXFSSvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763096AbXFSSs7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 14:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762758AbXFSSsw
+	id S1763289AbXFSSvo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 14:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762900AbXFSSvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 14:48:52 -0400
-Received: from palrel12.hp.com ([156.153.255.237]:58621 "EHLO palrel12.hp.com"
+	Tue, 19 Jun 2007 14:51:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53594 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761204AbXFSSsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 14:48:51 -0400
-Date: Tue, 19 Jun 2007 13:48:50 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: jens.axboe@oracle.com, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [PATCH 1/1] cciss: add new controller support for P700m
-Message-ID: <20070619184850.GA16417@beardog.cca.cpqcorp.net>
-Reply-To: mike.miller@hp.com
+	id S1753942AbXFSSvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 14:51:36 -0400
+Date: Tue, 19 Jun 2007 20:51:25 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Andries Brouwer <Andries.Brouwer@cwi.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mount-2.12r-ggk.tar.gz
+Message-ID: <20070619185125.GU7226@petra.dvoda.cz>
+References: <200706191238.l5JCcxg14300@apps.cwi.nl> <20070619141528.GS7226@petra.dvoda.cz> <20070619152818.GA16363@apps.cwi.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070619152818.GA16363@apps.cwi.nl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH 1/1
+On Tue, Jun 19, 2007 at 05:28:18PM +0200, Andries Brouwer wrote:
+> > > The above mount makes a feeble attempt to record these flags
+> > > in /etc/mtab, but will fail in any nontrivial situation.]
+> > 
+> >  I don't think that mtab is a good place for this shared subtree
+> >  stuff. The mtab needs to die.
+> 
+> Perhaps. Perhaps not.
+> 
+> On the one hand I think there is a place for arbitrary user-space info
+> about mounted filesystems. With information about who mounted, and at what time.
+> What the icon is that should represent this filesystem. What resources are
+> associated to this mount, and which program must do the cleanup. Etc.
+> Today there is not much user-space info, but there is some.
 
-This patch adds support for the Smart Array P700m SAS controller. This new
-controller will ship Fall 2008. Please consider this for inclusion.
+ See also the "[RFC] obsoleting /etc/mtab" thread:
+ http://www.mail-archive.com/util-linux-ng@vger.kernel.org/index.html#00208
 
-Signed-off-by: Mike Miller <mike.miller@hp.com>
+    Karel
 
---------------------------------------------------------------------------------
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 5acc6c4..0fcad43 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -87,6 +87,7 @@ static const struct pci_device_id cciss_
- 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSD,     0x103C, 0x3214},
- 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSD,     0x103C, 0x3215},
- 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSC,     0x103C, 0x3237},
-+	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSC,     0x103C, 0x323D},
- 	{PCI_VENDOR_ID_HP,     PCI_ANY_ID,	PCI_ANY_ID, PCI_ANY_ID,
- 		PCI_CLASS_STORAGE_RAID << 8, 0xffff << 8, 0},
- 	{0,}
-@@ -119,6 +120,7 @@ static struct board_type products[] = {
- 	{0x3214103C, "Smart Array E200i", &SA5_access, 120},
- 	{0x3215103C, "Smart Array E200i", &SA5_access, 120},
- 	{0x3237103C, "Smart Array E500", &SA5_access, 512},
-+	{0x323D103C, "Smart Array P700m", &SA5_access, 512},
- 	{0xFFFF103C, "Unknown Smart Array", &SA5_access, 120},
- };
- 
+
+-- 
+ Karel Zak  <kzak@redhat.com>
