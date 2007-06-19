@@ -1,276 +1,541 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbXFSLSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbXFSL26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757541AbXFSLSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 07:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbXFSLSa
+	id S1757917AbXFSL26 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 07:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756448AbXFSL2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 07:18:30 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:60982 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754611AbXFSLS3 (ORCPT
+	Tue, 19 Jun 2007 07:28:49 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:26889 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756327AbXFSL2s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 07:18:29 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Optional Beeping During Resume From Suspend To Ram.
-Date: Tue, 19 Jun 2007 21:18:22 +1000
-User-Agent: KMail/1.9.6
-Cc: pavel@ucw.cz, Rafael Wysocki <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
+	Tue, 19 Jun 2007 07:28:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uiXrDCbvKIl/o7MSTHl/Hk4cYoPicrsU7u5OqDQ5HDW3h7G74FbvJQdtowrRX4pTIsJyZjRpDIt7u7SZ+rsU/3VNjUEGhcbPBG9hXLjD2pe4mg+cuZudsXrf6w/BJRfyq1eAVtR9JhWed/agSDeDw7sK0SJj72GFUSkTnOMfBNA=
+Message-ID: <5d5443650706190428q341a50a1obae68b2565d0ed7@mail.gmail.com>
+Date: Tue, 19 Jun 2007 16:58:46 +0530
+From: "Trilok Soni" <soni.trilok@gmail.com>
+To: "Rodolfo Giometti" <giometti@enneenne.com>
+Subject: Re: [PATCH] I2C: TSL2550 support.
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20070619105551.GA3199@enneenne.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2839312.NDQi3J478u";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706192118.23706.nigel@nigel.suspend2.net>
+Content-Disposition: inline
+References: <20070619105551.GA3199@enneenne.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2839312.NDQi3J478u
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Rodolfo,
 
-Hi all
+On 6/19/07, Rodolfo Giometti <giometti@enneenne.com> wrote:
+> Add support for Taos TSL2550 ambient light sensors.
+> (http://www.taosinc.com/product_detail.asp?cateid=4&proid=18).
+>
+> Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+> ---
+>  drivers/i2c/chips/Kconfig   |   10 +
+>  drivers/i2c/chips/Makefile  |    1 +
+>  drivers/i2c/chips/tsl2550.c |  427 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 438 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/i2c/chips/tsl2550.c
+>
+> diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
+> index ea085a0..b59c013 100644
+> --- a/drivers/i2c/chips/Kconfig
+> +++ b/drivers/i2c/chips/Kconfig
+> @@ -124,4 +124,14 @@ config SENSORS_MAX6875
+>           This driver can also be built as a module.  If so, the module
+>           will be called max6875.
+>
+> +config SENSORS_TSL2550
+> +       tristate "Taos TSL2550 ambient light sensor"
+> +       depends on I2C && EXPERIMENTAL
+> +       help
+> +         If you say yes here you get support for the Taos TSL2550
+> +         ambient light sensor.
+> +
+> +         This driver can also be built as a module.  If so, the module
+> +         will be called tsl2550.
+> +
+>  endmenu
+> diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
+> index 779868e..1ef6a04 100644
+> --- a/drivers/i2c/chips/Makefile
+> +++ b/drivers/i2c/chips/Makefile
+> @@ -12,6 +12,7 @@ obj-$(CONFIG_SENSORS_PCF8574) += pcf8574.o
+>  obj-$(CONFIG_SENSORS_PCF8591)  += pcf8591.o
+>  obj-$(CONFIG_ISP1301_OMAP)     += isp1301_omap.o
+>  obj-$(CONFIG_TPS65010)         += tps65010.o
+> +obj-$(CONFIG_SENSORS_TSL2550)  += tsl2550.o
+>
+>  ifeq ($(CONFIG_I2C_DEBUG_CHIP),y)
+>  EXTRA_CFLAGS += -DDEBUG
+> diff --git a/drivers/i2c/chips/tsl2550.c b/drivers/i2c/chips/tsl2550.c
+> new file mode 100644
+> index 0000000..fd7f87c
+> --- /dev/null
+> +++ b/drivers/i2c/chips/tsl2550.c
+> @@ -0,0 +1,427 @@
+> +/*
+> + *  tsl2550.c - Linux kernel modules for ambient light sensor
+> + *
+> + *  Copyright (C) 2007 Rodolfo Giometti <giometti@linux.it>
+> + *  Copyright (C) 2007 Eurotech S.p.A. <info@eurotech.it>
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or
+> + *  (at your option) any later version.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *  GNU General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License
+> + *  along with this program; if not, write to the Free Software
+> + *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/slab.h>
+> +#include <linux/i2c.h>
+> +#include <linux/mutex.h>
+> +#include <linux/delay.h>
+> +
+> +#define TSL2550_DRV_NAME       "tsl2550"
+> +#define DRIVER_VERSION         "1.1.0"
+> +
+> +/* --- Defines ------------------------------------------------------------- */
+> +
+> +#define TSL2550_POWER_DOWN             0x00
+> +#define TSL2550_POWER_UP               0x03
+> +#define TSL2550_STANDARD_RANGE         0x18
+> +#define TSL2550_EXTENDED_RANGE         0x1d
+> +#define TSL2550_READ_ADC0              0x43
+> +#define TSL2550_READ_ADC1              0x83
+> +
+> +/* --- Structs ------------------------------------------------------------- */
+> +
+> +struct tsl2550_data {
+> +       struct i2c_client *client;
+> +       struct mutex update_lock;
+> +
+> +       unsigned int power_state : 1;
+> +       unsigned int operating_mode : 1;
+> +};
+> +
+> +/* --- Management functions ------------------------------------------------ */
+> +
+> +static int tsl2550_set_operating_mode(struct i2c_client *client, int mode)
+> +{
+> +       struct tsl2550_data *data = i2c_get_clientdata(client);
+> +       int ret;
+> +
+> +       mode = !!mode;
+> +       if (mode == data->operating_mode)
+> +               return 0;
+> +
+> +       if (mode == 0)
+> +               ret = i2c_smbus_write_byte(client, TSL2550_STANDARD_RANGE);
+> +       else
+> +               ret = i2c_smbus_write_byte(client, TSL2550_EXTENDED_RANGE);
+> +
+> +       data->operating_mode = mode;
+> +
+> +       return ret;
+> +}
+> +
+> +static int tsl2550_set_power_state(struct i2c_client *client, int state)
+> +{
+> +       struct tsl2550_data *data = i2c_get_clientdata(client);
+> +       int ret;
+> +
+> +       state = !!state;
+> +       if (state == data->power_state)
+> +               return 0;
+> +
+> +       if (state == 0)
+> +               ret = i2c_smbus_write_byte(client, TSL2550_POWER_DOWN);
+> +       else {
+> +               ret = i2c_smbus_write_byte(client, TSL2550_POWER_UP);
+> +
+> +               /* On power up we should reset operating mode also... */
+> +               tsl2550_set_operating_mode(client, data->operating_mode);
+> +       }
+> +
+> +       data->power_state = state;
+> +
+> +       return ret;
+> +}
+> +
+> +static int tsl2550_get_adc_value(struct i2c_client *client, int channel)
+> +{
+> +       u8 cmd = channel == 0 ? TSL2550_READ_ADC0 : TSL2550_READ_ADC1;
+> +       unsigned long end;
+> +       int loop = 0, ret = 0;
+> +
+> +       /* Read ADC channel waiting at most 400ms (see data sheet for further
+> +         * info).
+> +        * To avoid long busy wait we spin for few milliseconds then
+> +        * start sleeping. */
 
-Here's what I have after today's work.
+multi-line comment block format is not correct. It should be
 
-I haven't yet been able to test on x86, but can confirm that it works okay =
-on x86_64. I'm currently working towards testing it on my old Omnibook. My =
-P4 desktop won't resume from suspend to ram at all, and hasn't produced any=
- beeps.
+> +       /*
+> +        * Read ADC channel waiting at most 400ms (see data sheet for further
+> +        * info).
+> +        * To avoid long busy wait we spin for few milliseconds then
+> +        * start sleeping.
+> +        */
 
-I needed to move the BEEP invocation to after the data segment is reloaded,=
- so that the test could access the variable. That was pretty tricky to find=
- - no oops or anything bad prior, it just didn't beep when expected.
-
-A couple of notes:
-
-=2D I'd like to put the BEEP macro somewhere that can be shared by x86 32 a=
-nd 64. If that's a good idea, any suggestions on where? Nothing occurs to m=
-e straight off.
-=2D I've just switched from Evo to Kmail. Please let me know if there's any=
- mangling of the patch.
-
-Regards,
-
-Nigel
-
- arch/i386/kernel/acpi/wakeup.S   |   29 ++++++++++++++++++++++++++++-
- arch/x86_64/kernel/acpi/wakeup.S |   25 +++++++++++++++++++++++++
- include/linux/acpi.h             |    1 +
- kernel/power/main.c              |   23 +++++++++++++++++++++++
- 4 files changed, 77 insertions(+), 1 deletion(-)
-diff -ruNp 970-str-beep.patch-old/arch/i386/kernel/acpi/wakeup.S 970-str-be=
-ep.patch-new/arch/i386/kernel/acpi/wakeup.S
-=2D-- 970-str-beep.patch-old/arch/i386/kernel/acpi/wakeup.S	2007-06-19 12:1=
-5:25.000000000 +1000
-+++ 970-str-beep.patch-new/arch/i386/kernel/acpi/wakeup.S	2007-06-19 21:14:=
-49.000000000 +1000
-@@ -11,7 +11,22 @@
- #
- # If physical address of wakeup_code is 0x12345, BIOS should call us with
- # cs =3D 0x1234, eip =3D 0x05
-=2D#=20
-+#
-+
-+#define BEEP \
-+	inb	$97, %al; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$3, %al; 	\
-+	outb	%al, $97; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$-74, %al; 	\
-+	outb	%al, $67; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$-119, %al; 	\
-+	outb	%al, $66; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$15, %al; 	\
-+	outb	%al, $66;
-=20
- ALIGN
- 	.align	4096
-@@ -31,6 +46,11 @@ wakeup_code:
- 	movw	%cs, %ax
- 	movw	%ax, %ds					# Make ds:0 point to wakeup_start
- 	movw	%ax, %ss
-+
-+	testl   $1, beep_flags - wakeup_code
-+	jz      1f
-+	BEEP
-+1:
- 	mov	$(wakeup_stack - wakeup_code), %sp		# Private stack is needed for ASU=
-S board
- 	movw	$0x0e00 + 'S', %fs:(0x12)
-=20
-@@ -88,6 +108,10 @@ wakeup_code:
- 	cmpl	$0x12345678, %eax
- 	jne	bogus_real_magic
-=20
-+	testl   $2, beep_flags - wakeup_code
-+	jz      1f
-+	BEEP
-+1:
- 	ljmpl	$__KERNEL_CS,$wakeup_pmode_return
-=20
- real_save_gdt:	.word 0
-@@ -98,6 +122,7 @@ real_save_cr4:	.long 0
- real_magic:	.long 0
- video_mode:	.long 0
- video_flags:	.long 0
-+beep_flags:	.long 0
- real_efer_save_restore:	.long 0
- real_save_efer_edx: 	.long 0
- real_save_efer_eax: 	.long 0
-@@ -261,6 +286,8 @@ ENTRY(acpi_copy_wakeup_routine)
- 	movl	%edx, video_mode - wakeup_start (%eax)
- 	movl	acpi_video_flags, %edx
- 	movl	%edx, video_flags - wakeup_start (%eax)
-+	movl	s2ram_beep, %edx
-+	movl	%edx, beep_flags - wakeup_start (%eax)
- 	movl	$0x12345678, real_magic - wakeup_start (%eax)
- 	movl	$0x12345678, saved_magic
- 	ret
-diff -ruNp 970-str-beep.patch-old/arch/x86_64/kernel/acpi/wakeup.S 970-str-=
-beep.patch-new/arch/x86_64/kernel/acpi/wakeup.S
-=2D-- 970-str-beep.patch-old/arch/x86_64/kernel/acpi/wakeup.S	2007-06-19 12=
-:15:28.000000000 +1000
-+++ 970-str-beep.patch-new/arch/x86_64/kernel/acpi/wakeup.S	2007-06-19 21:1=
-4:49.000000000 +1000
-@@ -16,6 +16,21 @@
- # cs =3D 0x1234, eip =3D 0x05
- #
-=20
-+#define BEEP \
-+	inb	$97, %al; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$3, %al; 	\
-+	outb	%al, $97; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$-74, %al; 	\
-+	outb	%al, $67; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$-119, %al; 	\
-+	outb	%al, $66; 	\
-+	outb	%al, $0x80; 	\
-+	movb	$15, %al; 	\
-+	outb	%al, $66;
-+
-=20
- ALIGN
- 	.align	16
-@@ -33,6 +48,13 @@ wakeup_code:
- 	movw	%cs, %ax
- 	movw	%ax, %ds		# Make ds:0 point to wakeup_start
- 	movw	%ax, %ss
-+
-+	# Data segment must be set up before we can see whether to beep.
-+	testl   $1, beep_flags - wakeup_code
-+	jz      1f
-+	BEEP
-+1:
-+
- 					# Private stack is needed for ASUS board
- 	mov	$(wakeup_stack - wakeup_code), %sp
-=20
-@@ -229,6 +251,7 @@ gdt_48a:
- 	.long   gdta - wakeup_code              # gdt base (relocated in later)
- =09
- real_magic:	.quad 0
-+beep_flags:	.quad 0
- video_mode:	.quad 0
- video_flags:	.quad 0
-=20
-@@ -344,6 +367,8 @@ ENTRY(acpi_copy_wakeup_routine)
- 	pushq	%rax
- 	pushq	%rdx
-=20
-+	movl	s2ram_beep, %edx
-+	movl	%edx, beep_flags - wakeup_start (,%rdi)
- 	movl	saved_video_mode, %edx
- 	movl	%edx, video_mode - wakeup_start (,%rdi)
- 	movl	acpi_video_flags, %edx
-diff -ruNp 970-str-beep.patch-old/include/linux/acpi.h 970-str-beep.patch-n=
-ew/include/linux/acpi.h
-=2D-- 970-str-beep.patch-old/include/linux/acpi.h	2007-06-19 21:15:08.00000=
-0000 +1000
-+++ 970-str-beep.patch-new/include/linux/acpi.h	2007-06-19 21:14:49.0000000=
-00 +1000
-@@ -123,6 +123,7 @@ extern int pci_mmcfg_config_num;
-=20
- extern int sbf_port;
- extern unsigned long acpi_video_flags;
-+extern unsigned long s2ram_beep;
-=20
- #else	/* !CONFIG_ACPI */
-=20
-diff -ruNp 970-str-beep.patch-old/kernel/power/main.c 970-str-beep.patch-ne=
-w/kernel/power/main.c
-=2D-- 970-str-beep.patch-old/kernel/power/main.c	2007-06-19 12:15:55.000000=
-000 +1000
-+++ 970-str-beep.patch-new/kernel/power/main.c	2007-06-19 21:14:49.00000000=
-0 +1000
-@@ -308,6 +308,27 @@ static ssize_t state_store(struct kset *
-=20
- power_attr(state);
-=20
-+unsigned long s2ram_beep =3D 0;
-+
-+static ssize_t s2ram_beep_show(struct kset *kset, char *buf)
-+{
-+	return sprintf(buf, "%d\n", s2ram_beep);
-+}
-+
-+static ssize_t
-+s2ram_beep_store(struct kset *kset, const char *buf, size_t n)
-+{
-+	int val;
-+
-+	if (sscanf(buf, "%d", &val) > 0) {
-+		s2ram_beep =3D val;
-+		return n;
-+	}
-+	return -EINVAL;
-+}
-+
-+power_attr(s2ram_beep);
-+
- #ifdef CONFIG_PM_TRACE
- int pm_trace_enabled;
-=20
-@@ -333,11 +354,13 @@ power_attr(pm_trace);
- static struct attribute * g[] =3D {
- 	&state_attr.attr,
- 	&pm_trace_attr.attr,
-+	&s2ram_beep_attr.attr,
- 	NULL,
- };
- #else
- static struct attribute * g[] =3D {
- 	&state_attr.attr,
-+	&s2ram_beep_attr.attr,
- 	NULL,
- };
- #endif /* CONFIG_PM_TRACE */
+please change it to other places in driver also.
 
 
-=2D-=20
-Nigel, Michelle and Alisdair Cunningham
-5 Mitchell Street
-Cobden 3266
-Victoria, Australia
+> +       end = jiffies + msecs_to_jiffies(400);
+> +       while (time_before(jiffies, end)) {
+> +               i2c_smbus_write_byte(client, cmd);
+> +
+> +               if (loop++ < 5)
+> +                       mdelay(1);
+> +               else
+> +                       msleep(1);
+> +
+> +               ret = i2c_smbus_read_byte(client);
+> +               if (ret < 0)
+> +                       return ret;
+> +               else if (ret & 0x0080)
+> +                       break;
+> +       }
+> +       if (!(ret & 0x0080))
+> +               return -EIO;
+> +       return ((u8) ret) & 0x7f;       /* remove the "valid" bit */
+> +}
+> +
+> +/* --- LUX calculation ----------------------------------------------------- */
+> +
+> +#define        TSL2550_MAX_LUX         1846
+> +
+> +static const u8 ratio_lut[] = {
+> +       100, 100, 100, 100, 100, 100, 100, 100,
+> +       100, 100, 100, 100, 100, 100, 99, 99,
+> +       99, 99, 99, 99, 99, 99, 99, 99,
+> +       99, 99, 99, 98, 98, 98, 98, 98,
+> +       98, 98, 97, 97, 97, 97, 97, 96,
+> +       96, 96, 96, 95, 95, 95, 94, 94,
+> +       93, 93, 93, 92, 92, 91, 91, 90,
+> +       89, 89, 88, 87, 87, 86, 85, 84,
+> +       83, 82, 81, 80, 79, 78, 77, 75,
+> +       74, 73, 71, 69, 68, 66, 64, 62,
+> +       60, 58, 56, 54, 52, 49, 47, 44,
+> +       42, 41, 40, 40, 39, 39, 38, 38,
+> +       37, 37, 37, 36, 36, 36, 35, 35,
+> +       35, 35, 34, 34, 34, 34, 33, 33,
+> +       33, 33, 32, 32, 32, 32, 32, 31,
+> +       31, 31, 31, 31, 30, 30, 30, 30,
+> +       30,
+> +};
+> +
+> +static const u16 count_lut[] = {
+> +       0, 1, 2, 3, 4, 5, 6, 7,
+> +       8, 9, 10, 11, 12, 13, 14, 15,
+> +       16, 18, 20, 22, 24, 26, 28, 30,
+> +       32, 34, 36, 38, 40, 42, 44, 46,
+> +       49, 53, 57, 61, 65, 69, 73, 77,
+> +       81, 85, 89, 93, 97, 101, 105, 109,
+> +       115, 123, 131, 139, 147, 155, 163, 171,
+> +       179, 187, 195, 203, 211, 219, 227, 235,
+> +       247, 263, 279, 295, 311, 327, 343, 359,
+> +       375,  391, 407, 423, 439, 455, 471, 487,
+> +       511, 543, 575, 607, 639, 671, 703, 735,
+> +       767, 799, 831, 863, 895, 927, 959, 991,
+> +       1039, 1103, 1167, 1231, 1295, 1359, 1423, 1487,
+> +       1551, 1615, 1679, 1743, 1807, 1871, 1935, 1999,
+> +       2095, 2223, 2351, 2479, 2607, 2735, 2863, 2991,
+> +       3119, 3247, 3375, 3503, 3631, 3759, 3887, 4015
+> +};
+> +
+> +/* This function is described into Taos TSL2550 Designer's Notebook
+> + * pages 2, 3 */
+> +static int tsl2550_calculate_lux(u8 ch0, u8 ch1)
+> +{
+> +       unsigned int lux;
+> +
+> +       /* Look up count from channel values */
+> +       u16 c0 = count_lut[ch0];
+> +       u16 c1 = count_lut[ch1];
+> +
+> +       /* Calculate ratio.
+> +        * Note: the "128" is a scaling factor */
+> +       u8 r = 128;
+> +
+> +       /* Avoid division by 0 and count 1 cannot be greater than count 0 */
+> +       if (c0 && (c1 <= c0))
+> +               r = c1 * 128 / c0;
+> +       else
+> +               return -1;
+> +
+> +       /* Calculare LUX */
+> +       lux = ((c0 - c1) * ratio_lut[r]) / 256;
+> +
+> +       /* LUX range check */
+> +       return lux > TSL2550_MAX_LUX ? TSL2550_MAX_LUX : lux;
+> +}
+> +
+> +/* --- SysFS support ------------------------------------------------------- */
+> +
+> +static ssize_t tsl2550_show_power_state(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +       struct tsl2550_data *data = i2c_get_clientdata(to_i2c_client(dev));
+> +
+> +       return sprintf(buf, "%u\n", data->power_state);
+> +}
+> +
+> +static ssize_t tsl2550_store_power_state(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+> +{
+> +       struct i2c_client *client = to_i2c_client(dev);
+> +       struct tsl2550_data *data = i2c_get_clientdata(client);
+> +       unsigned long val = simple_strtoul(buf, NULL, 10);
+> +       int ret;
+> +
+> +       mutex_lock(&data->update_lock);
+> +       ret = tsl2550_set_power_state(client, val);
+> +       mutex_unlock(&data->update_lock);
+> +
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       return count;
+> +}
+> +
+> +static DEVICE_ATTR(power_state, S_IWUSR | S_IRUGO,
+> +                  tsl2550_show_power_state, tsl2550_store_power_state);
+> +
+> +static ssize_t tsl2550_show_operating_mode(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +       struct tsl2550_data *data = i2c_get_clientdata(to_i2c_client(dev));
+> +
+> +       return sprintf(buf, "%u\n", data->operating_mode);
+> +}
+> +
+> +static ssize_t tsl2550_store_operating_mode(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+> +{
+> +       struct i2c_client *client = to_i2c_client(dev);
+> +       struct tsl2550_data *data = i2c_get_clientdata(client);
+> +       unsigned long val = simple_strtoul(buf, NULL, 10);
+> +       int ret;
+> +
+> +       mutex_lock(&data->update_lock);
+> +       ret = tsl2550_set_operating_mode(client, val);
+> +       mutex_unlock(&data->update_lock);
+> +
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       return count;
+> +}
+> +
+> +static DEVICE_ATTR(operating_mode, S_IWUSR | S_IRUGO,
+> +                  tsl2550_show_operating_mode, tsl2550_store_operating_mode);
+> +
+> +static ssize_t __tsl2550_show_lux(struct i2c_client *client, struct device_attribute *attr, char *buf)
+> +{
+> +       u8 ch0, ch1;
+> +       int ret;
+> +
+> +       ret = tsl2550_get_adc_value(client, 0);
+> +       if (ret < 0)
+> +               return ret;
+> +       ch0 = (u8) ret;
+> +
+> +       mdelay(1);
+> +
+> +       ret = tsl2550_get_adc_value(client, 1);
+> +       if (ret < 0)
+> +               return ret;
+> +       ch1 = (u8) ret;
+> +
+> +       /* Do the job */
+> +       ret = tsl2550_calculate_lux(ch0, ch1);
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       return sprintf(buf, "%u\n", ret);
+> +}
+> +
+> +static ssize_t tsl2550_show_lux(struct device *dev, struct device_attribute *attr, char *buf)
+> +{
+> +       struct i2c_client *client = to_i2c_client(dev);
+> +       struct tsl2550_data *data = i2c_get_clientdata(client);
+> +       int ret;
+> +
+> +       /* No LUX data if not operational */
+> +       if (!data->power_state)
+> +               return -EBUSY;
+> +
+> +       mutex_lock(&data->update_lock);
+> +       ret = __tsl2550_show_lux(client, attr, buf);
+> +       mutex_unlock(&data->update_lock);
+> +
+> +       return ret;
+> +}
+> +
+> +static DEVICE_ATTR(lux, S_IRUGO,
+> +                  tsl2550_show_lux, NULL);
+> +
+> +static struct attribute *tsl2550_attributes[] = {
+> +       &dev_attr_power_state.attr,
+> +       &dev_attr_operating_mode.attr,
+> +       &dev_attr_lux.attr,
+> +       NULL
+> +};
+> +
+> +static const struct attribute_group tsl2550_attr_group = {
+> +       .attrs = tsl2550_attributes,
+> +};
+> +
+> +/* --- Initialization function --------------------------------------------- */
+> +
+> +static void tsl2550_init_client(struct i2c_client *client)
+> +{
+> +       struct tsl2550_data *data = i2c_get_clientdata(client);
+> +
+> +       /* Power up the device and set the default operating mode */
+> +       tsl2550_set_power_state(client, 1);
+> +       tsl2550_set_operating_mode(client, data->operating_mode);
+> +}
+> +
+> +/* --- I2C init/probing/exit functions ------------------------------------- */
+> +
+> +static struct i2c_driver tsl2550_driver;
+> +static int __devinit tsl2550_probe(struct i2c_client *client)
+> +{
+> +       struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+> +       struct tsl2550_data *data;
+> +       int *opmode, err = 0;
+> +
+> +       if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE
+> +                                    | I2C_FUNC_SMBUS_WRITE_BYTE_DATA))
+> +               goto exit;
 
---nextPart2839312.NDQi3J478u
-Content-Type: application/pgp-signature
+On "exit" you are returning value of "err" which is zero as per first
+exit above. You should
+first set "err" to relevant error flag and then exit.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> +
+> +       data = kzalloc(sizeof(struct tsl2550_data), GFP_KERNEL);
+> +       if (!data) {
+> +               err = -ENOMEM;
+> +               goto exit;
+> +       }
+> +       data->client = client;
+> +       strncpy(client->name, TSL2550_DRV_NAME, I2C_NAME_SIZE);
 
-iD8DBQBGd7t/N0y+n1M3mo0RAvu9AJ9K+RoVMmJJxsjPUAtwARMcKTRPKgCeOfyG
-AU035zij6UWkrdcxiq+EoxU=
-=gbAY
------END PGP SIGNATURE-----
+You can use "type" field in i2c_board_info structure to pass the
+client's name. As this name is being copied to client->name by
+i2c_new_device, and it could be useful in future to different next
+version of the very much similar chips using this field.
 
---nextPart2839312.NDQi3J478u--
+> +       i2c_set_clientdata(client, data);
+> +
+> +       /* Check platform data */
+> +       opmode = client->dev.platform_data;
+> +       if (opmode) {
+> +               if (*opmode < 0 || *opmode > 1) {
+> +                       dev_err(&client->dev, "invalid operating_mode (%d)\n",
+> +                                       *opmode);
+> +                       err = -EINVAL;
+> +                       goto exit_kfree;
+> +               }
+> +               data->operating_mode = *opmode;
+> +       }
+> +       else
+
+"else" should be with closing "}" bracket not after that.
+
+> +               data->operating_mode = 0;       /* default mode is standard */
+> +       dev_info(&client->dev, "%s operating mode\n",
+> +                       data->operating_mode ? "extended" : "standard");
+> +
+> +       /* Probe the chip. To do so we try to power up the device and then to
+> +        * read back the 0x03 code */
+> +       err = i2c_smbus_write_byte(client, TSL2550_POWER_UP);
+> +       if (err < 0)
+> +               goto exit_kfree;
+> +       mdelay(1);
+> +       err = i2c_smbus_read_byte(client);
+> +       if (err != TSL2550_POWER_UP) {
+> +               err = -ENODEV;
+> +               goto exit_kfree;
+> +       }
+> +
+> +       mutex_init(&data->update_lock);
+> +
+> +       /* Initialize the TSL2550 chip */
+> +       tsl2550_init_client(client);
+> +
+> +       /* Register sysfs hooks */
+> +       err = sysfs_create_group(&client->dev.kobj, &tsl2550_attr_group);
+> +       if (err)
+> +               goto exit_kfree;
+> +
+> +       dev_info(&client->dev,
+> +               "TSL2550 I2C support enabled - ver. %s\n", DRIVER_VERSION);
+> +       dev_info(&client->dev,
+> +               "Copyright (C) 2007 Rodolfo Giometti <giometti@linux.it>\n");
+> +
+> +       return 0;
+> +
+> +exit_kfree:
+> +       kfree(data);
+> +exit:
+> +       return err;
+> +}
+> +
+> +static int __devexit tsl2550_remove(struct i2c_client *client)
+> +{
+> +       sysfs_remove_group(&client->dev.kobj, &tsl2550_attr_group);
+> +
+> +       /* Power doen the device */
+> +       tsl2550_set_power_state(client, 0);
+> +
+> +       kfree(i2c_get_clientdata(client));
+> +
+> +       return 0;
+> +}
+> +
+> +static struct i2c_driver tsl2550_driver = {
+> +       .driver = {
+> +               .name   = TSL2550_DRV_NAME,
+> +               .owner  = THIS_MODULE,
+> +       },
+> +       .probe  = tsl2550_probe,
+> +       .remove = __devexit_p(tsl2550_remove),
+> +};
+> +
+> +static int __init tsl2550_init(void)
+> +{
+> +       return i2c_add_driver(&tsl2550_driver);
+> +}
+> +
+> +static void __exit tsl2550_exit(void)
+> +{
+> +       i2c_del_driver(&tsl2550_driver);
+> +}
+> +
+> +MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
+> +MODULE_DESCRIPTION("TSL2550 ambient light sensor driver");
+> +MODULE_LICENSE("GPL");
+> +
+> +module_init(tsl2550_init);
+> +module_exit(tsl2550_exit);
+
+
+-- 
+--Trilok Soni
