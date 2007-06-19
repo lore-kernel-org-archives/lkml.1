@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXFSNyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbXFSN4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbXFSNyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 09:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXFSNyJ
+	id S1753415AbXFSN4l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 09:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXFSN4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 09:54:09 -0400
-Received: from smtp.ono.com ([62.42.230.12]:5248 "EHLO resmaa01.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751643AbXFSNyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 09:54:07 -0400
-Date: Tue, 19 Jun 2007 15:53:57 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc4-mm2
-Message-ID: <20070619155357.0741dd22@werewolf-wl>
-In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.9.2cvs70 (GTK+ 2.11.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 09:56:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:55664 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751414AbXFSN4d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 09:56:33 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] console UTF-8 fixes
+To: Egmont Koblinger <egmont@uhulinux.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Behdad Esfahbod <behdad@behdad.org>, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Tue, 19 Jun 2007 15:54:52 +0200
+References: <8aT6Q-3iM-17@gated-at.bofh.it> <8xLa7-25v-5@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1I0eAW-0000nC-5a@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/5i/GSyEyJS5pMecahng4hbVybMXTzigDTJ42
+ ou/JD+q6X02Ked2YGHOnJ2Di3OGd9RvPki3s0itWLzlrWYCABG
+ F1xPiZQoW6Da96wWvhIJQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jun 2007 22:03:13 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+Egmont Koblinger <egmont@uhulinux.hu> wrote:
 
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
-> 
-> - Basically a bugfixed version of 2.6.22-rc4-mm1.  None of the subsystem
->   trees were repulled, several bad patches were dropped, a few were fixed.
-> 
+> 2. My patch introduced "question mark with inverted color attributes" as a
+>    last resort fallback glyph. Though it perfectly works on VGA console, on
+>    framebuffer you may end up with question marks that are highlighed but
+>    shouldn't be, and normal characters that are accidentally highlighed.
+>    This is caused by missing FLUSHes when changing the color attribute.
 
-I get this warning when I plug a USB stick:
+Does the FLUSH DTRT by design, or does it just shrink and hide the original
+race? And why wasn't VGA affected, too?
+-- 
+Backups? We doan NEED no steenking baX%^~,VbKx NO CARRIER 
 
-Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: new high speed USB device using ehci_hcd and address 4
-Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: new device found, idVendor=090c, idProduct=1000
-Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: new device strings: Mfr=1, Product=2, SerialNumber=3
-Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: Product: USBDrive
-Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: Manufacturer: LG
-Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: SerialNumber: AA04012700012034
-Jun 19 15:50:53 werewolf-wl kernel: usb 1-8: configuration #1 chosen from 1 choice
-Jun 19 15:50:53 werewolf-wl kernel: scsi7 : SCSI emulation for USB Mass Storage devices
-Jun 19 15:50:53 werewolf-wl kernel: usb-storage: device found at 4
-Jun 19 15:50:53 werewolf-wl kernel: usb-storage: waiting for device to settle before scanning
-Jun 19 15:50:58 werewolf-wl kernel: WARNING: at drivers/usb/core/urb.c:293 usb_submit_urb()
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_submit_urb+491/513] usb_submit_urb+0x1eb/0x201
-Jun 19 15:50:58 werewolf-wl kernel:  [<c02724be>] usb_submit_urb+0x1eb/0x201
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_sg_init+580/609] usb_sg_init+0x244/0x261
-Jun 19 15:50:58 werewolf-wl kernel:  [<c027408b>] usb_sg_init+0x244/0x261
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_sg_wait+175/326] usb_sg_wait+0xaf/0x146
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0273c12>] usb_sg_wait+0xaf/0x146
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_bulk_transfer_sg+149/220] usb_stor_bulk_transfer_sg+0x95/0xdc
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_bulk_transfer_buf+71/114] usb_stor_bulk_transfer_buf+0x47/0x72
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0285afe>] usb_stor_bulk_transfer_buf+0x47/0x72
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_Bulk_transport+293/617] usb_stor_Bulk_transport+0x125/0x269
-Jun 19 15:50:58 werewolf-wl kernel:  [<c02860a9>] usb_stor_Bulk_transport+0x125/0x269
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+0/425] usb_stor_control_thread+0x0/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0286d5f>] usb_stor_control_thread+0x0/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_invoke_transport+21/659] usb_stor_invoke_transport+0x15/0x293
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0286202>] usb_stor_invoke_transport+0x15/0x293
-Jun 19 15:50:58 werewolf-wl kernel:  [__wake_up_locked+31/33] __wake_up_locked+0x1f/0x21
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0113a23>] __wake_up_locked+0x1f/0x21
-Jun 19 15:50:58 werewolf-wl kernel:  [__down_interruptible+236/270] __down_interruptible+0xec/0x10e
-Jun 19 15:50:58 werewolf-wl kernel:  [<c02f682a>] __down_interruptible+0xec/0x10e
-Jun 19 15:50:58 werewolf-wl kernel:  [default_wake_function+0/12] default_wake_function+0x0/0xc
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0116d65>] default_wake_function+0x0/0xc
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+0/425] usb_stor_control_thread+0x0/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0286d5f>] usb_stor_control_thread+0x0/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+0/425] usb_stor_control_thread+0x0/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0286d5f>] usb_stor_control_thread+0x0/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+315/425] usb_stor_control_thread+0x13b/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0286e9a>] usb_stor_control_thread+0x13b/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [kthread+0/86] kthread+0x0/0x56
-Jun 19 15:50:58 werewolf-wl kernel:  [<c012de72>] kthread+0x0/0x56
-Jun 19 15:50:58 werewolf-wl kernel:  [usb_stor_control_thread+0/425] usb_stor_control_thread+0x0/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [<c0286d5f>] usb_stor_control_thread+0x0/0x1a9
-Jun 19 15:50:58 werewolf-wl kernel:  [kthread+52/86] kthread+0x34/0x56
-Jun 19 15:50:58 werewolf-wl kernel:  [<c012dea6>] kthread+0x34/0x56
-Jun 19 15:50:58 werewolf-wl kernel:  [kthread+0/86] kthread+0x0/0x56
-Jun 19 15:50:58 werewolf-wl kernel:  [<c012de72>] kthread+0x0/0x56
-Jun 19 15:50:58 werewolf-wl kernel:  [kernel_thread_helper+7/20] kernel_thread_helper+0x7/0x14
-Jun 19 15:50:58 werewolf-wl kernel:  [<c01033e3>] kernel_thread_helper+0x7/0x14
-Jun 19 15:50:58 werewolf-wl kernel:  =======================
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.0 (Cooker) for i586
-Linux 2.6.21-jam07 (gcc 4.1.2 20070302 (4.1.2-1mdv2007.1)) SMP PREEMPT
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
+Friﬂ, Spammer: fc6TtrpBa@6e.7eggert.dyndns.org
+ hKipagwey2@mhl7jy.7eggert.dyndns.org B@d.7eggert.dyndns.org
