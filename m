@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbXFSVIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbXFSVKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759042AbXFSVIq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXFSVIi
+	id S1757357AbXFSVKv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbXFSVKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:08:38 -0400
-Received: from hera.cwi.nl ([192.16.191.8]:58762 "EHLO hera.cwi.nl"
+	Tue, 19 Jun 2007 17:10:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44490 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753550AbXFSVIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:08:37 -0400
-Date: Tue, 19 Jun 2007 23:08:28 +0200
-From: Andries Brouwer <Andries.Brouwer@cwi.nl>
-To: Karel Zak <kzak@redhat.com>
-Cc: Andries Brouwer <Andries.Brouwer@cwi.nl>, linux-kernel@vger.kernel.org
-Subject: Re: mount-2.12r-ggk.tar.gz
-Message-ID: <20070619210827.GA20366@apps.cwi.nl>
-References: <200706191238.l5JCcxg14300@apps.cwi.nl> <20070619141528.GS7226@petra.dvoda.cz> <20070619152818.GA16363@apps.cwi.nl> <20070619185125.GU7226@petra.dvoda.cz>
-Mime-Version: 1.0
+	id S1752960AbXFSVKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 17:10:42 -0400
+To: david@lang.hm
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706182035420.3593@woody.linux-foundation.org>
+	<or7iq05w6g.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706190221.09067.dhazelton@enter.net>
+	<Pine.LNX.4.64.0706191238220.25045@asgard.lang.hm>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Tue, 19 Jun 2007 18:09:17 -0300
+In-Reply-To: <Pine.LNX.4.64.0706191238220.25045@asgard.lang.hm> (david@lang.hm's message of "Tue\, 19 Jun 2007 12\:42\:06 -0700 \(PDT\)")
+Message-ID: <or645j1wjm.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070619185125.GU7226@petra.dvoda.cz>
-User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 08:51:25PM +0200, Karel Zak wrote:
-> > >  I don't think that mtab is a good place for this shared subtree
-> > >  stuff. The mtab needs to die.
-> > 
-> > Perhaps. Perhaps not.
-> > 
-> > On the one hand I think there is a place for arbitrary user-space info
-> > about mounted filesystems. With information about who mounted, and at
-> > what time. What the icon is that should represent this filesystem.
-> > What resources are associated to this mount, and which program must do
-> > the cleanup. Etc.
-> > Today there is not much user-space info, but there is some.
-> 
->  See also the "[RFC] obsoleting /etc/mtab" thread:
->  http://www.mail-archive.com/util-linux-ng@vger.kernel.org/index.html#00208
+On Jun 19, 2007, david@lang.hm wrote:
 
-Good that I am not on that mailing list - I might have spent a lot of time
-discussing.
+> based on my experiance looking at the software released for tivos, I
+> think you are over-estimating these numbers. if there are more then a
+> dozen people producing things that are good enough to be useful and
+> releasing their results as opensource software I would be surprised.
 
-I see that many people agree that there is the need to attach
-some metadata to mounts. Good.
-But they suggest storing that metadata in the kernel. Bad.
-The kernel is not a storage place for random non-kernel-related data.
+Yup.
 
-A good place is a file, like /etc/mtab (I suppose today /var/run/mtab
-might be the appropriate place for system-wide mounts, and for
-user-private mounts the user can, if she wishes, indicate her
-favorite mtab file to use: "mount -M $HOME/foo/mtab3").
+And how many more would there be should it not be tivoized?  More
+hackers would buy the devices, a number of them with the explicit
+intent and interest in modifying the software in it.
 
-And the kernel needs non-procfs interfaces (namely syscalls)
-that can tell a process about its mount environment: readmounts()
-and statmount(). As soon as mount(8) can ask the kernel, then
-the problem of non-up-to-date /etc/mtab, and incomplete /proc/mounts
-has gone away.
+You're losing all that.
 
-Andries
+> and for all that the FSF is claiming that tivos can't being modified
+> it's really not that hard to change.
 
+But is it legal?
 
-[By the way, just like a single flat directory that contains all files
-turned out to be a bad idea, a single flat structure that contains
-all mounts will turn out soon to be a bad idea too. Some people use
-thousands of mounts. So, also mounts must live in a tree-structured space.]
+How many would contribute changes to a list where there are TiVo
+people watching, which might expose these contributors to liabilities?
 
-
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
