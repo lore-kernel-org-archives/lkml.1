@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbXFSMjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758573AbXFSMjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758092AbXFSMjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 08:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbXFSMjD
+	id S1758573AbXFSMjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 08:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbXFSMjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 08:39:03 -0400
-Received: from hera.cwi.nl ([192.16.191.8]:62347 "EHLO hera.cwi.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755892AbXFSMjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 08:39:01 -0400
-Date: Tue, 19 Jun 2007 14:38:59 +0200 (MEST)
-From: <Andries.Brouwer@cwi.nl>
-Message-Id: <200706191238.l5JCcxg14300@apps.cwi.nl>
-To: linux-kernel@vger.kernel.org
-Subject: mount-2.12r-ggk.tar.gz
+	Tue, 19 Jun 2007 08:39:24 -0400
+Received: from ccerelbas01.cce.hp.com ([161.114.21.104]:33314 "EHLO
+	ccerelbas01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756152AbXFSMjX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 08:39:23 -0400
+Date: Tue, 19 Jun 2007 05:39:15 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/8] 2.6.22-rc3 perfmon2 : IBS implementation for AMD64
+Message-ID: <20070619123915.GB23051@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070614215818.509851000@localhost> <20070615093330.845322000@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070615093330.845322000@localhost>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The present situation of util-linux and mount is not quite clear to me.
-On kernel.org under utils/util-linux nothing has happened for over a year,
-and there is also an empty utils/util-linux-ng.
+Robert,
 
-Anyway, Dirk Gerrits, René Gabriël and Peter Kooijmans sent me
-a patch to add support for shared subtrees to the mount from
-util-linux 2.12r, and I put up the result for ftp at
-ftp://ftp.win.tue.nl/pub/linux-local/utils/mount/mount-2.12r-ggk.tar.gz
+I applied this patch to my tree.
+Thanks.
 
-They remark that it feels like a kernel bug that --make-unbindable
-is not reset by --make-private and suggest the patch
+On Fri, Jun 15, 2007 at 06:57:30PM +0200, Robert Richter wrote:
+> This patch implements Barcelona CPU detection.
+> 
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> 
+> Index: linux-2.6.22-rc3/arch/i386/perfmon/perfmon.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/arch/i386/perfmon/perfmon.c
+> +++ linux-2.6.22-rc3/arch/i386/perfmon/perfmon.c
+> @@ -1059,6 +1059,7 @@ char *pfm_arch_get_pmu_module_name(void)
+>  			goto try_arch;
+>  		}
+>  	case 15:
+> +	case 16:
+>  		/* All Opteron processors */
+>  		if (cpu_data->x86_vendor == X86_VENDOR_AMD)
+>  			return "perfmon_k8";
+> Index: linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/arch/x86_64/perfmon/perfmon_k8.c
+> +++ linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
+> @@ -307,7 +307,12 @@ static int pfm_k8_probe_pmu(void)
+>  		return -1;
+>  	}
+>  
+> -	if (current_cpu_data.x86 != 15) {
+> +	switch (current_cpu_data.x86) {
+> +	case 15:
+> +	case 16:
+> +		PFM_INFO("found family=%d", current_cpu_data.x86);
+> +		break;
+> +	default:
+>  		PFM_INFO("unsupported family=%d", current_cpu_data.x86);
+>  		return -1;
+>  	}
+> 
+> --
+> AMD Saxony, Dresden, Germany
+> Operating System Research Center
+> email: robert.richter@amd.com
+> 
+> 
+> 
 
---- pnode.old   2007-04-17 12:53:11.000000000 +0200
-+++ pnode.c     2007-04-17 13:22:03.000000000 +0200
-@@ -83,6 +83,8 @@
-                mnt->mnt_master = NULL;
-                if (type == MS_UNBINDABLE)
-                        mnt->mnt_flags |= MNT_UNBINDABLE;
-+               else
-+                       mnt->mnt_flags &= ~MNT_UNBINDABLE;
-        }
- }
+-- 
 
-(with white-space damage - my cut&paste).
-
-Without this patch one needs the detour "--make-shared; --make-private"
-in order to reset the "unbindable" flag for a private tree.
-
-Andries
-
-
-
-[By the way, this shared subtree stuff is a bit messy,
-and impossible to support correctly by mount without help
-from the kernel. So far the shared/slave/unbindable status
-of mounts is not visible in /proc/mounts or /proc/$$/mountstats.
-The above mount makes a feeble attempt to record these flags
-in /etc/mtab, but will fail in any nontrivial situation.]
-
+-Stephane
