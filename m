@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbXFSIz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbXFSJBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756737AbXFSIz1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 04:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbXFSIzT
+	id S1756186AbXFSJBf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 05:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbXFSJB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 04:55:19 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:31676 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbXFSIzS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 04:55:18 -0400
-Subject: Re: [RFC/PATCH] Documentation of kernel messages
-From: holzheu <holzheu@linux.vnet.ibm.com>
-Reply-To: holzheu@linux.vnet.ibm.com
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Gerrit Huizenga <gh@us.ibm.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       "lf_kernel_messages@linux-foundation.org" 
-	<lf_kernel_messages@linux-foundation.org>,
-       pavel@ucw.cz
-In-Reply-To: <1182216982.3014.1.camel@laptopd505.fenrus.org>
-References: <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
-	 <1182171354.11400.40.camel@localhost.localdomain>
-	 <1182172374.28566.1.camel@laptopd505.fenrus.org>
-	 <1182174836.11400.64.camel@localhost.localdomain>
-	 <1182216982.3014.1.camel@laptopd505.fenrus.org>
-Content-Type: text/plain
-Organization: IBM
-Date: Tue, 19 Jun 2007 10:51:28 +0200
-Message-Id: <1182243088.11540.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 05:01:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52309 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752172AbXFSJB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 05:01:27 -0400
+Date: Tue, 19 Jun 2007 11:01:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: dmitry.adamushko@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -cfs] Fix cpu_load calculation error
+Message-ID: <20070619090120.GC5746@elte.hu>
+References: <20070618170114.GA21037@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070618170114.GA21037@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-18 at 18:36 -0700, Arjan van de Ven wrote:
-> On Mon, 2007-06-18 at 15:53 +0200, holzheu wrote:
-> > On Mon, 2007-06-18 at 06:12 -0700, Arjan van de Ven wrote:
-> > > On Mon, 2007-06-18 at 14:55 +0200, holzheu wrote:
-> > > > Hi Gerrit,
-> > > > 
-> > > > The common thing of your and our approach is, that we need an ID to
-> > > > identify a message either by:
-> > > 
-> > > 
-> > > Maybe I am missing something big, but why is an ID needed?
-> > > The message IS the ID right? That's the only thing that is robust
-> > > against code moving about....
-> > 
-> > Yes. As already discussed with Pavel, it is one option to use the format
-> > string of the message as message ID. The disadvantage compared to
-> > message IDs like hashes is, that format strings might be even less
-> > unique than hashes 
+
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+
+> Ingo/Dmitry,
+> 	I am resending the patch to fix cpu_load calculation error in 
+> cfs v17, this time CCing lkml.
+
+> v17 cpu_load calculation didn't take into account that a class's 
+> delta_exec/fair may be stale because it could not get an opportunity 
+> to run. This can lead to incorrect calculation of a class's load. This 
+> patch removes load tracking from individual classes and instead 
+> introduces a global per-cpu load tracking common to all classes in 
+> kernel/sched.c itself.
 > 
-> if the hash comes from the string in the first place I have a hard time
-> believing that.
+> Thanks to Dmitry for suggesting this idea.
 > 
+> Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
 
-Just think of all messages containing %s, which can expand to every
-possible string.
+thanks Srivatsa, i've applied this to the -v18 tree and everything's 
+looking good so far!
 
-Michael
-
+	Ingo
