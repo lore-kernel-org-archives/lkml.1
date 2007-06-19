@@ -1,199 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbXFSHz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbXFSH43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbXFSHz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 03:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXFSHzK
+	id S1755154AbXFSH43 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 03:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXFSH4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 03:55:10 -0400
-Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:47723
-	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752431AbXFSHzI (ORCPT
+	Tue, 19 Jun 2007 03:56:22 -0400
+Received: from smtp.nokia.com ([131.228.20.172]:26978 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753069AbXFSH4V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 03:55:08 -0400
-Message-ID: <46778A7A.1080403@hawkeye.stone.uk.eu.org>
-Date: Tue, 19 Jun 2007 08:49:14 +0100
-From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: Kyle Moffett <mrmacman_g4@mac.com>
-CC: Bryan Henderson <hbryan@us.ibm.com>, akpm@linux-foundation.org,
-       alan <alan@clueserver.org>, hpa@zytor.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, git@vger.kernel.org
-Subject: Re: Versioning file system
-References: <OF7FA807A1.64C0D5AF-ON882572FE.0061B34C-882572FE.00628322@us.ibm.com> <6E9A6F9E-8948-40F2-9129-1F1491D49D83@mac.com>
-In-Reply-To: <6E9A6F9E-8948-40F2-9129-1F1491D49D83@mac.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 03:56:21 -0400
+Subject: Re: [PATCH/RFC] oops and panic message logging to MTD
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Richard Purdie <rpurdie@openedhand.com>
+Cc: linux-mtd <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1182184301.6074.62.camel@localhost.localdomain>
+References: <1182184301.6074.62.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 19 Jun 2007 10:55:49 +0300
+Message-Id: <1182239749.4403.48.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 19 Jun 2007 07:55:49.0072 (UTC) FILETIME=[40126D00:01C7B247]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> On Jun 18, 2007, at 13:56:05, Bryan Henderson wrote:
->>> The question remains is where to implement versioning: directly in
->>> individual filesystems or in the vfs code so all filesystems can use it?
->>
->> Or not in the kernel at all.  I've been doing versioning of the types
->> I described for years with user space code and I don't remember
->> feeling that I compromised in order not to involve the kernel.
->>
->> Of course, if you want to do it with snapshots and COW, you'll have to
->> ask where in the kernel to put that, but that's not a file versioning
->> question; it's the larger snapshot question.
-> 
-> What I think would be particularly interesting in this domain is
-> something similar in concept to GIT, except in a file-system:
->   1) Redundancy is easy, you just ensure that you have at least "N"
-> distributed copies of each object, where "N" is some function of the
-> object itself.
->   2) Network replication is easy, you look up objects based on the SHA-1
-> stored in the parent directory entry and cache them where needed (IE:
-> make the "N" function above dynamic based on frequency of access on a
-> given computer).
->   3) Snapshots are easy and cheap; an RO snapshot is a tag and an RW
-> snapshot is a branch.  These can be easily converted between.
->   4) Compression is easy; you can compress objects based on any
-> arbitrary configurable criteria and the filesystem will record whether
-> or not an object is compressed.  You can also compress differently when
-> archiving objects to secondary storage.
->   5) Streaming fsck-like verification is easy; ensure the hash name
-> field matches the actual hash of the object.
->   6) Fsck is easy since rollback is trivial, you can always revert to an
-> older tree to boot and start up services before attempting resurrection
-> of lost objects and trees in the background.
->   7) Multiple-drive or multiple-host storage pools are easy:  Think the
-> git "alternates" file.
->   8) Network filesystem load-balancing is easy; SHA-1s are essentially
-> random so you can just assign SHA-1 prefixes to different systems for
-> data storage and your data is automatically split up.
-> 
-> 
-> Other issues:
-> 
-> Q. How do you deal with block allocation?
-> A. Same way other filesystems deal with block allocation. 
-> Reference-counting gets tricky, especially across a network, but it's
-> easy to play it safe with simple cross-network refcount-journalling. 
-> Since the _only_ thing that needs journalling is the refcounts and
-> block-free data, you need at most a megabyte or two of journal.  If in
-> doubt, it's easy to play it safe and keep an extra refcount around for
-> an in-the-background consistency check later on.  When networked-gitfs
-> systems crash, you just assume they still have all the refcounts they
-> had at the moment they died, and compare notes when they start back up
-> again.  If a node has a cached copy of data on its local disk then it
-> can just nonatomically increment the refcount for that object in its own
-> RAM (ordered with respect to disk-flushes, of course) and tell its peers
-> at some point.  A node should probably cache most of its working set on
-> local disk for efficiency; it's trivially verified against updates from
-> other nodes and provides an easy way to keep refcounts for such data. 
-> If a node increments the refcount on such data and dies before getting
-> that info out to its peers, then when it starts up again its peers will
-> just be told that it has a "new" node with insufficient replication and
-> they will clone it out again properly.  For networked
-> refcount-increments you can do one of 2 things: (1) Tell at least X many
-> peers and wait for them to sync the update out to disk, or (2) Get the
-> object from any peer (at least one of whom hopefully has it in RAM) and
-> save it to local disk with an increased refcount.
-> 
-> Q. How do you actually delete things?
-> A. Just replace all the to-be-erased tree and commit objects before a
-> specified point with "History erased" objects with their SHA-1's
-> magically set to that of the erased objects.  If you want you may delete
-> only the "tree" objects and leave the commits intact.  If you delete a
-> whole linear segment of history then you can just use a single "History
-> erased" commit object with its parent pointed to the object before the
-> erased segment.  Probably needs some form of back-reference storage to
-> make it efficient; not sure how expensive that would be.  This would
-> allow making a bunch of snapshots and purging them logarithmically based
-> on passage of time.  For instance, you might have snapshots of every 5
-> minutes for the last hour, every 30 minutes for the last day, every 4
-> hours for the last week, every day for the last month, once per week for
-> the last year, once per month for the last 5 years, and once per year
-> beyond that.
-> 
-> That's pretty impressive data-recovery resolution, and it accounts for
-> only 200 unique commits after it's been running for 10 years.
-> 
-> Q. How do you archive data?
-> A. Same as deleting, except instead of a "History erased" object you
-> would use a "History archived" object with a little bit of string data
-> to indicate which volume it's stored on (and where on the volume).  When
-> you stick that volume into the system you could easily tell the kernel
-> to use it as an alternate for the given storage group.
-> 
-> Q. What enforces data integrity?
-> A. Ensure that a new tree object and its associated sub objects are on
-> disk before you delete the old one.  Doesn't need any actual full syncs
-> at all, just barriers.  If you replace the tree object before write-out
-> is complete then just skip writing the old one and write the new one in
-> its place.
-> 
-> Q. What consists of a "commit"?
-> A. Anything the administrator wants to define it as.  Useful algorithms
-> include: "Once per x Mbyte of page dirtying", "Once per 5 min", "Only
-> when sync() or fsync() are called", "Only when gitfs-commit is called". 
-> You could even combine them:  "Every x Mbyte of page dirtying or every 5
-> minutes, whichever is shorter (or longer, depending on admin
-> requirements)".  There would also be appropriate syscalls to trigger
-> appropriate git-like behavior.  Network-accessible gitfs would want to
-> have mechanisms to trigger commits based on activity on other systems
-> (needs more thought).
-> 
-> Q. How do you access old versions?
-> A. Mount another instance of the filesystem with an SHA-1 ID, a
-> tag-name, or a branch-name in a special mount option.  Should be user
-> accessible with some restrictions (needs more thought).
-> 
-> Q. How do you deal with conflicts on networked filesystems.
-> A. Once again, however the administrator wants to deal with them.  Options:
->    1)  Forcibly create a new branch for the conflicted tree.
->    2)  Attempt to merge changes using the standard git-merge semantics
->    3)  Merge independent changes to different files and pick one for
-> changes to the same file
->    4)  Your Algorithm Here(TM).  GIT makes it easy to extend
-> conflict-resolution.
-> 
-> Q. How do you deal with little scattered changes in big (or sparse) files?
-> A. Two questions, two answers:  For sparse files, git would need
-> extending to understand (and hash) the nature of the sparse-ness.  For
-> big files, you should be able to introduce a "compound-file" datatype
-> and configure git to deal with specific X-Mbyte chunks of it
-> independently.  This might not be a bad idea for native git as well. 
-> Would need system-specific configuration.
-> 
-> Q. How do you prevent massive data consumption by spurious tiny changes
-> A. You have a few options:
->    1)  Configure your commit algorithm as above to not commit so often
->    2)  Configure a stepped commit-discard algorithm as described above
-> in the "How do you delete things" question
->    3)  Archive unused data to secondary storage more often
-> 
-> Q. What about all the unanswered questions?
-> A. These are all the ones I could think of off the top of my head but
-> there are at least a hundred more.  I'm pretty sure these are some of
-> the most significant ones.
-> 
-> Q. That's a great idea and I'll implement it right away!
-> A. Yay!  (but that's not a question :-D)  Good luck and happy hacking.
-> 
-> Q. That's a stupid idea and would never ever work!
-> A. Thanks for your useful input! (but that's not a question either)  I'm
-> sure anybody who takes up a project like this will consider such opinions.
-> 
-> Q. *flamage*
-> A. I'm glad you have such strong opinions, feel free to to continue to
-> spam my /dev/null device (and that's also not a question).
-> 
-> All opinions and comments welcomed.
-> 
-> Cheers,
-> Kyle Moffett
-> 
-> 
+On Mon, 2007-06-18 at 17:31 +0100, Richard Purdie wrote:
+> +static int mtdoops_erase_block(struct mtd_info *mtd, int offset)
+> +{
+> +	struct erase_info erase;
+> +	DECLARE_WAITQUEUE(wait, current);
+> +	wait_queue_head_t wait_q;
+> +	int ret;
+> +
+> +	init_waitqueue_head(&wait_q);
+> +	erase.mtd = mtd;
+> +	erase.callback = mtdoops_erase_callback;
+> +	erase.addr = offset;
+> +	if (mtd->erasesize < OOPS_PAGE_SIZE)
+> +		erase.len = OOPS_PAGE_SIZE;
 
-It sounds brilliant and I'd love to have a got at implementing it but I
-don't know enough (yet :-D) about how git works, a little research is
-called for I think.
+It seems to me that your code won't work if mtd->erasesize <
+OOPS_PAGE_SIZE anyway, so this check should not be here I guess.
 
-Jack
+
+> +	ret = mtd->read(mtd, cxt->nextpage * OOPS_PAGE_SIZE, 4,
+> +			&retlen, (u_char *) &count);
+> +	if ((retlen != 4) || (ret < 0)) {
+> +		printk(KERN_ERR "mtdoops: Read failure at %d (%d of 4 read)"
+> +				", err %d.\n", cxt->nextpage * OOPS_PAGE_SIZE,
+> +				retlen, ret);
+> +		return 1;
+> +	}
+
+mtd->read() returns -EUCLEAN in case of a correctable bit-flip, ignore
+this error code here and elsewhere as well please.
+
+> +static void mtdoops_prepare(struct mtdoops_context *cxt)
+> +{
+> +	struct mtd_info *mtd = cxt->mtd;
+> +	int i = 0, j, ret, mod;
+> +
+> +	/* We were unregistered */
+> +	if (!mtd)
+> +		return;
+> +
+> +	mod = (cxt->nextpage * OOPS_PAGE_SIZE) % mtd->erasesize;
+> +	if (mod != 0) {
+> +		cxt->nextpage = cxt->nextpage + ((mtd->erasesize - mod) / OOPS_PAGE_SIZE);
+> +		if (cxt->nextpage > cxt->oops_pages)
+> +			cxt->nextpage = 0;
+> +	}
+> +
+> +	while (mtd->block_isbad &&
+> +			mtd->block_isbad(mtd, cxt->nextpage * OOPS_PAGE_SIZE)) {
+
+Well, mtd->block_isbad() may return error, unlikely, bu still. You also
+ignore the error at other places.
+
+> +badblock:
+> +		printk(KERN_WARNING "mtdoops: Bad block at %08x\n",
+> +				cxt->nextpage * OOPS_PAGE_SIZE);
+> +		i++;
+> +		cxt->nextpage = cxt->nextpage + (mtd->erasesize / OOPS_PAGE_SIZE);
+> +		if (cxt->nextpage > cxt->oops_pages)
+> +			cxt->nextpage = 0;
+> +		if (i == (cxt->oops_pages / (mtd->erasesize / OOPS_PAGE_SIZE))) {
+> +			printk(KERN_ERR "mtdoops: All blocks bad!\n");
+> +			return;
+> +		}
+> +	}
+> +
+> +	for (j = 0, ret = -1; (j < 3) && (ret < 0); j++)
+> +		ret = mtdoops_erase_block(mtd, cxt->nextpage * OOPS_PAGE_SIZE);
+
+Ugh, why do you make it this difficult way instead of
+
+for (all EBs) {
+    ret = erase()
+    if (ret == -EIO) {
+        markbad();
+    } else
+        return err;
+}
+
+> +
+> +	if (ret < 0) {
+> +		if (mtd->block_markbad)
+> +			mtd->block_markbad(mtd, cxt->nextpage * OOPS_PAGE_SIZE);
+> +		goto badblock;
+
+Please, mark EB as bad only in case of -EIO. Also, do not ignore error
+code of mtd->block_markbad()
+
+
+Is it possible to re-structure the code and erase/check if EB is bad in
+_one_ cycle (thus avoiding this goto which is difficult to understand)?
+
+Surely all you want is to format the partition. So make a loop, skip bad
+EBs and erase good ones. In case of erase failure (-EIO) mark the EB as
+bad.
+
+> +static int find_next_position(struct mtdoops_context *cxt)
+> +{
+> +	struct mtd_info *mtd = cxt->mtd;
+> +	int page, maxpos = 0;
+> +	u32 count, maxcount = 0xffffffff;
+> +	size_t retlen;
+> +
+> +	for (page = 0; page < cxt->oops_pages; page++) {
+> +		mtd->read(mtd, page * OOPS_PAGE_SIZE, 4, &retlen, (u_char *) &count);
+
+Please, check return code here.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
