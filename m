@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760108AbXFSXee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbXFSXf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760108AbXFSXee (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 19:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbXFSXe1
+	id S1760211AbXFSXf6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 19:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbXFSXft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 19:34:27 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49054 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756919AbXFSXe0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 19:34:26 -0400
-Date: Tue, 19 Jun 2007 16:34:24 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
-       gregkh@suse.de, muli@il.ibm.com, suresh.b.siddha@intel.com,
-       ashok.raj@intel.com, davem@davemloft.net
-Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures in dma map
- api calls
-In-Reply-To: <46786668.6050507@linux.intel.com>
-Message-ID: <Pine.LNX.4.64.0706191632380.15951@schroedinger.engr.sgi.com>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
- <20070619213808.798646000@askeshav-devel.jf.intel.com>
- <Pine.LNX.4.64.0706191624110.15951@schroedinger.engr.sgi.com>
- <46786668.6050507@linux.intel.com>
+	Tue, 19 Jun 2007 19:35:49 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:52576 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755682AbXFSXfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 19:35:48 -0400
+In-Reply-To: <20070619204317.GR10008@csclub.uwaterloo.ca>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: akpm@linux-foundation.org, alan <alan@clueserver.org>,
+       Chris Snook <csnook@redhat.com>, hpa@zytor.com,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: Versioning file system
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF35839FC7.229AE944-ON882572FF.007F2DF8-882572FF.00819E1C@us.ibm.com>
+From: Bryan Henderson <hbryan@us.ibm.com>
+Date: Tue, 19 Jun 2007 16:35:50 -0700
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V80_M5_05202007|May 20, 2007) at
+ 06/19/2007 19:35:48,
+	Serialize complete at 06/19/2007 19:35:48
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Arjan van de Ven wrote:
+>We don't need a new special character for every 
+>>  new feature.  We've got one, and it's flexible enough to do what you 
+want, 
+>> as proven by NetApp's extremely successful implementation.
 
-> > Otherwise you are locked into the use of GFP_ATOMIC.
-> 
-> all callers pretty much are either in irq context or with spinlocks held. Good
-> luck..... it's also called primarily from the PCI DMA API which doesn't take a
-> gfp_t argument in the first place...
-> 
-> so I'm not seeing the point.
+I don't know NetApp's implementation, but I assume it is more than just a 
+choice of special character.  If you merely start the directory name with 
+a dot, you don't fool anyone but 'ls' and shell wildcard expansion.  (And 
+for some enlightened people like me, you don't even fool ls, because we 
+use the --almost-all option to show the dot files by default, having been 
+burned too many times by invisible files).
 
-Hmmm... From my superficial look at things it seems that one could avoid 
-GFP_ATOMIC at times. I do not know too much about the driver though but it 
-seems a bit restrictive to always do GFP_ATOMIC allocs.
+I assume NetApp flags the directory specially so that a POSIX directory 
+read doesn't get it.  I've seen that done elsewhere.
+
+The same thing, by the way, is possible with Jack's filename:version idea, 
+and I assumed that's what he had in mind.  Not that that makes it all OK.
+
+--
+Bryan Henderson                     IBM Almaden Research Center
+San Jose CA                         Filesystems
 
