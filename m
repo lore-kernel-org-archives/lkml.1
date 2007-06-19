@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932644AbXFSTHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbXFSTHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932644AbXFSTHM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbXFSTGz
+	id S932701AbXFSTHj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764508AbXFSTHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:06:55 -0400
-Received: from host86-137-96-215.range86-137.btcentralplus.com ([86.137.96.215]:54236
-	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932351AbXFSTGx (ORCPT
+	Tue, 19 Jun 2007 15:07:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59902 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764352AbXFSTHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:06:53 -0400
-Message-ID: <4678292B.6000804@hawkeye.stone.uk.eu.org>
-Date: Tue, 19 Jun 2007 20:06:19 +0100
-From: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Tue, 19 Jun 2007 15:07:16 -0400
+Date: Tue, 19 Jun 2007 12:06:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: John Stoffel <john@stoffel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, tim.c.chen@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Change in default vm_dirty_ratio
+In-Reply-To: <alpine.LFD.0.98.0706191201130.3593@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0706191205410.3593@woody.linux-foundation.org>
+References: <1182201271.4883.22.camel@localhost.localdomain>
+ <20070618164711.9de1c38e.akpm@linux-foundation.org> <18040.9056.755569.67029@stoffel.org>
+ <alpine.LFD.0.98.0706191201130.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Chris Snook <csnook@redhat.com>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com>
-In-Reply-To: <46781A5B.9090104@redhat.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
-> But what you're talking about *will* break userspace.  If I do an ls in
-> a directory, and get pages upon pages of versions of just one file,
-> that's broken.  If I tar up a directory and get a tarball that's
-> hundreds of times larger than it should be, that's broken.  If you want
-> the files to be hidden from userspace applications that don't know about
-> your backup scheme, (and it sounds like you do) then use the existing
-> convention for hidden files, the prepended '.'  This is the universal
-> sign for "don't mess with me unless you know what you're doing".
 
-The idea was that if you did an ls you would get the latest version of
-the file without the :revision_num. The only visible version would be
-the latest version, i.e. the current system would not change. The idea
-was that it would only show earlier versions if they were specifically
-requested with a :revision_num suffix. In that case the
-filesystem/kernel would need to recognise the suffix and return the
-earlier version of the file.
 
-The only userspace it would break is files with :num in their name, as I
-haven't seen any files like that I don't think its too big a problem but
-the way of specifiying revisions could be changed.
+On Tue, 19 Jun 2007, Linus Torvalds wrote:
+> 
+> Yes. It should depend on:
+>  - speed of the device(s) in question
 
-Jack
+Btw, this one can be quite a big deal. Try connecting an iPod and syncing 
+8GB of data to it. Oops.
+
+So yes, it would be nice to have some per-device logic too. Tested patches 
+would be very welcome ;)
+
+		Linus
