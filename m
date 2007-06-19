@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbXFSHrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbXFSHtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbXFSHrn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 03:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXFSHre
+	id S1754054AbXFSHtM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 03:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXFSHs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 03:47:34 -0400
-Received: from ananke.telenet-ops.be ([195.130.137.78]:55983 "EHLO
-	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbXFSHrc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 03:47:32 -0400
-X-Greylist: delayed 154562 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 03:47:32 EDT
-Date: Tue, 19 Jun 2007 09:47:28 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "James E.J. Bottomley" <James.Bottomley@SteelEye.com>
-cc: Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
-       Kars de Jong <jongk@linux-m68k.org>, Richard Hirst <rhirst@levanta.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org
-Subject: Re: [patch 0/5] m68k 53c700 SCSI
-In-Reply-To: <20070617124704.800461751@mail.of.borg>
-Message-ID: <Pine.LNX.4.64.0706190942180.3234@anakin>
-References: <20070617124704.800461751@mail.of.borg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 19 Jun 2007 03:48:58 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:64150 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751452AbXFSHs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 03:48:58 -0400
+Date: Tue, 19 Jun 2007 09:47:52 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Jan Altenberg <jan.altenberg@linutronix.de>,
+       Andrew Victor <andrew@sanpeople.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
+Subject: Re: [PATCH] atmel_lcdfb: Fix STN LCD support
+Message-ID: <20070619094752.1b7ba108@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <467252C4.50203@rfo.atmel.com>
+References: <467252C4.50203@rfo.atmel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi James,
+On Fri, 15 Jun 2007 10:50:12 +0200
+Nicolas Ferre <nicolas.ferre@rfo.atmel.com> wrote:
 
-On Sun, 17 Jun 2007, Geert Uytterhoeven wrote:
-> These patches add support for m68k to the 53c700 SCSI core and introduce new
-> drivers for various m68k hardware using this 53c700 SCSI core, to replace the
-> just removed drivers using the old 53c7xx SCSI core.
+> From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 > 
->   [1] [PATCH] 53c700 scsi: m68k support for the 53c700 SCSI core
->   [2] [PATCH] 53c700 scsi: m68k BVME6000 NCR53C710 SCSI
->   [3] [PATCH] 53c700 scsi: m68k MVME16x NCR53C710 SCSI
->   [4] [PATCH] 53c700 scsi: Amiga 4000T NCR53c710 SCSI
->   [5] [PATCH] 53c700 scsi: Amiga Zorro NCR53c710 SCSI
+> Fixes STN LCD support for the atmel_lcdfb framebuffer driver.
 > 
-> Please apply for 2.6.23. Thx!
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 
-Apparently I made some major mistakes when preparing these patches.
-Here are the fixes.
----
+Looks correct to me. Although...
 
-Fixup m68k 53c700 drivers:
-  - a4000t.c: Add missing include, needed in some configurations
-  - bvme6000_scsi.c: Kill bogus opening brace
-  - zorro7xx.c: Remove MODULE_DEVICE_TABLE, it should be part of another
-                patch
+> Index: b/drivers/video/Kconfig
+> ===================================================================
+> --- a/drivers/video/Kconfig	2007-05-14 11:02:16.000000000 +0200
+> +++ b/drivers/video/Kconfig	2007-06-13 11:04:10.000000000 +0200
+> @@ -701,6 +701,16 @@
+>  	  Say Y if you want to map Frame Buffer in internal SRAM. Say N if you want
+>  	  to let frame buffer in external SDRAM.
+>  
+> +config FB_ATMEL_STN
+> +	bool "Use a STN display with AT91/AT32 LCD Controller"
+> +	depends on FB_ATMEL && ARCH_AT91SAM9261
+> +	default n
+> +	help
+> +	  Say Y if you want to connect a STN LCD display to the AT91/AT32 LCD
+> +	  Controller. Say N if you want to connect a TFT.
+> +
+> +	  If unsure, say N.
+> +
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/scsi/a4000t.c        |    1 +
- drivers/scsi/bvme6000_scsi.c |    2 +-
- drivers/scsi/zorro7xx.c      |    1 -
- 3 files changed, 2 insertions(+), 2 deletions(-)
+I don't think it's appropriate to include chip-specific options here.
+This option will not affect the driver at all, it will only affect the
+board-specific setup code, so IMO it should be under Platform-specific
+options or something like that.
 
---- a/drivers/scsi/a4000t.c
-+++ b/drivers/scsi/a4000t.c
-@@ -12,6 +12,7 @@
- #include <linux/platform_device.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
-+#include <asm/amigahw.h>
- #include <asm/amigaints.h>
- #include <scsi/scsi_host.h>
- #include <scsi/scsi_transport_spi.h>
---- a/drivers/scsi/bvme6000_scsi.c
-+++ b/drivers/scsi/bvme6000_scsi.c
-@@ -112,7 +112,7 @@ static int __init bvme6000_scsi_init(voi
- 	int err;
- 
- 	err = driver_register(&bvme6000_scsi_driver);
--	if (err) {
-+	if (err)
- 		return err;
- 
- 	bvme6000_scsi_device = platform_device_register_simple("bvme6000-scsi",
---- a/drivers/scsi/zorro7xx.c
-+++ b/drivers/scsi/zorro7xx.c
-@@ -65,7 +65,6 @@ static struct zorro_device_id zorro7xx_z
- 	},
- 	{ 0 }
- };
--MODULE_DEVICE_TABLE(zorro, zorro7xx_zorro_tbl);
- 
- static int __devinit zorro7xx_init_one(struct zorro_dev *z,
- 				       const struct zorro_device_id *ent)
+Also, the text says AT91/AT32 but it depends on one particular AT91
+chip.
 
-Gr{oetje,eeting}s,
+I haven't had a chance to test it since I don't have any STN displays
+around, but I'll try forwarding it to someone who has.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Haavard
