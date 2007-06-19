@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbXFSEWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbXFSEyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbXFSEWx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 00:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbXFSEWq
+	id S1754398AbXFSEyE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 00:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbXFSExy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 00:22:46 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:47437 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbXFSEWp (ORCPT
+	Tue, 19 Jun 2007 00:53:54 -0400
+Received: from srv1.netkinetics.net ([206.71.148.180]:38026 "EHLO
+	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbXFSExx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 00:22:45 -0400
-Date: Mon, 18 Jun 2007 21:22:02 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Miklos Szeredi <miklos@szeredi.hu>,
-       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, torvalds@linux-foundation.org, shai@scalex86.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070619042201.GA13854@localdomain>
-References: <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu> <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu> <E1Hyrnk-0006On-00@dorka.pomaz.szeredi.hu> <20070616103707.GA28096@elte.hu> <E1I02Zx-0005qu-00@dorka.pomaz.szeredi.hu> <20070618064343.GA31113@elte.hu> <E1I0Baz-0006cP-00@dorka.pomaz.szeredi.hu> <20070618081204.GA11153@elte.hu> <20070618012055.81a7c837.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070618012055.81a7c837.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 19 Jun 2007 00:53:53 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Tim Post <tim.post@netkinetics.net>
+Reply-To: tim.post@netkinetics.net
+To: Daniel Drake <dsd@gentoo.org>
+Cc: Alexandre Oliva <aoliva@redhat.com>, Bron Gondwana <brong@fastmail.fm>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <46774BD3.6010605@gentoo.org>
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
+	 <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070615072322.GA7594@brong.net>
+	 <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070616021630.GA30660@brong.net>
+	 <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070616103130.GD32405@brong.net>
+	 <orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070616233251.GA17270@brong.net>
+	 <ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <46774BD3.6010605@gentoo.org>
+Content-Type: text/plain
+Organization: Net Kinetics
+Date: Tue, 19 Jun 2007 12:51:19 +0800
+Message-Id: <1182228679.21798.1711.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.1 
+Content-Transfer-Encoding: 7bit
 X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
 X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - netkinetics.net
 X-Source: 
 X-Source-Args: 
 X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 01:20:55AM -0700, Andrew Morton wrote:
-> On Mon, 18 Jun 2007 10:12:04 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, 2007-06-18 at 23:21 -0400, Daniel Drake wrote:
+> Let's take a certain class of medical devices into account: ones that 
+> are absolutely definitely for medical treatment, but are not life 
+> threatening if they fail.
 > 
-> > ---------------------------------------------------->
-> > Subject: [patch] x86: fix spin-loop starvation bug
-> > From: Ingo Molnar <mingo@elte.hu>
-> > 
-> > Miklos Szeredi reported very long pauses (several seconds, sometimes 
-> > more) on his T60 (with a Core2Duo) which he managed to track down to 
-> > wait_task_inactive()'s open-coded busy-loop. He observed that an 
-> > interrupt on one core tries to acquire the runqueue-lock but does not 
-> > succeed in doing so for a very long time - while wait_task_inactive() on 
-> > the other core loops waiting for the first core to deschedule a task 
-> > (which it wont do while spinning in an interrupt handler).
-> > 
-> > The problem is: both the spin_lock() code and the wait_task_inactive() 
-> > loop uses cpu_relax()/rep_nop(), so in theory the CPU should have 
-> > guaranteed MESI-fairness to the two cores - but that didnt happen: one 
-> > of the cores was able to monopolize the cacheline that holds the 
-> > runqueue lock, for extended periods of time.
-> > 
-> > This patch changes the spin-loop to assert an atomic op after every REP 
-> > NOP instance - this will cause the CPU to express its "MESI interest" in 
-> > that cacheline after every REP NOP.
-> 
-> Kiran, if you're still able to reproduce that zone->lru_lock starvation problem,
-> this would be a good one to try...
+> Say, a dental treatment device -- if the device produces a crown or 
+> bridge that doesn't fit properly, the dentist says "nope" and throws it 
+> away. No harm done.
 
-We tried this approach a week back (speak of co-incidences), and it did not
-help the problem.  I'd changed calls to the zone->lru_lock spin_lock
-to do spin_trylock in a while loop with cpu_relax instead.  It did not help,
-This was on top of 2.6.17 kernels.  But the good news is 2.6.21, as
-is does not have the starvation issue -- that is, zone->lru_lock does not
-seem to get contended that much under the same workload.
+I've done quite a bit of research, I'm not nearly done.
 
-However, this was not on the same hardware I reported zone->lru_lock
-contention on (8 socket dual core opteron).  I don't have access to it 
-anymore :(
+These regulations (from what I can tell) seemed to follow suit with the
+National Electric Code (NEC) [latest] when dealing with mandatory
+isolated ground devices and special cabling methods when it comes into a
+device touching a patient. If that remains consistent, this won't be so
+bad.
 
-Thanks,
-Kiran
+If the patient never comes in contact with it, its not regulated as much
+and (from what I've seen) has no requirement for tamper proofing. I
+point out again, I am not _nearly_ done with my research.
+
+I think of nothing else, anyone with an interest should closely monitor
+how these devices are being regulated by the FDA as more of them begin
+to look like penguins.
+
+I won't argue one way or another as to the presence of benevolent intent
+in those laws-to-come, I'm simply pointing out the questionable
+technical competency of those who will be writing them and their need
+for guidance when doing so.
+
+
+Best,
+--Tim
+
+
