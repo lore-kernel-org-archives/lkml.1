@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbXFSJC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbXFSJFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbXFSJC0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 05:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbXFSJCS
+	id S1756763AbXFSJFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 05:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbXFSJE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 05:02:18 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:33830 "EHLO smtp4-g19.free.fr"
+	Tue, 19 Jun 2007 05:04:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41522 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753135AbXFSJCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 05:02:17 -0400
-Message-ID: <46779B8D.6050900@free.fr>
-Date: Tue, 19 Jun 2007 11:02:05 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	id S1753333AbXFSJEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 05:04:55 -0400
+Date: Tue, 19 Jun 2007 11:04:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       suresh.b.siddha@intel.com, pwil3058@bigpond.net.au, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: v2.6.21.4-rt11
+Message-ID: <20070619090430.GA7471@elte.hu>
+References: <20070613184741.GC8125@linux.vnet.ibm.com> <20070613185522.GA27335@elte.hu> <20070613233910.GJ8125@linux.vnet.ibm.com> <20070615144535.GA12078@elte.hu> <20070615151452.GC9301@linux.vnet.ibm.com> <20070615195545.GA28872@elte.hu> <20070616011605.GH9301@linux.vnet.ibm.com> <20070616084434.GG2559@linux.vnet.ibm.com> <20070616161213.GA2994@linux.vnet.ibm.com> <20070618151215.GA9750@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>
-Subject: Selective system profiling
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070618151215.GA9750@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
 
-Here's my situation:
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
 
-I'm pushing data in chunks of 1316 bytes to a PCI device at 38 Mbit/s.
-In other words, I write 1316 bytes to the device every 277 microseconds.
+> I believe the patch below is correct. With the patch applied, I could 
+> not recreate the imbalance with rcutorture. Let me know whether you 
+> still see the problem with this patch applied on any other machine.
 
-I've noticed that the latency of this operation varies immensely. Most 
-of the time it completes in 50-80 microseconds, but there are occasions 
-when it takes several milliseconds (I've even logged 23 ms).
+thanks for tracking this down! I've applied Christoph's patch (with your 
+suggested modification plus a few small cleanups).
 
-The pseudo-code looks like this:
+I'm wondering, why did this trigger under CFS and not on mainline? 
+Mainline seems to have a similar problem in idle_balance() too, or am i 
+misreading it?
 
-   deadline = now;
-
-   while ( 1 )
-   {
-     deadline += 277 µs
-     sleep_until(deadline)
-     t0 = now;
-     write 1316 bytes to PCI device
-     t1 = now;
-     if (t1-t0 > 100 µs) scream & panic
-   }
-
-Relevant (?) information about the setup:
-
-I'm running a PREEMPT_RT kernel with high-resolution timers.
-(Specifically 2.6.20.7-rt8)
-http://rt.wiki.kernel.org/index.php/Main_Page
-HZ=100
-The process is in SCHED_RR with priority 75.
-The only "process" (?) with higher priority is posix_cpu_timer.
-write() is implemented as an ioctl in the driver.
-You might think that write() blocks when the buffers on the PCI board 
-are full, but I am 99.9% sure that the buffers are never full.
-
-
-Here's my question:
-
-When my process comes back from a write operation, and I find that I 
-have been blocked for more than X ms, can I call a function from a 
-system profiler (oprofile perhaps?) to know exactly where in the kernel 
-the CPU has been for the last X ms, and how much time has been spent in 
-each function, either sleeping or doing something?
-
-Regards.
+	Ingo
