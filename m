@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbXFSLbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbXFSLf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbXFSLbe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 07:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756470AbXFSLb0
+	id S1757967AbXFSLf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 07:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbXFSLfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 07:31:26 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:52844 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756075AbXFSLbZ (ORCPT
+	Tue, 19 Jun 2007 07:35:20 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:19235 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbXFSLfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 07:31:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hqzouYH/ChaKT3zaIBlVV2EjVBNp2wMQITiwk3WVkkQmBcm1KgHn9sI08W9zRHMD9ZT5loIRHLoHbk/+uYXNUCYWPrcVuCJR+5NeCAw2A4w8+Lwut+9OqvqgtLjuGQlTBGSdEUJfovo7Az2c+0OZPn0OIweZA+RXCL2gu3Qkzi8=
-Message-ID: <9a8748490706190431p3dc4aaa5o2791f1e49084bdee@mail.gmail.com>
-Date: Tue, 19 Jun 2007 13:31:24 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>, "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org
-Subject: Re: [PATCH] clarify the GPL version of contributions by Jesper Juhl in CREDITS
-In-Reply-To: <20070618015801.GA30892@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 19 Jun 2007 07:35:18 -0400
+Subject: Re: [RFC/PATCH] Documentation of kernel messages
+From: holzheu <holzheu@linux.vnet.ibm.com>
+Reply-To: holzheu@linux.vnet.ibm.com
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Gerrit Huizenga <gh@us.ibm.com>, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, gregkh@suse.de, mtk-manpages@gmx.net,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       "lf_kernel_messages@linux-foundation.org" 
+	<lf_kernel_messages@linux-foundation.org>,
+       pavel@ucw.cz
+In-Reply-To: <1182216982.3014.1.camel@laptopd505.fenrus.org>
+References: <E1HzGkR-0008DO-Un@w-gerrit.beaverton.ibm.com>
+	 <1182171354.11400.40.camel@localhost.localdomain>
+	 <1182172374.28566.1.camel@laptopd505.fenrus.org>
+	 <1182174836.11400.64.camel@localhost.localdomain>
+	 <1182216982.3014.1.camel@laptopd505.fenrus.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 19 Jun 2007 13:31:22 +0200
+Message-Id: <1182252682.11540.32.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706180233.02955.jesper.juhl@gmail.com>
-	 <20070618015801.GA30892@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18/06/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Mon, Jun 18, 2007 at 02:33:02AM +0200, Jesper Juhl wrote:
-> > Just to make things clear in the light of recent discussions.
-> > Stuff I contribute to the Linux kernel are licensed under the terms of the
-> > GPL version 2.
-> >
-> > +D: All contributions are licensed under the terms of the GPL version 2.
->
-> I suspect this is the default for the vast majority of kernel developers.
-> Perhaps it's only worth special casing those that have an interest in
-> GPLv3, as the numbers are bound to be far lower -- if this sort of thing
-> is judged to be a good idea, that is (It's rather interesting to note
-> that the vast majority of GPLv3 advocates don't even have a single
-> changeset in the kernel, yet still feel that their input on kernel
-> licensing is somehow relevant or valid).
->
-Explicitly marking the GPLv3 supporters would probably result in the
-smaller set, but I just felt that it was important to make my own
-position absolutely clear.
+On Mon, 2007-06-18 at 18:36 -0700, Arjan van de Ven wrote:
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+<snip>
+
+> well.... surely the messages are caught by some userspace program,
+> right? (like syslog).. that can do the lookup and make it all
+> conveniently lookup-able and cross-referencable etc etc....
+
+Ok, I agree. Maybe that's really a good idea!
+
+So what about the following proposal:
+
+* Use printk format strings as message IDs
+* Use kernel-doc (or similar mechanism) for message documentation
+* Use Subsystem tag/component ID for each printk. This might be
+  optional, but would make sense to get messages more unique.
+* Implement a new tool (kmsg) to allow operators
+  to access kernel message descriptions in a convenient way.
+
+The kmsg tool will read the dmsg buffer together with the list of
+documented printks, which has been created in the kernel build using
+the format strings defined in the KMSG_DOC macros. It matches the known
+format strings to the dmesg messages and informs the operator, for
+which message he can get a description.
+
+Something like:
+
+>> kmsg
+Linux version 2.6.9-42.0.3.ELsmp...
+....
+[<ID>] lp0 on fire
+
+>> kmsg <ID>
+Desciption: your printer failed basic tests, you should check cabling
+
+The <ID> is generated by the kmsg tool and could be e.g. the hashes for
+the matching format strings.
+
+Michael
+
