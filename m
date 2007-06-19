@@ -1,78 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbXFSXuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbXFSXv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760299AbXFSXuV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 19:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXFSXuK
+	id S1760765AbXFSXv2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 19:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757247AbXFSXvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 19:50:10 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:40230
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756599AbXFSXuI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 19:50:08 -0400
-Date: Tue, 19 Jun 2007 16:49:24 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
+	Tue, 19 Jun 2007 19:51:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33977 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756634AbXFSXvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 19:51:20 -0400
+To: "David Schwartz" <davids@webmaster.com>
+Cc: "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <orzm2vy12t.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706191644220.26701@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706182035420.3593@woody.linux-foundation.org>
- <or7iq05w6g.fsf@oliva.athome.lsd.ic.unicamp.br> <200706190221.09067.dhazelton@enter.net>
- <Pine.LNX.4.64.0706191238220.25045@asgard.lang.hm>
- <or645j1wjm.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706191421590.26701@asgard.lang.hm>
- <orzm2vy12t.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <MDEHLPKNGKAHNMBLJOLKAELIELAC.davids@webmaster.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Tue, 19 Jun 2007 20:51:10 -0300
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKAELIELAC.davids@webmaster.com> (David Schwartz's message of "Tue\, 19 Jun 2007 15\:40\:54 -0700")
+Message-ID: <orps3ry041.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Alexandre Oliva wrote:
+On Jun 19, 2007, "David Schwartz" <davids@webmaster.com> wrote:
 
-> On Jun 19, 2007, david@lang.hm wrote:
->
->> On Tue, 19 Jun 2007, Alexandre Oliva wrote:
->>> You're losing all that.
->
->> based on the knowledge shown by these users you aren't loosing much.
->
-> Remember, the sample is biased, the hackers who'd like to hack it are
-> less likely to buy it, and some might be only making private changes
-> to avoid legal hassles.
->
-> And then, it doesn't have to be all that much.  Since you're talking
-> specifically about TiVo customers, how much has TiVo effectly
-> contributed in terms of code?  (It was pointed out before, I know, but
-> it's important to keep this in perspective, lest people lose sight of
-> what's at stake)
+>> Right to control what software runs on the hardware is no different.
+>> For any hardware on which I can run the software, I'm a user there,
+>> and I'm entitled to the rights granted by the license.
 
-they contributed all changes they made to GPL code, exactly as required.
+> Exactly. However, that right does not include the right to run the software
+> on any particular piece of hardware.
 
-in addition they have provided the full build environments, not just 
-listing the versions of the compilers, etc.
+I think that's correct, in general.  But when I receive the software
+along with a particular piece of hardware, on which I'm to expected to
+run it, I'm also receiving all other freedoms that ought to be
+respected by whoever distributed the software to me, which means the
+distributor can't impose restrictions on my running modified versions
+of the program there (or anywhere else I can run the software, for
+that matter).
 
->> remember, not all tivo models are locked down,
->
-> Only the earliest that you can't find for sale any more, right?
->
->> as a result of watching the hacker groups I can safely say that the
->> lockdown has not blocked many users. it has slowed modification of the
->> hacks to new types of hardware, but not for very long.
->
-> Well, then...  What's the point *for* tivoization, again?  To slow
-> down the contributions?  And that's good because...?
+> It includes the right to run the software on *ANY* hardware, so long
+> as one is authorized to choose what software runs on that hardware.
 
-no, the point is that while tivoization is not nessasarily the best thing 
-it's far better then the company useing propriatary code.
+That's correct, too, with the provision that the distributor cannot
+impose restrictions on running modified versions of the program.  Not
+on any other hardware I can control, not on the hardware with which I
+received the software along with the freedoms to control it in as far
+as running the GPLed software goes.
 
-delayed contributions are better then no contributions.
+> You keep conflating things like access to the source code and the legal
+> right to modify that source code with the authorization right to install
+> that modified kernel on some particular piece of hardware. The GPL was never
+> about how such authorization decisions are made.
 
-David Lang
+That's correct.  All it says is that you can't impose further
+restrictions.  This means you can't use anything (source code
+deprivation, patents, copyright, authorization, nothing) to disrespect
+users' freedoms.  Is this so hard to accept?  There's nothing special
+about these authorization rights you're talking about that distinguish
+them from copyrights or patent rights or any other rights.  The GPL
+says: don't use them against users' freedoms regarding the GPLed
+software.  No excuses.
+
+> If I make you a user of my laptop, do I have to let you install a modified
+> kernel?
+
+Does interacting with your laptop over the network make me a user of
+your kernel?
+
+> What if I even let you access the kernel source, so I have
+> distributed it to you.
+
+You have distributed the source to me, I can modify it.
+
+But did you distribute the kernel binary installed on your computer to
+me?  That's the one I'm (possibly) using per the above.  Whether you
+also gave me sources is irrelevant, unless you gave them to me as part
+of your obligation of distributing the corresponding sources, in case
+we conclude you distributed the kernel binary installed on your
+computer to me when you granted me remote access to it.
+
+And then, GPLv3 makes it clear that, in the case of remote access,
+you're not conveying the binary to me, therefore the conditions for
+conveying do not apply.
+
+> The GPL was never, ever about such authorization decisions. They are
+> completely alien to both the wording and the spirit of the GPL.
+
+You can repeat that as much as you want, this won't change the fact
+that the GPL has never permitted you to use whatever rights you have
+to impose restrictions on users' freedoms as to GPLed software once
+you've (implicitly) accepted the conditions of the license.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
