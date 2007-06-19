@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760294AbXFSRiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXFSRjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760294AbXFSRiz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 13:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbXFSRis
+	id S1760766AbXFSRjg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbXFSRj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 13:38:48 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:36485 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754682AbXFSRir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 13:38:47 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Martin Bligh <mbligh@mbligh.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
-In-Reply-To: <alpine.LFD.0.98.0706190949440.3593@woody.linux-foundation.org>
-References: <20070617220927.99ebc1ee.akpm@linux-foundation.org> <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca> <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de> <alpine.LFD.0.98.0706190732150.3593@woody.linux-foundation.org> <20070619165300.GD19904@flower.upol.cz> <alpine.LFD.0.98.0706190949440.3593@woody.linux-foundation.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: jed (x86_64-pc-linux-glibc-debian)
-X-Mailer: slrn
-Date: Tue, 19 Jun 2007 19:51:21 +0200
-Message-Id: <E1I0hrN-0003Z5-14@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	Tue, 19 Jun 2007 13:39:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57640 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757796AbXFSRj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 13:39:27 -0400
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Al Viro" <viro@ftp.linux.org.uk>,
+       "Bernd Schmidt" <bernds_cb1@t-online.de>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Ingo Molnar" <mingo@elte.hu>,
+       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
+       david@lang.hm, "Tarkan Erimer" <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
+	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706181945.16343.dhazelton@enter.net>
+	<orvedk8zpa.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706182035420.3593@woody.linux-foundation.org>
+	<or7iq05w6g.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<84144f020706190717q33dbc5e0r5d33b550aa22bfb3@mail.gmail.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Tue, 19 Jun 2007 14:28:24 -0300
+In-Reply-To: <84144f020706190717q33dbc5e0r5d33b550aa22bfb3@mail.gmail.com> (Pekka Enberg's message of "Tue\, 19 Jun 2007 17\:17\:30 +0300")
+Message-ID: <orr6o73lc7.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Date: Tue, 19 Jun 2007 10:04:58 -0700 (PDT)
-> 
-> On Tue, 19 Jun 2007, Oleg Verych wrote:
+On Jun 19, 2007, "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+
+> Hi Alexandre,
+> On 6/19/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+>> Dispute this:
 >> 
->> I'm proposing kind of smart tracking, summarized before. I'm not an
->> idealist, doing manual work. Making tools -- is what i've picked up from
->> one of your mails. Thus hope of having more opinions on that.
->
-> Don't get me wrong, I wasn't actually responing to you personally, I was 
-> actually responding mostly to the tone of this thread.
+>> non-tivoized hardware => users can scratch their itches => more
+>> contributions from these users
+>> 
+>> tivoized hardware => users can't scratch their itches => fewer
+>> contributions from these users
 
-By reading only known persons[1]? Fine, it is OK.
+> Maybe, but in what numbers?
 
-But i hope, i did useful statements. In fact, noise reduction stuff WRT
-bug reports was before in my analysis of Adrian's POV here (reportbug
-tool). Also it showed again, when i've wrote about traces, where testers
-(bug reporters) can find test cases, before they will cry (again) about
-some issues. I see this, example is bugzilla @ mozilla -- known history.
+We'll get to that.
 
-[1] Noise filtering -- that's obvious for me, after all :)
+> Furthermore, Linus has repeatedly explained to you why he (and bunch
+> of other _kernel_ hackers -- this is a thread on LKML, remember)
+> thinks it's stupid for a software license to restrict hardware
+> design choices.
 
-By not flaming further, i'm just going to try to implement something.
-Hopefully my next patch will be usefully smart tracked.
+Most of these explanations carried the assumption that this would
+lower the amount of contributions he'd get.  And this is precisely the
+circular logic in their arguments, and this is why this argument is
+intended to show the initial assumption is false.  But hey, maybe I'm
+wrong, and it won't show that at all, and I'll be proved wrong, and
+then there's going to be one more very vocal defensor of your ideals.
 
-Thanks!
-____
+
+Now, if people want to keep on fooling themselves, I guess they can,
+as long as they don't hurt others in the process.  If they try to fool
+others, I feel it is my moral duty to intervene.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
