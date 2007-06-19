@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbXFSVIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbXFSVIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756997AbXFSVIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbXFSVIL
+	id S1759042AbXFSVIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbXFSVIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:08:11 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50004
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753386AbXFSVIK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:08:10 -0400
-Date: Tue, 19 Jun 2007 14:07:18 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Daniel Drake <dsd@gentoo.org>, Bron Gondwana <brong@fastmail.fm>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <ory7ig4h24.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706191404060.26701@asgard.lang.hm>
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
- <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net>
- <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616021630.GA30660@brong.net>
- <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616103130.GD32405@brong.net>
- <orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616233251.GA17270@brong.net>
- <ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br> <46774BD3.6010605@gentoo.org>
- <ory7ig4h24.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 19 Jun 2007 17:08:38 -0400
+Received: from hera.cwi.nl ([192.16.191.8]:58762 "EHLO hera.cwi.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753550AbXFSVIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 17:08:37 -0400
+Date: Tue, 19 Jun 2007 23:08:28 +0200
+From: Andries Brouwer <Andries.Brouwer@cwi.nl>
+To: Karel Zak <kzak@redhat.com>
+Cc: Andries Brouwer <Andries.Brouwer@cwi.nl>, linux-kernel@vger.kernel.org
+Subject: Re: mount-2.12r-ggk.tar.gz
+Message-ID: <20070619210827.GA20366@apps.cwi.nl>
+References: <200706191238.l5JCcxg14300@apps.cwi.nl> <20070619141528.GS7226@petra.dvoda.cz> <20070619152818.GA16363@apps.cwi.nl> <20070619185125.GU7226@petra.dvoda.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070619185125.GU7226@petra.dvoda.cz>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Alexandre Oliva wrote:
+On Tue, Jun 19, 2007 at 08:51:25PM +0200, Karel Zak wrote:
+> > >  I don't think that mtab is a good place for this shared subtree
+> > >  stuff. The mtab needs to die.
+> > 
+> > Perhaps. Perhaps not.
+> > 
+> > On the one hand I think there is a place for arbitrary user-space info
+> > about mounted filesystems. With information about who mounted, and at
+> > what time. What the icon is that should represent this filesystem.
+> > What resources are associated to this mount, and which program must do
+> > the cleanup. Etc.
+> > Today there is not much user-space info, but there is some.
+> 
+>  See also the "[RFC] obsoleting /etc/mtab" thread:
+>  http://www.mail-archive.com/util-linux-ng@vger.kernel.org/index.html#00208
 
-> On Jun 19, 2007, Daniel Drake <dsd@gentoo.org> wrote:
->
->> I realise that the latest GPLv3 draft would not pose restrictions
->> here, as such devices would not be classified as consumer
->> products.
->
-> And even if they were, there's always ROM.
->
-> I don't know whether hardware seals that state "once you break this
-> seal, law prohibits the use of this device with human patients".
+Good that I am not on that mailing list - I might have spent a lot of time
+discussing.
 
-once you break the seal the device is no longer certified. an uncertified 
-device cannot be used.
+I see that many people agree that there is the need to attach
+some metadata to mounts. Good.
+But they suggest storing that metadata in the kernel. Bad.
+The kernel is not a storage place for random non-kernel-related data.
 
-this is very common (in some areas it's widely ignored, in others it 
-isn't)
+A good place is a file, like /etc/mtab (I suppose today /var/run/mtab
+might be the appropriate place for system-wide mounts, and for
+user-private mounts the user can, if she wishes, indicate her
+favorite mtab file to use: "mount -M $HOME/foo/mtab3").
 
-this is just like the 'you void the warranty if you disrupt this sticker' 
-stickers that you see on just about any hardware you buy today. some 
-vendors are stickers for this, others don't really care.
+And the kernel needs non-procfs interfaces (namely syscalls)
+that can tell a process about its mount environment: readmounts()
+and statmount(). As soon as mount(8) can ask the kernel, then
+the problem of non-up-to-date /etc/mtab, and incomplete /proc/mounts
+has gone away.
 
-David Lang
+Andries
 
-> Then the restriction is not being imposed by the manufacturer, only by
-> law, and this does make lot of a difference as far as software freedom
-> is concerned.
->
-> But then, law might not find this to be enough.  Software patents are
-> not the only stupid law that harms Free Software :-(
->
->
+
+[By the way, just like a single flat directory that contains all files
+turned out to be a bad idea, a single flat structure that contains
+all mounts will turn out soon to be a bad idea too. Some people use
+thousands of mounts. So, also mounts must live in a tree-structured space.]
+
+
