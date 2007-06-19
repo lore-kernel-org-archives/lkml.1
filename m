@@ -1,41 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbXFSVEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbXFSVIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758784AbXFSVEk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXFSVEd
+	id S1756997AbXFSVIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbXFSVIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:04:33 -0400
-Received: from waste.org ([66.93.16.53]:52951 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752466AbXFSVEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:04:33 -0400
-Date: Tue, 19 Jun 2007 16:00:11 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: clameter@sgi.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       suresh.b.siddha@intel.com
-Subject: Re: [patch 05/26] Slab allocators: Cleanup zeroing allocations
-Message-ID: <20070619210010.GN11166@waste.org>
-References: <20070618095838.238615343@sgi.com> <20070618095914.622685354@sgi.com>
+	Tue, 19 Jun 2007 17:08:11 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50004
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753386AbXFSVIK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 17:08:10 -0400
+Date: Tue, 19 Jun 2007 14:07:18 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Daniel Drake <dsd@gentoo.org>, Bron Gondwana <brong@fastmail.fm>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <ory7ig4h24.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706191404060.26701@asgard.lang.hm>
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
+ <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net>
+ <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616021630.GA30660@brong.net>
+ <orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616103130.GD32405@brong.net>
+ <orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616233251.GA17270@brong.net>
+ <ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br> <46774BD3.6010605@gentoo.org>
+ <ory7ig4h24.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070618095914.622685354@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 02:58:43AM -0700, clameter@sgi.com wrote:
-> It becomes now easy to support the zeroing allocs with generic inline functions
-> in slab.h. Provide inline definitions to allow the continued use of
-> kzalloc, kmem_cache_zalloc etc but remove other definitions of zeroing functions
-> from the slab allocators and util.c.
+On Tue, 19 Jun 2007, Alexandre Oliva wrote:
 
-The SLOB bits up through here look fine.
+> On Jun 19, 2007, Daniel Drake <dsd@gentoo.org> wrote:
+>
+>> I realise that the latest GPLv3 draft would not pose restrictions
+>> here, as such devices would not be classified as consumer
+>> products.
+>
+> And even if they were, there's always ROM.
+>
+> I don't know whether hardware seals that state "once you break this
+> seal, law prohibits the use of this device with human patients".
 
-I worry a bit about adding another branch checking __GFP_ZERO in such
-a hot path for SLAB/SLUB.
+once you break the seal the device is no longer certified. an uncertified 
+device cannot be used.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+this is very common (in some areas it's widely ignored, in others it 
+isn't)
+
+this is just like the 'you void the warranty if you disrupt this sticker' 
+stickers that you see on just about any hardware you buy today. some 
+vendors are stickers for this, others don't really care.
+
+David Lang
+
+> Then the restriction is not being imposed by the manufacturer, only by
+> law, and this does make lot of a difference as far as software freedom
+> is concerned.
+>
+> But then, law might not find this to be enough.  Software patents are
+> not the only stupid law that harms Free Software :-(
+>
+>
