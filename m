@@ -1,85 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbXFSNnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbXFSNny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752781AbXFSNnD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 09:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbXFSNmy
+	id S1753499AbXFSNny (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 09:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbXFSNnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 09:42:54 -0400
-Received: from rzlab.ucr.edu ([138.23.92.77]:39176 "EHLO
-	epsilon.donarmstrong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbXFSNmx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 09:42:53 -0400
-X-Greylist: delayed 713 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 09:42:53 EDT
-Date: Tue, 19 Jun 2007 06:30:46 -0700
-From: Don Armstrong <don@debian.org>
-To: Debbugs developers <debian-debbugs@lists.debian.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
-Message-ID: <20070619133046.GI14145@volo.donarmstrong.com>
-Mail-Followup-To: Debbugs developers <debian-debbugs@lists.debian.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200706172349.08813.bzolnier@gmail.com> <4675C083.6080409@s5r6.in-berlin.de> <20070617220927.99ebc1ee.akpm@linux-foundation.org> <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca> <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower>
+	Tue, 19 Jun 2007 09:43:46 -0400
+Received: from styx.suse.cz ([82.119.242.94]:60451 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751359AbXFSNnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 09:43:46 -0400
+Date: Tue, 19 Jun 2007 15:44:16 +0200
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: Hans de Goede <j.w.r.degoede@hhs.nl>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jiri Kosina <jikos@jikos.cz>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stanislav Brabec <sbrabec@suse.cz>
+Subject: Re: PATCH: change keycode for scancode e0 32 from 150 to 172
+Message-ID: <20070619134416.GL6382@suse.cz>
+References: <466F1462.5090008@hhs.nl> <466F1E5C.5090002@zytor.com> <Pine.LNX.4.64.0706131113400.23280@twin.jikos.cz> <466FB80E.7050902@hhs.nl> <Pine.LNX.4.64.0706131131250.23280@twin.jikos.cz> <d120d5000706130645o4b63e9e8mf7606eb682275a0@mail.gmail.com> <46770E66.70506@hhs.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1I0UzP-0004AY-Hy@flower>
+In-Reply-To: <46770E66.70506@hhs.nl>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Oleg Verych wrote:
-> * From: Linus Torvalds
-> * Newsgroups: gmane.linux.kernel
-> * Date: Mon, 18 Jun 2007 17:09:37 -0700 (PDT)
->
-> > I do agree. It _sounds_ like a great idea to try to control the
-> > flow of patches better,
+On Tue, Jun 19, 2007 at 12:59:50AM +0200, Hans de Goede wrote:
+> Dmitry Torokhov wrote:
+> >On 6/13/07, Jiri Kosina <jikos@jikos.cz> wrote:
+> >>On Wed, 13 Jun 2007, Hans de Goede wrote:
+> >>
+> >>> Good to hear, so as everyone smees to agree, shall I write a (massive,
+> >>> complex, intrusive) patch to fix this, or are there until now silent
+> >>> parties that object?
+> >>
+> >>Well, Dmitry is the one who has final word on this, as it is related to
+> >>PS/2 keyboards. Just noticed he is not in CC, added.
+> >>
+> >
+> >Yep, just send me the patch (don't forget to make change to
+> >drivers/char/keyboard.c that Vojtech mentioned in other e-mail).
+> >
 > 
-> There were some ideas, i will try to summarize:
+> Here is a patch as promised, attached.
 > 
-> * New Patches (or sets) need tracking, review, testing
+> Thanks & Regards,
 > 
->   Zero (tracking) done by sending (To, or bcc) [RFC] patch to something
->   like submit@pts.e-mail.example.com (like BTS now). Notifications will
->   be sent to intrested maintainers (if meta-information is ok) or testers
->   (see below)
+> Hans
 
-The BTS, while fairly good at tracking issues for distributions made
-up of thousands of packages (like Debian), is rather suboptimal for
-dealing with the workflow of a single (relatively) monolithic entity
-like the linux kernel.
+Patch looks OK (didn't test it, but it seems to do all what's needed).
 
-Since the ultimate goal is presumably to apply a patch to a git tree,
-some sort of system which is built directly on top of git (or
-intimately intertwined) is probably required. Some of the metrics that
-the BTS uses, like the easy ability to use mail to control bugs may be
-useful to incorporate, but I'd be rather surprised if it could be made
-to work with the kernel developer's workflow as it exists now.
-
-It may be useful for whoever ends up designing the patch system to
-take a glimpse at how it's done in debbugs, but since I don't know how
-the workflow works now, and how people want to have it work in the
-end, I can't tell you what features from debbugs would be useful to
-use.
-
-Finally, at the end of the day, my own time and effort (and the
-primary direction of debbugs development) is aimed at supporting the
-primary user of debbugs, the Debian project. People who understand (or
-want to understand) the linux kernel team's workflow are the ones who
-are going to need to do the heavy lifting here.
+Acked-by: Vojtech Pavlik <vojtech@suse.cz>
 
 
-Don Armstrong
- 
+> As discussed by mail change keycode for scancode e0 32 from 150 to 172
+> 
+> Signed-off-by: Hans de Goede <j.w.r.degoede@hhs.nl>
+> diff -ur linux-2.6.22-rc4.orig/drivers/char/keyboard.c linux-2.6.22-rc4/drivers/char/keyboard.c
+> --- linux-2.6.22-rc4.orig/drivers/char/keyboard.c	2007-06-16 22:54:47.000000000 +0200
+> +++ linux-2.6.22-rc4/drivers/char/keyboard.c	2007-06-18 23:15:27.000000000 +0200
+> @@ -1005,8 +1005,8 @@
+>  	284,285,309,  0,312, 91,327,328,329,331,333,335,336,337,338,339,
+>  	367,288,302,304,350, 89,334,326,267,126,268,269,125,347,348,349,
+>  	360,261,262,263,268,376,100,101,321,316,373,286,289,102,351,355,
+> -	103,104,105,275,287,279,306,106,274,107,294,364,358,363,362,361,
+> -	291,108,381,281,290,272,292,305,280, 99,112,257,258,359,113,114,
+> +	103,104,105,275,287,279,258,106,274,107,294,364,358,363,362,361,
+> +	291,108,381,281,290,272,292,305,280, 99,112,257,306,359,113,114,
+>  	264,117,271,374,379,265,266, 93, 94, 95, 85,259,375,260, 90,116,
+>  	377,109,111,277,278,282,283,295,296,297,299,300,301,293,303,307,
+>  	308,310,313,314,315,317,318,319,320,357,322,323,324,325,276,330,
+> diff -ur linux-2.6.22-rc4.orig/drivers/input/keyboard/atkbd.c linux-2.6.22-rc4/drivers/input/keyboard/atkbd.c
+> --- linux-2.6.22-rc4.orig/drivers/input/keyboard/atkbd.c	2007-06-16 22:54:48.000000000 +0200
+> +++ linux-2.6.22-rc4/drivers/input/keyboard/atkbd.c	2007-06-18 23:07:24.000000000 +0200
+> @@ -89,7 +89,7 @@
+>  	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+>  	217,100,255,  0, 97,165,  0,  0,156,  0,  0,  0,  0,  0,  0,125,
+>  	173,114,  0,113,  0,  0,  0,126,128,  0,  0,140,  0,  0,  0,127,
+> -	159,  0,115,  0,164,  0,  0,116,158,  0,150,166,  0,  0,  0,142,
+> +	159,  0,115,  0,164,  0,  0,116,158,  0,172,166,  0,  0,  0,142,
+>  	157,  0,  0,  0,  0,  0,  0,  0,155,  0, 98,  0,  0,163,  0,  0,
+>  	226,  0,  0,  0,  0,  0,  0,  0,  0,255, 96,  0,  0,  0,143,  0,
+>  	  0,  0,  0,  0,  0,  0,  0,  0,  0,107,  0,105,102,  0,  0,112,
+> @@ -111,7 +111,7 @@
+>  	 82, 83, 80, 76, 77, 72, 69, 98,  0, 96, 81,  0, 78, 73, 55,183,
+>  
+>  	184,185,186,187, 74, 94, 92, 93,  0,  0,  0,125,126,127,112,  0,
+> -	  0,139,150,163,165,115,152,150,166,140,160,154,113,114,167,168,
+> +	  0,139,172,163,165,115,152,172,166,140,160,154,113,114,167,168,
+>  	148,149,147,140
+>  };
+>  
+
+
 -- 
-N: Why should I believe that?"
-B: Because it's a fact."
-N: Fact?"
-B: F, A, C, T... fact"
-N: So you're saying that I should believe it because it's true. 
-   That's your argument?
-B: It IS true.
--- "Ploy" http://www.mediacampaign.org/multimedia/Ploy.MPG
-
-http://www.donarmstrong.com              http://rzlab.ucr.edu
+Vojtech Pavlik
+Director SuSE Labs
