@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbXFSWE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbXFSWIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbXFSWE3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbXFSWEU
+	id S1756460AbXFSWIJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbXFSWHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:04:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41808
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752465AbXFSWET (ORCPT
+	Tue, 19 Jun 2007 18:07:55 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:58052
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbXFSWHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:04:19 -0400
-Date: Tue, 19 Jun 2007 15:04:37 -0700 (PDT)
-Message-Id: <20070619.150437.38693228.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: shemminger@linux-foundation.org, fubar@us.ibm.com, da-x@monatomic.org,
-       ctindel@users.sourceforge.net, kaneshige.kenji@jp.fujitsu.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, bonding-devel@lists.sourceforge.net
-Subject: Re: Why is this patch not in 2.6.22-rc5?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <467817CE.80904@garzik.org>
-References: <15712.1181795790@death>
-	<20070619082302.4b9a5c27@localhost.localdomain>
-	<467817CE.80904@garzik.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 18:07:54 -0400
+Date: Tue, 19 Jun 2007 15:07:40 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: Chris Snook <csnook@redhat.com>, Jack Stone <jack@hawkeye.stone.uk.eu.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
+       alan <alan@clueserver.org>
+Subject: Re: Versioning file system
+In-Reply-To: <20070619204317.GR10008@csclub.uwaterloo.ca>
+Message-ID: <Pine.LNX.4.64.0706191505130.26701@asgard.lang.hm>
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com>
+ <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com>
+ <20070619204317.GR10008@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Tue, 19 Jun 2007 13:52:14 -0400
+On Tue, 19 Jun 2007, Lennart Sorensen wrote:
 
-> Stephen Hemminger wrote:
-> > On Wed, 13 Jun 2007 21:36:30 -0700
-> > Jay Vosburgh <fubar@us.ibm.com> wrote:
-> > 
-> >> 	The following patch (based on a patch from Stephen Hemminger
-> >> <shemminger@linux-foundation.org>) removes use after free conditions in
-> >> the unregister path for the bonding master.  Without this patch, an
-> >> operation of the form "echo -bond0 > /sys/class/net/bonding_masters"
-> >> would trigger a NULL pointer dereference in sysfs.  I was not able to
-> >> induce the failure with the non-sysfs code path, but for consistency I
-> >> updated that code as well.
-> >>
-> >> 	I also did some testing of the bonding /proc file being open
-> >> while the bond is being deleted, and didn't see any problems there.
-> >>
-> >> Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
-> > 	
-> > Hey David, this patch fixes one of the bugs listed in 2.6.22-rc5
-> > list. Jay submitted last week but it hasn't made it upstream.
-> 
-> Get him to forward it to me, like he does for other bonding patches...
+> On Tue, Jun 19, 2007 at 02:03:07PM -0400, Chris Snook wrote:
+>> I pointed out NetApp's .snapshot directories because that's a method that
+>> uses legal path character, but doesn't break anything.  With this method,
+>> userspace tools will have to be taught that : is suddenly a special
+>> character.  Userspace already knows that files beginning with . are special
+>> and treat them specially. We don't need a new special character for every
+>>  new feature.  We've got one, and it's flexible enough to do what you want,
+>> as proven by NetApp's extremely successful implementation.  Perhaps you
+>> want a slightly different interface from what NetApp has implemented, but
+>> what you're suggesting will change the default behavior of basic tools like
+>> tar and ls.  This is not a good thing.
+>
+> I think I used one of those systems once (or at least another one with
+> .snapshot feature).  It managed to completely avoid user space problems
+> by never actually showing .snapshot in directory listings, but you could
+> always cd to it or refer to it explicitly.  You never risked having tar
+> or find or anything else accidentally pick it up.  Very nice interface.
 
-Yes, this patch definitely should go via Jeff, he handles merging the
-bonding bits.
+since anything starting with . is considered a 'hidden' file per *nix 
+tradition it's ignored by many programs and optionally ignored by most 
+others (and anything that doesn't ignore . files when presending files to 
+the user has many other problems on modern desktop systems anyway ;-)
+
+the only trouble I ever had with the .snapshot approach is when tar or 
+find would decend down into the .snapshot when I didn't really intend for 
+it to do so.
+
+David Lang
