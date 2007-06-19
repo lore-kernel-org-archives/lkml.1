@@ -1,64 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934188AbXFSUbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbXFSUey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934188AbXFSUbo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 16:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbXFSUbe
+	id S1752535AbXFSUey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 16:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762560AbXFSUeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 16:31:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59742 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932133AbXFSUbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 16:31:33 -0400
-Message-ID: <46783D1C.5030408@redhat.com>
-Date: Tue, 19 Jun 2007 16:31:24 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 19 Jun 2007 16:34:46 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4056 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762343AbXFSUep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 16:34:45 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <aoliva@redhat.com>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Tue, 19 Jun 2007 13:33:49 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEEKHELAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       alan <alan@clueserver.org>
-Subject: Re: Versioning file system
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com> <467829C4.5020101@zytor.com> <46782AA5.2000108@hawkeye.stone.uk.eu.org> <46783847.1020205@redhat.com> <46783939.7000308@hawkeye.stone.uk.eu.org>
-In-Reply-To: <46783939.7000308@hawkeye.stone.uk.eu.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <orodjb1zwk.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 19 Jun 2007 13:34:10 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 19 Jun 2007 13:34:11 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jack Stone wrote:
-> Chris Snook wrote:
->> Jack Stone wrote:
->>> H. Peter Anvin wrote:
->>>> Chris Snook wrote:
->>>>> I pointed out NetApp's .snapshot directories because that's a method
->>>>> that uses legal path character, but doesn't break anything.  With this
->>>>> method, userspace tools will have to be taught that : is suddenly a
->>>>> special character.
->>>> Not to mention that the character historically used for this purpose is
->>>> ; (semicolon.)
->>> But that would cause havoc with shells which use ; to seperate commands.
->>> Using ; would defiantly break userspace
->>>
->>> Jack
->>>
->> I can escape the semicolon just fine in bash.  In fact, tab-completion
->> will do this automatically.  That's really a non-issue.  It just means
->> that anyone who wants to use this feature would have to know what
->> they're doing, which I believe is your goal, right?
-> 
-> I didn't realise this. Would ; break userspace if it was used as the
-> delimiter?
 
-I have no idea.  I've never written a file management utility or library, so I 
-don't know if they handle those specially.
+> Right.  All GPL can say is that you cannot impose further restrictions
+> on how the user adapts the software, and since the user runs the
+> software on that computer, that means you must not restrict the user's
+> ability to upgrade or otherwise replace that software there, when you
+> gave the user the software along with the computer.
 
-> This discussion may be academic as this design is looking less and less
-> useful/workable.
+You keep smuggling in the same assumption without ever defending it. There
+is a user. There is a person who gets to decide what software runs on a
+particular piece of hardware. You keep assuming they must be the same
+person. There are *MANY* legitimate reasons why the user of a piece of
+hardware should not be the same person who controls what software runs on
+that hardware.
 
-Well, I'd argue that the most interesting part of this idea is how it works on 
-the inside.  You can implement arbitrarily impractical interfaces to test it out 
-as long as your code is modular enough to implement a community-agreeable 
-interface once it's ready for a wider audience.
+> >> As long as you didn't hand me the hardware along with the software,
+> >> for me to become a user of the software on that hardware, I agree.
 
-	-- Chris
+> > This is, again, an argument that is totally alien to the GPL.
+
+> No, it's not.  It is intended to ensure that free software remains
+> free for all its users.
+
+Exactly, on all hardware. Not "especially free" on some one particular
+piece.
+
+> When you receive the software, you become a
+> user.  That's when you receive the rights, and that's what creates the
+> obligation on the distributor to not impose restrictions on the
+> freedoms, no matter by how means such restrictions could be legally or
+> technically accomplished.
+
+Exactly. And they place no restrictions on your ability to modify or use
+that software on any hardware you like, provided of course you are the
+person who gets to decide what software runs on that hardware.
+
+> > The idea that you have 'special' rights to the software on some
+> > hardware but not others is simply insane.
+
+> I agree, to some extent.  It's not so much about the rights, but about
+> the restrictions the vendor can impose on hardware.
+
+The GPL is about what restrictions a particule piece of hardware, that
+contains no GPL'd software, can impose?
+
+> It's just that, for this particular hardware, as you say, the
+> manufacturer has (or had) special rights.  This means it can decide
+> what software runs, whom it gives the hardware to, etc.
+
+Exactly. For any given piece of hardware, there must be some person or
+entity that decides what software runs on it.
+
+> However, by distributing software under the GPL, the vendor accepts
+> the condition to not use any means whatsoever to impose restrictions
+> on the recipient's exercise of the rights granted by the license by
+> means of the distribution of the software.
+
+Agreed.
+
+> There's no reason to make the hardware special, or the right of
+> authorization special, as a possible excuse to impose restrictions on
+> the user.  It amounts to just that: an attempt to excuse oneself from
+> the condition of not imposing restrictions on the enjoyment of the
+> freedoms.
+
+There is always the restriction that if you aren't the person who gets to
+choose what software runs on a particular piece of hardware, then you can't
+run modified software on that hardware.
+
+There has to be someone who makes that decision for any given piece of
+hardware. The idea that this person *MUST* be the user is totally alien to
+the GPL. It's got nothing whatsoever to do with *ANY* of the freedoms the
+GPL was protecting. All of those freedoms very critically apply to *ALL*
+hardware in the entire universe.
+
+> > The GPL is about being able to use the software on *ANY* hardware
+> > for which you have the right to decide what software runs.
+
+> Yes.  And, per the "pass on all rights you have" spirit in the
+> preamble, that translates into "no further restrictions" in the legal
+> terms, the user *must* receive this right from the distributor of the
+> software.
+
+That right is a right to that particular piece of hardware, it is not a
+right to the GPL'd software. Your argument suggests that if I let you use my
+laptop, I must let you modify the Linux kernel on it. That's just craziness.
+The GPL was never about who was authorized to install modified software on
+particular pieces of hardware.
+
+> > You can state what the GPLv3 does as many times as you want, but special
+> > rights to particular pieces of hardware is *TOTALLY* alien to
+> > the spirit of the GPL.
+
+> I agree.  That's the bug in GPLv2 that the anti-tivoization provision
+> is trying to fix.
+
+You can see it as a bug, and if you think Tivoization of free software is
+bad, then that view makes sense. However, if you see the GPL as being about
+getting the software, being free to modify the software, being able to
+install that software on *ANY* hardware (whether or not that hardware
+shipped with open-souruce software) and if you see the GPL as avoiding any
+restrictions on authorization decisions, then the GPLv3 is not "fixing"
+something but radically doing something else entirely.
+
+>From my point of view, the biggest problem with the GPLv3 is not the change
+in spirit but the change in scope. The GPLv3 attempts to control the Tivo
+hardware, firmware, and keys, none of which contain any GPL'd software at
+all. The idea that because you use GPL'd software, restrictions are imposed
+on non-GPL'd works bothers me tremendously.
+
+DS
+
+
