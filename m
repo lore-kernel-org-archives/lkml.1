@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbXFSWqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbXFSWrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbXFSWqm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbXFSWqf
+	id S1758165AbXFSWrU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbXFSWrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:46:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44958 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752698AbXFSWqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:46:34 -0400
-To: david@lang.hm
-Cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706190221.09067.dhazelton@enter.net>
-	<ork5u04f5b.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706190258.56955.dhazelton@enter.net>
-	<or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706191413040.26701@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 19:45:10 -0300
-In-Reply-To: <Pine.LNX.4.64.0706191413040.26701@asgard.lang.hm> (david@lang.hm's message of "Tue\, 19 Jun 2007 14\:18\:11 -0700 \(PDT\)")
-Message-ID: <ord4zrzhqh.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 19 Jun 2007 18:47:12 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52690 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752698AbXFSWrL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 18:47:11 -0400
+Date: Tue, 19 Jun 2007 15:46:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, suresh.b.siddha@intel.com
+Subject: Re: [patch 10/26] SLUB: Faster more efficient slab determination
+ for __kmalloc.
+Message-Id: <20070619154654.218f902c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706191533580.7633@schroedinger.engr.sgi.com>
+References: <20070618095838.238615343@sgi.com>
+	<20070618095915.826976488@sgi.com>
+	<20070619130858.693ae66e.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706191522230.7633@schroedinger.engr.sgi.com>
+	<20070619152957.a03fbb2c.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0706191533580.7633@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, david@lang.hm wrote:
+On Tue, 19 Jun 2007 15:38:01 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Tue, 19 Jun 2007, Alexandre Oliva wrote:
->> 
->> Once again, now with clearer starting conditions (not intended to
->> match TiVo in any way, BTW; don't get into that distraction)
->> 
->> 
->> Vendor doesn't care about tivoizing, their business works the same
->> either way.
->> 
->> Vendor's employees will contribute the same, one way or another, so
->> their contributions are out of the equation.
+> Ok and BUILD_BUG_ON really works? Had some bad experiences with it.
 
-> no, this is what you are missing.
+hm, I don't recall any problems, apart from its very obscure error
+reporting.
 
-No, this is just one of many possible situations.
-
-You're just thinking of a different scenario, in which tivoization is
-important for the tivoizer.  We'll get to that.
-
-Please be patient.  Don't get the illusion that you're disputing or
-weakening the argument with these statements.  Disputing premises of a
-logical inference is pointless as far as disputing a larger argument
-that this particular lemma would be a part of.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+But if it breaks, we get an opportunity to fix it ;)
