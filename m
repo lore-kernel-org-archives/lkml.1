@@ -1,64 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933488AbXFSTxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933831AbXFSTyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933488AbXFSTxq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbXFSTxi
+	id S933831AbXFSTyF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933120AbXFSTxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:53:38 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2678 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760868AbXFSTxh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:53:37 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 19 Jun 2007 12:53:34 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Fix signalfd interaction with thread-private signals
-In-Reply-To: <20070619140646.GB27343@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0706191244090.16740@alien.or.mcafeemobile.com>
-References: <1182064500.2798.6.camel@entropy>
- <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com>
- <1182108399.3794.4.camel@entropy> <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
- <1182125303.3794.8.camel@entropy> <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com>
- <1182127391.26853.207.camel@localhost.localdomain>
- <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
- <20070619091452.GA94@tv-sign.ru> <1182254988.26853.334.camel@localhost.localdomain>
- <20070619140646.GB27343@tv-sign.ru>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 19 Jun 2007 15:53:43 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:45303 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932716AbXFSTxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 15:53:41 -0400
+Date: Tue, 19 Jun 2007 21:53:30 +0200 (MEST)
+Message-Id: <200706191953.l5JJrU4K002663@alkaid.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 2.6.22-rc5 1/2] sata_promise: cleanups
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Oleg Nesterov wrote:
+This patch applies some trivial cleanups to sata_promise:
+- repair whitespace damage
+- correct comment at board_2057x_pata definition
+- pull SATAII TX4 support code out to separate functions
+- rename ata_nr to ata_no for consistency with libata's port_no
+- remove some init-time debug printks (requested by Jeff)
 
-> On 06/19, Benjamin Herrenschmidt wrote:
-> >
-> > On Tue, 2007-06-19 at 13:14 +0400, Oleg Nesterov wrote:
-> > 
-> > > The commited "Fix signalfd interaction with thread-private signals"
-> > > (commit caec4e8dc85e0644ec24aeb36285e1ba02da58cc) doesn't implement
-> > > this.
-> > 
-> > Indeed, if you want what Davide described, you need to also change
-> > signalfd side. The patch I did merely prevents another thread from
-> > dequeuing somebody else private signals.
-> 
-> Yes I see, but why do we need this change? Yes, we can dequeue SIGSEGV
-> from another thread. Just don't do it if you have a handler for SIGSEGV?
+This patch should cause no behavioural changes, except for
+the removed printks.
 
-I believe it can be confusing to have private signals dequeued from 
-another thread. The kernel expect those to be dequeued by the target 
-thread.
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+--
+ drivers/ata/sata_promise.c |   56 ++++++++++++++++++---------------------------
+ 1 files changed, 23 insertions(+), 33 deletions(-)
 
-
-- Davide
-
-
+--- linux-2.6.22-rc5/drivers/ata/sata_promise.c.~1~	2007-06-19 20:38:13.000000000 +0200
++++ linux-2.6.22-rc5/drivers/ata/sata_promise.c	2007-06-19 20:40:28.000000000 +0200
+@@ -45,8 +45,7 @@
+ #include "sata_promise.h"
+ 
+ #define DRV_NAME	"sata_promise"
+-#define DRV_VERSION	"2.07"
+-
++#define DRV_VERSION	"2.08"
+ 
+ enum {
+ 	PDC_MAX_PORTS		= 4,
+@@ -94,7 +93,7 @@ enum {
+ 	board_20319		= 2,	/* FastTrak S150 TX4 */
+ 	board_20619		= 3,	/* FastTrak TX4000 */
+ 	board_2057x		= 4,	/* SATAII150 Tx2plus */
+-	board_2057x_pata	= 5,	/* SATAII150 Tx2plus */
++	board_2057x_pata	= 5,	/* SATAII150 Tx2plus PATA port */
+ 	board_40518		= 6,	/* SATAII150 Tx4 */
+ 
+ 	PDC_HAS_PATA		= (1 << 1), /* PDC20375/20575 has PATA */
+@@ -124,7 +123,6 @@ enum {
+ 	PDC_FLAG_4_PORTS	= (1 << 26), /* 4 ports */
+ };
+ 
+-
+ struct pdc_port_priv {
+ 	u8			*pkt;
+ 	dma_addr_t		pkt_dma;
+@@ -340,7 +338,6 @@ static const struct pci_device_id pdc_at
+ 	{ }	/* terminate list */
+ };
+ 
+-
+ static struct pci_driver pdc_ata_pci_driver = {
+ 	.name			= DRV_NAME,
+ 	.id_table		= pdc_ata_pci_tbl,
+@@ -348,7 +345,6 @@ static struct pci_driver pdc_ata_pci_dri
+ 	.remove			= ata_pci_remove_one,
+ };
+ 
+-
+ static int pdc_common_port_start(struct ata_port *ap)
+ {
+ 	struct device *dev = ap->host->dev;
+@@ -438,7 +434,6 @@ static u32 pdc_sata_scr_read (struct ata
+ 	return readl(ap->ioaddr.scr_addr + (sc_reg * 4));
+ }
+ 
+-
+ static void pdc_sata_scr_write (struct ata_port *ap, unsigned int sc_reg,
+ 			       u32 val)
+ {
+@@ -657,8 +652,8 @@ static void pdc_error_intr(struct ata_po
+ 	ata_port_abort(ap);
+ }
+ 
+-static inline unsigned int pdc_host_intr( struct ata_port *ap,
+-                                          struct ata_queued_cmd *qc)
++static inline unsigned int pdc_host_intr(struct ata_port *ap,
++					 struct ata_queued_cmd *qc)
+ {
+ 	unsigned int handled = 0;
+ 	void __iomem *port_mmio = ap->ioaddr.cmd_addr;
+@@ -685,10 +680,10 @@ static inline unsigned int pdc_host_intr
+ 		handled = 1;
+ 		break;
+ 
+-        default:
++	default:
+ 		ap->stats.idle_irq++;
+ 		break;
+-        }
++	}
+ 
+ 	return handled;
+ }
+@@ -701,6 +696,18 @@ static void pdc_irq_clear(struct ata_por
+ 	readl(mmio + PDC_INT_SEQMASK);
+ }
+ 
++static inline int pdc_is_sataii_tx4(unsigned long flags)
++{
++	const unsigned long mask = PDC_FLAG_GEN_II | PDC_FLAG_4_PORTS;
++	return (flags & mask) == mask;
++}
++
++static inline unsigned int pdc_port_no_to_ata_no(unsigned int port_no, int is_sataii_tx4)
++{
++	static const unsigned char sataii_tx4_port_remap[4] = { 3, 1, 0, 2};
++	return is_sataii_tx4 ? sataii_tx4_port_remap[port_no] : port_no;
++}
++
+ static irqreturn_t pdc_interrupt (int irq, void *dev_instance)
+ {
+ 	struct ata_host *host = dev_instance;
+@@ -807,7 +814,6 @@ static void pdc_tf_load_mmio(struct ata_
+ 	ata_tf_load(ap, tf);
+ }
+ 
+-
+ static void pdc_exec_command_mmio(struct ata_port *ap, const struct ata_taskfile *tf)
+ {
+ 	WARN_ON (tf->protocol == ATA_PROT_DMA ||
+@@ -867,7 +873,6 @@ static void pdc_ata_setup_port(struct at
+ 	ap->ioaddr.scr_addr		= scr_addr;
+ }
+ 
+-
+ static void pdc_host_init(struct ata_host *host)
+ {
+ 	void __iomem *mmio = host->iomap[PDC_MMIO_BAR];
+@@ -955,10 +960,8 @@ static int pdc_ata_init_one (struct pci_
+ 
+ 	if (pi->flags & PDC_FLAG_SATA_PATA) {
+ 		u8 tmp = readb(base + PDC_FLASH_CTL+1);
+-		if (!(tmp & 0x80)) {
++		if (!(tmp & 0x80))
+ 			ppi[n_ports++] = pi + 1;
+-			dev_printk(KERN_INFO, &pdev->dev, "PATA port found\n");
+-		}
+ 	}
+ 
+ 	host = ata_host_alloc_pinfo(&pdev->dev, ppi, n_ports);
+@@ -968,22 +971,12 @@ static int pdc_ata_init_one (struct pci_
+ 	}
+ 	host->iomap = pcim_iomap_table(pdev);
+ 
+-	is_sataii_tx4 = 0;
+-	if ((pi->flags & (PDC_FLAG_GEN_II|PDC_FLAG_4_PORTS)) == (PDC_FLAG_GEN_II|PDC_FLAG_4_PORTS)) {
+-		is_sataii_tx4 = 1;
+-		dev_printk(KERN_INFO, &pdev->dev, "applying SATAII TX4 port numbering workaround\n");
+-	}
++	is_sataii_tx4 = pdc_is_sataii_tx4(pi->flags);
+ 	for (i = 0; i < host->n_ports; i++) {
+-		static const unsigned char sataii_tx4_port_remap[4] = { 3, 1, 0, 2};
+-		int ata_nr;
+-
+-		ata_nr = i;
+-		if (is_sataii_tx4)
+-			ata_nr = sataii_tx4_port_remap[i];
+-
++		unsigned int ata_no = pdc_port_no_to_ata_no(i, is_sataii_tx4);
+ 		pdc_ata_setup_port(host->ports[i],
+-				   base + 0x200 + ata_nr * 0x80,
+-				   base + 0x400 + ata_nr * 0x100);
++				   base + 0x200 + ata_no * 0x80,
++				   base + 0x400 + ata_no * 0x100);
+ 	}
+ 
+ 	/* initialize adapter */
+@@ -1002,19 +995,16 @@ static int pdc_ata_init_one (struct pci_
+ 				 &pdc_ata_sht);
+ }
+ 
+-
+ static int __init pdc_ata_init(void)
+ {
+ 	return pci_register_driver(&pdc_ata_pci_driver);
+ }
+ 
+-
+ static void __exit pdc_ata_exit(void)
+ {
+ 	pci_unregister_driver(&pdc_ata_pci_driver);
+ }
+ 
+-
+ MODULE_AUTHOR("Jeff Garzik");
+ MODULE_DESCRIPTION("Promise ATA TX2/TX4/TX4000 low-level driver");
+ MODULE_LICENSE("GPL");
