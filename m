@@ -1,88 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764602AbXFSS66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764692AbXFSS71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764602AbXFSS66 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 14:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764381AbXFSS6r
+	id S1764692AbXFSS71 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 14:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757633AbXFSS7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 14:58:47 -0400
-Received: from ip-svs-1.Informatik.Uni-Oldenburg.DE ([134.106.12.126]:33619
-	"EHLO schlidder.svs.informatik.uni-oldenburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764344AbXFSS6p (ORCPT
+	Tue, 19 Jun 2007 14:59:12 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:33924 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1763576AbXFSS7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 14:58:45 -0400
-X-Greylist: delayed 1827 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 14:58:44 EDT
-Date: Tue, 19 Jun 2007 20:28:13 +0200
-From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>,
-       Vladislav Bolkhovitin <vst@vlnb.net>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
-Message-ID: <20070619182813.GA21404@titan.lahn.de>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	=?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>,
-	Vladislav Bolkhovitin <vst@vlnb.net>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <20070612161029.GB28279@think.oraclecorp.com> <4676C2D6.8030708@vlnb.net> <46779DB1.7060807@draigBrady.com> <20070619120457.GD14108@think.oraclecorp.com>
+	Tue, 19 Jun 2007 14:59:10 -0400
+Date: Tue, 19 Jun 2007 14:59:08 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Renato S. Yamane" <renatoyamane@mandic.com.br>,
+       Jiri Kosina <jikos@jikos.cz>
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] Error -71 on device descriptor read/all
+In-Reply-To: <Pine.LNX.4.64.0706191751490.3068@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.44L0.0706191456030.2552-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070619120457.GD14108@think.oraclecorp.com>
-Organization: UUCP-Freunde Lahn e.V.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Tue, 19 Jun 2007, Jiri Kosina wrote:
 
-On Tue, Jun 19, 2007 at 08:04:57AM -0400, Chris Mason wrote:
-> On Tue, Jun 19, 2007 at 10:11:13AM +0100, Pádraig Brady wrote:
-> > Vladislav Bolkhovitin wrote:
-> > > 
-> > > I would also suggest one more feature: support for block level
-> > > de-duplication. I mean:
-...
-> > > That would be very usable feature, which in most cases would allow to
-> > > shrink occupied disk space on 50-90%.
-> > 
-> > Have you references for this number?
-> > In my experience one gets a lot of benefit from
-> > the much simpler process of "de-duplication" of files.
+> [ OK, it probably seems like a faulty hardware (controller or the device 
+>   itself), which is not able to run at high speed, but runs nicely on full 
+>   speed. Do you have a chance to try another high speed device in this 
+>   machine to check whether it works?
 > 
-> Yes, I would expect simple hard links to be a better solution for this,
-> but the feature request is not that out of line.  I actually had plans
-> on implementing auto duplicate block reuse earlier in btrfs.
+>   Adding linux-usb-devel into CC , just in case, and leaving the full 
+>   original message below ]
+> 
+> On Tue, 19 Jun 2007, Renato S. Yamane wrote:
+> 
+> > Jiri Kosina wrote:
+> > > On Tue, 19 Jun 2007, Renato S. Yamane wrote:
+> > > > I see this in dmesg:
+> > > > usb 1-1: device descriptor read/all, error -71
+> > > 
+> > > Is this a USB 2.0 high-speed device?
+> > 
+> > lspci -v | grep 1d.7
+> > 00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family)
+> > USB2 EHCI Controller (rev 04) (prog-if 20 [EHCI])
+> > 
+> > My machine is a Laptop Toshiba M45-S355
+> > 
+> > > Don't you for example have USB extension cable too long to work on-high
+> > > speed?
+> > 
+> > My only USB device is a mouse (Microsoft Notebook Optical Mouse) without
+> > extension cable (I use original cable, with less than 3 feets).
+> > 
+> > > I guess the situation improves when you force USB 1.1 (i.e. rmmod ehci_hcd),
+> > > right?
+> > 
+> > #rmmode ehci_hcd
+> > #tail /var/log/messages
+> > 
+> > kernel: ehci_hcd 0000:00:1d.7: remove, state 4
+> > kernel: usb usb5: USB disconnect, address 1
+> > kernel: ehci_hcd 0000:00:1d.7: USB bus 5 deregistered
+> > kernel: ACPI: PCI interrupt for device 0000:00:1d.7 disabled
+> > 
+> > I don't see any error (-71).
+> > 
+> > #modprobe ehci_hcd
+> > #tail /var/log/messages
+> > kernel: ACPI: PCI Interrupt 0000:00:1d.7[A] -> Link [LNKH] -> GSI 10 (level,
+> > low) -> IRQ 10
+> > kernel: ehci_hcd 0000:00:1d.7: EHCI Host Controller
+> > kernel: ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
+> > kernel: ehci_hcd 0000:00:1d.7: debug port 1
+> > kernel: ehci_hcd 0000:00:1d.7: irq 10, io mem 0xf4000000
+> > kernel: ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 
+> > 2004
+> > kernel: usb usb5: configuration #1 chosen from 1 choice
+> > kernel: hub 5-0:1.0: USB hub found
+> > kernel: hub 5-0:1.0: 8 ports detected
+> > kernel: usb 1-1: USB disconnect, address 4
+> > kernel: usb 1-1: new low speed USB device using uhci_hcd and address 5
+> > kernel: usb 1-1: configuration #1 chosen from 1 choice
+> > kernel: input: Microsoft Microsoft 3-Button Mouse with IntelliEye? as 
+> > /class/input/input8
+> > kernel: input: USB HID v1.00 Mouse [Microsoft Microsoft 3-Button Mouse with
+> > IntelliEye?] on usb-0000:00:1d.0-1
+> > 
+> > This error is present only in dmesg, see below (line 8):
+> > 
+> > PCI: Setting latency timer of device 0000:00:1d.7 to 64
+> > ehci_hcd 0000:00:1d.7: EHCI Host Controller
+> > ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 5
+> > ehci_hcd 0000:00:1d.7: debug port 1
+> > PCI: cache line size of 32 is not supported by device 0000:00:1d.7
+> > ehci_hcd 0000:00:1d.7: irq 10, io mem 0xf4000000
+> > ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+> > usb 1-1: device descriptor read/all, error -71
+> > usb usb5: configuration #1 chosen from 1 choice
+> > hub 5-0:1.0: USB hub found
+> > hub 5-0:1.0: 8 ports detected
+> > Clocksource tsc unstable (delta = -194969704 ns)
+> > ACPI: PCI Interrupt Link [LNKG] enabled at IRQ 6
+> > PCI: setting IRQ 6 as level-triggered
 
-One problem with hard-links for me is, they also share the meta-data,
-especially file permissions and owners.
+Does the mouse work correctly, even with ehci-hcd loaded?
 
-Take a Subversion checkout for example: For each file "$A" Subversion
-saves a backup under ".svm/text-base/$A.svn-base" for file comparison
-and diff generation. The user controls the file permissions of "$A",
-Subversion protects its backup with 0444. You can't hard-link them,
-because than "svn diff" doesn't work anymore if your editor doesn't
-break the hard-link, or worse, your permissions can get wrong.
+If it does then don't worry about the -71 error.  It appears to be 
+transient and it's not necessarily fatal.
 
-If previous versions Subversion also had an extra file for file
-attributes (mime-type, permissions, to-be-ignored, etc.) Since most
-files had no special attributes, each had a file only containing "END".
-Those you could hard-link by hand to save space.
+Alan Stern
 
-If somebody want to research this further:
-
-There is this nice little package called "perforate", which contains
-"finddup" to find duplicate files. Run it two times, once with "-i" to
-ignore permissions while comparing file contents
-	finddup -i -d /
-and once without "-i" for "content and permissions must match"
-	finddup -d /
-This will give you a hint on how many files you could hard-link or how
-many files share their content.
-
-BYtE
-Philipp
--- 
-  / /  (_)__  __ ____  __ Philipp Hahn
- / /__/ / _ \/ // /\ \/ /
-/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
