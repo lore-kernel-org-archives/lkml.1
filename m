@@ -1,51 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbXFSPiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbXFSPjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759603AbXFSPiv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbXFSPio
+	id S1759913AbXFSPjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbXFSPjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:38:44 -0400
-Received: from rtr.ca ([64.26.128.89]:4608 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755087AbXFSPin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:38:43 -0400
-Message-ID: <4677F881.6060200@rtr.ca>
-Date: Tue, 19 Jun 2007 11:38:41 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Linas Vepstas <linas@austin.ibm.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
-References: <20070618175713.GD5836@austin.ibm.com>	<20070618212704.394912b8@the-village.bc.nu>	<20070618204601.GF5836@austin.ibm.com>	<20070618220441.3a3af8ca@the-village.bc.nu>	<4677E3BC.3040307@ru.mvista.com> <20070619151919.79c79af1@the-village.bc.nu> <4677E726.1080602@ru.mvista.com>
-In-Reply-To: <4677E726.1080602@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 19 Jun 2007 11:39:06 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38548 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757744AbXFSPjE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 11:39:04 -0400
+Subject: Re: [-RT] multiple streams have degraded performance
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vernon Mauery <vernux@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200706190725.30414.vernux@us.ibm.com>
+References: <200706182212.22633.vernux@us.ibm.com>
+	 <1182235898.7348.361.camel@twins>  <200706190725.30414.vernux@us.ibm.com>
+Content-Type: text/plain
+Date: Tue, 19 Jun 2007 17:38:50 +0200
+Message-Id: <1182267530.7348.367.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
-> Alan Cox wrote:
+On Tue, 2007-06-19 at 07:25 -0700, Vernon Mauery wrote:
+> On Monday 18 June 2007 11:51:38 pm Peter Zijlstra wrote:
+> > On Mon, 2007-06-18 at 22:12 -0700, Vernon Mauery wrote:
+> > > In looking at the performance characteristics of my network I found that
+> > > 2.6.21.5-rt15 suffers from degraded thoughput with multiple threads.  The
+> > > test that I did this with is simply invoking 1, 2, 4, and 8 instances of
+> > > netperf at a time and measuring the total throughput.  I have two 4-way
+> > > machines connected with 10GbE cards.  I tested several kernels (some
+> > > older and some newer) and found that the only thing in common was that
+> > > with -RT kernels the performance went down with concurrent streams.
+> > >
+> > > While the test was showing the numbers for receiving as well as sending,
+> > > the receiving numbers are not reliable because that machine was running a
+> > > -RT kernel for these tests.
+> > >
+> > > I was just wondering if anyone had seen this problem before or would have
+> > > any idea on where to start hunting for the solution.
+> >
+> > could you enable CONFIG_LOCK_STAT
+> >
+> > echo 0 > /proc/lock_stat
+> >
+> > <run your test>
+> >
+> > and report the output of (preferably not 80 column wrapped):
+> >
+> > grep : /proc/lock_stat | head
 > 
->>>>> I can prepare a patch, but only with a lot of guidance. I can test 
->>>>> & debug, I'm highly motivated just right now ... 
-> 
->>>> If you've got a nice repeatable problem please try using the libata
->>>> driver. That handles the error paths differently and doesn't try a FIFO
->>>> drain which might matter in this case I guess.
-> 
->>>    FIFO drain for DMA commands?
-> 
->> Welcome to the old IDE layer which I am so glad I left behind 8)
-> 
->> ide_ata_error will try and do a PIO flush regardless of the command type
->> if DRQ_STAT is asserted. See ide_dma_intr -> ide_error -> ...
-> 
->    Indeed... but the thing is we don't know what's asserted in this case 
-> -- remember, it's reading the status register that locks everything up...
+> /proc/lock_stat stayed empty for the duration of the test.  I am guessing this 
+> means there was no lock contention.
 
-Exactly.  And IORDY shouldn't really apply there,
-unless some nitwit standards person wrote it into a spec..
+Most likely caused by the issue below.
 
--ml
+> I do see this on the console:
+> BUG: scheduling with irqs disabled: IRQ-8414/0x00000000/9494
+> caller is wait_for_completion+0x85/0xc4
+> 
+> Call Trace:
+>  [<ffffffff8106f3b2>] dump_trace+0xaa/0x32a
+>  [<ffffffff8106f673>] show_trace+0x41/0x64
+>  [<ffffffff8106f6ab>] dump_stack+0x15/0x17
+>  [<ffffffff8106566f>] schedule+0x82/0x102
+>  [<ffffffff81065774>] wait_for_completion+0x85/0xc4
+>  [<ffffffff81092043>] set_cpus_allowed+0xa1/0xc8
+>  [<ffffffff810986e2>] do_softirq_from_hardirq+0x105/0x12d
+>  [<ffffffff810ca6cc>] do_irqd+0x2a8/0x32f
+>  [<ffffffff8103469d>] kthread+0xf5/0x128
+>  [<ffffffff81060f68>] child_rip+0xa/0x12
+> 
+> INFO: lockdep is turned off.
+> 
+> I haven't seen this until I enabled lock_stat and ran the test.
+
+I think this is what causes the lack of output. It disables all lock
+tracking features...
+
+> > or otherwise if there are any highly contended network locks listed?
+> 
+> Any other ideas for debugging this?
+
+fixing the above bug would help :-)
+
+Ingo says that should be fixed in -rt17, so if you could give that a
+spin...
+
