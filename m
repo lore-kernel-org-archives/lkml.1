@@ -1,91 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbXFSVTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbXFSVVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbXFSVTE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXFSVSy
+	id S1758164AbXFSVVW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbXFSVVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:18:54 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:35476
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbXFSVSx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:18:53 -0400
-Date: Tue, 19 Jun 2007 14:18:11 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+	Tue, 19 Jun 2007 17:21:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48213 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752083AbXFSVVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 17:21:14 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
        Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706191413040.26701@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <200706190221.09067.dhazelton@enter.net> <ork5u04f5b.fsf@oliva.athome.lsd.ic.unicamp.br>
- <200706190258.56955.dhazelton@enter.net> <or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
+	<ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
+	<or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
+	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070619012517.GL14788@delft.aura.cs.cmu.edu>
+	<orbqfc5wno.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070619200156.GA8812@delft.aura.cs.cmu.edu>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Tue, 19 Jun 2007 18:20:24 -0300
+In-Reply-To: <20070619200156.GA8812@delft.aura.cs.cmu.edu> (Jan Harkes's message of "Tue\, 19 Jun 2007 16\:01\:56 -0400")
+Message-ID: <orwsxzzlnr.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Alexandre Oliva wrote:
+On Jun 19, 2007, Jan Harkes <jaharkes@cs.cmu.edu> wrote:
 
->
-> Once again, now with clearer starting conditions (not intended to
-> match TiVo in any way, BTW; don't get into that distraction)
->
->
-> Vendor doesn't care about tivoizing, their business works the same
-> either way.
->
-> Vendor's employees will contribute the same, one way or another, so
-> their contributions are out of the equation.
+> On Tue, Jun 19, 2007 at 02:40:59AM -0300, Alexandre Oliva wrote:
+>> > The actual software is mailed to you on a credit card sized
+>> > ROM when you activate service.
+> ...
+>> The GPLv3 won't remove every way in which people who want/need to stop
+>> the user from making changes to the software could accomplishing this
+>> (ROM).  It will just make this a bit more inconvenient, such that
+>> vendors that have the option respect users' freedoms, and those that
+>> find it too inconvenient respect the wishes of users who don't want
+>> their software turned non-free.
 
-no, this is what you are missing.
+> Or are you saying that all that anti-tivoization language that adds
+> complex requirements which change depending on the market some device
+> happens to be sold in
 
-with tivoizing, the vendors employees are working on linux and 
-contributing
+You allude to the definition of User Product, not geographies, I
+suppose.
 
-without tivoizing and with GPLv3 license involved the vendors employees 
-are working on a propriatary OS and are contributing nothing back
+> and which will most likely make GPLv3 software unusable for various
+> applications ranging from medical equipment to financial transaction
+> systems (and probably others)
 
-> Users get source code in either case, and they can modify it and share
-> it.  They're in no way stopped from becoming part of the community.
+Not unusable, except perhaps for the one example about credit card
+terminals presented so far.
 
-not if the GPLv3 achieves it's objectives of forcing the vendor to stop 
-useing opensource software.
+> is there to just make it a _bit_ more inconvenient for vendors to
+> implement a tivo-like scheme?
 
->
-> Given these conditions:
->
-> In a tivoized device, users will be unable to scratch their itches.
-> This doesn't stop them from contributing to the project, but they may
-> lack self-interest motivation to contribute, because they won't be
-> able to use their modifications in the device they own.
->
-> In a non-tivoized device, users can scratch their itches.  They can
-> contribute just as much as they would in a tivoized device, but since
-> they can use the changes they make to make their own devices work
-> better for them, this works as a motivator for them to make changes,
-> and perhaps to contribute them.  Therefore, they will tend to
-> contribute more.
->
->
-> Can you point out any flaw in this reasoning, or can we admit it as
-> true?
+I'm not sure they find it to be "just a bit".
 
-in a tivoized device, users have access to the source code and can 
-understand how things work, incoporate improvements into other projects, 
-etc.
+Point is to keep Free Software Free freedoms, and ROM doesn't make it
+non-Free, so this provision is a means to ensure the compliance with
+the wishes of users who want their software to not be used in ways
+that make it non-Free.
 
-In addition, users who bypass the lockdown restrictions can modify the 
-software on that device.
+As it so happens, this also places economic pressure on vendors who
+tivoize, such that they either face more costly solutions, or enable
+users to tinker with the software as well.  And if neither ROM nor
+permission are an option for the vendor, well, too bad, the author
+gets to decide how his software is to be used, right?
 
-in a non-tivoized device users have a black-box and have to reverse 
-engineer everything becouse the vendor releases no source at all.
+> So what exactly is the point of all this then?
 
-David Lang
+Keeping Free Software Free.
+
+(and, as a consequence that many of you may welcome, keeping
+open-source software open source)
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
