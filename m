@@ -1,81 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765316AbXFSTvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933488AbXFSTxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765316AbXFSTvb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760904AbXFSTvX
+	id S933488AbXFSTxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbXFSTxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:51:23 -0400
-Received: from smtp2.Stanford.EDU ([171.67.20.25]:37685 "EHLO
-	smtp2.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757896AbXFSTvW (ORCPT
+	Tue, 19 Jun 2007 15:53:38 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2678 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760868AbXFSTxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:51:22 -0400
-X-Greylist: delayed 1483 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 15:51:22 EDT
-Subject: Re: 2.6.21.5-rt15: BUG: scheduling with irqs disabled
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: nando@ccrma.Stanford.EDU, carrlane@ccrma.Stanford.EDU,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1182212425.21064.47.camel@cmn3.stanford.edu>
-References: <1182212425.21064.47.camel@cmn3.stanford.edu>
-Content-Type: text/plain
-Date: Tue, 19 Jun 2007 12:26:37 -0700
-Message-Id: <1182281197.25101.35.camel@cmn3.stanford.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Jun 2007 15:53:37 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 19 Jun 2007 12:53:34 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix signalfd interaction with thread-private signals
+In-Reply-To: <20070619140646.GB27343@tv-sign.ru>
+Message-ID: <Pine.LNX.4.64.0706191244090.16740@alien.or.mcafeemobile.com>
+References: <1182064500.2798.6.camel@entropy>
+ <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com>
+ <1182108399.3794.4.camel@entropy> <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
+ <1182125303.3794.8.camel@entropy> <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com>
+ <1182127391.26853.207.camel@localhost.localdomain>
+ <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
+ <20070619091452.GA94@tv-sign.ru> <1182254988.26853.334.camel@localhost.localdomain>
+ <20070619140646.GB27343@tv-sign.ru>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-18 at 17:20 -0700, Fernando Lopez-Lezcano wrote:
-> Hi Ingo, I'm seeing this on 2.6.21.5-rt14 and 2.6.21.5-rt15, this
-> problem did not happen in 2.6.21.3-rt9 (last I checked on this
-> hardware). The computer is an athlon x2 and eth0 is "alias eth0 skge",
-> the BUGs trigger on network activity (but not a constant stream of
-> them)...
+On Tue, 19 Jun 2007, Oleg Nesterov wrote:
 
-Seems to have been fixed in 2.6.21.5-rt17! (briefly booted into one
-machine with the new build and so far no BUGs reported). 
+> On 06/19, Benjamin Herrenschmidt wrote:
+> >
+> > On Tue, 2007-06-19 at 13:14 +0400, Oleg Nesterov wrote:
+> > 
+> > > The commited "Fix signalfd interaction with thread-private signals"
+> > > (commit caec4e8dc85e0644ec24aeb36285e1ba02da58cc) doesn't implement
+> > > this.
+> > 
+> > Indeed, if you want what Davide described, you need to also change
+> > signalfd side. The patch I did merely prevents another thread from
+> > dequeuing somebody else private signals.
+> 
+> Yes I see, but why do we need this change? Yes, we can dequeue SIGSEGV
+> from another thread. Just don't do it if you have a handler for SIGSEGV?
 
-Thanks!!!
--- Fernando
+I believe it can be confusing to have private signals dequeued from 
+another thread. The kernel expect those to be dequeued by the target 
+thread.
 
 
-> BUG: scheduling with irqs disabled: IRQ-20/0x00000000/1246
-> caller is wait_for_completion+0x65/0x9b
->  [<c0105f44>] dump_trace+0x64/0x105
->  [<c0105ffd>] show_trace_log_lvl+0x18/0x2c
->  [<c010660a>] show_trace+0xf/0x11
->  [<c010668b>] dump_stack+0x12/0x14
->  [<c032ba36>] schedule+0x86/0xfa
->  [<c032bb0f>] wait_for_completion+0x65/0x9b
->  [<c0125f24>] set_cpus_allowed+0x71/0x8f
->  [<c012f867>] do_softirq_from_hardirq+0xbd/0xda
->  [<c015a336>] do_irqd+0x1ff/0x24d
->  [<c013be5c>] kthread+0xb0/0xd8
->  [<c0105b7b>] kernel_thread_helper+0x7/0x10
->  =======================
-> [root@cmn34 ~]# cat /proc/interrupts
->            CPU0       CPU1
->   0:        251          1   IO-APIC-edge      timer
->   1:          0          2   IO-APIC-edge      i8042
->   6:          0          6   IO-APIC-edge      floppy
->   7:          1          0   IO-APIC-edge      parport0
->   8:          0          1   IO-APIC-edge      rtc
->   9:          0          0   IO-APIC-fasteoi   acpi
->  12:          0          4   IO-APIC-edge      i8042
->  14:          0       3724   IO-APIC-edge      ide0
->  16:       7591       5688   IO-APIC-fasteoi   ohci_hcd:usb1, libata
->  17:          1        238   IO-APIC-fasteoi   ohci_hcd:usb2, NVidia
-> CK8S
->  18:          0          3   IO-APIC-fasteoi   ehci_hcd:usb3
->  19:          0          0   IO-APIC-fasteoi   libata
->  20:          0       3028   IO-APIC-fasteoi   eth0
->  21:          0          2   IO-APIC-fasteoi   ohci1394, ICE1712
->  22:      17253       5916   IO-APIC-fasteoi   radeon@pci:0000:01:00.0
-> NMI:          0          0
-> LOC:      32953      36858
-> ERR:          1
-> MIS:          0
+- Davide
 
 
