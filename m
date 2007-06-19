@@ -1,179 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbXFSQcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbXFSQgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758669AbXFSQcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 12:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbXFSQck
+	id S1758653AbXFSQgV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 12:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXFSQgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 12:32:40 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:56544 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753840AbXFSQcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 12:32:39 -0400
-Message-ID: <46780522.5030109@rfo.atmel.com>
-Date: Tue, 19 Jun 2007 18:32:34 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Tue, 19 Jun 2007 12:36:15 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:38290 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbXFSQgO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 12:36:14 -0400
+Date: Tue, 19 Jun 2007 17:36:11 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 5/7] Introduce a means of compacting memory within a zone
+Message-ID: <20070619163611.GD17109@skynet.ie>
+References: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie> <20070618093002.7790.68471.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0706181010030.4751@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: Andrew Victor <andrew@sanpeople.com>, Marc Pignat <marc.pignat@hevs.ch>,
-       Hamish Guthrie <hamish@prodigi.ch>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mmc: at91_mci typo
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
-Content-Transfer-Encoding: 7bit
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: 
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706181010030.4751@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On (18/06/07 10:18), Christoph Lameter didst pronounce:
+> On Mon, 18 Jun 2007, Mel Gorman wrote:
+> 
+> > +	/* Isolate free pages. This assumes the block is valid */
+> > +	for (; blockpfn < end_pfn; blockpfn++) {
+> > +		struct page *page;
+> > +		int isolated, i;
+> > +
+> > +		if (!pfn_valid_within(blockpfn))
+> > +			continue;
+> > +
+> > +		page = pfn_to_page(blockpfn);
+> > +		if (!PageBuddy(page))
+> > +			continue;
+> 
+> The name PageBuddy is getting to be misleading. Maybe rename this to
+> PageFree or so?
+> 
 
-Typo fix in at91_mci driver : standardized the typo 
-(at91_mci everywhere)
+That would be suprisingly ambiguous. per-cpu pages are free pages but are not
+PageBuddy pages. In this case, I really mean a PageBuddy page, not a free page.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com> 
----
+> > +
+> > +		/* Found a free page, break it into order-0 pages */
+> > +		isolated = split_free_page(page);
+> > +		total_isolated += isolated;
+> > +		for (i = 0; i < isolated; i++) {
+> > +			list_add(&page->lru, freelist);
+> > +			page++;
+> > +		}
+> 
+> Why do you need to break them all up? Easier to coalesce later?
+> 
 
-Will not make the driver works better but will satisfy the most  
-demanding typo specialists. 
+They are broken up because migration currently works on order-0 pages.
+It is easier to break them up now for compaction_alloc() to give out one
+at a time than trying to figure out how to split them up later.
 
- drivers/mmc/host/at91_mci.c |   30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+> > +/* Returns 1 if the page is within a block suitable for migration to */
+> > +static int pageblock_migratable(struct page *page)
+> > +{
+> > +	/* If the page is a large free page, then allow migration */
+> > +	if (PageBuddy(page) && page_order(page) >= pageblock_order)
+> > +		return 1;
+> 
+> if (PageSlab(page) && page->slab->ops->kick) {
+> 	migratable slab
+> }
+> 
+> if (page table page) {
+> 	migratable page table page?
+> }
+> 
+> etc?
+> 
 
+Not quite. pageblock_migratable() is telling if this block is suitable for
+taking free pages from so movable pages can be migrated there.  Right now
+that means checking if there are enough free pages that the whole block
+becomes MOVABLE or if the block is already being used for movable pages.
 
-Index: b/drivers/mmc/host/at91_mci.c
-===================================================================
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -131,7 +131,7 @@ struct at91mci_host
- /*
-  * Copy from sg to a dma block - used for transfers
-  */
--static inline void at91mci_sg_to_dma(struct at91mci_host *host, struct mmc_data *data)
-+static inline void at91_mci_sg_to_dma(struct at91mci_host *host, struct mmc_data *data)
- {
- 	unsigned int len, i, size;
- 	unsigned *dmabuf = host->buffer;
-@@ -180,7 +180,7 @@ static inline void at91mci_sg_to_dma(str
- /*
-  * Prepare a dma read
-  */
--static void at91mci_pre_dma_read(struct at91mci_host *host)
-+static void at91_mci_pre_dma_read(struct at91mci_host *host)
- {
- 	int i;
- 	struct scatterlist *sg;
-@@ -248,7 +248,7 @@ static void at91mci_pre_dma_read(struct 
- /*
-  * Handle after a dma read
-  */
--static void at91mci_post_dma_read(struct at91mci_host *host)
-+static void at91_mci_post_dma_read(struct at91mci_host *host)
- {
- 	struct mmc_command *cmd;
- 	struct mmc_data *data;
-@@ -299,7 +299,7 @@ static void at91mci_post_dma_read(struct
- 
- 	/* Is there another transfer to trigger? */
- 	if (host->transfer_index < data->sg_len)
--		at91mci_pre_dma_read(host);
-+		at91_mci_pre_dma_read(host);
- 	else {
- 		at91_mci_write(host, AT91_MCI_IER, AT91_MCI_RXBUFF);
- 		at91_mci_write(host, ATMEL_PDC_PTCR, ATMEL_PDC_RXTDIS | ATMEL_PDC_TXTDIS);
-@@ -464,7 +464,7 @@ static unsigned int at91_mci_send_comman
- 			host->buffer = NULL;
- 			host->total_length = 0;
- 
--			at91mci_pre_dma_read(host);
-+			at91_mci_pre_dma_read(host);
- 			ier = AT91_MCI_ENDRX /* | AT91_MCI_RXBUFF */;
- 		}
- 		else {
-@@ -476,7 +476,7 @@ static unsigned int at91_mci_send_comman
- 						  host->total_length,
- 						  &host->physical_address, GFP_KERNEL);
- 
--			at91mci_sg_to_dma(host, data);
-+			at91_mci_sg_to_dma(host, data);
- 
- 			pr_debug("Transmitting %d bytes\n", host->total_length);
- 
-@@ -506,7 +506,7 @@ static unsigned int at91_mci_send_comman
- /*
-  * Wait for a command to complete
-  */
--static void at91mci_process_command(struct at91mci_host *host, struct mmc_command *cmd)
-+static void at91_mci_process_command(struct at91mci_host *host, struct mmc_command *cmd)
- {
- 	unsigned int ier;
- 
-@@ -521,15 +521,15 @@ static void at91mci_process_command(stru
- /*
-  * Process the next step in the request
-  */
--static void at91mci_process_next(struct at91mci_host *host)
-+static void at91_mci_process_next(struct at91mci_host *host)
- {
- 	if (!(host->flags & FL_SENT_COMMAND)) {
- 		host->flags |= FL_SENT_COMMAND;
--		at91mci_process_command(host, host->request->cmd);
-+		at91_mci_process_command(host, host->request->cmd);
- 	}
- 	else if ((!(host->flags & FL_SENT_STOP)) && host->request->stop) {
- 		host->flags |= FL_SENT_STOP;
--		at91mci_process_command(host, host->request->stop);
-+		at91_mci_process_command(host, host->request->stop);
- 	}
- 	else
- 		mmc_request_done(host->mmc, host->request);
-@@ -538,7 +538,7 @@ static void at91mci_process_next(struct 
- /*
-  * Handle a command that has been completed
-  */
--static void at91mci_completed_command(struct at91mci_host *host)
-+static void at91_mci_completed_command(struct at91mci_host *host)
- {
- 	struct mmc_command *cmd = host->cmd;
- 	unsigned int status;
-@@ -581,7 +581,7 @@ static void at91mci_completed_command(st
- 	else
- 		cmd->error = MMC_ERR_NONE;
- 
--	at91mci_process_next(host);
-+	at91_mci_process_next(host);
- }
- 
- /*
-@@ -593,7 +593,7 @@ static void at91_mci_request(struct mmc_
- 	host->request = mrq;
- 	host->flags = 0;
- 
--	at91mci_process_next(host);
-+	at91_mci_process_next(host);
- }
- 
- /*
-@@ -706,7 +706,7 @@ static irqreturn_t at91_mci_irq(int irq,
- 
- 		if (int_status & AT91_MCI_ENDRX) {
- 			pr_debug("Receive has ended\n");
--			at91mci_post_dma_read(host);
-+			at91_mci_post_dma_read(host);
- 		}
- 
- 		if (int_status & AT91_MCI_NOTBUSY) {
-@@ -735,7 +735,7 @@ static irqreturn_t at91_mci_irq(int irq,
- 	if (completed) {
- 		pr_debug("Completed command\n");
- 		at91_mci_write(host, AT91_MCI_IDR, 0xffffffff);
--		at91mci_completed_command(host);
-+		at91_mci_completed_command(host);
- 	} else
- 		at91_mci_write(host, AT91_MCI_IDR, int_status);
- 
+The block could become movable if the decision was made to kick out slab
+pages that are located towards the end of the zone. If page tables
+become movable, then they would need to be identified here but that is
+not the case.
 
+The pageblock_migratable() function is named so that this decision can
+be easily revisited in one place.
 
+> > +		/* Try isolate the page */
+> > +		if (locked_isolate_lru_page(zone, page, migratelist) == 0)
+> > +			isolated++;
+> 
+> Support for other ways of migrating a page?
+> 
 
+When other mechanisms exist, they would be added here. Right now,
+isolate_lru_page() is the only one I am aware of.
+
+> > +static int compact_zone(struct zone *zone, struct compact_control *cc)
+> > +{
+> > +	int ret = COMPACT_INCOMPLETE;
+> > +
+> > +	/* Setup to move all movable pages to the end of the zone */
+> > +	cc->migrate_pfn = zone->zone_start_pfn;
+> > +	cc->free_pfn = cc->migrate_pfn + zone->spanned_pages;
+> > +	cc->free_pfn &= ~(pageblock_nr_pages-1);
+> > +
+> > +	for (; ret == COMPACT_INCOMPLETE; ret = compact_finished(zone, cc)) {
+> > +		isolate_migratepages(zone, cc);
+> > +
+> > +		if (!cc->nr_migratepages)
+> > +			continue;
+> > +
+> > +		/* Isolate free pages if necessary */
+> > +		if (cc->nr_freepages < cc->nr_migratepages)
+> > +			isolate_freepages(zone, cc);
+> > +
+> > +		/* Stop compacting if we cannot get enough free pages */
+> > +		if (cc->nr_freepages < cc->nr_migratepages)
+> > +			break;
+> > +
+> > +		migrate_pages(&cc->migratepages, compaction_alloc,
+> > +							(unsigned long)cc);
+> 
+> You do not need to check the result of migration? Page migration is a best 
+> effort that may fail.
+> 
+
+You're right. I used to check it for debugging purposes to make sure migration
+was actually occuring. It is not unusual still for a fair number of pages
+to fail to migrate. migration already uses a retry logic and I shouldn't
+be replicating it.
+
+More importantly, by leaving the pages on the migratelist, I potentially
+retry the same migrations over and over again wasting time and effort not
+to mention that I keep pages isolated for much longer than necessary and
+that could cause stalling problems. I should be calling putback_lru_pages()
+when migrate_pages() tells me it failed to migrate pages.
+
+I'll revisit this one. Thanks
+
+> Looks good otherwise.
+> 
+> Acked-by: Christoph Lameter <clameter@sgi.com>
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
