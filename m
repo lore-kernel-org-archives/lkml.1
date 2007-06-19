@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762706AbXFSB0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764282AbXFSB0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762706AbXFSB0R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 21:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbXFSB0H
+	id S1764282AbXFSB0l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 21:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbXFSB0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 21:26:07 -0400
-Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:38715 "EHLO
-	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757222AbXFSB0F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 21:26:05 -0400
-Date: Mon, 18 Jun 2007 21:25:17 -0400
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
+	Mon, 18 Jun 2007 21:26:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36215 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759028AbXFSB0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 21:26:32 -0400
+To: "David Schwartz" <davids@webmaster.com>
+Cc: <mdpoole@troilus.org>, <david@lang.hm>,
+       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070619012517.GL14788@delft.aura.cs.cmu.edu>
-Mail-Followup-To: Alexandre Oliva <aoliva@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Al Viro <viro@ftp.linux.org.uk>,
-	Bernd Schmidt <bernds_cb1@t-online.de>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-	Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-	debian developer <debiandev@gmail.com>, david@lang.hm,
-	Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org> <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org> <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org> <ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org> <or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org> <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+References: <MDEHLPKNGKAHNMBLJOLKGEEFELAC.davids@webmaster.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Mon, 18 Jun 2007 22:26:27 -0300
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEEFELAC.davids@webmaster.com> (David Schwartz's message of "Mon\, 18 Jun 2007 15\:59\:25 -0700")
+Message-ID: <or8xagag58.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Jan Harkes <jaharkes@cs.cmu.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 08:31:30PM -0300, Alexandre Oliva wrote:
-> On Jun 18, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > In the GPLv3 world, we have already discussed in this thread how you can 
-> > follow the GPLv3 by making the TECHNICALLY INFERIOR choice of using a ROM 
-> > instead of using a flash device.
-> 
-> Yes.  This is one option that doesn't bring any benefits to anyone.
-> It maintains the status quo for users and the community, but it loses
-> the ability for the vendor to upgrade, fix or otherwise control the
-> users.  Bad for the vendor.
+On Jun 18, 2007, "David Schwartz" <davids@webmaster.com> wrote:
 
-Not really, Tivo could simply sell you a box without any installed
-software. The actual software is mailed to you on a credit card sized
-ROM when you activate service. When they want to (or need to) update the
-software they send out a new ROM card, maybe yearly as part of the
-service subscription renewal.
+>> First, end users buy and use the hardware in question.  It does not
+>> belong to Tivo, so the analogy to his laptop fails there.
 
-The box could even be sold by third party vendors, I think they may even
-have started off that way, my old Series 1 had a big Philips logo on it.
-So now we make sure that this hardware refuses to boot any unsigned
-code, but it wasn't shipped containing GPLv3 software, so it's license
-terms simply does not apply.
+> No, this is incorrect. They buy *some* of the rights to the hardware but not
+> all of them.
 
-The software is shipped on a ROM card which can no longer be modified by
-the manufacturer or any third party, so it would seem to comply with the
-GPLv3. I can even imagine that the hardware is really general purpose
-but the ROM is encrypted so that only the BIOS/bootloader can unlock it.
+Wow, really?  I thought TiVo actually sold the computer.
 
-So the GPLv3 seems to fall short on actually preventing tivoization. It
-just requires an extra layer of indirection, ship hardware seperately
-from software.
+Not that it would make a difference as far as GPLv3 is concerned.
+It's still a user product, and it still contains GPLed software, and
+TiVo distributes that software to other users.
 
-Jan
+> But you cannot coherently deny that TiVo retains this right when
+> they sell certain other rights to the hardware.
 
+Heh.  I mis-parsed "sell rights to the hardware".  How can the
+hardware buy something?
+
+
+Whatever rights TiVo wants to retain or keep from the user is of
+little concern here, as long as this doesn't get in the way of the
+user's exercise of the freedoms that the GPL stands to defend.  If it
+wants to retain more rights than that, then it may have to refrain
+from using GPLed software, or face the risk of a court finding it
+couldn't have done that in the first place.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
