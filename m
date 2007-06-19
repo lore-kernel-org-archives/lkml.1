@@ -1,110 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933088AbXFSC6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765794AbXFSDM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933088AbXFSC6u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 22:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762960AbXFSC6j
+	id S1765794AbXFSDM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 23:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762458AbXFSDMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 22:58:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34404 "EHLO mx1.redhat.com"
+	Mon, 18 Jun 2007 23:12:14 -0400
+Received: from smtpout.mac.com ([17.250.248.178]:59237 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762855AbXFSC6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 22:58:37 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
-       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: mea culpa on the meaning of Tivoization
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706181559.40320.dhazelton@enter.net>
-	<orps3t9cfw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706181808.18007.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Mon, 18 Jun 2007 23:57:20 -0300
-In-Reply-To: <200706181808.18007.dhazelton@enter.net> (Daniel Hazelton's message of "Mon\, 18 Jun 2007 18\:08\:17 -0400")
-Message-ID: <orabuw8xdb.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1759420AbXFSDML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 23:12:11 -0400
+In-Reply-To: <OF7FA807A1.64C0D5AF-ON882572FE.0061B34C-882572FE.00628322@us.ibm.com>
+References: <OF7FA807A1.64C0D5AF-ON882572FE.0061B34C-882572FE.00628322@us.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6E9A6F9E-8948-40F2-9129-1F1491D49D83@mac.com>
+Cc: Jack Stone <jack@hawkeye.stone.uk.eu.org>,
+       Andrew Morton <akpm@linux-foundation.org>, alan <alan@clueserver.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-fsdevel@vger.kernel.org,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, git@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Versioning file system
+Date: Mon, 18 Jun 2007 23:10:42 -0400
+To: Bryan Henderson <hbryan@us.ibm.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+On Jun 18, 2007, at 13:56:05, Bryan Henderson wrote:
+>> The question remains is where to implement versioning: directly in  
+>> individual filesystems or in the vfs code so all filesystems can  
+>> use it?
+>
+> Or not in the kernel at all.  I've been doing versioning of the  
+> types I described for years with user space code and I don't  
+> remember feeling that I compromised in order not to involve the  
+> kernel.
+>
+> Of course, if you want to do it with snapshots and COW, you'll have  
+> to ask where in the kernel to put that, but that's not a file  
+> versioning question; it's the larger snapshot question.
 
-> On Monday 18 June 2007 17:31:47 Alexandre Oliva wrote:
->> And if you look at GPLv3dd1 or dd2 IIRC, that's how it started.  For
->> some reason, the FSF turned it into the more lax (in some senses)
->> installation information for user products in dd3.  Maybe they decided
->> that the argument about the signature being effectively part of the
->> executable, and therefore the key being effectively part of the source
->> code, was less likely to be upheld in a court of law than this
->> alternate phrasing.  All in all, the effect is the same AFAICT, and
->> the spirit is being complied with.
+What I think would be particularly interesting in this domain is  
+something similar in concept to GIT, except in a file-system:
+   1) Redundancy is easy, you just ensure that you have at least "N"  
+distributed copies of each object, where "N" is some function of the  
+object itself.
+   2) Network replication is easy, you look up objects based on the  
+SHA-1 stored in the parent directory entry and cache them where  
+needed (IE: make the "N" function above dynamic based on frequency of  
+access on a given computer).
+   3) Snapshots are easy and cheap; an RO snapshot is a tag and an RW  
+snapshot is a branch.  These can be easily converted between.
+   4) Compression is easy; you can compress objects based on any  
+arbitrary configurable criteria and the filesystem will record  
+whether or not an object is compressed.  You can also compress  
+differently when archiving objects to secondary storage.
+   5) Streaming fsck-like verification is easy; ensure the hash name  
+field matches the actual hash of the object.
+   6) Fsck is easy since rollback is trivial, you can always revert  
+to an older tree to boot and start up services before attempting  
+resurrection of lost objects and trees in the background.
+   7) Multiple-drive or multiple-host storage pools are easy:  Think  
+the git "alternates" file.
+   8) Network filesystem load-balancing is easy; SHA-1s are  
+essentially random so you can just assign SHA-1 prefixes to different  
+systems for data storage and your data is automatically split up.
 
-> But the change has some massive problems.
 
-Such as?  Is the effect really any different?
+Other issues:
 
-> If dd1 or dd2 was clearly and concisely written such that the
-> conditions were not open to a different interpretation without
-> creative re-definition of words then changes would not be
-> needed. (I'm still working on the version I mentioned - give me a
-> bit, writing english in such a way that a lawyer can't twist it to
-> mean whatever they are paid to make it mean is difficult.)
+Q. How do you deal with block allocation?
+A. Same way other filesystems deal with block allocation.  Reference- 
+counting gets tricky, especially across a network, but it's easy to  
+play it safe with simple cross-network refcount-journalling.  Since  
+the _only_ thing that needs journalling is the refcounts and block- 
+free data, you need at most a megabyte or two of journal.  If in  
+doubt, it's easy to play it safe and keep an extra refcount around  
+for an in-the-background consistency check later on.  When networked- 
+gitfs systems crash, you just assume they still have all the  
+refcounts they had at the moment they died, and compare notes when  
+they start back up again.  If a node has a cached copy of data on its  
+local disk then it can just nonatomically increment the refcount for  
+that object in its own RAM (ordered with respect to disk-flushes, of  
+course) and tell its peers at some point.  A node should probably  
+cache most of its working set on local disk for efficiency; it's  
+trivially verified against updates from other nodes and provides an  
+easy way to keep refcounts for such data.  If a node increments the  
+refcount on such data and dies before getting that info out to its  
+peers, then when it starts up again its peers will just be told that  
+it has a "new" node with insufficient replication and they will clone  
+it out again properly.  For networked refcount-increments you can do  
+one of 2 things: (1) Tell at least X many peers and wait for them to  
+sync the update out to disk, or (2) Get the object from any peer (at  
+least one of whom hopefully has it in RAM) and save it to local disk  
+with an increased refcount.
 
-It's very difficult and, worse, it might turn out to be unenforceable.
-You'd have to count on signing keys being copyrightable, and they are
-unlikely to be, and on signatures being derived works of both, which
-is a tough call.  The whole idea resonates very well with the spirit
-of the license, but we need more than that, we need it to be very
-likely to work.  I suspect this is why the FSF has decided to take
-another route to achieve the same (AFAICT) effect.
+Q. How do you actually delete things?
+A. Just replace all the to-be-erased tree and commit objects before a  
+specified point with "History erased" objects with their SHA-1's  
+magically set to that of the erased objects.  If you want you may  
+delete only the "tree" objects and leave the commits intact.  If you  
+delete a whole linear segment of history then you can just use a  
+single "History erased" commit object with its parent pointed to the  
+object before the erased segment.  Probably needs some form of back- 
+reference storage to make it efficient; not sure how expensive that  
+would be.  This would allow making a bunch of snapshots and purging  
+them logarithmically based on passage of time.  For instance, you  
+might have snapshots of every 5 minutes for the last hour, every 30  
+minutes for the last day, every 4 hours for the last week, every day  
+for the last month, once per week for the last year, once per month  
+for the last 5 years, and once per year beyond that.
 
->> I don't see how this is different from refraining from accepting
->> contributions under any other license, except that you can't use
->> license incompatibility to reason it out as an impossibility you
->> established for yourself in just the very same way.
+That's pretty impressive data-recovery resolution, and it accounts  
+for only 200 unique commits after it's been running for 10 years.
 
-> I think there was more to it than that, but the point doesn't
-> matter. If the license used on contributed code *isn't* completely
-> compatible with the license on the project it can't be used
-> anyway. (doesn't the GPLv3 cover situations like that?)
+Q. How do you archive data?
+A. Same as deleting, except instead of a "History erased" object you  
+would use a "History archived" object with a little bit of string  
+data to indicate which volume it's stored on (and where on the  
+volume).  When you stick that volume into the system you could easily  
+tell the kernel to use it as an alternate for the given storage group.
 
-I'm not sure what you're asking.  GPLv3 covers additional permissions,
-that are really no different from dual-licensing, so anyone can choose
-to drop them when combining with works (including their own) that
-don't offer such additional permissions.
+Q. What enforces data integrity?
+A. Ensure that a new tree object and its associated sub objects are  
+on disk before you delete the old one.  Doesn't need any actual full  
+syncs at all, just barriers.  If you replace the tree object before  
+write-out is complete then just skip writing the old one and write  
+the new one in its place.
 
->> My objection was mainly about the "forcing".  FSF's stance is about
->> educating users as to the moral and ethical reasons, such that they
->> reject non-Free Software, while at the same time providing software
->> authors with means to stop others from hurting users, by depriving
->> them of the freedoms they're morally entitled to have.
+Q. What consists of a "commit"?
+A. Anything the administrator wants to define it as.  Useful  
+algorithms include: "Once per x Mbyte of page dirtying", "Once per 5  
+min", "Only when sync() or fsync() are called", "Only when gitfs- 
+commit is called".  You could even combine them:  "Every x Mbyte of  
+page dirtying or every 5 minutes, whichever is shorter (or longer,  
+depending on admin requirements)".  There would also be appropriate  
+syscalls to trigger appropriate git-like behavior.  Network- 
+accessible gitfs would want to have mechanisms to trigger commits  
+based on activity on other systems (needs more thought).
 
-> Hrm... When I first hit the end of this massive sentence I was really 
-> confused. Took about five minutes for me to remember that "morally entitled" 
-> is based on the morals promoted by the FSF.
+Q. How do you access old versions?
+A. Mount another instance of the filesystem with an SHA-1 ID, a tag- 
+name, or a branch-name in a special mount option.  Should be user  
+accessible with some restrictions (needs more thought).
 
-Yes.  And the 'them' after the last comma refers to the users, not the
-authors (although they can be users too), in case it's not clear ;-)
-:-D
+Q. How do you deal with conflicts on networked filesystems.
+A. Once again, however the administrator wants to deal with them.   
+Options:
+    1)  Forcibly create a new branch for the conflicted tree.
+    2)  Attempt to merge changes using the standard git-merge semantics
+    3)  Merge independent changes to different files and pick one for  
+changes to the same file
+    4)  Your Algorithm Here(TM).  GIT makes it easy to extend  
+conflict-resolution.
 
-> Everyone that has been part of this discussion - my personal code of morals 
-> will not let me get away without this: "Forgive me if, in the heat of the 
-> moment, I offended any of you."
+Q. How do you deal with little scattered changes in big (or sparse)  
+files?
+A. Two questions, two answers:  For sparse files, git would need  
+extending to understand (and hash) the nature of the sparse-ness.   
+For big files, you should be able to introduce a "compound-file"  
+datatype and configure git to deal with specific X-Mbyte chunks of it  
+independently.  This might not be a bad idea for native git as well.   
+Would need system-specific configuration.
 
-FWIW, I never felt offended by you, but I second your request and
-extend it to all participants in the thread too, particularly to Ingo,
-to whom I remember having directed some harsh words.
+Q. How do you prevent massive data consumption by spurious tiny changes
+A. You have a few options:
+    1)  Configure your commit algorithm as above to not commit so often
+    2)  Configure a stepped commit-discard algorithm as described  
+above in the "How do you delete things" question
+    3)  Archive unused data to secondary storage more often
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Q. What about all the unanswered questions?
+A. These are all the ones I could think of off the top of my head but  
+there are at least a hundred more.  I'm pretty sure these are some of  
+the most significant ones.
+
+Q. That's a great idea and I'll implement it right away!
+A. Yay!  (but that's not a question :-D)  Good luck and happy hacking.
+
+Q. That's a stupid idea and would never ever work!
+A. Thanks for your useful input! (but that's not a question either)   
+I'm sure anybody who takes up a project like this will consider such  
+opinions.
+
+Q. *flamage*
+A. I'm glad you have such strong opinions, feel free to to continue  
+to spam my /dev/null device (and that's also not a question).
+
+All opinions and comments welcomed.
+
+Cheers,
+Kyle Moffett
+
