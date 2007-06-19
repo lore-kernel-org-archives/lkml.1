@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbXFSWd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbXFSWek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760282AbXFSWd0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760127AbXFSWdK
+	id S1760241AbXFSWek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbXFSWed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:33:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54658 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757740AbXFSWdJ (ORCPT
+	Tue, 19 Jun 2007 18:34:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58492
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753278AbXFSWeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:33:09 -0400
-Date: Tue, 19 Jun 2007 15:33:08 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       suresh.b.siddha@intel.com
-Subject: Re: [patch 05/26] Slab allocators: Cleanup zeroing allocations
-In-Reply-To: <20070619210010.GN11166@waste.org>
-Message-ID: <Pine.LNX.4.64.0706191532170.7633@schroedinger.engr.sgi.com>
-References: <20070618095838.238615343@sgi.com> <20070618095914.622685354@sgi.com>
- <20070619210010.GN11166@waste.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 19 Jun 2007 18:34:31 -0400
+Date: Tue, 19 Jun 2007 15:34:50 -0700 (PDT)
+Message-Id: <20070619.153450.107921888.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: vtaras@openvz.org, dev@sw.ru, vvs@sw.ru, devel@openvz.org,
+       linux-kernel@vger.kernel.org, nataliep@google.com, jack@suse.cz,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] diskquota: 32bit quota tools on 64bit architectures
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070619123316.bccb926d.akpm@linux-foundation.org>
+References: <1182154907.197287.4324.nullmailer@white.sw.ru>
+	<20070619123316.bccb926d.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Matt Mackall wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 19 Jun 2007 12:33:16 -0700
 
-> I worry a bit about adding another branch checking __GFP_ZERO in such
-> a hot path for SLAB/SLUB.
+> Only x86_64 and ia64 are fixed.  Would it be correct to assume that the
+> other CONFIG_COMPAT architectures also need to be fixed?
 
-Its checking the gfpflags variable on the stack. In a recently touched 
-cachline.
+Only platforms which compat to "i386" have the issue wrt.
+the alignment of "u64" types, which is "4" on i386 and
+"8" on the platforms that compat to them.
 
-
+This has been mentioned at least 3 times in this thread.
