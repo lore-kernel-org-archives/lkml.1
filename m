@@ -1,100 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765499AbXFSC2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932548AbXFSC2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765499AbXFSC2E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 22:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761181AbXFSC1x
+	id S932548AbXFSC2q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 22:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761181AbXFSC2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 22:27:53 -0400
-Received: from hu-out-0506.google.com ([72.14.214.230]:33145 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760820AbXFSC1w convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 22:27:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mc1wkJX/kW9k+0/az0PGrcUhdY6HA7kupr9AnfnLSeRZTcywkNlj8Pf/EYEGuuAYYzc3YfmDigsi83NVUggdVYl3uppwomADT5FaZ0PlzsLczxkmM5Pf0CFzkBAuvhpj47hXVcsUUdCJm1uZf1k3gPVFQCpZrrzXC5OMkYdexV8=
-Message-ID: <32209efe0706181927w1f346dd3x33641c054f8100cf@mail.gmail.com>
-Date: Mon, 18 Jun 2007 19:27:50 -0700
-From: "Natalie Protasevich" <protasnb@gmail.com>
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>
-Subject: Re: How to improve the quality of the kernel?
-Cc: "Martin Bligh" <mbligh@mbligh.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Adrian Bunk" <bunk@stusta.de>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Oleg Verych" <olecom@flower.upol.cz>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Diego Calleja" <diegocg@gmail.com>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0128A11@ecqcmtlmail3.quebec.int.ec.gc.ca>
+	Mon, 18 Jun 2007 22:28:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53480 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760820AbXFSC2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 22:28:37 -0400
+To: Johannes Stezenbach <js@linuxtv.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <4673CA7C.5040207@t-online.de>
+	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616181902.GB21478@ftp.linux.org.uk>
+	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070618155016.GA31892@linuxtv.org>
+	<or645lcdg7.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070618232549.GA22170@linuxtv.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Mon, 18 Jun 2007 23:27:12 -0300
+In-Reply-To: <20070618232549.GA22170@linuxtv.org> (Johannes Stezenbach's message of "Tue\, 19 Jun 2007 01\:25\:49 +0200")
+Message-ID: <orr6o88yrj.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org>
-	 <20070617115258.1f55b29d.akpm@linux-foundation.org>
-	 <200706172349.08813.bzolnier@gmail.com>
-	 <4675C083.6080409@s5r6.in-berlin.de>
-	 <20070617220927.99ebc1ee.akpm@linux-foundation.org>
-	 <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca>
-	 <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com>
-	 <46770A22.4020007@mbligh.org>
-	 <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com>
-	 <F1D642E5A91BC94D9504EC83AE19E6B0128A11@ecqcmtlmail3.quebec.int.ec.gc.ca>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/18/07, Fortier,Vincent [Montreal] <Vincent.Fortier1@ec.gc.ca> wrote:
-> > -----Message d'origine-----
-> > De : Natalie Protasevich [mailto:protasnb@gmail.com]
-> > Envoyé : 18 juin 2007 18:56
-> >
-> > On 6/18/07, Martin Bligh <mbligh@mbligh.org> wrote:
-> > > >> > So if you make changes to random-driver.c you can do `git-log
-> > > >> > random-driver.c|grep Tested-by" to find people who can test your
-> > > >> > changes for you.
-> > > >>
-> > > >> You would'nt even need to search in GIT.  Maybie even when ever a
-> > > >> patchset is being proposed a mail could be sent to appropriate
-> > > >> hardware/or feature pseudo-auto-generated mailing-list?
-> > > >>
-> > > >> On lkml I mostly try to follow patches/bugs associated with
-> > > >> hardware I use.  Why not try to automate the process and get more testers in?
-> > > >>
-> > > >
-> > > > I think this is an excellent point. One data point could be a field
-> > > > in bugzilla to input the hardware information. Simple query can
-> > > > select common hardware and platform. So far it's not working when
-> > > > hardware is just mentioned in the text part.
-> > >
-> > > if it's free text it'll be useless for search ... I suppose we could
-> > > do drop-downs for architecture at least? Not sure much beyond that
-> > > would work ... *possibly* the common drivers, but I don't think we'd
-> > > get enough coverage for it to be of use.
-> > >
-> > How about several buckets for model/BIOS version/chipset
-> > etc., at least optional, and some will be relevant some not
-> > for particular cases. But at least people will make an
-> > attempt to collect such data from their system, boards, etc.
->
-> How about an easy way to send multiple hardware profiles to your bugzilla user account simultaniously linked to an online pciutils database and/or an hardware list database similar to overclocking web sites and why not even with a link to the git repository when possible?
->
-> A some sort of really usefull "send your profile" of RHN that would link the driver with the discovered hardware and add you to appropriate mailing lists to test patches/help reproducing & solving problems/etc.
->
-> In the end plenty of statistics and hardware compatibility list could be made.  For example, that would make my life easier knowing what level of compatibility Linux can offer for old HP9000 K-boxes that we still have running at the office and presumably get people to contact to get help?
+On Jun 18, 2007, Johannes Stezenbach <js@linuxtv.org> wrote:
 
-This is definitely something that can be done (and should) - well,
-especially having ability search by certain criteria - then all sorts
-of statistics and databases can be created.
-Everything that helps  to find a way to work on a patch and to test
-easier should be done to make bug fixing easier and even possible.
-Often times the most knowledgeable people are not able to make quick
-fix just because there is no way to reproduce the case or get access
-to HW.
+> On Mon, Jun 18, 2007, Alexandre Oliva wrote:
 
---Natalie
+>> People talk a lot about TiVo here, but do they the faintest idea of
+>> how the conversations with TiVo are proceeding?  I thought so...
+
+> Oh, if you know something we don't, could you please fill us in?
+
+Honestly, I don't know either.  But I get an impression that there are
+conversations underway.
+
+> And who was it who coined the "Tivoization" term, thus putting
+> TiVo into focus?
+
+AFAIK TiVo invented the practice, did they not deserve the credit?
+
+> Hm, you only talk about people who already use free software,
+> but I tried to make you aware of the importance of
+> _promoting_ free software, i.e. winning new people and
+> companies for the free software idea.
+
+Aah, I see.  Indeed, I'd missed that aspect.  Sorry about that.
+
+My take on it is that bringing free loaders in doesn't help us much,
+and bringing them in in a way that they don't learn the essential
+aspects of the community will hurt the community in the long run.
+
+So they must become aware that respecting others' freedoms is not only
+the right thing to do, from a moral and ethical standpoint, but also
+that this is precisely what enables our community to thrive, and to
+enable everyone to get the best out of the software we cooperate to
+develop.
+
+> I think the majority of embedded devices still run proprietary
+> RTOSes, and the majority of desktops still run Windows or Mac OS.
+> Don't you want to change that?
+
+Sure.  But getting those companies to adopt Free Software in a way
+that turns it into non-Free Software doesn't change that in any way.
+
+Of course we might get some additional contributions here and there,
+but then more and more users would still be stuck, unable or limited
+in the ways and incentives they have to participate in our community.
+Permitting this is very short-sighted.  It might bring us apparent
+advantages in the short run, but the more such disrespects there are,
+the more there will be, and the fewer users will be able to become
+developers.  In the end, this may kill the whole process, in a tragedy
+of the commons.  In the article linked below, I argue this very point,
+comparing how the demand for respecting users' freedoms is what keeps
+the free-loaders away and makes the GPL the most cost-effective
+license for software development, compared with permissive licenses
+and non-Free licenses.  The very same arguments apply to a comparison
+between a license that permits tivoization and one that doesn't,
+because the latter is more likely to have more contributors to share
+the load, and both equally reduce the likelihood of unmergeable forks.
+http://www.lsd.ic.unicamp.br/~oliva/papers/free-software/BMind.pdf
+
+> if you raise the entry barrier too high, they won't get started at
+> all.
+
+I acknowledge this argument, but I hear the same arguments against the
+GPLv2, claiming the barrier is too high, and it's not from people who
+believe that tivoization is already prohibited.
+
+> They are aware of the trend towards Linux, but are afraid that the
+> obligations of the GPL might be impractical for them.  Then they
+> only have the choice to not use Linux, or to use "creative
+> workarounds".
+
+Or to respect users' freedoms, enabling/motivating those users to
+become developers in our community.
+
+> It's true that what these companies do might have little direct
+> benefit for users buying their products, however the long term
+> benefits of getting the people in these companies exposed to free
+> software ideas, and in contact with the free software community, can
+> only be positive
+
+As long as they understand how the community works, be it from the
+moral and ethical standpoint, be it from the pragmatic standpoint.  In
+both cases, the end result is that they learn that, when they share
+and cooperating, respecting users freedoms (enabling and providing
+incentive for them to improve the software), everybody wins,
+themselves included.
+
+>> So you see, the picture of anti-tivozation is not as bleak as people
+>> try to frame it.  In fact, it's not bleak at all.  If one out of 10,
+>> maybe even 1 out of 100 vendors start respecting users' freedoms, when
+>> faced with anti-tivoization provisions, the community will already win
+>> big time, because each vendor is likely to have thousands of
+>> customers, some of which will use the freedoms to serve the goals of
+>> the community, in the very terms the community claims to care about.
+
+> Does this multiplicator also apply to new companies
+> which start using free software for their products?
+
+Of course, even more so!  Then you win not only the contributions from
+the user, but also from the company itself, which you didn't have
+before.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
