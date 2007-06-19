@@ -1,166 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbXFSMko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbXFSMss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759332AbXFSMko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 08:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbXFSMk1
+	id S1758485AbXFSMss (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 08:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXFSMsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 08:40:27 -0400
-Received: from tayrelbas04.tay.hp.com ([161.114.80.247]:60527 "EHLO
-	tayrelbas04.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756429AbXFSMkY (ORCPT
+	Tue, 19 Jun 2007 08:48:40 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32866 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754123AbXFSMsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 08:40:24 -0400
-Date: Tue, 19 Jun 2007 05:40:17 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/8] 2.6.22-rc3 perfmon2 : IBS implementation for AMD64
-Message-ID: <20070619124017.GD23051@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070614215818.509851000@localhost> <20070615093331.040831000@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 19 Jun 2007 08:48:39 -0400
+Date: Tue, 19 Jun 2007 14:48:55 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Debbugs developers <debian-debbugs@lists.debian.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Bligh <mbligh@mbligh.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
+Message-ID: <20070619124855.GB12950@stusta.de>
+References: <200706172349.08813.bzolnier@gmail.com> <4675C083.6080409@s5r6.in-berlin.de> <20070617220927.99ebc1ee.akpm@linux-foundation.org> <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca> <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070615093331.040831000@localhost>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
+In-Reply-To: <E1I0UzP-0004AY-Hy@flower>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert,
+On Tue, Jun 19, 2007 at 06:06:47AM +0200, Oleg Verych wrote:
+> [Dear Debbug developers, i wish your ideas will be useful.]
+> 
+> * From: Linus Torvalds
+> * Newsgroups: gmane.linux.kernel
+> * Date: Mon, 18 Jun 2007 17:09:37 -0700 (PDT)
+> >
+> > On Mon, 18 Jun 2007, Martin Bligh wrote:
+> >> 
+> >> Sorry to be a wet blanket, but I've seen those sort of things
+> >> before, and they just don't seem to work, especially in the
+> >> environment we're in with such a massive diversity of hardware.
+> >
+> > I do agree. It _sounds_ like a great idea to try to control the flow of 
+> > patches better,
+> 
+> There were some ideas, i will try to summarize:
+> 
+> * New Patches (or sets) need tracking, review, testing
+> 
+>   Zero (tracking) done by sending (To, or bcc) [RFC] patch to something
+>   like submit@pts.e-mail.example.com (like BTS now). Notifications will
+>   be sent to intrested maintainers (if meta-information is ok) or testers
+>   (see below)
+> 
+>   First is mostly done by maintainers or interested individuals.
+>   Result is "Acked-by" and "Cc" entries in the next patch sent. Due to
+>   lack of tracking this things are done manually, are generally in
+>   trusted manner. But bad like <200706172053.41806.bzolnier@gmail.com>
+>   sometimes happens.
 
-Patch applied.
-Thanks.
+The goal is to get all patches for a maintained subsystem submitted to 
+Linus by the maintainer.
 
-On Fri, Jun 15, 2007 at 06:58:49PM +0200, Robert Richter wrote:
-> Minor changes (whitespace, comments, ...)
+>   When patch in sent to this PTS, your lovely
+>   checkpatch/check-whatever-crap-has-being-sent tools can be set up as
+>   gatekeepers, thus making impossible stupid errors with MIME coding,
+>   line wrapping, whatever style you've came up with now in checking
+>   sent crap.
+
+The -mm kernel already implements what your proposed PTS would do.
+
+Plus it gives testers more or less all patches currently pending 
+inclusion into Linus' tree in one kernel they can test.
+
+The problem are more social problems like patches Andrew has never heard 
+of before getting into Linus' tree during the merge window.
+
+>...
+> |-*- Feature Needed -*-
+>   Addition, needed is hardware user tested have/had/used. Currently
+>   ``reportbug'' tool includes packed specific and system specific
+>   additions automaticly gathered and inserted to e-mail sent to BTS.
+>   (e.g. <http://permalink.gmane.org/gmane.linux.debian.devel.kernel/29740>)
+
+The problem is that most problems don't occur on one well-defined 
+kind of hardware - patches often break in exactly the areas the patch
+author expected no problems in.
+
+And in many cases a patch for a device driver was written due to a bug 
+report - in such cases a tester with the hardware in question is already 
+available.
+
+>...
+> > but in the end, it needs to also be easy and painfree to the people
+> > involved, and also make sure that any added workflow doesn't require
+> > even *more* load and expertise on the already often overworked 
+> > maintainers..
 > 
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
-> 
-> Index: linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/arch/x86_64/perfmon/perfmon_k8.c
-> +++ linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
-> @@ -32,23 +32,29 @@ static int force_nmi;
->  MODULE_PARM_DESC(force_nmi, "bool: force use of NMI for PMU interrupt");
->  module_param(force_nmi, bool, 0600);
->  
-> -static struct pfm_arch_pmu_info pfm_k8_pmu_info={
-> +static struct pfm_arch_pmu_info pfm_k8_pmu_info = {
->  	.pmc_addrs = {
-> -		{{MSR_K7_EVNTSEL0, 0}, 0, PFM_REGT_EN},
-> -		{{MSR_K7_EVNTSEL1, 0}, 1, PFM_REGT_EN},
-> -		{{MSR_K7_EVNTSEL2, 0}, 2, PFM_REGT_EN},
-> -		{{MSR_K7_EVNTSEL3, 0}, 3, PFM_REGT_EN},
-> +/* pmc0  */	{{MSR_K7_EVNTSEL0, 0}, 0, PFM_REGT_EN},
-> +/* pmc1  */	{{MSR_K7_EVNTSEL1, 0}, 1, PFM_REGT_EN},
-> +/* pmc2  */	{{MSR_K7_EVNTSEL2, 0}, 2, PFM_REGT_EN},
-> +/* pmc3  */	{{MSR_K7_EVNTSEL3, 0}, 3, PFM_REGT_EN},
->  	},
->  	.pmd_addrs = {
-> -		{{MSR_K7_PERFCTR0, 0}, 0, PFM_REGT_CTR},
-> -		{{MSR_K7_PERFCTR1, 0}, 0, PFM_REGT_CTR},
-> -		{{MSR_K7_PERFCTR2, 0}, 0, PFM_REGT_CTR},
-> -		{{MSR_K7_PERFCTR3, 0}, 0, PFM_REGT_CTR},
-> +/* pmd0  */	{{MSR_K7_PERFCTR0, 0}, 0, PFM_REGT_CTR},
-> +/* pmd1  */	{{MSR_K7_PERFCTR1, 0}, 0, PFM_REGT_CTR},
-> +/* pmd2  */	{{MSR_K7_PERFCTR2, 0}, 0, PFM_REGT_CTR},
-> +/* pmd3  */	{{MSR_K7_PERFCTR3, 0}, 0, PFM_REGT_CTR},
->  	},
->  	.pmu_style = PFM_X86_PMU_P6
->  };
->  
->  /*
-> + * force Local APIC interrupt on overflow
-> + */
-> +#define PFM_K8_VAL	(1ULL<<20)
-> +#define PFM_K8_NO64	(1ULL<<20)
-> +
-> +/*
->   * reserved bits must be zero
->   *
->   * - upper 32 bits are reserved
-> @@ -59,12 +65,6 @@ static struct pfm_arch_pmu_info pfm_k8_p
->  			| (1ULL<<20)	\
->  			| (1ULL<<21))
->  
-> -/*
-> - * force Local APIC interrupt on overflow
-> - */
-> -#define PFM_K8_VAL	(1ULL<<20)
-> -#define PFM_K8_NO64	(1ULL<<20)
-> -
->  static struct pfm_reg_desc pfm_k8_pmc_desc[]={
->  /* pmc0  */ PMC_D(PFM_REG_I64, "PERFSEL0", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL0),
->  /* pmc1  */ PMC_D(PFM_REG_I64, "PERFSEL1", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL1),
-> @@ -73,11 +73,11 @@ static struct pfm_reg_desc pfm_k8_pmc_de
->  };
->  #define PFM_AMD_NUM_PMCS ARRAY_SIZE(pfm_k8_pmc_desc)
->  
-> -static struct pfm_reg_desc pfm_k8_pmd_desc[]={
-> -/* pmd0  */ PMD_D(PFM_REG_C, "PERFCTR0", MSR_K7_PERFCTR0),
-> -/* pmd1  */ PMD_D(PFM_REG_C, "PERFCTR1", MSR_K7_PERFCTR1),
-> -/* pmd2  */ PMD_D(PFM_REG_C, "PERFCTR2", MSR_K7_PERFCTR2),
-> -/* pmd3  */ PMD_D(PFM_REG_C, "PERFCTR3", MSR_K7_PERFCTR3),
-> +static struct pfm_reg_desc pfm_k8_pmd_desc[] = {
-> +/* pmd0  */ PMD_D(PFM_REG_C,   "PERFCTR0",	MSR_K7_PERFCTR0),
-> +/* pmd1  */ PMD_D(PFM_REG_C,   "PERFCTR1",	MSR_K7_PERFCTR1),
-> +/* pmd2  */ PMD_D(PFM_REG_C,   "PERFCTR2",	MSR_K7_PERFCTR2),
-> +/* pmd3  */ PMD_D(PFM_REG_C,   "PERFCTR3",	MSR_K7_PERFCTR3),
->  };
->  #define PFM_AMD_NUM_PMDS ARRAY_SIZE(pfm_k8_pmd_desc)
->  
-> Index: linux-2.6.22-rc3/include/asm-i386/perfmon.h
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/include/asm-i386/perfmon.h
-> +++ linux-2.6.22-rc3/include/asm-i386/perfmon.h
-> @@ -50,14 +50,14 @@
->  /*
->   * bitmask for reg_type
->   */
-> -#define PFM_REGT_NA	 0x00 /* not available */
-> -#define PFM_REGT_EN 	 0x01 /* has enable bit (cleared on ctxsw) */
-> -#define PFM_REGT_ESCR    0x02 /* P4: ESCR */
-> -#define PFM_REGT_CCCR    0x04 /* P4: CCCR */
-> -#define PFM_REGT_OTH 	 0x80 /* other type of register */
-> -#define PFM_REGT_PEBS	 0x10 /* PEBS related */
-> -#define PFM_REGT_NOHT    0x20 /* unavailable with HT */
-> -#define PFM_REGT_CTR     0x40 /* counter */
-> +#define PFM_REGT_NA		0x0000	/* not available */
-> +#define PFM_REGT_EN		0x0001	/* has enable bit (cleared on ctxsw) */
-> +#define PFM_REGT_ESCR		0x0002	/* P4: ESCR */
-> +#define PFM_REGT_CCCR		0x0004	/* P4: CCCR */
-> +#define PFM_REGT_PEBS		0x0010	/* PEBS related */
-> +#define PFM_REGT_NOHT		0x0020	/* unavailable with HT */
-> +#define PFM_REGT_CTR		0x0040	/* counter */
-> +#define PFM_REGT_OTH		0x0080	/* other type of register */
->  
->  /*
->   * This design and the partitioning of resources for SMT (hyper threads)
-> Index: linux-2.6.22-rc3/include/linux/perfmon_pmu.h
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/include/linux/perfmon_pmu.h
-> +++ linux-2.6.22-rc3/include/linux/perfmon_pmu.h
-> @@ -69,7 +69,7 @@ struct pfm_reg_desc {
->  #define PFM_REG_C64	0x04  /* PMD: 64-bit virtualization */
->  #define PFM_REG_RO	0x08  /* PMD: read-only (writes ignored) */
->  #define PFM_REG_V	0x10  /* PMD: virtual reg (provided by PMU description) */
-> -#define PFM_REG_NO64	0x100 /* PMC: supports REGFL_NOEMUL64 */
-> +#define PFM_REG_NO64	0x100 /* PMC: supports PFM_REGFL_NO_EMUL64 */
->  
->  /*
->   * define some shortcuts for common types
-> 
-> --
-> AMD Saxony, Dresden, Germany
-> Operating System Research Center
-> email: robert.richter@amd.com
-> 
-> 
-> 
+> Experienced BTS users and developers. Please, correct me if i'm wrong.
+> At least e-mail part of Debian's BTS and whole idea of it is *exactly*
+> what is needed. Bugzilla fans, you can still use you useless pet,
+> because Debian developers have done things, to track and e-mail states
+> of bugs: <http://permalink.gmane.org/gmane.linux.debian.devel.kernel/29736>
+>...
+
+"useless pet"?
+Be serious.
+How many open source projects use Bugzilla and how many use the Debian BTS?
+And then start thinking about why the "useless pet" has so many more 
+user...
+
+The Debian BTS requires you to either write emails with control messages 
+or generating control messages with external tools.
+
+In Bugzilla the same works through a web interface.
+
+I know both the Debian BTS and Bugzilla and although they are quite 
+different they both are reasonable tools for their purpose.
+
+cu
+Adrian
 
 -- 
 
--Stephane
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
