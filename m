@@ -1,100 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbXFSGYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbXFSG2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758032AbXFSGYc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 02:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbXFSGYZ
+	id S1757967AbXFSG2t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 02:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbXFSG2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 02:24:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50094 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752829AbXFSGYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 02:24:24 -0400
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Daniel Hazelton <dhazelton@enter.net>, Bron Gondwana <brong@fastmail.fm>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Tue, 19 Jun 2007 02:28:42 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50309 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754026AbXFSG2l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 02:28:41 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Alexandre Oliva <aoliva@redhat.com>
+Subject: Re: mea culpa on the meaning of Tivoization
+Date: Tue, 19 Jun 2007 02:28:27 -0400
+User-Agent: KMail/1.9.6
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
        david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706161817.36657.dhazelton@enter.net>
-	<orodjfmjsr.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706162306.14516.dhazelton@enter.net>
-	<orwsy3l0jv.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070617051451.GD21478@ftp.linux.org.uk>
-	<orps3vjf93.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070618221511.GI21478@ftp.linux.org.uk>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 03:23:39 -0300
-In-Reply-To: <20070618221511.GI21478@ftp.linux.org.uk> (Al Viro's message of "Mon\, 18 Jun 2007 23\:15\:12 +0100")
-Message-ID: <orps3s4g44.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
+       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
+References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <200706182325.22067.dhazelton@enter.net> <ortzt44gqt.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <ortzt44gqt.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706190228.27543.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
+On Tuesday 19 June 2007 02:10:02 Alexandre Oliva wrote:
+> On Jun 19, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+> > I haven't looked at it, in depth, today but one of the problems I
+> > saw was the apparent loopholes in the text. No specifics, but I
+> > remember thinking "a lawyer would have a field day with this -
+> > dozens of ways they could sidestep these issues"
+>
+> *Pretty* *please* file comments about the apparent loopholes at
+> gplv3.fsf.org/comments
 
-> I.e. the phrase about similar spirit should be replaced with
-> something far more explicit and very, very hard to miss.
+To do that I'd have to go back, take the time to re-read the GPLv3 *in* 
+*depth*, think about each paragraph of each section individually...
 
-This is a very good idea.  Would you please file it at
-http://gplv3.fsf.org/comments?
+Like I said, I just got a general impression that a lawyer would have a 
+field-day with it.
 
-> I don't think you need more proof that people *do* interpret it in
-> very different ways, with quite unpleasant results.
- 
-Agreed.
+> > What I was getting at, here, is that the GPLv3 isn't backwards
+> > compatible with GPLv2,
+>
+> It couldn't possibly be.  The whole point of upgrading the GPL is such
+> that it complies better with its spirit of defending the freedoms, so
+> as to keep free software free.  This can only be accomplished with
+> additional restrictions that stop practices that deny users'
+> freedoms.
+>
+> Relaxing the provisions, a necessary condition for compatibility,
+> wouldn't make for better defenses.
+>
+> > because you aren't allowed to remove rights from the GPLv3. Remember,
+> > there are rights encoded in the GPLv3 that don't appear in v2.
+>
+> I'm not sure what you mean by "rights" in the two sentences above.
+> You know you can grant additional permissions, so I assume that's not
+> what you mean, even more so because you *can* indeed take them out.
+> Is it "conditions", "restrictions" or some such, that in turn
+> translate into freedoms for downstream users, or is it about the
+> granted rights per se?
 
->> Is it correct to say that you share Linus' opinion, that the only
->> problem with the GPLv3 is the anti-tivoization provision?
+Sorry, bad choice of words. There are "guarantees" encoded into every license. 
+There are some encoded into the GPLv3 that aren't encoded into the GPLv2. You 
+can't remove or restrict those guarantees without violating the license. And 
+removing those guarantees would be the only way to make the GPLv3 fully 
+compatible with the GPLv2.
 
-> No.
+> > In fact, if you want to use GPLv3 code in a GPLv2 project you have
+> > to use GPLv3. For some projects, like the Linux Kernel, the upgrade
+> > is impossible to accomplish.
+>
+> Impossible is a bit too strong.  I understand it would take a huge
+> amount of work though, so I sympathize with "it wouldn't be worth it",
+> even if, in my scale of moral values, I'd disagree.
 
-Thanks for your detailed analysis.  I wish I knew what to do with
-it.  (I decline impolite suggestions, thanks ;-)
+In this case I wasn't speaking literally. I should have been a lot more 
+specific there - it should say "practically impossible". 
 
-Would you like me to put you in touch with Richard Fontana, one of the
-lawyers involved in GPLv3, that's regarded as a legalese compiler, to
-discuss your issues about wording with him?  Or would you rather file
-them (with a bit more detail) at gplv3.fsf.org/comments?
-
-Aside from wording issues, which appear to dominate your comments, is
-it fair to characterize that your objections to GPLv3 are
-anti-tivoization provisions (strong) and Affero compatibility (weak?)?
-
-
-I'm setting wording issues aside because these are easier to fix once
-the problem is understood, rather than ideological differences, that
-would probably be pointless to attempt to fix.
-
-> 	7	-	if I want to give additional permissions, I don't
-> 			want them stripped, for fsck sake!  There is a
-> 			bog-standard mechanism for _that_ (dual-licensing),
-> 			thank you very much.
-
-additional permissions are indeed a form of dual-licensing, but one
-that doesn't require one to create a copy of the GPL and add the
-additional permissions to that copy.  Yes, it could be accomplished
-with dual-licensing terms such as "you can follow the terms of the
-GPL, with the following additional permissions".
-
-I don't quite see the point of criticizing this.  This is more
-informative than anything else.
-
-The meat here is really in the few additional restrictions, and the
-provisions to combat the practice of adding restrictions on top of the
-GPL and claiming the software is available under the GPL, which has
-made for a lot of confusion over time.
-
-
-Thanks a lot for your feedback.
+DRH
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
