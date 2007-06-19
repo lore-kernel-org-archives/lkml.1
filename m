@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbXFSViT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbXFSVkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbXFSViT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 17:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXFSViG
+	id S1756186AbXFSVkQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 17:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbXFSVkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 17:38:06 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4222 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752885AbXFSViF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 17:38:05 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: And now for something _totally_ different: Linux v2.6.22-rc5
-Date: Tue, 19 Jun 2007 23:37:49 +0200
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
+	Tue, 19 Jun 2007 17:40:05 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50670
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752144AbXFSVkC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 17:40:02 -0400
+Date: Tue, 19 Jun 2007 14:39:16 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <or645j1wjm.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706191421590.26701@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706182035420.3593@woody.linux-foundation.org>
+ <or7iq05w6g.fsf@oliva.athome.lsd.ic.unicamp.br> <200706190221.09067.dhazelton@enter.net>
+ <Pine.LNX.4.64.0706191238220.25045@asgard.lang.hm>
+ <or645j1wjm.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706192337.49505.m.kozlowski@tuxland.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 19 Jun 2007, Alexandre Oliva wrote:
 
-	MAINTAINERS says riscom8 is orphaned so not sure
-if anybody cares. Spotted this when playing with modprobe
-walking /lib/modules/`uname -r`/kernel in a loop ;)
+> On Jun 19, 2007, david@lang.hm wrote:
+>
+>> based on my experiance looking at the software released for tivos, I
+>> think you are over-estimating these numbers. if there are more then a
+>> dozen people producing things that are good enough to be useful and
+>> releasing their results as opensource software I would be surprised.
+>
+> Yup.
+>
+> And how many more would there be should it not be tivoized?  More
+> hackers would buy the devices, a number of them with the explicit
+> intent and interest in modifying the software in it.
+>
+> You're losing all that.
 
-BUG: sleeping function called from invalid context at kernel/mutex.c:86
-in_atomic():0, irqs_disabled():1
- [<c0104542>] show_trace_log_lvl+0x1a/0x30
- [<c01050d0>] show_trace+0x12/0x14
- [<c010515b>] dump_stack+0x15/0x17
- [<c0112bd4>] __might_sleep+0xa8/0xae
- [<c04148ff>] mutex_lock+0x15/0x1f
- [<c015f82f>] __unregister_chrdev_region+0x1a/0x85
- [<c015f8f7>] unregister_chrdev_region+0x2f/0x3e
- [<c029c710>] tty_unregister_driver+0x30/0x100
- [<df082011>] rc_release_drivers+0x11/0x20 [riscom8]
- [<df08960c>] riscom8_init_module+0x539/0x57a [riscom8]
- [<c01345c2>] sys_init_module+0x11b/0x167e
- [<c0103ee6>] sysenter_past_esp+0x5f/0x85
- =======================
+based on the knowledge shown by these users you aren't loosing much.
 
-Regards,
+remember, not all tivo models are locked down, and most of those that are 
+locked down can be unlocked pretty easily. it's only a couple models that 
+have required a soldering iron.
 
-	Mariusz
+the xbox hacks show that people will produce ways to bypass hardware 
+restrictions that are easy for less techinical people to use (and people 
+less technical then this aren't gong to be contributing code anyway)
+
+as a result of watching the hacker groups I can safely say that the 
+lockdown has not blocked many users. it has slowed modification of the 
+hacks to new types of hardware, but not for very long.
+
+>> and for all that the FSF is claiming that tivos can't being modified
+>> it's really not that hard to change.
+>
+> But is it legal?
+
+that depends on what lawyer you ask, and what they think of the 
+applicability of the DMCA.
+
+> How many would contribute changes to a list where there are TiVo
+> people watching, which might expose these contributors to liabilities?
+
+in the case of Tivo, there are many public boards that talk about hacking 
+tivos, and tivo employees login and contribute to them. just about all of 
+these boards ban specific topics. for example:
+
+getting service without paying for it is banned on every board I 
+personally look at
+
+transferring video off of the tivo is banned on some boards, but not on 
+others.
+
+David Lang
