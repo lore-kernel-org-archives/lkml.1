@@ -1,118 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbXFSIYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbXFSI0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756360AbXFSIYR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 04:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbXFSIYE
+	id S1756342AbXFSI0R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 04:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbXFSI0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 04:24:04 -0400
-Received: from keil-draco.com ([216.193.185.50]:50336 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754382AbXFSIYC (ORCPT
+	Tue, 19 Jun 2007 04:26:07 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:9729 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753183AbXFSI0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 04:24:02 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Tue, 19 Jun 2007 04:23:46 -0400
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <200706190258.56955.dhazelton@enter.net> <or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Tue, 19 Jun 2007 04:26:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=dg2FlDUkfw0aCytagxaumwmBK9sCbqsELb3jYp2pk3mT8pKeP0jl3Sw5nmLlmioHTSAIyZZrqueIs1b2R9sh9bnOv0lpwgEySo1Spe+pz2ZPSWKRvmeD6qGrTKkDSzfbh+mvNqzikiKM7EKkKGPXbcgyicCdIDCLHoq3/78mIa4=
+Message-ID: <46779353.7010709@innova-card.com>
+Date: Tue, 19 Jun 2007 10:26:59 +0200
+Reply-To: Franck <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, David Miller <davem@davemloft.net>
+Subject: Re: [patch-mm 14/25] NTP: Move the cmos update code into ntp.c
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de> <20070616101637.068394614@inhelltoy.tec.linutronix.de>
+In-Reply-To: <20070616101637.068394614@inhelltoy.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706190423.47166.dhazelton@enter.net>
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 June 2007 04:04:52 Alexandre Oliva wrote:
-> On Jun 19, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > On Tuesday 19 June 2007 02:44:32 Alexandre Oliva wrote:
-> >> GPLv3 forbids tivoization, therefore developer has requirement for
-> >> tivoization in the license, therefore GPLv3 forbidding tivoization
-> >> is bad.
-> >
-> > However, my argument is straight logic, nothing "circular" about it.  :)
-> > Replacing "X" in my logic path above with "tivoization" and "license"
-> > with "GPLv3", as you've done, does produce a valid chain of logic.
->
-> Yes.  Isn't it funny though that tivoization became necessary as a
-> consequence of GPLv3 forbidding it?
+Hi Thomas,
 
--ELOGIC
+Thomas Gleixner wrote:
+> i386 and sparc64 have the identical code to update the cmos clock.
+> Move it into kernel/time/ntp.c as there are other architectures
+> coming along with the same requirements.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Chris Wright <chrisw@sous-sol.org>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: john stultz <johnstul@us.ibm.com>
+> Cc: David Miller <davem@davemloft.net>
+> 
+> ---
+>  arch/i386/Kconfig          |    4 +++
+>  arch/i386/kernel/time.c    |   50 +-------------------------------------
+>  arch/sparc64/Kconfig       |    4 +++
+>  arch/sparc64/kernel/time.c |   53 +---------------------------------------
+>  include/asm-i386/timer.h   |    1 
+>  include/linux/time.h       |    2 +
+>  kernel/time/ntp.c          |   59 ++++++++++++++++++++++++++++++++++++++++++---
+>  7 files changed, 70 insertions(+), 103 deletions(-)
+> 
 
-It didn't become necessary as a result of the GPLv3 forbidding it. As I 
-pointed out in text that was cut to keep the post short, there could be any 
-number of reasons why "tivoization" is needed by the manufacturer. Other 
-people have also pointed that out. This whole bit was to point out that you 
-were inferring circular logic where none existed. 
+[snip]
 
-<snip>
-> >> Wait a minute, these figures you made up are for the tivoized hardware
-> >> (no changes allowed to the GPLed software in it), or for the
-> >> non-tivoized hardware (changes allowed to the GPLed software in it)?
-> >
-> > Actually, any generic "TiVO"-like hardware - whether it is tivoized or
-> > not.
->
-> So your claim is that a user's possibility to scratch her own itches
-> makes no difference whatsoever as to their amount of contributions she
-> is likely to make?
+>  /* Kick start a stopped clock (procedure from the Sun NVRAM/hostid FAQ). */
+> Index: linux-2.6.22-rc4-mm/include/linux/time.h
+> ===================================================================
+> --- linux-2.6.22-rc4-mm.orig/include/linux/time.h	2007-06-16 12:10:21.000000000 +0200
+> +++ linux-2.6.22-rc4-mm/include/linux/time.h	2007-06-16 12:10:24.000000000 +0200
+> @@ -93,6 +93,8 @@ extern struct timespec wall_to_monotonic
+>  extern seqlock_t xtime_lock __attribute__((weak));
+>  
+>  extern unsigned long read_persistent_clock(void);
+> +extern int update_persistent_clock(struct timespec now);
 
-Exactly.
+I'm wondering if update_persistent_clock shouldn't be part of
+"drivers/rtc/*" framework. Do you have any idea on how this
+is going to be implemented on platforms that use this framework ?
 
-> Am I the only one who thinks this is utter nonsense?
->
-> >> > those who will contribute them back: 38 (25%)
-> >>
-> >> Regardless of what you meant, this is 38 developers *on top* of
-> >> however many the company pays to work on that, unless you're jumping
-> >> the gun and spoiling the multi-part argument.
-> >
-> > 38ppm is a fairly small amount, regardless.
->
-> Yes.  And your estimates are way too low too, FWIW.  Any reason why
-> you changed your mind as to the 10% before?
+> +extern int no_sync_cmos_clock __read_mostly;
+>  void timekeeping_init(void);
+>  
+>  static inline unsigned long get_seconds(void)
+> Index: linux-2.6.22-rc4-mm/kernel/time/ntp.c
+> ===================================================================
+> --- linux-2.6.22-rc4-mm.orig/kernel/time/ntp.c	2007-06-16 12:10:21.000000000 +0200
+> +++ linux-2.6.22-rc4-mm/kernel/time/ntp.c	2007-06-16 12:10:24.000000000 +0200
+> @@ -10,6 +10,7 @@
+>  
+>  #include <linux/mm.h>
+>  #include <linux/time.h>
+> +#include <linux/timer.h>
+>  #include <linux/timex.h>
+>  #include <linux/jiffies.h>
+>  #include <linux/hrtimer.h>
+> @@ -187,12 +188,64 @@ u64 current_tick_length(void)
+>  	return tick_length;
+>  }
+>  
+> +#ifdef CONFIG_GENERIC_CMOS_UPDATE
+>  
+> -void __attribute__ ((weak)) notify_arch_cmos_timer(void)
+> +/* Disable the cmos update - used by virtualization and embedded */
+> +int no_sync_cmos_clock  __read_mostly;
+> +
 
-That 10% was, IIRC, a reference to the potential number of "Hackers" that 
-would own a TiVO. On thinking about it I realized that the number of hackers 
-owning a TiVO would be vanishingly small because of "tivoization". So in this 
-new set of numbers I dropped it entirely.
+[snip]
 
-... crap I am tempted to respond to nastily has been cut ...
+>  
+> +static void notify_cmos_timer(void)
+> +{
+> +	if (no_sync_cmos_clock)
+> +		mod_timer(&sync_cmos_timer, jiffies + 1);
+> +}
 
-> > I think I'd rather see a guaranteed increase of developers - even if
-> > it is only 10 - rather than hoping that the potential pool of 38
-> > actually follows through. Wouldn't you?
->
-> Yes.  How does this relate with the piece of the argument I've
-> proposed so far, or the whole argument I've posted before?
->
-> Answer: It doesn't.  At all.  You're just showing you didn't
-> understand the argument.  Which shows why I have to explain it piece
-> by piece.  Which suggests you shouldn't try to jump to conclusions.
+Isn't the test condition wrong ? Shouldn't it be:
 
-Wrong. Nobody here needs a "piece by piece" explanation. So, in the belief 
-that you were intelligent enough to understand that, I was providing proof 
-that refutes your argument entirely.
+	if (!no_sync_cmos_clock)
+		mod_timer(&sync_cmos_timer, jiffies + 1);
 
-With a situation as complex as what exists you can't split the argument into 
-two and claim that, since "Argument A" is true in the "split" argument that 
-it is true when the argument isn't split. This holds true for almost all 
-real-world situations.
+Thanks,
 
-Now, I am not enjoying the discussion anymore. I've asked once before - remove 
-me from the CC list.
-
-DRH
-
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+		Franck
