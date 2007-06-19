@@ -1,117 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934151AbXFSUZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934077AbXFSU00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934151AbXFSUZj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 16:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762575AbXFSUZY
+	id S934077AbXFSU00 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 16:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763668AbXFSU0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 16:25:24 -0400
-Received: from ag-out-0708.google.com ([72.14.246.248]:12107 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763496AbXFSUZW (ORCPT
+	Tue, 19 Jun 2007 16:26:17 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33664 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762536AbXFSU0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 16:25:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=SkW3hK2PIYeqwzO7KlugraIr0SS3nj31K6t5/VQTmyExKizAOAJ5ykqfOHzoq2yr0B22QWBZwH591pPVbPXq3iwStf+1KZPSA7HzJx/6qtpZzll0KDN0OClsmigyeFDlv4gpq+wyg0a819nHuL7Cj5qYgfqz3m2SeaXt4ni7BJ8=
-Date: Tue, 19 Jun 2007 22:25:24 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: kvm-devel@lists.sourceforge.net
-Cc: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, David Brown <dmlb2000@gmail.com>
-Subject: Re: [PATCH 1/2] kvm: Fix x86 emulator writeback
-Message-ID: <20070619202524.GA17672@dreamland.darkstar.lan>
-Mail-Followup-To: kvm-devel@lists.sourceforge.net,
-	Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org,
-	David Brown <dmlb2000@gmail.com>
-References: <20070614231359.GA5705@dreamland.darkstar.lan> <68676e00706141627s3cb87391sa0ee6711d2f7933f@mail.gmail.com> <467256AA.1040001@qumranet.com> <20070615214915.GA10536@dreamland.darkstar.lan> <4673949B.1070505@qumranet.com> <20070617151452.GA21971@dreamland.darkstar.lan> <4675523C.9020703@qumranet.com> <20070617165201.GA23885@dreamland.darkstar.lan> <46765954.60102@qumranet.com> <46766D57.8040206@qumranet.com>
+	Tue, 19 Jun 2007 16:26:16 -0400
+Date: Tue, 19 Jun 2007 22:26:33 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6.23 patch] remove options depending on OSS_OBSOLETE
+Message-ID: <20070619202633.GE12950@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <46766D57.8040206@qumranet.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Mon, Jun 18, 2007 at 02:32:39PM +0300, Avi Kivity ha scritto: 
-> >Unfortunately, this kills Windows XP (first run with a guest crash, 
-> >second with a host oops), so I reverted it.  I'd guess some operation  
-> >which doesn't need writeback ends up in the modified code.  
-> >Previously, the check caused it to skip writeback, but now it writes 
-> >back random memory, causing a crash.
-> >
-> 
-> There are comments around like
-> 
-> >    /* Disable writeback. */
-> >    dst.orig_val = dst.val;
-> 
-> Best option is probably to add an explicit disable_writeback flag and 
-> set it there.
+This patch contains the scheduled removal of options depending
+on OSS_OBSOLETE.
 
-I've tested this patch with linux, solaris and winxp, on a 32 bit guest.
-So far everything is fine ;)
-David, this patch should fix the lockup you're seeing.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 633c2ed..9b7b0b9 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -1139,8 +1139,10 @@ static int emulator_write_phys(struct kvm_vcpu *vcpu, gpa_t gpa,
- 		return 0;
- 	mark_page_dirty(vcpu->kvm, gpa >> PAGE_SHIFT);
- 	virt = kmap_atomic(page, KM_USER0);
--	kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
--	memcpy(virt + offset_in_page(gpa), val, bytes);
-+	if (memcmp(virt + offset_in_page(gpa), val, bytes)) {
-+		kvm_mmu_pte_write(vcpu, gpa, virt + offset, val, bytes);
-+		memcpy(virt + offset_in_page(gpa), val, bytes);
-+	}
- 	kunmap_atomic(virt, KM_USER0);
- 	return 1;
- }
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index a4a8481..eb10448 100644
---- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -482,6 +482,7 @@ x86_emulate_memop(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
- 	int mode = ctxt->mode;
- 	unsigned long modrm_ea;
- 	int use_modrm_ea, index_reg = 0, base_reg = 0, scale, rip_relative = 0;
-+	int no_wb = 0;
+---
+
+ sound/oss/Kconfig |   77 ----------------------------------------------
+ 1 file changed, 77 deletions(-)
+
+--- linux-2.6.22-rc4-mm2/sound/oss/Kconfig.old	2007-06-18 14:57:48.000000000 +0200
++++ linux-2.6.22-rc4-mm2/sound/oss/Kconfig	2007-06-18 14:59:17.000000000 +0200
+@@ -5,35 +5,6 @@
+ #
+ # Prompt user for primary drivers.
  
- 	/* Shadow copy of register state. Committed on successful emulation. */
- 	unsigned long _regs[NR_VCPU_REGS];
-@@ -1048,7 +1049,7 @@ done_prefixes:
- 						      _regs[VCPU_REGS_RSP]),
- 				     &dst.val, dst.bytes, ctxt)) != 0)
- 				goto done;
--			dst.val = dst.orig_val;	/* skanky: disable writeback */
-+			no_wb = 1;	/* skanky: disable writeback */
- 			break;
- 		default:
- 			goto cannot_emulate;
-@@ -1057,7 +1058,7 @@ done_prefixes:
- 	}
+-config OSS_OBSOLETE
+-	bool "Obsolete OSS drivers"
+-	depends on SOUND_PRIME
+-	help
+-	  This option enables support for obsolete OSS drivers that
+-	  are scheduled for removal in the near future.
+-
+-	  Please contact Adrian Bunk <bunk@stusta.de> if you had to
+-	  say Y here because your hardware is not properly supported
+-	  by ALSA.
+-
+-	  If unsure, say N.
+-
+-config SOUND_BT878
+-	tristate "BT878 audio dma"
+-	depends on SOUND_PRIME && PCI && OSS_OBSOLETE
+-	---help---
+-	  Audio DMA support for bt878 based grabber boards.  As you might have
+-	  already noticed, bt878 is listed with two functions in /proc/pci.
+-	  Function 0 does the video stuff (bt848 compatible), function 1 does
+-	  the same for audio data.  This is a driver for the audio part of
+-	  the chip.  If you say 'Y' here you get a oss-compatible dsp device
+-	  where you can record from.  If you want just watch TV you probably
+-	  don't need this driver as most TV cards handle sound with a short
+-	  cable from the TV card to your sound card's line-in.
+-
+-	  To compile this driver as a module, choose M here: the module will
+-	  be called btaudio.
+-
+ config SOUND_BCM_CS4297A
+ 	tristate "Crystal Sound CS4297a (for Swarm)"
+ 	depends on SOUND_PRIME && SIBYTE_SWARM
+@@ -44,13 +15,6 @@
+ 	  note that CONFIG_KGDB should not be enabled at the same
+ 	  time, since it also attempts to use this UART port.
  
- writeback:
--	if ((d & Mov) || (dst.orig_val != dst.val)) {
-+	if (!no_wb) {
- 		switch (dst.type) {
- 		case OP_REG:
- 			/* The 4-byte case *is* correct: in 64-bit mode we zero-extend. */
-@@ -1306,7 +1307,7 @@ twobyte_insn:
+-config SOUND_ICH
+-	tristate "Intel ICH (i8xx) audio support"
+-	depends on SOUND_PRIME && PCI && OSS_OBSOLETE
+-	help
+-	  Support for integral audio in Intel's I/O Controller Hub (ICH)
+-	  chipset, as used on the 810/820/840 motherboards.
+-
+ config SOUND_VWSND
+ 	tristate "SGI Visual Workstation Sound"
+ 	depends on SOUND_PRIME && X86_VISWS
+@@ -346,26 +310,6 @@
+ 	  and Pinnacle). Larger values reduce the chance of data overruns at
+ 	  the expense of overall latency. If unsure, use the default.
  
- twobyte_special_insn:
- 	/* Disable writeback. */
--	dst.orig_val = dst.val;
-+	no_wb = 1;
- 	switch (b) {
- 	case 0x09:		/* wbinvd */
- 		break;
+-config SOUND_VIA82CXXX
+-	tristate "VIA 82C686 Audio Codec"
+-	depends on SOUND_PRIME && PCI && OSS_OBSOLETE && VIRT_TO_BUS
+-	help
+-	  Say Y here to include support for the audio codec found on VIA
+-	  82Cxxx-based chips. Typically these are built into a motherboard.
+-
+-	  DO NOT select Sound Blaster or Adlib with this driver, unless
+-	  you have a Sound Blaster or Adlib card in addition to your VIA
+-	  audio chip.
+-
+-config MIDI_VIA82CXXX
+-	bool "VIA 82C686 MIDI"
+-	depends on SOUND_VIA82CXXX && ISA_DMA_API
+-	help
+-	  Answer Y to use the MIDI interface of the Via686. You may need to
+-	  enable this in the BIOS before it will work. This is for connection
+-	  to external MIDI hardware, and is not required for software playback
+-	  of MIDI files.
+-
+ config SOUND_OSS
+ 	tristate "OSS sound modules"
+ 	depends on SOUND_PRIME && ISA_DMA_API && VIRT_TO_BUS
+@@ -400,20 +344,6 @@
+ 
+ 	  Say Y unless you have 16MB or more RAM or a PCI sound card.
+ 
+-config SOUND_CS4232
+-	tristate "Crystal CS4232 based (PnP) cards"
+-	depends on SOUND_OSS && OSS_OBSOLETE
+-	help
+-	  Say Y here if you have a card based on the Crystal CS4232 chip set,
+-	  which uses its own Plug and Play protocol.
+-
+-	  If you compile the driver into the kernel, you have to add
+-	  "cs4232=<io>,<irq>,<dma>,<dma2>,<mpuio>,<mpuirq>" to the kernel
+-	  command line.
+-
+-	  See <file:Documentation/sound/oss/CS4232> for more information on
+-	  configuring this card.
+-
+ config SOUND_SSCAPE
+ 	tristate "Ensoniq SoundScape support"
+ 	depends on SOUND_OSS
+@@ -720,13 +650,6 @@
+ 	  Say Y here to include support for the Rockwell WaveArtist sound
+ 	  system.  This driver is mainly for the NetWinder.
+ 
+-config SOUND_TVMIXER
+-	tristate "TV card (bt848) mixer support"
+-	depends on SOUND_PRIME && I2C && VIDEO_V4L1 && OSS_OBSOLETE
+-	help
+-	  Support for audio mixer facilities on the BT848 TV frame-grabber
+-	  card.
+-
+ config SOUND_KAHLUA
+ 	tristate "XpressAudio Sound Blaster emulation"
+ 	depends on SOUND_SB
 
-
-Luca
--- 
-"Ci sono le balle, le megaballe e le statistiche".
- Mark Twain
