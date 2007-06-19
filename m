@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbXFSBWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbXFSBWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbXFSBWJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 21:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbXFSBV5
+	id S1763291AbXFSBWd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 21:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbXFSBWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 21:21:57 -0400
-Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:34403
-	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754413AbXFSBV5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 21:21:57 -0400
-To: davids@webmaster.com
-Cc: <david@lang.hm>, "Alexandre Oliva" <aoliva@redhat.com>,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+	Mon, 18 Jun 2007 21:22:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35280 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758912AbXFSBWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 21:22:22 -0400
+To: david@lang.hm
+Cc: Anders Larsen <al@alarsen.net>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <MDEHLPKNGKAHNMBLJOLKGEEFELAC.davids@webmaster.com>
-From: Michael Poole <mdpoole@troilus.org>
-Date: Mon, 18 Jun 2007 21:21:56 -0400
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEEFELAC.davids@webmaster.com> (David Schwartz's message of "Mon\, 18 Jun 2007 15\:59\:25 -0700")
-Message-ID: <87tzt4vivf.fsf@graviton.dyn.troilus.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
+References: <1182156596l.29108l.0l@ecxwww1.reanet.de>
+	<or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706181202580.12717@asgard.lang.hm>
+	<orbqfdavpn.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706181343320.14890@asgard.lang.hm>
+	<orlkeh9btt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706181447430.14890@asgard.lang.hm>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Mon, 18 Jun 2007 22:21:50 -0300
+In-Reply-To: <Pine.LNX.4.64.0706181447430.14890@asgard.lang.hm> (david@lang.hm's message of "Mon\, 18 Jun 2007 14\:52\:19 -0700 \(PDT\)")
+Message-ID: <ord4zsagcx.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz writes:
+On Jun 18, 2007, david@lang.hm wrote:
 
->> First, end users buy and use the hardware in question.  It does not
->> belong to Tivo, so the analogy to his laptop fails there.
->
-> No, this is incorrect. They buy *some* of the rights to the hardware but not
-> all of them. Specifically, they do not buy the right to choose what software
-> runs on that hardware. That right is still owned by TiVo.
+> Ok, next question, could you do the same thing if you used a CD
+> instead of a ROM?
 
-Do you have a reference to the contract establishing that cession of
-rights from the buyer to Tivo?  To the extent that some contract
-purports to restrict the user in ways contrary to the GPL, I suspect
-Tivo might have a hard time defending it in court.
+Yes, I believe the very same reasoning applies.
 
-> You can argue that TiVo is being dishonest, breaking the law, being immoral,
-> or whatever in retaining this right or in failing to disclose that they
-> retain it. But you cannot coherently deny that TiVo retains this right when
-> they sell certain other rights to the hardware.
+> what makes a blob delivered via a network inherently different from
+> the same blob delivered via a plugin ROM or CD?
 
-By the first sale doctrine, someone who buys an item has practically
-unlimited rights to deal with it or dispose of it as the buyer wishes.
-The only things that would restrict that are statute or a contract
-entered as part of the sale -- most likely a EULA or other shrink-wrap
-agreement.  Given that most such recognized agreements deal with
-software or services rather than hardware, I am not sure a court would
-recognize a hardware EULA as being binding.  (I suspect this is the
-direction you were heading with the paragraph below.)
+Err...  Nothing, really, except that delivery over the network doesn't
+even have a physical support that you might wish you could possibly
+modify but Mother Nature won't let you.
 
-Michael Poole
+What could make a difference, as far as GPLv3 is concerned, is that
+conveyance over the network might be considered more easily separate
+from the transaction involving the user product than receiving the CD
+or the ROM chip along with it.
 
-> I do in fact argue that there are things that are wrong with TiVo doing
-> this. But they are not GPL-related things. I would make these same arguments
-> if the TiVo contained no GPL'd software and I in fact do make them about
-> products like the Xbox.
->
-> DS
+But then, a lot of it would depend on the the precise contractual
+terms surrounding the transference of the user product, on intent and
+how that's interpreted by courts, and on how good a justice money can
+buy ;-)
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
