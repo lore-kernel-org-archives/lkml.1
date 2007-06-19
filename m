@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762267AbXFSFme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbXFSFoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762267AbXFSFme (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 01:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760596AbXFSFmQ
+	id S1761993AbXFSFoR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 01:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbXFSFoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 01:42:16 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:57253 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759882AbXFSFmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 01:42:14 -0400
-Date: Tue, 19 Jun 2007 07:50:07 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070619055007.GB1649@ff.dom.local>
-References: <4bacf17f0706161435g1bb7c08bpd427901f64d57fa@mail.gmail.com> <20070618110849.GA2450@ff.dom.local> <20070618081000.14da5186@localhost.localdomain>
+	Tue, 19 Jun 2007 01:44:06 -0400
+Received: from verein.lst.de ([213.95.11.210]:36118 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753622AbXFSFoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 01:44:04 -0400
+Date: Tue, 19 Jun 2007 07:43:24 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Jens Axboe <axboe@kernel.dk>,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+Message-ID: <20070619054324.GA18542@lst.de>
+References: <20070615113919.142332000@pademelon.sonytel.be> <20070615120848.352093000@pademelon.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070618081000.14da5186@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070615120848.352093000@pademelon.sonytel.be>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 18, 2007 at 08:10:00AM -0700, Stephen Hemminger wrote:
-> On Mon, 18 Jun 2007 13:08:49 +0200
-> Jarek Poplawski <jarkao2@o2.pl> wrote:
+On Fri, Jun 15, 2007 at 01:39:23PM +0200, Geert Uytterhoeven wrote:
+> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 > 
-> > On 16-06-2007 23:35, Marcin .lusarz wrote:
-> > > hi
-> > > after upgrading kernel from 2.6.20 to 2.6.21.3 i'm experiencing really
-> > > strange problem - my _both_ network cards dies after random uptime -
-> > > sometimes it's a few minutes, sometimes hours, sometimes it does not
-> > > happen for a couple of days...
-> > > today it happened for the first time without nvidia module and almost
-> > > immediately after system start
-> > > 
-> > > here is the output of some commands which might help debug this:
-...
-> > It looks like skge driver enables different device than probbed.
-> > Maybe you've something old/wrong about eth0/eth1 in /etc configs?
-> 
-> More likely it is just user level device renaming. Most distro's
-> rename devices (if needed) using udev.
+> Add a Disk Storage Driver for the PS3:
+>   - Implemented as a block device driver with a dynamic major
+>   - Disk names (and partitions) are of the format ps3d%c(%u)
+>   - Uses software scatter-gather with a 64 KiB bounce buffer as the hypervisor
+>     doesn't support scatter-gather
 
-On the other hand it's interesting, why it's not always, and why
-sometimes it took so long?
+Looks good to me.  Only nitpicks are:
 
-Jarek P. 
+ - ps3disk_priv should probably be an inline function instead of a macro
+ - ps3disk_open is not needed at all and should be removed completely.
+ - please remove PS3DISK_MAJOR - and just pass 0 to register_blkdev.
+   Passing 0 to get an unassigned dev_t range is the normal convention
+   and giving it a suprising symbolic names makes reading the code a
+   little harder.  
+ - put_disk in ps3disk_remove should be done after you finished tearing
+   down the device, not before
+ - calling free_irq directly followed by request_irq in ps3disk_probe
+   looks rather dumb.  I'd rather move the request_irq out of
+   ps3stor_setup into the low-level driver.
+
