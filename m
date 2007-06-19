@@ -1,110 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbXFSWli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbXFSWqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757399AbXFSWli (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbXFSWla
+	id S1757247AbXFSWqm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbXFSWqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:41:30 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1235 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754276AbXFSWla (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:41:30 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <aoliva@redhat.com>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Tue, 19 Jun 2007 15:40:54 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKAELIELAC.davids@webmaster.com>
+	Tue, 19 Jun 2007 18:46:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44958 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752698AbXFSWqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 18:46:34 -0400
+To: david@lang.hm
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706190221.09067.dhazelton@enter.net>
+	<ork5u04f5b.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706190258.56955.dhazelton@enter.net>
+	<or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706191413040.26701@asgard.lang.hm>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Tue, 19 Jun 2007 19:45:10 -0300
+In-Reply-To: <Pine.LNX.4.64.0706191413040.26701@asgard.lang.hm> (david@lang.hm's message of "Tue\, 19 Jun 2007 14\:18\:11 -0700 \(PDT\)")
+Message-ID: <ord4zrzhqh.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <orhcp3zk5o.fsf@oliva.athome.lsd.ic.unicamp.br>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Tue, 19 Jun 2007 15:41:27 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Tue, 19 Jun 2007 15:41:37 -0700
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 19, 2007, david@lang.hm wrote:
 
-> > You keep smuggling in the same assumption without ever
-> > defending it. There
-> > is a user. There is a person who gets to decide what software runs on a
-> > particular piece of hardware. You keep assuming they must be the same
-> > person.
+> On Tue, 19 Jun 2007, Alexandre Oliva wrote:
+>> 
+>> Once again, now with clearer starting conditions (not intended to
+>> match TiVo in any way, BTW; don't get into that distraction)
+>> 
+>> 
+>> Vendor doesn't care about tivoizing, their business works the same
+>> either way.
+>> 
+>> Vendor's employees will contribute the same, one way or another, so
+>> their contributions are out of the equation.
 
-> No, I'm just saying that whoever gets to decide cannot restrict the
-> user's freedoms as to the software the user received.
+> no, this is what you are missing.
 
-I agree. However, the freedom to run modified software on hardware for which
-one is not the person who gets to decide what software runs on that hardware
-is not one of those freedoms.
+No, this is just one of many possible situations.
 
-> Consider this:
->
-> I get GPLed software.
->
-> I make improvements to it.
->
-> I give it to you, but I leave out the sources of my changes.
->
-> You ask me for sources, because without them you can't enjoy the
-> freedom to adapt the software.
->
-> I say "No, they're mine.  I have the right to keep them and release
-> them however I like.  Copyright law says so.!
->
-> You talk to the copyright holder, and he revokes my license and gets a
-> court order such that I can't distribute the software any more.
+You're just thinking of a different scenario, in which tivoization is
+important for the tivoizer.  We'll get to that.
 
-Right.
+Please be patient.  Don't get the illusion that you're disputing or
+weakening the argument with these statements.  Disputing premises of a
+logical inference is pointless as far as disputing a larger argument
+that this particular lemma would be a part of.
 
-> You see?  It's not because I had a right that I can use it to impose
-> restrictions on your freedoms, after I distribute the software to you.
-
-Right.
-
-> Right to control what software runs on the hardware is no different.
-> For any hardware on which I can run the software, I'm a user there,
-> and I'm entitled to the rights granted by the license.
-
-Exactly. However, that right does not include the right to run the software
-on any particular piece of hardware. It includes the right to get the source
-code, redistribute it, modify it, and so on. It includes the right to run
-the software on *ANY* hardware, so long as one is authorized to choose what
-software runs on that hardware.
-
-> It's really this simple.  Don't complicate the issue by trying to make
-> hardware special.  It's just an illusion to try to convince yourself
-> that you can deprive users of freedoms provided by the GPL.
-
-The right to run GPL'd software on some particular piece of hardware was
-never a GPL right. That is an *authorization* decision, similar to who has
-'root' access on a Linux box and can modify and install the kernel.
-
-You keep conflating things like access to the source code and the legal
-right to modify that source code with the authorization right to install
-that modified kernel on some particular piece of hardware. The GPL was never
-about how such authorization decisions are made.
-
-If I make you a user of my laptop, do I have to let you install a modified
-kernel? What if I even let you access the kernel source, so I have
-distributed it to you.
-
-The GPL was never, ever about such authorization decisions. They are
-completely alien to both the wording and the spirit of the GPL.
-
-DS
-
-
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
