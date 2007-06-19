@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbXFSToQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764738AbXFSTu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932352AbXFSToQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761412AbXFSToA
+	id S1764738AbXFSTu0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbXFSTuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:44:00 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1070 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbXFSToA (ORCPT
+	Tue, 19 Jun 2007 15:50:17 -0400
+Received: from fw1-az.mvista.com ([65.200.49.156]:8865 "EHLO
+	zipcode.az.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752109AbXFSTuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:44:00 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 19 Jun 2007 12:43:53 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Fix signalfd interaction with thread-private signals
-In-Reply-To: <20070619091452.GA94@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0706191242160.16740@alien.or.mcafeemobile.com>
-References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
- <1182064500.2798.6.camel@entropy> <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com>
- <1182108399.3794.4.camel@entropy> <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
- <1182125303.3794.8.camel@entropy> <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com>
- <1182127391.26853.207.camel@localhost.localdomain>
- <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
- <20070619091452.GA94@tv-sign.ru>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 19 Jun 2007 15:50:16 -0400
+X-Greylist: delayed 1333 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 15:50:16 EDT
+Date: Tue, 19 Jun 2007 12:25:05 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, ab@mycable.de, mgreer@mvista.com,
+       khali@linux-fr.org, david-b@pacbell.net
+Subject: Re: [PATCH 1/2] rtc: add rtc-m41txx driver
+Message-ID: <20070619192505.GA363@mag.az.mvista.com>
+References: <20070620.005926.52130307.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070620.005926.52130307.anemo@mba.ocn.ne.jp>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007, Oleg Nesterov wrote:
-
-> The commited "Fix signalfd interaction with thread-private signals"
-> (commit caec4e8dc85e0644ec24aeb36285e1ba02da58cc) doesn't implement
-> this.
+On Wed, Jun 20, 2007 at 12:59:26AM +0900, Atsushi Nemoto wrote:
+> This is a new-style i2c driver for ST M41TXX RTC chip, derived from
+> works by Alexander Bigga <ab@mycable.de> who wrote the original
+> rtc-m41txx.c based on drivers/i2c/chips/m41t00.c driver.
 > 
-> We can do something like
+> This driver supports M41T80, M41T81 and M41ST85.  The old m41t00
+> driver supports M41T00, M41T81 and M41T85(M41ST85).  While the M41T00
+> chip is now supported by rtc-ds1307 driver, this driver does not
+> include support for the chip.
 > 
-> 	int signalfd_dequeue_signal(struct task_struct *tsk, sigset_t *mask, siginfo_t *info)
-> 	{
-> 		if (tsk->tgid == current->tgid)
-> 			tsk = current;
-> 
-> 		return dequeue_signal(tsk, mask, info);
-> 	}
-> 
-> (still I can't understand why should we change signalfd).
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> Signed-off-by: Alexander Bigga <ab@mycable.de>
 
-Yes, of course. I was waiting for Ben's patch to go in, before fixing 
-signalfd. I did not know if Linus would have acked that.
+Other than addressing David's question about alarm support,
 
-
-
-- Davide
-
-
+Acked-by: Mark A. Greer <mgreer@mvista.com>
