@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbXFSMAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbXFSMHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757648AbXFSMAU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 08:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbXFSMAI
+	id S1757658AbXFSMHn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 08:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbXFSMHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 08:00:08 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:33832 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755411AbXFSMAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 08:00:07 -0400
-Message-ID: <4677C539.7020203@free.fr>
-Date: Tue, 19 Jun 2007 13:59:53 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Tue, 19 Jun 2007 08:07:34 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:62543 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754185AbXFSMHd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 08:07:33 -0400
+Date: Tue, 19 Jun 2007 08:04:57 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: =?iso-8859-1?Q?P=E1draig?= Brady <P@draigBrady.com>
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Btrfs: a copy on write, snapshotting FS
+Message-ID: <20070619120457.GD14108@think.oraclecorp.com>
+References: <20070612161029.GB28279@think.oraclecorp.com> <4676C2D6.8030708@vlnb.net> <46779DB1.7060807@draigBrady.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Dumping the checksums in a module
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46779DB1.7060807@draigBrady.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Tue, Jun 19, 2007 at 10:11:13AM +0100, Pádraig Brady wrote:
+> Vladislav Bolkhovitin wrote:
+> > 
+> > I would also suggest one more feature: support for block level
+> > de-duplication. I mean:
+> > 
+> > 1. Ability for Btrfs to have blocks in several files to point to the
+> > same block on disk
+> > 
+> > 2. Support for new syscall or IOCTL to de-duplicate as a single
+> > transaction two or more blocks on disk, i.e. link them to one of them
+> > and free others
+> > 
+> > 3. De-de-duplicate blocks on disk, i.e. copy them on write
+> > 
+> > I suppose that de-duplication itself would be done by some user space
+> > process that would scan files, determine blocks with the same data and
+> > then de-duplicate them by using syscall or IOCTL (2).
+> > 
+> > That would be very usable feature, which in most cases would allow to
+> > shrink occupied disk space on 50-90%.
+> 
+> Have you references for this number?
+> In my experience one gets a lot of benefit from
+> the much simpler process of "de-duplication" of files.
 
-As far as I understand (which is not very far), if I define
-CONFIG_MODVERSIONS, then checksums for various functions (all exported
-functions?) and various structures (which ones?) will be included inside
-the kernel image, and written to Module.symvers. When an out-of-tree
-module is built, it will *also* include these checksums.
+Yes, I would expect simple hard links to be a better solution for this,
+but the feature request is not that out of line.  I actually had plans
+on implementing auto duplicate block reuse earlier in btrfs.
 
-How do I list ALL the checksums within a module?
+Snapshots already share duplicate blocks between files, and so all of
+the reference counting needed to implement this already exists.
+Snapshots are writable, and data mods are copy on write, and in general
+things work.
 
-$ /sbin/modinfo -V
-module-init-tools version 3.2.2
+But, to help fsck, the extent allocation tree has a back pointer to the
+inode that owns an extent.  If you're doing snapshots, all of the owners
+of the extent have the same inode number.   If you're sharing duplicate
+blocks, the owners can have any inode number, and fsck becomes much more
+complex.
 
-$ uname -a
-Linux venus 2.6.18.6 #1 PREEMPT Thu Feb 8 18:04:49 CET 2007 i686
-pentium4 i386 GNU/Linux
+In general, when I have to decide between fsck and a feature, I'm going
+to pick fsck.  The features are much more fun, but fsck is one of the
+main motivations for doing this work.
 
-$ /sbin/modinfo test.ko
-filename:       test.ko
-vermagic:       2.6.20.7-rt8 preempt mod_unload PENTIUMIII REGPARM
-depends:
-parm:           pConfig_file:charp
-parm:           allocator_himem:An integer (int)
-parm:           EnableIdleMode:An integer (int)
-parm:           Board_ID:An integer (int)
-parm:           Diagnostic:An integer (int)
-
-$ hexdump -C test.ko | grep -A2 struct_
-000752e0  17 98 07 0e 73 74 72 75  63 74 5f 6d 6f 64 75 6c
-|....struct_modul|
-000752f0  65 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
-|e...............|
-00075300  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
-|................|
-
-I think this means that, in this module, the checksum for symbol
-struct_module is 0x1798070e, right?
-
-Is there a simpler way to list all the checksums?
-
-Regards.
-
+Thanks for the input,
+Chris
