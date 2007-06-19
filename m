@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbXFSQIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXFSQN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbXFSQIv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 12:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbXFSQIn
+	id S1758205AbXFSQN2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 12:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXFSQNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 12:08:43 -0400
-Received: from h155.mvista.com ([63.81.120.155]:38321 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753723AbXFSQIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 12:08:42 -0400
-Message-ID: <4677FFF1.2010308@ru.mvista.com>
-Date: Tue, 19 Jun 2007 20:10:25 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 19 Jun 2007 12:13:21 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:63760 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753298AbXFSQNU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 12:13:20 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-Cc: Stuart_Hayes@Dell.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
-References: <20070618175713.GD5836@austin.ibm.com> <DFEF91B22ED07447AB6AA4B237F913F9B18A05@ausx3mpc125.aus.amer.dell.com> <4677E30B.4020101@ru.mvista.com> <20070619150502.GO5836@austin.ibm.com>
-In-Reply-To: <20070619150502.GO5836@austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: [PATCH] Chinese translation of Documentation/HOWTO
+Date: Wed, 20 Jun 2007 00:14:59 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890D82D61@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20070619153615.GA2461@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Chinese translation of Documentation/HOWTO
+Thread-Index: Aceyh2hGrPJskFxqRYuKJV2zPS/LzQAA8+ng
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "WANG Cong" <xiyou.wangcong@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, <gregkh@suse.de>,
+       "TripleX Chung" <xxx.phy@gmail.com>,
+       "Maggie Chen" <chenqi@beyondsoft.com>, "Tejun Heo" <htejun@gmail.com>,
+       "Fengguang Wu" <fengguang.wu@gmail.com>,
+       "Chen Li-jun" <cljun@xiyou.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi Wangcong,
 
-Linas Vepstas wrote:
+Thanks for your comments.  Most of the comments are literal.  I don't
+believe all of them are necessary as language is a matter of personal
+preference. :)  I will consider your suggestions carefully and pick up
+those which are really necessary.
 
->>Stuart_Hayes@Dell.com wrote:
+- Leo
 
->>>I think reading the IDE status register clears the interrupt in the IDE
->>>device, which might be causing the drive to think it's OK to generate
->>>another interrupt.
-
->>   This is not how IDE drives are supposed to act -- they won't proceed any 
->>further until "interrupt pending" condition is cleared, so these aren't 
->>supposed to be "stacked". This behavior however is not strictly specified 
->>by ATA standards IIRC, but I can't readily imagine such situaltion anyway 
->>unless tagged command queueing  (which is not supported by IDE core) and/or 
->>ATAPI command overlapping is in action...
-
-> The problem only manifests during high io load; perhaps a missing mutex
-> somewhere is blasting one thing too many out to the hard drive?
-
-    Hm... not sure about this.
-
->>>This could either cause it to get stuck trying to
->>>service an interrupt that is never getting cleared as you suggested, or
->>>possibly when the next IRQ comes in the IDE IRQ handler gets stuck
->>>waiting for a spinlock that the code you're looking at already owns...?
-
->>   I could also imagine the HPT366 chip going mad and stalling the reads if 
->>the taskfile regs forever because of the incomplete DMA or even the drive 
->>going mad and not replying to I/O cycles with proper -IORDY handshake (i.e. 
->>holding it low all the time)...
-
-> In my case, ctrl-alt-sysrq doesn't work, which makes it hard to debug.
-
-> I'm thinking that trying to debug libata is a better idea, rather than
-> investing time in ide, right?  Although at the moment, libata works even 
-> less; see other email.
-
-    Which makes me think this really is some *hardware* issue.
-
-> --linas
-
-MBR, Sergei
+> -----Original Message-----
+> From: WANG Cong [mailto:xiyou.wangcong@gmail.com]
+> Sent: Tuesday, June 19, 2007 11:36 PM
+> To: Li Yang-r58472
+> Cc: linux-kernel@vger.kernel.org; gregkh@suse.de; TripleX Chung;
+Maggie Chen;
+> Tejun Heo; Fengguang Wu; Chen Li-jun
+> Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+> 
+> On Tue, Jun 19, 2007 at 10:21:03PM +0800, Li Yang wrote:
+> >This is a Chinese translated version of Documentation/HOWTO.
+Currently
+> >Chinese involvement in Linux kernel is very low, especially comparing
+to
+> >its largest population base.  Language could be the main obstacle.
+Hope
+> >this document will help more Chinese to contribute to Linux kernel.
+> 
+> Thanks for your work!
+> 
+> I hope people here who don't understand Chinese won't mind if I
+comment the
+> following patch in Chinese. ;)
+> 
+{snip}
