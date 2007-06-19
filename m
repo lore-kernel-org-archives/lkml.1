@@ -1,41 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbXFSCdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765427AbXFSCjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932179AbXFSCdc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 22:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759895AbXFSCdZ
+	id S1765427AbXFSCjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 22:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760525AbXFSCjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 22:33:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55412 "EHLO mx1.redhat.com"
+	Mon, 18 Jun 2007 22:39:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57009 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757940AbXFSCdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 22:33:24 -0400
+	id S1759895AbXFSCjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 22:39:31 -0400
 To: david@lang.hm
-Cc: Johannes Stezenbach <js@linuxtv.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <4673CA7C.5040207@t-online.de>
-	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616181902.GB21478@ftp.linux.org.uk>
-	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
-	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070618155016.GA31892@linuxtv.org>
-	<or645lcdg7.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070618232549.GA22170@linuxtv.org>
-	<Pine.LNX.4.64.0706181634560.14890@asgard.lang.hm>
+Cc: Joshua David Williams <yurimxpxman.lkml@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: GPLv3 dispute solution - new open source license?
+References: <200706181807.53306.yurimxpxman@gmail.com>
+	<Pine.LNX.4.64.0706181541050.14890@asgard.lang.hm>
 From: Alexandre Oliva <aoliva@redhat.com>
 Organization: Red Hat OS Tools Group
-Date: Mon, 18 Jun 2007 23:32:15 -0300
-In-Reply-To: <Pine.LNX.4.64.0706181634560.14890@asgard.lang.hm> (david@lang.hm's message of "Mon\, 18 Jun 2007 16\:39\:20 -0700 \(PDT\)")
-Message-ID: <ormyyw8yj4.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Mon, 18 Jun 2007 23:39:23 -0300
+In-Reply-To: <Pine.LNX.4.64.0706181541050.14890@asgard.lang.hm> (david@lang.hm's message of "Mon\, 18 Jun 2007 15\:43\:02 -0700 \(PDT\)")
+Message-ID: <orir9k8y78.fsf@oliva.athome.lsd.ic.unicamp.br>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -44,21 +28,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Jun 18, 2007, david@lang.hm wrote:
 
-> On Tue, 19 Jun 2007, Johannes Stezenbach wrote:
->>> But since the software is good, and moving to another software
->>> would be costly in various dimentions, the vendor has an incentive
->>> to stick with the software they have.
+> On Mon, 18 Jun 2007, Joshua David Williams wrote:
+>> On 6/18/07, Carlo Wood <carlo@alinoe.com> wrote:
+>> 
+>>> Now, writing yet another license for the linux kernel is
+>>> therefore NOT the solution - if you get my drift.
+>> 
+>> The new license could be written to be compatible with both versions of the
+>> GPL.
 
-> but if regulations or other contracts require tamper-resistant
-> hardware they have no choices other then to fork the existing GPLv2
-> versions or switch to alternate options for anything that switches to
-> GPLv3
+> no it couldn't
 
-Where by "alternate options" I hope you mean non-copyleft or
-tivoizable (copyleft by definition) software, or (newer versions of)
-the same software they already use, but in ROM.  (I point this out
-because people keep forgetting all the available options when they
-claim to enumerate all available options ;-)
+It could.  Just not as part of the same work.  I.e., it wouldn't be
+compatible in both directions, so it wouldn't make some of the most
+vocal Linux developers in that other thread happy.
+
+But you could achieve one-way compatibility in various ways:
+
+GPLv2+, after GPLv3 is published, and before there's a GPLv4, is
+pretty much it.
+
+One could also come up with any license that permits use under the
+terms of the GPLv2 or the GPLv3.
+
+One could also dual-license under GPLv2 and GPLv3.
+
+FWIW, IANAL.
 
 -- 
 Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
