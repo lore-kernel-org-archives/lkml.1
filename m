@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbXFSRBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760264AbXFSRCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759469AbXFSRBz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 13:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbXFSRBs
+	id S1760264AbXFSRCT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbXFSRCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 13:01:48 -0400
-Received: from main.gmane.org ([80.91.229.2]:51595 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755489AbXFSRBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 13:01:48 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jakub Narebski <jnareb@gmail.com>
-Subject: Re: Versioning file system
-Followup-To: gmane.comp.version-control.git
-Date: Tue, 19 Jun 2007 18:52:22 +0200
-Organization: At home
-Message-ID: <f591k5$odb$2@sea.gmane.org>
-References: <OF7FA807A1.64C0D5AF-ON882572FE.0061B34C-882572FE.00628322@us.ibm.com> <6E9A6F9E-8948-40F2-9129-1F1491D49D83@mac.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: host-89-229-25-173.torun.mm.pl
-Mail-Copies-To: Jakub Narebski <jnareb@gmail.com>
-User-Agent: KNode/0.10.2
-Cc: git@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 19 Jun 2007 13:02:09 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:36307 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757239AbXFSRCI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 13:02:08 -0400
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Adrian Bunk <bunk@stusta.de>, Martin Bligh <mbligh@mbligh.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
+In-Reply-To: <4677F15D.6000903@s5r6.in-berlin.de>
+References: <4675C083.6080409@s5r6.in-berlin.de> <20070617220927.99ebc1ee.akpm@linux-foundation.org> <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca> <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de> <20070619140512.GA19904@flower.upol.cz> <4677F15D.6000903@s5r6.in-berlin.de>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: jed (x86_64-pc-linux-glibc-debian)
+X-Mailer: slrn
+Date: Tue, 19 Jun 2007 19:14:39 +0200
+Message-Id: <E1I0hHr-0002yT-Lr@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> On Jun 18, 2007, at 13:56:05, Bryan Henderson wrote:
+* Date: Tue, 19 Jun 2007 17:08:13 +0200
+>
+>> Crazy development{0}. Somebody knows, that comprehensively testing
+>> hibernation is their thing. I don't care about it, i care about foo, bar.
+>> Thus i can apply for example lguest patches and implement and test new
+>> asm-offset replacement, *easily*.
+>
+> That's right.  But the production of subsystem test patchkits is
+> volunteer work which will be hard to unify.
+>
+> I'm not saying it's impossible to reach some degree of organized
+> production of test patchkits; after all we already have some
+> standardization regarding patch submission which is volunteer work too.
 
->>> The question remains is where to implement versioning: directly in  
->>> individual filesystems or in the vfs code so all filesystems can  
->>> use it?
->>
->> Or not in the kernel at all.  I've been doing versioning of the  
->> types I described for years with user space code and I don't  
->> remember feeling that I compromised in order not to involve the  
->> kernel.
->>
->> Of course, if you want to do it with snapshots and COW, you'll have  
->> to ask where in the kernel to put that, but that's not a file  
->> versioning question; it's the larger snapshot question.
-> 
-> What I think would be particularly interesting in this domain is  
-> something similar in concept to GIT, except in a file-system
-[cut]
+But still there's no one opinion about against what tree to base the
+patch. For somebody it's Linus's mainline, for somebody it's bleeding
+edge -mm. And there will be no one.
 
-How it relates to ext3cow versioning (snapshotting) filesystem,
-for example? ext3cow assumes linear history, which simplifies things
-a bit.
+Thus, particular patch entry might have as -mm as Linus's re-based
+versions or (as Adrian noted) VFS.asof02-07-2007 FANCYFS. For example,
+Rusty did that, after somebody asked him to have not only -mm lguest
+version. So, for really intrusive feature/patch (and not
+in-middle-development, Adrian) author can have a version (with git
+branch, patch directory or something).
 
--- 
-Jakub Narebski
-Warsaw, Poland
-ShadeHawk on #git
-
-
+Counter-example: Scheduler patches are extraordinary with large
+threads or replies, but that is (one of) classical release-early and
+often. Proposed bureaucracy doesn't apply ;)
+____
