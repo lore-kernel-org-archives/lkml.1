@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbXFSMgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbXFSMjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757897AbXFSMgf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 08:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXFSMg3
+	id S1758092AbXFSMjQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 08:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbXFSMjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 08:36:29 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:53068
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754180AbXFSMg2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 08:36:28 -0400
-Date: Tue, 19 Jun 2007 14:38:03 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Shaun Savage <savages@savages.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: How do you allocate huge pages.
-Message-ID: <20070619123803.GD22468@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Shaun Savage <savages@savages.net>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4677C702.6050102@savages.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4677C702.6050102@savages.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 19 Jun 2007 08:39:03 -0400
+Received: from hera.cwi.nl ([192.16.191.8]:62347 "EHLO hera.cwi.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755892AbXFSMjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 08:39:01 -0400
+Date: Tue, 19 Jun 2007 14:38:59 +0200 (MEST)
+From: <Andries.Brouwer@cwi.nl>
+Message-Id: <200706191238.l5JCcxg14300@apps.cwi.nl>
+To: linux-kernel@vger.kernel.org
+Subject: mount-2.12r-ggk.tar.gz
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, Jun 19, 2007 at 05:07:30AM -0700 Shaun Savage ha dit:
- 
-> I am trying to allocate very large memory within the kernel. I want to
-> start by allocating one huge (4M) page and using that as buffer space.
+The present situation of util-linux and mount is not quite clear to me.
+On kernel.org under utils/util-linux nothing has happened for over a year,
+and there is also an empty utils/util-linux-ng.
 
-possibly vmalloc() is what you're looking for, if it isn't really a
-*page* of 4M, what afaik is impossible with a standard kernel.
+Anyway, Dirk Gerrits, René Gabriël and Peter Kooijmans sent me
+a patch to add support for shared subtrees to the mount from
+util-linux 2.12r, and I put up the result for ftp at
+ftp://ftp.win.tue.nl/pub/linux-local/utils/mount/mount-2.12r-ggk.tar.gz
 
-vmalloc() allocates virtually contiguous memory, as opposed to
-kmalloc() which allocates physically contiguous memory.
+They remark that it feels like a kernel bug that --make-unbindable
+is not reset by --make-private and suggest the patch
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+--- pnode.old   2007-04-17 12:53:11.000000000 +0200
++++ pnode.c     2007-04-17 13:22:03.000000000 +0200
+@@ -83,6 +83,8 @@
+                mnt->mnt_master = NULL;
+                if (type == MS_UNBINDABLE)
+                        mnt->mnt_flags |= MNT_UNBINDABLE;
++               else
++                       mnt->mnt_flags &= ~MNT_UNBINDABLE;
+        }
+ }
 
-     La libertad es como la ma�ana. Hay quienes esperan dormidos a que
-   llegue, pero hay quienes desvelan y caminan la noche para alcanzarla
-                        (Subcomandante Marcos)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+(with white-space damage - my cut&paste).
+
+Without this patch one needs the detour "--make-shared; --make-private"
+in order to reset the "unbindable" flag for a private tree.
+
+Andries
+
+
+
+[By the way, this shared subtree stuff is a bit messy,
+and impossible to support correctly by mount without help
+from the kernel. So far the shared/slave/unbindable status
+of mounts is not visible in /proc/mounts or /proc/$$/mountstats.
+The above mount makes a feeble attempt to record these flags
+in /etc/mtab, but will fail in any nontrivial situation.]
+
