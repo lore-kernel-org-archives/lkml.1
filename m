@@ -1,140 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760981AbXFSWvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759528AbXFSWwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760981AbXFSWvn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 18:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbXFSWvf
+	id S1759528AbXFSWwS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 18:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXFSWv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 18:51:35 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:13715 "EHLO
-	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755945AbXFSWve (ORCPT
+	Tue, 19 Jun 2007 18:51:57 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:41957
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755826AbXFSWv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 18:51:34 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Wed, 20 Jun 2007 00:52:03 +0200
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Subject: [PATCH 11/12] pcmcia/net_pcmcia: all net_pcmcia modules depend
- on PCMCIA
-Message-ID: <20070619225203.GM5193@alberich.amd.com>
+	Tue, 19 Jun 2007 18:51:56 -0400
+Date: Tue, 19 Jun 2007 15:50:33 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <ord4zrzhqh.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706191548010.26701@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <200706190221.09067.dhazelton@enter.net> <ork5u04f5b.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <200706190258.56955.dhazelton@enter.net> <or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <Pine.LNX.4.64.0706191413040.26701@asgard.lang.hm>
+ <ord4zrzhqh.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 19 Jun 2007 22:51:06.0827 (UTC)
- FILETIME=[525959B0:01C7B2C4]
-X-WSS-ID: 6A6682571S4852452-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix several build errors with PCMCIA=m && NET_PCMCIA=y:
+On Tue, 19 Jun 2007, Alexandre Oliva wrote:
 
-   LD      .tmp_vmlinux1
-   drivers/built-in.o: In function `nmclan_release':
-   nmclan_cs.c:(.text+0x14026c): undefined reference to `pcmcia_disable_device'
-   ...
-   drivers/built-in.o: In function `exit_xirc2ps_cs':
-   xirc2ps_cs.c:(.exit.text+0x1055): undefined reference to `pcmcia_unregister_driver'
-   make: *** [.tmp_vmlinux1] Error 1
+> On Jun 19, 2007, david@lang.hm wrote:
+>
+>> On Tue, 19 Jun 2007, Alexandre Oliva wrote:
+>>>
+>>> Once again, now with clearer starting conditions (not intended to
+>>> match TiVo in any way, BTW; don't get into that distraction)
+>>>
+>>>
+>>> Vendor doesn't care about tivoizing, their business works the same
+>>> either way.
+>>>
+>>> Vendor's employees will contribute the same, one way or another, so
+>>> their contributions are out of the equation.
+>
+>> no, this is what you are missing.
+>
+> No, this is just one of many possible situations.
+>
+> You're just thinking of a different scenario, in which tivoization is
+> important for the tivoizer.  We'll get to that.
+>
+> Please be patient.  Don't get the illusion that you're disputing or
+> weakening the argument with these statements.  Disputing premises of a
+> logical inference is pointless as far as disputing a larger argument
+> that this particular lemma would be a part of.
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- drivers/net/pcmcia/Kconfig |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+if a company doesn't care about tivoizing then they won't do it, it takes 
+time and money to tivoize some product and it will cause headaches for the 
+company.
 
-diff --git a/drivers/net/pcmcia/Kconfig b/drivers/net/pcmcia/Kconfig
-index 5d658bc..9545440 100644
---- a/drivers/net/pcmcia/Kconfig
-+++ b/drivers/net/pcmcia/Kconfig
-@@ -23,6 +23,7 @@ if NET_PCMCIA
- 
- config PCMCIA_3C589
- 	tristate "3Com 3c589 PCMCIA support"
-+	depends on PCMCIA
- 	help
- 	  Say Y here if you intend to attach a 3Com 3c589 or compatible PCMCIA
- 	  (PC-card) Ethernet card to your computer.
-@@ -32,6 +33,7 @@ config PCMCIA_3C589
- 
- config PCMCIA_3C574
- 	tristate "3Com 3c574 PCMCIA support"
-+	depends on PCMCIA
- 	help
- 	  Say Y here if you intend to attach a 3Com 3c574 or compatible PCMCIA
- 	  (PC-card) Fast Ethernet card to your computer.
-@@ -41,6 +43,7 @@ config PCMCIA_3C574
- 
- config PCMCIA_FMVJ18X
- 	tristate "Fujitsu FMV-J18x PCMCIA support"
-+	depends on PCMCIA
- 	select CRC32
- 	help
- 	  Say Y here if you intend to attach a Fujitsu FMV-J18x or compatible
-@@ -51,6 +54,7 @@ config PCMCIA_FMVJ18X
- 
- config PCMCIA_PCNET
- 	tristate "NE2000 compatible PCMCIA support"
-+	depends on PCMCIA
- 	select CRC32
- 	help
- 	  Say Y here if you intend to attach an NE2000 compatible PCMCIA
-@@ -61,6 +65,7 @@ config PCMCIA_PCNET
- 
- config PCMCIA_NMCLAN
- 	tristate "New Media PCMCIA support"
-+	depends on PCMCIA
- 	help
- 	  Say Y here if you intend to attach a New Media Ethernet or LiveWire
- 	  PCMCIA (PC-card) Ethernet card to your computer.
-@@ -70,6 +75,7 @@ config PCMCIA_NMCLAN
- 
- config PCMCIA_SMC91C92
- 	tristate "SMC 91Cxx PCMCIA support"
-+	depends on PCMCIA
- 	select CRC32
- 	select MII
- 	help
-@@ -81,6 +87,7 @@ config PCMCIA_SMC91C92
- 
- config PCMCIA_XIRC2PS
- 	tristate "Xircom 16-bit PCMCIA support"
-+	depends on PCMCIA
- 	help
- 	  Say Y here if you intend to attach a Xircom 16-bit PCMCIA (PC-card)
- 	  Ethernet or Fast Ethernet card to your computer.
-@@ -90,6 +97,7 @@ config PCMCIA_XIRC2PS
- 
- config PCMCIA_AXNET
- 	tristate "Asix AX88190 PCMCIA support"
-+	depends on PCMCIA
- 	---help---
- 	  Say Y here if you intend to attach an Asix AX88190-based PCMCIA
- 	  (PC-card) Fast Ethernet card to your computer.  These cards are
-@@ -101,7 +109,7 @@ config PCMCIA_AXNET
- 
- config ARCNET_COM20020_CS
- 	tristate "COM20020 ARCnet PCMCIA support"
--	depends on ARCNET_COM20020
-+	depends on ARCNET_COM20020 && PCMCIA
- 	help
- 	  Say Y here if you intend to attach this type of ARCnet PCMCIA card
- 	  to your computer.
-@@ -111,7 +119,7 @@ config ARCNET_COM20020_CS
- 
- config PCMCIA_IBMTR
- 	tristate "IBM PCMCIA tokenring adapter support"
--	depends on IBMTR!=y && TR && !64BIT
-+	depends on IBMTR!=y && TR && !64BIT && PCMCIA
- 	help
- 	  Say Y here if you intend to attach this type of Token Ring PCMCIA
- 	  card to your computer. You then also need to say Y to "Token Ring
--- 
-1.5.0.7
+their reasons for wanting to tivoize a product may be faulty, but they 
+think that the reasons are valid or they wouldn't go to the effort.
 
-
-
-
+David Lang
