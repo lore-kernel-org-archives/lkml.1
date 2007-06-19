@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbXFSGEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbXFSGH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbXFSGEF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 02:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXFSGDr
+	id S1756262AbXFSGH0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 02:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXFSGHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 02:03:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45452 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754102AbXFSGDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 02:03:46 -0400
-To: Daniel Drake <dsd@gentoo.org>
-Cc: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
-	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615072322.GA7594@brong.net>
-	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616021630.GA30660@brong.net>
-	<orhcp8s402.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616103130.GD32405@brong.net>
-	<orhcp7rfd6.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616233251.GA17270@brong.net>
-	<ork5u3mjkf.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<46774BD3.6010605@gentoo.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 03:03:15 -0300
-In-Reply-To: <46774BD3.6010605@gentoo.org> (Daniel Drake's message of "Mon\, 18 Jun 2007 23\:21\:55 -0400")
-Message-ID: <ory7ig4h24.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 19 Jun 2007 02:07:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45848
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752312AbXFSGHM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 02:07:12 -0400
+Date: Mon, 18 Jun 2007 23:07:31 -0700 (PDT)
+Message-Id: <20070618.230731.11645150.davem@davemloft.net>
+To: hch@lst.de
+Cc: James.Bottomley@SteelEye.com, axboe@kernel.dk, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+       Geert.Uytterhoeven@sonycom.com, dwmw2@infradead.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 4/6] ps3: Disk Storage Driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070619055629.GE18542@lst.de>
+References: <1181947242.3600.8.camel@mulgrave.il.steeleye.com>
+	<20070615.160858.26276547.davem@davemloft.net>
+	<20070619055629.GE18542@lst.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, Daniel Drake <dsd@gentoo.org> wrote:
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 19 Jun 2007 07:56:29 +0200
 
-> I realise that the latest GPLv3 draft would not pose restrictions
-> here, as such devices would not be classified as consumer
-> products.
+> A SCSI pass through is of course perfectly fine.  If you have a separate
+> block passthrough that has additional magic a separate block driver is
+> the way to go because it actually is simpler than a scsi driver decoding
+> command blocks and translating them to deep magic.  The ps3 storage
+> drivers this thread discussed are a good example for that.  We now
+> have a very nice and simple disk, scsi and flash chardev driver each
+> that don't include abstractions layers and cruft.  Combine that with
+> their initial scsi layer driver that was full of internal dispatches
+> because each of these device types speaks a completely different command
+> set.
 
-And even if they were, there's always ROM.
+That's how I'm currently writing my virtual disk client driver
+for the Sun LDOMS stuff, as a block device.
 
-I don't know whether hardware seals that state "once you break this
-seal, law prohibits the use of this device with human patients".
+The remaining issues are the partitioning (which we're discussing in
+another thread) and how to export the scsi passthru support in such a
+non-scsi block driver.
 
-Then the restriction is not being imposed by the manufacturer, only by
-law, and this does make lot of a difference as far as software freedom
-is concerned.
-
-But then, law might not find this to be enough.  Software patents are
-not the only stupid law that harms Free Software :-(
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+The main disk I/O block read and write is done using descriptors
+sent to the disk server.  SCSI pass-through is provided (optionally)
+so that disk analysis tools can do things like MODE_SENSE on the
+disk.
