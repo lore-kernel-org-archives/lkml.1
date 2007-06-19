@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765422AbXFSAjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763977AbXFSAnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765422AbXFSAjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 20:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbXFSAjG
+	id S1763977AbXFSAnL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 20:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbXFSAm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 20:39:06 -0400
-Received: from smtp1.Stanford.EDU ([171.67.22.28]:44861 "EHLO
-	smtp1.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155AbXFSAjF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 20:39:05 -0400
-X-Greylist: delayed 1117 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Jun 2007 20:39:05 EDT
-Subject: 2.6.21.5-rt15: BUG: scheduling with irqs disabled
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: carrlane@ccrma.Stanford.EDU, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 18 Jun 2007 17:20:25 -0700
-Message-Id: <1182212425.21064.47.camel@cmn3.stanford.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+	Mon, 18 Jun 2007 20:42:58 -0400
+Received: from dvhart.com ([64.146.134.43]:45931 "EHLO dvhart.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758774AbXFSAm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 20:42:57 -0400
+Message-ID: <4677268F.9070202@mbligh.org>
+Date: Mon, 18 Jun 2007 17:42:55 -0700
+From: Martin Bligh <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Natalie Protasevich <protasnb@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Adrian Bunk <bunk@stusta.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Oleg Verych <olecom@flower.upol.cz>, Andi Kleen <andi@firstfloor.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: How to improve the quality of the kernel?
+References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org>	 <200706172349.08813.bzolnier@gmail.com>	 <4675C083.6080409@s5r6.in-berlin.de>	 <20070617220927.99ebc1ee.akpm@linux-foundation.org>	 <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca>	 <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com>	 <46770A22.4020007@mbligh.org>	 <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com>	 <46771C5D.10809@mbligh.org>	 <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <32209efe0706181724k26e0ee57laf9610b1834d4154@mail.gmail.com>
+In-Reply-To: <32209efe0706181724k26e0ee57laf9610b1834d4154@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, I'm seeing this on 2.6.21.5-rt14 and 2.6.21.5-rt15, this
-problem did not happen in 2.6.21.3-rt9 (last I checked on this
-hardware). The computer is an athlon x2 and eth0 is "alias eth0 skge",
-the BUGs trigger on network activity (but not a constant stream of
-them)...
+> Sure, simplicity is a key - but most of reporters on bugs are pretty
+> professional folks (or very well rounded amateurs :) We can try still
+> why not? the worst that can happen will be empty fields.
 
-BUG: scheduling with irqs disabled: IRQ-20/0x00000000/1246
-caller is wait_for_completion+0x65/0x9b
- [<c0105f44>] dump_trace+0x64/0x105
- [<c0105ffd>] show_trace_log_lvl+0x18/0x2c
- [<c010660a>] show_trace+0xf/0x11
- [<c010668b>] dump_stack+0x12/0x14
- [<c032ba36>] schedule+0x86/0xfa
- [<c032bb0f>] wait_for_completion+0x65/0x9b
- [<c0125f24>] set_cpus_allowed+0x71/0x8f
- [<c012f867>] do_softirq_from_hardirq+0xbd/0xda
- [<c015a336>] do_irqd+0x1ff/0x24d
- [<c013be5c>] kthread+0xb0/0xd8
- [<c0105b7b>] kernel_thread_helper+0x7/0x10
- =======================
-[root@cmn34 ~]# cat /proc/interrupts
-           CPU0       CPU1
-  0:        251          1   IO-APIC-edge      timer
-  1:          0          2   IO-APIC-edge      i8042
-  6:          0          6   IO-APIC-edge      floppy
-  7:          1          0   IO-APIC-edge      parport0
-  8:          0          1   IO-APIC-edge      rtc
-  9:          0          0   IO-APIC-fasteoi   acpi
- 12:          0          4   IO-APIC-edge      i8042
- 14:          0       3724   IO-APIC-edge      ide0
- 16:       7591       5688   IO-APIC-fasteoi   ohci_hcd:usb1, libata
- 17:          1        238   IO-APIC-fasteoi   ohci_hcd:usb2, NVidia
-CK8S
- 18:          0          3   IO-APIC-fasteoi   ehci_hcd:usb3
- 19:          0          0   IO-APIC-fasteoi   libata
- 20:          0       3028   IO-APIC-fasteoi   eth0
- 21:          0          2   IO-APIC-fasteoi   ohci1394, ICE1712
- 22:      17253       5916   IO-APIC-fasteoi   radeon@pci:0000:01:00.0
-NMI:          0          0
-LOC:      32953      36858
-ERR:          1
-MIS:          0
+mmm. added complexity and interface clutter for little or no benefit
+is what I'm trying to avoid - they did that in the IBM bugzilla and
+it turned into a big ugly unusable monster. You can call me either
+"experienced" or "bitter" depending what mood you're in ;-)
 
--- Fernando
+Not sure I'd agree that most of the bug submitters are all that
+professional, it's a very mixed bag.
 
+> Maybe searching free text fields can then be implemented.  Then every
+> message exchange in bugzilla can be used for extracting such info -
+> questions about HW specifics are asked a lot, almost in every one.
+> It's a shame we cant' use this information. I was once searching for
+> "VIA" and got "zero bugs found", but in reality there are hundreds!
+> Probably something that makes sense to bring up with bugzilla project?
 
+That should work now ... seems to for me.
+
+http://bugzilla.kernel.org/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=&long_desc_type=substring&long_desc=VIA&kernel_version_type=allwordssubstr&kernel_version=&bug_status=NEW&bug_status=REOPENED&bug_status=ASSIGNED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=REJECTED&bug_status=DEFERRED&bug_status=NEEDINFO&bug_status=CLOSED&emailassigned_to1=1&emailtype1=substring&email1=&emailassigned_to2=1&emailreporter2=1&emailcc2=1&emailtype2=substring&email2=&bugidtype=include&bug_id=&chfieldfrom=&chfieldto=Now&chfieldvalue=&regression=both&cmdtype=doit&order=Bug+Number&field0-0-0=noop&type0-0-0=noop&value0-0-0=
+
+Produces a metric-buttload of results. Go to the advanced search option
+and do "A Comment" contains the string "VIA". By default "Status" is
+only set to do open bugs, which you might want to change to all types.
+
+> However, I've been working with other bugzillas (have to admit they
+> were mostly company/corporate), where this was a required field that
+> didn't seem to cause difficulties. I am planning to do some more
+> research and get some more ideas from other bugzillas. I suppose we
+> can have them discussed and revised sometime.
+
+Would be good, thanks. I tend to favour keeping things as simple as
+possible though, we have very little control over our users, and they're
+a very broad base. Making the barrier to entry for use as low as
+possible is the design we've been pursuing.
+
+M.
