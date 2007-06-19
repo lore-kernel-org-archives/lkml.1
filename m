@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764821AbXFSBKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760017AbXFSBQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764821AbXFSBKX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Jun 2007 21:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbXFSBKM
+	id S1760017AbXFSBQV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Jun 2007 21:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbXFSBQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Jun 2007 21:10:12 -0400
-Received: from dvhart.com ([64.146.134.43]:46261 "EHLO dvhart.com"
+	Mon, 18 Jun 2007 21:16:13 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33037 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754156AbXFSBKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Jun 2007 21:10:10 -0400
-Message-ID: <46772CF0.7080805@mbligh.org>
-Date: Mon, 18 Jun 2007 18:10:08 -0700
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Natalie Protasevich <protasnb@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Oleg Verych <olecom@flower.upol.cz>, Andi Kleen <andi@firstfloor.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: How to improve the quality of the kernel?
-References: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org>	 <20070617220927.99ebc1ee.akpm@linux-foundation.org>	 <F1D642E5A91BC94D9504EC83AE19E6B0128A0D@ecqcmtlmail3.quebec.int.ec.gc.ca>	 <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com>	 <46770A22.4020007@mbligh.org>	 <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com>	 <46771C5D.10809@mbligh.org>	 <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org>	 <32209efe0706181724k26e0ee57laf9610b1834d4154@mail.gmail.com>	 <4677268F.9070202@mbligh.org> <32209efe0706181755r7ed8f99do811a9881379d8509@mail.gmail.com>
-In-Reply-To: <32209efe0706181755r7ed8f99do811a9881379d8509@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754242AbXFSBQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Jun 2007 21:16:13 -0400
+Subject: Re: [RFC] [PATCH] selective signal ptracing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@gmail.com>
+Cc: Roland McGrath <roland@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       john.blackwood@ccur.com, linux-kernel@vger.kernel.org,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>, bugsy@ccur.com
+In-Reply-To: <625fc13d0706180615t2f327b16rf648b2ee56da6ed9@mail.gmail.com>
+References: <1182039062.26853.111.camel@localhost.localdomain>
+	 <20070617012952.09F2D4D059F@magilla.localdomain>
+	 <625fc13d0706180615t2f327b16rf648b2ee56da6ed9@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 19 Jun 2007 11:15:00 +1000
+Message-Id: <1182215700.26853.299.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > Maybe searching free text fields can then be implemented.  Then every
->> > message exchange in bugzilla can be used for extracting such info -
->> > questions about HW specifics are asked a lot, almost in every one.
->> > It's a shame we cant' use this information. I was once searching for
->> > "VIA" and got "zero bugs found", but in reality there are hundreds!
->> > Probably something that makes sense to bring up with bugzilla project?
->>
->> That should work now ... seems to for me.
->>
->> http://bugzilla.kernel.org/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=&long_desc_type=substring&long_desc=VIA&kernel_version_type=allwordssubstr&kernel_version=&bug_status=NEW&bug_status=REOPENED&bug_status=ASSIGNED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=REJECTED&bug_status=DEFERRED&bug_status=NEEDINFO&bug_status=CLOSED&emailassigned_to1=1&emailtype1=substring&email1=&emailassigned_to2=1&emailreporter2=1&emailcc2=1&emailtype2=substring&email2=&bugidtype=include&bug_id=&chfieldfrom=&chfieldto=Now&chfieldvalue=&regression=both&cmdtype=doit&order=Bug+Number&field0-0-0=noop&type0-0-0=noop&value0-0-0= 
->>
->>
->> Produces a metric-buttload of results. Go to the advanced search option
->> and do "A Comment" contains the string "VIA". By default "Status" is
->> only set to do open bugs, which you might want to change to all types.
+On Mon, 2007-06-18 at 08:15 -0500, Josh Boyer wrote:
+> On 6/16/07, Roland McGrath <roland@redhat.com> wrote:
+> > > What are the issues with arch like ARM ?
+> >
+> > The interesting class ARM belongs to is machines that don't (or don't
+> > always) have hardware support for single-step.  Maintaining the status quo
+> > of how PTRACE_SINGLESTEP functions on these machines is different in
+> > implementation under utrace than it is for machines that always use
+> > hardware support.  That is the only special complication for ARM, and it is
+> > not really very complicated.  Apparently the way I described the issue in
+> > the past was easily misunderstood.
 > 
-> Yes it works great! Thanks... I'd say this should be really a default
-> search, because first search screen is misleading - it promises find
-> all for any "words" :)
+> That isn't just ARM.  There are some embedded PowerPC chips that lack
+> an easily usable hardware single step.  Just an FYI.
 
-OK, or at the very least we can fix the text at least to indicate it'll
-only search summaries (and likely only of open bugs at that ...)
+Note that we could use xmon infrastructure for that ... Paul has the
+whole shebang done in there, including emulating branches etc...
 
-M.
+Ben.
+
+
