@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbXFSQ6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbXFSRBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbXFSQ6w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 12:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759736AbXFSQ6o
+	id S1759469AbXFSRBz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbXFSRBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 12:58:44 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:57136 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759722AbXFSQ6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 12:58:43 -0400
-Date: Tue, 19 Jun 2007 17:58:41 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 0/7] Memory Compaction v2
-Message-ID: <20070619165841.GG17109@skynet.ie>
-References: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0706181022530.4751@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706181022530.4751@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Tue, 19 Jun 2007 13:01:48 -0400
+Received: from main.gmane.org ([80.91.229.2]:51595 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755489AbXFSRBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 13:01:48 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jakub Narebski <jnareb@gmail.com>
+Subject: Re: Versioning file system
+Followup-To: gmane.comp.version-control.git
+Date: Tue, 19 Jun 2007 18:52:22 +0200
+Organization: At home
+Message-ID: <f591k5$odb$2@sea.gmane.org>
+References: <OF7FA807A1.64C0D5AF-ON882572FE.0061B34C-882572FE.00628322@us.ibm.com> <6E9A6F9E-8948-40F2-9129-1F1491D49D83@mac.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 8Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: host-89-229-25-173.torun.mm.pl
+Mail-Copies-To: Jakub Narebski <jnareb@gmail.com>
+User-Agent: KNode/0.10.2
+Cc: git@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (18/06/07 10:24), Christoph Lameter didst pronounce:
-> On Mon, 18 Jun 2007, Mel Gorman wrote:
-> 
-> > The patchset implements memory compaction for the page allocator reducing
-> > external fragmentation so that free memory exists as fewer, but larger
-> > contiguous blocks. Instead of being a full defragmentation solution,
-> > this focuses exclusively on pages that are movable via the page migration
-> > mechanism.
-> 
-> We need an additional facility at some point that allows the moving of 
-> pages that are not on the LRU. Such support seems to be possible
-> for page table pages and slab pages.
+Kyle Moffett wrote:
+> On Jun 18, 2007, at 13:56:05, Bryan Henderson wrote:
 
-Agreed. When I put this together first, I felt I would be able to isolate
-pages of different types on migratelist but that is not the case as migration
-would not be able to tell the difference between a LRU page and a pagetable
-page. I'll rename cc->migratelist to cc->migratelist_lru with the view to
-potentially adding cc->migratelist_pagetable or cc->migratelist_slab later.
+>>> The question remains is where to implement versioning: directly in  
+>>> individual filesystems or in the vfs code so all filesystems can  
+>>> use it?
+>>
+>> Or not in the kernel at all.  I've been doing versioning of the  
+>> types I described for years with user space code and I don't  
+>> remember feeling that I compromised in order not to involve the  
+>> kernel.
+>>
+>> Of course, if you want to do it with snapshots and COW, you'll have  
+>> to ask where in the kernel to put that, but that's not a file  
+>> versioning question; it's the larger snapshot question.
+> 
+> What I think would be particularly interesting in this domain is  
+> something similar in concept to GIT, except in a file-system
+[cut]
+
+How it relates to ext3cow versioning (snapshotting) filesystem,
+for example? ext3cow assumes linear history, which simplifies things
+a bit.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jakub Narebski
+Warsaw, Poland
+ShadeHawk on #git
+
+
