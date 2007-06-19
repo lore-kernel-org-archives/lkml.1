@@ -1,122 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbXFSRX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbXFSRYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760794AbXFSRX6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 13:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbXFSRXu
+	id S1760855AbXFSRYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 13:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757777AbXFSRYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 13:23:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52017 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757777AbXFSRXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 13:23:49 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706190258.56955.dhazelton@enter.net>
-	<or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706190423.47166.dhazelton@enter.net>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 14:22:48 -0300
-In-Reply-To: <200706190423.47166.dhazelton@enter.net> (Daniel Hazelton's message of "Tue\, 19 Jun 2007 04\:23\:46 -0400")
-Message-ID: <orvedj3llj.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Tue, 19 Jun 2007 13:24:36 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:40637 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757685AbXFSRYf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 13:24:35 -0400
+Date: Tue, 19 Jun 2007 19:24:29 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] Re: rtc_cmos: error after first write to wakealarm
+Message-ID: <20070619172429.GA30990@dose.home.local>
+Mail-Followup-To: Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com,
+	Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+	linux-kernel@vger.kernel.org
+References: <20070615063308.GA18089@dose.home.local> <20070615155904.1d1da892.yoichi_yuasa@tripeaks.co.jp> <20070615070319.GA19455@dose.home.local> <20070619142404.42dcdc3c@inspiron>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070619142404.42dcdc3c@inspiron>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, Daniel Hazelton <dhazelton@enter.net> wrote:
+On Tue, Jun 19, 2007 at 14:24:04 +0200, Alessandro Zummo wrote:
+> On Fri, 15 Jun 2007 09:03:19 +0200
+> Tino Keitel <tino.keitel@gmx.de> wrote:
+> 
+> > > > I have the following strange behaviour with rtc_cmos:
+> > > > 
+> > > > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> > > > bash: echo: write error: Device or resource busy
+> > > > $ rmmod rtc_cmos
+> > > > $ modprobe rtc_cmos
+> > > > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> > > > $ echo 1181934240 > /sys/class/rtc/rtc0/wakealarm
+> > > > bash: echo: write error: Device or resource busy
+> > > > $
+> > > 
+> > > If the alarm has already been enabled, you cannot set the next
+> > > alarm.  You should disable first.
+> > 
+> > Ah, ok.
+> >   
+> > Where is the documentation that describes that I have to disable it
+> > first, and how to do this? A migration document for
+> > /proc/acpi/alarm users would be nice, too.
+> 
+>  Well, I guess there is no documentation. Maybe we could add
+>  a dev_warn with an explicit message.
 
-> On Tuesday 19 June 2007 04:04:52 Alexandre Oliva wrote:
->> So your claim is that a user's possibility to scratch her own itches
->> makes no difference whatsoever as to their amount of contributions she
->> is likely to make?
+Isn't it somewhat ridiculous to plan the removal of a feature for
+several months, and then replace it with something that behaves
+differently without any documentation?
 
-> Exactly.
+I don't know if there is any centralized form sysfs documentation. I
+guess not. So at least a short text like the one below somewhere in
+Documentation/ would be useful.
 
-Hmm, interesting...  Are you doing this just to make it more
-interesting, or did you never take Open Source 101? ;-)  Or economy,
-game theory, ecology, politics, for that matter?
+I still wonder how 'cat /sys/class/rtc/rtcX/wakealarm' is expected to
+behave. With 2.6.22-rc5, I get this:
 
-Do you realize how many contradictions arise from this claim?
+$ echo 1182351177 > /sys/class/rtc/rtc0/wakealarm 
+$ cat /sys/class/rtc/rtc0/wakealarm
+2051644873
 
-A few examples for you.  Let me know if you don't understand why these
-contradict this claim, I'll be happy to explain it to you.
+There seems to be a constant difference of 869984896 seconds. Is this a
+bug?
 
-How many newbies have patches accepted that they didn't test?
 
-At which point in becoming a Linux developer does one leave behind
-this altruistic attitude and becomes moved by self interest only?
+-----------------------------------------------------------------------
 
-How many people you know got to know Linux in their TiVos, took the
-Linux sources that TiVo distributes and built it for their own PC?
+How to use /sys/class/rtc/rtcX/wakealarm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
->> Yes.  And your estimates are way too low too, FWIW.  Any reason why
->> you changed your mind as to the 10% before?
+This file takes the seconds since epoch to enable a wake event at the
+specified time.
 
-> That 10% was, IIRC, a reference to the potential number of "Hackers" that 
-> would own a TiVO. On thinking about it I realized that the number of hackers 
-> owning a TiVO would be vanishingly small because of "tivoization".
+If a '0' is written, the alarm is disabled.
 
-Aah, ok.
+If the alarm was already enabled, a new alarm can only be set after the
+old alarm is disabled.
 
-So, you lowered the estimate for the case of a tivoized device, but
-then claimed it was the same for an otherwise-identical non-tivoized
-device.
 
-Seriously, try 'modprobe logic', you'll like it ;-)
+Migration from /proc/acpi/alarm
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-> Wrong. Nobody here needs a "piece by piece" explanation.
+Users of /proc/acpi/alarm have to change their code to supply the
+seconds since epoch instead of a date string.
 
-Then why do you keep making claims that are not related with either
-the part of the argument I'm posing or the full argument I've already
-presented?
+For shell scripts, this can be done using the date command, e.g. like
+this:
 
-> So, in the belief that you were intelligent enough to understand
-> that, I was providing proof that refutes your argument entirely.
+date -d tomorrow "+%s"
 
-The only proof you provided was that you didn't understand the
-argument.
+This returns the seconds since epoch of the current time on the
+following day.
 
-> With a situation as complex as what exists you can't split the
-> argument into two and claim that, since "Argument A" is true in the
-> "split" argument that it is true when the argument isn't split. This
-> holds true for almost all real-world situations.
+Please note that you have to disable the old alarm first, if you want
+to set a new alarm. Otherwise, you get an error. Example:
 
-Which proves you don't understand how logical proofs work.
+echo 12345 > /sys/class/rtc/rtc0/wakealarm
+echo 0 > /sys/class/rtc/rtc0/wakealarm
+echo 23456 > /sys/class/rtc/rtc0/wakealarm
 
-Let me explain it to you.
+-----------------------------------------------------------------------
 
-First, you need to establish initial premises.  Whether or not they
-resemble any similarity with anything else you're thinking of is
-irrelevant.  They might even be known to be false, in proof by
-contradiction.
-
-Then, you apply logical inference rules to the initial premises, and
-establish consequences of the initial premises.
-
-One of these consequences may be what you are trying to prove.  Or,
-you may come to a contradiction, and prove that initial premises are
-self-contradictory.  Or you may come to no useful conclusion
-whatsoever.
-
-> Now, I am not enjoying the discussion anymore.
-
-Understandable.
-
-> I've asked once before - remove me from the CC list.
-
-I'll try to remember to do that.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Regards,
+Tino
