@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbXFSPZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbXFSP0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720AbXFSPZR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 11:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbXFSPZE
+	id S1757599AbXFSP0S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 11:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXFSP0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 11:25:04 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:61887 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbXFSPZB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 11:25:01 -0400
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH] Chinese translation of Documentation/HOWTO
-Date: Tue, 19 Jun 2007 23:26:36 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D82D5F@zch01exm26.fsl.freescale.net>
-In-Reply-To: <11822628633463-git-send-email-leoli@freescale.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Chinese translation of Documentation/HOWTO
-Thread-Index: Aceye5BhKqnLVLvbSdi0EDYhvY/UMgAByJuA
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <gregkh@suse.de>, "TripleX Chung" <xxx.phy@gmail.com>,
-       "Maggie Chen" <chenqi@beyondsoft.com>
+	Tue, 19 Jun 2007 11:26:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2885 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754273AbXFSP0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 11:26:05 -0400
+Date: Tue, 19 Jun 2007 15:25:55 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp>
+Cc: crispin@novell.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,pathname matching
+Message-ID: <20070619152555.GB5127@ucw.cz>
+References: <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <200706160948.FEH12774.MTtPGSNN@I-love.SAKURA.ne.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706160948.FEH12774.MTtPGSNN@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi!
 
-I hope this document can get into the kernel tree.  As I read through
-the discussion about Japanese translation, there are quite some
-arguments that one cannot do kernel development effectively without
-solid English skill.  As a non-native English speaker, I would say that
-it is much easier to understand technical terms and effectively discuss
-technical matters.  But community policies and politics are different
-things.  They will be very painful for one who doesn't really grasp
-English well.  IMHO, having these policy documents in different
-languages will greatly help these non-native speakers to contribute,
-hence greatly benefit the Linux kernel community itself.
+> > In a smaller scale example, I want to share some files with a friend. I
+> > can't be bothered to set up a proper access control system, so I just mv
+> > the files to ~crispin/public_html/lookitme and in IRC say "get it now,
+> > going away in 10 minutes" and then move it out again. Yes, you can
+> > manually address this by running "restorecon ~crispin/public_html". But
+> > AA does this automatically without having to run any commands.
+> If you share ~crispin/public_html/lookitme by making a hard link,
+> does relabeling approach work?
+> I thought SELinux allows only one label for one file.
+> If AA (on the top of SELinux) tries to allow different permissions to
+> ~crispin/public_html/lookitme and its original location,
+> either one of two pathnames won't be accessible as intended, will it?
 
-- Leo
+Yes, that's a bug/feature in AA. No, selinux will not be able to emulate that
+bug/feature. Yes, it is dangerous, as it makes AA mostly useless on
+multiuser machines.
 
-> -----Original Message-----
-> From: Li Yang [mailto:leoli@freescale.com]
-> Sent: Tuesday, June 19, 2007 10:21 PM
-> To: linux-kernel@vger.kernel.org
-> Cc: gregkh@suse.de; Li Yang-r58472; TripleX Chung; Maggie Chen
-> Subject: [PATCH] Chinese translation of Documentation/HOWTO
-> 
-> This is a Chinese translated version of Documentation/HOWTO.
-Currently
-> Chinese involvement in Linux kernel is very low, especially comparing
-to
-> its largest population base.  Language could be the main obstacle.
-Hope
-> this document will help more Chinese to contribute to Linux kernel.
-> 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: TripleX Chung <xxx.phy@gmail.com>
-> Signed-off-by: Maggie Chen <chenqi@beyondsoft.com>
-> ---
->  Documentation/zh_CN/HOWTO |  534
-> +++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 534 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/zh_CN/HOWTO
-> 
-> diff --git a/Documentation/zh_CN/HOWTO b/Documentation/zh_CN/HOWTO
-> new file mode 100644
-> index 0000000..27b0fe7
-> --- /dev/null
-> +++ b/Documentation/zh_CN/HOWTO
-{snip}
-
+(ln /etc/shadow /tmp is something any user can do, and all you need is
+to exploit any daemon with access to /tmp).
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
