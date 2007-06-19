@@ -1,42 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbXFSTHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbXFSTJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932701AbXFSTHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 15:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764508AbXFSTHS
+	id S932810AbXFSTJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 15:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932734AbXFSTJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 15:07:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59902 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764352AbXFSTHQ (ORCPT
+	Tue, 19 Jun 2007 15:09:08 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:59030 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763192AbXFSTJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 15:07:16 -0400
-Date: Tue, 19 Jun 2007 12:06:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: John Stoffel <john@stoffel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, tim.c.chen@linux.intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Change in default vm_dirty_ratio
-In-Reply-To: <alpine.LFD.0.98.0706191201130.3593@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.98.0706191205410.3593@woody.linux-foundation.org>
-References: <1182201271.4883.22.camel@localhost.localdomain>
- <20070618164711.9de1c38e.akpm@linux-foundation.org> <18040.9056.755569.67029@stoffel.org>
- <alpine.LFD.0.98.0706191201130.3593@woody.linux-foundation.org>
+	Tue, 19 Jun 2007 15:09:07 -0400
+Message-ID: <467829C4.5020101@zytor.com>
+Date: Tue, 19 Jun 2007 12:08:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Chris Snook <csnook@redhat.com>
+CC: Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk, alan <alan@clueserver.org>
+Subject: Re: Versioning file system
+References: <46731169.2090002@hawkeye.stone.uk.eu.org> <4673182B.4090800@redhat.com> <46739E89.1080003@hawkeye.stone.uk.eu.org> <46781A5B.9090104@redhat.com>
+In-Reply-To: <46781A5B.9090104@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Snook wrote:
+> I pointed out NetApp's .snapshot directories because that's a method
+> that uses legal path character, but doesn't break anything.  With this
+> method, userspace tools will have to be taught that : is suddenly a
+> special character.
 
+Not to mention that the character historically used for this purpose is
+; (semicolon.)
 
-On Tue, 19 Jun 2007, Linus Torvalds wrote:
-> 
-> Yes. It should depend on:
->  - speed of the device(s) in question
-
-Btw, this one can be quite a big deal. Try connecting an iPod and syncing 
-8GB of data to it. Oops.
-
-So yes, it would be nice to have some per-device logic too. Tested patches 
-would be very welcome ;)
-
-		Linus
+	-hpa
