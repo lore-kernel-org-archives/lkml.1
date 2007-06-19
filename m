@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbXFSXf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760624AbXFSXhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbXFSXf6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 19:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbXFSXft
+	id S1760624AbXFSXhW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 19:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbXFSXhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 19:35:49 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:52576 "EHLO e3.ny.us.ibm.com"
+	Tue, 19 Jun 2007 19:37:11 -0400
+Received: from Mail.MNSU.EDU ([134.29.1.12]:38583 "EHLO mail.mnsu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755682AbXFSXfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 19:35:48 -0400
-In-Reply-To: <20070619204317.GR10008@csclub.uwaterloo.ca>
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: akpm@linux-foundation.org, alan <alan@clueserver.org>,
-       Chris Snook <csnook@redhat.com>, hpa@zytor.com,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
+	id S1756471AbXFSXhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 19:37:10 -0400
+Message-ID: <467868CF.30606@mnsu.edu>
+Date: Tue, 19 Jun 2007 18:37:51 -0500
+From: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-Subject: Re: Versioning file system
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF35839FC7.229AE944-ON882572FF.007F2DF8-882572FF.00819E1C@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Tue, 19 Jun 2007 16:35:50 -0700
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V80_M5_05202007|May 20, 2007) at
- 06/19/2007 19:35:48,
-	Serialize complete at 06/19/2007 19:35:48
-Content-Type: text/plain; charset="US-ASCII"
+To: Christoph Lameter <clameter@sgi.com>
+CC: Thomas Glanzmann <thomas@glanzmann.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: GIT Packages for Debian Etch
+References: <20070618212524.GC16393@cip.informatik.uni-erlangen.de> <Pine.LNX.4.64.0706181617060.18601@schroedinger.engr.sgi.com> <20070619061300.GK16393@cip.informatik.uni-erlangen.de> <Pine.LNX.4.64.0706191215570.7008@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0706191215570.7008@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->We don't need a new special character for every 
->>  new feature.  We've got one, and it's flexible enough to do what you 
-want, 
->> as proven by NetApp's extremely successful implementation.
+Christoph Lameter wrote:
+> On Tue, 19 Jun 2007, Thomas Glanzmann wrote:
+>   
+> The other choice that we developers usually make is to run either testing 
+> or unstable. "stable" is a synonym for obsolete ;-).
+>
+>   
 
-I don't know NetApp's implementation, but I assume it is more than just a 
-choice of special character.  If you merely start the directory name with 
-a dot, you don't fool anyone but 'ls' and shell wildcard expansion.  (And 
-for some enlightened people like me, you don't even fool ls, because we 
-use the --almost-all option to show the dot files by default, having been 
-burned too many times by invisible files).
+I'm just not going to let this go.  Stable is synonymous with, well 
+ummm, "stable."  That means that I don't have 3000 changes a month, it's 
+secure and the unexpected doesn't happen.  It means I can write a 
+lecture explaining how git works.  ...do updates... then expect my 
+lecture to still work the next day.  It means writing local shell 
+scripts and expecting them to work until the NEXT stable release without 
+changes.  It means knowing what things WILL break if and when I do go to 
+the next version.
 
-I assume NetApp flags the directory specially so that a POSIX directory 
-read doesn't get it.  I've seen that done elsewhere.
+Stable is a CHOICE not a punishment.
 
-The same thing, by the way, is possible with Jack's filename:version idea, 
-and I assumed that's what he had in mind.  Not that that makes it all OK.
+-- 
+Jeffrey Hundstad
+PS.  Running unstable on my laptop... and running stable on my servers.
 
---
-Bryan Henderson                     IBM Almaden Research Center
-San Jose CA                         Filesystems
 
