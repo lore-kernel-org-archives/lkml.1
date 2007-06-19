@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933906AbXFSUMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765472AbXFSUPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933906AbXFSUMX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 16:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761659AbXFSUMO
+	id S1765472AbXFSUPP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 16:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761291AbXFSUPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 16:12:14 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:40301 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761233AbXFSUMM (ORCPT
+	Tue, 19 Jun 2007 16:15:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51072 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755091AbXFSUO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 16:12:12 -0400
-Subject: [PATCH RT] Use raw spinlocks in NMI print sequencing.
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 19 Jun 2007 16:11:34 -0400
-Message-Id: <1182283894.15228.23.camel@localhost.localdomain>
+	Tue, 19 Jun 2007 16:14:59 -0400
+Date: Tue, 19 Jun 2007 13:14:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: Re: [PATCH 2/2] UML - Add stack usage monitoring
+Message-Id: <20070619131441.01b5ae4b.akpm@linux-foundation.org>
+In-Reply-To: <20070619195003.GA11718@c2.user-mode-linux.org>
+References: <20070619184245.GA10567@c2.user-mode-linux.org>
+	<20070619115422.de61abd5.akpm@linux-foundation.org>
+	<20070619195003.GA11718@c2.user-mode-linux.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently NMI uses spinlocks to serialize the prints. We need these to
-be raw spinlocks for PREEMPT_RT
+On Tue, 19 Jun 2007 15:50:03 -0400
+Jeff Dike <jdike@addtoit.com> wrote:
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> On Tue, Jun 19, 2007 at 11:54:22AM -0700, Andrew Morton wrote:
+> > On Tue, 19 Jun 2007 14:42:45 -0400
+> > Jeff Dike <jdike@addtoit.com> wrote:
+> > 
+> > > Add a machanism to see how much of a kernel stack is used.  This
+> > > allocates zeroed stacks and sees where the lowest non-zero byte is on
+> > > process exit.  It keeps track of the lowest value and logs values as
+> > > they get lower.
+> > > 
+> > 
+> > remind us again why the generic code is unsuitable?
+> 
+> It does something different - it will tell you the greatest stack
+> usage of any currently running process.  What I want to be able to do
+> is run a workload and come back a few days later and see how close
+> anything came to running out of stack.
 
-Index: linux-2.6.21-rt9/arch/x86_64/kernel/nmi.c
-===================================================================
---- linux-2.6.21-rt9.orig/arch/x86_64/kernel/nmi.c
-+++ linux-2.6.21-rt9/arch/x86_64/kernel/nmi.c
-@@ -949,7 +949,7 @@ int __kprobes nmi_watchdog_tick(struct p
- 	}
- 
- 	if (cpu_isset(cpu, backtrace_mask)) {
--		static DEFINE_SPINLOCK(lock);	/* Serialise the printks */
-+		static DEFINE_RAW_SPINLOCK(lock);	/* Serialise the printks */
- 
- 		spin_lock(&lock);
- 		printk("NMI backtrace for cpu %d\n", cpu);
+<looks>
 
+wth?  I'm _sure_ we used to have code in there which would, within
+do_exit(), work out the maximum amount of kernel stack which a task had
+used and if that was max-since-boot, drop a printk.
+
+Maybe I dreamed it, but I don't think so.
+
+I wonder where it went?
+
+Oh well.  Your new code should really be generic, utilising the
+stack-page-zeroing which CONFIG_DEBUG_STACK_USAGE enables.  There's nothing
+UML-specific about it.
+
+low_water_lock and lowest_to_date should be static to check_stack_usage(),
+btw..
 
