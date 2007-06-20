@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760388AbXFTNSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbXFTNZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760388AbXFTNSW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 09:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbXFTNSO
+	id S1756675AbXFTNZv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 09:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXFTNZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 09:18:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55730 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754422AbXFTNSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 09:18:13 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18fJ8k8TiYfA+cfVYa1Gt1Oy7VNXr5dV275ZdvMb/
-	GHLed3jmZ/6gEd
-Date: Wed, 20 Jun 2007 15:18:29 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Andi Kleen <ak@suse.de>
-Cc: eranian@hpl.hp.com, oprofile-list@lists.sourceforge.net, wcohen@redhat.com,
-       perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
-       levon@movementarian.org, akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 1/2] Separate the performance counter allocation from the LAPIC NMI watchdog
-Message-ID: <20070620131829.GA17256@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Andi Kleen <ak@suse.de>, eranian@hpl.hp.com,
-	oprofile-list@lists.sourceforge.net, wcohen@redhat.com,
-	perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
-	levon@movementarian.org, akpm@linux-foundation.org, mingo@elte.hu
-References: <20070618103214.GA12045@atjola.homenet> <200706201431.44014.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 20 Jun 2007 09:25:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52320 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752830AbXFTNZn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 09:25:43 -0400
+Date: Wed, 20 Jun 2007 14:25:42 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Blunck <jblunck@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 1/4] Union mount documentation.
+Message-ID: <20070620132542.GA6169@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jan Blunck <jblunck@suse.de>, linux-kernel@vger.kernel.org
+References: <20070620055050.GB4267@in.ibm.com> <20070620055157.GC4267@in.ibm.com> <1182319191.2700.9.camel@laptopd505.fenrus.org> <f5al1i$foi$1@sea.gmane.org> <20070620123223.GB4620@infradead.org> <f5b7ec$f4g$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200706201431.44014.ak@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+In-Reply-To: <f5b7ec$f4g$1@sea.gmane.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.20 14:31:43 +0200, Andi Kleen wrote:
-> On Wednesday 20 June 2007 12:35:56 Björn Steinbrink wrote:
-> > The performance counter allocator is tied to the LAPIC NMI watchdog,
+On Wed, Jun 20, 2007 at 12:43:56PM +0000, Jan Blunck wrote:
+> On Wed, 20 Jun 2007 13:32:23 +0100, Christoph Hellwig wrote:
 > 
-> That's not true. It's completely independent. It just happens to be in
-> the same file, but it has no direct functional ties to the watchdog.
-
-The allocator relies on the wd_ops structure, which is only initialized
-if the LAPIC NMI watchdog is enabled. If it is not enabled, the
-functions that convert from absolute perfctr/evntsel addresses to
-offsets from the respective base address break, and always return 0.
-
-> > Fix the performance counter allocator by making it independent of the
-> > LAPIC NMI watchdog. This also fixes a bug in the LAPIC NMI watchdog
-> > which allocated the wrong performance counter on CPUs with PerfMon
-> > support.
+> > On Wed, Jun 20, 2007 at 07:29:55AM +0000, Jan Blunck wrote:
+> >> Mounting a file system twice is bad in the first place. This should be
+> >> done by using bind mounts and bind a mounted file system into a union.
+> >> After that the normal locking rules apply (and hopefully work ;).
+> > 
+> > From the kernel POV mounting a filesystem twice is the same as doing
+> > a bind mount.
 > 
-> Combining code movement with functional fixes makes it impossible
-> to review properly. Don't do that please.
+> Somehow I thought about doing this:
+> 
+>  mount /dev/dasda1 /mnt/A
+>  mount /dev/dasda1 /mnt/B
+> 
+> ... which doesn't result in a bind mount.
 
-Ok.
-
-Björn
+But the kernel internal effect is exactly the same.  One superblock instance,
+two vfsmounts referring to it. 
