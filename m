@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbXFTWzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbXFTW4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbXFTWzb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 18:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXFTWzV
+	id S1756735AbXFTW4N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 18:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbXFTWz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 18:55:21 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:58464 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbXFTWzU (ORCPT
+	Wed, 20 Jun 2007 18:55:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44324 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751541AbXFTWz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 18:55:20 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that through other means
-References: <467994BD.6000403@zytor.com>
-From: Nix <nix@esperi.org.uk>
-Emacs: is that a Lisp interpreter in your editor, or are you just happy to see me?
-Date: Wed, 20 Jun 2007 23:55:15 +0100
-In-Reply-To: <467994BD.6000403@zytor.com> (H. Peter Anvin's message of "Wed, 20 Jun 2007 13:57:33 -0700")
-Message-ID: <87abuu2q3w.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+	Wed, 20 Jun 2007 18:55:57 -0400
+Date: Wed, 20 Jun 2007 15:54:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ian McDonald <ian.mcdonald@jandi.co.nz>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       William Cohen <wcohen@redhat.com>,
+       "S. P. Prasanna" <prasanna@in.ibm.com>,
+       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
+       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
+       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
+In-Reply-To: <5640c7e00706201541g3ecaf8c5i524d8b464d8fcc2d@mail.gmail.com>
+Message-ID: <alpine.LFD.0.98.0706201550480.3593@woody.linux-foundation.org>
+References: <467543FA.60905@googlemail.com> 
+ <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com> 
+ <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
+ <5640c7e00706201541g3ecaf8c5i524d8b464d8fcc2d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=4 Fuz1=4 Fuz2=4
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20 Jun 2007, H. Peter Anvin verbalised:
 
-> Right now it is actually impossible to conclusively determine a
-> filesystem-relative path in the presence of bind (and possibly move)
-> mounts.  This is highly desirable to be able to do in contexts that
-> involve non-Linux (or not-the-current-instance-of-Linux) accesses to the
-> filesystem, e.g. other filesystems or bootloaders.
 
-It's also highly desirable if you want to be able to run a backup :) one
-would desire to back up the filesystem as a whole, not some bind mount
-of one directory out of it (and backing up both is needless
-duplication).
+On Thu, 21 Jun 2007, Ian McDonald wrote:
+> 
+> It depends on the purpose of DEBUG_RODATA.  If DEBUG_RODATA was for
+> security reasons then I agree, but it seems to be more to catch
+> accidental writes.
 
-So I applaud this and would be an immediate user, no matter what format
-is chosen, as long as we can tell what is mounted where.
+Well, I'd say that it is *one* tool for debugging.
 
-(As an aside, it would be nice if mount(8) could supply (a limited
-amount of) extra (arbitrary?) textual options to the kernelq,
-specifically so that mount options which are only interpreted by
-userspace programs, like `user' and the quota options, could appear in
-/proc/mounts. That way we could finally ditch bloody /etc/mtab for good.
+Now, Kprobes is another tool - and I'm just saying that I don't see why 
+you should really expect to break one tool with the other. They take 
+different approaches.
 
-(Any other approach requires mount(8) to keep track of these options in
-a separate file, which brings back exactly the same synchronization
-horrors that we're all so nauseatingly familiar with from /etc/mtab.)
+And yes, sometimes debugging *does* change what it debugs. In timing, if 
+nothing else, but also in the kinds of things you can do. For example, we 
+don't allow slab redzoning on data structures that have alignment 
+restrictions not compatible with the redzoning, and I'd argue that this is 
+more of the same: we just should not do DEBUG_RODATA if you expect to 
+change read-only data.
 
-> I'm personally leaning toward the second option (/dev/md6:/users/foo).
-> Although that might confuse current utilities, those utilities are
-> *already* liable to get confused by the fact that the line doesn't mean
-> what they think it means.
+There's just no *point*. 
 
-Quite so. The output from df(8) in the presence of large numbers of bind
-mounts was ludicrous before it started explicitly ignoring filesystems
-of type `none', and that was arguably the wrong place to fix it.
-
--- 
-`... in the sense that dragons logically follow evolution so they would
- be able to wield metal.' --- Kenneth Eng's colourless green ideas sleep
- furiously
+		Linus
