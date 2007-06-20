@@ -1,134 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbXFTQvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbXFTQwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267AbXFTQvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXFTQvH
+	id S1753812AbXFTQwQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbXFTQwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:51:07 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37915 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751201AbXFTQvG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:51:06 -0400
-Date: Wed, 20 Jun 2007 09:51:03 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-mm@kvack.org, wli@holomorphy.com, lee.schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Some thoughts on memory policies
-In-Reply-To: <p73lkeerep2.fsf@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0706200940550.22446@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706181257010.13154@schroedinger.engr.sgi.com>
- <p73lkeerep2.fsf@bingen.suse.de>
+	Wed, 20 Jun 2007 12:52:01 -0400
+Received: from gateway12.iders.ca ([206.45.72.61]:56281 "EHLO koko.iders.ca"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbXFTQwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 12:52:00 -0400
+X-Greylist: delayed 1456 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jun 2007 12:52:00 EDT
+Message-ID: <4679557C.5080907@iders.ca>
+Date: Wed, 20 Jun 2007 11:27:40 -0500
+From: Andrew McKay <amckay@iders.ca>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alexandre Oliva <aoliva@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>, david@lang.hm,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614195517.GA4933@elte.hu>	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614235004.GA14952@elte.hu>	<20070615011012.6c09066e@the-village.bc.nu>	<20070615012623.GA25189@elte.hu>	<20070615101007.0cbfd078@the-village.bc.nu>	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>	<4673CA7C.5040207@t-online.de>	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616181902.GB21478@ftp.linux.org.uk>	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org> <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Andi Kleen wrote:
-
-> > - Device drivers may need to control memory allocations in
-> >   devices either because their DMA engines can only reach a
-> >   subsection of the system
+> No, I'm not.  You can say tivoization is *good* however much you like.
+> This doesn't dispute in any way my claim that no tivoization would be
+> *better*, that you'd get contributions from the people that, because
+> of tivoization, don't feel compelled to develop and contribute,
+> because they can't use the fruits of their efforts in the device where
+> they would be most useful for them.
 > 
-> On what system does this happen? Not sure you can call that
-> a "coherent system"
 
-This is an issue for example on DSM systems where memory is virtualized by 
-transferring pages of memory on request. We are also getting into embedded 
-systems using NUMA for a variety of reason. Devices that can only reach
-a subset of memory may come about there.
+I know I'm jumping in to this conversation in the middle and a few days behind, 
+but that's one of the biggest fallacies in the open source communities.  First 
+of all more system developers contribute to the community than end users do. 
+Secondly GPLv3 will cause companies like TIVO, router companies, security 
+companies to not adopt Linux as an operating system, because they can't secure 
+their system.  Placing code in a ROM so they can't upgrade their own systems is 
+an absolute joke, and not a viable option.  In the end, GPLV3 will cause less 
+contribution to the Linux Kernel community. Systems developers won't be choosing 
+Linux and directly contributing to Kernel development while developing their 
+product.  Fewer products on the market will use linux, so even end users, who 
+really don't contribute a lot, won't be contributing either.
 
-> > or because memory transfer
-> >   performance is superior in certain nodes of the system.
-> 
-> Most architectures already give a sensible default for the coherent DMA
-> mappings (node the device is attached to) For the others it is
-> really not under driver control.
+I'm not going to address whether GPLv3 changed the spirit of GPLv2, but saying 
+that licensing the Linux Kernel under GPLv3 will result in more contributions is 
+absolute BS.
 
-Yes I did some of that work. But that is still from the perspective of the 
-system as a whole. A device may have unique locality requirements. F.e. it 
-may be able to interweave memory transfers from multiple nodes for optimal 
-performance.
+Andrew McKay
+Iders Inc.
 
-> Also controlling from the device where the submitted
-> data is difficult unless you bind processes. If you do 
-> it just works, but if you don't want to (for most cases
-> explicit binding is bad) it is hard.
-
-It wont be difficult if the device has
-
-1. A node number
-2. An allocation policy
-
-Then the allocation must be done as if we would be on that node.
-
-> I would be definitely opposed to anything that exposes
-> addresses as user interface.
-
-Well its more the device driver telling the system where the stuff ought 
-to be best located.
-
-> > 2. Memory policies need to support additional constraints
-> > 
-> > - Restriction to a set of nodes. That is what we have today.
-> > 
-> > - Restriction to a container or cpuset. Maybe restriction
-> >   to a set of containers?
-> 
-> Why?
-
-Because the sysadmin can set the containers up in a flexible way. Maybe we 
-want to segment a node into a couple of 100MB chunks and give various apps
-access to it?
-
-> > - Strict vs no strict allocations. A strict allocation needs
-> >   to fail if the constraints cannot be met. A non strict
-> >   allocation can fall back.
-> 
-> That's already there -- that's the difference between PREFERED
-> and BIND.
-
-But its not available for interleave f.e.
-
-> Regarding your page cache proposal: I think it's a bad
-> idea, larger soft page sizes would be better.
-
-I am not sure what you are talking about.
-
-> > The esoteric
-> > nature of memory policy semantics makes them difficult to comprehend.
-> 
-> Exactly.  It doesn't make sense to implement if you can't
-> give it a good interface.
-
-Right we need a clean interface and something that works in such a way 
-that people can understand it. The challenge is to boil down something 
-complex to a few simple mechanisms.
- 
-> > 7. Allocators must change
-> > 
-> > Right now the policy is set by the process context which is bad because
-> > one cannot specify a memory policy for an allocation. It must be possible
-> > to pass a memory policy to the allocators and then get the memory 
-> > requested.
-> 
-> We already can allocate on a node. If there is really demand
-> we could also expose interleaved allocations, but again
-> we would need a good user.
-
-We have these bad hacks for shmem and for hugetlb where we have to set 
-policies in the context by creating a fake vma in order to get policy 
-applied.
-
-If we want to allocate for a device then the device is the context and not 
-the process, same thing for shmem and hugetlb.
- 
-> Not sure it is useful for sl[aou]b.
-
-If we do this then it needs to be consistently supported by the 
-allocators. Meaning the slab allocators would have to support a call where 
-you can pass a policy in and then objects need to be served in conformity 
-with that policy.
 
