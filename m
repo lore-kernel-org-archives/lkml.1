@@ -1,159 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbXFTSEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbXFTSFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757411AbXFTSEv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 14:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbXFTSEn
+	id S1758539AbXFTSFb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 14:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbXFTSFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 14:04:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53148 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754493AbXFTSEm (ORCPT
+	Wed, 20 Jun 2007 14:05:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46996 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756221AbXFTSFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 14:04:42 -0400
-Date: Wed, 20 Jun 2007 11:03:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Neuer <mr.fred.smoothie@pobox.com>
-cc: Helge Hafting <helge.hafting@aitel.hist.no>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Mundt <lethal@linux-sh.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <161717d50706200958o53ae986fv635e18b9b6a17e85@mail.gmail.com>
-Message-ID: <alpine.LFD.0.98.0706201040590.3593@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm> 
- <4671B734.1040401@nortel.com>  <orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br>
-  <200706142155.34298.dhazelton@enter.net>  <or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
-  <alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org> 
- <46791A35.4000009@aitel.hist.no>  <alpine.LFD.0.98.0706200930070.3593@woody.linux-foundation.org>
- <161717d50706200958o53ae986fv635e18b9b6a17e85@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 20 Jun 2007 14:05:23 -0400
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures in
+	dma	map api calls
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+In-Reply-To: <20070620173038.GA25516@linux-os.sc.intel.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
+	 <20070619213808.798646000@askeshav-devel.jf.intel.com>
+	 <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com>
+	 <20070620173038.GA25516@linux-os.sc.intel.com>
+Content-Type: text/plain
+Date: Wed, 20 Jun 2007 20:05:03 +0200
+Message-Id: <1182362703.21117.79.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 20 Jun 2007, Dave Neuer wrote: 
+On Wed, 2007-06-20 at 10:30 -0700, Siddha, Suresh B wrote:
+> On Wed, Jun 20, 2007 at 06:03:02AM -0700, Arjan van de Ven wrote:
+> > Peter Zijlstra wrote:
+> > >
+> > >
+> > >PF_MEMALLOC as is, is meant to salvage the VM from the typical VM
+> > >deadlock. 
 > > 
-> > And anybody who thinks others don't have the "right to choice", and then
-> > tries to talk about "freedoms" is a damn hypocritical moron.
+> > .. and this IS the typical VM deadlock.. it is your storage driver 
+> > trying to write out a piece of memory on behalf of the VM, and calls 
+> > the iommu to map it, which then needs a bit of memory....
 > 
-> One might say the same thing about someone who claims not to have a
-> moral right to force certain choices on others in some circumstances
-> (e.g. when those others have used copyrighted work in a product and
-> ought to understand that for some not insignificant portion of the
-> copyright holders, the terms implicitly included preserving certain
-> "freedoms" for downstream recipients) while reserving a very similar
-> moral right with others (e.g. potential murderers, theives,
-> tresspassers, distributors of proprietary derived works).
+> Today PF_MEMALLOC doesn't do much in interrupt context. If PF_MEMALLOC
+> is the right usage model for this, then we need to fix the behavior of
+> PF_MEMALLOC in the interrupt context(for our usage model, we do most
+> of the allocations in interrupt context).
 
-I don't disagree that "morals" are something very personal, and you can 
-thus never really argue on morals *except*for*your*own*behaviour*.
+Right, I have patches that add GFP_EMERGENCY to do basically that.
 
-So I claim that for *me* the right choice is GPLv2 (or something similar). 
-I think the GPLv3 is overreaching.
+> I am not very familiar with PF_MEMALLOC. So experts please comment.
 
-There's a very fundamental, and very basic rule that is often a good 
-guideline. It's "Do unto others".
+PF_MEMALLOC is meant to avoid the VM deadlock - that is we need memory
+to free memory. The one constraint is that its use be bounded. (which is
+currently violated in that there is no bound on the number of direct
+reclaim contexts - which is on my to-fix list)
 
-So the reason I *personally* like the GPLv2 is that it does unto others 
-exactly what I wish they would do unto me.
+So a reclaim context (kswapd and direct reclaim) set PF_MEMALLOC to
+ensure they themselves will not block on a memory allocation. And it is
+understood that these code paths have a bounded memory footprint.
 
-It allows everybody do make that choice that I consider to be really 
-important: the choice of how something _you_ designed gets used.
+Now, this code seems to be running from interrupt context, which makes
+it impossible to tell if the work is being done on behalf of a reclaim
+task.  Is it possible to setup the needed data for the IRQ handler from
+process context?
 
-And it does that exactly by *limiting* the license to only that one work. 
-Not trying to extend it past the work.
+Blindly adding GFP_EMERGENCY to do this, has the distinct disadvantage
+that there is no inherent bound on the amount of memory consumed. In my
+patch set I add an emergency reserve (below the current watermarks,
+because ALLOC_HIGH and ALLOC_HARDER modify the threshold in a relative
+way, and thus cannot provide a guaranteed limit). I then accurately
+account all allocations made from this reserve to ensure I never cross
+the set limit.
 
-See?
+Like has been said before, if possible move to blocking allocs
+(GFP_NOIO), if that is not possible use mempools (for kmem_cache, or
+page alloc), if that is not possible use ALLOC_NO_WATERMARKS
+(PF_MEMALLOC, GFP_EMERGENCY) but put in a reserve and account its usage.
 
-The GPLv3 can never do that. Quite fundamentally, whenever you extend the 
-"reach" of a license past just the derived work, you will *always* get 
-into a situation where people who designed two different things get into a 
-conflict when they meet. The GPLv2 simply avoids the conflict entirely, 
-and has no problem at all with the "Do unto others as you would have them 
-do unto you".
+The last option basically boils down to reserved based allocation,
+something which I hope to introduce some-day...
 
-In a very real sense, the GPLv3 asks people to do things that I personally 
-would refuse to do. I put Linux on my kids computers, and I limit their 
-ability to upgrade it. Do I have that legal right (I sure do, I'm their 
-legal guardian), but the point is that this is not about "legality", this 
-is about "morality". The GPLv3 doesn't match what I think is morally where 
-I want to be. I think it *is* ok to control peoples hardware. I do it 
-myself.
+That is, failure is a OK, unless you're from a reclaim context, those
+should make progress.
 
-So your arguments about "potential murderes", "thieves", "trespassers" and 
-"distributors of proprietary derived works" is totally missing the point.
 
-It's missing the point that "morals" are about _personal_ choices. You 
-cannot force others to a certain moral standpoint. 
+One thing I'm confused about, in earlier discussions it was said that
+mempools are not sufficient because they deplete the GFP_ATOMIC reserve
+and only then use the mempool. This would not work because some
+downstream allocation would then go splat --- using
+PF_MEMALLOC/GFP_EMERGENCY has exactly the same problem!
 
-Laws (like copyright law) and legal issues, on the other hand, are 
-fundamentally *not* about "personal" things, they are about interactions 
-that are *not* personal. So laws need to be fundamnetally different from 
-morals. A law has to take into account that different people have 
-different moral background, and a law has to be _pragmatic_.
 
-So trying to mix up a moral argument with a legal one is a fundamental 
-mistake. They have two totally different and separate areas.
 
-The GPLv2 is a *legal* license. It's not a "moral license" or a "spiritual 
-guide". Its raison-d'etre is that pragmatic area where different peoples 
-different moral rules meet.
-
-In contrast, a persons *choice* to use the GPLv2 is his private choice.  
-Totally different. My choice of the GPLv2 doesn't say anything about my 
-choice of laws or legal issues. 
-
-You don't have to agree with it - but exactly because it's his private 
-choice, it's a place where the persons moral rules matter, in a way that 
-they do *not* matter in legal issues.
-
-So killing, thieving, and distributing proprietary derived works are about 
-*legal* choices. Are they also "immoral"? Who knows. Sometimes killing is 
-moral. Sometimes thievery can me moral. Sometimes distributing derived 
-works can be moral. Morality != legality. They are two totally different 
-things.
-
-Only religious fanatics and totalitarian states equate "morality" with 
-"legality". There's tons of examples of that from human history. The ruler 
-is not just a king, he's a God, so disagreeing with him is immoral, but 
-it's also illegal, and you can get your head cut off.
-
-In fact, a lot of our most well-known heroes are the ones that actually 
-saw the difference between morals and laws.
-
-A German soldier who refused to follow orders was clearly the more "moral" 
-one, wouldn't you say? Never mind law. Gandhi is famous for his peaceful 
-civil disobedience - was that "immoral" or "illegal"? 
-
-Or Robin Hood. A romantic tale, but one where the big fundamnetal part of 
-the picture is the _difference_ between morality and legality.
-
-Think about it.
-
-Yes, there is obviously overlap, in that a lot of laws are there to 
-protect things that people also consider "moral". But the fact that there 
-is correlation should *not* cause anybody to think that they are at all 
-about the same thing. 
-
-> To call people who draw the line in a different place than you 
-> hypocrites is BS.
-
-That was *not* what I did.
-
-I don't think it's hypocritical to prefer the GPLv3. That's a fine choice, 
-it's just not *mine*.
-
-What I called hypocritical was to do so in the name of "freedom", while 
-you're at the same time trying to argue that I don't have the "freedom" to 
-make my own choice.
-
-See? THAT is hypocritical.
-
-			Linus
