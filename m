@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbXFTXMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbXFTXNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbXFTXMR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXFTXMK
+	id S1754998AbXFTXNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbXFTXNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:12:10 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51171 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751751AbXFTXMJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:12:09 -0400
-Date: Thu, 21 Jun 2007 00:17:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: oops with USB serial irda adapter
-Message-ID: <20070621001750.283f48ac@the-village.bc.nu>
-In-Reply-To: <4679A74F.4010901@redhat.com>
-References: <4679A74F.4010901@redhat.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 20 Jun 2007 19:13:11 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45583 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753021AbXFTXNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:13:09 -0400
+Message-ID: <4679B476.9060503@garzik.org>
+Date: Wed, 20 Jun 2007 19:12:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, Dan Aloni <da-x@monatomic.org>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       bonding-devel@lists.sourceforge.net
+Subject: Re: [PATCH] bonding: Fix use after free in unregister path
+References: <1178862045.3979.33.camel@kane-linux> <20070511092519.1f34ab34@freepuppy> <1179130660.3881.23.camel@kane-linux> <20070514085840.17a343f7@freepuppy> <20070613094521.GA8860@localdomain> <20070613155335.47111c67@localhost> <15712.1181795790@death> <20070619082302.4b9a5c27@localhost.localdomain> <467817CE.80904@garzik.org> <24302.1182276732@death>
+In-Reply-To: <24302.1182276732@death>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007 18:16:47 -0400
-Chuck Ebbert <cebbert@redhat.com> wrote:
-
-> [https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=241598]
+Jay Vosburgh wrote:
+> 	The following patch (based on a patch from Stephen Hemminger
+> <shemminger@linux-foundation.org>) removes use after free conditions in
+> the unregister path for the bonding master.  Without this patch, an
+> operation of the form "echo -bond0 > /sys/class/net/bonding_masters"
+> would trigger a NULL pointer dereference in sysfs.  I was not able to
+> induce the failure with the non-sysfs code path, but for consistency I
+> updated that code as well.
 > 
-> Oops happens here in kernel 2.6.20.11:
-> drivers/usb/serial/ir-usb.c, line 557:
+> 	I also did some testing of the bonding /proc file being open
+> while the bond is being deleted, and didn't see any problems there.
 > 
->                 /* Notify the tty driver that the termios have changed. */
->                 port->tty->ldisc.set_termios(port->tty, NULL);
-> 
-> (ldisc.set_termios is NULL)
+> Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
 
-Yeah the driver is full of bugs - its also broken for the way its
-set_termios tries to play 'guess it the properties have changed' and gets
-speed checks wrong, how it snoops the baud bits and some other stuff it
-does.
+applied to #upstream-fixes
 
-If you make it look like a real serial driver it ought to work fine. If
-you've got hardware I can send you test patches ?
+
