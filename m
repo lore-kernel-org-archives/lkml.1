@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbXFTDan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761473AbXFTDeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760899AbXFTDan (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 23:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbXFTDaf
+	id S1761473AbXFTDeO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 23:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbXFTDd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 23:30:35 -0400
-Received: from [212.12.190.69] ([212.12.190.69]:33155 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757227AbXFTDae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 23:30:34 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "Scott Preece" <sepreece@gmail.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Wed, 20 Jun 2007 06:30:57 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200706200157.20527.a1426z@gawab.com> <7b69d1470706191929l7ff28df5v80f46811c739fa25@mail.gmail.com>
-In-Reply-To: <7b69d1470706191929l7ff28df5v80f46811c739fa25@mail.gmail.com>
+	Tue, 19 Jun 2007 23:33:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36380 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbXFTDd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 23:33:58 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+Subject: Re: [PATCH 3/12] acpi: fix compile error with ACPI && !ACPI_POWER
+Date: Tue, 19 Jun 2007 23:33:47 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <20070619224858.GE5193@alberich.amd.com>
+In-Reply-To: <20070619224858.GE5193@alberich.amd.com>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706200630.57460.a1426z@gawab.com>
+Content-Disposition: inline
+Message-Id: <200706192333.47687.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Preece wrote:
-> On 6/19/07, Al Boldi <a1426z@gawab.com> wrote:
-> > Nicolas Mailhot wrote:
-> > > Tivo didn't make the Linux success. More Tivos can definitely undo it.
-> >
-> > I don't think so.
-> >
-> > First, it's not Linux that made success, but rather GNU that uses Linux
-> > as its kernel.  And, believe it or not, when people say Linux, they
-> > really mean GNU.  People could care less what kernel they were running,
-> > as long as the system is up and runs the procs that offer their
-> > services.
->
+On Tuesday 19 June 2007 18:48, Andreas Herrmann wrote:
+> Fix compile error with ACPI && !ACPI_POWER as bus.c
+> depends on power.c
+
+How were you able to set CONFIG_ACPI_POWER=n to cause this compile error?
+
+When I do that, "make oldconfig" forces it to =y.
+
+-Len
+
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 > ---
->
-> Actually, for use in devices (like TiVos or cell phones), it is very
-> definitely the kernel that is of interest. Many such devices use
-> little or no GNU software (some manufacturers have consciously avoided
-> it because of the possibility of shifts like the GPLv3 changes).
-
-Sure, but was it Linux in embedded devices that made Linux what it is today, 
-or was it GNU/Linux?
-
-
-Thanks!
-
---
-Al
-
+>  drivers/acpi/Kconfig  |    4 ----
+>  drivers/acpi/Makefile |    2 +-
+>  2 files changed, 1 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 139f41f..9d6baab 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -288,10 +288,6 @@ config ACPI_EC
+>  	  the battery and thermal drivers.  If you are compiling for a 
+>  	  mobile system, say Y.
+>  
+> -config ACPI_POWER
+> -	bool
+> -	default y
+> -
+>  config ACPI_SYSTEM
+>  	bool
+>  	default y
+> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+> index d4336f1..9485cc3 100644
+> --- a/drivers/acpi/Makefile
+> +++ b/drivers/acpi/Makefile
+> @@ -48,7 +48,7 @@ obj-$(CONFIG_ACPI_DOCK)		+= dock.o
+>  obj-$(CONFIG_ACPI_BAY)		+= bay.o
+>  obj-$(CONFIG_ACPI_VIDEO)	+= video.o
+>  obj-y				+= pci_root.o pci_link.o pci_irq.o pci_bind.o
+> -obj-$(CONFIG_ACPI_POWER)	+= power.o
+> +obj-y				+= power.o
+>  obj-$(CONFIG_ACPI_PROCESSOR)	+= processor.o
+>  obj-$(CONFIG_ACPI_CONTAINER)	+= container.o
+>  obj-$(CONFIG_ACPI_THERMAL)	+= thermal.o
