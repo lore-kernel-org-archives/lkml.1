@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763272AbXFTUNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbXFTUWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763272AbXFTUNP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762643AbXFTUMz
+	id S1752553AbXFTUWl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbXFTUWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:12:55 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1339 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762101AbXFTUMy (ORCPT
+	Wed, 20 Jun 2007 16:22:33 -0400
+Received: from tayrelbas04.tay.hp.com ([161.114.80.247]:40217 "EHLO
+	tayrelbas04.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbXFTUWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:12:54 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 20 Jun 2007 13:12:47 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] exclude sync signals from signalfd sets
-In-Reply-To: <alpine.LFD.0.98.0706201255530.3593@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706201309280.4018@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0706201209570.6029@alien.or.mcafeemobile.com>
- <alpine.LFD.0.98.0706201255530.3593@woody.linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 20 Jun 2007 16:22:32 -0400
+Date: Wed, 20 Jun 2007 13:22:16 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/8] 2.6.22-rc3 perfmon2 : Debug messages added
+Message-ID: <20070620202216.GA26200@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070620182126.248753000@amd.com> <20070620184113.GC5874@erda.amd.com> <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Linus Torvalds wrote:
+David,
 
+On Wed, Jun 20, 2007 at 12:49:05PM -0700, David Rientjes wrote:
+> On Wed, 20 Jun 2007, Robert Richter wrote:
 > 
-> 
-> On Wed, 20 Jun 2007, Davide Libenzi wrote:
+> > Debug messages added for better debugging.
 > > 
-> > The following patch excludes synchronous signals from being dequeued
-> > by a signalfd.
 > 
-> I really prefer the current code. Listign special cases is just ugly. Just 
-> make it so that thread-local signals stay thread-local, and it's all good.
+> And you added BUG_ON()'s.
+> 
+> > Signed-off-by: Robert Richter <robert.richter@amd.com>
+> > 
+> > Index: linux-2.6.22-rc3/perfmon/perfmon_file.c
+> > ===================================================================
+> > --- linux-2.6.22-rc3.orig/perfmon/perfmon_file.c
+> > +++ linux-2.6.22-rc3/perfmon/perfmon_file.c
+> > @@ -192,6 +192,8 @@ static int pfm_mmap(struct file *file, s
+> >  	unsigned long flags;
+> >  	int ret;
+> >  
+> > +	PFM_DBG("pfm_file_ops");
+> 
+> After commenting on your first set of patches, I've been using it a little 
+> more.  In my use, these debugging messages weren't very helpful because 
+> "pfm_file_ops" can indicate pfm_mmap, pfm_read, pfm_poll, etc.  Could 
+> these be changed to be more specific based on the function they're in?
+> 
+the PFM_DBG() macro adds the CPU, function name and line number to the
+printed string.
 
-Hmm, I thought the behaviour implemented by the patch was pretty clean. 
-But anyway, if we leave the current code (as it is in your current tree), 
-we need the patch below to avoid spurious poll returns.
+-- 
 
-
-
-- Davide
-
-
----
- fs/signalfd.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.mod/fs/signalfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/signalfd.c	2007-06-20 13:08:25.000000000 -0700
-+++ linux-2.6.mod/fs/signalfd.c	2007-06-20 13:09:00.000000000 -0700
-@@ -133,7 +133,8 @@
- 	 * the peer disconnects.
- 	 */
- 	if (signalfd_lock(ctx, &lk)) {
--		if (next_signal(&lk.tsk->pending, &ctx->sigmask) > 0 ||
-+		if ((lk.tsk == current &&
-+		     next_signal(&lk.tsk->pending, &ctx->sigmask) > 0) ||
- 		    next_signal(&lk.tsk->signal->shared_pending,
- 				&ctx->sigmask) > 0)
- 			events |= POLLIN;
+-Stephane
