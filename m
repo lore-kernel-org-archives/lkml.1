@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXFTUEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762574AbXFTUF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbXFTUEr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758951AbXFTUEk
+	id S1762574AbXFTUF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760444AbXFTUFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:04:40 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:61560 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758876AbXFTUEk convert rfc822-to-8bit (ORCPT
+	Wed, 20 Jun 2007 16:05:20 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:21990 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760388AbXFTUFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:04:40 -0400
+	Wed, 20 Jun 2007 16:05:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MhrJVET72wX4jHvTOGZqD77JQZvTxEb5/DmYNs4r59QxAZrmjbS6MjSSMk8ihp6+QHd6i5HNXD8WeJ9ILa2GIyhDhJKVt0oQCh6a72gQ5gO5mzlT+xHgOtBh1iFU4l/0czH0KXt921GhpCOcUypf6i73C02y+VORfEPOkuEuK30=
-Message-ID: <7b9198260706201304h692e0740i7c4024d54dc35416@mail.gmail.com>
-Date: Wed, 20 Jun 2007 21:04:39 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "=?ISO-8859-1?Q?Toralf_F=F6rster?=" <toralf.foerster@gmx.de>
-Subject: Re: linux-2.6.22-rc5-g7c8545e build #298 failed b/c of Section mismatch: reference to .init.text:amd_init_mtrr
-Cc: rgooch@atnf.csiro.au, linux-kernel@vger.kernel.org
-In-Reply-To: <200706202152.48877.toralf.foerster@gmx.de>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=p5NDyIYrPH6EAHze5mfmeHJpEYrigjKEC6Rs+KSbjPUk658/qxwJw+mxCg/vtqqn5qsIC712Dnyx43IL8aqmw2Trv7eXwGWHPNTw95oo7Xc6UzeIy2RR2/roXb4713j0WLMJDJwJgcQ5WkKVQwKU2nyWr/Tqlu/N7DuTEuc700M=
+Message-ID: <161717d50706201305v5bd3379cx2d397589a1fe0b00@mail.gmail.com>
+Date: Wed, 20 Jun 2007 16:05:16 -0400
+From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+To: "david@lang.hm" <david@lang.hm>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Michael Poole" <mdpoole@troilus.org>,
+       "Tomas Neme" <lacrymology@gmail.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0706201241060.30395@asgard.lang.hm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200706202152.48877.toralf.foerster@gmx.de>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
+	 <2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
+	 <871wg6trnx.fsf@graviton.dyn.troilus.org>
+	 <2e6659dd0706201205i52e0b836oe642e2b442e425d7@mail.gmail.com>
+	 <87wsxysaad.fsf@graviton.dyn.troilus.org>
+	 <Pine.LNX.4.64.0706201232290.30395@asgard.lang.hm>
+	 <87odjas9f7.fsf@graviton.dyn.troilus.org>
+	 <Pine.LNX.4.64.0706201241060.30395@asgard.lang.hm>
+X-Google-Sender-Auth: 1baaa3a9c6c43669
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20/06/07, Toralf Förster <toralf.foerster@gmx.de> wrote:
-> Hello,
+On 6/20/07, david@lang.hm <david@lang.hm> wrote:
 >
-> the build with the attached .config failed, make ends with:
-<snippedy-doo-dah>
+> but the signature isn't part of the kernel
 
-Hi,
+But some would argue that it's part of the source with which the
+binary is derived (only a court could meaningfully decide if they're
+right).
 
-The build seems to fail because of:
-ERROR: "ROOT_DEV" [drivers/mtd/maps/nettel.ko] undefined!
+> and the code that checks the
+> signature is completely independant.
 
-After taking a quick look at the code, I can't immediately see why
-this would be, since there is an include for linux/root_dev.h at the
-top, there.
+Irrelevant.
 
-There's only one occurrence of ROOT_DEV (line 425), and after a quick
-look at the git history, it seems the include was originally missing,
-but was put back in, in commit
-6cc449c7d0292cb9b993f0df84fd3225e3099492.
+> and finally the PVR functions are not
+> part of the kernel
 
--- 
-Regards,
-Tom Spink
-University of Edinburgh
+Booting is.
+
+Dave
