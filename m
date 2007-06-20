@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761988AbXFTEc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761872AbXFTEmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761988AbXFTEc4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 00:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbXFTEct
+	id S1761872AbXFTEmG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 00:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbXFTEl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 00:32:49 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:42831 "EHLO smtp.gentoo.org"
+	Wed, 20 Jun 2007 00:41:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41975 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754077AbXFTEcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 00:32:48 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: [PATCH] remove usage of memmem from scripts/kallsyms.c
-Date: Wed, 20 Jun 2007 00:33:15 -0400
-User-Agent: KMail/1.9.7
-Cc: "Paulo Marques" <pmarques@grupopie.com>, "Andrew Morton" <akpm@osdl.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <4678013C.5090402@grupopie.com> <a781481a0706191147x72be6357vf0c83808b13174b8@mail.gmail.com>
-In-Reply-To: <a781481a0706191147x72be6357vf0c83808b13174b8@mail.gmail.com>
+	id S1754572AbXFTElz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 00:41:55 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 7/12] acpi: fix another compile warning
+Date: Wed, 20 Jun 2007 00:41:42 -0400
+User-Agent: KMail/1.9.5
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Andreas Herrmann" <andreas.herrmann3@amd.com>,
+       linux-acpi@vger.kernel.org
+References: <20070619225035.GI5193@alberich.amd.com> <20070619204934.f56722a8.randy.dunlap@oracle.com> <20070619205158.8d6da762.randy.dunlap@oracle.com>
+In-Reply-To: <20070619205158.8d6da762.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2027308.Klxhedck65";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706200033.16708.vapier@gentoo.org>
-Sender: linux-kernel-owner@vger.kernel.org
-X-Mailing-List: linux-kernel@vger.kernel.org
-
---nextPart2027308.Klxhedck65
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200706200041.42596.lenb@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 June 2007, Satyam Sharma wrote:
-> On 6/19/07, Paulo Marques <pmarques@grupopie.com> wrote:
-> > The only in-kernel user of "memmem" is scripts/kallsyms.c and it only
-> > uses it to find tokens that are 2 bytes in size. It is trivial to
-> > replace it with a simple function that finds 2-byte tokens.
-> >
-> > This should help users from systems that don't have the memmem GNU
-> > extension available.
->
-> So we could remove the "#define _GNU_SOURCE" at the top
-> of scripts/kallsyms.c too, presumably? If not (i.e. if there are
-> more GNUisms left in that file anyway), then I'm not sure if we
-> really gain by the change.
+On Tuesday 19 June 2007 23:51, Randy Dunlap wrote:
+> On Tue, 19 Jun 2007 20:49:34 -0700 Randy Dunlap wrote:
+> 
+> > On Tue, 19 Jun 2007 23:38:02 -0400 Len Brown wrote:
+> > 
+> > > On Tuesday 19 June 2007 18:50, Andreas Herrmann wrote:
+> > > > Avoid compile warning if !ACPI_BLACKLIST_YEAR
+> > > > 
+> > > >   CC      drivers/acpi/blacklist.o
+> > > >   drivers/acpi/blacklist.c:76:5: warning: "CONFIG_ACPI_BLACKLIST_YEAR" is not defined
+> > > 
+> > > How were you able to produce a .config with CONFIG_ACPI_BLACKLIST_YEAR not defined?
+> > > Can you send it to me?
+> > 
+> > 'make randconfig' does that kind of thing.  It doesn't enforce/follow
+> > "select" clauses.
+> 
+> I should have also said:  randconfig is good for detecting some
+> missing conditions/configs or missing header files, but if you find one
+> that is just plain Invalid (like some of these), just say so
+> and do whatever you want with the patch (IMHO of course).
 
-yes, i believe this is true
--mike
+If randconfig ends up with impossible-for-a-user-to-generate configs,
+then it seems seriously broken.  Perhaps it would make sense to run
+"make oldconfig" after "make randconfig" -- or better yet, have that
+built in?
 
---nextPart2027308.Klxhedck65
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iQIVAwUARniuDEFjO5/oN/WBAQI+wA//bTn3gzl5l5QZbWU/qfp9A55acKc1dtFV
-yU9bs+8lf/Q1eCIm9Op1+7HFq3ArPZMNC4RKwZfgQaIa1sNfCnjvySlQAAdVrRCJ
-2Xg8WIrU/xI4ihYmlWzRb8EoZafZShM05RhQVQzdLQmbfYaElvR4j4cQwYy+SWFV
-Dkbrr8o7k8Hz1nenP2gJDlbzbn541Eydgrh5O/2Q4h5OO7VZ42eR8RMY+BFIO80C
-nNdkezB7dA0KJC4amYaS3p7EafG2L/M0+sZfxnG0B0ybHG3o04sllKDCvrT1SMrX
-we9DTGc4C/boJYcyY+v/7Q2ho+l4skhpzf7Gbt5NqMBkaOVy4MhRNHSirJfEVEci
-KsugQRghr5zdREKDxihlFL7O+IwaUsfbZf+VQltgnBoFXNgvSb/eUo5ll2foqcrQ
-MUU71uIeciShx+kBuQDYhbJCe/sg0Q3t6G1hHL3c+XhoMUdUvCe4sZViJeJ4KVQ4
-Tau0JObjwo2RhSBpzzGEVMbPXNwbfFj7Xib6HGhaLkdacPrcGr6u+d65LV7hK3XF
-xL9c6G21lpj9zBj6nQam2QT8AGh4HzK5OfG/dVkv096jDw1yWRBtr4C1In+BIeme
-6UsTtsDMt5CT/BAStbgikT+ggs7YU8i6HhmBz90+ycpVJ9TscmVIOh1YOuHslI97
-TdLNi9N3SOQ=
-=SaTI
------END PGP SIGNATURE-----
-
---nextPart2027308.Klxhedck65--
+-Len
