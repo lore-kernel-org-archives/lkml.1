@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbXFTSPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbXFTSQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbXFTSPZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 14:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbXFTSPP
+	id S1756711AbXFTSQh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 14:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbXFTSQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 14:15:15 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:54209 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752128AbXFTSPN (ORCPT
+	Wed, 20 Jun 2007 14:16:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41789 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbXFTSQ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 14:15:13 -0400
-Date: Wed, 20 Jun 2007 14:14:33 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@redhat.com,
-       mbligh@google.com
-Subject: Re: Problem with global_flush_tlb() on i386 (x86_64? too) in 2.6.22-rc4-mm2
-Message-ID: <20070620181433.GA16050@Krystal>
-References: <20070619170914.GA30623@Krystal> <200706201101.20673.ak@suse.de> <20070620164614.GA8916@Krystal> <200706201953.54322.ak@suse.de>
+	Wed, 20 Jun 2007 14:16:29 -0400
+Subject: Re: Change in default vm_dirty_ratio
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, tim.c.chen@linux.intel.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.0.98.0706201015370.3593@woody.linux-foundation.org>
+References: <1182201271.4883.22.camel@localhost.localdomain>
+	 <20070618164711.9de1c38e.akpm@linux-foundation.org>
+	 <20070620042434.GC12096@redhat.com>
+	 <20070619214407.dfff0ca6.akpm@linux-foundation.org>
+	 <1182328536.21117.24.camel@twins>
+	 <alpine.LFD.0.98.0706201015370.3593@woody.linux-foundation.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 20 Jun 2007 11:12:53 -0700
+Message-Id: <1182363174.2701.2.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <200706201953.54322.ak@suse.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:10:04 up 23 days,  2:48,  4 users,  load average: 0.10, 0.47, 0.59
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen (ak@suse.de) wrote:
-> On Wednesday 20 June 2007 18:46, Mathieu Desnoyers wrote:
-> > * Andi Kleen (ak@suse.de) wrote:
-> > > On Tuesday 19 June 2007 22:01:36 Mathieu Desnoyers wrote:
-> > > > Looking more closely into the code to find the cause of the
-> > > > change_page_addr()/global_flush_tlb() inconsistency, I see where the
-> > > > problem could be:
-> > >
-> > > Yes it's a known problem. I have a hack queued for .22 and there
-> > > are proposed patches for .23 too.
-> > >
-> > > ftp://ftp.firstfloor.org/pub/ak/x86_64/late-merge/patches/cpa-flush
-> > >
-> > > -ANdi
-> >
-> > Hi Andi,
-> >
-> > Although I cannot find it at the specified URL, I suspect it is already
-> > in Andrew's tree, in 2.6.22-rc4-mm2, under the name
+On Wed, 2007-06-20 at 10:17 -0700, Linus Torvalds wrote:
 > 
-> Try again
+> On Wed, 20 Jun 2007, Peter Zijlstra wrote:
+> > 
+> > Building on the per BDI patches, how about integrating feedback from the
+> > full-ness of device queues. That is, when we are happily doing IO and we
+> > cannot possibly saturate the active devices (as measured by their queue
+> > never reaching 75%?) then we can safely increase the total dirty limit.
 > 
-> > "x86_64-mm-cpa-cache-flush.patch"
+> The really annoying things are the one-off things. You've been happily 
+> working for a while (never even being _close_ to saturatign any IO 
+> queues), and then you untar a large tree.
 > 
-> No, that's a different patch with also at least one known bug.
-> 
-> -Andi
+> If the kernel now let's you dirty lots of memory, you'll have a very 
+> unpleasant experience.
 
-Yeah, I guess disabling clflush and calling wbinvd and a full TLB flush
-on every CPU is the safe way to go.
 
-However, digging in your previous patch (in Andrew's tree), I think I
-found a potential cause for the problem:
+maybe that needs to be fixed? If you stopped dirtying after the initial
+bump.. is there a reason for the kernel to dump all that data to the
+disk in such a way that it disturbs interactive users?
 
-__change_page_attr does a list_add of &kpte_page->lru. If I am not
-mistaken, there can be more than one consecutive struct page *page
-having their PTE in the same kpte_page. Therefore, it would generate
-many list_add of the same kpte_page, which would cause a loop in the
-linked list, and therefore a system hang.
+so the question maybe is.. is the vm tunable the cause or the symptom of
+the bad experience?
 
-Does it make sense ?
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
