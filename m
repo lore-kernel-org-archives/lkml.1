@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbXFTOXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbXFTO0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbXFTOXH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 10:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXFTOWz
+	id S1756554AbXFTO0Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 10:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbXFTO0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 10:22:55 -0400
-Received: from pat.uio.no ([129.240.10.15]:51967 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751530AbXFTOWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 10:22:54 -0400
-Subject: Re: [RFC PATCH 4/4] Directory listing support for union mounted
-	directories.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
-In-Reply-To: <20070620120947.GA3973@infradead.org>
-References: <20070620055050.GB4267@in.ibm.com>
-	 <20070620055418.GF4267@in.ibm.com>  <20070620120947.GA3973@infradead.org>
-Content-Type: text/plain
-Date: Wed, 20 Jun 2007 10:22:28 -0400
-Message-Id: <1182349348.6225.15.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.148)
-X-UiO-Scanned: DC53B993FF9156DE3134CF4199294CDB27384E7C
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 493 total 2478675 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Wed, 20 Jun 2007 10:26:03 -0400
+Received: from smtp002.mail.ukl.yahoo.com ([217.12.11.33]:47161 "HELO
+	smtp002.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752231AbXFTO0A convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 10:26:00 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jun 2007 10:25:59 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=17o5U7Zr5L2sqBhu7F6gblQ7jy8XcgjK6jpuNsMEXLt7zsoFAaQEpdVLdLRBv6V8aP7LB4m5QEd3EmIwJS1eyGxUMMImIP4LnJUDNG9NmJwQ1U/bluxSNX1ENML0ePoxCgEuf2JDhjqWEnRZINbsBtk90e3RPz3PaDdV2eAIHsc=  ;
+X-YMail-OSG: 886Bz6oVM1lSgcEzwJj9oAeXT8Btmp9r8.i4crHDqSIAGpvz1tqKLOtiNgkJvZtd6siKAXg62zdPicl2N4.f45yCV2OnnvN8ga7AXaYn0sWk8qG1
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH 2/2] UML - Add stack usage monitoring
+Date: Wed, 20 Jun 2007 16:06:58 +0200
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Dike <jdike@addtoit.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20070619184245.GA10567@c2.user-mode-linux.org> <20070619195003.GA11718@c2.user-mode-linux.org> <20070619131441.01b5ae4b.akpm@linux-foundation.org>
+In-Reply-To: <20070619131441.01b5ae4b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200706201606.58331.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-20 at 13:09 +0100, Christoph Hellwig wrote:
-> On Wed, Jun 20, 2007 at 11:24:18AM +0530, Bharata B Rao wrote:
-> > From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> > Subject: Directory listing support for union mounted directories.
-> > 
-> > Modifies readdir()/getdents() to support union mounted directories.
-> > 
-> > This patch adds support to readdir()/getdents() to read directory entries
-> > from all the directories of the union stack, and present a merged view to
-> > the userspace. This is achieved by maintaining a cache of read entries.
-> > 
-> > TODO: Breaks lseek on union mounted directories, Fix this.
-> 
-> Btw, to avoid dealing with file structs representing multiple objects
-> ->readdir should be changed to an inode_operation and not take a struct
-> file * but rather struct inode + loff_t *ppos.  This sounds like a nice
-> preparatory patch for any kind of union mount implementation and is
-> acceptable standing on it's own.
+On martedì 19 giugno 2007, Andrew Morton wrote:
+> On Tue, 19 Jun 2007 15:50:03 -0400
+>
+> Jeff Dike <jdike@addtoit.com> wrote:
+> > On Tue, Jun 19, 2007 at 11:54:22AM -0700, Andrew Morton wrote:
+> > > On Tue, 19 Jun 2007 14:42:45 -0400
+> > >
+> > > Jeff Dike <jdike@addtoit.com> wrote:
+> > > > Add a machanism to see how much of a kernel stack is used.  This
+> > > > allocates zeroed stacks and sees where the lowest non-zero byte is on
+> > > > process exit.  It keeps track of the lowest value and logs values as
+> > > > they get lower.
+> > >
+> > > remind us again why the generic code is unsuitable?
+> >
+> > It does something different - it will tell you the greatest stack
+> > usage of any currently running process.  What I want to be able to do
+> > is run a workload and come back a few days later and see how close
+> > anything came to running out of stack.
+>
+> <looks>
+>
+> wth?  I'm _sure_ we used to have code in there which would, within
+> do_exit(), work out the maximum amount of kernel stack which a task had
+> used and if that was max-since-boot, drop a printk.
+>
+> Maybe I dreamed it, but I don't think so.
+>
+> I wonder where it went?
 
-No it shouldn't. The struct file contains other stateful information
-from the open() call (such as authentication info) that needs to be
-passed into readdir.
+Oh, it's exactly what CONFIG_DEBUG_STACK_USAGE does for i386... (not sure if 
+you were still wondering...).
 
-Trond
+> Oh well.  Your new code should really be generic, utilising the
+> stack-page-zeroing which CONFIG_DEBUG_STACK_USAGE enables.  There's nothing
+> UML-specific about it.
 
+> low_water_lock and lowest_to_date should be static to check_stack_usage(),
+> btw..
+
+-- 
+Inform me of my mistakes, so I can add them to my list!
+Paolo Giarrusso, aka Blaisorblade
+http://www.user-mode-linux.org/~blaisorblade
