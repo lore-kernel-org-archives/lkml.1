@@ -1,83 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbXFTWez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbXFTWh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbXFTWez (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 18:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXFTWeq
+	id S1755131AbXFTWh7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 18:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbXFTWhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 18:34:46 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:18768 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbXFTWep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 18:34:45 -0400
-Message-ID: <4679AB39.4010909@oracle.com>
-Date: Wed, 20 Jun 2007 18:33:29 -0400
-From: Chuck Lever <chuck.lever@oracle.com>
-Reply-To: chuck.lever@oracle.com
-Organization: Oracle Corporation
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
- through other means
-References: <467994BD.6000403@zytor.com> <20070620210343.GQ21478@ftp.linux.org.uk>
-In-Reply-To: <20070620210343.GQ21478@ftp.linux.org.uk>
-Content-Type: multipart/mixed;
- boundary="------------080302000001050300020807"
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 20 Jun 2007 18:37:52 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45414 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbXFTWhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 18:37:52 -0400
+Date: Wed, 20 Jun 2007 15:38:20 -0700
+From: Tony Jones <tonyj@suse.de>
+To: linux-audit@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] audit: fix oops removing watch if audit disabled
+Message-ID: <20070620223820.GA16416@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080302000001050300020807
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Removing a watched file will oops if audit is disabled (auditctl -e 0).
 
-Al Viro wrote:
-> On Wed, Jun 20, 2007 at 01:57:33PM -0700, H. Peter Anvin wrote:
->> ... or, alternatively, add a subfield to the first field (which would
->> entail escaping whatever separator we choose):
->>
->> /dev/md6 /export ext3 rw,data=ordered 0 0
->> /dev/md6:/users/foo /home/foo ext3 rw,data=ordered 0 0
->> /dev/md6:/users/bar /home/bar ext3 rw,data=ordered 0 0
-> 
-> Hell, no.  The first field is in principle impossible to parse unless
-> you know the fs type.
-> 
-> How about making a new file with sane format?  From the very
-> beginning.  E.g. mountpoint + ID + relative path + type + options,
-> where ID uniquely identifies superblock (e.g. numeric st_dev)
-> and backing device (if any) is sitting among the options...
+To reproduce:
+- auditctl -e 1
+- touch /tmp/foo
+- auditctl -w /tmp/foo
+- auditctl -e 0
+- rm /tmp/foo (or mv)
 
-To support NFS client performance statistics, I recently added 
-/proc/self/mountstats.  That might be a place to add details about 
---move and --bind mounts without changing the format of /proc/mounts.
+Signed-off-by: Tony Jones <tonyj@suse.de>
+---
 
---------------080302000001050300020807
-Content-Type: text/x-vcard; charset=utf-8;
- name="chuck.lever.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="chuck.lever.vcf"
-
-begin:vcard
-fn:Chuck Lever
-n:Lever;Chuck
-org:Oracle Corporation;Corporate Architecture: Linux Projects Group
-adr:;;1015 Granger Avenue;Ann Arbor;MI;48104;USA
-title:Principal Member of Staff
-tel;work:+1 248 614 5091
-x-mozilla-html:FALSE
-url:http://oss.oracle.com/~cel/
-version:2.1
-end:vcard
-
-
---------------080302000001050300020807--
+diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+index 74cc0fc..ce61f42 100644
+--- a/kernel/auditfilter.c
++++ b/kernel/auditfilter.c
+@@ -947,7 +947,7 @@ static void audit_update_watch(struct au
+ 
+ 		/* If the update involves invalidating rules, do the inode-based
+ 		 * filtering now, so we don't omit records. */
+-		if (invalidating &&
++		if (invalidating && current->audit_context &&
+ 		    audit_filter_inodes(current, current->audit_context) == AUDIT_RECORD_CONTEXT)
+ 			audit_set_auditable(current->audit_context);
+ 
