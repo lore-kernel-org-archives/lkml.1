@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbXFTXT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbXFTXWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756016AbXFTXT6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbXFTXTu
+	id S1755924AbXFTXWt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXFTXWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:19:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36202 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752996AbXFTXTt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:19:49 -0400
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ian McDonald <ian.mcdonald@jandi.co.nz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       William Cohen <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <20070620230751.GA15092@redhat.com>
-References: <467543FA.60905@googlemail.com>
-	 <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com>
-	 <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
-	 <20070620230751.GA15092@redhat.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 20 Jun 2007 16:15:53 -0700
-Message-Id: <1182381354.2701.4.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 20 Jun 2007 19:22:42 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:59818 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753345AbXFTXWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:22:41 -0400
+Date: Thu, 21 Jun 2007 01:22:34 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Timo Sirainen <tss@iki.fi>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray-lk@madrabbit.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: SMP read() stopping at memory page boundaries
+In-Reply-To: <1182361700.3768.107.camel@hurina>
+Message-ID: <Pine.LNX.4.64.0706210121310.3068@twin.jikos.cz>
+References: <1182351171.3768.65.camel@hurina>  <1182354493.3768.80.camel@hurina>
+  <2c0942db0706200922i15ce44b0xceaed95d002dba33@mail.gmail.com> 
+ <1182358622.3768.98.camel@hurina>  <20070620180500.6e2d600a@the-village.bc.nu>
+ <1182361700.3768.107.camel@hurina>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-20 at 19:07 -0400, Dave Jones wrote:
-> On Wed, Jun 20, 2007 at 03:38:06PM -0700, Linus Torvalds wrote:
-> 
->  > And yes, that patch already got merged. However, the patch to *allow* 
->  > Kprobes with DEBUG_RODATA is not, and will not be. It's not a regression, 
->  > and quite frankly, I don't think I would even want that patch.
->  > 
->  > Kprobes fundamntally disagrees with DEBUG_RODATA, there's no point in 
->  > "working around it". Better just admit it.
-> 
-> Surely the fundamental disagreement is only due to DEBUG_RODATA
-> covering write-protection of both .text, and .rodata  ?
-> I can see value in having a kernel that supports kprobes, whilst
-> at the same point, raising red flags if something writes into
-> a const string. With my distro kernel maintainer hat on, I always
-> hate these 'pick one' decisions, because I always get convincing
-> arguments from proponents of both sides.
-> 
-> Was it always this way?  I thought DEBUG_RODATA initially just
-> covered, well.. rodata.    And kprobes only wants to change .text
-> doesn't it ?
+On Wed, 20 Jun 2007, Timo Sirainen wrote:
 
-no this got "fixed" recently. It used to only cover data.
-Andi merged a patch to make it cover text too.. imo we should reverse
-that, or make the check better and not have it cover text if kprobes is
-active. I can do the later if people are ok with that, it's
-approximately 3 lines of code.
+> > It will occur if you are reading as someone else changes the file size.
+> > Use file locking, it exists for a reason ;)
+> Annoying extra overhead. Especially with NFS, when nowadays you can't
+> even use flock() to create local locks..
 
+It's not only "nowadays", it has been like that for quite a some time.
 
+On the other hand you can use fcntl(F_SETLK) though, which works even 
+through NFS (v3).
+
+-- 
+Jiri Kosina
