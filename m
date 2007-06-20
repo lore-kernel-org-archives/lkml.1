@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbXFTRy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbXFTRyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbXFTRy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbXFTRyS
+	id S1758640AbXFTRyx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbXFTRyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:54:18 -0400
-Received: from holomorphy.com ([66.93.40.71]:52951 "EHLO holomorphy.com"
+	Wed, 20 Jun 2007 13:54:45 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33902 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753718AbXFTRyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:54:17 -0400
-Date: Wed, 20 Jun 2007 10:54:45 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Albert Cahalan <acahalan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: JIT emulator needs
-Message-ID: <20070620175445.GJ6909@holomorphy.com>
-References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com> <20070619150824.GH11781@holomorphy.com> <787b0d920706192016l660dd5b0mbf300581db81ac62@mail.gmail.com> <20070620160116.GI6909@holomorphy.com> <467957CB.8020704@zytor.com>
+	id S1753307AbXFTRyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 13:54:44 -0400
+From: Andi Kleen <ak@suse.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: Problem with global_flush_tlb() on i386 (x86_64? too) in 2.6.22-rc4-mm2
+Date: Wed, 20 Jun 2007 19:53:53 +0200
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@redhat.com,
+       mbligh@google.com
+References: <20070619170914.GA30623@Krystal> <200706201101.20673.ak@suse.de> <20070620164614.GA8916@Krystal>
+In-Reply-To: <20070620164614.GA8916@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <467957CB.8020704@zytor.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706201953.54322.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
->> I presumed an ELF note or extended filesystem attributes were already
->> in place for this sort of affair. It may be that the model implemented
->> is so restrictive that users are forbidden to create new executables,
->> in which case using a different model is certainly in order. Otherwise
->> the ELF note or attributes need to be implemented.
+On Wednesday 20 June 2007 18:46, Mathieu Desnoyers wrote:
+> * Andi Kleen (ak@suse.de) wrote:
+> > On Tuesday 19 June 2007 22:01:36 Mathieu Desnoyers wrote:
+> > > Looking more closely into the code to find the cause of the
+> > > change_page_addr()/global_flush_tlb() inconsistency, I see where the
+> > > problem could be:
+> >
+> > Yes it's a known problem. I have a hack queued for .22 and there
+> > are proposed patches for .23 too.
+> >
+> > ftp://ftp.firstfloor.org/pub/ak/x86_64/late-merge/patches/cpa-flush
+> >
+> > -ANdi
+>
+> Hi Andi,
+>
+> Although I cannot find it at the specified URL, I suspect it is already
+> in Andrew's tree, in 2.6.22-rc4-mm2, under the name
 
-On Wed, Jun 20, 2007 at 09:37:31AM -0700, H. Peter Anvin wrote:
-> Another thing to keep in mind, since we're talking about security
-> policies in the first place, is that anything like this *MUST* be
-> "opt-in" on the part of the security policy, because what we're talking
-> about is circumventing an explicit security policy just based on a
-> user-provided binary saying, in effect, "don't worry, I know what I'm
-> doing."
-> Changing the meaning of an established explicit security policy is not
-> acceptable.
+Try again
 
-This is what I had in mind with the commentary on the intentions of the
-policy. Thank you for correcting my hamhanded attempt to describe it.
+> "x86_64-mm-cpa-cache-flush.patch"
 
+No, that's a different patch with also at least one known bug.
 
--- wli
+-Andi
