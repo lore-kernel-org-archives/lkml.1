@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbXFTU3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbXFTUbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686AbXFTU3f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXFTU32
+	id S1753508AbXFTUbQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXFTUbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:29:28 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:51722 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbXFTU31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:29:27 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAOoqeUarR7MV/2dsb2JhbAA
-X-IronPort-AV: i="4.16,444,1175497200"; 
-   d="scan'208"; a="496214419:sNHT31164952"
-To: Jack Stone <jack@hawkeye.stone.uk.eu.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Spinlock init
-X-Message-Flag: Warning: May contain useful information
-References: <46798A37.6050007@hawkeye.stone.uk.eu.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 20 Jun 2007 13:29:14 -0700
-In-Reply-To: <46798A37.6050007@hawkeye.stone.uk.eu.org> (Jack Stone's message of "Wed, 20 Jun 2007 21:12:39 +0100")
-Message-ID: <ada4pl29xph.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Wed, 20 Jun 2007 16:31:03 -0400
+Received: from waste.org ([66.93.16.53]:54955 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750763AbXFTUbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 16:31:01 -0400
+Date: Wed, 20 Jun 2007 15:30:22 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Alexander Gabert <pappy@gentoo.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, libc-alpha@sourceware.org,
+       linux-kernel@vger.kernel.org, hardened@gentoo.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] get_random_long() and AT_ENTROPY for auxv, kernel 2.6.21.5
+Message-ID: <20070620203022.GO11166@waste.org>
+References: <4675C678.3080807@gentoo.org> <1182128803.22999.9.camel@laptopd505.fenrus.org> <4675DFA8.6060703@gentoo.org> <1182130680.22999.13.camel@laptopd505.fenrus.org> <4676601A.7070209@gentoo.org> <467948F5.3010709@gentoo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Jun 2007 20:29:14.0399 (UTC) FILETIME=[AAF5AAF0:01C7B379]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <467948F5.3010709@gentoo.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > can rwlock_init and spin_lock_init be used outside of functions declared
- > __init. The spinlock documentation suggests that it can't but I'd like
- > someone to confirm that.
+On Wed, Jun 20, 2007 at 05:34:13PM +0200, Alexander Gabert wrote:
+> Hi,
+> 
+> http://dev.gentoo.org/~pappy/kernel/linux-2.6.21.5-get_urandom_long-AT_ENTROPY.patch
+> 
+> this patch adds the function drivers/char/random.c:get_random_long()
+> and adds an AT_ENTROPY field in the auxv without config option
+> (the config option was removed as suggested by Arjan on LKML).
 
-Those function can be used in any function.  A function is declared
-__init if it only runs during the kernel startup, so that the memory
-holding the code for __init functions can be freed once startup is
-done.  However, spin_lock_init() is just used to initialize a freshly
-allocated spinlock, and spinlocks may be allocated at any time, even
-long after the kernel is done starting up.  A quick look throught
-kernel source code will show many, many examples where
-spin_lock_init(), rwlock_init(), mutex_init(), etc. are called from
-non-__init functions.
+One ought to cc: the /dev/random maintainer.
 
+> /*
+> + * get_random_long() returns a randomized unsigned long word.
+> + * It recycles it's entropy cache for a given time period and
+> + * uses half_md4_transform to generate a unique return value.
+> + * Every REKEY_INTERVAL the cache is reloaded with fresh
+> + * randomization data using get_random_bytes().
+> + * This function is not intended for strong cryptographic routines.
+> + */
 
- - R.
+What's the point of this?
+
+-- 
+Mathematics is the supreme nostalgia of our time.
