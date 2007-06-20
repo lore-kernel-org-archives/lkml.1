@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbXFTXJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbXFTXMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbXFTXJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbXFTXJq
+	id S1756483AbXFTXMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXFTXMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:09:46 -0400
-Received: from mx.treblig.org ([80.68.94.177]:4490 "EHLO mx.treblig.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756881AbXFTXJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:09:44 -0400
-X-Greylist: delayed 1683 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jun 2007 19:09:44 EDT
-Date: Wed, 20 Jun 2007 23:41:35 +0100
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: Karel Zak <kzak@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that through other means
-Message-ID: <20070620224135.GC6258@gallifrey>
-References: <467994BD.6000403@zytor.com> <20070620220551.GX7226@petra.dvoda.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070620220551.GX7226@petra.dvoda.cz>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
-X-Uptime: 23:38:12 up 47 days, 16:21,  1 user,  load average: 0.37, 0.43, 0.44
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 20 Jun 2007 19:12:10 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51171 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751751AbXFTXMJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:12:09 -0400
+Date: Thu, 21 Jun 2007 00:17:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: oops with USB serial irda adapter
+Message-ID: <20070621001750.283f48ac@the-village.bc.nu>
+In-Reply-To: <4679A74F.4010901@redhat.com>
+References: <4679A74F.4010901@redhat.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Karel Zak (kzak@redhat.com) wrote:
-> On Wed, Jun 20, 2007 at 01:57:33PM -0700, H. Peter Anvin wrote:
-> > 
+On Wed, 20 Jun 2007 18:16:47 -0400
+Chuck Ebbert <cebbert@redhat.com> wrote:
 
-<snip>
-
-> > ... or, alternatively, add a subfield to the first field (which would
-> > entail escaping whatever separator we choose):
-> > 
-> > /dev/md6 /export ext3 rw,data=ordered 0 0
-> > /dev/md6:/users/foo /home/foo ext3 rw,data=ordered 0 0
-> > /dev/md6:/users/bar /home/bar ext3 rw,data=ordered 0 0
+> [https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=241598]
 > 
->  We needn't a new separator (':') there already is one (' ').
+> Oops happens here in kernel 2.6.20.11:
+> drivers/usb/serial/ir-usb.c, line 557:
+> 
+>                 /* Notify the tty driver that the termios have changed. */
+>                 port->tty->ldisc.set_termios(port->tty, NULL);
+> 
+> (ldisc.set_termios is NULL)
 
-What happens with the (sick) case of spaces in directory names?
-Also is it really nicely defined that there is no way to put a space
-in an option in any of the filesystems?   I suppose someone
-particularly sick could have a device node in a directory with a space
-in it.  It would be nice if new formats for this are being defined
-to make it cover everything.
+Yeah the driver is full of bugs - its also broken for the way its
+set_termios tries to play 'guess it the properties have changed' and gets
+speed checks wrong, how it snoops the baud bits and some other stuff it
+does.
 
-Dave
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+If you make it look like a real serial driver it ought to work fine. If
+you've got hardware I can send you test patches ?
