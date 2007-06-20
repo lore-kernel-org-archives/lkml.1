@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbXFTXGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbXFTXGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbXFTXGW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbXFTXGO
+	id S1757220AbXFTXGf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbXFTXGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:06:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45518 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763AbXFTXGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:06:13 -0400
-Message-ID: <4679B2DE.9090903@garzik.org>
-Date: Wed, 20 Jun 2007 19:06:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Wed, 20 Jun 2007 19:06:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58112 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754275AbXFTXGQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:06:16 -0400
+Date: Wed, 20 Jun 2007 16:04:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ian McDonald <ian.mcdonald@jandi.co.nz>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       William Cohen <wcohen@redhat.com>,
+       "S. P. Prasanna" <prasanna@in.ibm.com>,
+       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
+       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
+       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
+In-Reply-To: <alpine.LFD.0.98.0706201550480.3593@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0706201601100.3593@woody.linux-foundation.org>
+References: <467543FA.60905@googlemail.com> 
+ <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com> 
+ <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
+ <5640c7e00706201541g3ecaf8c5i524d8b464d8fcc2d@mail.gmail.com>
+ <alpine.LFD.0.98.0706201550480.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Carlo Wood <carlo@alinoe.com>, linux-kernel@vger.kernel.org
-Subject: Re: SATA Harddisk speed drop of 100 MB/s
-References: <20070620224847.GA5488@alinoe.com>
-In-Reply-To: <20070620224847.GA5488@alinoe.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carlo Wood wrote:
-> hdparm -tT gives over 160 MB/s for my tripple 10k rpm Raptor RAID5
-> on 2.6.18, as expected.
+
+
+On Wed, 20 Jun 2007, Linus Torvalds wrote:
 > 
-> In 2.6.22-rc5 this dropped to only 60 MB/s !
-> 
-> Is this a known issue?
-> 
-> I also measured it with bonnie; I get 108 MB/s reading speed on
-> 2.6.18 and only 68 MB/s on 2.6.22-rc5.
+> There's just no *point*. 
 
-More info needed...  kernel config, before-and-after dmesg output, lspci 
-output.
+Put another way: we lived without DEBUG_RODATA for fifteen years, why 
+should we now start adding complexity to work around code that doesn't 
+accept the (fairly small) debugging it gives?
 
-	Jeff
+Has anybody actually found a bug using it?
 
+As far as I know, the biggest reason to use DEBUG_RODATA is
 
+ (a) Hey, it's a cheap way to check one thing
 
+ (b) An added layer of security (which it's not that great for, but it 
+     might make sense to make it more of a real security feature).
+
+and neither of them really seems to say "let's add more code to other 
+pieces of the kernel to work around it" to me.
+
+			Linus
