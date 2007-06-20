@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbXFTU5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbXFTU66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753330AbXFTU5q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbXFTU5h
+	id S1753402AbXFTU66 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbXFTU6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:57:37 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:47558 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbXFTU5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:57:35 -0400
-Message-ID: <467994BD.6000403@zytor.com>
-Date: Wed, 20 Jun 2007 13:57:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 20 Jun 2007 16:58:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48923 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbXFTU6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 16:58:50 -0400
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Anders Larsen <al@alarsen.net>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <1182156596l.29108l.0l@ecxwww1.reanet.de>
+	<or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<46794CB3.4000305@zytor.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Wed, 20 Jun 2007 17:58:18 -0300
+In-Reply-To: <46794CB3.4000305@zytor.com> (H. Peter Anvin's message of "Wed\, 20 Jun 2007 08\:50\:11 -0700")
+Message-ID: <orsl8mtkb9.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Adding subroot information to /proc/mounts, or obtaining that through
- other means
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Right now it is actually impossible to conclusively determine a
-filesystem-relative path in the presence of bind (and possibly move)
-mounts.  This is highly desirable to be able to do in contexts that
-involve non-Linux (or not-the-current-instance-of-Linux) accesses to the
-filesystem, e.g. other filesystems or bootloaders.
+On Jun 20, 2007, "H. Peter Anvin" <hpa@zytor.com> wrote:
 
-Example:
+> Alexandre Oliva wrote:
+>> 
+>>> b) the manufacturer is able to update the device _in_ _the_ _field_.
+>> Sure, it would be more costly, but it's not like the
+>> law (or the agreements in place) *mandate* tivoization.
 
-Let's assume /dev/md6 is mounted on /export.  Then /export/users/foo and
-/exports/users/bar are bind-mounted to /home/foo and /home/bar respectively.
+> The sad part is that the FCC, especially, are pretty fond of doing
+> exactly that.
 
-/proc/mounts will show:
+<broken-record>
+  It does not mandate the use of *copyleft* Free Software in non-ROM
+  such a way that the user cannot modify it.
+</broken-record>
 
-/dev/md6 /export ext3 rw,data=ordered 0 0
-/dev/md6 /home/foo ext3 rw,data=ordered 0 0
-/dev/md6 /home/bar ext3 rw,data=ordered 0 0
+> This comes more from a general cluelessness about technology
 
-... with no indication that anything is amiss.  The latter two fields
-are confusing, at best.
+And the meaning of tivoization ;-)
 
-We could add a field to /proc/mounts to add this information:
+Tivoization doesn't mean "user can't modify".  It's more than that.
 
-/dev/md6 /export ext3 rw,data=ordered 0 0 /
-/dev/md6 /home/foo ext3 rw,data=ordered 0 0 /users/foo
-/dev/md6 /home/bar ext3 rw,data=ordered 0 0 /users/bar
 
-... or, alternatively, add a subfield to the first field (which would
-entail escaping whatever separator we choose):
+But I agree with the feeling.  It's like mandating knife manufacturers
+to design ways to stop people from hurting or killing others with
+knives.  So much for self defense...
 
-/dev/md6 /export ext3 rw,data=ordered 0 0
-/dev/md6:/users/foo /home/foo ext3 rw,data=ordered 0 0
-/dev/md6:/users/bar /home/bar ext3 rw,data=ordered 0 0
-
-One could also consider providing a system call (or ioctl, ...) to get
-this information, effectively as an augmentation to stat().  If that's
-the case, it would probably be a good thing if this "stat-plus" system
-call could in the future be expanded to contain additional information
-without having to change a structure every time, perhaps using a method
-similar to sendmsg/recvmsg, as ugly as those are.
-
-I'm personally leaning toward the second option (/dev/md6:/users/foo).
-Although that might confuse current utilities, those utilities are
-*already* liable to get confused by the fact that the line doesn't mean
-what they think it means.
-
-	-hpa
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
