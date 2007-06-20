@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757619AbXFTPOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbXFTPSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757619AbXFTPOs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 11:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbXFTPOj
+	id S1755243AbXFTPSY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 11:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXFTPSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 11:14:39 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:53234 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754023AbXFTPOi (ORCPT
+	Wed, 20 Jun 2007 11:18:17 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:57220 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbXFTPSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 11:14:38 -0400
-Message-ID: <46794457.6010402@s5r6.in-berlin.de>
-Date: Wed, 20 Jun 2007 17:14:31 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: "Huang, Ying" <ying.huang@intel.com>
-CC: Greg K-H <greg@kroah.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Adrian Bunk <bunk@stusta.de>, "; david@lang.hm" <david@lang.hm>,
-       David Miller <davem@davemloft.net>,
-       Duncan Sands <duncan.sands@math.u-psud.fr>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] driver core: multithreaded probing - more parallelism
- control
-References: <1182373258.30574.30.camel@caritas-dev.intel.com> <46794343.3080204@s5r6.in-berlin.de>
-In-Reply-To: <46794343.3080204@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jun 2007 11:18:16 -0400
+Date: Wed, 20 Jun 2007 11:17:53 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Blaisorblade <blaisorblade@yahoo.it>
+Cc: user-mode-linux-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [uml-devel] [PATCH 2/2] UML - Add stack usage monitoring
+Message-ID: <20070620151753.GA6728@c2.user-mode-linux.org>
+References: <20070619184245.GA10567@c2.user-mode-linux.org> <20070619195003.GA11718@c2.user-mode-linux.org> <20070619131441.01b5ae4b.akpm@linux-foundation.org> <200706201606.58331.blaisorblade@yahoo.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706201606.58331.blaisorblade@yahoo.it>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Huang, Ying wrote:
-...
->> + * @probe: probing infromation include probing function and parameter
->                       ^^^^^^^^^^^
-> typo: information
+On Wed, Jun 20, 2007 at 04:06:58PM +0200, Blaisorblade wrote:
+> Oh, it's exactly what CONFIG_DEBUG_STACK_USAGE does for i386... (not sure if 
+> you were still wondering...).
 
-Also, the meaning of the rest of the sentence is unclear.
+Where?  The only usage in i386 that I see is thread_info.h zeroing stacks
+as they are allocated.
+
+				Jeff
+
 -- 
-Stefan Richter
--=====-=-=== -==- =-=--
-http://arcgraph.de/sr/
+Work email - jdike at linux dot intel dot com
