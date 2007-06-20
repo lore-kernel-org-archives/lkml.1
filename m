@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbXFTTu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbXFTTvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760610AbXFTTu1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 15:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbXFTTuU
+	id S1757353AbXFTTvP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 15:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756788AbXFTTu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 15:50:20 -0400
-Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:50759
-	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756269AbXFTTuT (ORCPT
+	Wed, 20 Jun 2007 15:50:59 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:36934 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756216AbXFTTu6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 15:50:19 -0400
-To: david@lang.hm
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
-	<ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
-	<or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
-	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
-	<2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
-	<871wg6trnx.fsf@graviton.dyn.troilus.org> <467977F7.2040506@zytor.com>
-	<Pine.LNX.4.64.0706201200550.30395@asgard.lang.hm>
-	<87sl8ms9z5.fsf@graviton.dyn.troilus.org>
-	<Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm>
-From: Michael Poole <mdpoole@troilus.org>
-Date: Wed, 20 Jun 2007 15:50:18 -0400
-In-Reply-To: <Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm> (david@lang.hm's message of "Wed\, 20 Jun 2007 12\:40\:20 -0700 \(PDT\)")
-Message-ID: <87k5tys8w5.fsf@graviton.dyn.troilus.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
+	Wed, 20 Jun 2007 15:50:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=xhyBbRt3oJUXwZza1jMXSj3dKwgOqBBPjEerLqvn6XQ3b3xFSJJMgrhNVXcwS2Y+G
+	YdQFX99lvb+2qcsyRIp4A==
+Date: Wed, 20 Jun 2007 12:45:35 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Robert Richter <robert.richter@amd.com>
+cc: Stephane Eranian <eranian@hpl.hp.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/8] 2.6.22-rc3 perfmon2 : Barcelona CPU detection
+In-Reply-To: <20070620184102.GB5874@erda.amd.com>
+Message-ID: <alpine.DEB.0.99.0706201244160.4562@chino.kir.corp.google.com>
+References: <20070620182126.248753000@amd.com>
+ <20070620184102.GB5874@erda.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm writes:
+On Wed, 20 Jun 2007, Robert Richter wrote:
 
-> On Wed, 20 Jun 2007, Michael Poole wrote:
->
->> david@lang.hm writes:
->>
->>> this is very much NOT true. if you take the source the provide you can
->>> compile a kernel that will run on the tivo, the only thing you have to
->>> do (on some models) is to change the bios to skip the step that checks
->>> if the kernel has been tampered with.
->>
->> If we are opining whether Tivo provided complete source code for their
->> Linux kernel images, the requirement to change non-GPLed software as a
->> condition to exercise GPL-protected rights speaks for itself.
->
-> no, the GPL protected rights don't say anything about the hardware the
-> system runs on.
->
-> you are saying that the GPL now controls what the BIOS software is
-> allowed to do or not allowed to do.
+> Index: linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/arch/x86_64/perfmon/perfmon_k8.c
+> +++ linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
+> @@ -307,7 +307,12 @@ static int pfm_k8_probe_pmu(void)
+>  		return -1;
+>  	}
+>  
+> -	if (current_cpu_data.x86 != 15) {
+> +	switch (current_cpu_data.x86) {
+> +	case 15:
+> +	case 16:
+> +		PFM_INFO("found family=%d", current_cpu_data.x86);
+> +		break;
+> +	default:
+>  		PFM_INFO("unsupported family=%d", current_cpu_data.x86);
+>  		return -1;
+>  	}
 
-Please retract that claim.  I have said no such thing, and have
-avoided saying anything that I thought might be misconstrued in that
-direction.
+This still shouldn't be a switch clause because you're hiding the return 
+-1; in the default label.  I think it would be better to write:
 
-To be absolutely clear: My complaints with Tivo as a hardware or BIOS
-vendor are moral and pragmatic, not legal.  My complaint with Tivo as
-a distributor of Linux is what hinges on legal issues.
-
-> that's a seperate body of code that is in no way derived from the
-> linux kernel (even the anti-tampering functions would work equally
-> well with other Operating systems and are in no way linux
-> specific). it's no even loaded on the same media (the BIOS is in
-> flash/rom on the botherboard, the OS is on the hard drive)
->
-> and note that the software that is checked to make sure that it hasn't
-> been changed includes much more then the kernel. it checks the kernel
-> and the initrd.
-
-Not legally relevant.
-
->> Out of curiosity, what do you have to do on models besides those?  Are
->> newer models more or less restrictive in what they run?  If newer
->> models are more restrictive, I think that also speaks to whether Tivo
->> thinks it is conveying complete source code.
->
-> newer models do tend to be more restrictive, but they also tend to
-> connect to more propriatary networks (satellite or cable)
-
-What they connect to is also not relevant.  That imples that because a
-vendor has been issued or licensed patents, they are not obliged to
-follow the GPL -- that the vendor has other obligations that supercede
-the GPL's license claims.  GPL section 7 addresses that situation.
-
-Michael Poole
+	if (current_cpu_data.x86 == 15 || current_cpu_data.x86 == 16)
+		PFM_INFO("found family=%d", current_cpu_data.x86);
+	else {
+		PFM_INFO("unsupported family=%d", current_cpu_data.x86);
+		return -1;
+	}
