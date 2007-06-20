@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbXFTHzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761876AbXFTH5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761344AbXFTHzb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 03:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbXFTHzW
+	id S1761876AbXFTH5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 03:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758051AbXFTH53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 03:55:22 -0400
-Received: from main.gmane.org ([80.91.229.2]:36181 "EHLO ciao.gmane.org"
+	Wed, 20 Jun 2007 03:57:29 -0400
+Received: from il.qumranet.com ([82.166.9.18]:42946 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755748AbXFTHzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 03:55:21 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jan Blunck <jblunck@suse.de>
-Subject: Re: [RFC PATCH 1/4] Union mount documentation.
-Date: Wed, 20 Jun 2007 07:29:55 +0000 (UTC)
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
-Message-ID: <f5al1i$foi$1@sea.gmane.org>
-References: <20070620055050.GB4267@in.ibm.com>
-	<20070620055157.GC4267@in.ibm.com>
-	<1182319191.2700.9.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: charybdis-ext.suse.de
-User-Agent: pan 0.119 (Karma Hunters)
+	id S1755794AbXFTH52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 03:57:28 -0400
+Message-ID: <4678DB8C.4040200@qumranet.com>
+Date: Wed, 20 Jun 2007 10:47:24 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Luca Tettamanti <kronos.it@gmail.com>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] kvm: Fix x86 emulator writeback
+References: <68676e00706141627s3cb87391sa0ee6711d2f7933f@mail.gmail.com> <467256AA.1040001@qumranet.com> <20070615214915.GA10536@dreamland.darkstar.lan> <4673949B.1070505@qumranet.com> <20070617151452.GA21971@dreamland.darkstar.lan> <4675523C.9020703@qumranet.com> <20070617165201.GA23885@dreamland.darkstar.lan> <46765954.60102@qumranet.com> <46766D57.8040206@qumranet.com> <20070619202524.GA17672@dreamland.darkstar.lan> <20070619204120.GA18800@dreamland.darkstar.lan>
+In-Reply-To: <20070619204120.GA18800@dreamland.darkstar.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Wed, 20 Jun 2007 10:47:24 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007 22:59:51 -0700, Arjan van de Ven wrote:
+Luca Tettamanti wrote:
+> When the old value and new one are the same the emulator skips the
+> write; this is undesiderable when the destination is a MMIO area and the
+> write shall be performed regardless of the previous value. This
+> optimization breaks e.g. a Linux guest APIC compiled without
+> X86_GOOD_APIC.
+>
+> Remove the check and perform the writeback stage in the emulation unless
+> it's explicitly disabled (currently push and some 2 bytes instructions
+> may disable the writeback).
+>
+>   
 
-> first of all I'm happy to see that people are still working on unionfs;
-> I'd love to have functionality like this show up in Linux.
+Applied both, thanks.
 
-This has nothing to do with unionfs. This is about doing a VFS based
-approach to union mounts. Unification is a name-based construct so it
-belongs into VFS and not into a separate file system.
-
-> I'll not claim to have any VFS knowledge whatsoever, but I was just
-> wondering what happens in the following scenario:
-> 
-> FS A is mounted twice, in /mnt/A and /mnt/union
-> 
-> FS B is mounted twice, in /mnt/B and as topmost union mount
-> on /mnt/union
-> 
-> lets for simplicity say both filesystems are entirely empty
-> 
-> user does on FS A: 
-> mkdir  /mnt/A/somedir
-> touch /mnt/A/somedir/somefile
-> 
-> and then 2 things happen in parallel
-> 1) touch /mnt/B/somefile
-> 2) mv /mnt/union/somedir /mnt/union/somefile
-> 
-> since the underlying FS for 2) is FS A... how will this work out locking
-> wise? Will the VS lock the union directory only? Or will this operate
-> only on the underlying FS? How is dcache consistency guaranteed for
-> scenarios like this?
-
-Mounting a file system twice is bad in the first place. This should be
-done by using bind mounts and bind a mounted file system into a union.
-After that the normal locking rules apply (and hopefully work ;).
-
-Jan
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
