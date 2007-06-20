@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbXFTAck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbXFTAj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758887AbXFTAck (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 20:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbXFTAcd
+	id S1758927AbXFTAj5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 20:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbXFTAjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 20:32:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42766 "EHLO mx1.redhat.com"
+	Tue, 19 Jun 2007 20:39:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44116 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755334AbXFTAcc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 20:32:32 -0400
-To: =?utf-8?Q?Hans-J=C3=BCrgen?= Koch <hjk@linutronix.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1754599AbXFTAjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 20:39:48 -0400
+To: david@lang.hm
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Rob Landley <rob@landley.net>,
-       Bron Gondwana <brong@fastmail.fm>, Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: mea culpa on the meaning of Tivoization
-References: <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706191022.21869.hjk@linutronix.de>
-	<orbqfb3icl.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706200008.35152.hjk@linutronix.de>
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706190221.09067.dhazelton@enter.net>
+	<ork5u04f5b.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706190258.56955.dhazelton@enter.net>
+	<or7iq04bff.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706191413040.26701@asgard.lang.hm>
+	<ord4zrzhqh.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706191548010.26701@asgard.lang.hm>
+	<ortzt3y0rf.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706191649490.26701@asgard.lang.hm>
 From: Alexandre Oliva <aoliva@redhat.com>
 Organization: Red Hat OS Tools Group
-Date: Tue, 19 Jun 2007 21:30:30 -0300
-In-Reply-To: <200706200008.35152.hjk@linutronix.de> (=?utf-8?Q?=22Hans-J?=
- =?utf-8?Q?=C3=BCrgen?= Koch"'s message of "Wed\, 20 Jun 2007 00\:08\:34
- +0200")
-Message-ID: <orhcp3xyah.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Tue, 19 Jun 2007 21:38:49 -0300
+In-Reply-To: <Pine.LNX.4.64.0706191649490.26701@asgard.lang.hm> (david@lang.hm's message of "Tue\, 19 Jun 2007 16\:57\:04 -0700 \(PDT\)")
+Message-ID: <ord4zrxxwm.fsf@oliva.athome.lsd.ic.unicamp.br>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, Hans-Jürgen Koch <hjk@linutronix.de> wrote:
+On Jun 19, 2007, david@lang.hm wrote:
 
->> >> Let's just hope it never is, or that some influx of 
->> >> long-sighted comes in 
->> 
->> > Kernel programmers are short-sighted? What kind of arrogance is that?
->> 
->> It's just stating the obvious.  The upgrade path is a nightmare.
+> if you also make the assumption that the company won't use propriatary
+> software instead then I think you would get agreement.
 
-> Well, maybe. Maybe this is a topic that needs further discussion.
-> But I don't find it very important as we're not in a situation where
-> we urgently need a new license.
+Ah, good point.  When I posed the one of the two cases of the inicial
+scenario as "no tivoization", I meant Free Software without
+constraints.
 
-Agreed.  It could have been discussed years ago, when the
-clarification on GPLv2-only came up, but it's still not urgent, and
-hopefully it never will be.  It wouldn't be a bad idea to think about
-it, though.
+> but the disagrement is over this exact assumption. you assume that
+> these companies will use non-tivoized products if you make it hard
+> to use the software covered by the GPL, most other people are saying
+> that they disagree and the result would be fewer companies useing
+> software covered by GPL instead.
 
-Just in case it's not clear, this is in no way related with GPLv3.
-It's just that GPLv3 discussions appear to get more people thinking
-about relicensing, and then the "impossibilities" of doing it come up.
+I understand that.  And what I'm saying is that, even if fewer such
+companies use GPLed software, you may still be better off, out of
+additional contributions you'll get from customers of companies that
+switch from tivoization to unconstrained Free Software, because of the
+additional costs of the alternatives.
+
+And no, I can't prove it, but it's good that at least the argument is
+no longer completely disregarded while something else is disputed.
+
+
+Now that you guys at least understand what the argument is, you can
+figure out the solution by yourselves.
 
 -- 
 Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
