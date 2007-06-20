@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbXFTPx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbXFTPyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758062AbXFTPx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 11:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbXFTPxr
+	id S1758607AbXFTPyk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 11:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbXFTPyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 11:53:47 -0400
-Received: from ns.suse.de ([195.135.220.2]:53176 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754785AbXFTPxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 11:53:47 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Subject: Re: [PATCH -mm 1/2] i386: semi-rewrite of PTRACE_PEEKUSR, PTRACE_POKEUSR
-Date: Wed, 20 Jun 2007 17:53:33 +0200
-User-Agent: KMail/1.9.6
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, roland@redhat.com,
-       hch@infradead.org, devel@openvz.org
-References: <20070620150733.GB6663@localhost.sw.ru>
-In-Reply-To: <20070620150733.GB6663@localhost.sw.ru>
+	Wed, 20 Jun 2007 11:54:20 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:49387 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755342AbXFTPyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 11:54:19 -0400
+Message-ID: <46794BE2.5020108@zytor.com>
+Date: Wed, 20 Jun 2007 08:46:42 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <ak@suse.de>
+CC: Christoph Hellwig <hch@infradead.org>, Mike Frysinger <vapier@gentoo.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] use __asm__ and __volatile__ in asm-x86_64/msr.h
+References: <200706180209.36762.vapier@gentoo.org> <200706181002.21978.vapier@gentoo.org> <20070618183651.GB17112@infradead.org> <200706182053.04116.ak@suse.de>
+In-Reply-To: <200706182053.04116.ak@suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706201753.33546.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 June 2007 17:07:34 Alexey Dobriyan wrote:
-> Refactor PTRACE_PEEKUSR, PTRACE_POKEUSR implementation on i386.
-> Ideas and concepts borrowed from utrace patchset by Roland McGrath.
+Andi Kleen wrote:
+>> asm-i386/msr.h should not be exported to userspace at all, it contains
+>> nothing but kernel-internal helpers.
 > 
-> Patch adds only two new concepts: struct ptrace_usr_area and struct regset.
-> The former describes registers accessible through PTRACE_PEEKUSR,
-> PTRACE_POKEUSR in generic way. Where it starts, where it ends, if it's a hole
-> (needed to know when to return 0 and -EIO).
-> 
-> The latter is for abstracting various registers and operations on them
-> (general-purpose regs, FPU regs, etc).
-> 
-> Unlike utrace patchset, usr_area has direct pointer to correspoding
-> register set instead of magic number in specific array.
+> Actually rdtsc and rdtscll and potentially rdpmc which is in there can be very 
+> useful in user space if you know what you're doing. Unfortunately a lot of its users don't,
+> but not having the include probably won't stop them either.
 
-The new code seems to be larger than the old code. Not sure 
-how that is an improvement?
+More likely, people will just re-implement them incorrectly.
 
-Given the old bit operations weren't very nice, but then
-the code rarely changes so it wasn't exactly a maintenance issue.
+However, the rdtsc() definition in the kernel is weird (and removable, I
+think there are no more users -- I have it removed in my MSR driver
+rewrite tree which I need to get off my arse and push.)  Most users
+would expect the rdtscll() functionality with the rdtsc() name.
 
--Andi
+	-hpa
