@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbXFTRfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbXFTRfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757882AbXFTRfM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbXFTRe7
+	id S1756460AbXFTRfd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbXFTRfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:34:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:61768 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754110AbXFTRe6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:34:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sEtl3j1LVvvgUkBw8N95ux+5yQh9NGj+N/KSJa+vlDgxWBiNDs6byds/na7VmQ97sRBBjaiwWNsPkCLY0HmrtAvQY64nUtVSc45UhWO6u9gQlOfuCzG/wbCeTO5ErD3cZNb30oIZ6YJ6/Hj7c+JbSMIxV0bg41/PNvIq8vRhcjg=
-Message-ID: <9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
-Date: Wed, 20 Jun 2007 19:34:57 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Alexandre Oliva" <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Ingo Molnar" <mingo@elte.hu>,
-       "Daniel Hazelton" <dhazelton@enter.net>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jun 2007 13:35:01 -0400
+Received: from mga03.intel.com ([143.182.124.21]:11540 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754429AbXFTRfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 13:35:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,443,1175497200"; 
+   d="scan'208";a="241351820"
+Date: Wed, 20 Jun 2007 10:30:38 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, suresh.b.siddha@intel.com,
+       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures in dma	map api calls
+Message-ID: <20070620173038.GA25516@linux-os.sc.intel.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070619213808.798646000@askeshav-devel.jf.intel.com> <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	 <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
-	 <ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
-	 <or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
-	 <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <46792586.20706@linux.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/06/07, Alexandre Oliva <aoliva@redhat.com> wrote:
-> On Jun 18, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > In the GPLv3 world, we have already discussed in this thread how you can
-> > follow the GPLv3 by making the TECHNICALLY INFERIOR choice of using a ROM
-> > instead of using a flash device.
->
-> Yes.  This is one option that doesn't bring any benefits to anyone.
-> It maintains the status quo for users and the community, but it loses
-> the ability for the vendor to upgrade, fix or otherwise control the
-> users.  Bad for the vendor.
->
-Also bad for the user since now the vendor can no longer supply
-updated firmware to fix bugs or otherwise improve the device. Also,
-the vendow has the problem that devices that get returned for repair
-or similar can't easily be updated software wise. For the vendor not
-to be able to update the box creates a lot of problems for both the
-vendor and the end user.
+On Wed, Jun 20, 2007 at 06:03:02AM -0700, Arjan van de Ven wrote:
+> Peter Zijlstra wrote:
+> >
+> >
+> >PF_MEMALLOC as is, is meant to salvage the VM from the typical VM
+> >deadlock. 
+> 
+> .. and this IS the typical VM deadlock.. it is your storage driver 
+> trying to write out a piece of memory on behalf of the VM, and calls 
+> the iommu to map it, which then needs a bit of memory....
 
+Today PF_MEMALLOC doesn't do much in interrupt context. If PF_MEMALLOC
+is the right usage model for this, then we need to fix the behavior of
+PF_MEMALLOC in the interrupt context(for our usage model, we do most
+of the allocations in interrupt context).
 
-> As another option, the vendor can respect users' freedoms, and then
-> everybody wins big.  That's the option that anti-tivoization provides
-> economic incentive for vendors to take.  Sure, they may still prefer
-> the alternative above, or stick with an older version (which has its
-> costs), or move to different software (which also has its costs), but
-> it's unreasonable to claim that I'm advocating for vendors to move to
-> ROM.
->
-I am fairly confident that if too much software switches to GPLv3
-we'll see a lot of businesses move to BSD or proprietary software.
-That means *we* lose bigtime.
+I am not very familiar with PF_MEMALLOC. So experts please comment.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+thanks,
+suresh
