@@ -1,72 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbXFTIHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXFTIMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759455AbXFTIHF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 04:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761117AbXFTIGt
+	id S932184AbXFTIMh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 04:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbXFTIMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 04:06:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38212 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757385AbXFTIGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 04:06:48 -0400
-Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures in dma
-	map api calls
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
-       gregkh@suse.de, muli@il.ibm.com, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, davem@davemloft.net,
-       clameter@sgi.com
-In-Reply-To: <20070619213808.798646000@askeshav-devel.jf.intel.com>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
-	 <20070619213808.798646000@askeshav-devel.jf.intel.com>
-Content-Type: text/plain
-Date: Wed, 20 Jun 2007 10:06:39 +0200
-Message-Id: <1182326799.21117.19.camel@twins>
+	Wed, 20 Jun 2007 04:12:25 -0400
+Received: from main.gmane.org ([80.91.229.2]:56907 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753845AbXFTIMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 04:12:23 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jan Blunck <jblunck@suse.de>
+Subject: Re: [RFC PATCH 1/4] Union mount documentation.
+Date: Wed, 20 Jun 2007 08:11:51 +0000 (UTC)
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+Message-ID: <f5ang7$foi$4@sea.gmane.org>
+References: <20070620055050.GB4267@in.ibm.com>
+	<20070620055157.GC4267@in.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: charybdis-ext.suse.de
+User-Agent: pan 0.119 (Karma Hunters)
+Cc: linux-fsdevel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-19 at 14:37 -0700, Keshavamurthy, Anil S wrote:
-> plain text document attachment (intel_iommu_pf_memalloc.patch)
-> Intel IOMMU driver needs memory during DMA map calls to setup its internal
-> page tables and for other data structures. As we all know that these DMA 
-> map calls are mostly called in the interrupt context or with the spinlock 
-> held by the upper level drivers(network/storage drivers), so in order to 
-> avoid any memory allocation failure due to low memory issues,
-> this patch makes memory allocation by temporarily setting PF_MEMALLOC
-> flags for the current task before making memory allocation calls.
-> 
-> We evaluated mempools as a backup when kmem_cache_alloc() fails
-> and found that mempools are really not useful here because
->  1) We don;t know for sure how much to reserve in advance
+On Wed, 20 Jun 2007 11:21:57 +0530, Bharata B Rao wrote:
 
-So you just unleashed an unbounded allocation context on PF_MEMALLOC?
-seems like a really really bad idea.
+> +4. Union stack: building and traversal
+> +-------------------------------------- +Union stack needs to be built
+> from two places: during an explicit union +mount (or mount propagation)
+> and during the lookup of a directory that +appears in more than one
+> layer of the union. +
+> +The link between two layers of union stack is maintained using the
+> +union_mount structure:
+> +
+> +struct union_mount {
+> +	/* vfsmount and dentry of this layer */
+> +	struct vfsmount *src_mnt;
+> +	struct dentry *src_dentry;
+> +
+> +	/* vfsmount and dentry of the next lower layer */
+> +	struct vfsmount *dst_mnt;
+> +	struct dentry *dst_dentry;
+> +
+> +	/*
+> +	 * This list_head hashes this union_mount based on this layer's +	 *
+> vfsmount and dentry. This is used to get to the next layer of +	 * the
+> stack (dst_mnt, dst_dentry) given the (src_mnt, src_dentry) +	 * and is
+> used for stack traversal. +	 */
+> +	struct list_head hash;
+> +
+> +	/*
+> +	 * All union_mounts under a vfsmount(src_mnt) are linked together +	 *
+> at mnt->mnt_union using this list_head. This is needed to destroy +	 *
+> all the union_mounts when the mnt goes away. +	 */
+> +	struct list_head list;
+> +};
+> +
+> +These union mount structures are stored in a hash
+> table(union_mount_hashtable) +which uses the same hash as used for
+> mount_hashtable since both of them use +(vfsmount, dentry) pairs to
+> calculate the hash. +
+> +During a new mount (or mount propagation), a new union_mount structure
+> is +created. A reference to the mountpoint's vfsmount and dentry is
+> taken and +stored in the union_mount (as dst_mnt, dst_dentry). And this
+> union_mount +is inserted in the union_mount_hashtable based on the hash
+> generated by +the mount root's vfsmount and dentry. +
+> +Similar method is employed to create a union stack during first time
+> lookup +of a common named directory within a union mount point. But
+> here, the top +level directory's vfsmount and dentry are hashed to get
+> to the lower level +directory's vfsmount and dentry.
+> +
+> +The insertion, deletion and lookup of union_mounts in the
+> +union_mount_hashtable is protected by vfsmount_lock. While traversing
+> the +stack, we hold this spinlock only briefly during lookup time and
+> release +it as soon as we get the next union stack member. The top level
+> of the +stack holds a reference to the next level (via union_mount
+> structure) and +so on. Therefore, as long as we hold a reference to a
+> union stack member, +its lower layers can't go away. And since we don't
+> do the complete +traversal under any lock, it is possible for the stack
+> to change over the +level from where we started traversing. For eg. when
+> traversing the stack +downwards, a new filesystem can be mounted on top
+> of it. When this happens, +the user who had a reference to the old top
+> wouldn't have visibility to +the new top and would continue as if the
+> new top didn't exist for him. +I believe this is fine as long as members
+> of the stack don't go away from +under us(CHECK). And to be sure of
+> this, we need to hold a reference to the +level from where we start the
+> traversal and should continue to hold it +till we are done with the
+> traversal.
 
->  2) And mempools are not useful for GFP_ATOMIC case (as we call 
->     memory alloc functions with GFP_ATOMIC)
+Well done. I like your approach much more than the simple chaining of
+dentries. When I told you about the idea of maintaining a list of
+<dentry,vfsmount> objects I always though about one big structure for all
+the layers of an union. Smaller objects that only point to the next layer
+seem to be better but make the search for the topmost layer impossible.
+You should maintain a reference to the topmost struct union_mount though.
 
-Mempools work as intended with GFP_ATOMIC, it gets filled up to the
-specified number of elements using GFP_KERNEL (at creation time). This
-gives GFP_ATOMIC allocations nr_elements extra items once it would start
-failing.
+> +5. Union stack: destroying
+> +--------------------------
+> +In addition to storing the union_mounts in a hash table for quick
+> lookups, +they are also stored as a list, headed at vsmount->mnt_union.
+> So, all +union_mounts that occur under a vfsmount (starting from the
+> mountpoint +followed by the subdir unions) are stored within the
+> vfsmount. During +umount (specifically, during the last mntput()), this
+> list is traversed +to destroy all union stacks under this vfsmount. +
+> +Hence, all union stacks under a vfsmount continue to exist until the
+> +vfsmount is unmounted. It may be noted that the union_mount structure
+> +holds a reference to the current dentry also. Becasue of this, for
+> +subdir unions, both the top and bottom level dentries become pinned
+> +till the upper layer filesystem is unmounted. Is this behaviour
+> +acceptable ? Would this lead to a lot of pinned dentries over a period
+> +of time ? (CHECK) If we don't do this, the top layer dentry might go
+> +out of cache, during which time we have no means to release the
+> +corresponding union_mount and the union_mount becomes stale. Would it
+> +be necessary and worthwhile to add intelligence to prune_dcache() to
+> +prune unused union_mounts thereby releasing the dentries ? +
+> +As noted above, we hold the refernce to current dentry from union_mount
+> +but don't get a reference to the corresponding vfsmount. We depend on
+> +the user of the union stack to hold the reference to the topmost
+> vfsmount +until he is done with the stack traversal. Not holding a
+> reference to the +top vfsmount from within union_mount allows us to free
+> all the union_mounts +from last mntput of the top vfsmount. Is this
+> approach acceptable ? +
+> +NOTE: union_mount structures are part of two lists: the hash list for
+> +quick lookups and a linked list to aid the freeing of these structures
+> +during unmount.
 
-> With PF_MEMALLOC flag set in the current->flags, the VM subsystem avoids
-> any watermark checks before allocating memory thus guarantee'ing the 
-> memory till the last free page.
+This must changed. This is the only reason why the dentry chaining
+approach was so complex. You need a way to get rid of all unused dentries
+in a union.
 
-PF_MEMALLOC as is, is meant to salvage the VM from the typical VM
-deadlock. Using it as you do now is not something a driver should ever
-do, and I'm afraid I will have to strongly oppose this patch.
+Besides that, I wonder why you left out the rest of my code? The readdir,
+whiteout and copyup parts are orthogonal to the code for maintaining the
+union structure itself. I just rewrote most of it myself to use functions
+like follow_union_down() etc to get rid of the dentry chaining in the long
+run.
 
-You really really want to calculate an upper bound on your memory
-consumption and reserve this.
-
-So, I'm afraid I'll have to..
-
-NACK!
+Jan
 
