@@ -1,49 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbXFTIQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbXFTIcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757358AbXFTIQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 04:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbXFTIQO
+	id S1755131AbXFTIcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 04:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbXFTIcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 04:16:14 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:4384 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbXFTIQM (ORCPT
+	Wed, 20 Jun 2007 04:32:13 -0400
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:53010 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751312AbXFTIcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 04:16:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=FkOYVDjudX6d2+B1fVBSP5EQ/4MeSOIC+9DMjVU1BVNFrlOp6yjCUuOXR2wo4DH1nS2vZS+x1goqG+X5jaOClZxwAby1p7LDYCVqKQG9uECzBZ46cJgGHAdpbrfEv2jZ8ViXmtUsF3D2+w4xvd3Rr+Uy/DJ/80XYqfMVMNWf/wI=
-Message-ID: <ed10ee420706200116u1f220f0bu479ec93bd5e82540@mail.gmail.com>
-Date: Wed, 20 Jun 2007 01:16:12 -0700
-From: "SL Baur" <steve@xemacs.org>
-To: "Al Boldi" <a1426z@gawab.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Scott Preece" <sepreece@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200706200630.57460.a1426z@gawab.com>
+	Wed, 20 Jun 2007 04:32:12 -0400
+Message-ID: <4678E5FF.7030301@hitachi.com>
+Date: Wed, 20 Jun 2007 17:31:59 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Organization: Systems Development Lab., Hitachi, Ltd., Japan
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Tom Zanussi <zanussi@us.ibm.com>
+Cc: David Wilder <dwilder@us.ibm.com>, linux-kernel@vger.kernel.org,
+       systemtap@sources.redhat.com,
+       Yumiko Sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi Oshima <soshima@redhat.com>, Hideo Aoki <haoki@redhat.com>
+Subject: Re: [PATCH] relay-file-read-start-pos-fix.patch
+References: <4676109F.8020202@us.ibm.com>  <467750E9.4090808@hitachi.com> <1182231301.30702.82.camel@ubuntu>
+In-Reply-To: <1182231301.30702.82.camel@ubuntu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706200157.20527.a1426z@gawab.com>
-	 <7b69d1470706191929l7ff28df5v80f46811c739fa25@mail.gmail.com>
-	 <200706200630.57460.a1426z@gawab.com>
-X-Google-Sender-Auth: ac6f500a22857662
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sure, but was it Linux in embedded devices that made Linux what it is today,
-> or was it GNU/Linux?
+Hi Tom,
 
-No, it was the fact that Linux has always been able to run on garbage.
+Tom Zanussi wrote:
+> Could you send more info on how to reproduce the problem you're seeing?
+> And does this patch fix it?
 
-My introduction to Linux was in 1995 when I was given a network
-of computers made out of back-laboratory garbage and US$0
-software budget and told to make it work.  None of the BSDs
-could cut it, but Linux could.
+Sure, I'll explain how to reproduce it.
 
-User space Unix tool rewrites all of which I could have gotten from
-*BSD had absolutely nothing to do with it.  I doubt that I am
-typical.
+Since current SystemTap is not supporting "overwrite" mode,
+you need to apply a patch before trying to reproduce it.
+I already posted the patch to bugzilla. You can get it from below.
+http://sourceware.org/bugzilla/attachment.cgi?id=1896&action=view
 
--sb
+Here is an example script (fillup.stp).
+----
+global counter=0
+probe timer.ms(1) {
+        counter++;
+        printf("%08d : %020d\n", counter, gettimeofday_ns());
+}
+----
+
+First of all, run the script with -O (overwrite mode) flag.
+(For simplify my explanation, I also use -m flag here.)
+$ stap -O fillup.stp -m fillup
+Soon after starting, press ^\(Ctrl+\) to detach from it.
+
+The script writes 32 bytes dummy data per 1 milli-second, so
+it writes about 32k bytes per 1 second.
+And the default size of relay channel of systemtap is 512kB
+which contains 4 subbufs (each size of subbufs is 128kB).
+Thus, it fills the relay channel at about 16 seconds and
+wraparounds because it uses overwrite mode.
+
+So, wait more than 16 seconds (for example, 18 sec),
+read the relay channel and count the line number.
+And repeat it.
+$ while true; do sleep 18; \
+ cat /sys/kernel/debug/systemtap/fillup/trace0 | wc -l; done
+
+Ideally, it will show the number from 12288(=3*128k/32) to
+16384(=4*128k/32).
+
+However, without my patch, it shows;
+4793
+5721
+9818
+9817
+9819
+13912
+0
+0
+780
+1625
+5723
+5721
+
+And, with my patch;
+15742
+13273
+14901
+12430
+14056
+15682
+13215
+14840
+12370
+13996
+15624
+13154
+
+
+So, I think my patch (which )fixes the problem.
+
+Thanks,
+
+P.S.
+I attached my patch (relay-file-read-overwrite-mode-fix.patch)
+which fixed the problem pointed in previous mail.
+
+Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+
+---
+ kernel/relay.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/kernel/relay.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/relay.c	2007-06-13 20:22:02.000000000 +0900
++++ linux-2.6.22-rc4-mm2/kernel/relay.c	2007-06-20 10:53:06.000000000 +0900
+@@ -812,7 +812,10 @@
+ 	}
+
+ 	buf->bytes_consumed += bytes_consumed;
+-	read_subbuf = read_pos / buf->chan->subbuf_size;
++	if (!read_pos)
++		read_subbuf = buf->subbufs_consumed % n_subbufs;
++	else
++		read_subbuf = read_pos / buf->chan->subbuf_size;
+ 	if (buf->bytes_consumed + buf->padding[read_subbuf] == subbuf_size) {
+ 		if ((read_subbuf == buf->subbufs_produced % n_subbufs) &&
+ 		    (buf->offset == subbuf_size))
+@@ -841,8 +844,9 @@
+ 	}
+
+ 	if (unlikely(produced - consumed >= n_subbufs)) {
+-		consumed = (produced / n_subbufs) * n_subbufs;
++		consumed = produced - n_subbufs + 1;
+ 		buf->subbufs_consumed = consumed;
++		buf->bytes_consumed = 0;
+ 	}
+ 	
+ 	produced = (produced % n_subbufs) * subbuf_size + buf->offset;
+
+
+
+
