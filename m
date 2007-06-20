@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbXFTWCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbXFTWGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbXFTWCb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 18:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbXFTWCW
+	id S1754381AbXFTWGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 18:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbXFTWGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 18:02:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49157 "EHLO ogre.sisk.pl"
+	Wed, 20 Jun 2007 18:06:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43929 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750839AbXFTWCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 18:02:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Subject: Re: [PATCH] Optional Beeping During Resume From Suspend To Ram.
-Date: Thu, 21 Jun 2007 00:09:26 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, pavel@ucw.cz,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>
-References: <200706192118.23706.nigel@nigel.suspend2.net> <200706192333.09183.rjw@sisk.pl>
-In-Reply-To: <200706192333.09183.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1751816AbXFTWGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 18:06:03 -0400
+Date: Thu, 21 Jun 2007 00:05:51 +0200
+From: Karel Zak <kzak@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: Adding subroot information to /proc/mounts, or obtaining that through other means
+Message-ID: <20070620220551.GX7226@petra.dvoda.cz>
+References: <467994BD.6000403@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706210009.27457.rjw@sisk.pl>
+In-Reply-To: <467994BD.6000403@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tuesday, 19 June 2007 23:33, Rafael J. Wysocki wrote:
-> On Tuesday, 19 June 2007 13:18, Nigel Cunningham wrote:
-> > Hi all
-> > 
-> > Here's what I have after today's work.
-> > 
-> > I haven't yet been able to test on x86, but can confirm that it works okay on
-> > x86_64. I'm currently working towards testing it on my old Omnibook. My P4
-> > desktop won't resume from suspend to ram at all, and hasn't produced any
-> > beeps.   
-> > 
-> > I needed to move the BEEP invocation to after the data segment is reloaded,
-> > so that the test could access the variable. That was pretty tricky to find -
-> > no oops or anything bad prior, it just didn't beep when expected.  
-> > 
-> > A couple of notes:
-> > 
-> > - I'd like to put the BEEP macro somewhere that can be shared by x86 32 and
-> > 64. If that's a good idea, any suggestions on where? Nothing occurs to me
-> > straight off.  
+On Wed, Jun 20, 2007 at 01:57:33PM -0700, H. Peter Anvin wrote:
 > 
-> I don't know either.  I think Andi is the right person to ask (CC added).
+> We could add a field to /proc/mounts to add this information:
 > 
-> > - I've just switched from Evo to Kmail. Please let me know if there's any
-> > mangling of the patch. 
+> /dev/md6 /export ext3 rw,data=ordered 0 0 /
+> /dev/md6 /home/foo ext3 rw,data=ordered 0 0 /users/foo
+> /dev/md6 /home/bar ext3 rw,data=ordered 0 0 /users/bar
 
-Unfortunately, the message is encoded as "quoted printable" which results in
-the whitespace being mangled.
+ I prefer this format. It's compatible with the mount(8) -- the mount
+ ignores extra columns.
 
-> The patch looks good to me.  I'll try to run it on an i386 tomorrow.
+> ... or, alternatively, add a subfield to the first field (which would
+> entail escaping whatever separator we choose):
+> 
+> /dev/md6 /export ext3 rw,data=ordered 0 0
+> /dev/md6:/users/foo /home/foo ext3 rw,data=ordered 0 0
+> /dev/md6:/users/bar /home/bar ext3 rw,data=ordered 0 0
 
-I've recoded it and rediffed against -rc5 with the hibernation and suspend
-patchset.  The resut is at
+ We needn't a new separator (':') there already is one (' ').
 
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc5/patches/29-Optional-Beeping-During-Resume-From-RAM.patch
+> I'm personally leaning toward the second option (/dev/md6:/users/foo).
+> Although that might confuse current utilities, those utilities are
+> *already* liable to get confused by the fact that the line doesn't mean
+> what they think it means.
 
-Well, my i386 test box doesn't seem to be able to beep at all.  I'll have to
-look for another one ...
+ Many people use "ln -s /proc/mounts /etc/mtab".
 
-Greetings,
-Rafael
-
+    Karel
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+ Karel Zak  <kzak@redhat.com>
