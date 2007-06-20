@@ -1,301 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbXFTV11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbXFTV1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbXFTV11 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 17:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbXFTV1R
+	id S1755924AbXFTV1n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 17:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbXFTV11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 17:27:17 -0400
-Received: from mga01.intel.com ([192.55.52.88]:33703 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbXFTV1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 17:27:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,444,1175497200"; 
-   d="scan'208";a="259253474"
-Date: Wed, 20 Jun 2007 14:23:42 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: jeff@garzik.org
-Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       arjan@linux.intel.com
-Subject: [patch 3/3] Enable Aggressive Link Power management for AHCI
- controllers.
-Message-Id: <20070620142342.404856fe.kristen.c.accardi@intel.com>
-In-Reply-To: <20070611184146.448266229@intel.com>
-References: <20070611184146.448266229@intel.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jun 2007 17:27:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40231 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755077AbXFTV1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 17:27:25 -0400
+Date: Wed, 20 Jun 2007 14:27:22 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andreas Dilger <adilger@clusterfs.com>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-ext4@vger.kernel.org
+Subject: Re: [36/37] Large blocksize support for ext2
+In-Reply-To: <20070620205602.GI5181@schatzie.adilger.int>
+Message-ID: <Pine.LNX.4.64.0706201425050.31425@schroedinger.engr.sgi.com>
+References: <20070620182907.506775016@sgi.com> <20070620183014.438784820@sgi.com>
+ <20070620205602.GI5181@schatzie.adilger.int>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable Aggressive Link Power management for AHCI controllers.
+On Wed, 20 Jun 2007, Andreas Dilger wrote:
 
-This patch will set the correct bits to turn on Aggressive
-Link Power Management (ALPM) for the ahci driver.  This
-will cause the controller and disk to negotiate a lower
-power state for the link when there is no activity (see
-the AHCI 1.x spec for details).  This feature is mutually
-exclusive with Hot Plug, so when ALPM is enabled, Hot Plug
-is disabled.  ALPM will be enabled by default, but it is
-settable via the scsi host syfs interface.  Possible 
-settings for this feature are:
+> On Jun 20, 2007  11:29 -0700, clameter@sgi.com wrote:
+> > This adds support for a block size of up to 64k on any platform.
+> > It enables the mounting filesystems that have a larger blocksize
+> > than the page size.
+> 
+> Might have been good to CC the ext2/3/4 maintainers here?  I definitely
+> have been waiting for a patch like this for ages (so definitely no
+> objection from me), but there are a few caveats before this will work
+> on ext2/3/4.
 
-Setting		Effect
-----------------------------------------------------------
-min_power	ALPM is enabled, and link set to enter 
-		lowest power state (SLUMBER) when idle
-		Hot plug not allowed.
+The CC list is already big so I thought those would be monitoring 
+linux-fsdevel.
 
-max_performance	ALPM is disabled, Hot Plug is allowed
+> > Hmmm... Actually there is nothing additional to be done after the earlier
+> > cleanup of the macros. So just modify copyright.
+> 
+> It is NOT possible to have 64kB blocksize on ext2/3/4 without some small
+> changes to the directory handling code.  The reason is that an empty 64kB
+> directory block would have a rec_len == (__u16)2^16 == 0, and this would
+> cause an error to be hit in the filesystem.  What is needed is to put
+> 2 empty records in such a directory, or to special-case an impossible
+> value like rec_len = 0xffff to handle this.
+> 
+> There was a patch to fix the 64kB blocksize directory problem, but it
+> hasn't been merged anywhere yet seeing as there wasn't previously a
+> patch to allow larger blocksize...
 
-medium_power	ALPM is enabled, and link set to enter
-		second lowest power state (PARTIAL) when
-		idle.  Hot plug not allowed.
+mke2fs allows to specify a 64kb blocksize and IA64 can run with 64kb 
+PAGE_SIZE. So this is a bug in ext2fs that needs to be fixed regardless.
 
-Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> Having 32kB blocksize has no problems that I'm aware of.  Also, I'm not
+> sure how it happened, but ext2 SHOULD have an explicit check (as
+> ext3/4 does) limiting it to EXT2_MAX_BLOCK_SIZE.  Otherwise it appears
+> that there would be no error reported if the superblock reports e.g. 16MB
+> blocksize, and all kinds of things would break.
 
----
-I've changed this patch to define "disable_pm", and to change
-the behavior of ahci_disable_alpm() to not change the link
-pm policy, and just turn off alpm.
+mke2fs fails for blocksizes > 64k so you are safe there. I'd like to see 
+that limit lifted?
 
-this whole patch series can be found here:
-http://www.kernel.org/pub/linux/kernel/people/kristen/patches/SATA/alpm/
+> There shouldn't be a problem with increasing EXT{2,3,4}_MAX_BLOCK_SIZE to
+> 32kB (AFAIK), but I haven't looked into this in a while.
 
-Index: 2.6-git/drivers/ata/ahci.c
-===================================================================
---- 2.6-git.orig/drivers/ata/ahci.c
-+++ 2.6-git/drivers/ata/ahci.c
-@@ -48,6 +48,9 @@
- #define DRV_NAME	"ahci"
- #define DRV_VERSION	"2.2"
- 
-+static int ahci_enable_alpm(struct ata_port *ap,
-+		enum scsi_host_link_pm policy);
-+static int ahci_disable_alpm(struct ata_port *ap);
- 
- enum {
- 	AHCI_PCI_BAR		= 5,
-@@ -97,6 +100,7 @@ enum {
- 	/* HOST_CAP bits */
- 	HOST_CAP_SSC		= (1 << 14), /* Slumber capable */
- 	HOST_CAP_CLO		= (1 << 24), /* Command List Override support */
-+	HOST_CAP_ALPM		= (1 << 26), /* Aggressive Link PM support */
- 	HOST_CAP_SSS		= (1 << 27), /* Staggered Spin-up */
- 	HOST_CAP_NCQ		= (1 << 30), /* Native Command Queueing */
- 	HOST_CAP_64		= (1 << 31), /* PCI DAC (64-bit DMA) support */
-@@ -151,6 +155,8 @@ enum {
- 				  PORT_IRQ_PIOS_FIS | PORT_IRQ_D2H_REG_FIS,
- 
- 	/* PORT_CMD bits */
-+	PORT_CMD_ASP		= (1 << 27), /* Aggressive Slumber/Partial */
-+	PORT_CMD_ALPE		= (1 << 26), /* Aggressive Link PM enable */
- 	PORT_CMD_ATAPI		= (1 << 24), /* Device is ATAPI */
- 	PORT_CMD_LIST_ON	= (1 << 15), /* cmd list DMA engine running */
- 	PORT_CMD_FIS_ON		= (1 << 14), /* FIS DMA engine running */
-@@ -171,6 +177,7 @@ enum {
- 	AHCI_FLAG_HONOR_PI		= (1 << 26), /* honor PORTS_IMPL */
- 	AHCI_FLAG_IGN_SERR_INTERNAL	= (1 << 27), /* ignore SERR_INTERNAL */
- 	AHCI_FLAG_32BIT_ONLY		= (1 << 28), /* force 32bit */
-+	AHCI_FLAG_NO_HOTPLUG		= (1 << 29), /* ignore PxSERR.DIAG.N */
- 
- 	AHCI_FLAG_COMMON		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
- 					  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
-@@ -253,6 +260,7 @@ static struct scsi_host_template ahci_sh
- 	.slave_configure	= ata_scsi_slave_config,
- 	.slave_destroy		= ata_scsi_slave_destroy,
- 	.bios_param		= ata_std_bios_param,
-+	.set_link_pm_policy	= ata_scsi_set_link_pm_policy,
- };
- 
- static const struct ata_port_operations ahci_ops = {
-@@ -284,6 +292,8 @@ static const struct ata_port_operations 
- 	.port_suspend		= ahci_port_suspend,
- 	.port_resume		= ahci_port_resume,
- #endif
-+	.enable_pm		= ahci_enable_alpm,
-+	.disable_pm		= ahci_disable_alpm,
- 
- 	.port_start		= ahci_port_start,
- 	.port_stop		= ahci_port_stop,
-@@ -719,6 +729,158 @@ static void ahci_power_up(struct ata_por
- 	writel(cmd | PORT_CMD_ICC_ACTIVE, port_mmio + PORT_CMD);
- }
- 
-+static int ahci_disable_alpm(struct ata_port *ap)
-+{
-+	void __iomem *port_mmio = ahci_port_base(ap);
-+	u32 cmd, scontrol;
-+	struct ahci_port_priv *pp = ap->private_data;
-+
-+	/*
-+ 	 * disable Interface Power Management State Transitions
-+ 	 * This is accomplished by setting bits 8:11 of the
-+ 	 * SATA Control register
-+ 	 */
-+	scontrol = readl(port_mmio + PORT_SCR_CTL);
-+	scontrol |= (0x3 << 8);
-+	writel(scontrol, port_mmio + PORT_SCR_CTL);
-+
-+	/* get the existing command bits */
-+	cmd = readl(port_mmio + PORT_CMD);
-+
-+	/* disable ALPM and ASP */
-+	cmd &= ~PORT_CMD_ASP;
-+	cmd &= ~PORT_CMD_ALPE;
-+
-+	/* force the interface back to active */
-+	cmd |= PORT_CMD_ICC_ACTIVE;
-+
-+	/* write out new cmd value */
-+	writel(cmd, port_mmio + PORT_CMD);
-+	cmd = readl(port_mmio + PORT_CMD);
-+
-+	/* wait 10ms to be sure we've come out of any low power state */
-+	msleep(10);
-+
-+	/* clear out any PhyRdy stuff from interrupt status */
-+	writel(PORT_IRQ_PHYRDY, port_mmio + PORT_IRQ_STAT);
-+
-+	/* go ahead and clean out PhyRdy Change from Serror too */
-+	ahci_scr_write(ap, SCR_ERROR, (1 << 16));
-+
-+	/*
-+ 	 * Clear flag to indicate that we should ignore all PhyRdy
-+ 	 * state changes
-+ 	 */
-+	ap->flags &= ~AHCI_FLAG_NO_HOTPLUG;
-+
-+	/*
-+ 	 * Enable interrupts on Phy Ready.
-+ 	 */
-+	pp->intr_mask |= PORT_IRQ_PHYRDY;
-+	writel(pp->intr_mask, port_mmio + PORT_IRQ_MASK);
-+
-+	/*
-+ 	 * don't change the link pm policy - we can be called
-+ 	 * just to turn of link pm temporarily
-+ 	 */
-+	return 0;
-+}
-+
-+static int ahci_enable_alpm(struct ata_port *ap,
-+	enum scsi_host_link_pm policy)
-+{
-+	struct ahci_host_priv *hpriv = ap->host->private_data;
-+	void __iomem *port_mmio = ahci_port_base(ap);
-+	u32 cmd, scontrol, sstatus;
-+	struct ahci_port_priv *pp = ap->private_data;
-+	u32 asp;
-+
-+	/* Make sure the host is capable of link power management */
-+	if (!(hpriv->cap & HOST_CAP_ALPM)) {
-+		ap->pm_policy = SHOST_NOT_AVAILABLE;
-+		return -EINVAL;
-+	}
-+
-+	/* make sure we have a device attached */
-+	sstatus = readl(port_mmio + PORT_SCR_STAT);
-+	if (!(sstatus & 0xf00)) {
-+		ap->pm_policy = SHOST_NOT_AVAILABLE;
-+		return -EINVAL;
-+	}
-+
-+	switch(policy) {
-+	case SHOST_MAX_PERFORMANCE:
-+		ahci_disable_alpm(ap);
-+		ap->pm_policy = policy;
-+		return 0;
-+	case SHOST_NOT_AVAILABLE:
-+	case SHOST_MIN_POWER:
-+		/*
-+ 		 * if we came here with SHOST_NOT_AVAILABLE,
-+ 		 * it just means this is the first time we
-+ 		 * have tried to enable - so try to do
-+ 		 * min_power
-+ 		 */
-+		ap->pm_policy = SHOST_MIN_POWER;
-+
-+		/* configure HBA to enter SLUMBER */
-+		asp = PORT_CMD_ASP;
-+		break;
-+	case SHOST_MEDIUM_POWER:
-+		/* configure HBA to enter PARTIAL */
-+		ap->pm_policy = policy;
-+		asp = 0;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/*
-+ 	 * Disable interrupts on Phy Ready. This keeps us from
-+ 	 * getting woken up due to spurious phy ready interrupts
-+	 * TBD - Hot plug should be done via polling now, is
-+	 * that even supported?
-+ 	 */
-+	pp->intr_mask &= ~PORT_IRQ_PHYRDY;
-+	writel(pp->intr_mask, port_mmio + PORT_IRQ_MASK);
-+
-+	/*
-+ 	 * Set a flag to indicate that we should ignore all PhyRdy
-+ 	 * state changes since these can happen now whenever we
-+ 	 * change link state
-+ 	 */
-+	ap->flags |= AHCI_FLAG_NO_HOTPLUG;
-+
-+	/* get the existing command bits */
-+	cmd = readl(port_mmio + PORT_CMD);
-+
-+	/*
-+ 	 * enable Interface Power Management State Transitions
-+ 	 * This is accomplished by clearing bits 8:11 of the
-+ 	 * SATA Control register
-+ 	 */
-+	scontrol = readl(port_mmio + PORT_SCR_CTL);
-+	scontrol &= ~(0x3 << 8);
-+	writel(scontrol, port_mmio + PORT_SCR_CTL);
-+
-+	/*
-+ 	 * Set ASP based on Policy
-+ 	 */
-+	cmd |= asp;
-+
-+	/*
-+ 	 * Setting this bit will instruct the HBA to aggressively
-+ 	 * enter a lower power link state when it's appropriate and
-+ 	 * based on the value set above for ASP
-+ 	 */
-+	cmd |= PORT_CMD_ALPE;
-+
-+	/* write out new cmd value */
-+	writel(cmd, port_mmio + PORT_CMD);
-+	cmd = readl(port_mmio + PORT_CMD);
-+	return 0;
-+}
-+
- #ifdef CONFIG_PM
- static void ahci_power_down(struct ata_port *ap)
- {
-@@ -1244,6 +1406,10 @@ static void ahci_host_intr(struct ata_po
- 	status = readl(port_mmio + PORT_IRQ_STAT);
- 	writel(status, port_mmio + PORT_IRQ_STAT);
- 
-+	if ((ap->flags & AHCI_FLAG_NO_HOTPLUG) &&
-+		(status & PORT_IRQ_PHYRDY))
-+		status &= ~PORT_IRQ_PHYRDY;
-+
- 	if (unlikely(status & PORT_IRQ_ERROR)) {
- 		ahci_error_intr(ap, status);
- 		return;
-@@ -1759,6 +1925,7 @@ static int ahci_init_one(struct pci_dev 
- 
- 			ap->ioaddr.cmd_addr = port_mmio;
- 			ap->ioaddr.scr_addr = port_mmio + PORT_SCR;
-+			ap->pm_policy = SHOST_NOT_AVAILABLE;
- 		} else
- 			host->ports[i]->ops = &ata_dummy_port_ops;
- 	}
+I'd love to see such a patch. That is also useful for arches that have 
+PAGE_SIZE > 4kb without this patchset.
+
