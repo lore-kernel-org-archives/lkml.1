@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763068AbXFTKmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbXFTKtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763068AbXFTKmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 06:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbXFTKmj
+	id S1756843AbXFTKtD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 06:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbXFTKsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 06:42:39 -0400
-Received: from calisto.ae.poznan.pl ([150.254.37.3]:56023 "EHLO
-	calisto.ae.poznan.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757466AbXFTKmi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 06:42:38 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jun 2007 06:42:37 EDT
-Message-ID: <4679030E.5010205@ae.poznan.pl>
-Date: Wed, 20 Jun 2007 12:35:58 +0200
-From: =?ISO-8859-2?Q?Maciej_So=B3tysiak?= <maciej.soltysiak@ae.poznan.pl>
-Organization: =?ISO-8859-2?Q?Pozna=F1_University_of_Economics?=
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Wed, 20 Jun 2007 06:48:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49237 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750887AbXFTKsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 06:48:51 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1/UKdJUmarUURDSF6Ssh9PVsLsH1iTk3V0Yrh1lmD
+	4JDh5EBN0obSKB
+Date: Wed, 20 Jun 2007 12:49:07 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Stephane Eranian <eranian@hpl.hp.com>, oprofile-list@lists.sourceforge.net,
+       wcohen@redhat.com, ak@suse.de, perfmon@napali.hpl.hp.com,
+       linux-kernel@vger.kernel.org, levon@movementarian.org,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: [PATCH 0/2] Performance counter allocator separation
+Message-ID: <20070620104906.GA25242@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Stephane Eranian <eranian@hpl.hp.com>,
+	oprofile-list@lists.sourceforge.net, wcohen@redhat.com, ak@suse.de,
+	perfmon@napali.hpl.hp.com, linux-kernel@vger.kernel.org,
+	levon@movementarian.org, akpm@linux-foundation.org, mingo@elte.hu
+References: <20070612150246.GJ32163@frankl.hpl.hp.com> <20070612190730.GA6978@atjola.homenet> <20070613014136.GA2386@atjola.homenet> <20070613164632.GA8674@atjola.homenet> <20070618095238.GC20759@frankl.hpl.hp.com> <20070618103214.GA12045@atjola.homenet>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21.14 NFS related oops
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070618103214.GA12045@atjola.homenet>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > I'm running 2.6.21.5 now with slab debugging on, here's what I got 
-about
- > > slab corruption:
- > >
- > > Slab corruption: skbuff_head_cache start=ef287b78, len=164
- > > Redzone: 0x5a2cf071/0x5a2cf071.
- > > Last user: [<c031710c>](kfree_skbmem+0x3c/0x90)
- > > 090: 6b 6b 6b 6b 6b 63 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
- > > Single bit error detected. Probably bad RAM.
- > > Run memtest86+ or a similar memory test tool.
- > > Prev obj: start=ef287ac8, len=164
- > > Redzone: 0x170fc2a5/0x170fc2a5.
- > > Last user: [<c031798b>](__alloc_skb+0x2b/0x100)
- > > 000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- > > 010: 00 00 00 00 e0 71 e6 ef 00 00 00 00 00 00 00 00
- > > Next obj: start=ef287c28, len=164
- > > Redzone: 0x170fc2a5/0x170fc2a5.
- > > Last user: [<c031798b>](__alloc_skb+0x2b/0x100)
- > > 000: 84 d0 85 c5 84 d0 85 c5 04 d0 85 c5 2c 0a 73 46
- > > 010: 6f cd 09 00 00 00 00 00 01 00 00 00 08 e5 72 ee
- > >
- > > How probable is that it is really a bad memory issue?
- > > Does this report say anything about which RAM chip I should
- > > investigate/replace ? I have 1x512MB+1x256MB
- > >
- > > Best Regards,
- > > Maciej
- >
- > I'd try doing as suggested above: run memtest86 on the computer for a
- > couple of hours and see what it tells you. That should hopefully give
- > you enough information to figure out which chips need replacing.
+[Sorry if anyone gets this mail twice, seems that git-send-email
+"forgot" to mask the umlaut in my name for this message, causing a few
+servers to reject it.]
 
-I am also getting BAD CRC on the disk that holds my swap partition.
-I was wondering if slab debugging could say I have slab corruption not 
-because
-my RAM chips are bad, but because SWAP has bad blocks ? And that the
-whole problem might be swap disk related not ram related.
+These two patches fix the performance counter allocator to work even
+when the LAPIC NMI watchdog is disabled. It's split up into two patches
+to keep the size of the pure regression fix down and allow the cleanup
+to be merged once 2.6.22 is out.
 
- > Cheers
- >   Trond
-Regards,
-Maciej
+If you prefer an all-in-one patch nevertheless, please let me know.
 
+Thanks,
+Björn
