@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbXFTXP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbXFTXRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756678AbXFTXP0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbXFTXPS
+	id S1757277AbXFTXRZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbXFTXRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:15:18 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45618 "EHLO mail.dvmed.net"
+	Wed, 20 Jun 2007 19:17:16 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45646 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752039AbXFTXPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:15:17 -0400
-Message-ID: <4679B503.1030106@garzik.org>
-Date: Wed, 20 Jun 2007 19:15:15 -0400
+	id S1751611AbXFTXRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:17:15 -0400
+Message-ID: <4679B579.6040208@garzik.org>
+Date: Wed, 20 Jun 2007 19:17:13 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] natsemi irq flags
-References: <20070615211608.11079.35368.stgit@ghaskins-t60p.haskins.net>
-In-Reply-To: <20070615211608.11079.35368.stgit@ghaskins-t60p.haskins.net>
+To: divy@chelsio.com
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 1/5] cxgb3 - fix skb->dev dereference
+References: <20070530170128.22789.3485.stgit@localhost.localdomain>
+In-Reply-To: <20070530170128.22789.3485.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
@@ -27,16 +28,18 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> The spinlock irq flags should be a unsigned long to properly support 64 bit
+divy@chelsio.com wrote:
+> From: Divy Le Ray <divy@chelsio.com>
 > 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> eth_type_trans() now sets skb->dev. 
+> References to skb->dev should happen after it is called.
 > 
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
 > ---
 > 
->  drivers/net/natsemi.c |    2 +-
+>  drivers/net/cxgb3/sge.c |    2 +-
 >  1 files changed, 1 insertions(+), 1 deletions(-)
 
-applied to #upstream-fixes
+applied 1-5 to #upstream-fixes (2.6.22)
 
 
