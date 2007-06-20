@@ -1,55 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761985AbXFTD4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbXFTEDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761985AbXFTD4P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 23:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759637AbXFTDz7
+	id S1760064AbXFTEDT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 00:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbXFTEDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 23:55:59 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57786 "EHLO gate.crashing.org"
+	Wed, 20 Jun 2007 00:03:09 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:45380 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757071AbXFTDz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 23:55:59 -0400
-Date: Tue, 19 Jun 2007 22:55:47 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: Linus Torvalds <torvalds@osdl.org>
-cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+	id S1750696AbXFTEDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 00:03:08 -0400
+Date: Wed, 20 Jun 2007 13:01:31 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, wli@holomorphy.com, lee.schermerhorn@hp.com,
        linux-kernel@vger.kernel.org
-Subject: Please pull from 'for_linus' branch
-Message-ID: <Pine.LNX.4.64.0706192241550.13170@blarg.am.freescale.net>
+Subject: Re: Some thoughts on memory policies
+Message-ID: <20070620040131.GA29240@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+	wli@holomorphy.com, lee.schermerhorn@hp.com,
+	linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0706181257010.13154@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706181257010.13154@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, Jun 18, 2007 at 01:22:08PM -0700, Christoph Lameter wrote:
+> 1. Memory policies must be attachable to a variety of objects
+> 
+> - System policies. The system policy is currently not
+>   modifiable. It may be useful to be able to set this.
+>   Small NUMA systems may want to run with interleave by default 
+> 
+For small systems there are a number of things that could be done for
+this. With the interleave map for system init dynamically created, we can
+make a reasonable guess about whether we want to use interleave as a
+default policy or not if the node map is considerably different from
+the online map (or the node_memory_map in -mm).
 
-Please pull from 'for_linus' branch at
+If the system policy only makes sense as interleave or default, it might
+make sense simply to have a sysctl for this (the sysctl handler could
+rebalance the interleave map when switching to handle offline nodes
+coming online later, for example).
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_linus
+> - Memory policies need to be attachable to types of pages.
+>   F.e. executable pages of a threaded application are best
+>   spread (or replicated) whereas the stack and the data may
+>   best be allocated in a node local way.
 
-To get a fix for 2.6.22 to the rheap allocator that was causing multiple
-instances of the UCC ethernet driver to fail because it was running out of
-memory due to wasting space for aligned requests.
+That would be nice, but one would also have to be able to restrict
+the range of nodes to replicate across when applications know their
+worst-case locality. Perhaps some of the cpuset work could be generalized
+for this?
 
-Thanks,
-Kumar.
+> 2. Memory policies need to support additional constraints
+> 
+> - Restriction to a set of nodes. That is what we have today.
+> 
+> - Restriction to a container or cpuset. Maybe restriction
+>   to a set of containers?
+> 
+Having memory policies per container or cpuset would be nice to have,
+but this seems like it would get pretty messy with nested cpusets that
+contain overlapping memory nodes?
 
- arch/powerpc/lib/rheap.c |   48 ++++++++++++++++++++++++++++-------------------
- 1 file changed, 29 insertions(+), 19 deletions(-)
+The other question is whether tasks residing under a cpuset with an
+established memory policy are allowed to mbind() outside of the cpuset
+policy constraints. Spreading of page and slab cache pages seem to
+already side-step constraints.
 
-commit 7c8545e98468c53809fc06788a3b9a34dff05240
-Author: Li Yang <leoli@freescale.com>
-Date:   Mon Jun 18 19:29:21 2007 +0800
+> 7. Allocators must change
+> 
+> Right now the policy is set by the process context which is bad because
+> one cannot specify a memory policy for an allocation. It must be possible
+> to pass a memory policy to the allocators and then get the memory 
+> requested.
+> 
+Some policy hints can already be determined from the gfpflags, perhaps
+it's worth expanding on this? If these sorts of things have to be handled
+by devices, one has to assume that the device may not always be running
+in the same configuration or system, so an explicit policy would simply
+cause more trouble.
 
-    [POWERPC] rheap - eliminates internal fragments caused by alignment
-
-    The patch adds fragments caused by rh_alloc_align() back to free list, instead
-    of allocating the whole chunk of memory.  This will greatly improve memory
-    utilization managed by rheap.
-
-    It solves MURAM not enough problem with 3 UCCs enabled on MPC8323.
-
-    Signed-off-by: Li Yang <leoli@freescale.com>
-    Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> I wish we could come up with some universal scheme that encompasses all
+> of the functionality we want and that makes memory more manageable....
+> 
+There's quite a bit of room for improving and extending the existing
+code, and those options should likely be exhausted first.
