@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbXFTXYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbXFTXej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756124AbXFTXYw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbXFTXYp
+	id S1754807AbXFTXej (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbXFTXea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:24:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:32808 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751958AbXFTXYo (ORCPT
+	Wed, 20 Jun 2007 19:34:30 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:18752 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbXFTXe3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:24:44 -0400
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ian McDonald <ian.mcdonald@jandi.co.nz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       William Cohen <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
-References: <467543FA.60905@googlemail.com>
-	 <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com>
-	 <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 20 Jun 2007 16:21:07 -0700
-Message-Id: <1182381667.2701.7.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+	Wed, 20 Jun 2007 19:34:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=i7odN3wgrrdOaYY1nEaJlsmE0Vv42rKgSBdwPz8qCk6yQ8vnkKET7PcmYjIB+ztZ8WjiOGNlW23ElNgSKaUIY+X1Tw8xZKPZOq+CE4CpK26AB6GD0MtJ702N1F8urgfT32TEEVD12X1wpUX0t4FgT0634iFmNPPwhHwrckwPi+Q=
+Message-ID: <161717d50706201634m68992ddeqb1d7557fb43c0822@mail.gmail.com>
+Date: Wed, 20 Jun 2007 19:34:28 -0400
+From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+To: davids@webmaster.com
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Tomas Neme" <lacrymology@gmail.com>, mdpool@troilus.org,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKMEBIEMAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <871wg6trnx.fsf@graviton.dyn.troilus.org>
+	 <MDEHLPKNGKAHNMBLJOLKMEBIEMAC.davids@webmaster.com>
+X-Google-Sender-Auth: 497564e6f0fc5135
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 6/20/07, David Schwartz <davids@webmaster.com> wrote:
+>
+> > Tomas Neme writes:
+>
+> > > I have been following this discussion for the last week or so, and
+> > > what I haven't been able to figure out is what the hell is the big
+> > > deal with TiVO doing whatever they want to with their stupid design.
+> > > They made a design, they build a machine, they sell it as is, and
+> > > provide source code for GPL'ed software... what's your problem?
+>
+> > It's simple: they don't provide _complete_ source code.  They keep the
+> > source code for the part of their Linux kernel images that provides
+> > the functionality "runs on Tivo DVRs".  The GPL requires that
+> > distributors of binary versions provide complete source code, not just
+> > the parts of source code that are convenient.
+> >
+> > Michael Poole
+>
+> That leads to lots of obvious nonsense unless you fix it with all kinds of
+> made up ad-hoc changes just to get the result you want. Why doesn't Linus
+> have to release the keys he uses to sign the Linux kernel source
+> distributions? That provides the functionality "can be proven to be
+> authorized by Linus". What you call "runs on Tivo DVRs", I call "can be
+> proven to be authorized by Tivo to run on Tivo DVRs".
 
-> Kprobes fundamntally disagrees with DEBUG_RODATA, there's no point in 
-> "working around it". Better just admit it.
+This argument is the obvious nonsense. "Runs on TiVO" is a property of
+the software that TiVO distributes -- such an important property that
+it would be nonsensical for them to distribute it with their hardware.
+But they do distribute it, and only the GPL allows them to.
 
-that's wrong. KPROBE fundamentally disagrees with TEXT being read only,
-which is a 2.6.22 new "feature".. and a buggy one at that.
+Linus' key is not required to use the software Linus distributes under
+the GPL, by contrast.
 
+>
+> Tivo's choice is an authorization decision. It is similar to you not having
+> root access to a Linux box. Sorry, you can't run a modified kernel on that
+> machine, but you can still modify the kernel and run it on any hardware
+> where authorization decisions don't stop you from doing so. The GPL was
+> never about such authorization decisions.
 
-the real fix would be something like this instead:
+Says judge Schwartz. Oops. That's right, you're not a judge in any
+legal jurisdiction, nor an author of the GPL.
 
---- linux-2.6.22-rc5/arch/x86_64/mm/init.c.org	2007-06-21 04:20:10.000000000 -0700
-+++ linux-2.6.22-rc5/arch/x86_64/mm/init.c	2007-06-21 04:21:01.000000000 -0700
-@@ -605,6 +605,11 @@ void mark_rodata_ro(void)
- 	if (num_possible_cpus() > 1)
- 		start = (unsigned long)_etext;
- #endif
-+
-+#ifdef CONFIG_KPROBES
-+	start = (unsigned long)_etext;
-+#endif
-+	
- 	end = (unsigned long)__end_rodata;
- 	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
- 	end &= PAGE_MASK;
-
-
+Dave
