@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbXFTXtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbXFTXty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756225AbXFTXtm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbXFTXte
+	id S1757321AbXFTXty (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbXFTXtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:49:34 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1906 "EHLO
+	Wed, 20 Jun 2007 19:49:35 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:1908 "EHLO
 	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbXFTXtd (ORCPT
+	with ESMTP id S1752813AbXFTXtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Jun 2007 19:49:33 -0400
 From: "David Schwartz" <davids@webmaster.com>
-To: <mr.fred.smoothie@gmail.com>
-Cc: "Tomas Neme" <lacrymology@gmail.com>, <mdpool@troilus.org>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+To: <mdpoole@troilus.org>
+Cc: <linux-kernel@vger.kernel.org>
 Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Wed, 20 Jun 2007 16:48:48 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKGEDEEMAC.davids@webmaster.com>
+Date: Wed, 20 Jun 2007 16:48:49 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKIEDEEMAC.davids@webmaster.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 X-Priority: 3 (Normal)
 X-MSMail-Priority: Normal
 X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <161717d50706201634m68992ddeqb1d7557fb43c0822@mail.gmail.com>
+In-Reply-To: <87tzt2qjqz.fsf@graviton.dyn.troilus.org>
 X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
 Importance: Normal
 X-Authenticated-Sender: joelkatz@webmaster.com
@@ -39,34 +38,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> This argument is the obvious nonsense. "Runs on TiVO" is a property of
-> the software that TiVO distributes -- such an important property that
-> it would be nonsensical for them to distribute it with their hardware.
-> But they do distribute it, and only the GPL allows them to.
 
-Why does the importance of the property matter to the validity of the
-argument?
+> Most of this list has
+> already dismissed your rather unique -- I would even say frivolous --
+> idea of how far "mere aggregation" goes: I, for one, have better
+> things to do than explain why a C file is not a "mere aggregation" of
+> the functions it contains.)
+>
+> Michael Poole
 
-> Linus' key is not required to use the software Linus distributes under
-> the GPL, by contrast.
+Of course it's not mere aggregation. The functions in a C file are
+creatively combined. How many times do I have to say that the opposite of
+"mere aggregation" is creative combination?
 
-Why does whether or not the key is required to use the software matter? It
-may be impossible to use a Linux kernel on a particular piece of hardware
-without the BIOS, that doesn't mean the BIOS source code is part of the
-kernel source code even if the kernel is shipped for that hardware.
-
-> > Tivo's choice is an authorization decision. It is similar to
-> > you not having
-> > root access to a Linux box. Sorry, you can't run a modified
-> > kernel on that
-> > machine, but you can still modify the kernel and run it on any hardware
-> > where authorization decisions don't stop you from doing so. The GPL was
-> > never about such authorization decisions.
-
-> Says judge Schwartz. Oops. That's right, you're not a judge in any
-> legal jurisdiction, nor an author of the GPL.
-
-Nice argument. I'm wrong because people can disagree with me.
+It is not unique, it is part of the definition of a "derivative work".
 
 DS
 
