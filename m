@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbXFTQhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbXFTQkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbXFTQhp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXFTQhj
+	id S1755544AbXFTQkS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbXFTQkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:37:39 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:45802 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752346AbXFTQhi (ORCPT
+	Wed, 20 Jun 2007 12:40:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55112 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753315AbXFTQkF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:37:38 -0400
-Message-ID: <467957CB.8020704@zytor.com>
-Date: Wed, 20 Jun 2007 09:37:31 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 20 Jun 2007 12:40:05 -0400
+Date: Wed, 20 Jun 2007 09:39:12 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexander Gabert <pappy@gentoo.org>
+cc: Arjan van de Ven <arjan@infradead.org>, libc-alpha@sourceware.org,
+       linux-kernel@vger.kernel.org, hardened@gentoo.org
+Subject: Re: [PATCH] get_random_long() and AT_ENTROPY for auxv, kernel
+ 2.6.21.5
+In-Reply-To: <467948F5.3010709@gentoo.org>
+Message-ID: <alpine.LFD.0.98.0706200937280.3593@woody.linux-foundation.org>
+References: <4675C678.3080807@gentoo.org>  <1182128803.22999.9.camel@laptopd505.fenrus.org>
+  <4675DFA8.6060703@gentoo.org> <1182130680.22999.13.camel@laptopd505.fenrus.org>
+ <4676601A.7070209@gentoo.org> <467948F5.3010709@gentoo.org>
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Albert Cahalan <acahalan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: JIT emulator needs
-References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com> <20070619150824.GH11781@holomorphy.com> <787b0d920706192016l660dd5b0mbf300581db81ac62@mail.gmail.com> <20070620160116.GI6909@holomorphy.com>
-In-Reply-To: <20070620160116.GI6909@holomorphy.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
+
+
+On Wed, 20 Jun 2007, Alexander Gabert wrote:
 > 
-> I presumed an ELF note or extended filesystem attributes were already
-> in place for this sort of affair. It may be that the model implemented
-> is so restrictive that users are forbidden to create new executables,
-> in which case using a different model is certainly in order. Otherwise
-> the ELF note or attributes need to be implemented.
-> 
+> this patch adds the function drivers/char/random.c:get_random_long()
 
-Another thing to keep in mind, since we're talking about security
-policies in the first place, is that anything like this *MUST* be
-"opt-in" on the part of the security policy, because what we're talking
-about is circumventing an explicit security policy just based on a
-user-provided binary saying, in effect, "don't worry, I know what I'm
-doing."
+It's totally whitespace-damaged, and I wonder why the "int" vs "long" is 
+so important. Also, what are the performance implications for execve?
 
-Changing the meaning of an established explicit security policy is not
-acceptable.
-
-	-hpa
+		Linus
