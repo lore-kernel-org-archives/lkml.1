@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbXFTOGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbXFTORB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759110AbXFTOGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 10:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbXFTOGL
+	id S1754909AbXFTORB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 10:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXFTOQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 10:06:11 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56432 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753762AbXFTOGK (ORCPT
+	Wed, 20 Jun 2007 10:16:54 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:31503 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbXFTOQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 10:06:10 -0400
-Date: Wed, 20 Jun 2007 10:06:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-cc: Jiri Kosina <jikos@jikos.cz>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] Error -71 on device descriptor read/all
-In-Reply-To: <46790A61.5070107@mandic.com.br>
-Message-ID: <Pine.LNX.4.44L0.0706201003490.3311-100000@iolanthe.rowland.org>
+	Wed, 20 Jun 2007 10:16:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=f1bp7iIapIkqxjJN9IC9fo1UNXwD+UwhwXs9RtOwL6IGjgf9IALIRM1R9iEeANxHj10rIhRtB+9b7LXzqf8nYoCP5QcWVrmC2+O+A4JAOXyO867ckP68AMoGAYiLYabJSs+OP4qJZQpMg7AosgHFR4OwAaCLLT7wqK4sWTZSBrY=
+Message-ID: <cda58cb80706200716g6de08bb5hdbe408888abf3de4@mail.gmail.com>
+Date: Wed, 20 Jun 2007 16:16:51 +0200
+From: "Franck Bui-Huu" <vagabon.xyz@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: [2.6 patch] more MOMENCO_JAGUAR_ATX removal
+Cc: "Ralf Baechle" <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070619202704.GG12950@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070619202704.GG12950@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Renato S. Yamane wrote:
+Hi,
 
-> Alan Stern wrote:
-> > Does the mouse work correctly, even with ehci-hcd loaded?
-> 
-> Yes.
-> And sorry, but I don't have any other USB2.0 device to test.
-> I try with my cel phone (Motorola V3i) in this night (GMT-3).
-> 
-> > If it does then don't worry about the -71 error.  It appears to be 
-> > transient and it's not necessarily fatal.
-> 
-> In my dmesg today, I see this:
-> usb 1-1: can't set config #1, error -71
+On 6/19/07, Adrian Bunk <bunk@stusta.de> wrote:
+> This patch removes the few leftovers of the MOMENCO_JAGUAR_ATX removal.
+>
 
-That error is more serious.
+thanks for catching it,
 
-> When I remove and input (again) my Mouse, I see this in /var/log/messages:
-> 
-> kernel: usb 1-1: USB disconnect, address 3
-> kernel: usb 1-1: new low speed USB device using uhci_hcd and address 4
-> kernel: usb 1-1: configuration #1 chosen from 1 choice
-> kernel: input: Microsoft Microsoft 3-Button Mouse with IntelliEye? as 
-> /class/input/input8
-> kernel: input: USB HID v1.00 Mouse [Microsoft Microsoft 3-Button Mouse 
-> with IntelliEye?] on usb-0000:00:1d.0-1
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>
+> ---
+>
+>  drivers/net/Kconfig    |    2 +-
+>  include/asm-mips/war.h |    7 +++----
+>  2 files changed, 4 insertions(+), 5 deletions(-)
+>
+> --- linux-2.6.22-rc4-mm2/drivers/net/Kconfig.old        2007-06-18 15:24:49.000000000 +0200
+> +++ linux-2.6.22-rc4-mm2/drivers/net/Kconfig    2007-06-18 15:25:02.000000000 +0200
+> @@ -2362,7 +2362,7 @@
+>
+>  config MV643XX_ETH
+>         tristate "MV-643XX Ethernet support"
+> -       depends on MOMENCO_OCELOT_C || MOMENCO_JAGUAR_ATX || MV64360 || MV64X60 || MOMENCO_OCELOT_3 || (PPC_MULTIPLATFORM && PPC32)
+> +       depends on MOMENCO_OCELOT_C || MV64360 || MV64X60 || MOMENCO_OCELOT_3 || (PPC_MULTIPLATFORM && PPC32)
 
-This is a low-level hardware error.  It indicates that communication 
-over the USB cable isn't working right.  The fact that it occurs 
-sometimes but not at other times indicates that some of the hardware 
-components may be not-quite within spec.
+Actually MOMENCO_OCELOT_C has been killed too...
 
-Have you tried using that mouse on a different computer?  How about 
-using a different USB mouse on your computer?
-
-Alan Stern
-
+-- 
+               Franck
