@@ -1,89 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761501AbXFTHf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbXFTHnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761501AbXFTHf4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 03:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbXFTHft
+	id S1761682AbXFTHnc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 03:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbXFTHnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 03:35:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52676 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757753AbXFTHfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 03:35:48 -0400
-To: "David Schwartz" <davids@webmaster.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <MDEHLPKNGKAHNMBLJOLKOENJELAC.davids@webmaster.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Wed, 20 Jun 2007 04:35:37 -0300
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOENJELAC.davids@webmaster.com> (David Schwartz's message of "Wed\, 20 Jun 2007 00\:07\:08 -0700")
-Message-ID: <or645jw01i.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 20 Jun 2007 03:43:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37627 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757513AbXFTHnW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 03:43:22 -0400
+Subject: Re: [-RT] multiple streams have degraded performance
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vernon Mauery <vernux@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Ingo Molnar <mingo@elte.hu>, netdev <netdev@vger.kernel.org>
+In-Reply-To: <200706192038.01054.vernux@us.ibm.com>
+References: <200706182212.22633.vernux@us.ibm.com>
+	 <200706192038.01054.vernux@us.ibm.com>
+Content-Type: text/plain
+Date: Wed, 20 Jun 2007 09:42:45 +0200
+Message-Id: <1182325365.21117.9.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 20, 2007, "David Schwartz" <davids@webmaster.com> wrote:
+On Tue, 2007-06-19 at 20:38 -0700, Vernon Mauery wrote:
+> On Monday 18 June 2007 10:12:21 pm Vernon Mauery wrote:
+> > In looking at the performance characteristics of my network I found that
+> > 2.6.21.5-rt15 suffers from degraded thoughput with multiple threads.  The
+> > test that I did this with is simply invoking 1, 2, 4, and 8 instances of
+> > netperf at a time and measuring the total throughput.  I have two 4-way
+> > machines connected with 10GbE cards.  I tested several kernels (some older
+> > and some newer) and found that the only thing in common was that with -RT
+> > kernels the performance went down with concurrent streams.
+> 
+> I just tested this using lo instead of the 10GbE adapter.  I found similar 
+> results.  Since this makes it reproducible by just about anybody (maybe the 
+> only factor now is the number of CPUs), I have attached the script that I 
+> test things with.
+> 
+> So with the script run like ./stream_test 127.0.0.1 on 2.6.21 and 
+> 2.6.21.5-rt17 I got the following:
+> 
+> 2.6.21
+> =======================
+> default: 1 streams: Send at 2790.3 Mb/s, Receive at 2790.3 Mb/s
+> default: 2 streams: Send at 4129.4 Mb/s, Receive at 4128.7 Mb/s
+> default: 4 streams: Send at 7949.6 Mb/s, Receive at 7735.5 Mb/s
+> default: 8 streams: Send at 7930.7 Mb/s, Receive at 7910.1 Mb/s
+> 1Msock: 1 streams: Send at 2810.7 Mb/s, Receive at 2810.7 Mb/s
+> 1Msock: 2 streams: Send at 4093.4 Mb/s, Receive at 4092.6 Mb/s
+> 1Msock: 4 streams: Send at 7887.8 Mb/s, Receive at 7880.4 Mb/s
+> 1Msock: 8 streams: Send at 8091.7 Mb/s, Receive at 8082.2 Mb/s
+> 
+> 2.6.21.5-rt17
+> ======================
+> default: 1 streams: Send at 938.2 Mb/s, Receive at 938.2 Mb/s
+> default: 2 streams: Send at 1476.3 Mb/s, Receive at 1436.9 Mb/s
+> default: 4 streams: Send at 1489.8 Mb/s, Receive at 1145.0 Mb/s
+> default: 8 streams: Send at 1099.8 Mb/s, Receive at 1079.1 Mb/s
+> 1Msock: 1 streams: Send at 921.4 Mb/s, Receive at 920.4 Mb/s
+> 1Msock: 2 streams: Send at 1332.2 Mb/s, Receive at 1311.5 Mb/s
+> 1Msock: 4 streams: Send at 1483.0 Mb/s, Receive at 1137.8 Mb/s
+> 1Msock: 8 streams: Send at 1446.2 Mb/s, Receive at 1135.6 Mb/s
 
-> The freedom to "run the program, for any purpose" is just as much
-> violated by Microsoft when they make the Xbox.
+Unfortunately I do not have a 4-way machine, but a dual core was enough
+to show the problem:
 
-That's correct.
+./stream_test 127.0.0.1
 
-> You can't run the Linux kernel on that either, for the exact same
-> reasons you can't run a modified Linux kernel on the Tivo.
+** default: 1 streams: Send at 268.9 Mb/s, Receive at 268.0 Mb/s
+** default: 2 streams: Send at 448.7 Mb/s, Receive at 448.4 Mb/s
+** default: 4 streams: Send at 438.7 Mb/s, Receive at 438.3 Mb/s
+** default: 8 streams: Send at 352.7 Mb/s, Receive at 351.2 Mb/s
 
-Technically speaking, yes.
+** 1Msock: 1 streams: Send at 207.4 Mb/s, Receive at 207.4 Mb/s
+** 1Msock: 2 streams: Send at 450.0 Mb/s, Receive at 450.0 Mb/s
+** 1Msock: 4 streams: Send at 444.9 Mb/s, Receive at 444.9 Mb/s
+** 1Msock: 8 streams: Send at 351.4 Mb/s, Receive at 351.4 Mb/s
 
-Legally speaking, these are completely different situations.
 
-First of all, Microsoft is not in any way involved in how you received
-the copy of the kernel Linux you'd like to run on the Xbox.  If it is,
-you might have a claim that they couldn't impose this restriction on
-you.  IANAL.
+and lock_stat shows the following offender:
 
-Second, you're not a user of Linux on the Xbox in the first place, so
-you don't have an inherent right to run the program there that the
-hardware manufacturer is denying you.  It's not much different than
-wanting to run the program on on computers you have remote access to,
-on which you have no permission to install Linux, or on computers you
-have but with incompatible hardware architectures.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                              class name    contentions   waittime-min   waittime-max waittime-total    con-bounces   acquisitions   holdtime-min   holdtime-max holdtime-total    acq-bounces
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-The case of incompatible hardware architectures is actually a bit
-different, since nobody is really stopping you from running the
-program there, it would just take you porting work to get to run it.
+                         udp_hash_lock-W:             1           1.58           1.58           1.58              1            163          0.100           4.38         184.44            110
+                         udp_hash_lock-R:        539603           1.30        4848.34     7756821.91         539131       15095136           0.36         520.09    20404391.93       11527348
+                         ---------------
+                           udp_hash_lock         539603          [<ffffffff80468d63>] __udp4_lib_lookup+0x3c/0x10d
+                           udp_hash_lock              1          [<ffffffff804686fe>] __udp_lib_get_port+0x2c/0x21a
 
-While in both the remote-access case and the Xbox case someone *is*
-indeed stopping you from installing and running the software on those
-computers, this does not render the software non-free, because you're
-not a user of the software there in the first place, and stating that,
-in order for software to be free, you'd have to have the ability to
-install it on any existing computer in the world would be nonsensical.
 
-However, in the case of TiVo, you have received the software from TiVo
-with the express purpose of running it on the hardware they sold you,
-and you can't install or run modified versions precisely because they
-don't want to let you.  They're denying you a freedom that you are
-entitled to have, which renders that binary copy of Linux installed on
-it non-Free, and at the same time they're imposing further
-restrictions on your freedoms that the GPL is designed to respect and
-defend, which violates the spirit, if not the letter, of the GPL.
+Which makes perfect sense, in that r/w locks are degraded to regular
+exclusive locks on -rt.
 
-So you see, these are two very different cases, the key difference
-being the obligation that TiVo accepted towards the copyright holders
-of Linux, when it distributed the software to you, of respecting your
-freedoms, by not imposing restrictions on your exercise of the
-freedoms in addition the restrictions that the license itself imposes.
+So I guess you're wanting to go help out with the RCU-ification of
+whatever it is that this lock protects. :-)
 
-> (And GPL rights were always applicable equally to all hardware in
-> the universe, not specially to some hardware and not others.)
-
-Correct.  Whoever distributed you the software entitled you to enjoy
-the freedoms wherever you manage to run the software.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
