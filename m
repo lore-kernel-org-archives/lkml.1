@@ -1,161 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760063AbXFTTtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbXFTTu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760063AbXFTTtd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 15:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbXFTTt0
+	id S1760610AbXFTTu1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 15:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbXFTTuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 15:49:26 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:36765 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754574AbXFTTtZ (ORCPT
+	Wed, 20 Jun 2007 15:50:20 -0400
+Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:50759
+	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756269AbXFTTuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 15:49:25 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=HKSYrKHYETStTbdqCnlMQ2msojAe4G2iFLFRP97Z+W51MJBop0+66gCqRoa+yk5xi
-	CTIsMiNfwDIDEl9zqUJmA==
-Date: Wed, 20 Jun 2007 12:49:05 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Robert Richter <robert.richter@amd.com>
-cc: Stephane Eranian <eranian@hpl.hp.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] 2.6.22-rc3 perfmon2 : Debug messages added
-In-Reply-To: <20070620184113.GC5874@erda.amd.com>
-Message-ID: <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com>
-References: <20070620182126.248753000@amd.com>
- <20070620184113.GC5874@erda.amd.com>
+	Wed, 20 Jun 2007 15:50:19 -0400
+To: david@lang.hm
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Tomas Neme <lacrymology@gmail.com>,
+       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
+	<ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
+	<or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
+	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
+	<2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
+	<871wg6trnx.fsf@graviton.dyn.troilus.org> <467977F7.2040506@zytor.com>
+	<Pine.LNX.4.64.0706201200550.30395@asgard.lang.hm>
+	<87sl8ms9z5.fsf@graviton.dyn.troilus.org>
+	<Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm>
+From: Michael Poole <mdpoole@troilus.org>
+Date: Wed, 20 Jun 2007 15:50:18 -0400
+In-Reply-To: <Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm> (david@lang.hm's message of "Wed\, 20 Jun 2007 12\:40\:20 -0700 \(PDT\)")
+Message-ID: <87k5tys8w5.fsf@graviton.dyn.troilus.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Robert Richter wrote:
+david@lang.hm writes:
 
-> Debug messages added for better debugging.
-> 
+> On Wed, 20 Jun 2007, Michael Poole wrote:
+>
+>> david@lang.hm writes:
+>>
+>>> this is very much NOT true. if you take the source the provide you can
+>>> compile a kernel that will run on the tivo, the only thing you have to
+>>> do (on some models) is to change the bios to skip the step that checks
+>>> if the kernel has been tampered with.
+>>
+>> If we are opining whether Tivo provided complete source code for their
+>> Linux kernel images, the requirement to change non-GPLed software as a
+>> condition to exercise GPL-protected rights speaks for itself.
+>
+> no, the GPL protected rights don't say anything about the hardware the
+> system runs on.
+>
+> you are saying that the GPL now controls what the BIOS software is
+> allowed to do or not allowed to do.
 
-And you added BUG_ON()'s.
+Please retract that claim.  I have said no such thing, and have
+avoided saying anything that I thought might be misconstrued in that
+direction.
 
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
-> 
-> Index: linux-2.6.22-rc3/perfmon/perfmon_file.c
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/perfmon/perfmon_file.c
-> +++ linux-2.6.22-rc3/perfmon/perfmon_file.c
-> @@ -192,6 +192,8 @@ static int pfm_mmap(struct file *file, s
->  	unsigned long flags;
->  	int ret;
->  
-> +	PFM_DBG("pfm_file_ops");
+To be absolutely clear: My complaints with Tivo as a hardware or BIOS
+vendor are moral and pragmatic, not legal.  My complaint with Tivo as
+a distributor of Linux is what hinges on legal issues.
 
-After commenting on your first set of patches, I've been using it a little 
-more.  In my use, these debugging messages weren't very helpful because 
-"pfm_file_ops" can indicate pfm_mmap, pfm_read, pfm_poll, etc.  Could 
-these be changed to be more specific based on the function they're in?
+> that's a seperate body of code that is in no way derived from the
+> linux kernel (even the anti-tampering functions would work equally
+> well with other Operating systems and are in no way linux
+> specific). it's no even loaded on the same media (the BIOS is in
+> flash/rom on the botherboard, the OS is on the hard drive)
+>
+> and note that the software that is checked to make sure that it hasn't
+> been changed includes much more then the kernel. it checks the kernel
+> and the initrd.
 
-> Index: linux-2.6.22-rc3/perfmon/perfmon_syscalls.c
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/perfmon/perfmon_syscalls.c
-> +++ linux-2.6.22-rc3/perfmon/perfmon_syscalls.c
-> @@ -403,6 +403,8 @@ asmlinkage long sys_pfm_create_context(s
->  	void *fmt_arg = NULL;
->  	int ret;
->  
-> +	PFM_DBG("syscall");
+Not legally relevant.
 
-Likewise.  Using "syscall" for all debugging messages in the syscall 
-handlers isn't very informative.  Could this be PFM_DBG(__FUNCTION__) 
-instead?
+>> Out of curiosity, what do you have to do on models besides those?  Are
+>> newer models more or less restrictive in what they run?  If newer
+>> models are more restrictive, I think that also speaks to whether Tivo
+>> thinks it is conveying complete source code.
+>
+> newer models do tend to be more restrictive, but they also tend to
+> connect to more propriatary networks (satellite or cable)
 
-> +
->  	if (atomic_read(&perfmon_disabled))
->  		return -ENOSYS;
->  
-> @@ -433,8 +435,12 @@ asmlinkage long sys_pfm_write_pmcs(int f
->  	size_t sz;
->  	int ret, fput_needed;
->  
-> -	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
-> +	PFM_DBG("syscall");
-> +
-> +	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq)) {
-> +                PFM_DBG("invalid arg count %d", count);
+What they connect to is also not relevant.  That imples that because a
+vendor has been issued or licensed patents, they are not obliged to
+follow the GPL -- that the vendor has other obligations that supercede
+the GPL's license claims.  GPL section 7 addresses that situation.
 
-This is whitespace damaged.
-
->  		return -EINVAL;
-> +	}
->  
->  	sz = count*sizeof(*ureq);
->  
-> @@ -475,6 +481,8 @@ asmlinkage long sys_pfm_write_pmcs(int f
->  		kfree(fptr);
->  error:
->  	fput_light(filp, fput_needed);
-> +	if (ret)
-> +		PFM_DBG("failed: errno=%d", -ret);
-
-What failed?  More information would be helpful since this is, after all, 
-a diagnostic message.
-
-> Index: linux-2.6.22-rc3/include/asm-i386/perfmon.h
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/include/asm-i386/perfmon.h
-> +++ linux-2.6.22-rc3/include/asm-i386/perfmon.h
-> @@ -140,6 +140,10 @@ static inline void pfm_arch_write_pmc(st
->  	if (ctx && ctx->flags.started == 0)
->  		return;
->  
-> +	PFM_DBG_ovfl("pfm_arch_write_pmc(0x%016Lx, 0x%016Lx)",
-> +		     (unsigned long long) pfm_pmu_conf->pmc_desc[cnum].hw_addr,
-> +		     (unsigned long long) value);
-
-Casting here should be unnecessary.  Changing %L would be advisible to 
-display the data as it is stored in the object.
-
-> +	BUG_ON(pfm_pmu_conf->pmc_desc[cnum].type & PFM_REG_V);
->  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
->  		__pfm_write_reg_p4(&arch_info->pmc_addrs[cnum], value);
->  	else
-> @@ -155,6 +159,10 @@ static inline void pfm_arch_write_pmd(st
->  	if (pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_C64)
->  		value |= ~pfm_pmu_conf->ovfl_mask;
->  
-> +	PFM_DBG_ovfl("pfm_arch_write_pmd(0x%016Lx, 0x%016Lx)",
-> +		     (unsigned long long) pfm_pmu_conf->pmd_desc[cnum].hw_addr,
-> +		     (unsigned long long) value);
-> +	BUG_ON(pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_V);
->  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
->  		__pfm_write_reg_p4(&arch_info->pmd_addrs[cnum], value);
->  	else
-> @@ -165,10 +173,14 @@ static inline u64 pfm_arch_read_pmd(stru
->  {
->  	struct pfm_arch_pmu_info *arch_info = pfm_pmu_conf->arch_info;
->  	u64 tmp;
-> +	BUG_ON(pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_V);
->  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
->  		__pfm_read_reg_p4(&arch_info->pmd_addrs[cnum], &tmp);
->  	else
->  		rdmsrl(pfm_pmu_conf->pmd_desc[cnum].hw_addr, tmp);
-> +	PFM_DBG_ovfl("pfm_arch_read_pmd(0x%016Lx) = 0x%016Lx",
-> +		     (unsigned long long) pfm_pmu_conf->pmd_desc[cnum].hw_addr,
-> +		     (unsigned long long) tmp);
->  	return tmp;
->  }
->  
-> @@ -176,10 +188,14 @@ static inline u64 pfm_arch_read_pmc(stru
->  {
->  	struct pfm_arch_pmu_info *arch_info = pfm_pmu_conf->arch_info;
->  	u64 tmp;
-> +	BUG_ON(pfm_pmu_conf->pmc_desc[cnum].type & PFM_REG_V);
->  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
->  		__pfm_read_reg_p4(&arch_info->pmc_addrs[cnum], &tmp);
->  	else
->  		rdmsrl(pfm_pmu_conf->pmc_desc[cnum].hw_addr, tmp);
-> +        PFM_DBG_ovfl("pfm_arch_read_pmc(0x%016Lx) = 0x%016Lx",
-> +		     (unsigned long long) pfm_pmu_conf->pmc_desc[cnum].hw_addr,
-> +		     (unsigned long long) tmp);
-
-More whitespace damage.
+Michael Poole
