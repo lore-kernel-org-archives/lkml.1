@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762689AbXFTIGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbXFTIHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762689AbXFTIGP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 04:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760132AbXFTIGA
+	id S1759455AbXFTIHF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 04:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761117AbXFTIGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 04:06:00 -0400
-Received: from mail.bmlv.gv.at ([193.171.152.37]:34015 "EHLO mail.bmlv.gv.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753012AbXFTIF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 04:05:58 -0400
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Versioning file system
-Date: Wed, 20 Jun 2007 10:05:15 +0200
-User-Agent: KMail/1.9.7
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Chris Snook <csnook@redhat.com>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@zeniv.linux.org.uk, alan <alan@clueserver.org>
-References: <46731169.2090002@hawkeye.stone.uk.eu.org> <20070619225021.225d4c7e@the-village.bc.nu> <467853BB.1090109@zytor.com>
-In-Reply-To: <467853BB.1090109@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 20 Jun 2007 04:06:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38212 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757385AbXFTIGs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 04:06:48 -0400
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures in dma
+	map api calls
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, davem@davemloft.net,
+       clameter@sgi.com
+In-Reply-To: <20070619213808.798646000@askeshav-devel.jf.intel.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
+	 <20070619213808.798646000@askeshav-devel.jf.intel.com>
+Content-Type: text/plain
+Date: Wed, 20 Jun 2007 10:06:39 +0200
+Message-Id: <1182326799.21117.19.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706201005.16323.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mittwoch, 20. Juni 2007, H. Peter Anvin wrote:
-> Alan Cox wrote:
-> > POSIX is very
-> > clear about what is acceptable as magic in a pathname, and the unix spec
-> > even more so.  The NetApp approach recognizes two important things
-> >
-> > 1.	Old version access is the oddity not the norm
-> > 2.	Standards behaviour is important
->
-> 3. An atomic snapshot is more useful than a bunch of disconnected
-> per-file version.  Kind of like CVS vs SVN.
+On Tue, 2007-06-19 at 14:37 -0700, Keshavamurthy, Anil S wrote:
+> plain text document attachment (intel_iommu_pf_memalloc.patch)
+> Intel IOMMU driver needs memory during DMA map calls to setup its internal
+> page tables and for other data structures. As we all know that these DMA 
+> map calls are mostly called in the interrupt context or with the spinlock 
+> held by the upper level drivers(network/storage drivers), so in order to 
+> avoid any memory allocation failure due to low memory issues,
+> this patch makes memory allocation by temporarily setting PF_MEMALLOC
+> flags for the current task before making memory allocation calls.
+> 
+> We evaluated mempools as a backup when kmem_cache_alloc() fails
+> and found that mempools are really not useful here because
+>  1) We don;t know for sure how much to reserve in advance
 
-I believe that since some decision must be made *when* a snapshot is taken, 
-and that should (has to) be done by userspace, a userspace versioning system 
-for doing the backups is the right solution. [1]
+So you just unleashed an unbounded allocation context on PF_MEMALLOC?
+seems like a really really bad idea.
 
-Whether there is some filesystem (FUSE or native) that allows online browsing 
-of the backups or not is another matter.
+>  2) And mempools are not useful for GFP_ATOMIC case (as we call 
+>     memory alloc functions with GFP_ATOMIC)
 
-Ad 1: What userspace needs is
-- atomic snapshots of complete directory trees, independent of mount
-  boundaries (across filesystems)
-- an atomic way to change the state of the filesystem for the *whole* system.
-  For FSVS I'll try to use unionfs for that - populate some new directory with
-  my tree of changes, then overmount that over "/", and move the files over
-  one-by-one until the new directory is empty. (Must be checked on reboot, of
-  course).
+Mempools work as intended with GFP_ATOMIC, it gets filled up to the
+specified number of elements using GFP_KERNEL (at creation time). This
+gives GFP_ATOMIC allocations nr_elements extra items once it would start
+failing.
 
-These are actually two similar operations (from the atomic view), but have to 
-be done in completely different ways ... Maybe there could be some "better" 
-interface (if there is one - I don't know what could really be removed from 
-the above workflow).
+> With PF_MEMALLOC flag set in the current->flags, the VM subsystem avoids
+> any watermark checks before allocating memory thus guarantee'ing the 
+> memory till the last free page.
 
+PF_MEMALLOC as is, is meant to salvage the VM from the typical VM
+deadlock. Using it as you do now is not something a driver should ever
+do, and I'm afraid I will have to strongly oppose this patch.
 
-Regards,
+You really really want to calculate an upper bound on your memory
+consumption and reserve this.
 
-Phil
+So, I'm afraid I'll have to..
+
+NACK!
+
