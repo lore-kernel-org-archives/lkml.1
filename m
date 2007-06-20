@@ -1,51 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762489AbXFTH6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbXFTIBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762489AbXFTH6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 03:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759976AbXFTH6j
+	id S1762608AbXFTIBB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 04:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759976AbXFTIAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 03:58:39 -0400
-Received: from [60.23.248.87] ([60.23.248.87]:57317 "EHLO virgo.fc-cn.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756922AbXFTH6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 03:58:38 -0400
-X-Greylist: delayed 1452 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jun 2007 03:58:38 EDT
-Message-ID: <4678D882.3090606@mail.fc-cn.com>
-Date: Wed, 20 Jun 2007 15:34:26 +0800
-From: Qi Yong <qiyong@mail.fc-cn.com>
-Organization: FCD
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070217 Iceape/1.1.1 (Debian-1.1.1-2)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dtor@insightbb.com>
-CC: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, michal.k.k.piotrowski@gmail.com
-Subject: Re: [patch] add printk_ratelimit to atkbd_interrupt
-References: <20070620011753.GA16692@virgo.fc-cn.com> <200706200013.13029.dtor@insightbb.com>
-In-Reply-To: <200706200013.13029.dtor@insightbb.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jun 2007 04:00:54 -0400
+Received: from main.gmane.org ([80.91.229.2]:59369 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757761AbXFTIAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 04:00:53 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jan Blunck <jblunck@suse.de>
+Subject: Re: [RFC PATCH 3/4] Lookup changes to support union mount.
+Date: Wed, 20 Jun 2007 07:51:58 +0000 (UTC)
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+Message-ID: <f5amau$foi$3@sea.gmane.org>
+References: <20070620055050.GB4267@in.ibm.com>
+	<20070620055326.GE4267@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: charybdis-ext.suse.de
+User-Agent: pan 0.119 (Karma Hunters)
+Cc: linux-fsdevel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Tuesday 19 June 2007 21:17, Qi Yong wrote:
->   
->> Add printk_ratelimit() to atkbd_interrupt(). I get "Spurious ACK" messages flushing on my
->> screen. This patch helps to read the screen.
->>
->>     
->
-> Will apply, thank you.
->
-> Do you have any idea why you are getting spurios ACK messages? Do you have
-> an application fiddling with keyboard port or do you have blink driver
-> enabled?
+On Wed, 20 Jun 2007 11:23:26 +0530, Bharata B Rao wrote:
 
-No idea. It is at boot time.
-Yes, i have CONFIG_BLINK=y.
+> +/*
+> + * Looks for the given @name in dcache by walking through all the layers
+> + * of the union stack, starting from the top.
+> + * FIXME: If we don't find the dentry in a upper layer, we descend to the
+> + * next layer. So there is a chance to miss this dentry in the top layer
+> + * if this is the _first_ time lookup of the dentry in this layer. A real
+> + * lookup might have fetched a valid dentry in this layer itself, while we
+> + * chose to descend to the next lower layer. One solution is not have this
+> + * function itself, do the toplevel lookup in dcache and if it fails proceed
+> + * to real_lookup_union() directly.
+> + */
+> +struct dentry *__d_lookup_union(struct nameidata *nd, struct qstr *name)
+> +{
+> +	struct dentry *dentry;
+> +	struct nameidata nd_tmp;
+> +	struct vfsmount *mnt = mntget(nd->mnt);
+> +	struct qstr this;
+> +	int err;
+> +
+> +	nd_tmp.mnt = nd->mnt;
+> +	nd_tmp.dentry = nd->dentry;
+> +
+> +	this.name = name->name;
+> +	this.len = name->len;
+> +	this.hash = name->hash;
+> +
+> +	do {
+> +		/* d_hash() is a repetition for the top layer. */
+> +		if (nd_tmp.dentry->d_op && nd_tmp.dentry->d_op->d_hash) {
+> +			err = nd_tmp.dentry->d_op->d_hash(nd_tmp.dentry, &this);
+> +			if (err < 0)
+> +				goto out;
+> +		}
+> +
+> +		dentry = __d_lookup(nd_tmp.dentry, &this);
+> +		if (dentry) {
+> +			if (dentry->d_inode) {
+> +				if (nd->mnt != nd_tmp.mnt) {
+> +					mntput(nd->mnt);
+> +					nd->mnt = mntget(nd_tmp.mnt);
+> +				}
+> +				mntput(mnt);
+> +				return dentry;
+> +			} else {
+> +				dput(dentry);
+> +			}
+> +		}
+> +	} while (next_union_mount(&nd_tmp));
+> +out:
+> +	mntput(mnt);
+> +	return NULL;
+> +}
+> +
 
-(add CC: Michal Piotrowski)
+The reference counting for vfsmount is wrong. next_union_mount() should be
+something similar to follow_down(). You should grab the reference to the
+underlying mount before doing the lookup. Ok ok, you already have a valid
+reference in struct union_mount but anyway.
 
--- 
-Qi Yong
+Jan
 
