@@ -1,103 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbXFTAKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbXFTANh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758645AbXFTAKT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 20:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbXFTAKI
+	id S1758533AbXFTANh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 20:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbXFTANa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 20:10:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36960 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752371AbXFTAKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 20:10:06 -0400
-Date: Tue, 19 Jun 2007 17:09:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Carlo Wood <carlo@alinoe.com>
-cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       eric@anholt.net, zhenyu.z.wang@intel.com, lethal@linux-sh.org,
-       y-goto@jp.fujitsu.com
-Subject: Re: 2.6.22-rc5 regression
-In-Reply-To: <20070619233716.GA5779@alinoe.com>
-Message-ID: <alpine.LFD.0.98.0706191649160.3593@woody.linux-foundation.org>
-References: <20070617182254.GA17595@alinoe.com> <20070617195805.GA6125@alinoe.com>
- <20070617214905.GA6207@alinoe.com> <alpine.LFD.0.98.0706180950130.14121@woody.linux-foundation.org>
- <20070618181225.GB8054@alinoe.com> <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org>
- <20070618195415.GA7481@alinoe.com> <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org>
- <20070618225009.GE13538@alinoe.com> <alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org>
- <20070619233716.GA5779@alinoe.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 19 Jun 2007 20:13:30 -0400
+Received: from kumera.dghda.com ([80.68.90.171]:4258 "EHLO kumera.dghda.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753251AbXFTAN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 20:13:29 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 20:13:29 EDT
+From: "Duane Griffin" <duaneg@dghda.com>
+Message-Id: <20070620000646.186114175@dastardly.home.dghda.com>
+References: <20070620000644.891099313@dastardly.home.dghda.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 20 Jun 2007 01:06:45 +0100
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, didier <did447@gmail.com>,
+       Solra Bizna <sbizna@tejat.net>, Daniel Drake <dsd@gentoo.org>
+Subject: [patch 1/2] HFS+: Refactor ASCII to unicode conversion routine for later reuse
+Content-Disposition: inline; filename=hfsplus-refactor-unicode.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Refactor existing HFS+ ASCII to unicode string conversion routine to
+split out character conversion functionality. This will be reused by
+the custom dentry hash and comparison routines. This approach avoids
+unnecessary memory allocation compared to using the string conversion
+routine directly in the new functions.
 
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+---
 
-On Wed, 20 Jun 2007, Carlo Wood wrote:
+--- linux-2.6.21.orig/fs/hfsplus/unicode.c
++++ linux-2.6.21/fs/hfsplus/unicode.c
+@@ -239,58 +239,97 @@ out:
+ 	return res;
+ }
+ 
+-int hfsplus_asc2uni(struct super_block *sb, struct hfsplus_unistr *ustr, const char *astr, int len)
++/*
++ * Convert one or more ASCII characters into a single unicode character.
++ * Returns the number of ASCII characters corresponding to the unicode char.
++ */
++static
++int asc2uc(struct super_block *sb, const char *astr, int len, wchar_t *uc)
+ {
+-	struct nls_table *nls = HFSPLUS_SB(sb).nls;
+-	int size, off, decompose;
+-	wchar_t c;
+-	u16 outlen = 0;
++	int size = HFSPLUS_SB(sb).nls->char2uni(astr, len, uc);
++	if (size <= 0) {
++		*uc = '?';
++		size = 1;
++	}
++	switch (*uc) {
++	case 0x2400:
++		*uc = 0;
++		break;
++	case ':':
++		*uc = '/';
++		break;
++	}
++	return size;
++}
++
++struct decomposed_uc {
++	int size;
++	wchar_t str[3];
++};
++
++/* Decomposes a single unicode character. */
++static void decompose_uc(wchar_t uc, struct decomposed_uc *duc)
++{
++	int off, ii;
+ 
+-	decompose = !(HFSPLUS_SB(sb).flags & HFSPLUS_SB_NODECOMPOSE);
++	duc->size = 1;
++	duc->str[0] = uc;
++
++	off = hfsplus_decompose_table[(uc >> 12) & 0xf];
++	if (off == 0 || off == 0xffff)
++		return;
++
++	off = hfsplus_decompose_table[off + ((uc >> 8) & 0xf)];
++	if (!off)
++		return;
++
++	off = hfsplus_decompose_table[off + ((uc >> 4) & 0xf)];
++	if (!off)
++		return;
++
++	off = hfsplus_decompose_table[off + (uc & 0xf)];
++
++	duc->size = off & 3;
++	off /= 4;
++	for (ii = 0; ii < duc->size; ++ii)
++		duc->str[ii] = hfsplus_decompose_table[off++];
++}
++
++/*
++ * Convert a ASCII character(s) to a unicode character.
++ * The unicode character will be decomposed, if required.
++ * Returns the number of ASCII characters converted.
++ */
++static int asc2ucd(struct super_block *sb,
++	const char *astr, int len, struct decomposed_uc *duc)
++{
++	int size = asc2uc(sb, astr, len, duc->str);
++	bool decompose = !(HFSPLUS_SB(sb).flags & HFSPLUS_SB_NODECOMPOSE);
++
++	if (decompose && *duc->str >= 0xc0)
++		decompose_uc(*duc->str, duc);
++	else
++		duc->size = 1;
++
++	return size;
++}
++
++int hfsplus_asc2uni(struct super_block *sb,
++	struct hfsplus_unistr *ustr, const char *astr, int len)
++{
++	u16 outlen = 0;
++	struct decomposed_uc duc;
+ 
+ 	while (outlen < HFSPLUS_MAX_STRLEN && len > 0) {
+-		size = nls->char2uni(astr, len, &c);
+-		if (size <= 0) {
+-			c = '?';
+-			size = 1;
+-		}
++		int ii;
++		int size = asc2ucd(sb, astr, len, &duc);
++		if (outlen + duc.size > HFSPLUS_MAX_STRLEN)
++			break;
++
+ 		astr += size;
+ 		len -= size;
+-		switch (c) {
+-		case 0x2400:
+-			c = 0;
+-			break;
+-		case ':':
+-			c = '/';
+-			break;
+-		}
+-		if (c >= 0xc0 && decompose) {
+-			off = hfsplus_decompose_table[(c >> 12) & 0xf];
+-			if (!off)
+-				goto done;
+-			if (off == 0xffff) {
+-				goto done;
+-			}
+-			off = hfsplus_decompose_table[off + ((c >> 8) & 0xf)];
+-			if (!off)
+-				goto done;
+-			off = hfsplus_decompose_table[off + ((c >> 4) & 0xf)];
+-			if (!off)
+-				goto done;
+-			off = hfsplus_decompose_table[off + (c & 0xf)];
+-			size = off & 3;
+-			if (!size)
+-				goto done;
+-			off /= 4;
+-			if (outlen + size > HFSPLUS_MAX_STRLEN)
+-				break;
+-			do {
+-				ustr->unicode[outlen++] = cpu_to_be16(hfsplus_decompose_table[off++]);
+-			} while (--size > 0);
+-			continue;
+-		}
+-	done:
+-		ustr->unicode[outlen++] = cpu_to_be16(c);
++		for (ii = 0; ii < duc.size; ++ii)
++			ustr->unicode[outlen++] = cpu_to_be16(duc.str[ii]);
+ 	}
+ 	ustr->length = cpu_to_be16(outlen);
+ 	if (len > 0)
 
-> On Mon, Jun 18, 2007 at 03:57:51PM -0700, Linus Torvalds wrote:
-> > > I'll redo the bisect with this new git.
-> > 
-> > Thanks,
-> > 		Linus
-> 
-> Well, I did a new 'git bisect' - and if you ask me - it is still broken.
-> 
-> It's conclusion was this time:
-> 
-> hikaru:/usr/src/kernel/git/linux-2.6>git bisect bad
-> 01da41b86f6e5f9a724e20a63f093d77e37d8056 is first bad commit
-> 
->     parisc: make command_line[] static
-
-Heh.
-
-Yeah, at this point I think we can pretty much guarantee that your problem 
-is one of two cases:
-
- - either a bit random, and depends on some timing thing, and one of the 
-   kernels you marked "good" wasn't really.
-
-   It's not likely that you marked a good kernel bad, of course, since 
-   with a good kernel, everything should have always worked, but with a 
-   bad kernel and a bug that isn't entirely reproducible, you'd mark it 
-   "good" by mistake - because it just randomly didn't show the problem.
-
-OR
-
- - we actually have two different commits that introduce the problem for 
-   you, and it comes and goes, and the bisection doesn't work, because 
-   there isn't a clear "this side works, that other side does not" 
-   situation.
-
-For example, later on you say:
-
-> Personally I am convinced that the real problem is with
-> 8888985144db8f4cb7e56154b31bdf233d3550bf
-
-but if you look at your commit log, you have:
-
-> # bad: [25971f68d392f1816e21520e9e59648403b0bdad] [PARISC] fix section
-> # mismatch in ccio-dma
-> git-bisect bad 25971f68d392f1816e21520e9e59648403b0bdad
-
-Notice? You said that 25971f68d392f1816e21520e9e59648403b0bdad was bad, 
-but that is *before_ the 8888985144db8f4cb7e56154b31bdf233d3550bf commit. 
-Do a
-
-	gitk 25971f68d3..8888985144
-
-to see that part of the history.
-
-So maybe you didn't test that kernel properly? And maybe it really is 
-random, and something has happened that just makes it happen more often?
-
-Also, some *really* nasty bugs end up being about bad initialization, and 
-it turns out that what happens more is not which kernel you run, but what 
-the *previous* kernel you ran is, because it left some device driver state 
-that the bug doesn't clean up!
-
-Anyway, can you try that 25971f68d3 kernel one more time? You marked it 
-bad, but if that kernel is bad, then the commit you are pointing to is 
-*not* the culprit.
-
-			Linus
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
