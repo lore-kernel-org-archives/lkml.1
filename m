@@ -1,52 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbXFTXv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbXFTXwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757503AbXFTXv6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbXFTXvm
+	id S1757355AbXFTXwi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbXFTXwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:51:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43436 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755479AbXFTXvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:51:41 -0400
-Date: Wed, 20 Jun 2007 16:50:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Ian McDonald <ian.mcdonald@jandi.co.nz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       William Cohen <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
-In-Reply-To: <1182381667.2701.7.camel@laptopd505.fenrus.org>
-Message-ID: <alpine.LFD.0.98.0706201649060.3593@woody.linux-foundation.org>
-References: <467543FA.60905@googlemail.com> 
- <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com> 
- <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
- <1182381667.2701.7.camel@laptopd505.fenrus.org>
+	Wed, 20 Jun 2007 19:52:30 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:32794 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753719AbXFTXw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:52:29 -0400
+Date: Thu, 21 Jun 2007 01:51:52 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, torvalds@linux-foundation.org
+Subject: Re: [PATCH] blink: Only blink when parameter is set
+In-Reply-To: <20070620201637.GA5610@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0706210147260.3068@twin.jikos.cz>
+References: <20070617083904.GC4496@suse.de> <20070620201637.GA5610@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Jun 2007, Pavel Machek wrote:
 
+> * It breaks keyboards. Yes, we are talking about maybe-broken i8042s, 
+>   but it still breaks thinkpads at least.
 
-On Wed, 20 Jun 2007, Arjan van de Ven wrote:
-> 
-> the real fix would be something like this instead:
+Hi Pavel,
 
-If people can test this, and confirm it works, please send a patch that 
-not only does this ad undoes the Kconfig language.  It looks like the 
-right thing to do, but I won't touch it without somebody who actually 
-tested these combinarions sending in a patch.
+this has probably been already solved by proper throttling - see 
+http://lkml.org/lkml/2007/6/15/22
 
-Hmm?
-
-		Linus
+-- 
+Jiri Kosina
