@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbXFTRyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbXFTR7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758640AbXFTRyx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbXFTRyp
+	id S1758093AbXFTR7j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXFTR7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:54:45 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33902 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753307AbXFTRyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:54:44 -0400
-From: Andi Kleen <ak@suse.de>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: Problem with global_flush_tlb() on i386 (x86_64? too) in 2.6.22-rc4-mm2
-Date: Wed, 20 Jun 2007 19:53:53 +0200
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@redhat.com,
-       mbligh@google.com
-References: <20070619170914.GA30623@Krystal> <200706201101.20673.ak@suse.de> <20070620164614.GA8916@Krystal>
-In-Reply-To: <20070620164614.GA8916@Krystal>
+	Wed, 20 Jun 2007 13:59:32 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:31675 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753287AbXFTR7b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 13:59:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=pr2bKECTd02j/Fsa0Vlrj4PWH6Nm5Uk5PVL/igxVyz0LlsIup2jUmTEO/cHFDgw3o+hPBkgHIiBI8RDBnmURYDADuV1T4C5hTB9K2/hJzPefGYQ/1yyofAe7QSeJm7JDGenkmNR9+9BOpSFGvra5j0RDxDrnz3jA71EP0qj0eBA=
+Date: Wed, 20 Jun 2007 21:57:37 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] bracing the loop in kernel/softirq.c
+Message-ID: <20070620175737.GA6523@cvg>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706201953.54322.ak@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 June 2007 18:46, Mathieu Desnoyers wrote:
-> * Andi Kleen (ak@suse.de) wrote:
-> > On Tuesday 19 June 2007 22:01:36 Mathieu Desnoyers wrote:
-> > > Looking more closely into the code to find the cause of the
-> > > change_page_addr()/global_flush_tlb() inconsistency, I see where the
-> > > problem could be:
-> >
-> > Yes it's a known problem. I have a hack queued for .22 and there
-> > are proposed patches for .23 too.
-> >
-> > ftp://ftp.firstfloor.org/pub/ak/x86_64/late-merge/patches/cpa-flush
-> >
-> > -ANdi
->
-> Hi Andi,
->
-> Although I cannot find it at the specified URL, I suspect it is already
-> in Andrew's tree, in 2.6.22-rc4-mm2, under the name
+This trivial patch adds braces over a one-line
+loop. That makes code...well... little bit
+convenient for (possible) further modifications.
 
-Try again
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-> "x86_64-mm-cpa-cache-flush.patch"
+ kernel/softirq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-No, that's a different patch with also at least one known bug.
 
--Andi
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 0b9886a..d1a7e89 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -470,9 +470,9 @@ void tasklet_kill(struct tasklet_struct *t)
+ 		printk("Attempt to kill tasklet from interrupt\n");
+ 
+ 	while (test_and_set_bit(TASKLET_STATE_SCHED, &t->state)) {
+-		do
++		do {
+ 			yield();
+-		while (test_bit(TASKLET_STATE_SCHED, &t->state));
++		} while (test_bit(TASKLET_STATE_SCHED, &t->state));
+ 	}
+ 	tasklet_unlock_wait(t);
+ 	clear_bit(TASKLET_STATE_SCHED, &t->state);
