@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbXFTHnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbXFTHzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761682AbXFTHnc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 03:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbXFTHnX
+	id S1761344AbXFTHzb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 03:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757761AbXFTHzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 03:43:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37627 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757513AbXFTHnW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 03:43:22 -0400
-Subject: Re: [-RT] multiple streams have degraded performance
-From: Peter Zijlstra <peterz@infradead.org>
-To: Vernon Mauery <vernux@us.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Ingo Molnar <mingo@elte.hu>, netdev <netdev@vger.kernel.org>
-In-Reply-To: <200706192038.01054.vernux@us.ibm.com>
-References: <200706182212.22633.vernux@us.ibm.com>
-	 <200706192038.01054.vernux@us.ibm.com>
-Content-Type: text/plain
-Date: Wed, 20 Jun 2007 09:42:45 +0200
-Message-Id: <1182325365.21117.9.camel@twins>
+	Wed, 20 Jun 2007 03:55:22 -0400
+Received: from main.gmane.org ([80.91.229.2]:36181 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755748AbXFTHzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 03:55:21 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jan Blunck <jblunck@suse.de>
+Subject: Re: [RFC PATCH 1/4] Union mount documentation.
+Date: Wed, 20 Jun 2007 07:29:55 +0000 (UTC)
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+Message-ID: <f5al1i$foi$1@sea.gmane.org>
+References: <20070620055050.GB4267@in.ibm.com>
+	<20070620055157.GC4267@in.ibm.com>
+	<1182319191.2700.9.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: charybdis-ext.suse.de
+User-Agent: pan 0.119 (Karma Hunters)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-19 at 20:38 -0700, Vernon Mauery wrote:
-> On Monday 18 June 2007 10:12:21 pm Vernon Mauery wrote:
-> > In looking at the performance characteristics of my network I found that
-> > 2.6.21.5-rt15 suffers from degraded thoughput with multiple threads.  The
-> > test that I did this with is simply invoking 1, 2, 4, and 8 instances of
-> > netperf at a time and measuring the total throughput.  I have two 4-way
-> > machines connected with 10GbE cards.  I tested several kernels (some older
-> > and some newer) and found that the only thing in common was that with -RT
-> > kernels the performance went down with concurrent streams.
+On Tue, 19 Jun 2007 22:59:51 -0700, Arjan van de Ven wrote:
+
+> first of all I'm happy to see that people are still working on unionfs;
+> I'd love to have functionality like this show up in Linux.
+
+This has nothing to do with unionfs. This is about doing a VFS based
+approach to union mounts. Unification is a name-based construct so it
+belongs into VFS and not into a separate file system.
+
+> I'll not claim to have any VFS knowledge whatsoever, but I was just
+> wondering what happens in the following scenario:
 > 
-> I just tested this using lo instead of the 10GbE adapter.  I found similar 
-> results.  Since this makes it reproducible by just about anybody (maybe the 
-> only factor now is the number of CPUs), I have attached the script that I 
-> test things with.
+> FS A is mounted twice, in /mnt/A and /mnt/union
 > 
-> So with the script run like ./stream_test 127.0.0.1 on 2.6.21 and 
-> 2.6.21.5-rt17 I got the following:
+> FS B is mounted twice, in /mnt/B and as topmost union mount
+> on /mnt/union
 > 
-> 2.6.21
-> =======================
-> default: 1 streams: Send at 2790.3 Mb/s, Receive at 2790.3 Mb/s
-> default: 2 streams: Send at 4129.4 Mb/s, Receive at 4128.7 Mb/s
-> default: 4 streams: Send at 7949.6 Mb/s, Receive at 7735.5 Mb/s
-> default: 8 streams: Send at 7930.7 Mb/s, Receive at 7910.1 Mb/s
-> 1Msock: 1 streams: Send at 2810.7 Mb/s, Receive at 2810.7 Mb/s
-> 1Msock: 2 streams: Send at 4093.4 Mb/s, Receive at 4092.6 Mb/s
-> 1Msock: 4 streams: Send at 7887.8 Mb/s, Receive at 7880.4 Mb/s
-> 1Msock: 8 streams: Send at 8091.7 Mb/s, Receive at 8082.2 Mb/s
+> lets for simplicity say both filesystems are entirely empty
 > 
-> 2.6.21.5-rt17
-> ======================
-> default: 1 streams: Send at 938.2 Mb/s, Receive at 938.2 Mb/s
-> default: 2 streams: Send at 1476.3 Mb/s, Receive at 1436.9 Mb/s
-> default: 4 streams: Send at 1489.8 Mb/s, Receive at 1145.0 Mb/s
-> default: 8 streams: Send at 1099.8 Mb/s, Receive at 1079.1 Mb/s
-> 1Msock: 1 streams: Send at 921.4 Mb/s, Receive at 920.4 Mb/s
-> 1Msock: 2 streams: Send at 1332.2 Mb/s, Receive at 1311.5 Mb/s
-> 1Msock: 4 streams: Send at 1483.0 Mb/s, Receive at 1137.8 Mb/s
-> 1Msock: 8 streams: Send at 1446.2 Mb/s, Receive at 1135.6 Mb/s
+> user does on FS A: 
+> mkdir  /mnt/A/somedir
+> touch /mnt/A/somedir/somefile
+> 
+> and then 2 things happen in parallel
+> 1) touch /mnt/B/somefile
+> 2) mv /mnt/union/somedir /mnt/union/somefile
+> 
+> since the underlying FS for 2) is FS A... how will this work out locking
+> wise? Will the VS lock the union directory only? Or will this operate
+> only on the underlying FS? How is dcache consistency guaranteed for
+> scenarios like this?
 
-Unfortunately I do not have a 4-way machine, but a dual core was enough
-to show the problem:
+Mounting a file system twice is bad in the first place. This should be
+done by using bind mounts and bind a mounted file system into a union.
+After that the normal locking rules apply (and hopefully work ;).
 
-./stream_test 127.0.0.1
-
-** default: 1 streams: Send at 268.9 Mb/s, Receive at 268.0 Mb/s
-** default: 2 streams: Send at 448.7 Mb/s, Receive at 448.4 Mb/s
-** default: 4 streams: Send at 438.7 Mb/s, Receive at 438.3 Mb/s
-** default: 8 streams: Send at 352.7 Mb/s, Receive at 351.2 Mb/s
-
-** 1Msock: 1 streams: Send at 207.4 Mb/s, Receive at 207.4 Mb/s
-** 1Msock: 2 streams: Send at 450.0 Mb/s, Receive at 450.0 Mb/s
-** 1Msock: 4 streams: Send at 444.9 Mb/s, Receive at 444.9 Mb/s
-** 1Msock: 8 streams: Send at 351.4 Mb/s, Receive at 351.4 Mb/s
-
-
-and lock_stat shows the following offender:
-
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                              class name    contentions   waittime-min   waittime-max waittime-total    con-bounces   acquisitions   holdtime-min   holdtime-max holdtime-total    acq-bounces
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-                         udp_hash_lock-W:             1           1.58           1.58           1.58              1            163          0.100           4.38         184.44            110
-                         udp_hash_lock-R:        539603           1.30        4848.34     7756821.91         539131       15095136           0.36         520.09    20404391.93       11527348
-                         ---------------
-                           udp_hash_lock         539603          [<ffffffff80468d63>] __udp4_lib_lookup+0x3c/0x10d
-                           udp_hash_lock              1          [<ffffffff804686fe>] __udp_lib_get_port+0x2c/0x21a
-
-
-Which makes perfect sense, in that r/w locks are degraded to regular
-exclusive locks on -rt.
-
-So I guess you're wanting to go help out with the RCU-ification of
-whatever it is that this lock protects. :-)
+Jan
 
