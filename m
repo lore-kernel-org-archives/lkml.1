@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbXFTQx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbXFTQ44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbXFTQx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbXFTQxs
+	id S1755251AbXFTQ44 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbXFTQ4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:53:48 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:41148 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752546AbXFTQxr convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:53:47 -0400
-Date: Wed, 20 Jun 2007 12:46:14 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@redhat.com,
-       mbligh@google.com
-Subject: Re: Problem with global_flush_tlb() on i386 (x86_64? too) in 2.6.22-rc4-mm2
-Message-ID: <20070620164614.GA8916@Krystal>
-References: <20070619170914.GA30623@Krystal> <20070619200136.GA4943@Krystal> <200706201101.20673.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <200706201101.20673.ak@suse.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:29:24 up 23 days, 8 min,  4 users,  load average: 1.28, 1.16, 0.88
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 20 Jun 2007 12:56:47 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36322 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751677AbXFTQ4p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 12:56:45 -0400
+Date: Wed, 20 Jun 2007 18:01:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linas@austin.ibm.com (Linas Vepstas)
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Stuart_Hayes@dell.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+Message-ID: <20070620180123.642316ae@the-village.bc.nu>
+In-Reply-To: <20070620162845.GY5836@austin.ibm.com>
+References: <20070618175713.GD5836@austin.ibm.com>
+	<4677FFF1.2010308@ru.mvista.com>
+	<20070619164854.GR5836@austin.ibm.com>
+	<200706192043.40298.bzolnier@gmail.com>
+	<46783777.10607@ru.mvista.com>
+	<20070620162845.GY5836@austin.ibm.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen (ak@suse.de) wrote:
-> On Tuesday 19 June 2007 22:01:36 Mathieu Desnoyers wrote:
-> > Looking more closely into the code to find the cause of the
-> > change_page_addr()/global_flush_tlb() inconsistency, I see where the
-> > problem could be:
-> 
-> Yes it's a known problem. I have a hack queued for .22 and there
-> are proposed patches for .23 too.
-> 
-> ftp://ftp.firstfloor.org/pub/ak/x86_64/late-merge/patches/cpa-flush
-> 
-> -ANdi
-> 
+> Google seems to show that there is no publically available 
+> firmware updates for Maxtor disks.
 
-Hi Andi,
+There are for some but only if you irritate the tech support people.
 
-Although I cannot find it at the specified URL, I suspect it is already
-in Andrew's tree, in 2.6.22-rc4-mm2, under the name
+> hours at high cpu usage.... There were maybe a a dozen DriveReady
+> SeekComplete Timeout errors clustered a few minutes apart.  
 
-"x86_64-mm-cpa-cache-flush.patch"
+That suggests the drive is having problems occassionally and that the DMA
+path code then blows up when they occur.
 
-But Andrew's
-"revert-x86_64-mm-cpa-cache-flush.patch"
+> Is there a way of viewing the contents of he command queue on
+> the hard drive, to see if the command actually made it across?
 
-Is applied subsequently, along with the Changelog:
+queue ? You are overestimating IDE ;)
 
-From: Andrew Morton <akpm@linux-foundation.org>
+When the command is written you wait 400nS and then BSY is supposed to be
+asserted. DRQ and other bits then handshake the data at the software
+level with IORDY doing it at the hardware level for PIO (except in early
+drives/low speeds where its done by the prayer and timing tolerance
+approach)
 
-This causes my dual-pIII to hang after "write protecting kernel memory".
+Its unlikely the command got lost. The IRQ could have done but the error
+path tries to spot that case by reading the status register - which
+hangs. So in theory it could be a lost IRQ and if the reset works we'll
+find that out.
 
-config: http://userweb.kernel.org/~akpm/config-vmm.txt
+Alan
 
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Is the version found in 2.6.22-rc4-mm2 the latest ?
-
-I propose to verify if the i386:
-
-if (!PageReserved(kpte_page)) {
-   if (cpu_has_pse
-
-check should be also integrated into the global flush tlb ? It would
-cause machines not supporting PSE to try to free non existing large
-pages, and also would cause problems with reserved pages.
-
-It does not seem to fix the hang on my P4 neither though.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
