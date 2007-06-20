@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbXFTUWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbXFTUYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752553AbXFTUWl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbXFTUWd
+	id S1752600AbXFTUYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbXFTUYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:22:33 -0400
-Received: from tayrelbas04.tay.hp.com ([161.114.80.247]:40217 "EHLO
-	tayrelbas04.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbXFTUWc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:22:32 -0400
-Date: Wed, 20 Jun 2007 13:22:16 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] 2.6.22-rc3 perfmon2 : Debug messages added
-Message-ID: <20070620202216.GA26200@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070620182126.248753000@amd.com> <20070620184113.GC5874@erda.amd.com> <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com>
-Mime-Version: 1.0
+	Wed, 20 Jun 2007 16:24:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37775 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750800AbXFTUYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 16:24:09 -0400
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <20070614112329.3645c397@the-village.bc.nu>
+	<20070614103846.GA7902@elte.hu>
+	<or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614195517.GA4933@elte.hu>
+	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net>
+	<orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070615072322.GA7594@brong.net>
+	<orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070620134148.GT10008@csclub.uwaterloo.ca>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Wed, 20 Jun 2007 17:21:22 -0300
+In-Reply-To: <20070620134148.GT10008@csclub.uwaterloo.ca> (Lennart Sorensen's message of "Wed\, 20 Jun 2007 09\:41\:48 -0400")
+Message-ID: <or645iv0l9.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+On Jun 20, 2007, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
 
-On Wed, Jun 20, 2007 at 12:49:05PM -0700, David Rientjes wrote:
-> On Wed, 20 Jun 2007, Robert Richter wrote:
-> 
-> > Debug messages added for better debugging.
-> > 
-> 
-> And you added BUG_ON()'s.
-> 
-> > Signed-off-by: Robert Richter <robert.richter@amd.com>
-> > 
-> > Index: linux-2.6.22-rc3/perfmon/perfmon_file.c
-> > ===================================================================
-> > --- linux-2.6.22-rc3.orig/perfmon/perfmon_file.c
-> > +++ linux-2.6.22-rc3/perfmon/perfmon_file.c
-> > @@ -192,6 +192,8 @@ static int pfm_mmap(struct file *file, s
-> >  	unsigned long flags;
-> >  	int ret;
-> >  
-> > +	PFM_DBG("pfm_file_ops");
-> 
-> After commenting on your first set of patches, I've been using it a little 
-> more.  In my use, these debugging messages weren't very helpful because 
-> "pfm_file_ops" can indicate pfm_mmap, pfm_read, pfm_poll, etc.  Could 
-> these be changed to be more specific based on the function they're in?
-> 
-the PFM_DBG() macro adds the CPU, function name and line number to the
-printed string.
+> On Fri, Jun 15, 2007 at 04:26:34PM -0300, Alexandre Oliva wrote:
+>> If the bug is in the non-GPLed BIOS, not in the GPLed code, too bad.
+>> One more reason to dislike non-Free Software.
+
+> Maybe the Tivo only loading signed kernels is a bug in their bios. :)
+
+That might be so.  And in the US, a court might end up finding that
+piece of code was taken at random, for no particular reason, from a
+sample of garbage produced by code monkeys (in a very literal sense)
+typing at random on computer keyboards over a large period of time ;-)
 
 -- 
-
--Stephane
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
