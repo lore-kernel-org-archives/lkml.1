@@ -1,137 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbXFTPr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbXFTPsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756982AbXFTPr0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 11:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbXFTPrH
+	id S1755906AbXFTPsX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 11:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXFTPsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 11:47:07 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:42755 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbXFTPrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 11:47:05 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@osdl.org>, Pavel Emelianov <xemul@openvz.org>
-Cc: Linux Containers <containers@lists.osdl.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 20 Jun 2007 21:16:55 +0530
-Message-Id: <20070620154655.13844.42876.sendpatchset@balbir-laptop>
-Subject: [patch -rss] Make RSS accounting display more user friendly
+	Wed, 20 Jun 2007 11:48:16 -0400
+Received: from dovecot.org ([82.118.211.50]:55963 "EHLO dovecot.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752407AbXFTPsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 11:48:15 -0400
+Subject: Re: SMP read() stopping at memory page boundaries
+From: Timo Sirainen <tss@iki.fi>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1182351171.3768.65.camel@hurina>
+References: <1182351171.3768.65.camel@hurina>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-1IppvHwtzOiuXG0COxtj"
+Date: Wed, 20 Jun 2007 18:48:13 +0300
+Message-Id: <1182354493.3768.80.camel@hurina>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-1IppvHwtzOiuXG0COxtj
+Content-Type: multipart/mixed; boundary="=-32LprqJESYLghVLqsryc"
 
-Display the current usage and limit in a more user friendly manner. Number
-of pages can be confusing if the page size is different. Some systems
-can choose a page size of 64KB.
 
-NOTE: Values shown in MB and GB could be rounded off.
+--=-32LprqJESYLghVLqsryc
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Sample display
+On Wed, 2007-06-20 at 17:52 +0300, Timo Sirainen wrote:
+> Sometimes read() returns only 4096 bytes. I'm locking the file, so I
+> don't think this should ever happen, right?
 
-:~ # cat /container/rss_limit 
-17179869183 (GB), 9223372036854775807 pages
-:~ # cat /container/rss_usage 
-36 (MB), 9220 pages
-:~ # 
+Sorry, the problem was with file truncating so there's no bug with
+locking. I didn't notice it first because it happened to work with
+FreeBSD and Solaris.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+Without locking there's a problem that I'd want to avoid, but I guess
+it's not necessarily a bug (although it doesn't seem to happen with
+FreeBSD or Solaris):
 
- include/linux/res_counter.h |    6 ++++++
- kernel/res_counter.c        |   27 +++++++++++++++++++++++----
- 2 files changed, 29 insertions(+), 4 deletions(-)
+Process 1:
 
-diff -puN kernel/res_counter.c~rss-ui-display-kdb kernel/res_counter.c
---- linux-2.6.22-rc24-mm2/kernel/res_counter.c~rss-ui-display-kdb	2007-06-20 20:15:46.000000000 +0530
-+++ linux-2.6.22-rc24-mm2-balbir/kernel/res_counter.c	2007-06-20 21:12:29.000000000 +0530
-@@ -61,7 +61,8 @@ void res_counter_uncharge(struct res_cou
- }
- 
- 
--static inline unsigned long *res_counter_member(struct res_counter *cnt, int member)
-+static inline unsigned long *res_counter_member(struct res_counter *cnt,
-+						int member, int *format_mem)
- {
- 	switch (member) {
- 	case RES_USAGE:
-@@ -69,6 +70,7 @@ static inline unsigned long *res_counter
- 	case RES_LIMIT:
- 		return &cnt->limit;
- 	case RES_FAILCNT:
-+		*format_mem = 0;
- 		return &cnt->failcnt;
- 	};
- 
-@@ -81,10 +83,26 @@ ssize_t res_counter_read(struct res_coun
- {
- 	unsigned long *val;
- 	char buf[64], *s;
-+	int format_mem = 1;
-+	unsigned long val_kb = 0, val_mb = 0, val_gb = 0;
- 
- 	s = buf;
--	val = res_counter_member(cnt, member);
--	s += sprintf(s, "%lu\n", *val);
-+	val = res_counter_member(cnt, member, &format_mem);
-+	/*
-+	 * NOTE: GB and MB values might be rounded off
-+	 */
-+	if (format_mem) {
-+		val_gb = (*val << PAGE_SHIFT) >> GB_SHIFT;
-+		val_mb = (*val << PAGE_SHIFT) >> MB_SHIFT;
-+		val_kb = (*val << PAGE_SHIFT) >> KB_SHIFT;
-+		if (val_gb)
-+			s += sprintf(s, "%lu (GB), %lu pages\n", val_gb, *val);
-+		else if (val_mb)
-+			s += sprintf(s, "%lu (MB), %lu pages\n", val_mb, *val);
-+		else
-+			s += sprintf(s, "%lu (KB), %lu pages\n", val_kb, *val);
-+	} else
-+		s += sprintf(s, "%lu\n", *val);
- 	return simple_read_from_buffer((void __user *)userbuf, nbytes,
- 			pos, buf, s - buf);
- }
-@@ -95,6 +113,7 @@ ssize_t res_counter_write(struct res_cou
- 	int ret;
- 	char *buf, *end;
- 	unsigned long tmp, *val;
-+	int nop;
- 
- 	buf = kmalloc(nbytes + 1, GFP_KERNEL);
- 	ret = -ENOMEM;
-@@ -111,7 +130,7 @@ ssize_t res_counter_write(struct res_cou
- 	if (*end != '\0')
- 		goto out_free;
- 
--	val = res_counter_member(cnt, member);
-+	val = res_counter_member(cnt, member, &nop);
- 	*val = tmp;
- 	ret = nbytes;
- out_free:
-diff -puN include/linux/res_counter.h~rss-ui-display-kdb include/linux/res_counter.h
---- linux-2.6.22-rc24-mm2/include/linux/res_counter.h~rss-ui-display-kdb	2007-06-20 20:15:46.000000000 +0530
-+++ linux-2.6.22-rc24-mm2-balbir/include/linux/res_counter.h	2007-06-20 21:01:57.000000000 +0530
-@@ -13,6 +13,12 @@
- 
- #include <linux/container.h>
- 
-+#ifndef KB_SHIFT
-+#define KB_SHIFT	10
-+#define MB_SHIFT	20
-+#define GB_SHIFT	30
-+#endif
-+
- /*
-  * the core object. the container that wishes to account for some
-  * resource may include this counter into its structures and use
-_
+ - create "foo2"
+ - rename() to "foo"
+ - lock
+ - write(4096 + 16 bytes)
+ - [fsync() here doesn't change anything]
+ - pwrite("1111" to offset=3D4096-4)
+ - unlock
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Process 2:
+
+ - open("foo")
+ - read(8192 bytes)
+
+read() sometimes returns 4096 bytes but with the "1111" already included
+in the data. Is there a way to avoid this without locking the file while
+reading? The "1111" tries to act as a kind of a lock.
+
+Again attached a test program, which should really do what I
+intended. :)
+
+--=-32LprqJESYLghVLqsryc
+Content-Disposition: attachment; filename=concurrency.c
+Content-Type: text/x-csrc; name=concurrency.c; charset=ISO-8859-15
+Content-Transfer-Encoding: base64
+
+LyoNCiAgIGdjYyBjb25jdXJyZW5jeS5jIC1vIGNvbmN1cnJlbmN5IC1XYWxsDQoNCiAgIHN0YXJ0
+IHR3byBib3RoIGEgcmVhZGVyIGFuZCBhIHdyaXRlcjoNCg0KICAgLi9jb25jdXJyZW5jeQ0KICAg
+Li9jb25jdXJyZW5jeSAxDQoqLw0KI2RlZmluZSBfWE9QRU5fU09VUkNFIDUwMA0KI2luY2x1ZGUg
+PHN0ZGlvLmg+DQojaW5jbHVkZSA8c3RkbGliLmg+DQojaW5jbHVkZSA8c3RyaW5nLmg+DQojaW5j
+bHVkZSA8ZmNudGwuaD4NCiNpbmNsdWRlIDx1bmlzdGQuaD4NCiNpbmNsdWRlIDxhc3NlcnQuaD4N
+CiNpbmNsdWRlIDxzeXMvZmlsZS5oPg0KDQojZGVmaW5lIE1BWF9QQUdFU0laRSA4MTkyDQoNCmlu
+dCBtYWluKGludCBhcmdjLCBjaGFyICphcmd2W10pDQp7DQoJY2hhciBidWZbTUFYX1BBR0VTSVpF
+KjJdLCBvbmVzWzRdID0geyAxLCAxLCAxLCAxIH07DQoJaW50IGZkLCByZXQsIHBhZ2VzaXplOw0K
+DQoJbWVtc2V0KGJ1ZiwgMCwgc2l6ZW9mKGJ1ZikpOw0KDQoJcGFnZXNpemUgPSBnZXRwYWdlc2l6
+ZSgpOw0KCWFzc2VydChwYWdlc2l6ZSA8PSBNQVhfUEFHRVNJWkUpOw0KDQoJYnVmW3BhZ2VzaXpl
+XSA9ICdoJzsNCglpZiAoYXJnYyA9PSAxKSB7DQoJCXByaW50Zigid3JpdGluZywgcGFnZSBzaXpl
+ID0gJWRcbiIsIHBhZ2VzaXplKTsNCgkJZm9yICg7Oykgew0KCQkJZmQgPSBvcGVuKCJmb28yIiwg
+T19SRFdSIHwgT19DUkVBVCB8IE9fVFJVTkMsIDA2MDApOw0KCQkJaWYgKGZkID09IC0xKSB7DQoJ
+CQkJcGVycm9yKCJvcGVuKCkiKTsNCgkJCQlyZXR1cm4gMTsNCgkJCX0NCgkJCWlmIChyZW5hbWUo
+ImZvbzIiLCAiZm9vIikgPCAwKQ0KCQkJCXBlcnJvcigicmVuYW1lKCkiKTsNCgkJCXVzbGVlcChy
+YW5kKCkgJSAxMDAwKTsNCg0KCQkJaWYgKGZsb2NrKGZkLCBMT0NLX0VYKSA8IDApDQoJCQkJcGVy
+cm9yKCJmbG9jaygpIik7DQoJCQlwd3JpdGUoZmQsIGJ1ZiwgcGFnZXNpemUrMTYsIDApOw0KCQkJ
+Ly91c2xlZXAocmFuZCgpICUgMTAwMCk7DQoJCQkvL2ZkYXRhc3luYyhmZCk7DQoJCQlwd3JpdGUo
+ZmQsIG9uZXMsIDQsIHBhZ2VzaXplLTQpOw0KCQkJaWYgKGZsb2NrKGZkLCBMT0NLX1VOKSA8IDAp
+DQoJCQkJcGVycm9yKCJmbG9jaygpIik7DQoJCQl1c2xlZXAocmFuZCgpICUgMTAwMCk7DQoJCQlj
+bG9zZShmZCk7DQoJCX0NCgl9IGVsc2Ugew0KCQlwcmludGYoInJlYWRpbmcsIHBhZ2Ugc2l6ZSA9
+ICVkXG4iLCBwYWdlc2l6ZSk7DQoJCWZvciAoOzsgY2xvc2UoZmQpKSB7DQoJCQlmZCA9IG9wZW4o
+ImZvbyIsIE9fUkRXUiwgMDYwMCk7DQoJCQlpZiAoZmQgPT0gLTEpIHsNCgkJCQlwZXJyb3IoIm9w
+ZW4oKSIpOw0KCQkJCXJldHVybiAxOw0KCQkJfQ0KDQoJCQlyZXQgPSBwcmVhZChmZCwgYnVmLCBz
+aXplb2YoYnVmKSwgMCk7DQoJCQlpZiAocmV0IDwgcGFnZXNpemUpIHsNCgkJCQlpZiAocmV0ID4g
+MCkNCgkJCQkJcHJpbnRmKCJsZXNzIHRoYW4gYSBwYWdlOiAlZFxuIiwgcmV0KTsNCgkJCQljb250
+aW51ZTsNCgkJCX0NCg0KCQkJaWYgKG1lbWNtcChidWYgKyBwYWdlc2l6ZSAtIDQsIG9uZXMsIDQp
+ID09IDApIHsNCgkJCQlpZiAocmV0ID09IHBhZ2VzaXplKSB7DQoJCQkJCXByaW50ZigicGFnZSBz
+aXplIGN1dFxuIik7DQoJCQkJfSBlbHNlIGlmIChidWZbcGFnZXNpemVdICE9ICdoJykgew0KCQkJ
+CQlwcmludGYoImJyb2tlbiBkYXRhXG4iKTsNCgkJCQl9DQoJCQl9DQoJCX0NCgl9DQoJcmV0dXJu
+IDA7DQp9DQo=
+
+
+--=-32LprqJESYLghVLqsryc--
+
+--=-1IppvHwtzOiuXG0COxtj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGeUw9yUhSUUBViskRAkpKAJ4uDlvXTs8J4xnthJ3IjDcAFKhOvgCgpvVl
+5a3g2/bgAyhqvUTzoTSgXwM=
+=LDg9
+-----END PGP SIGNATURE-----
+
+--=-1IppvHwtzOiuXG0COxtj--
+
