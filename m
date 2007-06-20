@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbXFTRfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbXFTRfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbXFTRfd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbXFTRfB
+	id S1757159AbXFTRfq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757735AbXFTRfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:35:01 -0400
-Received: from mga03.intel.com ([143.182.124.21]:11540 "EHLO mga03.intel.com"
+	Wed, 20 Jun 2007 13:35:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49716 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754429AbXFTRfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:35:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,443,1175497200"; 
-   d="scan'208";a="241351820"
-Date: Wed, 20 Jun 2007 10:30:38 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
-       gregkh@suse.de, muli@il.ibm.com, suresh.b.siddha@intel.com,
-       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
-Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures in dma	map api calls
-Message-ID: <20070620173038.GA25516@linux-os.sc.intel.com>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070619213808.798646000@askeshav-devel.jf.intel.com> <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46792586.20706@linux.intel.com>
-User-Agent: Mutt/1.4.1i
+	id S1753307AbXFTRfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 13:35:09 -0400
+Message-ID: <467964F6.6040700@redhat.com>
+Date: Wed, 20 Jun 2007 13:33:42 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Bryan Henderson <hbryan@us.ibm.com>
+CC: Trond Myklebust <trond.myklebust@fys.uio.no>, akpm@linux-foundation.org,
+       alan <alan@clueserver.org>, hpa@zytor.com,
+       Jack Stone <jack@hawkeye.stone.uk.eu.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       viro@zeniv.linux.org.uk
+Subject: Re: Versioning file system
+References: <OF1BE97403.60074CE1-ON88257300.005C4F4A-88257300.005DC171@us.ibm.com>
+In-Reply-To: <OF1BE97403.60074CE1-ON88257300.005C4F4A-88257300.005DC171@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 06:03:02AM -0700, Arjan van de Ven wrote:
-> Peter Zijlstra wrote:
-> >
-> >
-> >PF_MEMALLOC as is, is meant to salvage the VM from the typical VM
-> >deadlock. 
+Bryan Henderson wrote:
+>> The directory is quite visible with a standard 'ls -a'. Instead,
+>> they simply mark it as a separate volume/filesystem: i.e. the fsid
+>> differs when you call stat(). The whole thing ends up acting rather like
+>> our bind mounts.
 > 
-> .. and this IS the typical VM deadlock.. it is your storage driver 
-> trying to write out a piece of memory on behalf of the VM, and calls 
-> the iommu to map it, which then needs a bit of memory....
+> Hmm.  So it breaks user space quite a bit.  By break, I mean uses that 
+> work with more conventional filesystems stop working if you switch to 
+> NetAp.  Most programs that operate on directory trees willingly cross 
+> filesystems, right?  Even ones that give you an option, such as GNU cp, 
+> don't by default.
+> 
+> But if the implementation is, as described, wildly successful, that means 
+> users are willing to tolerate this level of breakage, so it could be used 
+> for versioning too.
+> 
+> But I think I'd rather see a truly hidden directory for this (visible only 
+> when looked up explicitly).
 
-Today PF_MEMALLOC doesn't do much in interrupt context. If PF_MEMALLOC
-is the right usage model for this, then we need to fix the behavior of
-PF_MEMALLOC in the interrupt context(for our usage model, we do most
-of the allocations in interrupt context).
+Well, if we're going to have super-secret hidden directories, we might as well 
+implement them in a namespace framework.  Somebody is going to want generic 
+filesystem namespaces eventually, so having one unified mechanism for doing this 
+kind of thing will make it much easier, especially for userspace apps which 
+would need to be modified to be aware of them.
 
-I am not very familiar with PF_MEMALLOC. So experts please comment.
+Personally, I'm happy with .snapshot and the like.
 
-thanks,
-suresh
+	-- Chris
