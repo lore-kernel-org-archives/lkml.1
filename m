@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbXFTJoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbXFTJpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbXFTJoA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 05:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbXFTJnv
+	id S1762780AbXFTJpR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 05:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbXFTJpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 05:43:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41632 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753383AbXFTJnv (ORCPT
+	Wed, 20 Jun 2007 05:45:06 -0400
+Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:57735 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754793AbXFTJpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 05:43:51 -0400
-Subject: Re: Change in default vm_dirty_ratio
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, davej@redhat.com,
-       tim.c.chen@linux.intel.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20070620092058.GP18863@kernel.dk>
-References: <1182201271.4883.22.camel@localhost.localdomain>
-	 <20070618164711.9de1c38e.akpm@linux-foundation.org>
-	 <20070620042434.GC12096@redhat.com>
-	 <20070619214407.dfff0ca6.akpm@linux-foundation.org>
-	 <1182328536.21117.24.camel@twins>
-	 <20070620015826.03f1d71a.akpm@linux-foundation.org>
-	 <20070620091404.GO18863@kernel.dk> <1182331182.21117.39.camel@twins>
-	 <20070620092058.GP18863@kernel.dk>
-Content-Type: text/plain
-Date: Wed, 20 Jun 2007 11:43:41 +0200
-Message-Id: <1182332621.21117.49.camel@twins>
+	Wed, 20 Jun 2007 05:45:05 -0400
+Date: Wed, 20 Jun 2007 11:45:58 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Trilok Soni <soni.trilok@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] I2C: TSL2550 support.
+Message-ID: <20070620114558.499cc9be@hyperion.delvare>
+In-Reply-To: <20070619144730.GA20624@enneenne.com>
+References: <20070619153940.0e120fb0@hyperion.delvare>
+	<20070619144730.GA20624@enneenne.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-20 at 11:20 +0200, Jens Axboe wrote:
-> On Wed, Jun 20 2007, Peter Zijlstra wrote:
-> > On Wed, 2007-06-20 at 11:14 +0200, Jens Axboe wrote:
-> > > On Wed, Jun 20 2007, Andrew Morton wrote:
-> > > > Perhaps our queues are too long - if the VFS _does_ back off, it'll take
-> > > > some time for that to have an effect.
-> > > > 
-> > > > Perhaps the fact that the queue size knows nothing about the _size_ of the
-> > > > requests in the queue is a problem.
-> > > 
-> > > It's complicated, the size may not matter a lot. 128 sequential 512kb IO
-> > > may complete faster than 128 random 4kb IO's.
-> > 
-> > Yes, is there any way a queue could be limited to a certain amount of
-> > 'completion time' ?
+Hi Rodolfo,
+
+On Tue, 19 Jun 2007 16:47:30 +0200, Rodolfo Giometti wrote:
+> Add support for Taos TSL2550 ambient light sensors.
+> (http://www.taosinc.com/product_detail.asp?cateid=4&proid=18).
 > 
-> Not easily, we'd need some sort of disk profile for that to be remotely
-> reliable.
+> Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+> ---
+>  drivers/i2c/chips/Kconfig   |   10 +
+>  drivers/i2c/chips/Makefile  |    1 +
+>  drivers/i2c/chips/tsl2550.c |  453 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 464 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/i2c/chips/tsl2550.c
 
-Yes, I see the problem, benching the device is hard; you don't want it
-to do it each time, nor for it to take too long. Also, write performance
-might be destructive, also not quite wanted :-/
+Patch applied, thank you.
 
-/me sees this libtune doom on the horizon again.
-
-Something adaptive would be best, something that inserts barriers and
-measures the time to complete and then solves the read speed, write
-speed and seek latency. All during normal operation.
-
-That would entail storing a bunch of these sample points, solve the
-equation for sets of 3, and (time-) average the results.. ugh
-
-
-
+-- 
+Jean Delvare
