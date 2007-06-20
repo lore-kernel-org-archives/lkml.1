@@ -1,64 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbXFTQ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbXFTQ6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656AbXFTQ5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXFTQ5G
+	id S1755517AbXFTQ6q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbXFTQ6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:57:06 -0400
-Received: from dovecot.org ([82.118.211.50]:56870 "EHLO dovecot.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752935AbXFTQ5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:57:05 -0400
-Subject: Re: SMP read() stopping at memory page boundaries
-From: Timo Sirainen <tss@iki.fi>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <2c0942db0706200922i15ce44b0xceaed95d002dba33@mail.gmail.com>
-References: <1182351171.3768.65.camel@hurina>
-	 <1182354493.3768.80.camel@hurina>
-	 <2c0942db0706200922i15ce44b0xceaed95d002dba33@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-6LSMhvEeIg5h7kAnoZj8"
-Date: Wed, 20 Jun 2007 19:57:02 +0300
-Message-Id: <1182358622.3768.98.camel@hurina>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 20 Jun 2007 12:58:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:37971 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbXFTQ6i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 12:58:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=AvauF0meNtOMSkObqcKg5SDtq+xO0Y9ZDHTft7tFka8KlMdGfEnxzuOeO01omKnGgebNaOm1fYxeS0C0tdZaTF5hHOQLJm7J6Zfqe8kwKGqtpH6gotQWMN0etRZwyAs7Fp9nhN117n/4wIqWt9QBwF5wqJ7ixReKSL9JFGWtbDo=
+Message-ID: <161717d50706200958o53ae986fv635e18b9b6a17e85@mail.gmail.com>
+Date: Wed, 20 Jun 2007 12:58:36 -0400
+From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Helge Hafting" <helge.hafting@aitel.hist.no>,
+       "Alexandre Oliva" <aoliva@redhat.com>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Chris Friesen" <cfriesen@nortel.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, "Tarkan Erimer" <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
+In-Reply-To: <alpine.LFD.0.98.0706200930070.3593@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	 <4671B734.1040401@nortel.com>
+	 <orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <200706142155.34298.dhazelton@enter.net>
+	 <or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org>
+	 <46791A35.4000009@aitel.hist.no>
+	 <alpine.LFD.0.98.0706200930070.3593@woody.linux-foundation.org>
+X-Google-Sender-Auth: 43c4d3ff22726607
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 6/20/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+> But they do have the right to make their own choices, and try their own
+> strategies. And people shouldn't complain about that. If somebody doesn't
+> like the Tivo box, and the Tivo service requirements, just don't *buy* the
+> damn thing, and don't sign up for the service.
 
---=-6LSMhvEeIg5h7kAnoZj8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>
+> And anybody who thinks others don't have the "right to choice", and then
+> tries to talk about "freedoms" is a damn hypocritical moron.
 
-On Wed, 2007-06-20 at 09:22 -0700, Ray Lee wrote:
-> On 6/20/07, Timo Sirainen <tss@iki.fi> wrote:
-> > On Wed, 2007-06-20 at 17:52 +0300, Timo Sirainen wrote:
-> > > Sometimes read() returns only 4096 bytes. I'm locking the file, so I
-> > > don't think this should ever happen, right?
->=20
-> man 2 read
->=20
-> read() is always allowed to return less than you asked for. You need
-> to go back and ask for the rest. That's why people wrap read() and
-> write() in loops, and use those wrapped versions instead.
+One might say the same thing about someone who claims not to have a
+moral right to force certain choices on others in some circumstances
+(e.g. when those others have used copyrighted work in a product and
+ought to understand that for some not insignificant portion of the
+copyright holders, the terms implicitly included preserving certain
+"freedoms" for downstream recipients) while reserving a very similar
+moral right with others (e.g. potential murderers, theives,
+tresspassers, distributors of proprietary derived works).
 
-I thought this wouldn't happen when reading from local filesystems.
-Anyway, my real program was doing that, and it was still seeing partial
-data. But looks like I can't reproduce it in my test program with two
-pread()s, so I'll have to do some more debugging.
+As I pointed out in a previous message in the thread, that some people
+want the copyright holders -- who have economic power over the
+hardware vendors who use Linux in their products -- to force a
+desireable outcome for those without that power (i.e. the small number
+of people who buy TiVOs or Linksys routers who actually care about
+source availability and who get told "don't buy it" as if that will
+change anything) is understandable.
 
+I think that there's a legitimate concern about what types of
+constraints it's valid for a copyright holder to try to enforce w/ a
+license -- I think it's immoral for an employer to force an employee
+to toil at a meaningless, soul-crushing job for the vast majority of
+one's single, short existence if they could make it more enjoyable,
+but I'd hate to see someone try to enforce that with a license (I'm
+happy telling a person in that situation to "just quit" just as you
+tell people "just don't buy it"). To call people who draw the line in
+a different place than you hypocrites is BS.
 
---=-6LSMhvEeIg5h7kAnoZj8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Your pragmatic arguments make much more sense than your moralistic ones, IMHO.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGeVxeyUhSUUBViskRAvX/AKCk+fxVbGmqSuQPDLhyTfXQsRPvnQCdGe6Q
-DTlGA3ZOdz77PilfDDc21AY=
-=1Y2r
------END PGP SIGNATURE-----
-
---=-6LSMhvEeIg5h7kAnoZj8--
-
+Dave
