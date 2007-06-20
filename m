@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761762AbXFTFBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762091AbXFTFIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761762AbXFTFBn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 01:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755905AbXFTFBe
+	id S1762091AbXFTFIS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 01:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756041AbXFTFIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 01:01:34 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:36796 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755405AbXFTFBd (ORCPT
+	Wed, 20 Jun 2007 01:08:10 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:21820 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755905AbXFTFIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 01:01:33 -0400
-Message-ID: <4678B46F.7070506@zytor.com>
-Date: Tue, 19 Jun 2007 22:00:31 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Bryan Henderson <hbryan@us.ibm.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       akpm@linux-foundation.org, alan <alan@clueserver.org>,
-       Chris Snook <csnook@redhat.com>,
-       Jack Stone <jack@hawkeye.stone.uk.eu.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: Versioning file system
-References: <OF35839FC7.229AE944-ON882572FF.007F2DF8-882572FF.00819E1C@us.ibm.com> <1182299263.6504.8.camel@heimdal.trondhjem.org>
-In-Reply-To: <1182299263.6504.8.camel@heimdal.trondhjem.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jun 2007 01:08:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=q59Nxlaq2mQ8Vkv4AZRn5Pzo0o0j/84xLmYc6Q704rFfVJA/UqbvSk9rcMEHKOTJzBYwrCmRNPpqID6wUtichOv2ChPaBVF5A7p4JchyQzyVg5g+yy7RqtSlR+ERqsiu44l9vZHxzkMP4xmVpqRzguNEksNg8Eyl6Ei5fOA2xrs=
+Date: Wed, 20 Jun 2007 13:09:30 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de,
+       TripleX Chung <xxx.phy@gmail.com>, Maggie Chen <chenqi@beyondsoft.com>,
+       Tejun Heo <htejun@gmail.com>, Fengguang Wu <fengguang.wu@gmail.com>,
+       Chen Li-jun <cljun@xiyou.edu.cn>
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+Message-ID: <20070620050930.GA2381@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070619153615.GA2461@localhost.localdomain> <989B956029373F45A0B8AF0297081890D82D61@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <989B956029373F45A0B8AF0297081890D82D61@zch01exm26.fsl.freescale.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
->>
->> I assume NetApp flags the directory specially so that a POSIX directory 
->> read doesn't get it.  I've seen that done elsewhere.
-> 
-> No. The directory is quite visible with a standard 'ls -a'. Instead,
-> they simply mark it as a separate volume/filesystem: i.e. the fsid
-> differs when you call stat(). The whole thing ends up acting rather like
-> our bind mounts.
-> It means that you avoid all those nasty user issues where people try to
-> hard link to/from .snapshot directories, rename files across snapshot
-> boundaries, etc.
-> 
+On Wed, Jun 20, 2007 at 12:14:59AM +0800, Li Yang-r58472 wrote:
+>Hi Wangcong,
+>
+>Thanks for your comments.  Most of the comments are literal.  I don't
+>believe all of them are necessary as language is a matter of personal
+>preference. :)  I will consider your suggestions carefully and pick up
+>those which are really necessary.
 
-Last I used a Netapp, it was configurable, I believe; I seem to also
-vaguely remember that one could configure it so that it only was
-accessible as part of a mount string rather than as part of an
-already-mounted filesystem.  Of course, this was a long time ago.
 
-	-hpa
+Yes. I just give you my comments and hope you can consider them carefully.
+Making the final decisions is still your work. ;)
+
+Thanks!
+
+
+WANG Cong
+
