@@ -1,90 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762312AbXFTJ2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762249AbXFTJd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762312AbXFTJ2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 05:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbXFTJ2W
+	id S1762249AbXFTJd0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 05:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbXFTJdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 05:28:22 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:54456 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751493AbXFTJ2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 05:28:21 -0400
-Date: Wed, 20 Jun 2007 11:36:12 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Miklos Szeredi <miklos@szeredi.hu>,
-       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070620093612.GA1626@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 20 Jun 2007 05:33:17 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:7891 "EHLO
+	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752973AbXFTJdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 05:33:16 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Wed, 20 Jun 2007 11:31:47 +0200
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+cc: "lkml" <linux-kernel@vger.kernel.org>, "Len Brown" <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 7/12] acpi: fix another compile warning
+Message-ID: <20070620093147.GP5193@alberich.amd.com>
+References: <20070619225035.GI5193@alberich.amd.com>
+ <200706192338.02807.lenb@kernel.org>
+ <20070619204934.f56722a8.randy.dunlap@oracle.com>
+ <20070619205158.8d6da762.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+In-Reply-To: <20070619205158.8d6da762.randy.dunlap@oracle.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 20 Jun 2007 09:30:49.0191 (UTC)
+ FILETIME=[B0054F70:01C7B31D]
+X-WSS-ID: 6A662C791S4902445-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706180857120.14121@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18-06-2007 18:34, Linus Torvalds wrote:
+On Tue, Jun 19, 2007 at 08:51:58PM -0700, Randy Dunlap wrote:
+> On Tue, 19 Jun 2007 20:49:34 -0700 Randy Dunlap wrote:
 > 
-> On Mon, 18 Jun 2007, Ingo Molnar wrote:
->> To test this theory, could you try the patch below, does this fix your 
->> hangs too?
+> > On Tue, 19 Jun 2007 23:38:02 -0400 Len Brown wrote:
+> > 
+> > > On Tuesday 19 June 2007 18:50, Andreas Herrmann wrote:
+> > > > Avoid compile warning if !ACPI_BLACKLIST_YEAR
+> > > > 
+> > > >   CC      drivers/acpi/blacklist.o
+> > > >   drivers/acpi/blacklist.c:76:5: warning: "CONFIG_ACPI_BLACKLIST_YEAR" is not defined
+> > > 
+> > > How were you able to produce a .config with CONFIG_ACPI_BLACKLIST_YEAR not defined?
+> > > Can you send it to me?
+> > 
+> > 'make randconfig' does that kind of thing.  It doesn't enforce/follow
+> > "select" clauses.
 > 
-> I really think this the the wrong approach, although *testing* it makes 
-> sense.
-> 
-> I think we need to handle loops that take, release, and then immediately 
-> re-take differently.
-> 
-> Such loops are _usually_ of the form where they really just release the 
-> lock for some latency reason, but in this case I think it's actually just 
-> a bug.
-> 
-> That code does:
-> 
-> 	if (unlikely(p->array || task_running(rq, p))) {
-> 
-> to decide if it needs to just unlock and repeat, but then to decide if it 
-> need to *yield* it only uses *one* of those tests (namely 
-> 
-> 	preempted = !task_running(rq, p);
-> 	..
-> 	if (preempted)
-> 		yield();
-> 
-> and I think that's just broken. It basically says:
-> 
->  - if the task is running, I will busy-loop on getting/releasing the 
->    task_rq_lock
-> 
-> and that is the _real_ bug here.
+> I should have also said:  randconfig is good for detecting some
+> missing conditions/configs or missing header files, but if you find one
+> that is just plain Invalid (like some of these), just say so
+> and do whatever you want with the patch (IMHO of course).
 
-I don't agree with this (+ I know it doesn't matter).
 
-The real bug is what Chuck Ebbert wrote: "Spinlocks aren't fair".
-And here they are simply lawlessly not fair.
+I think of randconfig as
 
-I cannot see any reason why any of tasks doing simultaneously
-"busy-loop on getting/releasing" a spinlock should starve almost
-to death another one doing the same (or simply waiting to get this
-lock) even without cpu_relax. Of course, lawfulness of such
-behavior is questionable, and should be fixed like here.
- 
-> Trying to make the spinlocks do somethign else than what they do is just 
-> papering over the real bug. The real bug is that anybody who just 
-> busy-loops getting a lock is wasting resources so much that we should not 
-> be at all surprised that some multi-core or NUMA situations will get 
-> starvation.
+  "make config with random answers to all questions"
 
-On the other hand it seems spinlocks should be at least a little
-more immune to such bugs: slowdown is OK but not freezing. Current
-behavior could suggest this unfairness could harm some tasks even
-without any loops present - but it's not visible enough.
+(Or did I miss something?)
+This means that randconfig does not give totally random
+configurations. The same restrictions apply for config,
+randconfig and menuconfig. If not we might consider fixing
+scripts/kconfig/conf.c and friends.
 
-So, I'm surprised this thread seems to stop after this patch, and
-there is no try to make the most of this ideal testing case to
-improve spinlock design btw.
+So in general a "randconfig" configurations can be generated by a user
+as well. He just has to give the same answers during "make config"
+as randconfig did.
+
+I started this randconfig thing yesterday and up to now I have looked
+at 16 (out of >66) configs which lead to kernel build errors with
+the current git tree.
+Of course I have seen duplicates of the problems reported.
+But there were just 3 (all equal) bogus configurations. There randconfig
+did not provide a proper file name for CONFIG_ACPI_CUSTOM_DSDT_FILE.
+This is the only case for which I would use the term "user error" or
+"bogus randconfig".
+
+IMHO if certain configurations are invalid we should use kconfig-language
+to prevent them.
+
+
+Ah and wrt to the above compile warning. Normally I would have ignored
+it - but I looked at acpi code and its Kconfig anyway.
+And It's easy to avoid such a warning to keep the terminal clear
+for more interesting compile messages ;-)
+
+
 
 Regards,
-Jarek P.
+
+Andreas
+
+
+
