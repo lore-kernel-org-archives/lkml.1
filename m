@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbXFTIfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbXFTIh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754452AbXFTIfv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 04:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXFTIfm
+	id S1757871AbXFTIh1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 04:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXFTIhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 04:35:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49453 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751796AbXFTIfl (ORCPT
+	Wed, 20 Jun 2007 04:37:18 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:14313 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751634AbXFTIhQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 04:35:41 -0400
-Subject: Re: Change in default vm_dirty_ratio
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Jones <davej@redhat.com>, tim.c.chen@linux.intel.com,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20070619214407.dfff0ca6.akpm@linux-foundation.org>
-References: <1182201271.4883.22.camel@localhost.localdomain>
-	 <20070618164711.9de1c38e.akpm@linux-foundation.org>
-	 <20070620042434.GC12096@redhat.com>
-	 <20070619214407.dfff0ca6.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 20 Jun 2007 10:35:36 +0200
-Message-Id: <1182328536.21117.24.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 20 Jun 2007 04:37:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=eqA/I2TbZeDdKGrJ/gQIRUUPcR3MZr3Wq5RKvHZReWXlknlS3TV6crEp8g6CG9hsjuUii2E1lDavNm0Omt/XNkyLW/CXyZM2A+fZk5v9+fKkaA+BPe3ezNVnJjodtRHI0OmqMwvvbFv3tzmO8EoZSHQB5NYvUxtiGrcNt8IMkwQ=
+Message-ID: <ed10ee420706200137n3040558bt1f176d7f3d8da171@mail.gmail.com>
+Date: Wed, 20 Jun 2007 01:37:15 -0700
+From: "SL Baur" <steve@xemacs.org>
+To: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Al Boldi" <a1426z@gawab.com>, "Scott Preece" <sepreece@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <161717d50706192105v6c0509f3kfbb43775a019194c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200706200157.20527.a1426z@gawab.com>
+	 <7b69d1470706191929l7ff28df5v80f46811c739fa25@mail.gmail.com>
+	 <200706200630.57460.a1426z@gawab.com>
+	 <161717d50706192105v6c0509f3kfbb43775a019194c@mail.gmail.com>
+X-Google-Sender-Auth: eab83dcf4139d197
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-19 at 21:44 -0700, Andrew Morton wrote:
+On 6/19/07, Dave Neuer <mr.fred.smoothie@pobox.com> wrote:
 
-> Anyway, this is all arse-about.  What is the design?  What algorithms
-> do we need to implement to do this successfully?  Answer me that, then
-> we can decide upon these implementation details.
+> It was Apache. Apache showed corporate users and small businesses
+> desperate to cash in on the Interweb c. 1995-1998 ...
 
-Building on the per BDI patches, how about integrating feedback from the
-full-ness of device queues. That is, when we are happily doing IO and we
-cannot possibly saturate the active devices (as measured by their queue
-never reaching 75%?) then we can safely increase the total dirty limit.
+Right time period ...
 
-OTOH, when even with the per BDI dirty limit the device queue is
-constantly saturated (contended) we ought to lower the total dirty
-limit.
+> Linux was a tool for UNIX sysadmins and admin wannabes to
+> practice their UNIX chops at home - or a conveniently inexpensive
+> platform on which to run Apache. Companies -- other than Linux
+> distributors -- didn't bet their business on it.
 
-Lots of detail here to work out, but does this sound workable?
+Wrong conclusion.  Been there, done that, helped bet the company
+on networks based on Linux servers.
 
+> Apache's success greatly contributed to the corporate acceptance of Linux, IMHO.
+
+Wrong again. Apache was not allowed to distribute strong
+encryption for e-commerce servers over that time frame.  The
+solution we bought was O/S agnostic.
+
+And to quote your next message, you have given all the reasons
+why NetBSD has already taken over the world.
+
+By the time of Linux 2.0.x, it could stay up for years at a
+time even if it was running on garbage.  There was no alternative
+even *close*.
+
+-sb
