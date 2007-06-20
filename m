@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbXFUFbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbXFUFmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbXFUFbe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 01:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbXFUFb1
+	id S1755342AbXFUFmS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 01:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXFUFmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 01:31:27 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:42067
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbXFUFb0 (ORCPT
+	Thu, 21 Jun 2007 01:42:09 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:48023 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751753AbXFUFmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 01:31:26 -0400
-Date: Wed, 20 Jun 2007 22:30:35 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Thu, 21 Jun 2007 01:42:08 -0400
+Date: Wed, 20 Jun 2007 15:46:26 -0400
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: Alexandre Oliva <aoliva@redhat.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
        Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
+       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070615012623.GA25189@elte.hu> <20070615101007.0cbfd078@the-village.bc.nu>
- <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de>
- <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk>
- <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
- <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
- <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
- <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca>
- <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca>
- <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
- <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <20070620194626.GX10008@csclub.uwaterloo.ca>
+References: <20070610160531.GA12179@kroah.com> <f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com> <20070612184110.GB7980@kroah.com> <orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org> <or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br> <20070613211432.GH10008@csclub.uwaterloo.ca> <orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614175305.GI10008@csclub.uwaterloo.ca> <4677F616.3080406@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4677F616.3080406@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Alexandre Oliva wrote:
+On Tue, Jun 19, 2007 at 07:28:22PM +0400, Manu Abraham wrote:
+> Well, it is not Tivo alone -- look at http://aminocom.com/ for an
+> example. If you want the kernel sources pay USD 50k and we will provide
+> the kernel sources, was their attitude.
 
-> On Jun 20, 2007, david@lang.hm wrote:
->
->> On Wed, 20 Jun 2007, Alexandre Oliva wrote:
->>> Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
->>>
->>> On Jun 20, 2007, Andrew McKay <amckay@iders.ca> wrote:
->>>
->>>> However, I don't see how this would ever require a company like Tivo
->>>> or Mastercard to have their networks play nice with a unit that has
->>>> been modified by the end user, potentially opening up some serious
->>>> security holes.
->>>
->>> Which is why the GPLv3 doesn't make the requirement that you stated.
->
->> so if the BIOS checked the checksum of the boot image and if it found
->> it wasn't correct would disable the video input hardware but let you
->> boot the system otherwise it would be acceptable to you and the GPLv3?
->
-> I don't think so, but IANAL.  What do you think?  Here's what I
-> think to be the relevant passages.
->
->  [...] The information must suffice to ensure that the continued
->  functioning of the modified object code is in no case prevented or
->  interfered with solely because modification has been made.
->
->  [...]
->
->  The requirement to provide Installation Information does not include
->  a requirement to continue to provide support service, warranty, or
->  updates for a work that has been modified or installed by the
->  recipient, or for the User Product in which it has been modified or
->  installed.  Network access may be denied when the modification
->  itself materially and adversely affects the operation of the network
->  or violates the rules and protocols for communication across the
->  network.
+Hmm, set top boxes are often rented from the cable company rather than
+sold.  Stupid grey area for sure.  At least tivo does give you the
+sources, without demanding more money.  Rather big difference.
 
-Ok, so if refusing to run software that's tampered with isn't acceptable, 
-and disabling the hardware that would be needed to talk on the network 
-isn't acceptable. how exactly can they prevent a system that's been 
-tampered with from accessing their network? (something even you say they 
-have a right to do)
+> Well, it is not Tivo alone, a large chunk of the vendors do that. The
+> vendors who actually do it the clean way are just few and can be counted
+> very easily.
 
-asking a device that's running software that you haven't verified to give 
-you a checksum of itself isn't going to work becouse the software can just 
-lie to you.
+Well at least where I work we don't try to lock down the hardware, we do
+contribute our changes and bug fixes to upstream when it makes sense
+(and where our changes wouldn't make sense for upstream, they are still
+clearly included with the sources we have.)  If a customer wants a copy
+of the sources, they will get a nice DVD, although strangely none have
+asked for one yet.
 
-you claim they have this right, but then claim to prohibit every possible 
-method of them excercising that right.
-
-pick one side or the other, you don't get both.
-
-David Lang
+--
+Len Sorensen
