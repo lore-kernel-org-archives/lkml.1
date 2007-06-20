@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762249AbXFTJd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbXFTJh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762249AbXFTJd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 05:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbXFTJdR
+	id S1762780AbXFTJh5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 05:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbXFTJhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 05:33:17 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:7891 "EHLO
-	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752973AbXFTJdQ (ORCPT
+	Wed, 20 Jun 2007 05:37:50 -0400
+Received: from smtp-103-wednesday.nerim.net ([62.4.16.103]:63101 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753228AbXFTJht (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 05:33:16 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Wed, 20 Jun 2007 11:31:47 +0200
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-cc: "lkml" <linux-kernel@vger.kernel.org>, "Len Brown" <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 7/12] acpi: fix another compile warning
-Message-ID: <20070620093147.GP5193@alberich.amd.com>
-References: <20070619225035.GI5193@alberich.amd.com>
- <200706192338.02807.lenb@kernel.org>
- <20070619204934.f56722a8.randy.dunlap@oracle.com>
- <20070619205158.8d6da762.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-In-Reply-To: <20070619205158.8d6da762.randy.dunlap@oracle.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 20 Jun 2007 09:30:49.0191 (UTC)
- FILETIME=[B0054F70:01C7B31D]
-X-WSS-ID: 6A662C791S4902445-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+	Wed, 20 Jun 2007 05:37:49 -0400
+Date: Wed, 20 Jun 2007 11:38:42 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Trilok Soni <soni.trilok@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [i2c] [PATCH] I2C: TSL2550 support.
+Message-ID: <20070620113842.03635603@hyperion.delvare>
+In-Reply-To: <20070619144845.GJ4374@enneenne.com>
+References: <5d5443650706190428q341a50a1obae68b2565d0ed7@mail.gmail.com>
+	<20070619121020.GA8902@enneenne.com>
+	<20070619153940.0e120fb0@hyperion.delvare>
+	<20070619144845.GJ4374@enneenne.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 08:51:58PM -0700, Randy Dunlap wrote:
-> On Tue, 19 Jun 2007 20:49:34 -0700 Randy Dunlap wrote:
+Hi Rodolfo,
+
+On Tue, 19 Jun 2007 16:48:46 +0200, Rodolfo Giometti wrote:
+> Please, note that I left LUX calculation untouched since on my data
+> sheet I have only such cumputation example. :(
 > 
-> > On Tue, 19 Jun 2007 23:38:02 -0400 Len Brown wrote:
-> > 
-> > > On Tuesday 19 June 2007 18:50, Andreas Herrmann wrote:
-> > > > Avoid compile warning if !ACPI_BLACKLIST_YEAR
-> > > > 
-> > > >   CC      drivers/acpi/blacklist.o
-> > > >   drivers/acpi/blacklist.c:76:5: warning: "CONFIG_ACPI_BLACKLIST_YEAR" is not defined
-> > > 
-> > > How were you able to produce a .config with CONFIG_ACPI_BLACKLIST_YEAR not defined?
-> > > Can you send it to me?
-> > 
-> > 'make randconfig' does that kind of thing.  It doesn't enforce/follow
-> > "select" clauses.
-> 
-> I should have also said:  randconfig is good for detecting some
-> missing conditions/configs or missing header files, but if you find one
-> that is just plain Invalid (like some of these), just say so
-> and do whatever you want with the patch (IMHO of course).
+> Hope it could be ok anyway...
 
+Datasheets typically give you one way to process the data, that doesn't
+mean this is the only way, nor the best in all situations. My proposal
+was mathematically equivalent to your datasheet-based implementation,
+and had a lower memory footprint.
 
-I think of randconfig as
+Anyway, your way works too, so it's OK. I'll take your patch as is,
+optimizations can always be applied later. I wish I could give a try to
+your driver, but unfortunately I still didn't manage to get my TAOS
+evaluation module to work under Linux :(
 
-  "make config with random answers to all questions"
-
-(Or did I miss something?)
-This means that randconfig does not give totally random
-configurations. The same restrictions apply for config,
-randconfig and menuconfig. If not we might consider fixing
-scripts/kconfig/conf.c and friends.
-
-So in general a "randconfig" configurations can be generated by a user
-as well. He just has to give the same answers during "make config"
-as randconfig did.
-
-I started this randconfig thing yesterday and up to now I have looked
-at 16 (out of >66) configs which lead to kernel build errors with
-the current git tree.
-Of course I have seen duplicates of the problems reported.
-But there were just 3 (all equal) bogus configurations. There randconfig
-did not provide a proper file name for CONFIG_ACPI_CUSTOM_DSDT_FILE.
-This is the only case for which I would use the term "user error" or
-"bogus randconfig".
-
-IMHO if certain configurations are invalid we should use kconfig-language
-to prevent them.
-
-
-Ah and wrt to the above compile warning. Normally I would have ignored
-it - but I looked at acpi code and its Kconfig anyway.
-And It's easy to avoid such a warning to keep the terminal clear
-for more interesting compile messages ;-)
-
-
-
-Regards,
-
-Andreas
-
-
-
+-- 
+Jean Delvare
