@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbXFTUkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbXFTUnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbXFTUkS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbXFTUkF
+	id S1752724AbXFTUnX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbXFTUnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:40:05 -0400
-Received: from tayrelbas04.tay.hp.com ([161.114.80.247]:43349 "EHLO
-	tayrelbas04.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbXFTUkB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:40:01 -0400
-Date: Wed, 20 Jun 2007 13:39:44 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] 2.6.22-rc3 perfmon2 : Debug messages added
-Message-ID: <20070620203944.GB26200@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070620182126.248753000@amd.com> <20070620184113.GC5874@erda.amd.com> <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com> <20070620202216.GA26200@frankl.hpl.hp.com> <alpine.DEB.0.99.0706201326310.6935@chino.kir.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 20 Jun 2007 16:43:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48873 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbXFTUnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 16:43:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mattia Dongili <malattia@linux.it>
+Subject: Re: can't suspend on vaio sz (rc4 and rc5 are ok) [was Re: 2.6.22-rc4-mm2]
+Date: Wed, 20 Jun 2007 22:50:03 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-usb-devel@lists.sourceforge.net,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <200706201340.19404.rjw@sisk.pl> <20070620153813.GA3569@inferi.kami.home>
+In-Reply-To: <20070620153813.GA3569@inferi.kami.home>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.99.0706201326310.6935@chino.kir.corp.google.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
+Message-Id: <200706202250.04414.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 01:28:50PM -0700, David Rientjes wrote:
-> On Wed, 20 Jun 2007, Stephane Eranian wrote:
-> 
-> > > After commenting on your first set of patches, I've been using it a little 
-> > > more.  In my use, these debugging messages weren't very helpful because 
-> > > "pfm_file_ops" can indicate pfm_mmap, pfm_read, pfm_poll, etc.  Could 
-> > > these be changed to be more specific based on the function they're in?
+On Wednesday, 20 June 2007 17:38, Mattia Dongili wrote:
+> On Wed, Jun 20, 2007 at 01:40:18PM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, 20 June 2007 07:22, Mattia Dongili wrote:
+> > > On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
+> > > > 
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
 > > > 
-> > the PFM_DBG() macro adds the CPU, function name and line number to the
-> > printed string.
+> > > Hello,
+> > > on this vaio sz72b I can't suspend if usb-storage is loaded. Bisecting
+> > > is becoming troublesome as different sets have slightly different
+> > > problems.
+> > > At one point (with the GREGKH usb stuff built) I had the kernel
+> > > reporting it cannot stop the usb-storage thread so I guess that
+> > > something later in the series made things worse (freezable workqueues?).
+> > > 
+> > > Clues?
 > > 
+> > Can you please try 2.6.22-rc5 with the patches from
+> > 
+> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc5/patches/
+> > 
+> > applied.  That should allow us to eliminate some suspects. ;-)
 > 
-> That's not the case in what I currently have in my tree, I'll go back and 
-> see what I'm missing.
+> you're safe then! .22-rc5 + your suspend patch-set can suspend and
+> resume happily.
 
-Bizarre. Becuase if you've disabled CONFIG_PERFMON_DEBUG, then all the PFM_DBG()
-are removed. 
+OK, thanks.  OTOH, that would have been less patches to check ... ;-)
 
-> 
-> What's the current status of the perfmon2 patchset that Robert's work is 
-> based on?
+I'll see if I can reproduce your problem here.
 
-Well, I have been hacking on it a lot especially to allow Oprofile and
-perfmon2 to co-exist (mutual-exclusion). I am hoping to release something
-before I fly to OLS next week. I have started integrating  Robert's patches.
-I also have to integrate IBM's Cell support patch.
+Greetings,
+Rafael
+
 
 -- 
--Stephane
+"Premature optimization is the root of all evil." - Donald Knuth
