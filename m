@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbXFTSpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763644AbXFTSqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760580AbXFTSpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 14:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761051AbXFTSf4
+	id S1763644AbXFTSqJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 14:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761170AbXFTSg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 14:35:56 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44802 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761041AbXFTSfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 14:35:54 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18i8ZxhB7ciFX6TlyCImnDyWPwU8QPHzX3Dp+ftVr
-	boHG4H+ntyuXqG
-Date: Wed, 20 Jun 2007 20:35:51 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Andi Kleen <ak@suse.de>, eranian@hpl.hp.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, levon@movementarian.org,
-       perfmon@napali.hpl.hp.com, oprofile-list@lists.sourceforge.net,
-       wcohen@redhat.com, akpm@linux-foundation.org
-Subject: [PATCH 2/2] Reserve the right performance counter for the Intel PerfMon NMI watchdog
-Message-ID: <20070620183551.GC3251@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Andi Kleen <ak@suse.de>, eranian@hpl.hp.com, mingo@elte.hu,
-	linux-kernel@vger.kernel.org, levon@movementarian.org,
-	perfmon@napali.hpl.hp.com, oprofile-list@lists.sourceforge.net,
-	wcohen@redhat.com, akpm@linux-foundation.org
-References: <20070618103214.GA12045@atjola.homenet> <200706201431.44014.ak@suse.de> <20070620124959.GB24906@frankl.hpl.hp.com> <200706201501.02582.ak@suse.de> <20070620183315.GA3251@atjola.homenet>
+	Wed, 20 Jun 2007 14:36:59 -0400
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:41767 "EHLO
+	outbound2-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760477AbXFTSg5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 14:36:57 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Wed, 20 Jun 2007 20:36:05 +0200
+From: "Robert Richter" <robert.richter@amd.com>
+To: "David Rientjes" <rientjes@google.com>
+cc: "Stephane Eranian" <eranian@hpl.hp.com>,
+       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/8] 2.6.22-rc3 perfmon2 : IBS implementation for
+ AMD64
+Message-ID: <20070620183605.GF24544@erda.amd.com>
+References: <20070614215818.509851000@localhost>
+ <20070615093330.845322000@localhost>
+ <alpine.DEB.0.99.0706151153280.10812@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070620183315.GA3251@atjola.homenet>
+In-Reply-To: <alpine.DEB.0.99.0706151153280.10812@chino.kir.corp.google.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+X-OriginalArrivalTime: 20 Jun 2007 18:36:05.0620 (UTC)
+ FILETIME=[DC883340:01C7B369]
+X-WSS-ID: 6A67AC361S4957085-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Intel PerfMon NMI watchdog was using the generic reservation
-function which always reserves the first performance counter. But the
-watchdog actually uses the second performance counter, thus we need a
-specialised function.
+David,
 
-Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
----
- arch/i386/kernel/cpu/perfctr-watchdog.c |   22 ++++++++++++++++++++--
- 1 files changed, 20 insertions(+), 2 deletions(-)
+thanks for your comments.
 
-diff --git a/arch/i386/kernel/cpu/perfctr-watchdog.c b/arch/i386/kernel/cpu/perfctr-watchdog.c
-index a12dbcf..efc3232 100644
---- a/arch/i386/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/i386/kernel/cpu/perfctr-watchdog.c
-@@ -562,9 +562,27 @@ static int setup_intel_arch_watchdog(unsigned nmi_hz)
- 	return 1;
- }
- 
-+static int intel_arch_reserve(void)
-+{
-+	if (!reserve_perfctr_nmi(MSR_ARCH_PERFMON_PERFCTR1))
-+		return 0;
-+
-+	if (!reserve_evntsel_nmi(MSR_ARCH_PERFMON_EVENTSEL1)) {
-+		release_perfctr_nmi(MSR_ARCH_PERFMON_PERFCTR1);
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static void intel_arch_unreserve(void)
-+{
-+	release_evntsel_nmi(MSR_ARCH_PERFMON_EVENTSEL1);
-+	release_perfctr_nmi(MSR_ARCH_PERFMON_PERFCTR1);
-+}
-+
- static struct wd_ops intel_arch_wd_ops = {
--	.reserve = single_msr_reserve,
--	.unreserve = single_msr_unreserve,
-+	.reserve = intel_arch_reserve,
-+	.unreserve = intel_arch_unreserve,
- 	.setup = setup_intel_arch_watchdog,
- 	.rearm = p6_rearm,
- 	.stop = single_msr_stop_watchdog,
+On 15.06.07 11:54:24, David Rientjes wrote:
+> On Fri, 15 Jun 2007, Robert Richter wrote:
+> 
+> > Index: linux-2.6.22-rc3/arch/i386/perfmon/perfmon.c
+> > ===================================================================
+> > --- linux-2.6.22-rc3.orig/arch/i386/perfmon/perfmon.c
+> > +++ linux-2.6.22-rc3/arch/i386/perfmon/perfmon.c
+> > @@ -1059,6 +1059,7 @@ char *pfm_arch_get_pmu_module_name(void)
+> >  			goto try_arch;
+> >  		}
+> >  	case 15:
+> > +	case 16:
+> >  		/* All Opteron processors */
+> >  		if (cpu_data->x86_vendor == X86_VENDOR_AMD)
+> >  			return "perfmon_k8";
+> 
+> Constants like these should be #define'd in a header file but, admittedly, 
+> it might become a rather intrusive change at this point for the above 
+> case.
+
+All current x86 CPU detection code in the kernel is using hard coded
+numbers. Introducing new defines for family and model numbers would
+not be suitable here.
+
+Thanks,
+-Robert
+
 -- 
-1.5.2.2
+AMD Saxony, Dresden, Germany
+Operating System Research Center
+email: robert.richter@amd.com
+
+
 
