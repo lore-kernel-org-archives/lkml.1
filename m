@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbXFTLJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbXFTLOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbXFTLJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 07:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbXFTLJm
+	id S1757425AbXFTLOX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 07:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752405AbXFTLOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 07:09:42 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:9140 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752682AbXFTLJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 07:09:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=q/RDnsh6KeXY3d/Hj8PjE9oM5EFGGUdw/VJ5iOaXr83KPDW61IGr6RJzpzOjhvwv7RCbhvDSgYfMZ7CYPskAfPQaj4P1sqWrWAO0cFuGM8gyxXbhbMNcG/kgXnnEnAbfUSgbi3WWz/3dwYI6O5E0jbj8AByLBw3hdc3q1E7ls2o=
-Message-ID: <46790AEB.2070505@gmail.com>
-Date: Wed, 20 Jun 2007 15:09:31 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100301520.6675@asgard.lang.hm>	<f24d23310706100355j3af7e12fq2e0e345402e48ca2@mail.gmail.com>	<20070610160531.GA12179@kroah.com>	<f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com>	<20070612184110.GB7980@kroah.com>	<orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org>	<or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070613211432.GH10008@csclub.uwaterloo.ca>	<orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614175305.GI10008@csclub.uwaterloo.ca>	<4677F616.3080406@gmail.com> <20070619171921.54811314@the-village.bc.nu>
-In-Reply-To: <20070619171921.54811314@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jun 2007 07:14:16 -0400
+Received: from mail.screens.ru ([213.234.233.54]:47232 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751747AbXFTLOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 07:14:15 -0400
+Date: Wed, 20 Jun 2007 15:14:15 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix signalfd interaction with thread-private signals
+Message-ID: <20070620111415.GA91@tv-sign.ru>
+References: <1182108399.3794.4.camel@entropy> <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com> <1182125303.3794.8.camel@entropy> <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com> <1182127391.26853.207.camel@localhost.localdomain> <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org> <20070619091452.GA94@tv-sign.ru> <1182254988.26853.334.camel@localhost.localdomain> <20070619140646.GB27343@tv-sign.ru> <1182295473.26853.386.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182295473.26853.386.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Well, it is not Tivo alone -- look at http://aminocom.com/ for an
->> example. If you want the kernel sources pay USD 50k and we will provide
->> the kernel sources, was their attitude.
+On 06/20, Benjamin Herrenschmidt wrote:
+>
+> On Tue, 2007-06-19 at 18:06 +0400, Oleg Nesterov wrote:
+> > On 06/19, Benjamin Herrenschmidt wrote:
+> > >
+> > > On Tue, 2007-06-19 at 13:14 +0400, Oleg Nesterov wrote:
+> > > 
+> > > > The commited "Fix signalfd interaction with thread-private signals"
+> > > > (commit caec4e8dc85e0644ec24aeb36285e1ba02da58cc) doesn't implement
+> > > > this.
+> > > 
+> > > Indeed, if you want what Davide described, you need to also change
+> > > signalfd side. The patch I did merely prevents another thread from
+> > > dequeuing somebody else private signals.
+> > 
+> > Yes I see, but why do we need this change? Yes, we can dequeue SIGSEGV
+> > from another thread. Just don't do it if you have a handler for SIGSEGV?
 > 
-> GPLv2 deals with that case, and they can (and should) be sued for it
-> [except that US copyright law is designed for large music companies not
-> people]
+> Well, for such synchronous signals, it's a fairly stupid idea,
+> especially since you can't predict who will get it. Signals such as SEGV
+> are forced-in, which means they are force-unblocked. Thus, you can't
+> know for sure whome of signalfd or the target thread will get it first,
+> depending on who catches the siglock first I suppose. In one case,
+> you'll manage to steal it, in the other, you'll thread will be killed.
+
+Yes. As I said, I think this falls into the "just don't do that" category.
+But nothing bad happens from the kernel POV.
+
+Also, suppose that some thread does
+
+	for (;;)
+		signal(SIGSEGV, SIG_IGN);
+
+Now we have the same situation. do_sigaction() can steal SIGSEGV from
+another thread.
 
 
-Their argument was that the mentioned sources contain propreitary closed
-stuff from IBM/AMCC for the PPC 405/440 and or for the NXP (MIPS based)
-chips. Even if the GPLv2 deals with it, well haven't reached anywhere
-with it, inspite of talks with them. So most of the users just probably
-stopped talking sense with them, just like me.
+Perhaps, the proposed behaviour
 
-Have some of those Amino STB's, the software on it being buggy,
-including myself many others wanted to fix those bugs, but then people
-had to pay for their annual support to get the fixes. People who were
-able to fix also were denied the same since there is no source
-available. But if you wanted the sources, then you pay for the sources.
-If you don't pay for their sources, then pay for their
-Bronze/Silver/Gold Support schemes, where people pay through their nose.
+	> Multiple threads can wait on the signalfd. Each one will dequeue either
+	> its own private signals (tsk->pending) or the process shared ones
+	> (tsk->signal->shared_pending).
 
-For a specific case with which i wanted to attach a USB based device to
-the box, they stated: we can port in a driver that which exists in the
-vanilla kernel, to their device but just that they need to be paid for
-that to be done, eventhough if someone else was willing to do that job,
-but that wasn't possible because of no sources.
+is more convenient, I can't judge. If we implement this, sys_signalfd(-1) in
+essence means "attach to the thread group, not current". This also makes sense.
+But what we have now (with this patch applied) is a bit strange, imho.
 
-In either way, if you buy their devices, it is just that, you keep
-paying us, if you want your device your work as expected.
+Oleg.
+
