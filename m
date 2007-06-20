@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbXFTUCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbXFTUDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761970AbXFTUCR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881AbXFTUCG
+	id S1762179AbXFTUDA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759939AbXFTUCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:02:06 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:52083
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757359AbXFTUCF (ORCPT
+	Wed, 20 Jun 2007 16:02:52 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:41094 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759872AbXFTUCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:02:05 -0400
-Date: Wed, 20 Jun 2007 13:02:13 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Michael Poole <mdpoole@troilus.org>
-cc: Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+	Wed, 20 Jun 2007 16:02:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TuObidOafi5zeB0Rapr0WZQXiEMPKpMrRvBVZFp1AHdv8M/0jcsbGATIaYzNRLascELkNwYxLNT94AmXOYXYyj/GyUrMJFgxWOpElU9UYMP/oygz0fX5r1YKBEwH4I8iv985gCC/BdsqFaB8GQ4Ww+Kmxa2iYlc9XM1cfjNlgNY=
+Message-ID: <2e6659dd0706201302s6c83998fy96227e864ae55b9b@mail.gmail.com>
+Date: Wed, 20 Jun 2007 17:02:44 -0300
+From: "Tomas Neme" <lacrymology@gmail.com>
+To: "Michael Poole" <mdpoole@troilus.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <87fy4ms8qw.fsf@graviton.dyn.troilus.org>
-Message-ID: <Pine.LNX.4.64.0706201300410.30395@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
- <ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
- <or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
- <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
- <9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
- <2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
- <871wg6trnx.fsf@graviton.dyn.troilus.org> <2e6659dd0706201205i52e0b836oe642e2b442e425d7@mail.gmail.com>
- <87wsxysaad.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201232290.30395@asgard.lang.hm>
- <87odjas9f7.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201241060.30395@asgard.lang.hm>
- <87fy4ms8qw.fsf@graviton.dyn.troilus.org>
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <87wsxysaad.fsf@graviton.dyn.troilus.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
+	 <or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
+	 <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
+	 <2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
+	 <871wg6trnx.fsf@graviton.dyn.troilus.org>
+	 <2e6659dd0706201205i52e0b836oe642e2b442e425d7@mail.gmail.com>
+	 <87wsxysaad.fsf@graviton.dyn.troilus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Michael Poole wrote:
+>     A "computer program" is a set of statements or instructions to be
+>     used directly or indirectly in a computer in order to bring about
+>     a certain result.
+>     -- US Code, Title 17, Section 101
 
-> david@lang.hm writes:
->
->> On Wed, 20 Jun 2007, Michael Poole wrote:
->>
->>> david@lang.hm writes:
->>>
->>>> no, saying that the result must be acceptable to other software (in
->>>> this case the software running in the BIOS) is not part of the source
->>>> code.
->>>
->>> Why not?  The digital signature is a statement (which translates
->>> roughly to "Tivo approves this") to be used in a computer in order to
->>> bring about a certain result.  That result is making it boot on the
->>> PVR.  Source code simply means the original forms or inputs used to
->>> generate machine-readable statements.
->>
->> but the signature isn't part of the kernel, and the code that checks
->> the signature is completely independant. and finally the PVR functions
->> are not part of the kernel (and not under the GPL in any case)
->>
->> if your argument was true then Oracle releasing a database appliance
->> would require Oracle to give you the source to their database since
->> it's part of 'bringing about a certain result' namely operating as a
->> database server.
->
-> From the kernel's COPYING file:
->
->   NOTE! This copyright does *not* cover user programs that use kernel
-> services by normal system calls - this is merely considered normal use
-> of the kernel, and does *not* fall under the heading of "derived work".
->
-> See also the portion below.
+so?
 
-the PVR software does exactly this, so the functionality as a PVR has 
-nothing to do with the kernel by your own arguments.
+Not GPL related, but casino machine software that needs to be approved
+by the casino regulation office in Argentina need to provide source,
+compiling instructions AND binaries, and the binaries must pass a diff
+check. This is impossible without a hacked compiler since the
+timestamps WILL differ.
 
->> if your argument was true then releasing a GPL package for windows
->> would require that the windows kernel source be released, after it
->> it's nessasary for 'brining about a certain result' namely letting
->> your code run.
->
-> From section 3 of the GPL:
->
->  However, as a special exception, the source code distributed need
->  not include anything that is normally distributed (in either source
->  or binary form) with the major components (compiler, kernel, and so
->  on) of the operating system on which the executable runs, unless
->  that component itself accompanies the executable.
+Just an example that legality doesn't always comply with itself, and
+even less make sense.
 
-but then how can the kernel impose any restriction on the BIOS? (and 
-remember, you are the one arguing that it somehow does)
+T
 
-David Lang
-
->> these are both nonsense results.
->
-> .. which is why they are recognized to be different.
->
-> Michael Poole
->
+-- 
+|_|0|_|
+|_|_|0|
+|0|0|0|
