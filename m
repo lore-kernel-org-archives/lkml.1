@@ -1,61 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbXFTQwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbXFTQw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753812AbXFTQwQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbXFTQwB
+	id S1754437AbXFTQw3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXFTQwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:52:01 -0400
-Received: from gateway12.iders.ca ([206.45.72.61]:56281 "EHLO koko.iders.ca"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbXFTQwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:52:00 -0400
-X-Greylist: delayed 1456 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Jun 2007 12:52:00 EDT
-Message-ID: <4679557C.5080907@iders.ca>
-Date: Wed, 20 Jun 2007 11:27:40 -0500
-From: Andrew McKay <amckay@iders.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Wed, 20 Jun 2007 12:52:07 -0400
+Received: from homer.mvista.com ([63.81.120.155]:53333 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752479AbXFTQwG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 12:52:06 -0400
+Message-ID: <46795B9B.2020401@ru.mvista.com>
+Date: Wed, 20 Jun 2007 20:53:47 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Alexandre Oliva <aoliva@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>, david@lang.hm,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614195517.GA4933@elte.hu>	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614235004.GA14952@elte.hu>	<20070615011012.6c09066e@the-village.bc.nu>	<20070615012623.GA25189@elte.hu>	<20070615101007.0cbfd078@the-village.bc.nu>	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>	<4673CA7C.5040207@t-online.de>	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616181902.GB21478@ftp.linux.org.uk>	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org> <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Daniel Walker <dwalker@mvista.com>, Andrew Morton <akpm@osdl.org>,
+       john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC] clocksouce implementation for powerpc
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>	<20070616101637.107940593@inhelltoy.tec.linutronix.de>	<1182009083.11539.369.camel@imap.mvista.com> <20070620065710.GR9768@bakeyournoodle.com>
+In-Reply-To: <20070620065710.GR9768@bakeyournoodle.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> No, I'm not.  You can say tivoization is *good* however much you like.
-> This doesn't dispute in any way my claim that no tivoization would be
-> *better*, that you'd get contributions from the people that, because
-> of tivoization, don't feel compelled to develop and contribute,
-> because they can't use the fruits of their efforts in the device where
-> they would be most useful for them.
-> 
+Hello.
 
-I know I'm jumping in to this conversation in the middle and a few days behind, 
-but that's one of the biggest fallacies in the open source communities.  First 
-of all more system developers contribute to the community than end users do. 
-Secondly GPLv3 will cause companies like TIVO, router companies, security 
-companies to not adopt Linux as an operating system, because they can't secure 
-their system.  Placing code in a ROM so they can't upgrade their own systems is 
-an absolute joke, and not a viable option.  In the end, GPLV3 will cause less 
-contribution to the Linux Kernel community. Systems developers won't be choosing 
-Linux and directly contributing to Kernel development while developing their 
-product.  Fewer products on the market will use linux, so even end users, who 
-really don't contribute a lot, won't be contributing either.
+Tony Breeds wrote:
 
-I'm not going to address whether GPLv3 changed the spirit of GPLv2, but saying 
-that licensing the Linux Kernel under GPLv3 will result in more contributions is 
-absolute BS.
+>>>plain text document attachment
+>>>(clocksource-add-settimeofday-hook.patch)
+>>>From: Tony Breeds <tony@bakeyournoodle.com >
 
-Andrew McKay
-Iders Inc.
+>>>I'm working on a clocksource implementation for all powerpc platforms.
+>>>some of these platforms needs to do a little work as part of the
+>>>settimeofday() syscall and I can't see a way to do that without adding
+>>>this hook to clocksource.
 
+>>I'd like to see how this is used? If the code that uses this API change
+>>isn't ready yet, then this patch should really wait..
 
+> This is my current patch to rework arch/powerpc/kernel/time.c to create
+> a clocksource.  It's not ready for inclusion.
+
+    I guess it's been based on the prior work by John Stultz (and me too :-)?
+
+> powerpc needs to keep the vdso in sync whenener settimeodfay() is
+> called.  Adding the hook the to the clocksource structure was my way of
+> allowing this to happen.  There are other approaches, but this seemed to
+> best allow for runtime.  Initially I considered using update_vsyscall()
+> but this is called from do_timer(), and I don't need this code run then
+> :(
+
+> This has been booted on pSeries and iSeries (I'm using glibc 2.5, which
+> uses the vdso gettimeoday())
+
+[...]
+> Index: working/arch/powerpc/kernel/time.c
+> ===================================================================
+> --- working.orig/arch/powerpc/kernel/time.c
+> +++ working/arch/powerpc/kernel/time.c
+> @@ -74,6 +74,30 @@
+>  #endif
+>  #include <asm/smp.h>
+>  
+> +/* powerpc clocksource/clockevent code */
+> +
+> +/* TODO:
+> + *  o Code style
+> + *    * Variable names ... be consistent.
+> + *
+> + * TODO: Clocksource
+> + *  o Need a _USE_RTC() clocksource impelementation
+> + *  o xtime:  Either time.c manages it, or clocksource does, not both
+
+    If you mean the init. part, this has been already done by me -- I've 
+implemented read_persistent_clock() and got rid of xtime setting. What's left 
+is to implemet update_persistent_clock() and get rid of timer_check_rtc()...
+
+> + */
+> +
+> +#include <linux/clocksource.h>
+> +
+> +static struct clocksource clocksource_timebase = {
+> +	.name         = "timebase",
+> +	.rating       = 200,
+
+    Perhaps we even need to raise the rating to 300 or 400 -- according to 
+what <linux/clocksource.h> says?
+
+> +	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
+> +	.mask         = CLOCKSOURCE_MASK(64),
+> +	.shift        = 22,
+
+    PPC64 has issues with the fixed shift value, see:
+
+http://patchwork.ozlabs.org/linuxppc/patch?id=11125
+
+> +	.mult         = 0,	/* To be filled in */
+> +	.read         = NULL,   /* To be filled in */
+> +	.settimeofday = NULL,   /* To be filled in */
+
+    I don't quite understand why not just init them right away?  The values 
+are fixed anyways.
+
+> +};
+> +
+>  /* keep track of when we need to update the rtc */
+>  time_t last_rtc_update;
+>  #ifdef CONFIG_PPC_ISERIES
+[...]
+> @@ -666,8 +631,8 @@ void timer_interrupt(struct pt_regs * re
+>  		if (per_cpu(last_jiffy, cpu) >= tb_next_jiffy) {
+>  			tb_last_jiffy = tb_next_jiffy;
+>  			do_timer(1);
+> -			timer_recalc_offset(tb_last_jiffy);
+> -			timer_check_rtc();
+> +			/* timer_recalc_offset() && timer_check_rtc()
+> +			 * are now called from update_vsyscall() */
+
+    I.e. in the softirq context...
+
+[...]
+
+WBR, Sergei
