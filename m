@@ -1,79 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbXFTTNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbXFTTOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759110AbXFTTNe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 15:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXFTTNZ
+	id S1759592AbXFTTOd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 15:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbXFTTO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 15:13:25 -0400
-Received: from gateway12.iders.ca ([206.45.72.61]:56387 "EHLO koko.iders.ca"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754194AbXFTTNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 15:13:24 -0400
-Message-ID: <46797C52.4020907@iders.ca>
-Date: Wed, 20 Jun 2007 14:13:22 -0500
-From: Andrew McKay <amckay@iders.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Alexandre Oliva <aoliva@redhat.com>,
+	Wed, 20 Jun 2007 15:14:27 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1174 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755852AbXFTTO0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 15:14:26 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 20 Jun 2007 12:14:23 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614195517.GA4933@elte.hu>	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070614235004.GA14952@elte.hu>	<20070615011012.6c09066e@the-village.bc.nu>	<20070615012623.GA25189@elte.hu>	<20070615101007.0cbfd078@the-village.bc.nu>	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>	<4673CA7C.5040207@t-online.de>	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616181902.GB21478@ftp.linux.org.uk>	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>	<4679557C.5080907@iders.ca> <20070620175627.319a6c55@the-village.bc.nu>
-In-Reply-To: <20070620175627.319a6c55@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch] exclude sync signals from signalfd sets
+Message-ID: <Pine.LNX.4.64.0706201209570.6029@alien.or.mcafeemobile.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Secondly GPLv3 will cause companies like TIVO, router companies, security 
->> companies to not adopt Linux as an operating system, because they can't secure 
->> their system.  Placing code in a ROM so they can't upgrade their own systems is 
-> 
-> You've made an important mistake. You said "their system". Now its "our
-> code" and "whoever bought the units' hardware" so it isn't their anything.
+
+The following patch excludes synchronous signals from being dequeued
+by a signalfd. It also re-enable signalfd from fetching signals (that
+are not synchronous) sent with sys_tkill() and sys_tgkill(), to the
+thread that created the signalfd.
+The behaviour of a signalfd will hence be:
+
+- Does not, in any case, fetch synchronous signals
+
+- Does fetch shared signals of the thread group of the thread that
+  created the signalfd
+
+- Does fetch private signals sent using sys_tkill() or sys_tgkill(),
+  to the thread that created the signalfd
 
 
-Yes, the hardware belongs to the user, and the software belongs to the Linux 
-community.   However I think I wasn't 100% clear, I also mean keeping companies 
-networks and content secured.  Credit card companies insuring the software 
-hasn't been modified to skim cards (not that it's the only way to skim a card), 
-  or Tivo making sure that their content providers are protected.  Lets look at 
-the credit card example.  Sure the user could modify the system and boot their 
-own kernel, but it doesn't have to play nice with Mastercard's network anymore. 
-  Or better yet, would actually report that a certain business's card reader had 
-been tampered with.
 
-> 
-> You've made a second mistake I think by assuming that vendor held keys
-> "improve" security and must be vendor held and secret for it to work. In
-> fact vendor owned key systems that cannot be changed usually reduce
-> security.
-> 
-> There are very very good reasons for having vendor owned secret keys.
-> There are also very very good reasons for being able to rekey or disable
-> the key on your box.
-> 
-> Ask people whose product vendor went bankrupt. With the ability to
-> override/replace the keys they could have maintained their system
-> securely instead they could make no updates and the boxes were left
-> insecure.
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-I do see what you're saying here, and I can see how this is a problem.  However 
-what is the solution?  Sure having the system open for users to replace software 
-and tinker is great.  It's how I got into engineering.  I can also appreciate 
-the ability for the end user to fix and continue to use a system long after a 
-vendor goes out of business.  However, I don't see how this would ever require a 
-company like Tivo or Mastercard to have their networks play nice with a unit 
-that has been modified by the end user, potentially opening up some serious 
-security holes.  From what I understand this would still violate GPLv3 because 
-the system could no longer preform the task it was designed to do with modified 
-code, but maybe I have misunderstood.
 
-Andrew McKay
+- Davide
 
+
+
+---
+ fs/signalfd.c   |   10 +++++++++-
+ kernel/signal.c |    6 +-----
+ 2 files changed, 10 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.mod/fs/signalfd.c
+===================================================================
+--- linux-2.6.mod.orig/fs/signalfd.c	2007-06-19 18:58:15.000000000 -0700
++++ linux-2.6.mod/fs/signalfd.c	2007-06-19 19:02:57.000000000 -0700
+@@ -26,6 +26,14 @@
+ #include <linux/anon_inodes.h>
+ #include <linux/signalfd.h>
+ 
++/*
++ * Signals that a signalfd should never fetch.
++ */
++#define SIGNALFD_EXCLUDE_MASK (sigmask(SIGILL) | sigmask(SIGKILL) | \
++				       sigmask(SIGSTOP) | sigmask(SIGTRAP) | \
++				       sigmask(SIGFPE) | sigmask(SIGSEGV) | \
++				       sigmask(SIGBUS))
++
+ struct signalfd_ctx {
+ 	struct list_head lnk;
+ 	wait_queue_head_t wqh;
+@@ -320,7 +328,7 @@
+ 	if (sizemask != sizeof(sigset_t) ||
+ 	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
+ 		return error = -EINVAL;
+-	sigdelsetmask(&sigmask, sigmask(SIGKILL) | sigmask(SIGSTOP));
++	sigdelsetmask(&sigmask, SIGNALFD_EXCLUDE_MASK);
+ 	signotset(&sigmask);
+ 
+ 	if (ufd == -1) {
+Index: linux-2.6.mod/kernel/signal.c
+===================================================================
+--- linux-2.6.mod.orig/kernel/signal.c	2007-06-19 18:55:07.000000000 -0700
++++ linux-2.6.mod/kernel/signal.c	2007-06-19 18:58:43.000000000 -0700
+@@ -365,11 +365,7 @@
+ {
+ 	int signr = 0;
+ 
+-	/* We only dequeue private signals from ourselves, we don't let
+-	 * signalfd steal them
+-	 */
+-	if (tsk == current)
+-		signr = __dequeue_signal(&tsk->pending, mask, info);
++	signr = __dequeue_signal(&tsk->pending, mask, info);
+ 	if (!signr) {
+ 		signr = __dequeue_signal(&tsk->signal->shared_pending,
+ 					 mask, info);
