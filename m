@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbXFTFqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762603AbXFTFrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932108AbXFTFqU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 01:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbXFTFqJ
+	id S1762603AbXFTFrO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 01:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758423AbXFTFq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 01:46:09 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53723 "EHLO e6.ny.us.ibm.com"
+	Wed, 20 Jun 2007 01:46:57 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:37568 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755801AbXFTFqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 01:46:05 -0400
-Date: Wed, 20 Jun 2007 11:23:26 +0530
+	id S1760934AbXFTFq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 01:46:56 -0400
+Date: Wed, 20 Jun 2007 11:24:18 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Jan Blunck <j.blunck@tu-harburg.de>
-Subject: [RFC PATCH 3/4] Lookup changes to support union mount.
-Message-ID: <20070620055326.GE4267@in.ibm.com>
+Subject: [RFC PATCH 4/4] Directory listing support for union mounted directories.
+Message-ID: <20070620055418.GF4267@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20070620055050.GB4267@in.ibm.com>
 Mime-Version: 1.0
@@ -26,257 +26,326 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Lookup changes to support union mount.
+Subject: Directory listing support for union mounted directories.
 
-Adds support for looking up dentries inside a union mount point.
+Modifies readdir()/getdents() to support union mounted directories.
 
-This patch modifies the do_lookup() routine to look beyond the top layer for
-union mount points/directories. Union mount versions of dcache and real lookup
-routines are added to support this. The lookup routines are modified to build a
-new union stack when looking up a common named directory in the union stack.
+This patch adds support to readdir()/getdents() to read directory entries
+from all the directories of the union stack, and present a merged view to
+the userspace. This is achieved by maintaining a cache of read entries.
 
-TODO: Check if lookup_hash() and friends also need to know about union mount.
+TODO: Breaks lseek on union mounted directories, Fix this.
 
 Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- fs/dcache.c            |   53 ++++++++++++++++++
- fs/namei.c             |  137 +++++++++++++++++++++++++++++++++++++++++++++++--
- include/linux/dcache.h |    1 
- 3 files changed, 187 insertions(+), 4 deletions(-)
+ fs/file_table.c    |    1 
+ fs/readdir.c       |  242 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fs.h |   12 ++
+ 3 files changed, 254 insertions(+), 1 deletion(-)
 
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1312,6 +1312,59 @@ next:
-  	return found;
- }
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -174,6 +174,7 @@ void fastcall __fput(struct file *file)
+ 	if (file->f_mode & FMODE_WRITE)
+ 		put_write_access(inode);
+ 	put_pid(file->f_owner.pid);
++	put_rdstate(file->f_rdstate);
+ 	file_kill(file);
+ 	file->f_path.dentry = NULL;
+ 	file->f_path.mnt = NULL;
+--- a/fs/readdir.c
++++ b/fs/readdir.c
+@@ -19,6 +19,8 @@
  
+ #include <asm/uaccess.h>
+ 
++int readdir_union(struct file *file, void *buf, filldir_t filler);
++
+ int vfs_readdir(struct file *file, filldir_t filler, void *buf)
+ {
+ 	struct inode *inode = file->f_path.dentry->d_inode;
+@@ -33,7 +35,10 @@ int vfs_readdir(struct file *file, filld
+ 	mutex_lock(&inode->i_mutex);
+ 	res = -ENOENT;
+ 	if (!IS_DEADDIR(inode)) {
+-		res = file->f_op->readdir(file, buf, filler);
++		if (IS_MNT_UNION(file->f_path.mnt))
++			res = readdir_union(file, buf, filler);
++		else
++			res = file->f_op->readdir(file, buf, filler);
+ 		file_accessed(file);
+ 	}
+ 	mutex_unlock(&inode->i_mutex);
+@@ -303,3 +308,238 @@ out_putf:
+ out:
+ 	return error;
+ }
++
 +/*
-+ * Looks for the given @name in dcache by walking through all the layers
-+ * of the union stack, starting from the top.
-+ * FIXME: If we don't find the dentry in a upper layer, we descend to the
-+ * next layer. So there is a chance to miss this dentry in the top layer
-+ * if this is the _first_ time lookup of the dentry in this layer. A real
-+ * lookup might have fetched a valid dentry in this layer itself, while we
-+ * chose to descend to the next lower layer. One solution is not have this
-+ * function itself, do the toplevel lookup in dcache and if it fails proceed
-+ * to real_lookup_union() directly.
++ * NOTE: Some of the code below which maintains a list of dirents as a cache
++ * is from Jan Blunck's original union mount readdir patch.
 + */
-+struct dentry *__d_lookup_union(struct nameidata *nd, struct qstr *name)
++
++/* The readdir cache object */
++struct rdcache_entry {
++	struct list_head list;
++	struct qstr name;
++};
++
++struct rdcache_callback {
++	void *buf;			/* original callback buffer */
++	filldir_t filldir;		/* the filldir() we should call */
++	int error;			/* stores filldir error */
++	struct rdstate *rdstate;	/* readdir state */
++};
++
++static int rdcache_add_entry(struct list_head *list,
++				 const char *name, int namelen)
 +{
-+	struct dentry *dentry;
-+	struct nameidata nd_tmp;
-+	struct vfsmount *mnt = mntget(nd->mnt);
-+	struct qstr this;
++	struct rdcache_entry *this;
++	char *tmp_name;
++
++	this = kmalloc(sizeof(*this), GFP_KERNEL);
++	if (!this) {
++		printk(KERN_CRIT "rdcache_add_entry(): out of kernel memory\n");
++		return -ENOMEM;
++	}
++
++	tmp_name = kmalloc(namelen + 1, GFP_KERNEL);
++	if (!tmp_name) {
++		printk(KERN_CRIT "rdcache_add_entry(): out of kernel memory\n");
++		kfree(this);
++		return -ENOMEM;
++	}
++
++	this->name.name = tmp_name;
++	this->name.len = namelen;
++	this->name.hash = 0;
++	memcpy(tmp_name, name, namelen);
++	tmp_name[namelen] = 0;
++	INIT_LIST_HEAD(&this->list);
++	list_add(&this->list, list);
++	return 0;
++}
++
++static void rdcache_free(struct list_head *list)
++{
++	struct list_head *p;
++	struct list_head *ptmp;
++	int count = 0;
++
++	list_for_each_safe(p, ptmp, list) {
++		struct rdcache_entry *this;
++
++		this = list_entry(p, struct rdcache_entry, list);
++		list_del_init(&this->list);
++		kfree(this->name.name);
++		kfree(this);
++		count++;
++	}
++	return;
++}
++
++static int rdcache_find_entry(struct list_head *uc_list,
++				  const char *name, int namelen)
++{
++	struct rdcache_entry *p;
++	int ret = 0;
++
++	list_for_each_entry(p, uc_list, list) {
++		if (p->name.len != namelen)
++			continue;
++		if (strncmp(p->name.name, name, namelen) == 0) {
++			ret = 1;
++			break;
++		}
++	}
++	return ret;
++}
++
++/*
++ * filldir routine for union mounted directories.
++ * Handles duplicate elimination by building a readdir cache.
++ * TODO: readdir cache is a linked list. Check if this can be designed
++ * more efficiently.
++ */
++static int filldir_union(void *buf, const char *name, int namlen,
++			   loff_t offset, u64 ino, unsigned int d_type)
++{
++	struct rdcache_callback *cb = buf;
 +	int err;
 +
-+	nd_tmp.mnt = nd->mnt;
-+	nd_tmp.dentry = nd->dentry;
++	if (rdcache_find_entry(&cb->rdstate->dirent_cache, name, namlen))
++		return 0;
 +
-+	this.name = name->name;
-+	this.len = name->len;
-+	this.hash = name->hash;
-+
-+	do {
-+		/* d_hash() is a repetition for the top layer. */
-+		if (nd_tmp.dentry->d_op && nd_tmp.dentry->d_op->d_hash) {
-+			err = nd_tmp.dentry->d_op->d_hash(nd_tmp.dentry, &this);
-+			if (err < 0)
-+				goto out;
-+		}
-+
-+		dentry = __d_lookup(nd_tmp.dentry, &this);
-+		if (dentry) {
-+			if (dentry->d_inode) {
-+				if (nd->mnt != nd_tmp.mnt) {
-+					mntput(nd->mnt);
-+					nd->mnt = mntget(nd_tmp.mnt);
-+				}
-+				mntput(mnt);
-+				return dentry;
-+			} else {
-+				dput(dentry);
-+			}
-+		}
-+	} while (next_union_mount(&nd_tmp));
-+out:
-+	mntput(mnt);
-+	return NULL;
++	err =  cb->filldir(cb->buf, name, namlen, offset, ino, d_type);
++	if (err >= 0)
++		rdcache_add_entry(&cb->rdstate->dirent_cache, name, namlen);
++	cb->error = err;
++	return err;
 +}
 +
- /**
-  * d_hash_and_lookup - hash the qstr then search for a dentry
-  * @dir: Directory to search in
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -515,6 +515,127 @@ static struct dentry * real_lookup(struc
- 	return result;
- }
- 
-+/*
-+ * Walks down the parent's union stack looking for the given @name.
-+ * Builds unions at subdirectory levels if needed.
-+ */
-+static struct dentry *real_lookup_union(struct nameidata *nd, struct qstr *name)
++/* Called from last fput() */
++void put_rdstate(struct rdstate *rdstate)
 +{
-+	struct dentry *dentry, *topmost, *prev = NULL;
-+	struct nameidata nd_tmp;
-+	struct vfsmount *mnt_prev = NULL;
-+	struct vfsmount *mnt = mntget(nd->mnt);
++	if (!rdstate)
++		return;
 +
-+	topmost = real_lookup(nd->dentry, name, nd);
-+	if (IS_ERR(topmost))
-+		goto out;
++	mntput(rdstate->mnt);
++	dput(rdstate->dentry);
++	rdcache_free(&rdstate->dirent_cache);
++	kfree(rdstate);
++}
 +
-+	/* Found a vaild non-directory dentry in the topmost layer, return. */
-+	if (topmost->d_inode && !S_ISDIR(topmost->d_inode->i_mode))
-+		goto out;
-+
-+	nd_tmp.mnt = nd->mnt;
-+	nd_tmp.dentry = nd->dentry;
++static struct rdstate *get_rdstate(struct file *file)
++{
++	if (file->f_rdstate)
++		return file->f_rdstate;
 +
 +	/*
-+	 * At this point we either have a negative dentry or a directory
-+	 * as the topmost dentry. Continue to lookup in the bottom layers.
++	 * We have read the dirents from this earlier but now don't have a
++	 * corresponding rdstate. This shouldn't happen.
 +	 */
-+	while (next_union_mount(&nd_tmp)) {
-+		dentry = real_lookup(nd_tmp.dentry, name, &nd_tmp);
-+		/*
-+		 * If there is an error, return the dentry from
-+		 * the topmost layer.
-+		 */
-+		if (IS_ERR(dentry))
-+			goto out;
++	if (file->f_pos)
++		return ERR_PTR(-EINVAL);
 +
-+		/*
-+		 * Found a negative dentry in this layer, release it and
-+		 * continue with the next layer.
-+		 */
-+		if (!dentry->d_inode) {
-+			dput(dentry);
-+			continue;
-+		}
++	file->f_rdstate = kmalloc(sizeof(struct rdstate), GFP_KERNEL);
++	if (!file->f_rdstate)
++		return ERR_PTR(-ENOMEM);
 +
-+		/*
-+		 * If we find a vaild non-directory dentry in this layer, And
-+		 * - if the topmost dentry is negative, return this.
-+		 * - or if the topmost dentry is valid (dir), return topmost.
-+		 */
-+		if (!S_ISDIR(dentry->d_inode->i_mode)) {
-+			if (!topmost->d_inode) {
-+				mntput(nd->mnt);
-+				nd->mnt = mntget(nd_tmp.mnt);
-+				dput(topmost);
-+				topmost = dentry;
-+			} else {
-+				dput(dentry);
-+			}
-+			goto out;
-+		}
-+
-+		/*
-+		 * At this point, we have a directory in this layer. And
-+		 * - if the topmost dentry is negative, make this directory
-+		 * the topmost dentry.
-+		 * - or if topmost dentry is valid, union the two directories.
-+		 */
-+		if (!topmost->d_inode) {
-+			mntput(nd->mnt);
-+			nd->mnt = mntget(nd_tmp.mnt);
-+			dput(topmost);
-+			topmost = dget(dentry);
-+		} else {
-+			struct union_mount *u;
-+			struct dentry *top_dentry = prev ? prev : topmost;
-+			struct vfsmount *top_mnt = mnt_prev ? mnt_prev :
-+							nd->mnt;
-+			u = alloc_union_mount(top_mnt, top_dentry, nd_tmp.mnt,
-+						dentry);
-+			if (!u) {
-+				dput(dentry);
-+				goto out;
-+			}
-+			spin_lock(&vfsmount_lock);
-+			attach_mnt_union(u);
-+			spin_unlock(&vfsmount_lock);
-+			/*
-+			 * If the lower layer we found has a layer below
-+			 * it, no need to continue the lookup, return
-+			 * with the topmost we found.
-+			 * Else remember this layer so that this becomes
-+			 * the top layer for the next union.
-+			 */
-+			if (next_union_mount_exists(nd_tmp.mnt, dentry)) {
-+				dput(dentry);
-+				goto out;
-+			} else {
-+				if (prev)
-+					dput(prev);
-+				prev = dget(dentry);
-+				if (mnt_prev)
-+					mntput(mnt_prev);
-+				mnt_prev = mntget(nd_tmp.mnt);
-+			}
-+		}
-+
-+		/*
-+		 * Release the dentry from this layer and continue
-+		 * the lookup in the next lower layer.
-+		 */
-+		dput(dentry);
-+	}
-+out:
-+	if (prev)
-+		dput(prev);
-+	if (mnt_prev)
-+		mntput(mnt_prev);
-+	mntput(mnt);
-+	return topmost;
++	file->f_rdstate->off = 0;
++	file->f_rdstate->mnt = mntget(file->f_path.mnt);
++	file->f_rdstate->dentry = dget(file->f_path.dentry);
++	INIT_LIST_HEAD(&file->f_rdstate->dirent_cache);
++	return file->f_rdstate;
 +}
 +
- static int __emul_lookup_dentry(const char *, struct nameidata *);
++int readdir_union(struct file *file, void *buf, filldir_t filler)
++{
++	struct dentry *topmost = file->f_path.dentry;
++	struct rdstate *rdstate;
++	struct nameidata nd;
++	loff_t offset = 0;
++	struct rdcache_callback cb;
++	int err = 0;
++
++	/*
++	 * If this is not a union mount point or not a unioned directory
++	 * within the union mount point, do readdir in the normal way.
++	 */
++	nd.mnt = file->f_path.mnt;
++	nd.dentry = file->f_path.dentry;
++	if (!next_union_mount_exists(nd.mnt, nd.dentry))
++		return file->f_op->readdir(file, buf, filler);
++
++	rdstate = get_rdstate(file);
++	if (IS_ERR(rdstate)) {
++		err = PTR_ERR(rdstate);
++		return err;
++	}
++
++	cb.buf = buf;
++	cb.filldir = filler;
++	cb.rdstate = rdstate;
++
++	offset = rdstate->off;
++
++	/* Read from the topmost directory */
++	if (rdstate->dentry == topmost) {
++		file->f_pos = offset;
++		err = file->f_op->readdir(file, &cb, filldir_union);
++		rdstate->off = file->f_pos;
++		if (err < 0 || cb.error < 0)
++			goto out;
++
++		/*
++		 * Reading from topmost dir complete, start reading the lower
++		 * dir from the beginning.
++		 */
++		offset = 0;
++	} else {
++		nd.mnt = rdstate->mnt;
++		nd.dentry = rdstate->dentry;
++		goto read_lower;
++	}
++
++	if (!next_union_mount(&nd))
++		return err;
++
++read_lower:
++	do {
++		struct vfsmount *mnt_tmp = mntget(nd.mnt);
++		struct dentry *dentry_tmp = dget(nd.dentry);
++		struct file *ftmp = dentry_open(nd.dentry, nd.mnt,
++						file->f_flags);
++		if (IS_ERR(ftmp)) {
++			mntput(mnt_tmp);
++			dput(dentry_tmp);
++			err = PTR_ERR(ftmp);
++			goto out;
++		}
++
++		mutex_lock(&nd.dentry->d_inode->i_mutex);
++		ftmp->f_pos = offset;
++
++		err = ftmp->f_op->readdir(ftmp, &cb, filldir_union);
++		file_accessed(ftmp);
++		rdstate->off = ftmp->f_pos;
++		mutex_unlock(&nd.dentry->d_inode->i_mutex);
++		if (nd.mnt != rdstate->mnt) {
++			mntput(rdstate->mnt);
++			rdstate->mnt = mntget(nd.mnt);
++		}
++		if (nd.dentry != rdstate->dentry) {
++			dput(rdstate->dentry);
++			rdstate->dentry = dget(nd.dentry);
++		}
++		fput(ftmp);
++		if (err < 0 || cb.error < 0)
++			goto out;
++
++		/*
++		 * Reading from a lower dir complete, start reading the
++		 * next lower dir from the beginning.
++		 */
++		offset = 0;
++	} while (next_union_mount(&nd));
++
++	return 0;
++out:
++	return err;
++}
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -841,6 +841,14 @@ static inline void ra_set_size(struct fi
+ unsigned long ra_submit(struct file_ra_state *ra,
+ 		       struct address_space *mapping, struct file *filp);
  
- /* SMP-safe */
-@@ -769,21 +890,29 @@ static __always_inline void follow_dotdo
- static int do_lookup(struct nameidata *nd, struct qstr *name,
- 		     struct path *path)
- {
--	struct vfsmount *mnt = nd->mnt;
--	struct dentry *dentry = __d_lookup(nd->dentry, name);
++/* Direct cache for readdir, used for union mounted directories. */
++struct rdstate {
++	struct vfsmount *mnt;
 +	struct dentry *dentry;
++	loff_t off;
++	struct list_head dirent_cache;
++};
 +
-+	if (IS_MNT_UNION(nd->mnt))
-+		dentry = __d_lookup_union(nd, name);
-+	else
-+		dentry = __d_lookup(nd->dentry, name);
+ struct file {
+ 	/*
+ 	 * fu_list becomes invalid after file_free is called and queued via
+@@ -875,6 +883,7 @@ struct file {
+ 	spinlock_t		f_ep_lock;
+ #endif /* #ifdef CONFIG_EPOLL */
+ 	struct address_space	*f_mapping;
++	struct rdstate		*f_rdstate;
+ };
+ extern spinlock_t files_lock;
+ #define file_list_lock() spin_lock(&files_lock);
+@@ -2119,5 +2128,8 @@ static inline void free_secdata(void *se
+ { }
+ #endif	/* CONFIG_SECURITY */
  
- 	if (!dentry)
- 		goto need_lookup;
- 	if (dentry->d_op && dentry->d_op->d_revalidate)
- 		goto need_revalidate;
- done:
--	path->mnt = mnt;
-+	path->mnt = nd->mnt;
- 	path->dentry = dentry;
- 	__follow_mount(path);
- 	return 0;
- 
- need_lookup:
--	dentry = real_lookup(nd->dentry, name, nd);
-+	if (IS_MNT_UNION(nd->mnt))
-+		dentry = real_lookup_union(nd, name);
-+	else
-+		dentry = real_lookup(nd->dentry, name, nd);
++/* fs/readdir.c */
++void put_rdstate(struct rdstate *rdstate);
 +
- 	if (IS_ERR(dentry))
- 		goto fail;
- 	goto done;
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -289,6 +289,7 @@ extern void d_move(struct dentry *, stru
- /* appendix may either be NULL or be used for transname suffixes */
- extern struct dentry * d_lookup(struct dentry *, struct qstr *);
- extern struct dentry * __d_lookup(struct dentry *, struct qstr *);
-+extern struct dentry *__d_lookup_union(struct nameidata *nd, struct qstr *name);
- extern struct dentry * d_hash_and_lookup(struct dentry *, struct qstr *);
- 
- /* validate "insecure" dentry pointer */
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_FS_H */
