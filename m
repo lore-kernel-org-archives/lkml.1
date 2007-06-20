@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXFTQdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbXFTQhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbXFTQdw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXFTQdo
+	id S1755253AbXFTQhp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXFTQhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:33:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32916 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752928AbXFTQdn (ORCPT
+	Wed, 20 Jun 2007 12:37:39 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45802 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752346AbXFTQhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:33:43 -0400
-Date: Wed, 20 Jun 2007 09:32:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-cc: Alexandre Oliva <aoliva@redhat.com>, Daniel Hazelton <dhazelton@enter.net>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Mundt <lethal@linux-sh.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <46791A35.4000009@aitel.hist.no>
-Message-ID: <alpine.LFD.0.98.0706200930070.3593@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
- <4671B734.1040401@nortel.com> <orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br>
- <200706142155.34298.dhazelton@enter.net> <or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org>
- <46791A35.4000009@aitel.hist.no>
+	Wed, 20 Jun 2007 12:37:38 -0400
+Message-ID: <467957CB.8020704@zytor.com>
+Date: Wed, 20 Jun 2007 09:37:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: William Lee Irwin III <wli@holomorphy.com>
+CC: Albert Cahalan <acahalan@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: JIT emulator needs
+References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com> <20070619150824.GH11781@holomorphy.com> <787b0d920706192016l660dd5b0mbf300581db81ac62@mail.gmail.com> <20070620160116.GI6909@holomorphy.com>
+In-Reply-To: <20070620160116.GI6909@holomorphy.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+William Lee Irwin III wrote:
+> 
+> I presumed an ELF note or extended filesystem attributes were already
+> in place for this sort of affair. It may be that the model implemented
+> is so restrictive that users are forbidden to create new executables,
+> in which case using a different model is certainly in order. Otherwise
+> the ELF note or attributes need to be implemented.
+> 
 
+Another thing to keep in mind, since we're talking about security
+policies in the first place, is that anything like this *MUST* be
+"opt-in" on the part of the security policy, because what we're talking
+about is circumventing an explicit security policy just based on a
+user-provided binary saying, in effect, "don't worry, I know what I'm
+doing."
 
-On Wed, 20 Jun 2007, Helge Hafting wrote:
+Changing the meaning of an established explicit security policy is not
+acceptable.
 
-> Linus Torvalds wrote:
-> > 
-> > You do realize that Tivo makes all their money on the service, don't you?
-> > The actual hardware they basically give away at cost, exactly to get the
-> > service contracts. Not exactly a very unusual strategy in the high-tech
-> > world, is it?
-> >   
-> Not unusual - but so what.
-> This strategy may backfire if users find a way
-> to use the cheap box for something without Tivo's service contract.
-
-Yeah, I'm not at all trying to say that Tivo has the "right to make 
-money". 
-
-They can fail for all I care. 
-
-But they do have the right to make their own choices, and try their own 
-strategies. And people shouldn't complain about that. If somebody doesn't 
-like the Tivo box, and the Tivo service requirements, just don't *buy* the 
-damn thing, and don't sign up for the service.
-
-Whining about Tivo's choices is just stupid.
-
-And anybody who thinks others don't have the "right to choice", and then 
-tries to talk about "freedoms" is a damn hypocritical moron.
-
-		Linus
+	-hpa
