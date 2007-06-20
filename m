@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbXFTXxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbXFTX4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbXFTXxd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbXFTXxZ
+	id S1756758AbXFTX4w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbXFTX4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:53:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:51389 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753850AbXFTXxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:53:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=GYAlwyT/0DTLRMUk23vBQhL7RTbkQOfjVNUmcfDfmyOsDqEWz/K+aqnQAhhrF+aDkgEANyqKRsDb7II25iijKg0ROC5moByuNVqSq5/5GhX7Dl/Q3ZQsxk8kWCB+Ihh95mjWLsaxAZy11rvewFluV/RXlZyvLxc+7ldv1AgAlTs=
-Message-ID: <161717d50706201653l5fb6fc74ib59a30b06ccc251c@mail.gmail.com>
-Date: Wed, 20 Jun 2007 19:53:23 -0400
-From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
-To: "Tomas Neme" <lacrymology@gmail.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Alexandre Oliva" <aoliva@redhat.com>, "Andrew McKay" <amckay@iders.ca>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Daniel Hazelton" <dhazelton@enter.net>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <2e6659dd0706201629t2c293c5di614b2eb0818a9777@mail.gmail.com>
+	Wed, 20 Jun 2007 19:56:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45868 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752712AbXFTX4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:56:44 -0400
+Message-ID: <4679BEBA.9070708@garzik.org>
+Date: Wed, 20 Jun 2007 19:56:42 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Peer Chen <peerchen@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, htejun <htejun@gmail.com>,
+       alan <alan@redhat.com>
+Subject: Re: [PATCH 1/3] PATA: Add the MCP73/77 support to PATA driver
+References: <200706071823109037361@gmail.com>
+In-Reply-To: <200706071823109037361@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	 <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <4679557C.5080907@iders.ca>
-	 <20070620175627.319a6c55@the-village.bc.nu>
-	 <46797C52.4020907@iders.ca>
-	 <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
-	 <161717d50706201427i508c2868v7e6fd828bf2f4309@mail.gmail.com>
-	 <2e6659dd0706201629t2c293c5di614b2eb0818a9777@mail.gmail.com>
-X-Google-Sender-Auth: 6728926bcb743856
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/20/07, Tomas Neme <lacrymology@gmail.com> wrote:
->
-> I'm about this far to Linus'izing my wording and calling you stupid,
-> hypocrite, or bullshitter
+Peer Chen wrote:
+> Add the MCP73/MCP77 support to PATA driver.
+> The patch base on kernel 2.6.22-rc4
+>  
+> Signed-off-by: Peer Chen <peerchen@gmail.com>
 
-Knock yourself out, it will no doubt lend much moral and logic weight
-to your rhetoric.
+applied
 
-Dave
+
