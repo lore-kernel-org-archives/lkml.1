@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbXFTR2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbXFTR3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756778AbXFTR2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbXFTR2b
+	id S1757543AbXFTR3y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbXFTR3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:28:31 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:47845 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbXFTR2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:28:30 -0400
-Date: Wed, 20 Jun 2007 13:28:09 -0400
-Message-Id: <200706201728.l5KHS9hj029372@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-kernel@vger.kernel.org, jsipek@ic.sunysb.edu
-Subject: Re: [RFC PATCH 1/4] Union mount documentation. 
-In-reply-to: Your message of "Wed, 20 Jun 2007 07:29:55 -0000."
-             <f5al1i$foi$1@sea.gmane.org> 
-X-MailKey: Erez_Zadok
+	Wed, 20 Jun 2007 13:29:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47570 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753145AbXFTR3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 13:29:47 -0400
+Message-ID: <467963ED.9020705@redhat.com>
+Date: Wed, 20 Jun 2007 13:29:17 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: "Renato S. Yamane" <renatoyamane@mandic.com.br>,
+       Jiri Kosina <jikos@jikos.cz>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] Error -71 on device descriptor read/all
+References: <Pine.LNX.4.44L0.0706201003490.3311-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0706201003490.3311-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <f5al1i$foi$1@sea.gmane.org>, Jan Blunck writes:
-> On Tue, 19 Jun 2007 22:59:51 -0700, Arjan van de Ven wrote:
+On 06/20/2007 10:06 AM, Alan Stern wrote:
+>> In my dmesg today, I see this:
+>> usb 1-1: can't set config #1, error -71
 > 
-> > first of all I'm happy to see that people are still working on unionfs;
-> > I'd love to have functionality like this show up in Linux.
+> That error is more serious.
 > 
-> This has nothing to do with unionfs. This is about doing a VFS based
-> approach to union mounts. Unification is a name-based construct so it
-> belongs into VFS and not into a separate file system.
+>> When I remove and input (again) my Mouse, I see this in /var/log/messages:
+>>
+>> kernel: usb 1-1: USB disconnect, address 3
+>> kernel: usb 1-1: new low speed USB device using uhci_hcd and address 4
+>> kernel: usb 1-1: configuration #1 chosen from 1 choice
+>> kernel: input: Microsoft Microsoft 3-Button Mouse with IntelliEye? as 
+>> /class/input/input8
+>> kernel: input: USB HID v1.00 Mouse [Microsoft Microsoft 3-Button Mouse 
+>> with IntelliEye?] on usb-0000:00:1d.0-1
+> 
+> This is a low-level hardware error.  It indicates that communication 
+> over the USB cable isn't working right.  The fact that it occurs 
+> sometimes but not at other times indicates that some of the hardware 
+> components may be not-quite within spec.
+> 
+> Have you tried using that mouse on a different computer?  How about 
+> using a different USB mouse on your computer?
+> 
 
-Jan, while I agree with you in principle that unification is a VFS-level
-namespace construct, I disagree with you that unioning doesn't belong in a
-separate f/s.
+Something changed recently, and that error is showing up all over the
+place and on devices that used to work.
 
-As someone whose group developed three generations of the stackable file
-system Unionfs (see http://unionfs.filesystems.org/), I can tell you from my
-experience and the experience of numerous users, that the devil is the
-details -- or the so-called orthogonal issues.  To get a fully working
-unioning implementation, one that the many current users of Unionfs could
-use, you'll have to deal with many issues and corner cases: cache coherency,
-inode persistency (and network f/s exports), copyups, whiteouts and opaque
-dirs, how to deal with "odd" file systems which don't support native
-whiteouts and such, directory reading (seekdir), and more.  Our third
-generation Unionfs, the one with On-Disk Format (ODF), handles all of these.
-Rather than reproduce all that discussion here, I'll point people to read
-more info here: <http://www.filesystems.org/unionfs-odf.txt>
-
-So, to have a fully usable union mounts implementation, you're going to have
-to support a lot of existing features; but if you were to support them all
-at the VFS level, you will have bloated the VFS considerably with stuff that
-many would argue does not belong in the VFS.
-
-Sincerely,
-Erez Zadok.
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=213411
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=220450
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=236450
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243798
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=235558
