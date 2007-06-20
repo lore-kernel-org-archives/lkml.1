@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbXFTQ44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbXFTQ5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbXFTQ44 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbXFTQ4r
+	id S1755656AbXFTQ5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXFTQ5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:56:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36322 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751677AbXFTQ4p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:56:45 -0400
-Date: Wed, 20 Jun 2007 18:01:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linas@austin.ibm.com (Linas Vepstas)
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Stuart_Hayes@dell.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
-Message-ID: <20070620180123.642316ae@the-village.bc.nu>
-In-Reply-To: <20070620162845.GY5836@austin.ibm.com>
-References: <20070618175713.GD5836@austin.ibm.com>
-	<4677FFF1.2010308@ru.mvista.com>
-	<20070619164854.GR5836@austin.ibm.com>
-	<200706192043.40298.bzolnier@gmail.com>
-	<46783777.10607@ru.mvista.com>
-	<20070620162845.GY5836@austin.ibm.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 20 Jun 2007 12:57:06 -0400
+Received: from dovecot.org ([82.118.211.50]:56870 "EHLO dovecot.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752935AbXFTQ5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 12:57:05 -0400
+Subject: Re: SMP read() stopping at memory page boundaries
+From: Timo Sirainen <tss@iki.fi>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <2c0942db0706200922i15ce44b0xceaed95d002dba33@mail.gmail.com>
+References: <1182351171.3768.65.camel@hurina>
+	 <1182354493.3768.80.camel@hurina>
+	 <2c0942db0706200922i15ce44b0xceaed95d002dba33@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-6LSMhvEeIg5h7kAnoZj8"
+Date: Wed, 20 Jun 2007 19:57:02 +0300
+Message-Id: <1182358622.3768.98.camel@hurina>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Google seems to show that there is no publically available 
-> firmware updates for Maxtor disks.
 
-There are for some but only if you irritate the tech support people.
+--=-6LSMhvEeIg5h7kAnoZj8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> hours at high cpu usage.... There were maybe a a dozen DriveReady
-> SeekComplete Timeout errors clustered a few minutes apart.  
+On Wed, 2007-06-20 at 09:22 -0700, Ray Lee wrote:
+> On 6/20/07, Timo Sirainen <tss@iki.fi> wrote:
+> > On Wed, 2007-06-20 at 17:52 +0300, Timo Sirainen wrote:
+> > > Sometimes read() returns only 4096 bytes. I'm locking the file, so I
+> > > don't think this should ever happen, right?
+>=20
+> man 2 read
+>=20
+> read() is always allowed to return less than you asked for. You need
+> to go back and ask for the rest. That's why people wrap read() and
+> write() in loops, and use those wrapped versions instead.
 
-That suggests the drive is having problems occassionally and that the DMA
-path code then blows up when they occur.
+I thought this wouldn't happen when reading from local filesystems.
+Anyway, my real program was doing that, and it was still seeing partial
+data. But looks like I can't reproduce it in my test program with two
+pread()s, so I'll have to do some more debugging.
 
-> Is there a way of viewing the contents of he command queue on
-> the hard drive, to see if the command actually made it across?
 
-queue ? You are overestimating IDE ;)
+--=-6LSMhvEeIg5h7kAnoZj8
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-When the command is written you wait 400nS and then BSY is supposed to be
-asserted. DRQ and other bits then handshake the data at the software
-level with IORDY doing it at the hardware level for PIO (except in early
-drives/low speeds where its done by the prayer and timing tolerance
-approach)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Its unlikely the command got lost. The IRQ could have done but the error
-path tries to spot that case by reading the status register - which
-hangs. So in theory it could be a lost IRQ and if the reset works we'll
-find that out.
+iD8DBQBGeVxeyUhSUUBViskRAvX/AKCk+fxVbGmqSuQPDLhyTfXQsRPvnQCdGe6Q
+DTlGA3ZOdz77PilfDDc21AY=
+=1Y2r
+-----END PGP SIGNATURE-----
 
-Alan
-
+--=-6LSMhvEeIg5h7kAnoZj8--
 
