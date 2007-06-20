@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbXFTPkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbXFTPlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbXFTPkR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 11:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbXFTPkF
+	id S1756891AbXFTPlm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 11:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbXFTPlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 11:40:05 -0400
-Received: from qb-out-0506.google.com ([72.14.204.231]:31539 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753305AbXFTPkD (ORCPT
+	Wed, 20 Jun 2007 11:41:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58757 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbXFTPle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 11:40:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:x-mailer:x-operating-system;
-        b=Oxz1wvPcNKDJ8GAbYTaQwoZvueN3xTJx/NTx6PygRas0+17NlJ0Oe7ZP5c71Ty7thFJ8XFUY+F1cxSpL1iAjQBm4tx3NoZeo/H6WxI+UI4HltmUIFRm24iNWp1vqOZ0lWITw2+wt8htm7xKQKJ4NLeOs3aVr1CegOPZadgA7QDo=
-Date: Wed, 20 Jun 2007 23:46:10 +0800
-From: Wang Zhenyu <zhen78@gmail.com>
-To: Carlo Wood <carlo@alinoe.com>, Wang Zhenyu <zhenyu.z.wang@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       eric@anholt.net, lethal@linux-sh.org, y-goto@jp.fujitsu.com
-Subject: Re: 2.6.22-rc5 regression
-Message-ID: <20070620154610.GA2802@localhost.localdomain>
-References: <20070618181225.GB8054@alinoe.com> <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org> <20070618195415.GA7481@alinoe.com> <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org> <20070618225009.GE13538@alinoe.com> <alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org> <20070619233716.GA5779@alinoe.com> <20070620011521.GB2856@zhen-devel.sh.intel.com> <20070620014227.GA4090@zhen-devel.sh.intel.com> <20070620140237.GB5524@alinoe.com>
+	Wed, 20 Jun 2007 11:41:34 -0400
+Subject: Re: [PATCH] get_random_long() and AT_ENTROPY for auxv, kernel
+	2.6.21.5
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alexander Gabert <pappy@gentoo.org>
+Cc: libc-alpha@sourceware.org, linux-kernel@vger.kernel.org,
+       hardened@gentoo.org, torvalds@linux-foundation.org
+In-Reply-To: <467948F5.3010709@gentoo.org>
+References: <4675C678.3080807@gentoo.org>
+	 <1182128803.22999.9.camel@laptopd505.fenrus.org>
+	 <4675DFA8.6060703@gentoo.org>
+	 <1182130680.22999.13.camel@laptopd505.fenrus.org>
+	 <4676601A.7070209@gentoo.org>  <467948F5.3010709@gentoo.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 20 Jun 2007 08:38:00 -0700
+Message-Id: <1182353880.2701.0.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070620140237.GB5524@alinoe.com>
-User-Agent: Mutt/1.4.2.2i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.21-rc6 i686
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.20 16:02:37 +0000, Carlo Wood wrote:
+On Wed, 2007-06-20 at 17:34 +0200, Alexander Gabert wrote:
+> Hi,
 > 
-> and I am not sure if you will consider the:
+> http://dev.gentoo.org/~pappy/kernel/linux-2.6.21.5-get_urandom_long-AT_ENTROPY.patch
 > 
-> agpgart: Failed to find bridge device (chip_id: 29a2)
-> 
-> a bug.
+> this patch adds the function drivers/char/random.c:get_random_long()
+> and adds an AT_ENTROPY field in the auxv without config option
+> (the config option was removed as suggested by Arjan on LKML).
 
-yeah, the error message needs to be fixed only if AGP cap
-exists. I was checking with other GMCH data sheets, we'd better 
-disable AGP for chip that has no AGP port. I will send out
-another patch later.
+your patch has some whitespace damage it seems...
+other than that I can agree with the approach.
+
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
