@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbXFTPjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbXFTPkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbXFTPjY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 11:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbXFTPjR
+	id S1756710AbXFTPkR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 11:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbXFTPkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 11:39:17 -0400
-Received: from mtoichi13.ns.itscom.net ([219.110.2.183]:62574 "EHLO
-	mtoichi13.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753297AbXFTPjQ (ORCPT
+	Wed, 20 Jun 2007 11:40:05 -0400
+Received: from qb-out-0506.google.com ([72.14.204.231]:31539 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753305AbXFTPkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 11:39:16 -0400
-Date: Thu, 21 Jun 2007 00:38:13 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-usb-devel@lists.sourceforge.net,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: can't suspend on vaio sz (rc4 and rc5 are ok) [was Re: 2.6.22-rc4-mm2]
-Message-ID: <20070620153813.GA3569@inferi.kami.home>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org> <20070620052222.GA4452@inferi.kami.home> <200706201340.19404.rjw@sisk.pl>
-MIME-Version: 1.0
+	Wed, 20 Jun 2007 11:40:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:x-mailer:x-operating-system;
+        b=Oxz1wvPcNKDJ8GAbYTaQwoZvueN3xTJx/NTx6PygRas0+17NlJ0Oe7ZP5c71Ty7thFJ8XFUY+F1cxSpL1iAjQBm4tx3NoZeo/H6WxI+UI4HltmUIFRm24iNWp1vqOZ0lWITw2+wt8htm7xKQKJ4NLeOs3aVr1CegOPZadgA7QDo=
+Date: Wed, 20 Jun 2007 23:46:10 +0800
+From: Wang Zhenyu <zhen78@gmail.com>
+To: Carlo Wood <carlo@alinoe.com>, Wang Zhenyu <zhenyu.z.wang@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, lethal@linux-sh.org, y-goto@jp.fujitsu.com
+Subject: Re: 2.6.22-rc5 regression
+Message-ID: <20070620154610.GA2802@localhost.localdomain>
+References: <20070618181225.GB8054@alinoe.com> <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org> <20070618195415.GA7481@alinoe.com> <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org> <20070618225009.GE13538@alinoe.com> <alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org> <20070619233716.GA5779@alinoe.com> <20070620011521.GB2856@zhen-devel.sh.intel.com> <20070620014227.GA4090@zhen-devel.sh.intel.com> <20070620140237.GB5524@alinoe.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200706201340.19404.rjw@sisk.pl>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.22-rc5-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070620140237.GB5524@alinoe.com>
+User-Agent: Mutt/1.4.2.2i
+X-Mailer: mutt
+X-Operating-System: Linux 2.6.21-rc6 i686
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 01:40:18PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, 20 June 2007 07:22, Mattia Dongili wrote:
-> > On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
-> > > 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
-> > 
-> > Hello,
-> > on this vaio sz72b I can't suspend if usb-storage is loaded. Bisecting
-> > is becoming troublesome as different sets have slightly different
-> > problems.
-> > At one point (with the GREGKH usb stuff built) I had the kernel
-> > reporting it cannot stop the usb-storage thread so I guess that
-> > something later in the series made things worse (freezable workqueues?).
-> > 
-> > Clues?
+On 2007.06.20 16:02:37 +0000, Carlo Wood wrote:
 > 
-> Can you please try 2.6.22-rc5 with the patches from
+> and I am not sure if you will consider the:
 > 
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc5/patches/
+> agpgart: Failed to find bridge device (chip_id: 29a2)
 > 
-> applied.  That should allow us to eliminate some suspects. ;-)
+> a bug.
 
-you're safe then! .22-rc5 + your suspend patch-set can suspend and
-resume happily.
-
--- 
-mattia
-:wq!
+yeah, the error message needs to be fixed only if AGP cap
+exists. I was checking with other GMCH data sheets, we'd better 
+disable AGP for chip that has no AGP port. I will send out
+another patch later.
