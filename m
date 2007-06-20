@@ -1,65 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbXFTNF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbXFTNMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761298AbXFTNF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 09:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbXFTNFN
+	id S1760816AbXFTNMf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 09:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbXFTNM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 09:05:13 -0400
-Received: from main.gmane.org ([80.91.229.2]:37500 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756732AbXFTNFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 09:05:11 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jan Blunck <jblunck@suse.de>
-Subject: Re: [RFC PATCH 1/4] Union mount documentation.
-Date: Wed, 20 Jun 2007 12:56:58 +0000 (UTC)
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
-Message-ID: <f5b86q$f4g$2@sea.gmane.org>
-References: <20070620055050.GB4267@in.ibm.com>
-	<20070620055157.GC4267@in.ibm.com>
-	<1182319191.2700.9.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: charybdis-ext.suse.de
-User-Agent: pan 0.119 (Karma Hunters)
+	Wed, 20 Jun 2007 09:12:27 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:41971 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753612AbXFTNM0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 09:12:26 -0400
+Date: Wed, 20 Jun 2007 15:11:20 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com, lethal@linux-sh.org,
+       y-goto@jp.fujitsu.com
+Subject: Re: 2.6.22-rc5 regression
+Message-ID: <20070620131120.GA17615@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, zhenyu.z.wang@intel.com, lethal@linux-sh.org,
+	y-goto@jp.fujitsu.com
+References: <20070617214905.GA6207@alinoe.com> <alpine.LFD.0.98.0706180950130.14121@woody.linux-foundation.org> <20070618181225.GB8054@alinoe.com> <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org> <20070618195415.GA7481@alinoe.com> <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org> <20070618225009.GE13538@alinoe.com> <alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org> <20070619233716.GA5779@alinoe.com> <alpine.LFD.0.98.0706191649160.3593@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706191649160.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007 22:59:51 -0700, Arjan van de Ven wrote:
-
-> user does on FS A: 
-> mkdir  /mnt/A/somedir
-> touch /mnt/A/somedir/somefile
+On Tue, Jun 19, 2007 at 05:09:10PM -0700, Linus Torvalds wrote:
+> Heh.
 > 
-> and then 2 things happen in parallel
-> 1) touch /mnt/B/somefile
-> 2) mv /mnt/union/somedir /mnt/union/somefile
+> Yeah, at this point I think we can pretty much guarantee that your problem 
+> is one of two cases:
 > 
-> since the underlying FS for 2) is FS A... how will this work out locking
-> wise? Will the VS lock the union directory only? Or will this operate
-> only on the underlying FS? How is dcache consistency guaranteed for
-> scenarios like this?
+>  - either a bit random, and depends on some timing thing, and one of the 
+>    kernels you marked "good" wasn't really.
 
-Ok, with Christophs help I guess I know now what the question is :)
+Nope
 
-touch /mnt/B/somefile is doing a lookup in "B" for "somefile". Therefore it
-locks B->i_mutex for that. When it gets a negative dentry it creates the
-file.
+>    It's not likely that you marked a good kernel bad, of course, since 
+>    with a good kernel, everything should have always worked, but with a 
+>    bad kernel and a bug that isn't entirely reproducible, you'd mark it 
+>    "good" by mistake - because it just randomly didn't show the problem.
 
-mv /mnt/union/somedir /mnt/union/somefile is doing a lookup in "union" for
-"somefile". Therefore it first locks the i_mutex of the topmost directory
-in the union of "/mnt/union" (which happens to be "B"). When it gets a
-negative dentry it than follows the union down to the next layer (with the
-topmost directory still locked). Lookup is repeated until a filled dentry
-is found or the topmost dentry negative dentry is used as a target for the
-move. Thats it.
+Nope
 
-Did that answer your question?
+> OR
+> 
+>  - we actually have two different commits that introduce the problem for 
+>    you, and it comes and goes, and the bisection doesn't work, because 
+>    there isn't a clear "this side works, that other side does not" 
+>    situation.
 
-Cheers,
-Jan
+Yes
 
+Looking a bit closer to the bisect myself, I note that 
+25971f68d392f1816e21520e9e59648403b0bdad and
+aba297927d1d558c7a94548135133bdf9172708a are part of
+a branch that is derived from a very "old" revision.
+git bisect assumes that such an old revision is good,
+but in fact - that was already bad as well, because
+the history of this bug is:
+
+2.6.22-rc5 BAD
+2.6.22-rc4+somethingelse BAD
+2.6.22-rc4+something GOOD
+2.6.22-rc4 BAD
+...
+2.6.18-rc1 BAD
+2.6.18 GOOD
+
+Thus: BAD BAD BAD GOOD GOOD BAD BAD
+
+and git bisect can't handle that, even though I started
+with a 'good' start point and a bad start point at the end.
+
+> For example, later on you say:
+> 
+> > Personally I am convinced that the real problem is with
+> > 8888985144db8f4cb7e56154b31bdf233d3550bf
+> 
+> but if you look at your commit log, you have:
+> 
+> > # bad: [25971f68d392f1816e21520e9e59648403b0bdad] [PARISC] fix section
+> > # mismatch in ccio-dma
+> > git-bisect bad 25971f68d392f1816e21520e9e59648403b0bdad
+> 
+> Notice? You said that 25971f68d392f1816e21520e9e59648403b0bdad was bad, 
+> but that is *before_ the 8888985144db8f4cb7e56154b31bdf233d3550bf commit. 
+> Do a
+> 
+> 	gitk 25971f68d3..8888985144
+> 
+> to see that part of the history.
+
+This part is thus based upon a revision so old that it was bad again,
+even before the small period that it was good.
+
+> So maybe you didn't test that kernel properly? And maybe it really is 
+> random, and something has happened that just makes it happen more often?
+
+No, it is really 100% reproducible.
+
+-- 
+Carlo Wood <carlo@alinoe.com>
