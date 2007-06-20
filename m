@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbXFTR3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbXFTRbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbXFTR3y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbXFTR3r
+	id S1757921AbXFTRbc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbXFTRbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:29:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47570 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753145AbXFTR3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:29:47 -0400
-Message-ID: <467963ED.9020705@redhat.com>
-Date: Wed, 20 Jun 2007 13:29:17 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: "Renato S. Yamane" <renatoyamane@mandic.com.br>,
-       Jiri Kosina <jikos@jikos.cz>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] Error -71 on device descriptor read/all
-References: <Pine.LNX.4.44L0.0706201003490.3311-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0706201003490.3311-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 20 Jun 2007 13:31:25 -0400
+Received: from www.osadl.org ([213.239.205.134]:47928 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755501AbXFTRbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 13:31:25 -0400
+Subject: Re: [RFC] clocksouce implementation for powerpc
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Tony Breeds <tony@bakeyournoodle.com>, Daniel Walker <dwalker@mvista.com>,
+       Andrew Morton <akpm@osdl.org>, john stultz <johnstul@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <467961F1.1060909@ru.mvista.com>
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>
+	 <20070616101637.107940593@inhelltoy.tec.linutronix.de>
+	 <1182009083.11539.369.camel@imap.mvista.com>
+	 <20070620065710.GR9768@bakeyournoodle.com>
+	 <1182351439.18168.79.camel@imap.mvista.com>
+	 <467961F1.1060909@ru.mvista.com>
+Content-Type: text/plain
+Date: Wed, 20 Jun 2007 19:31:21 +0200
+Message-Id: <1182360681.3316.25.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/20/2007 10:06 AM, Alan Stern wrote:
->> In my dmesg today, I see this:
->> usb 1-1: can't set config #1, error -71
+On Wed, 2007-06-20 at 21:20 +0400, Sergei Shtylyov wrote:
+> >>+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
+> >>+{
+> >>+	timer_recalc_offset(tb_last_jiffy);
+> >>+	timer_check_rtc();
+> >>+}
 > 
-> That error is more serious.
+> > Hmm .. This doesn't look like it's taking into account that the time has
+> > changed ..
 > 
->> When I remove and input (again) my Mouse, I see this in /var/log/messages:
->>
->> kernel: usb 1-1: USB disconnect, address 3
->> kernel: usb 1-1: new low speed USB device using uhci_hcd and address 4
->> kernel: usb 1-1: configuration #1 chosen from 1 choice
->> kernel: input: Microsoft Microsoft 3-Button Mouse with IntelliEye? as 
->> /class/input/input8
->> kernel: input: USB HID v1.00 Mouse [Microsoft Microsoft 3-Button Mouse 
->> with IntelliEye?] on usb-0000:00:1d.0-1
-> 
-> This is a low-level hardware error.  It indicates that communication 
-> over the USB cable isn't working right.  The fact that it occurs 
-> sometimes but not at other times indicates that some of the hardware 
-> components may be not-quite within spec.
-> 
-> Have you tried using that mouse on a different computer?  How about 
-> using a different USB mouse on your computer?
-> 
+>     Why? By the time it gets called (form the timer softirq context) 
 
-Something changed recently, and that error is showing up all over the
-place and on devices that used to work.
+It is called from interrupt context at least in mainline. Only the -rt
+patch moves this to the softirq.
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=213411
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=220450
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=236450
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243798
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=235558
+	tglx
+
+
