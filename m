@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761832AbXFTDrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761985AbXFTDrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761832AbXFTDrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 23:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXFTDrJ
+	id S1761985AbXFTDrw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 23:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXFTDro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 23:47:09 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:49413
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756079AbXFTDrI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 23:47:08 -0400
-Date: Tue, 19 Jun 2007 20:47:08 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Al Boldi <a1426z@gawab.com>
-cc: Scott Preece <sepreece@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <200706200630.57460.a1426z@gawab.com>
-Message-ID: <Pine.LNX.4.64.0706192041350.30395@asgard.lang.hm>
-References: <200706200157.20527.a1426z@gawab.com>
- <7b69d1470706191929l7ff28df5v80f46811c739fa25@mail.gmail.com>
- <200706200630.57460.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 19 Jun 2007 23:47:44 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44377 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759291AbXFTDrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 23:47:43 -0400
+Subject: Re: Fix signalfd interaction with thread-private signals
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0706191908000.16740@alien.or.mcafeemobile.com>
+References: <alpine.LFD.0.98.0706162013420.14121@woody.linux-foundation.org>
+	 <1182064500.2798.6.camel@entropy>
+	 <Pine.LNX.4.64.0706170951580.20841@alien.or.mcafeemobile.com>
+	 <1182108399.3794.4.camel@entropy>
+	 <Pine.LNX.4.64.0706171436260.20841@alien.or.mcafeemobile.com>
+	 <1182125303.3794.8.camel@entropy>
+	 <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com>
+	 <1182127391.26853.207.camel@localhost.localdomain>
+	 <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
+	 <20070619091452.GA94@tv-sign.ru>
+	 <Pine.LNX.4.64.0706191643400.16740@alien.or.mcafeemobile.com>
+	 <1182302739.22337.9.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0706191908000.16740@alien.or.mcafeemobile.com>
+Content-Type: text/plain
+Date: Wed, 20 Jun 2007 13:46:57 +1000
+Message-Id: <1182311217.22337.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Al Boldi wrote:
+On Tue, 2007-06-19 at 19:15 -0700, Davide Libenzi wrote:
 
-> Scott Preece wrote:
->> On 6/19/07, Al Boldi <a1426z@gawab.com> wrote:
->>> Nicolas Mailhot wrote:
->>>> Tivo didn't make the Linux success. More Tivos can definitely undo it.
->>>
->>> I don't think so.
->>>
->>> First, it's not Linux that made success, but rather GNU that uses Linux
->>> as its kernel.  And, believe it or not, when people say Linux, they
->>> really mean GNU.  People could care less what kernel they were running,
->>> as long as the system is up and runs the procs that offer their
->>> services.
->>
->> ---
->>
->> Actually, for use in devices (like TiVos or cell phones), it is very
->> definitely the kernel that is of interest. Many such devices use
->> little or no GNU software (some manufacturers have consciously avoided
->> it because of the possibility of shifts like the GPLv3 changes).
->
-> Sure, but was it Linux in embedded devices that made Linux what it is today,
-> or was it GNU/Linux?
+> Ok, why instead don't we go for something like the attached patch?
+> We exclude sync signals from signalfd, but we don't limit signalfd to 
+> shared signals. Ie, we should be able to fetch a signal sent with 
+> sys_tkill() to threads different from "current", that otherwise we would 
+> not be able to fetch.
+> Ben, sorry but my memory sucks ... the "notifier" thing was fine in that 
+> case, no?
 
-if it was the GNU that made linux what it is today and the linux kernel 
-mearly an oppurtunist then the GNU/Hurd, GNU/Solaris, GNU/BSD and for that 
-matter GNU/Microsoft distributions should be steadily and quickly gaining 
-marketshare
+I'm generally nervous about the idea of letting signalfd dequeue
+somebody else private signals... even if we filter out SEGV's and
+friends but I'll let Linus decide there.
 
-oh, sorry, people barely know that they exist (including people convinced 
-that the linux kernel is junk compared to Solaris) and they are little 
-more than proof-that-it-can-be-done showpieces.
+Regarding the notifier, it's dodgy in most cases I'd say but I suppose
+it should be allright to only worry about "current" and not the target
+task there.
 
-it was the ability of the linux kernel to adapt to vastly different 
-hardware (including embeded hardware) that made Linux what it is today.
+Ben. 
 
-and I do mean 'Linux" not 'GNU/Linux' in the statement above.
-
-David Lang
