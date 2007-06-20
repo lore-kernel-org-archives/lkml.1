@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762425AbXFTFXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762153AbXFTFnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762425AbXFTFXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 01:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbXFTFXp
+	id S1762153AbXFTFnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 01:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbXFTFnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 01:23:45 -0400
-Received: from mtoichi14.ns.itscom.net ([219.110.2.184]:57176 "EHLO
-	mtoichi14.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755148AbXFTFXo (ORCPT
+	Wed, 20 Jun 2007 01:43:40 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:60141 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756392AbXFTFnj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 01:23:44 -0400
-Date: Wed, 20 Jun 2007 14:22:23 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: can't suspend on vaio sz (rc4 and rc5 are ok) [was Re: 2.6.22-rc4-mm2]
-Message-ID: <20070620052222.GA4452@inferi.kami.home>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Wed, 20 Jun 2007 01:43:39 -0400
+Date: Wed, 20 Jun 2007 11:20:50 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jan Blunck <j.blunck@tu-harburg.de>
+Subject: [RFC PATCH 0/4] New approach to VFS based union mount
+Message-ID: <20070620055050.GB4267@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.22-rc4-mm2-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
+Hi,
 
-Hello,
-on this vaio sz72b I can't suspend if usb-storage is loaded. Bisecting
-is becoming troublesome as different sets have slightly different
-problems.
-At one point (with the GREGKH usb stuff built) I had the kernel
-reporting it cannot stop the usb-storage thread so I guess that
-something later in the series made things worse (freezable workqueues?).
+The earlier approach to VFS based union mounts posted here didn't work for
+all cases of mounts (specially bind mounts). Hence, I have worked on this
+new approach which is more generic and hopefully should work in most cases.
+This approach fundamentally changes the way union stacks are maintained.
 
-Clues?
--- 
-mattia
-:wq!
+Details of the approach can be found in the accompanying documentation patch.
+Since this is still a work in progress, there are many loose ends. Apart
+from that, I have some questions about the design and implementation aspects,
+which I have raised in the documenation patch. It will be very helpful
+if people who are familiar with VFS and stackable filesystems could review
+this.
+
+This series (on 2622rc4mm2) has the following 4 patches:
+
+1/4 - Union mount documentation.
+2/4 - Mount changes to support union mount.
+3/4 - Lookup changes to support union mount.
+4/4 - Directory listing support for union mounted directories.
+
+Kindly review and send me your feedback.
+
+Regards,
+Bharata.
