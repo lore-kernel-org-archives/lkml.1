@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbXFTBep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbXFTBf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761052AbXFTBep (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 21:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbXFTBei
+	id S1761262AbXFTBf2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 21:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758314AbXFTBfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 21:34:38 -0400
-Received: from smtpout.mac.com ([17.250.248.172]:62835 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757578AbXFTBeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 21:34:37 -0400
-In-Reply-To: <467868CF.30606@mnsu.edu>
-References: <20070618212524.GC16393@cip.informatik.uni-erlangen.de> <Pine.LNX.4.64.0706181617060.18601@schroedinger.engr.sgi.com> <20070619061300.GK16393@cip.informatik.uni-erlangen.de> <Pine.LNX.4.64.0706191215570.7008@schroedinger.engr.sgi.com> <467868CF.30606@mnsu.edu>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E92A0D0D-BC6B-48CB-A99B-875E9BE5A18B@mac.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Thomas Glanzmann <thomas@glanzmann.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: GIT Packages for Debian Etch
-Date: Tue, 19 Jun 2007 21:33:48 -0400
-To: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Tue, 19 Jun 2007 21:35:20 -0400
+Received: from [60.23.248.87] ([60.23.248.87]:42720 "EHLO virgo.fc-cn.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753886AbXFTBfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 21:35:19 -0400
+X-Greylist: delayed 1142 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Jun 2007 21:35:19 EDT
+Date: Wed, 20 Jun 2007 09:17:53 +0800
+From: Qi Yong <qiyong@mail.fc-cn.com>
+To: dtor@mail.ru
+Cc: dmitry.torokhov@gmail.com, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [patch] add printk_ratelimit to atkbd_interrupt
+Message-ID: <20070620011753.GA16692@virgo.fc-cn.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, at 19:37:51, Jeffrey Hundstad wrote:
-> I'm just not going to let this go.  Stable is synonymous with, well  
-> ummm, "stable."  That means that I don't have 3000 changes a month,  
-> it's secure and the unexpected doesn't happen.  It means I can  
-> write a lecture explaining how git works.  ...do updates... then  
-> expect my lecture to still work the next day.  It means writing  
-> local shell scripts and expecting them to work until the NEXT  
-> stable release without changes.  It means knowing what things WILL  
-> break if and when I do go to the next version.
->
-> Stable is a CHOICE not a punishment.
+Add printk_ratelimit() to atkbd_interrupt(). I get "Spurious ACK" messages flushing on my
+screen. This patch helps to read the screen.
 
-With that said; Debian makes it easy to selectively install testing  
-or unstable packages by adding "testing" or "unstable" to your  
-sources.list and putting this in /etc/apt/apt.conf:
-   APT::Default-Release "stable";
-
-Then all apt-based programs will prefer stable packages everywhere  
-possible.  If you explicitly run "apt-get install somepackage/ 
-testing", then it will install the testing version of that package  
-and continue to auto-upgrade it as testing receives updates.
-
-Alternatively, you can "man apt_preferences" and tweak your "/etc/apt/ 
-preferences" file to your heart's content.  This includes things like  
-"Forcibly downgrade packages to the 'local' version if found in my  
-local deb repo", "Prefer stable over testing and unstable", etc.
-
-Cheers,
-Kyle Moffett
-
+Signed-off-by: Qi Yong <qiyong@mail.fc-cn.com>
+--
+diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+index be1fe46..13e6bd4 100644
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -408,9 +408,10 @@ static irqreturn_t atkbd_interrupt(struct serio *serio, unsigned char data,
+ 			goto out;
+ 		case ATKBD_RET_ACK:
+ 		case ATKBD_RET_NAK:
+-			printk(KERN_WARNING "atkbd.c: Spurious %s on %s. "
+-			       "Some program might be trying access hardware directly.\n",
+-			       data == ATKBD_RET_ACK ? "ACK" : "NAK", serio->phys);
++			if (printk_ratelimit())
++				printk(KERN_WARNING "atkbd.c: Spurious %s on %s. "
++				       "Some program might be trying access hardware directly.\n",
++				       data == ATKBD_RET_ACK ? "ACK" : "NAK", serio->phys);
+ 			goto out;
+ 		case ATKBD_RET_HANGEUL:
+ 		case ATKBD_RET_HANJA:
