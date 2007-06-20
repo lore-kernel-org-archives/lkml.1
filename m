@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbXFTX5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbXFTX5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbXFTX5d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbXFTX5M
+	id S1757752AbXFTX5r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbXFTX5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:57:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45897 "EHLO mail.dvmed.net"
+	Wed, 20 Jun 2007 19:57:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45906 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757822AbXFTX5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:57:10 -0400
-Message-ID: <4679BED2.5080608@garzik.org>
-Date: Wed, 20 Jun 2007 19:57:06 -0400
+	id S1757938AbXFTX52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:57:28 -0400
+Message-ID: <4679BEE4.6030107@garzik.org>
+Date: Wed, 20 Jun 2007 19:57:24 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Henne <henne@nachtwindheim.de>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kerneldoc fix in libata
-References: <46778F8A.2080108@nachtwindheim.de>
-In-Reply-To: <46778F8A.2080108@nachtwindheim.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Stas Sergeev <stsp@aknet.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] fix module_param mistake in it821x
+References: <46797505.1030508@aknet.ru>
+In-Reply-To: <46797505.1030508@aknet.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
 X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
@@ -27,26 +28,27 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henne wrote:
-> From: Henrik Kretzschmar <henne@nachtwindheim.de>
+Stas Sergeev wrote:
+> Hello.
 > 
-> Fix parameter name from ata_dev_reread_id() in libata-core.c for kerneldoc.
+> The attached patch fixes a trivial
+> mistake in a MODULE_PARAM_DESC of pata_it821x
+> driver. The parameter name in MODULE_PARAM_DESC
+> should match the one in module_param_named.
 > 
-> Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+> Signed-off-by: Stas Sergeev <stsp@aknet.ru>
 > 
-> ---
 > 
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 047eabd..88e2761 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -3659,7 +3659,7 @@ static int ata_dev_same_device(struct at
+> ------------------------------------------------------------------------
+> 
+> --- a/drivers/ata/pata_it821x.c	2007-04-27 12:46:35.000000000 +0400
+> +++ b/drivers/ata/pata_it821x.c	2007-06-20 18:16:20.000000000 +0400
+> @@ -828,7 +828,7 @@
 >  
->  /**
->   *	ata_dev_reread_id - Re-read IDENTIFY data
-> - *	@adev: target ATA device
-> + *	@dev: target ATA device
->   *	@readid_flags: read ID flags
+>  
+>  module_param_named(noraid, it8212_noraid, int, S_IRUGO);
+> -MODULE_PARM_DESC(it8212_noraid, "Force card into bypass mode");
+> +MODULE_PARM_DESC(noraid, "Force card into bypass mode");
 
 applied
 
