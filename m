@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbXFTXiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbXFTXjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755818AbXFTXiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXFTXiJ
+	id S1756764AbXFTXjA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbXFTXix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:38:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46681 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752585AbXFTXiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:38:08 -0400
-Date: Wed, 20 Jun 2007 19:24:00 -0400
-From: Dave Jones <davej@redhat.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ian McDonald <ian.mcdonald@jandi.co.nz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       William Cohen <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
-Message-ID: <20070620232400.GA18549@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ian McDonald <ian.mcdonald@jandi.co.nz>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Miklos Szeredi <miklos@szeredi.hu>, Ingo Molnar <mingo@elte.hu>,
-	"Darrick J. Wong" <djwong@us.ibm.com>, Andi Kleen <ak@suse.de>,
-	Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-	William Cohen <wcohen@redhat.com>,
-	"S. P. Prasanna" <prasanna@in.ibm.com>,
-	Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-	Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-	Rudolf Marek <r.marek@assembler.cz>,
-	Soeren Sonnenburg <kernel@nn7.de>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-References: <467543FA.60905@googlemail.com> <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com> <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org> <20070620230751.GA15092@redhat.com> <1182381354.2701.4.camel@laptopd505.fenrus.org>
+	Wed, 20 Jun 2007 19:38:53 -0400
+Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:37256
+	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752937AbXFTXiw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:38:52 -0400
+To: "David Schwartz" <davids@webmaster.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <MDEHLPKNGKAHNMBLJOLKIECOEMAC.davids@webmaster.com>
+From: Michael Poole <mdpoole@troilus.org>
+Date: Wed, 20 Jun 2007 19:38:44 -0400
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIECOEMAC.davids@webmaster.com> (David Schwartz's message of "Wed\, 20 Jun 2007 15\:49\:54 -0700")
+Message-ID: <87tzt2qjqz.fsf@graviton.dyn.troilus.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1182381354.2701.4.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 04:15:53PM -0700, Arjan van de Ven wrote:
- > On Wed, 2007-06-20 at 19:07 -0400, Dave Jones wrote:
- > > On Wed, Jun 20, 2007 at 03:38:06PM -0700, Linus Torvalds wrote:
- > > 
- > >  > And yes, that patch already got merged. However, the patch to *allow* 
- > >  > Kprobes with DEBUG_RODATA is not, and will not be. It's not a regression, 
- > >  > and quite frankly, I don't think I would even want that patch.
- > >  > 
- > >  > Kprobes fundamntally disagrees with DEBUG_RODATA, there's no point in 
- > >  > "working around it". Better just admit it.
- > > 
- > > Surely the fundamental disagreement is only due to DEBUG_RODATA
- > > covering write-protection of both .text, and .rodata  ?
- > > I can see value in having a kernel that supports kprobes, whilst
- > > at the same point, raising red flags if something writes into
- > > a const string. With my distro kernel maintainer hat on, I always
- > > hate these 'pick one' decisions, because I always get convincing
- > > arguments from proponents of both sides.
- > > 
- > > Was it always this way?  I thought DEBUG_RODATA initially just
- > > covered, well.. rodata.    And kprobes only wants to change .text
- > > doesn't it ?
- > 
- > no this got "fixed" recently. It used to only cover data.
- > Andi merged a patch to make it cover text too.. imo we should reverse
- > that, or make the check better and not have it cover text if kprobes is
- > active. I can do the later if people are ok with that, it's
- > approximately 3 lines of code.
+David Schwartz writes:
 
-Having the text as a separate option makes sense to me.
-(Or at the least we should rename DEBUG_RODATA, as it's now misleading).
+>> I do not say that the BIOS is doing anything (legally) wrong.  The
+>> wrong act is distributing the binary kernel image without distributing
+>> complete source code for it.
+>
+> Why are you not complaining that Linus does not distribute the keys he uses
+> to sign kernel source distributions? If a digital signature is part of the
+> distribution, why is the key used to produce that signature not part of the
+> distribution?
+>
+> If you can cite some legal reason there is a difference, I would be quite
+> impressed.
+>
+> In any event, the argument is obvious nonsense. The signature is merely
+> aggregated with the kernel. Cooperation, dependent function, and convergent
+> design can't break mere aggregation or you get ridiculous results. (For
+> example, a device shipped with the Linux kernel and some applications would
+> have to GPL all the applications.)
 
-	Dave
+Do you make it a habit to pose ranty questions to people while neither
+attributing their text nor cc'ing them?  Especially when you claim the
+person's argument is "obvious nonsense", it seems quite rude.
 
--- 
-http://www.codemonkey.org.uk
+(Since you have dismissed my argument as nonsense before hearing my
+response, I will not bother answering your question.  Since you are
+acting like a troll, I will dismiss you as one.  Most of this list has
+already dismissed your rather unique -- I would even say frivolous --
+idea of how far "mere aggregation" goes: I, for one, have better
+things to do than explain why a C file is not a "mere aggregation" of
+the functions it contains.)
+
+Michael Poole
