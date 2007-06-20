@@ -1,65 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761857AbXFTUAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbXFTUCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761857AbXFTUAf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbXFTUA2
+	id S1761970AbXFTUCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881AbXFTUCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:00:28 -0400
-Received: from main.gmane.org ([80.91.229.2]:53847 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757054AbXFTUA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:00:27 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Adam Jackson <ajackson@redhat.com>
-Subject: Re: [PATCH] Protection for exploiting null dereference using mmap
-Date: Wed, 20 Jun 2007 19:48:03 +0000 (UTC)
-Message-ID: <loom.20070620T212046-804@post.gmane.org>
-References: <1180561713.3633.27.camel@dhcp231-215.rdu.redhat.com>  <20070603205653.GE25869@devserv.devel.redhat.com>  <1180964306.14220.34.camel@moss-spartans.epoch.ncsc.mil>  <1181075666.3978.31.camel@localhost.localdomain>  <Line.LNX.4.64.0706051658170.23379@d.namei>  <20070605211616.GE23291@devserv.devel.redhat.com> <1181111433.3978.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 66.187.230.200 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070417 Fedora/2.0.0.3-4.fc7 Firefox/2.0.0.3)
+	Wed, 20 Jun 2007 16:02:06 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:52083
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757359AbXFTUCF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 16:02:05 -0400
+Date: Wed, 20 Jun 2007 13:02:13 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Michael Poole <mdpoole@troilus.org>
+cc: Tomas Neme <lacrymology@gmail.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <87fy4ms8qw.fsf@graviton.dyn.troilus.org>
+Message-ID: <Pine.LNX.4.64.0706201300410.30395@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
+ <ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
+ <or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
+ <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
+ <2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
+ <871wg6trnx.fsf@graviton.dyn.troilus.org> <2e6659dd0706201205i52e0b836oe642e2b442e425d7@mail.gmail.com>
+ <87wsxysaad.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201232290.30395@asgard.lang.hm>
+ <87odjas9f7.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201241060.30395@asgard.lang.hm>
+ <87fy4ms8qw.fsf@graviton.dyn.troilus.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris <eparis <at> redhat.com> writes:
-> On Tue, 2007-06-05 at 17:16 -0400, Alan Cox wrote:
-> > On Tue, Jun 05, 2007 at 05:00:51PM -0400, James Morris wrote:
-> > > This should be an unsigned long.
-> > > 
-> > > I wonder if the default should be for this value to be zero (i.e. preserve 
-> > > existing behavior).  It could break binaries, albeit potentially insecure 
-> > 
-> > Agreed - DOSemu type apps and lrmi need to map at zero for vm86
-> 
-> And so it shall be!
+On Wed, 20 Jun 2007, Michael Poole wrote:
 
-X also needs to be able to map at zero for vm86, which makes this a lot less
-useful.  In particular, the interrupt vectors need to point to the right place
-within the VBIOS we're calling into, so we have to be able to map the zero page.
-(And often write to it, if we're posting a non-primary card.)  Obviously this
-isn't so much an issue for non-x86, where you have to use the emulator anyway.
-And I'm pretty convinced that calling vm86 in a SMP environment is just suicide
-so you _ought_ to use the emulator even on real x86.
+> david@lang.hm writes:
+>
+>> On Wed, 20 Jun 2007, Michael Poole wrote:
+>>
+>>> david@lang.hm writes:
+>>>
+>>>> no, saying that the result must be acceptable to other software (in
+>>>> this case the software running in the BIOS) is not part of the source
+>>>> code.
+>>>
+>>> Why not?  The digital signature is a statement (which translates
+>>> roughly to "Tivo approves this") to be used in a computer in order to
+>>> bring about a certain result.  That result is making it boot on the
+>>> PVR.  Source code simply means the original forms or inputs used to
+>>> generate machine-readable statements.
+>>
+>> but the signature isn't part of the kernel, and the code that checks
+>> the signature is completely independant. and finally the PVR functions
+>> are not part of the kernel (and not under the GPL in any case)
+>>
+>> if your argument was true then Oracle releasing a database appliance
+>> would require Oracle to give you the source to their database since
+>> it's part of 'bringing about a certain result' namely operating as a
+>> database server.
+>
+> From the kernel's COPYING file:
+>
+>   NOTE! This copyright does *not* cover user programs that use kernel
+> services by normal system calls - this is merely considered normal use
+> of the kernel, and does *not* fall under the heading of "derived work".
+>
+> See also the portion below.
 
-We've already got the infrastructure in place to completely fake the real mode
-address space for the emulator.  IWBNI we had some way of presenting a set of
-virtual-address-space pages as contiguous to the vm86 task, since if we had that
-we could just malloc 1M, copy in the bits we need, and go.  I don't know if vm86
-mode supports that in silicon; it certainly isn't exposed in the API.  Anyone
-know?
+the PVR software does exactly this, so the functionality as a PVR has 
+nothing to do with the kernel by your own arguments.
 
-Actually it's a little worse than that.  Some chips have an escape hatch where
-they remap banks of registers into the 64k VGA aperture, and the BIOS relies on
-this.  So some of the pages need to be backed by device mappings, and some by
-plain memory.  You'd really need either an array of pointers to userspace pages,
-or a trap handler like how vm86 handles I/O cycles.  Again, I don't know offhand
-whether vm86 can do this, but if it does then fixing X to take advantage of it
-is pretty easy.
+>> if your argument was true then releasing a GPL package for windows
+>> would require that the windows kernel source be released, after it
+>> it's nessasary for 'brining about a certain result' namely letting
+>> your code run.
+>
+> From section 3 of the GPL:
+>
+>  However, as a special exception, the source code distributed need
+>  not include anything that is normally distributed (in either source
+>  or binary form) with the major components (compiler, kernel, and so
+>  on) of the operating system on which the executable runs, unless
+>  that component itself accompanies the executable.
 
-- ajax
+but then how can the kernel impose any restriction on the BIOS? (and 
+remember, you are the one arguing that it somehow does)
 
+David Lang
+
+>> these are both nonsense results.
+>
+> .. which is why they are recognized to be different.
+>
+> Michael Poole
+>
