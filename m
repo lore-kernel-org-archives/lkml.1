@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761937AbXFTDvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761985AbXFTD4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761937AbXFTDvc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 23:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759257AbXFTDvY
+	id S1761985AbXFTD4P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 23:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759637AbXFTDz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 23:51:24 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:25004 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757227AbXFTDvX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 23:51:23 -0400
-Date: Tue, 19 Jun 2007 20:51:58 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Len Brown <lenb@kernel.org>,
-       "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 7/12] acpi: fix another compile warning
-Message-Id: <20070619205158.8d6da762.randy.dunlap@oracle.com>
-In-Reply-To: <20070619204934.f56722a8.randy.dunlap@oracle.com>
-References: <20070619225035.GI5193@alberich.amd.com>
-	<200706192338.02807.lenb@kernel.org>
-	<20070619204934.f56722a8.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 19 Jun 2007 23:55:59 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57786 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757071AbXFTDz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 23:55:59 -0400
+Date: Tue, 19 Jun 2007 22:55:47 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Linus Torvalds <torvalds@osdl.org>
+cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Please pull from 'for_linus' branch
+Message-ID: <Pine.LNX.4.64.0706192241550.13170@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007 20:49:34 -0700 Randy Dunlap wrote:
+Linus,
 
-> On Tue, 19 Jun 2007 23:38:02 -0400 Len Brown wrote:
-> 
-> > On Tuesday 19 June 2007 18:50, Andreas Herrmann wrote:
-> > > Avoid compile warning if !ACPI_BLACKLIST_YEAR
-> > > 
-> > >   CC      drivers/acpi/blacklist.o
-> > >   drivers/acpi/blacklist.c:76:5: warning: "CONFIG_ACPI_BLACKLIST_YEAR" is not defined
-> > 
-> > How were you able to produce a .config with CONFIG_ACPI_BLACKLIST_YEAR not defined?
-> > Can you send it to me?
-> 
-> 'make randconfig' does that kind of thing.  It doesn't enforce/follow
-> "select" clauses.
+Please pull from 'for_linus' branch at
 
-I should have also said:  randconfig is good for detecting some
-missing conditions/configs or missing header files, but if you find one
-that is just plain Invalid (like some of these), just say so
-and do whatever you want with the patch (IMHO of course).
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_linus
 
+To get a fix for 2.6.22 to the rheap allocator that was causing multiple
+instances of the UCC ethernet driver to fail because it was running out of
+memory due to wasting space for aligned requests.
 
-> > thanks,
-> > -Len
-> > 
-> > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > > ---
-> > >  drivers/acpi/blacklist.c |    2 +-
-> > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/drivers/acpi/blacklist.c b/drivers/acpi/blacklist.c
-> > > index 3ec110c..ac96c47 100644
-> > > --- a/drivers/acpi/blacklist.c
-> > > +++ b/drivers/acpi/blacklist.c
-> > > @@ -73,7 +73,7 @@ static struct acpi_blacklist_item acpi_blacklist[] __initdata = {
-> > >  	{""}
-> > >  };
-> > >  
-> > > -#if	CONFIG_ACPI_BLACKLIST_YEAR
-> > > +#if	defined(CONFIG_ACPI_BLACKLIST_YEAR) && CONFIG_ACPI_BLACKLIST_YEAR
-> > >  
-> > >  static int __init blacklist_by_year(void)
-> > >  {
-> > -
+Thanks,
+Kumar.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ arch/powerpc/lib/rheap.c |   48 ++++++++++++++++++++++++++++-------------------
+ 1 file changed, 29 insertions(+), 19 deletions(-)
+
+commit 7c8545e98468c53809fc06788a3b9a34dff05240
+Author: Li Yang <leoli@freescale.com>
+Date:   Mon Jun 18 19:29:21 2007 +0800
+
+    [POWERPC] rheap - eliminates internal fragments caused by alignment
+
+    The patch adds fragments caused by rh_alloc_align() back to free list, instead
+    of allocating the whole chunk of memory.  This will greatly improve memory
+    utilization managed by rheap.
+
+    It solves MURAM not enough problem with 3 UCCs enabled on MPC8323.
+
+    Signed-off-by: Li Yang <leoli@freescale.com>
+    Acked-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
