@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbXFTTpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbXFTTrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758724AbXFTTpZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 15:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbXFTTpQ
+	id S1758869AbXFTTrc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 15:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbXFTTrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 15:45:16 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:49306
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754491AbXFTTpP (ORCPT
+	Wed, 20 Jun 2007 15:47:25 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:36567 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752468AbXFTTrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 15:45:15 -0400
-Date: Wed, 20 Jun 2007 12:45:24 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Michael Poole <mdpoole@troilus.org>
-cc: Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <87odjas9f7.fsf@graviton.dyn.troilus.org>
-Message-ID: <Pine.LNX.4.64.0706201241060.30395@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
- <ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
- <or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
- <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
- <9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
- <2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
- <871wg6trnx.fsf@graviton.dyn.troilus.org> <2e6659dd0706201205i52e0b836oe642e2b442e425d7@mail.gmail.com>
- <87wsxysaad.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201232290.30395@asgard.lang.hm>
- <87odjas9f7.fsf@graviton.dyn.troilus.org>
+	Wed, 20 Jun 2007 15:47:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=EmDfd6mvotmQr1y9KBtnbjSXVpGawd9v7bMioVzqe5QO3ENjgI/XhdnpjRDkuSYwM
+	bb1fNy1pgSTewcUqvb0fQ==
+Date: Wed, 20 Jun 2007 12:43:59 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Robert Richter <robert.richter@amd.com>
+cc: Stephane Eranian <eranian@hpl.hp.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 7/8] 2.6.22-rc3 perfmon2 : Renaming *_k8_* symbols to
+ *_amd64_*
+In-Reply-To: <20070620184154.GH5874@erda.amd.com>
+Message-ID: <alpine.DEB.0.99.0706201243330.4562@chino.kir.corp.google.com>
+References: <20070620182126.248753000@amd.com>
+ <20070620184154.GH5874@erda.amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Michael Poole wrote:
+On Wed, 20 Jun 2007, Robert Richter wrote:
 
-> david@lang.hm writes:
->
->> no, saying that the result must be acceptable to other software (in
->> this case the software running in the BIOS) is not part of the source
->> code.
->
-> Why not?  The digital signature is a statement (which translates
-> roughly to "Tivo approves this") to be used in a computer in order to
-> bring about a certain result.  That result is making it boot on the
-> PVR.  Source code simply means the original forms or inputs used to
-> generate machine-readable statements.
+> This patch renames *_k8_* symbols to *_amd64_*.
+> 
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> 
+> Index: linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
+> ===================================================================
+> --- linux-2.6.22-rc3.orig/arch/x86_64/perfmon/perfmon_k8.c
+> +++ linux-2.6.22-rc3/arch/x86_64/perfmon/perfmon_k8.c
+> @@ -36,7 +36,7 @@ static int force_nmi;
+>  MODULE_PARM_DESC(force_nmi, "bool: force use of NMI for PMU interrupt");
+>  module_param(force_nmi, bool, 0600);
+>  
+> -static struct pfm_arch_pmu_info pfm_k8_pmu_info = {
+> +static struct pfm_arch_pmu_info pfm_amd64_pmu_info = {
+>  	.pmc_addrs = {
+>  /* pmc0  */	{{MSR_K7_EVNTSEL0, 0}, 0, PFM_REGT_EN},
+>  /* pmc1  */	{{MSR_K7_EVNTSEL1, 0}, 1, PFM_REGT_EN},
+> @@ -96,7 +96,7 @@ static struct pfm_arch_pmu_info pfm_k8_p
+>  #define PFM_AMD64_IBSOPCTL_NO64		PFM_AMD64_IBSOPEN
+>  #define PFM_AMD64_IBSOPCTL_RSVD		(~((1ULL<<16)-1))
+>  
+> -static struct pfm_reg_desc pfm_k8_pmc_desc[]={
+> +static struct pfm_reg_desc pfm_amd64_pmc_desc[]={
+>  /* pmc0  */ PMC_D(PFM_REG_I64, "PERFSEL0", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL0),
+>  /* pmc1  */ PMC_D(PFM_REG_I64, "PERFSEL1", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL1),
+>  /* pmc2  */ PMC_D(PFM_REG_I64, "PERFSEL2", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL2),
 
-but the signature isn't part of the kernel, and the code that checks the 
-signature is completely independant. and finally the PVR functions are not 
-part of the kernel (and not under the GPL in any case)
-
-if your argument was true then Oracle releasing a database appliance would 
-require Oracle to give you the source to their database since it's part of 
-'bringing about a certain result' namely operating as a database server.
-
-if your argument was true then releasing a GPL package for windows would 
-require that the windows kernel source be released, after it it's 
-nessasary for 'brining about a certain result' namely letting your code 
-run.
-
-these are both nonsense results.
-
-David Lang
+Please fix the spacing here while you're at it.  Thanks for doing it in 
+the other patches in this series.
