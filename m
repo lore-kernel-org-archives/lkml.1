@@ -1,113 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbXFTABa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbXFTAKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759540AbXFTABa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Jun 2007 20:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbXFTABX
+	id S1758645AbXFTAKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Jun 2007 20:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbXFTAKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Jun 2007 20:01:23 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59837 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755215AbXFTABW (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 19 Jun 2007 20:01:22 -0400
-Date: Wed, 20 Jun 2007 10:01:09 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Greaves <david@dgreaves.com>
-Cc: xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       David Chinner <dgc@sgi.com>
-Subject: Re: xfs freeze/umount problem
-Message-ID: <20070620000109.GU86004887@sgi.com>
-References: <46778F60.5090107@dgreaves.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46778F60.5090107@dgreaves.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 19 Jun 2007 20:10:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36960 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752371AbXFTAKG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Jun 2007 20:10:06 -0400
+Date: Tue, 19 Jun 2007 17:09:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Carlo Wood <carlo@alinoe.com>
+cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, zhenyu.z.wang@intel.com, lethal@linux-sh.org,
+       y-goto@jp.fujitsu.com
+Subject: Re: 2.6.22-rc5 regression
+In-Reply-To: <20070619233716.GA5779@alinoe.com>
+Message-ID: <alpine.LFD.0.98.0706191649160.3593@woody.linux-foundation.org>
+References: <20070617182254.GA17595@alinoe.com> <20070617195805.GA6125@alinoe.com>
+ <20070617214905.GA6207@alinoe.com> <alpine.LFD.0.98.0706180950130.14121@woody.linux-foundation.org>
+ <20070618181225.GB8054@alinoe.com> <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org>
+ <20070618195415.GA7481@alinoe.com> <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org>
+ <20070618225009.GE13538@alinoe.com> <alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org>
+ <20070619233716.GA5779@alinoe.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 19, 2007 at 09:10:08AM +0100, David Greaves wrote:
-> David Chinner wrote:
-> > FWIW, I'm on record stating that "sync" is not sufficient to quiesce an 
-> XFS
-> > filesystem for a suspend/resume to work safely and have argued that the 
-> only
-> > safe thing to do is freeze the filesystem before suspend and thaw it after
-> > resume.
+
+
+On Wed, 20 Jun 2007, Carlo Wood wrote:
+
+> On Mon, Jun 18, 2007 at 03:57:51PM -0700, Linus Torvalds wrote:
+> > > I'll redo the bisect with this new git.
+> > 
+> > Thanks,
+> > 		Linus
 > 
-> Whilst testing a potential bug in another thread I accidentally found that 
-> unmounting a filesystem that I'd just frozen would hang.
+> Well, I did a new 'git bisect' - and if you ask me - it is still broken.
 > 
-> As the saying goes: "Well, duh!!"
+> It's conclusion was this time:
+> 
+> hikaru:/usr/src/kernel/git/linux-2.6>git bisect bad
+> 01da41b86f6e5f9a724e20a63f093d77e37d8056 is first bad commit
+> 
+>     parisc: make command_line[] static
 
-<grin>
+Heh.
 
-It's the s_umount semaphore that is the problem here - freeze_bdev()
-does a get_super() call which does a down_read(&sb->s_umount) and
-the corresponding up_read() call does not occur until the filesystem
-is thawed.
+Yeah, at this point I think we can pretty much guarantee that your problem 
+is one of two cases:
 
-So yes, your umount will hang until you thaw the fileystem.
+ - either a bit random, and depends on some timing thing, and one of the 
+   kernels you marked "good" wasn't really.
 
-As i just tried this, I can't unfreeze the filesystem because it's
-been removed from /proc/mounts already and so xfs_freeze -u aborts:
+   It's not likely that you marked a good kernel bad, of course, since 
+   with a good kernel, everything should have always worked, but with a 
+   bad kernel and a bug that isn't entirely reproducible, you'd mark it 
+   "good" by mistake - because it just randomly didn't show the problem.
 
-budgie:~ # xfs_freeze -u /dev/sdb8
-xfs_freeze: specified file ["/dev/sdb8"] is not on an XFS filesystem
-budgie:~ #
+OR
 
-> I could eventually run an unfreeze but the mount was still hung. This lead 
-> to an unclean shutdown.
+ - we actually have two different commits that introduce the problem for 
+   you, and it comes and goes, and the bisection doesn't work, because 
+   there isn't a clear "this side works, that other side does not" 
+   situation.
 
-So I couldn't reproduce the unclean shutdown.
+For example, later on you say:
 
-> OK, it may not be bright but it seems like this shouldn't happen; umount 
-> should either unfreeze and work or fail ("Attempt to umount a frozen 
-> filesystem.") if the fs is frozen.
+> Personally I am convinced that the real problem is with
+> 8888985144db8f4cb7e56154b31bdf233d3550bf
 
-IMO, an unmount of a frozen fileystem should simply return EBUSY.
+but if you look at your commit log, you have:
 
-> Is this a kernel bug/misfeature or a (u)mount one?
+> # bad: [25971f68d392f1816e21520e9e59648403b0bdad] [PARISC] fix section
+> # mismatch in ccio-dma
+> git-bisect bad 25971f68d392f1816e21520e9e59648403b0bdad
 
-Kernel bug. umount should know nothing about frozen filesystems...
+Notice? You said that 25971f68d392f1816e21520e9e59648403b0bdad was bad, 
+but that is *before_ the 8888985144db8f4cb7e56154b31bdf233d3550bf commit. 
+Do a
 
-Maybe something like th patch below needs to be done to prvent
-the hang....
+	gitk 25971f68d3..8888985144
 
-Cheers,
+to see that part of the history.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+So maybe you didn't test that kernel properly? And maybe it really is 
+random, and something has happened that just makes it happen more often?
 
-Don't try to unmount a frozen filesystem as the unmount will hang
-waiting on the s_umount semaphore held by the freeze and you may not
-be able to unfreeze the filesystem to allow the umount to proceed.
+Also, some *really* nasty bugs end up being about bad initialization, and 
+it turns out that what happens more is not which kernel you run, but what 
+the *previous* kernel you ran is, because it left some device driver state 
+that the bug doesn't clean up!
 
-Signed-Off-By: Dave Chinner <dgc@sgi.com>
+Anyway, can you try that 25971f68d3 kernel one more time? You marked it 
+bad, but if that kernel is bad, then the commit you are pointing to is 
+*not* the culprit.
 
----
- fs/namespace.c |    7 +++++++
- 1 file changed, 7 insertions(+)
-
-Index: 2.6.x-xfs-new/fs/namespace.c
-===================================================================
---- 2.6.x-xfs-new.orig/fs/namespace.c	2007-05-29 16:17:59.000000000 +1000
-+++ 2.6.x-xfs-new/fs/namespace.c	2007-06-20 09:57:21.310048007 +1000
-@@ -545,6 +545,13 @@ static int do_umount(struct vfsmount *mn
- 	int retval;
- 	LIST_HEAD(umount_list);
- 
-+	/*
-+	 * don't try to unmount frozen filesystems as we'll
-+	 * hang on the s_umount held by the freeze a bit later.
-+	 */
-+	if (sb->s_frozen != SB_UNFROZEN)
-+		return -EBUSY;
-+
- 	retval = security_sb_umount(mnt, flags);
- 	if (retval)
- 		return retval;
+			Linus
