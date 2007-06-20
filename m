@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbXFTW4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbXFTW5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbXFTW4N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 18:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbXFTWz6
+	id S1757117AbXFTW5X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 18:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbXFTW5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 18:55:58 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44324 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751541AbXFTWz5 (ORCPT
+	Wed, 20 Jun 2007 18:57:14 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:44836 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbXFTW5M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 18:55:57 -0400
-Date: Wed, 20 Jun 2007 15:54:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ian McDonald <ian.mcdonald@jandi.co.nz>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       William Cohen <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
-In-Reply-To: <5640c7e00706201541g3ecaf8c5i524d8b464d8fcc2d@mail.gmail.com>
-Message-ID: <alpine.LFD.0.98.0706201550480.3593@woody.linux-foundation.org>
-References: <467543FA.60905@googlemail.com> 
- <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com> 
- <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
- <5640c7e00706201541g3ecaf8c5i524d8b464d8fcc2d@mail.gmail.com>
+	Wed, 20 Jun 2007 18:57:12 -0400
+Message-ID: <4679B0C5.3030102@zytor.com>
+Date: Wed, 20 Jun 2007 15:57:09 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: chuck.lever@oracle.com
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
+ through other means
+References: <467994BD.6000403@zytor.com> <20070620210343.GQ21478@ftp.linux.org.uk> <4679AB39.4010909@oracle.com> <4679AD0F.3040207@zytor.com> <4679AEA7.8050806@oracle.com>
+In-Reply-To: <4679AEA7.8050806@oracle.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 21 Jun 2007, Ian McDonald wrote:
+Chuck Lever wrote:
+> The advantage is that it doesn't have strong user space dependencies on
+> its format like /proc/mounts does.
 > 
-> It depends on the purpose of DEBUG_RODATA.  If DEBUG_RODATA was for
-> security reasons then I agree, but it seems to be more to catch
-> accidental writes.
+> If you have NFS mount points, you will see that it includes a great deal
+> of additional information about each mount.
 
-Well, I'd say that it is *one* tool for debugging.
+OK, I see now:
+device raidtest:/export mounted on /net/raidtest/export with fstype nfs
+statvers=1.0
+        opts:
+rw,vers=3,rsize=131072,wsize=131072,acregmin=3,acregmax=60,acdirmin=30,acdirmax=60,hard,proto=tcp,timeo=600,retrans=2,sec=sys
+        age:    5
+        caps:   caps=0x9,wtmult=4096,dtsize=4096,bsize=0,namelen=255
+        sec:    flavor=1,pseudoflavor=1
+        events: 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+        bytes:  0 0 0 0 0 0 0 0
+        RPC iostats version: 1.0  p/v: 100003/3 (nfs)
+        xprt:   tcp 686 0 2 0 5 8 8 0 8 0
+        per-op statistics
+                NULL: 0 0 0 0 0 0 0 0
+             GETATTR: 2 2 0 264 224 1 0 1
+             SETATTR: 0 0 0 0 0 0 0 0
+              LOOKUP: 0 0 0 0 0 0 0 0
+              ACCESS: 1 1 0 116 120 0 0 0
+            READLINK: 0 0 0 0 0 0 0 0
+                READ: 0 0 0 0 0 0 0 0
+               WRITE: 0 0 0 0 0 0 0 0
+              CREATE: 0 0 0 0 0 0 0 0
+               MKDIR: 0 0 0 0 0 0 0 0
+             SYMLINK: 0 0 0 0 0 0 0 0
+               MKNOD: 0 0 0 0 0 0 0 0
+              REMOVE: 0 0 0 0 0 0 0 0
+               RMDIR: 0 0 0 0 0 0 0 0
+              RENAME: 0 0 0 0 0 0 0 0
+                LINK: 0 0 0 0 0 0 0 0
+             READDIR: 0 0 0 0 0 0 0 0
+         READDIRPLUS: 0 0 0 0 0 0 0 0
+              FSSTAT: 1 1 0 132 84 0 1 1
+              FSINFO: 1 1 0 132 80 0 0 0
+            PATHCONF: 0 0 0 0 0 0 0 0
+              COMMIT: 0 0 0 0 0 0 0 0
 
-Now, Kprobes is another tool - and I'm just saying that I don't see why 
-you should really expect to break one tool with the other. They take 
-different approaches.
+This format is just awful for parsing.  It's pretty clearly totally
+ad-hoc.  It's not even self-consistent (it uses different separators,
+etc, in the same file!)  It's reasonably compact for human consumption,
+but it doesn't show what the arrays mean.
 
-And yes, sometimes debugging *does* change what it debugs. In timing, if 
-nothing else, but also in the kinds of things you can do. For example, we 
-don't allow slab redzoning on data structures that have alignment 
-restrictions not compatible with the redzoning, and I'd argue that this is 
-more of the same: we just should not do DEBUG_RODATA if you expect to 
-change read-only data.
+Heck, XML would have been better than this mess...
 
-There's just no *point*. 
+	-hpa
 
-		Linus
