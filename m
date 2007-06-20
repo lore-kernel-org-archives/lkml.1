@@ -1,82 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbXFTNhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbXFTNhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbXFTNhD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 09:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbXFTNgw
+	id S1757275AbXFTNhz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 09:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXFTNho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 09:36:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58234 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087AbXFTNgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 09:36:51 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       Steven Whitehouse <swhiteho@redhat.com>, Andi Kleen <ak@suse.de>,
-       Shai Fultheim <shai@scalex86.org>,
-       Ravikiran Thirumalai <kiran@scalex86.org>
-Subject: Re: [PATCH 7/12] acpi: fix another compile warning
-Date: Wed, 20 Jun 2007 09:36:30 -0400
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20070619225035.GI5193@alberich.amd.com> <200706192338.02807.lenb@kernel.org> <20070620084911.GO5193@alberich.amd.com>
-In-Reply-To: <20070620084911.GO5193@alberich.amd.com>
+	Wed, 20 Jun 2007 09:37:44 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:51322 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751876AbXFTNhm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 09:37:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DZsRCVsB/l1tsgYbG17ZE6uwEmPQsCwUQd5er7OrheU9U4ShZyJNDgVGHCBk2PZuLJ13k3TKjORiOvuz9estdYi2ClepMRreYSniIFPukjt2xmIU8PzjW/6RQC5mE/LRWQpqxG7lcekiMyDSAwRhhH5AdeJHYJywGrCI/VCamAY=
+Message-ID: <6bffcb0e0706200637m33b02ea7le7c8f64c66e159b2@mail.gmail.com>
+Date: Wed, 20 Jun 2007 15:37:41 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Stephen Hemminger" <shemminger@linux-foundation.org>
+Subject: Re: [2/2] 2.6.22-rc5: known regressions with patches
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Dave Airlie" <airlied@linux.ie>,
+       "Andrea Righi" <righiandr@users.sourceforge.net>,
+       Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       "Samuel Ortiz" <samuel@sortiz.org>,
+       "Andrey Borzenkov" <arvidjaar@mail.ru>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "Chad Tindel" <ctindel@users.sourceforge.net>,
+       "Dan Aloni" <da-x@monatomic.org>, "Jay Vosburgh" <fubar@us.ibm.com>,
+       "Stephen Smalley" <sds@tycho.nsa.gov>,
+       "James Morris" <jmorris@namei.org>,
+       "Eric Paris" <eparis@parisplace.org>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-usb-devel@lists.sourceforge.net,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Paulo Pereira" <pfmp.404@gmail.com>,
+       "Alan Stern" <stern@rowland.harvard.edu>
+In-Reply-To: <20070618100905.7fc1176c@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706200936.31236.lenb@kernel.org>
+References: <4675430B.2000304@googlemail.com> <46754400.2080101@googlemail.com>
+	 <20070618100905.7fc1176c@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 June 2007 04:49, Andreas Herrmann wrote:
-> On Tue, Jun 19, 2007 at 11:38:02PM -0400, Len Brown wrote:
-> > On Tuesday 19 June 2007 18:50, Andreas Herrmann wrote:
-> > > Avoid compile warning if !ACPI_BLACKLIST_YEAR
-> > > 
-> > >   CC      drivers/acpi/blacklist.o
-> > >   drivers/acpi/blacklist.c:76:5: warning: "CONFIG_ACPI_BLACKLIST_YEAR" is not defined
-> > 
-> > How were you able to produce a .config with CONFIG_ACPI_BLACKLIST_YEAR not defined?
-> 
-> Initially I used randconfig. But you can easily create it using
-> "make menuconfig", too.
-> 
-> Just do "make mrproper && make menuconfig" and now
-> deselect CONFIG_PM. On x86_64 ACPI keeps enabled by default.
+On 18/06/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+> On Sun, 17 Jun 2007 16:24:00 +0200
+> Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+>
+> > Hi all,
+> >
+> > Here is a list of some known regressions in 2.6.22-rc5
+> > with patches available.
+> >
+> > Feel free to add new regressions/remove fixed etc.
+> > http://kernelnewbies.org/known_regressions
+> >
+> >
+> >
+> > Memory management
+> >
+> > Subject    : bug in i386 MTRR initialization
+> > References : http://lkml.org/lkml/2007/5/19/93
+> > Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
+> > Status     : patch available
+> >
+> >
+> >
+> > Networking
+> > Subject    : commit 9093bbb2d96d0184f037cea9b4e952a44ebe7c32 broke the bonding driver
+> > References : http://lkml.org/lkml/2007/6/13/65
+> > Submitter  : Dan Aloni <da-x@monatomic.org>
+> > Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
+> > Status     : patch available
+> >              (I cannot find it in archives. Stephen, please resend the patch)
+> >
+>
+> http://www.mail-archive.com/netdev@vger.kernel.org/msg40352.html
 
-As CONFIG_ACPI depends on CONFIG_PM, then if you are able to end up
-with a config having ACPI && !PM, then the Kconfig system is broken.
+Thanks!
 
-The brokeness is x86_64 specific, and results from the "select ACPI" below.
+Regards,
+Michal
 
-Please test if this single patch fixes all your multiple ACPI related build errors.
-
-I fear, however, that this patch defeats the purpose of 
-b0bd35e622ffbda2c01dc67a0381c6a18817a29a -- which was to make selecting
-NUMA more user-friendly.  So it might make more sense to simply revert that
-patch entirely.
-
-The underlying problem is that Kconfig doesn't support using select
-on targets which themselves have dependencies.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
-
-
-diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-index 5ce9443..e9d7767 100644
---- a/arch/x86_64/Kconfig
-+++ b/arch/x86_64/Kconfig
-@@ -364,9 +364,9 @@ config NODES_SHIFT
- config X86_64_ACPI_NUMA
-        bool "ACPI NUMA detection"
-        depends on NUMA
--       select ACPI 
-+       depends on ACPI 
- 	select PCI
--       select ACPI_NUMA
-+       depends on ACPI_NUMA
-        default y
-        help
- 	 Enable ACPI SRAT based node topology detection.
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
