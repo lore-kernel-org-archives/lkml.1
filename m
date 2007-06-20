@@ -1,381 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbXFTRJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbXFTRLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbXFTRJe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXFTRJZ
+	id S1756747AbXFTRLp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbXFTRLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:09:25 -0400
-Received: from mba.ocn.ne.jp ([122.1.175.29]:52177 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753640AbXFTRJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:09:24 -0400
-Date: Thu, 21 Jun 2007 02:10:01 +0900 (JST)
-Message-Id: <20070621.021001.126141525.anemo@mba.ocn.ne.jp>
-To: a.zummo@towertech.it
-Cc: linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com, ab@mycable.de,
-       mgreer@mvista.com, khali@linux-fr.org, david-b@pacbell.net
-Subject: [PATCH 2/2] rtc: watchdog support for rtc-m41t80 driver
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 20 Jun 2007 13:11:37 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36324 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753252AbXFTRLg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 13:11:36 -0400
+Date: Wed, 20 Jun 2007 18:16:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Helge Hafting" <helge.hafting@aitel.hist.no>,
+       "Alexandre Oliva" <aoliva@redhat.com>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Chris Friesen" <cfriesen@nortel.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, "Tarkan Erimer" <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070620181626.1e70b4f0@the-village.bc.nu>
+In-Reply-To: <161717d50706200958o53ae986fv635e18b9b6a17e85@mail.gmail.com>
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	<4671B734.1040401@nortel.com>
+	<orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706142155.34298.dhazelton@enter.net>
+	<or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org>
+	<46791A35.4000009@aitel.hist.no>
+	<alpine.LFD.0.98.0706200930070.3593@woody.linux-foundation.org>
+	<161717d50706200958o53ae986fv635e18b9b6a17e85@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add a watchdog driver interface to rtc-m41t80 driver.  This
-is derived from works by Alexander Bigga <ab@mycable.de>
+> constraints it's valid for a copyright holder to try to enforce w/ a
+> license -- I think it's immoral for an employer to force an employee
+> to toil at a meaningless, soul-crushing job for the vast majority of
+> one's single, short existence if they could make it more enjoyable,
+> but I'd hate to see someone try to enforce that with a license (I'm
+> happy telling a person in that situation to "just quit" just as you
+> tell people "just don't buy it"). To call people who draw the line in
+> a different place than you hypocrites is BS.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Signed-off-by: Alexander Bigga <ab@mycable.de>
----
-Changes from previous version (rtc-m41t8xx.c):
+Very poor example. In many parts of the world "Just quit" is "just starve
+to death".
 
-* Change the name. (rtc-m41txx to rtc-m41t80)
-* Fix ideneify field of watchdog_info.
-* Use C99 initializer for watchdog_info.
+And guess what - brand owners do use the rights to try and stop that kind
+of abuse with varying degrees of success. The 'fair trade' logo is
+controlled this way. Many companies do their best not to license
+production of goods to sweat shops and child slaves. It's considered
+morally correct and companies get pounded by the public and lose business
+when they fail to police these restrictions.
 
- drivers/rtc/Kconfig      |    7 +
- drivers/rtc/rtc-m41t80.c |  288 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 295 insertions(+), 0 deletions(-)
+So please DON'T equate the two. Tivo is a minor control argument about a
+silly little TV recording box. Employee rights is a matter of life, death
+and slavery for many many people.
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 03d2b1d..bf3836e 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -294,6 +294,13 @@ config RTC_DRV_M41T80
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-m41t80.
- 
-+config RTC_DRV_M41T80_WDT
-+	bool "ST M41T80 series RTC watchdog timer"
-+	depends on RTC_DRV_M41T80
-+	help
-+	  If you say Y here you will get support for the
-+	  watchdog timer in ST M41T80 RTC chips series.
-+
- config RTC_DRV_M48T86
- 	tristate "ST M48T86/Dallas DS12887"
- 	depends on RTC_CLASS
-diff --git a/drivers/rtc/rtc-m41t80.c b/drivers/rtc/rtc-m41t80.c
-index cc773ad..d870dba 100644
---- a/drivers/rtc/rtc-m41t80.c
-+++ b/drivers/rtc/rtc-m41t80.c
-@@ -21,6 +21,13 @@
- #include <linux/rtc.h>
- #include <linux/bcd.h>
- #include <linux/m41t80.h>
-+#ifdef CONFIG_RTC_DRV_M41T80_WDT
-+#include <linux/miscdevice.h>
-+#include <linux/watchdog.h>
-+#include <linux/reboot.h>
-+#include <linux/fs.h>
-+#include <linux/ioctl.h>
-+#endif
- 
- #define M41T80_REG_SSEC	0
- #define M41T80_REG_SEC	1
-@@ -411,6 +418,268 @@ static int m41t80_sysfs_register(struct device *dev)
- }
- #endif
- 
-+#ifdef CONFIG_RTC_DRV_M41T80_WDT
-+/*
-+ *****************************************************************************
-+ *
-+ * Watchdog Driver
-+ *
-+ *****************************************************************************
-+ */
-+static struct i2c_client *save_client;
-+
-+/* Default margin */
-+#define WD_TIMO 60		/* 1..31 seconds */
-+
-+static int wdt_margin = WD_TIMO;
-+module_param(wdt_margin, int, 0);
-+MODULE_PARM_DESC(wdt_margin, "Watchdog timeout in seconds (default 60s)");
-+
-+static unsigned long wdt_is_open;
-+static int boot_flag;
-+
-+/**
-+ *	wdt_ping:
-+ *
-+ *	Reload counter one with the watchdog timeout. We don't bother reloading
-+ *	the cascade counter.
-+ */
-+static void wdt_ping(void)
-+{
-+	unsigned char i2c_data[2];
-+	struct i2c_msg msgs1[1] = {
-+		{
-+			.addr	= save_client->addr,
-+			.flags	= 0,
-+			.len	= 2,
-+			.buf	= i2c_data,
-+		},
-+	};
-+	i2c_data[0] = 0x09;		/* watchdog register */
-+
-+	if (wdt_margin > 31)
-+		i2c_data[1] = (wdt_margin & 0xFC) | 0x83; /* resolution = 4s */
-+	else
-+		/*
-+		 * WDS = 1 (0x80), mulitplier = WD_TIMO, resolution = 1s (0x02)
-+		 */
-+		i2c_data[1] = wdt_margin<<2 | 0x82;
-+
-+	i2c_transfer(save_client->adapter, msgs1, 1);
-+}
-+
-+/**
-+ *	wdt_disable:
-+ *
-+ *	disables watchdog.
-+ */
-+static void wdt_disable(void)
-+{
-+	unsigned char i2c_data[2], i2c_buf[0x10];
-+	struct i2c_msg msgs0[2] = {
-+		{
-+			.addr	= save_client->addr,
-+			.flags	= 0,
-+			.len	= 1,
-+			.buf	= i2c_data,
-+		},
-+		{
-+			.addr	= save_client->addr,
-+			.flags	= I2C_M_RD,
-+			.len	= 1,
-+			.buf	= i2c_buf,
-+		},
-+	};
-+	struct i2c_msg msgs1[1] = {
-+		{
-+			.addr	= save_client->addr,
-+			.flags	= 0,
-+			.len	= 2,
-+			.buf	= i2c_data,
-+		},
-+	};
-+
-+	i2c_data[0] = 0x09;
-+	i2c_transfer(save_client->adapter, msgs0, 2);
-+
-+	i2c_data[0] = 0x09;
-+	i2c_data[1] = 0x00;
-+	i2c_transfer(save_client->adapter, msgs1, 1);
-+}
-+
-+/**
-+ *	wdt_write:
-+ *	@file: file handle to the watchdog
-+ *	@buf: buffer to write (unused as data does not matter here
-+ *	@count: count of bytes
-+ *	@ppos: pointer to the position to write. No seeks allowed
-+ *
-+ *	A write to a watchdog device is defined as a keepalive signal. Any
-+ *	write of data will do, as we we don't define content meaning.
-+ */
-+static ssize_t wdt_write(struct file *file, const char __user *buf,
-+			 size_t count, loff_t *ppos)
-+{
-+	/*  Can't seek (pwrite) on this device
-+	if (ppos != &file->f_pos)
-+	return -ESPIPE;
-+	*/
-+	if (count) {
-+		wdt_ping();
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static ssize_t wdt_read(struct file *file, char __user *buf,
-+			size_t count, loff_t *ppos)
-+{
-+	return 0;
-+}
-+
-+/**
-+ *	wdt_ioctl:
-+ *	@inode: inode of the device
-+ *	@file: file handle to the device
-+ *	@cmd: watchdog command
-+ *	@arg: argument pointer
-+ *
-+ *	The watchdog API defines a common set of functions for all watchdogs
-+ *	according to their available features. We only actually usefully support
-+ *	querying capabilities and current status.
-+ */
-+static int wdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
-+		     unsigned long arg)
-+{
-+	int new_margin, rv;
-+	static struct watchdog_info ident = {
-+		.options = WDIOF_POWERUNDER | WDIOF_KEEPALIVEPING |
-+			WDIOF_SETTIMEOUT,
-+		.firmware_version = 1,
-+		.identity = "M41T80 WTD"
-+	};
-+
-+	switch (cmd) {
-+	case WDIOC_GETSUPPORT:
-+		return copy_to_user((struct watchdog_info __user *)arg, &ident,
-+				    sizeof(ident)) ? -EFAULT : 0;
-+
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		return put_user(boot_flag, (int __user *)arg);
-+	case WDIOC_KEEPALIVE:
-+		wdt_ping();
-+		return 0;
-+	case WDIOC_SETTIMEOUT:
-+		if (get_user(new_margin, (int __user *)arg))
-+			return -EFAULT;
-+		/* Arbitrary, can't find the card's limits */
-+		if (new_margin < 1 || new_margin > 124)
-+			return -EINVAL;
-+		wdt_margin = new_margin;
-+		wdt_ping();
-+		/* Fall */
-+	case WDIOC_GETTIMEOUT:
-+		return put_user(wdt_margin, (int __user *)arg);
-+
-+	case WDIOC_SETOPTIONS:
-+		if (copy_from_user(&rv, (int __user *)arg, sizeof(int)))
-+			return -EFAULT;
-+
-+		if (rv & WDIOS_DISABLECARD) {
-+			printk(KERN_INFO
-+			       "rtc-m41t80: disable watchdog\n");
-+			wdt_disable();
-+		}
-+
-+		if (rv & WDIOS_ENABLECARD) {
-+			printk(KERN_INFO
-+			       "rtc-m41t80: enable watchdog\n");
-+			wdt_ping();
-+		}
-+
-+		return -EINVAL;
-+	}
-+	return -ENOTTY;
-+}
-+
-+/**
-+ *	wdt_open:
-+ *	@inode: inode of device
-+ *	@file: file handle to device
-+ *
-+ */
-+static int wdt_open(struct inode *inode, struct file *file)
-+{
-+	if (MINOR(inode->i_rdev) == WATCHDOG_MINOR) {
-+		if (test_and_set_bit(0, &wdt_is_open))
-+			return -EBUSY;
-+		/*
-+		 *	Activate
-+		 */
-+		wdt_is_open = 1;
-+		return 0;
-+	}
-+	return -ENODEV;
-+}
-+
-+/**
-+ *	wdt_close:
-+ *	@inode: inode to board
-+ *	@file: file handle to board
-+ *
-+ */
-+static int wdt_release(struct inode *inode, struct file *file)
-+{
-+	if (MINOR(inode->i_rdev) == WATCHDOG_MINOR)
-+		clear_bit(0, &wdt_is_open);
-+	return 0;
-+}
-+
-+/**
-+ *	notify_sys:
-+ *	@this: our notifier block
-+ *	@code: the event being reported
-+ *	@unused: unused
-+ *
-+ *	Our notifier is called on system shutdowns. We want to turn the card
-+ *	off at reboot otherwise the machine will reboot again during memory
-+ *	test or worse yet during the following fsck. This would suck, in fact
-+ *	trust me - if it happens it does suck.
-+ */
-+static int wdt_notify_sys(struct notifier_block *this, unsigned long code,
-+			  void *unused)
-+{
-+	if (code == SYS_DOWN || code == SYS_HALT)
-+		/* Disable Watchdog */
-+		wdt_disable();
-+	return NOTIFY_DONE;
-+}
-+
-+static const struct file_operations wdt_fops = {
-+	.owner	= THIS_MODULE,
-+	.read	= wdt_read,
-+	.ioctl	= wdt_ioctl,
-+	.write	= wdt_write,
-+	.open	= wdt_open,
-+	.release = wdt_release,
-+};
-+
-+static struct miscdevice wdt_dev = {
-+	.minor = WATCHDOG_MINOR,
-+	.name = "watchdog",
-+	.fops = &wdt_fops,
-+};
-+
-+/*
-+ *	The WDT card needs to learn about soft shutdowns in order to
-+ *	turn the timebomb registers off.
-+ */
-+static struct notifier_block wdt_notifier = {
-+	.notifier_call = wdt_notify_sys,
-+};
-+#endif /* CONFIG_RTC_DRV_M41T80_WDT */
-+
- /*
-  *****************************************************************************
-  *
-@@ -518,6 +787,19 @@ static int m41t80_probe(struct i2c_client *client)
- 	if (rc)
- 		goto exit;
- 
-+#ifdef CONFIG_RTC_DRV_M41T80_WDT
-+	if (chip->features & M41T80_FEATURE_HT) {
-+		rc = misc_register(&wdt_dev);
-+		if (rc)
-+			goto exit;
-+		rc = register_reboot_notifier(&wdt_notifier);
-+		if (rc) {
-+			misc_deregister(&wdt_dev);
-+			goto exit;
-+		}
-+		save_client = client;
-+	}
-+#endif
- 	return 0;
- 
- st_err:
-@@ -544,6 +826,12 @@ static int m41t80_remove(struct i2c_client *client)
- 	struct m41t80_data *clientdata = i2c_get_clientdata(client);
- 	struct rtc_device *rtc = clientdata->rtc;
- 
-+#ifdef CONFIG_RTC_DRV_M41T80_WDT
-+	if (clientdata->chip->features & M41T80_FEATURE_HT) {
-+		misc_deregister(&wdt_dev);
-+		unregister_reboot_notifier(&wdt_notifier);
-+	}
-+#endif
- 	if (rtc)
- 		rtc_device_unregister(rtc);
- 	kfree(clientdata);
+Alan
