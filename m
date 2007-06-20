@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752147AbXFTVnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbXFTVut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752147AbXFTVnI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 17:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbXFTVm4
+	id S1753160AbXFTVut (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 17:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbXFTVuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 17:42:56 -0400
-Received: from gateway12.iders.ca ([206.45.72.61]:56509 "EHLO koko.iders.ca"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751326AbXFTVmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 17:42:55 -0400
-Message-ID: <46799F5B.8090101@iders.ca>
-Date: Wed, 20 Jun 2007 16:42:51 -0500
-From: Andrew McKay <amckay@iders.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
-MIME-Version: 1.0
-To: david@lang.hm
-CC: Alexandre Oliva <aoliva@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Wed, 20 Jun 2007 17:50:39 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:57091 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbXFTVug (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 17:50:36 -0400
+From: Malte Cornils <malte@cornils.net>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [1/2] 2.6.22-rc5: known regressions
+Date: Wed, 20 Jun 2007 23:49:59 +0200
+User-Agent: KMail/1.9.5
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614235004.GA14952@elte.hu> <20070615011012.6c09066e@the-village.bc.nu> <20070615012623.GA25189@elte.hu> <20070615101007.0cbfd078@the-village.bc.nu> <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de> <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk> <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org> <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org> <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org> <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca> <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca> <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rodrigo Luiz <troops.of.doom@gmail.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@suse.cz>, Ben Collins <bcollins@ubuntu.com>,
+       reiserfs-devel@vger.kernel.org, "Vladimir V. Saveliev" <vs@namesys.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Greg Kroah-Hartman <gregkh@suse.de>
+References: <467543E1.1060001@googlemail.com> <20070618162915.GA7440@kroah.com> <200706190126.23091.malte@cornils.net>
+In-Reply-To: <200706190126.23091.malte@cornils.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706202350.00235.malte@cornils.net>
+X-Provags-ID: V01U2FsdGVkX1+M5kBLMBCshUSqmRiVUyfvVLT/ikFQnKctUCg
+ CkIlnfDSzQJcoAx2vL0joYG6O2EqxToXzcI9X7XSRPIfMGJnvD
+ oKS6vuDHxc6m1w+n8u/cg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Wed, 20 Jun 2007, Alexandre Oliva wrote:
-> 
->> Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
->>
->> On Jun 20, 2007, Andrew McKay <amckay@iders.ca> wrote:
->>
->>> However, I don't see how this would ever require a company like Tivo
->>> or Mastercard to have their networks play nice with a unit that has
->>> been modified by the end user, potentially opening up some serious
->>> security holes.
->>
->> Which is why the GPLv3 doesn't make the requirement that you stated.
-> 
-> so if the BIOS checked the checksum of the boot image and if it found it 
-> wasn't correct would disable the video input hardware but let you boot 
-> the system otherwise it would be acceptable to you and the GPLv3?
-> 
-> somehow I doubt it, but that's what it would take to prevent modified 
-> software from interacting with their networks (remembering that these 
-> networks are the cable and satellite networks in some cases)
-> 
-> it also seems that if this was the case it would be a trivial 
-> work-around for the GPLv3 if it was acceptable.
-> 
+Am Dienstag, 19. Juni 2007 01:26 schrieb Malte Cornils:
+> Hello,
+> Am Montag, 18. Juni 2007 18:29 schrieb Greg KH:
+> > > > Subject    : PCI setup hangs on Asus Notebook (nolapic helps)
+> > > > References : http://lkml.org/lkml/2007/6/14/161
+> > > > Submitter  : Malte Cornils <malte@cornils.net>
+> > > > Status     : unknown [...]
+> >
+> > Can you use 'git bisect' to track down the patch that causes this to
+> > fail?
+>
+> I will do this, however, it will likely take me a day or two to find. I'll
+> report back then.
 
-That is exactly where I was going with that.  A trivial work around in the Tivo 
-case.  I guess GPLv4 will have to close up that hole?
+Well, more likely a few more days due to difficult physical access to the 
+laptop at the moment; however, it's *not* a regression introduced in 
+2.6.22rc, it was introduced at some point of time between 2.6.18 and 
+2.6.19-rc1.
 
-Andrew McKay
+That means IMHO it's not sensible holding 2.6.22 final waiting for a fix for 
+this issue, but I will try to hurry in locating the exact commit anyway.
+
+Yours,
+-Malte Cornils
