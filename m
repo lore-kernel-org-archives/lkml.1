@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbXFTUzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbXFTU4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbXFTUzS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 16:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbXFTUzF
+	id S1754085AbXFTU4U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 16:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbXFTU4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 16:55:05 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:53366 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751543AbXFTUzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 16:55:03 -0400
-Date: Wed, 20 Jun 2007 13:54:40 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] 2.6.22-rc3 perfmon2 : Debug messages added
-Message-ID: <20070620205440.GD26200@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070620182126.248753000@amd.com> <20070620184113.GC5874@erda.amd.com> <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com> <20070620202216.GA26200@frankl.hpl.hp.com> <alpine.DEB.0.99.0706201326310.6935@chino.kir.corp.google.com> <20070620203944.GB26200@frankl.hpl.hp.com> <alpine.DEB.0.99.0706201341140.8396@chino.kir.corp.google.com>
+	Wed, 20 Jun 2007 16:56:09 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:42177 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbXFTU4G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 16:56:06 -0400
+Date: Wed, 20 Jun 2007 14:56:02 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: clameter@sgi.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-ext4@vger.kernel.org
+Subject: Re: [36/37] Large blocksize support for ext2
+Message-ID: <20070620205602.GI5181@schatzie.adilger.int>
+Mail-Followup-To: clameter@sgi.com, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+	Mel Gorman <mel@skynet.ie>,
+	William Lee Irwin III <wli@holomorphy.com>,
+	David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+	Badari Pulavarty <pbadari@gmail.com>,
+	Maxim Levitsky <maximlevitsky@gmail.com>, linux-ext4@vger.kernel.org
+References: <20070620182907.506775016@sgi.com> <20070620183014.438784820@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.99.0706201341140.8396@chino.kir.corp.google.com>
+In-Reply-To: <20070620183014.438784820@sgi.com>
 User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+On Jun 20, 2007  11:29 -0700, clameter@sgi.com wrote:
+> This adds support for a block size of up to 64k on any platform.
+> It enables the mounting filesystems that have a larger blocksize
+> than the page size.
 
-On Wed, Jun 20, 2007 at 01:45:22PM -0700, David Rientjes wrote:
-> On Wed, 20 Jun 2007, Stephane Eranian wrote:
-> 
-> > > What's the current status of the perfmon2 patchset that Robert's work is 
-> > > based on?
-> > 
-> > Well, I have been hacking on it a lot especially to allow Oprofile and
-> > perfmon2 to co-exist (mutual-exclusion). I am hoping to release something
-> > before I fly to OLS next week. I have started integrating  Robert's patches.
-> > I also have to integrate IBM's Cell support patch.
-> > 
-> 
-> Mutual exclusion between oprofile and perfmon2 will be great; I'm 
-> starting to see why you added the "implementation" field.  If you could 
-> integrate Robert's patches into your own then I think it will be easier 
-> for review from the community.
+Might have been good to CC the ext2/3/4 maintainers here?  I definitely
+have been waiting for a patch like this for ages (so definitely no
+objection from me), but there are a few caveats before this will work
+on ext2/3/4.
 
-I have removed the "implementation" field for now. It is only useful if 
-Oprofile is implemented on top of perfmon2. It is used by Oprofile
-tools to detects which interface to use so that they can be used with
-older kernels as well. But for now, I am shooting for Oprofile using
-its own kernel code and /dev/oprofile interface. That will provide
-for a smoother transition.
+> Hmmm... Actually there is nothing additional to be done after the earlier
+> cleanup of the macros. So just modify copyright.
 
--- 
+It is NOT possible to have 64kB blocksize on ext2/3/4 without some small
+changes to the directory handling code.  The reason is that an empty 64kB
+directory block would have a rec_len == (__u16)2^16 == 0, and this would
+cause an error to be hit in the filesystem.  What is needed is to put
+2 empty records in such a directory, or to special-case an impossible
+value like rec_len = 0xffff to handle this.
 
--Stephane
+There was a patch to fix the 64kB blocksize directory problem, but it
+hasn't been merged anywhere yet seeing as there wasn't previously a
+patch to allow larger blocksize...
+
+Having 32kB blocksize has no problems that I'm aware of.  Also, I'm not
+sure how it happened, but ext2 SHOULD have an explicit check (as
+ext3/4 does) limiting it to EXT2_MAX_BLOCK_SIZE.  Otherwise it appears
+that there would be no error reported if the superblock reports e.g. 16MB
+blocksize, and all kinds of things would break.
+
+There shouldn't be a problem with increasing EXT{2,3,4}_MAX_BLOCK_SIZE to
+32kB (AFAIK), but I haven't looked into this in a while.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
