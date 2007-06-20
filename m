@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbXFTQwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbXFTQx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbXFTQwq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbXFTQw2
+	id S1754685AbXFTQx4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbXFTQxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:52:28 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50910 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754203AbXFTQw0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:52:26 -0400
-Date: Wed, 20 Jun 2007 17:56:27 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew McKay <amckay@iders.ca>
-Cc: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070620175627.319a6c55@the-village.bc.nu>
-In-Reply-To: <4679557C.5080907@iders.ca>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614195517.GA4933@elte.hu>
-	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070614235004.GA14952@elte.hu>
-	<20070615011012.6c09066e@the-village.bc.nu>
-	<20070615012623.GA25189@elte.hu>
-	<20070615101007.0cbfd078@the-village.bc.nu>
-	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4673CA7C.5040207@t-online.de>
-	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616181902.GB21478@ftp.linux.org.uk>
-	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
-	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4679557C.5080907@iders.ca>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jun 2007 12:53:48 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:41148 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752546AbXFTQxr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 12:53:47 -0400
+Date: Wed, 20 Jun 2007 12:46:14 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@redhat.com,
+       mbligh@google.com
+Subject: Re: Problem with global_flush_tlb() on i386 (x86_64? too) in 2.6.22-rc4-mm2
+Message-ID: <20070620164614.GA8916@Krystal>
+References: <20070619170914.GA30623@Krystal> <20070619200136.GA4943@Krystal> <200706201101.20673.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200706201101.20673.ak@suse.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:29:24 up 23 days, 8 min,  4 users,  load average: 1.28, 1.16, 0.88
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Secondly GPLv3 will cause companies like TIVO, router companies, security 
-> companies to not adopt Linux as an operating system, because they can't secure 
-> their system.  Placing code in a ROM so they can't upgrade their own systems is 
+* Andi Kleen (ak@suse.de) wrote:
+> On Tuesday 19 June 2007 22:01:36 Mathieu Desnoyers wrote:
+> > Looking more closely into the code to find the cause of the
+> > change_page_addr()/global_flush_tlb() inconsistency, I see where the
+> > problem could be:
+> 
+> Yes it's a known problem. I have a hack queued for .22 and there
+> are proposed patches for .23 too.
+> 
+> ftp://ftp.firstfloor.org/pub/ak/x86_64/late-merge/patches/cpa-flush
+> 
+> -ANdi
+> 
 
-You've made an important mistake. You said "their system". Now its "our
-code" and "whoever bought the units' hardware" so it isn't their anything.
+Hi Andi,
 
-You've made a second mistake I think by assuming that vendor held keys
-"improve" security and must be vendor held and secret for it to work. In
-fact vendor owned key systems that cannot be changed usually reduce
-security.
+Although I cannot find it at the specified URL, I suspect it is already
+in Andrew's tree, in 2.6.22-rc4-mm2, under the name
 
-There are very very good reasons for having vendor owned secret keys.
-There are also very very good reasons for being able to rekey or disable
-the key on your box.
+"x86_64-mm-cpa-cache-flush.patch"
 
-Ask people whose product vendor went bankrupt. With the ability to
-override/replace the keys they could have maintained their system
-securely instead they could make no updates and the boxes were left
-insecure.
+But Andrew's
+"revert-x86_64-mm-cpa-cache-flush.patch"
 
-RPM for example intentionally follows this approach. RPM will check keys
-and the keys for different vendors/projects will not be released. However
-you can add keys, remove keys or even tell rpm "forget the key checking".
+Is applied subsequently, along with the Changelog:
 
-A silly example that rather makes the point is the X-Box. Using a bug in
-a game you can get into the X-box system and run Linux instead. As the
-owner of an X-box you can't fix the bug in the game because you don't
-know the signing key, but if you could change or add keys you could stop
-the "problem" occurring.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-The Xbox is perhaps an oddity in that the insecurity is widely preferred
-by the owners but the situation applies in cases where the owner would
-prefer the reverse were true.
+This causes my dual-pIII to hang after "write protecting kernel memory".
 
+config: http://userweb.kernel.org/~akpm/config-vmm.txt
+
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Is the version found in 2.6.22-rc4-mm2 the latest ?
+
+I propose to verify if the i386:
+
+if (!PageReserved(kpte_page)) {
+   if (cpu_has_pse
+
+check should be also integrated into the global flush tlb ? It would
+cause machines not supporting PSE to try to free non existing large
+pages, and also would cause problems with reserved pages.
+
+It does not seem to fix the hang on my P4 neither though.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
