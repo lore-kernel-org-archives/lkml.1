@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbXFTV17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbXFTV3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753845AbXFTV17 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 17:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXFTV1u
+	id S1755758AbXFTV3c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 17:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXFTV3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 17:27:50 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:5730 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756001AbXFTV1s (ORCPT
+	Wed, 20 Jun 2007 17:29:23 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40395 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752219AbXFTV3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 17:27:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bRRDxl1cQLUrlxmO818L2PXHFUMw4BxnM0WuhgeovDhui6dcOy1pujM3v0b3aHtCSF/WgrZUwGBLj1DEb+BcovPa8BV7Ux6pntlNWo9OPX8Nna5Ocy8Spm+By4pxJy8Pjid9gjlygrpBEHQVGigPvcHRcw3iQuvWB4Uxn8qIFgs=
-Message-ID: <161717d50706201427i508c2868v7e6fd828bf2f4309@mail.gmail.com>
-Date: Wed, 20 Jun 2007 17:27:46 -0400
-From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
-To: "Tomas Neme" <lacrymology@gmail.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Alexandre Oliva" <aoliva@redhat.com>, "Andrew McKay" <amckay@iders.ca>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Daniel Hazelton" <dhazelton@enter.net>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
+	Wed, 20 Jun 2007 17:29:22 -0400
+Date: Wed, 20 Jun 2007 14:29:21 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andreas Dilger <adilger@clusterfs.com>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [34/37] Large blocksize support in ramfs
+In-Reply-To: <20070620205002.GH5181@schatzie.adilger.int>
+Message-ID: <Pine.LNX.4.64.0706201427270.31425@schroedinger.engr.sgi.com>
+References: <20070620182907.506775016@sgi.com> <20070620183013.967063205@sgi.com>
+ <20070620205002.GH5181@schatzie.adilger.int>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	 <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	 <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <4679557C.5080907@iders.ca>
-	 <20070620175627.319a6c55@the-village.bc.nu>
-	 <46797C52.4020907@iders.ca>
-	 <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
-X-Google-Sender-Auth: 739df7e04b1c87b2
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/20/07, Tomas Neme <lacrymology@gmail.com> wrote:
->
-> Why, if you let user-compiled kernels to run in a TiVo, it might be
-> modified so the TiVo can be used to pirate-copy protected content,
+On Wed, 20 Jun 2007, Andreas Dilger wrote:
 
-1) It may be far more likely that in the majority of cases it will be
-modified with the intent to allow functionality which has no bearing
-on copyrighted entertainment copyright or which is permitted under the
-Fair Use doctrine. Neither you, nor I, nor anyone else on the list
-knows whether that is the case.
+> On Jun 20, 2007  11:29 -0700, clameter@sgi.com wrote:
+> > If you apply this patch and then you can f.e. try this:
+> > 
+> > 	mount -tramfs -o10 none /media
+> 
+> > @@ -164,10 +165,15 @@ static int ramfs_fill_super(struct super
+> > +	if (options && *options)
+> > +		order = simple_strtoul(options, NULL, 10);
+> 
+> This is probably a bad name for a mount option.  What about "order=10"?
+> Otherwise you prevent any other option from being used in the future.
 
-2) There are far easier ways to pirate copyrighted entertainment
-content (like buy the discs, professional duplicating hardware, and
-just dup them) which I would wager is what actual pirates do 99% of
-the time
+I tried to make it as simple as possible. The patch is primarily useful as 
+a debugging aid since it eliminates the lower layers from the game. I 
+think ramfs should be left as is sine it is intended as a minimal 
+implementation that should stay simpl.
 
-> which is a serious security hole.
+If we really want such an option for good then it may best be added to 
+shmem or ramdisk drivers?
 
-If you are a content company it's a security hole, if you are a TiVO
-owner, it's a feature.
-
-Dave
