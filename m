@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbXFTV1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbXFTV17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbXFTV1n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 17:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbXFTV11
+	id S1753845AbXFTV17 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 17:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXFTV1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 17:27:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40231 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755077AbXFTV1Z (ORCPT
+	Wed, 20 Jun 2007 17:27:50 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:5730 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756001AbXFTV1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 17:27:25 -0400
-Date: Wed, 20 Jun 2007 14:27:22 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andreas Dilger <adilger@clusterfs.com>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-ext4@vger.kernel.org
-Subject: Re: [36/37] Large blocksize support for ext2
-In-Reply-To: <20070620205602.GI5181@schatzie.adilger.int>
-Message-ID: <Pine.LNX.4.64.0706201425050.31425@schroedinger.engr.sgi.com>
-References: <20070620182907.506775016@sgi.com> <20070620183014.438784820@sgi.com>
- <20070620205602.GI5181@schatzie.adilger.int>
+	Wed, 20 Jun 2007 17:27:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=bRRDxl1cQLUrlxmO818L2PXHFUMw4BxnM0WuhgeovDhui6dcOy1pujM3v0b3aHtCSF/WgrZUwGBLj1DEb+BcovPa8BV7Ux6pntlNWo9OPX8Nna5Ocy8Spm+By4pxJy8Pjid9gjlygrpBEHQVGigPvcHRcw3iQuvWB4Uxn8qIFgs=
+Message-ID: <161717d50706201427i508c2868v7e6fd828bf2f4309@mail.gmail.com>
+Date: Wed, 20 Jun 2007 17:27:46 -0400
+From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+To: "Tomas Neme" <lacrymology@gmail.com>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Alexandre Oliva" <aoliva@redhat.com>, "Andrew McKay" <amckay@iders.ca>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Al Viro" <viro@ftp.linux.org.uk>,
+       "Bernd Schmidt" <bernds_cb1@t-online.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "Daniel Hazelton" <dhazelton@enter.net>, "Greg KH" <greg@kroah.com>,
+       "debian developer" <debiandev@gmail.com>, david@lang.hm,
+       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+	 <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	 <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <4679557C.5080907@iders.ca>
+	 <20070620175627.319a6c55@the-village.bc.nu>
+	 <46797C52.4020907@iders.ca>
+	 <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
+X-Google-Sender-Auth: 739df7e04b1c87b2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Andreas Dilger wrote:
+On 6/20/07, Tomas Neme <lacrymology@gmail.com> wrote:
+>
+> Why, if you let user-compiled kernels to run in a TiVo, it might be
+> modified so the TiVo can be used to pirate-copy protected content,
 
-> On Jun 20, 2007  11:29 -0700, clameter@sgi.com wrote:
-> > This adds support for a block size of up to 64k on any platform.
-> > It enables the mounting filesystems that have a larger blocksize
-> > than the page size.
-> 
-> Might have been good to CC the ext2/3/4 maintainers here?  I definitely
-> have been waiting for a patch like this for ages (so definitely no
-> objection from me), but there are a few caveats before this will work
-> on ext2/3/4.
+1) It may be far more likely that in the majority of cases it will be
+modified with the intent to allow functionality which has no bearing
+on copyrighted entertainment copyright or which is permitted under the
+Fair Use doctrine. Neither you, nor I, nor anyone else on the list
+knows whether that is the case.
 
-The CC list is already big so I thought those would be monitoring 
-linux-fsdevel.
+2) There are far easier ways to pirate copyrighted entertainment
+content (like buy the discs, professional duplicating hardware, and
+just dup them) which I would wager is what actual pirates do 99% of
+the time
 
-> > Hmmm... Actually there is nothing additional to be done after the earlier
-> > cleanup of the macros. So just modify copyright.
-> 
-> It is NOT possible to have 64kB blocksize on ext2/3/4 without some small
-> changes to the directory handling code.  The reason is that an empty 64kB
-> directory block would have a rec_len == (__u16)2^16 == 0, and this would
-> cause an error to be hit in the filesystem.  What is needed is to put
-> 2 empty records in such a directory, or to special-case an impossible
-> value like rec_len = 0xffff to handle this.
-> 
-> There was a patch to fix the 64kB blocksize directory problem, but it
-> hasn't been merged anywhere yet seeing as there wasn't previously a
-> patch to allow larger blocksize...
+> which is a serious security hole.
 
-mke2fs allows to specify a 64kb blocksize and IA64 can run with 64kb 
-PAGE_SIZE. So this is a bug in ext2fs that needs to be fixed regardless.
+If you are a content company it's a security hole, if you are a TiVO
+owner, it's a feature.
 
-> Having 32kB blocksize has no problems that I'm aware of.  Also, I'm not
-> sure how it happened, but ext2 SHOULD have an explicit check (as
-> ext3/4 does) limiting it to EXT2_MAX_BLOCK_SIZE.  Otherwise it appears
-> that there would be no error reported if the superblock reports e.g. 16MB
-> blocksize, and all kinds of things would break.
-
-mke2fs fails for blocksizes > 64k so you are safe there. I'd like to see 
-that limit lifted?
-
-> There shouldn't be a problem with increasing EXT{2,3,4}_MAX_BLOCK_SIZE to
-> 32kB (AFAIK), but I haven't looked into this in a while.
-
-I'd love to see such a patch. That is also useful for arches that have 
-PAGE_SIZE > 4kb without this patchset.
-
+Dave
