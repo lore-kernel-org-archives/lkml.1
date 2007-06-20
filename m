@@ -1,96 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763491AbXFTSod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763569AbXFTSoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763491AbXFTSod (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 14:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759164AbXFTSbH
+	id S1763569AbXFTSoq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 14:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760033AbXFTSdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 14:31:07 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54798 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757880AbXFTSaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 14:30:13 -0400
-Message-Id: <20070620183012.519569470@sgi.com>
-References: <20070620182907.506775016@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 20 Jun 2007 11:29:35 -0700
-From: clameter@sgi.com
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
-Cc: William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Badari Pulavarty <pbadari@gmail.com>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [28/37] compound pages: Allow freeing of compound pages via pagevec
-Content-Disposition: inline; filename=compound_free_via_pagevec
+	Wed, 20 Jun 2007 14:33:21 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60393 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1760064AbXFTSdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 14:33:19 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1+DmCAUu7iDyHcn5fVhbgcreqgBde7zfzwrdwOVMF
+	QHQWoxw28AZfW6
+Date: Wed, 20 Jun 2007 20:33:15 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Andi Kleen <ak@suse.de>
+Cc: eranian@hpl.hp.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       levon@movementarian.org, perfmon@napali.hpl.hp.com,
+       oprofile-list@lists.sourceforge.net, wcohen@redhat.com,
+       akpm@linux-foundation.org
+Subject: Re: [perfmon] Re: [PATCH 1/2] Separate the performance counter allocation from the LAPIC NMI watchdog
+Message-ID: <20070620183315.GA3251@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Andi Kleen <ak@suse.de>, eranian@hpl.hp.com, mingo@elte.hu,
+	linux-kernel@vger.kernel.org, levon@movementarian.org,
+	perfmon@napali.hpl.hp.com, oprofile-list@lists.sourceforge.net,
+	wcohen@redhat.com, akpm@linux-foundation.org
+References: <20070618103214.GA12045@atjola.homenet> <200706201431.44014.ak@suse.de> <20070620124959.GB24906@frankl.hpl.hp.com> <200706201501.02582.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200706201501.02582.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow the freeing of compound pages via pagevec.
+On 2007.06.20 15:01:02 +0200, Andi Kleen wrote:
+> 
+> > Once this is fixed (which is what Bjorn did), then I will agree with you.
+> > For this, the allocator needs to be able to probe the CPU and initialize
+> > its own data structures.
+> 
+> Ok that sounds reasonable. Please someone send a patch that does only 
+> that.
 
-In release_pages() we currently special case for compound pages in order to
-be sure to always decrement the page count of the head page and not the
-tail page. However that redirection to the head page is only necessary for
-tail pages. So use PageTail instead of PageCompound. No change therefore
-for the handling of tail pages.
+OK, here come the bugfixes without any restructuring. The first patch
+enables unconditional probing of the watchdog. The second makes the
+perfmon nmi watchdog reserve the correct perfctr/evntsel.
 
-The head page of a compound pages now represents single page large page.
-We do the usual processing including checking if its on the LRU
-and removing it (not useful right now but later when compound pages are
-on the LRU this will work). Then we add the compound page to the pagevec.
-Only head pages will end up on the pagevec not tail pages.
-
-In __pagevec_free() we then check if we are freeing a head page and if
-so call the destructor for the compound page.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/page_alloc.c |   13 +++++++++++--
- mm/swap.c       |    8 +++++++-
- 2 files changed, 18 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.22-rc4-mm2/mm/page_alloc.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/page_alloc.c	2007-06-18 19:13:03.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/page_alloc.c	2007-06-18 19:14:03.000000000 -0700
-@@ -1746,8 +1746,17 @@ void __pagevec_free(struct pagevec *pvec
- {
- 	int i = pagevec_count(pvec);
- 
--	while (--i >= 0)
--		free_hot_cold_page(pvec->pages[i], pvec->cold);
-+	while (--i >= 0) {
-+		struct page *page = pvec->pages[i];
-+
-+		if (PageHead(page)) {
-+			compound_page_dtor *dtor;
-+
-+			dtor = get_compound_page_dtor(page);
-+			(*dtor)(page);
-+		} else
-+			free_hot_cold_page(page, pvec->cold);
-+	}
- }
- 
- fastcall void __free_pages(struct page *page, unsigned int order)
-Index: linux-2.6.22-rc4-mm2/mm/swap.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/swap.c	2007-06-15 17:35:33.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/swap.c	2007-06-18 19:14:03.000000000 -0700
-@@ -293,7 +293,13 @@ void release_pages(struct page **pages, 
- 	for (i = 0; i < nr; i++) {
- 		struct page *page = pages[i];
- 
--		if (unlikely(PageCompound(page))) {
-+		/*
-+		 * If we have a tail page on the LRU then we need to
-+		 * decrement the page count of the head page. There
-+		 * is no further need to do anything since tail pages
-+		 * cannot be on the LRU.
-+		 */
-+		if (unlikely(PageTail(page))) {
- 			if (zone) {
- 				spin_unlock_irq(&zone->lru_lock);
- 				zone = NULL;
-
--- 
+Björn
