@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbXFTFIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbXFTFLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755434AbXFTFIh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 01:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758406AbXFTFI3
+	id S1762252AbXFTFLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 01:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759078AbXFTFLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 01:08:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41773 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756041AbXFTFI2 (ORCPT
+	Wed, 20 Jun 2007 01:11:12 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:35119 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756841AbXFTFLL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 01:08:28 -0400
-Date: Tue, 19 Jun 2007 22:08:25 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Mundt <lethal@linux-sh.org>
-cc: linux-mm@kvack.org, wli@holomorphy.com, lee.schermerhorn@hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Some thoughts on memory policies
-In-Reply-To: <20070620040131.GA29240@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.0706192205410.18467@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0706181257010.13154@schroedinger.engr.sgi.com>
- <20070620040131.GA29240@linux-sh.org>
+	Wed, 20 Jun 2007 01:11:11 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: [PATCH] Chinese translation of Documentation/HOWTO
+Date: Wed, 20 Jun 2007 13:13:00 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890D82DF1@zch01exm26.fsl.freescale.net>
+In-Reply-To: <a8e1da0706191858w73a453dfjf28895150af85cfe@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Chinese translation of Documentation/HOWTO
+Thread-Index: Acey3oy2DCA0r42jTmy6ZmniaiYV2gAGM0Xw
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "dave young" <hidave.darkstar@gmail.com>,
+       "WANG Cong" <xiyou.wangcong@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, <gregkh@suse.de>,
+       "TripleX Chung" <xxx.phy@gmail.com>,
+       "Maggie Chen" <chenqi@beyondsoft.com>, "Tejun Heo" <htejun@gmail.com>,
+       "Fengguang Wu" <fengguang.wu@gmail.com>,
+       "Chen Li-jun" <cljun@xiyou.edu.cn>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Paul Mundt wrote:
+> -----Original Message-----
+> From: dave young [mailto:hidave.darkstar@gmail.com]
+> Sent: Wednesday, June 20, 2007 9:58 AM
+> To: WANG Cong
+> Cc: Li Yang-r58472; linux-kernel@vger.kernel.org; gregkh@suse.de;
+TripleX Chung;
+> Maggie Chen; Tejun Heo; Fengguang Wu; Chen Li-jun
+> Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+> 
+> Hi,
+> IMHO, it is not very suitable  for translations  merging into kernel.
+> 
+> first, It's impossible to be 100% accurate.
 
-> There's quite a bit of room for improving and extending the existing
-> code, and those options should likely be exhausted first.
+It can be accurate by meaning.  And it can be improved.
 
-There is a confusing maze of special rules if one goes beyond the simple 
-process address space case. There are no clean rules on how to combine 
-memory policies. Refcounting / updating becomes a problem because policies 
-are intended to be only updated from the process that set them up. Look at 
-the gimmicks that Paul needed to do to update memory policies when a 
-process is migrated and the vmas on the stack for shmem etc etc.
+> second, two or more language need to be synced with english one, it's
+> a problem in  the long run.
 
+This can be done through good maintenance.  I don't think it's harder
+than maintaining the code in kernel source tree.
+
+- Leo
