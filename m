@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXFUAhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbXFUAhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbXFUAhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 20:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbXFUAg6
+	id S1758695AbXFUAhv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 20:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbXFUAhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 20:36:58 -0400
-Received: from bay-wan-b-65.sfo.dsl.cerfnet.com ([216.148.65.65]:39545 "EHLO
+	Wed, 20 Jun 2007 20:37:09 -0400
+Received: from bay-wan-b-65.sfo.dsl.cerfnet.com ([216.148.65.65]:39544 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755447AbXFUAg5 (ORCPT
+	with ESMTP id S1755494AbXFUAhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 20:36:57 -0400
-Message-Id: <20070620231853.164451916@goop.org>
-References: <20070620231726.834538992@goop.org>
+	Wed, 20 Jun 2007 20:37:08 -0400
+Message-Id: <20070620231726.834538992@goop.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 20 Jun 2007 16:17:33 -0700
+Date: Wed, 20 Jun 2007 16:17:26 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "Eric W. Biederman" <ebiederm@xmission.com>,
        "H. Peter Anvin" <hpa@zytor.com>
@@ -21,195 +20,78 @@ Cc: Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
        Andi Kleen <ak@suse.de>,
        v12n <virtualization@lists.linux-foundation.org>,
        lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 7/9] i386: paravirt boot sequence
-Content-Disposition: inline; filename=i386-paravirt-bootup.patch
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/9] x86 boot protocol updates
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses the updated boot protocol to do paravirtualized boot.
-If the boot version is >= 2.07, then it will do two things:
+[ This patch depends on the cross-architecture ELF cleanup patch. ]
 
- 1. Check the bootparams loadflags to see if we should reload the
-    segment registers and clear interrupts.  This is appropriate
-    for normal native boot and some paravirtualized environments, but
-    inapproprate for others.
+This series updates the boot protocol to 2.07 and uses it to implement
+paravirtual booting.  This allows the bootloader to tell the kernel
+what kind of hardware/pseudo-hardware environment it's coming up under,
+and the kernel can use the appropriate boot sequence code.
 
- 2. Check the hardware architecture, and dispatch to the appropriate
-    kernel entrypoint.  If the bootloader doesn't set this, then we
-    simply do the normal boot sequence.
+Specifically:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- arch/i386/boot/compressed/head.S |   14 +++++++++--
- arch/i386/boot/compressed/misc.c |    4 +++
- arch/i386/boot/header.S          |    7 ++++-
- arch/i386/kernel/head.S          |   47 ++++++++++++++++++++++++++++++++++----
- 4 files changed, 65 insertions(+), 7 deletions(-)
+- Update the boot protocol to 2.07, which adds fields to specify the
+  hardware subarchitecture and some subarchitecture-specific data.
+  It also specifies a flag to tell the boot code to avoid reloading
+  segment registers and playing with interrupt state, since it may not
+  have a visible gdt and/or may not be running in ring 0.
+  (Note: the segment reload and interrupt flags are conflated into one
+   flag, but they are not really related.  We could have two flags, but
+   the "cli" is probably completely redundant anyway, since the bootloader
+   would have to be completely mad to start the kernel with interrupts
+   enabled.)
 
-===================================================================
---- a/arch/i386/boot/compressed/head.S
-+++ b/arch/i386/boot/compressed/head.S
-@@ -33,14 +33,24 @@
- 	.globl blob_startup_32
- 
- blob_startup_32:
--	cld
--	cli
-+	/* check to see if KEEP_SEGMENTS flag is meaningful */
-+	cmpw $0x207, BP_version(%esi)
-+	jb 1f
-+
-+	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
-+		us to not reload segments */
-+	testb $(1<<6), BP_loadflags(%esi)
-+	jnz 2f
-+
-+1:	cli
- 	movl $(__BOOT_DS),%eax
- 	movl %eax,%ds
- 	movl %eax,%es
- 	movl %eax,%fs
- 	movl %eax,%gs
- 	movl %eax,%ss
-+
-+2:	cld
- 
- /* Calculate the delta between where we were compiled to run
-  * at and where we were actually loaded at.  This can only be done
-===================================================================
---- a/arch/i386/boot/compressed/misc.c
-+++ b/arch/i386/boot/compressed/misc.c
-@@ -245,6 +245,10 @@ static void putstr(const char *s)
- {
- 	int x,y,pos;
- 	char c;
-+
-+	if (RM_SCREEN_INFO.orig_video_mode == 0 &&
-+	    lines == 0 && cols == 0)
-+		return;
- 
- 	x = RM_SCREEN_INFO.orig_x;
- 	y = RM_SCREEN_INFO.orig_y;
-===================================================================
---- a/arch/i386/boot/header.S
-+++ b/arch/i386/boot/header.S
-@@ -119,7 +119,7 @@ 1:
- 	# Part 2 of the header, from the old setup.S
- 
- 		.ascii	"HdrS"		# header signature
--		.word	0x0206		# header version number (>= 0x0105)
-+		.word	0x0207		# header version number (>= 0x0105)
- 					# or else old loadlin-1.5 will fail)
- 		.globl realmode_swtch
- realmode_swtch:	.word	0, 0		# default_switch, SETUPSEG
-@@ -209,6 +209,11 @@ cmdline_size:   .long   COMMAND_LINE_SIZ
-                                                 #added with boot protocol
-                                                 #version 2.06
- 
-+hardware_subarch:	.long 0			# subarchitecture, added with 2.07
-+						# default to 0 for normal x86 PC
-+
-+hardware_subarch_data:	.quad 0
-+
- # End of setup header #####################################################
- 
- 	.section ".inittext", "ax"
-===================================================================
---- a/arch/i386/kernel/head.S
-+++ b/arch/i386/kernel/head.S
-@@ -86,28 +86,37 @@ pg0_init_size = ROUNDUP(INIT_MAP_BEYOND_
-  */
- .section .text.head,"ax",@progbits
- ENTRY(startup_32)
-+	/* check to see if KEEP_SEGMENTS flag is meaningful */
-+	cmpw $0x207, BP_version(%esi)
-+	jb 1f
-+
-+	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
-+		us to not reload segments */
-+	testb $(1<<6), BP_loadflags(%esi)
-+	jnz 2f
- 
- /*
-  * Set segments to known values.
-  */
--	cld
--	lgdt boot_gdt_descr - __PAGE_OFFSET
-+1:	lgdt boot_gdt_descr - __PAGE_OFFSET
- 	movl $(__BOOT_DS),%eax
- 	movl %eax,%ds
- 	movl %eax,%es
- 	movl %eax,%fs
- 	movl %eax,%gs
-+2:
- 
- /*
-  * Clear BSS first so that there are no surprises...
-- * No need to cld as DF is already clear from cld above...
-- */
-+ */
-+	cld
- 	xorl %eax,%eax
- 	movl $__bss_start - __PAGE_OFFSET,%edi
- 	movl $__bss_stop - __PAGE_OFFSET,%ecx
- 	subl %edi,%ecx
- 	shrl $2,%ecx
- 	rep ; stosl
-+
- /*
-  * Copy bootup parameters out of the way.
-  * Note: %esi still has the pointer to the real-mode data.
-@@ -135,6 +144,35 @@ 2:
- 	movsl
- 1:
- 
-+#ifdef CONFIG_PARAVIRT
-+	cmpw $0x207, (boot_params + BP_version - __PAGE_OFFSET)
-+	jb default_entry
-+
-+	/* Paravirt-compatible boot parameters.  Look to see what architecture
-+		we're booting under. */
-+	movl (boot_params + BP_hardware_subarch - __PAGE_OFFSET), %eax
-+	cmpl $num_subarch_entries, %eax
-+	jae bad_subarch
-+
-+	movl subarch_entries - __PAGE_OFFSET(,%eax,4), %eax
-+	subl $__PAGE_OFFSET, %eax
-+	jmp *%eax
-+
-+bad_subarch:
-+WEAK(lguest_entry)
-+WEAK(xen_entry)
-+	/* Unknown implementation; there's really
-+	   nothing we can do at this point. */
-+	ud2a
-+.data
-+subarch_entries:
-+	.long default_entry		/* normal x86/PC */
-+	.long lguest_entry		/* lguest hypervisor */
-+	.long xen_entry			/* Xen hypervisor */
-+num_subarch_entries = (. - subarch_entries) / 4
-+.previous
-+#endif /* CONFIG_PARAVIRT */
-+
- /*
-  * Initialize page tables.  This creates a PDE and a set of page
-  * tables, which are located immediately beyond _end.  The variable
-@@ -147,6 +185,7 @@ 1:
-  */
- page_pde_offset = (__PAGE_OFFSET >> 20);
- 
-+default_entry:
- 	movl $(pg0 - __PAGE_OFFSET), %edi
- 	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx
- 	movl $0x007, %eax			/* 0x007 = PRESENT+RW+USER */
+- Change the format of bzImage to contain an ELF file.  The initial part of
+  the bzImage is still the boot_params header followed by the 16-bit
+  setup code needed for booting from BIOS.  But rather than having
+  the self-decompressing kernel follow as a naked blob of code+data,
+  its actually wrapped in a page-aligned ELF file.  This allows the
+  bootloader to extract it and parse it, and use that to know what
+  memory the booting kernel will need initially.  Xen and lguest need
+  this because they start the kernel with paging enabled, and so need
+  to know what initial mappings to create.
+
+- Modify the kernel boot sequence to:
+  1. avoid reloading the segment state (gdt and segment registers) if the
+     bootloader asks it to
+  2. jump to a subarchitecture-specific entrypoint in kernel/head.S.
+
+- Add Xen-specific starup code, which mainly remaps the kernel from
+  its P=V identity mapping to the normal PAGE_OFFSET mapping.
+
+  One open issue is that I haven't made the normal head.S initial
+  pagetable construction code generally reusable.  The default
+  boot-on-normal x86 hardware still uses it of course, but other
+  subarchitectures like Voyager and lguest could probably use it as-is,
+  while still needing to do other specialized things.
+
+  The obvious fix is to make it a callable function, but we don't
+  generally assume there's a stack available at this early stage.
+  It looks like it would be easy to set one up though.
+
+As a pre-requisite for all the above, I've also cleaned up the bzImage
+build process process.  I've eliminated the need for the tools/build
+program, and instead use the linker to do more heavy lifting.  I've also
+removed some somewhat obscure uses of ld and objcopy wrap binary files
+in ELF .o wrappers, and replaced with with .S files containing .incbin.
+
+The downside is that its making a bit more complex use of linker scripts,
+which always opens scope for finding more binutils bugs.  Only one way
+to find out...
+
+Tested to check the generated kernels boot under qemu's internal bootload
+and grub, as well as booting under Xen (with an appropriate update to
+the Xen domain builder).
+
+TODO:
+ - poke Rusty into implementing the lguest bits
+ - look at Kbuild use in arch/{i386,x86_64}/boot/
+
+	J
 
 -- 
 
