@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbXFTNqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbXFTNx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbXFTNqt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 09:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbXFTNql
+	id S1753497AbXFTNx2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 09:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXFTNxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 09:46:41 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40954 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbXFTNqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 09:46:40 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 7/12] acpi: fix another compile warning
-Date: Wed, 20 Jun 2007 15:46:28 +0200
-User-Agent: KMail/1.9.6
-Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       Shai Fultheim <shai@scalex86.org>,
-       Ravikiran Thirumalai <kiran@scalex86.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <20070619225035.GI5193@alberich.amd.com> <20070620084911.GO5193@alberich.amd.com> <200706200936.31236.lenb@kernel.org>
-In-Reply-To: <200706200936.31236.lenb@kernel.org>
+	Wed, 20 Jun 2007 09:53:20 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:13027 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750758AbXFTNxT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 09:53:19 -0400
+Date: Wed, 20 Jun 2007 15:22:33 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Wang Zhenyu <zhenyu.z.wang@intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       eric@anholt.net, lethal@linux-sh.org, y-goto@jp.fujitsu.com
+Subject: Re: 2.6.22-rc5 regression
+Message-ID: <20070620132233.GA19640@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Wang Zhenyu <zhenyu.z.wang@intel.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+	eric@anholt.net, lethal@linux-sh.org, y-goto@jp.fujitsu.com
+References: <20070617214905.GA6207@alinoe.com> <alpine.LFD.0.98.0706180950130.14121@woody.linux-foundation.org> <20070618181225.GB8054@alinoe.com> <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org> <20070618195415.GA7481@alinoe.com> <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org> <20070618225009.GE13538@alinoe.com> <alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org> <20070619233716.GA5779@alinoe.com> <20070620011521.GB2856@zhen-devel.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706201546.28457.ak@suse.de>
+In-Reply-To: <20070620011521.GB2856@zhen-devel.sh.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 20, 2007 at 09:15:21AM +0800, Wang Zhenyu wrote:
+> Yep, the device table patch doesn't change any function, so your problem
+> started from when 965G support patch has been in kernel. 
 
-> The underlying problem is that Kconfig doesn't support using select
-> on targets which themselves have dependencies.
-> 
-> Signed-off-by: Len Brown <len.brown@intel.com>
+Yup
 
-The depends on ACPI is fine by me, but I would prefer if the 
-ACPI_NUMA dependency worked the other way round (APCI_NUMA default y
-and depends on the relevant architecture specific symbols). That would
-be more user friendly I think because all the NUMA options would
-be in one place.
+> Carlo, pls try a kernel param of "pci=nommconf" to see if that could
+> fix your hang. There might be a BIOS bug, as similar issue also happen
+> like https://bugzilla.novell.com/show_bug.cgi?id=228683
 
--Andi
+That bugreport looks EXACTLY like the problem that I ran into.
+Note that they have the same motherboard as me: ASUS P5B Deluxe
 
-> diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-> index 5ce9443..e9d7767 100644
-> --- a/arch/x86_64/Kconfig
-> +++ b/arch/x86_64/Kconfig
-> @@ -364,9 +364,9 @@ config NODES_SHIFT
->  config X86_64_ACPI_NUMA
->         bool "ACPI NUMA detection"
->         depends on NUMA
-> -       select ACPI 
-> +       depends on ACPI 
->  	select PCI
-> -       select ACPI_NUMA
-> +       depends on ACPI_NUMA
->         default y
->         help
->  	 Enable ACPI SRAT based node topology detection.
-> 
+I will try pci=nommconf in a moment. It isn't the best workaround
+however as it should reduce the available RAM from 4GB to 3GB.
+agp=off would be a better workaround.
 
-
+Carlo Wood <carlo@alinoe.com>
