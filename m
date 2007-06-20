@@ -1,62 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbXFTWIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbXFTWIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755099AbXFTWIT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 18:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXFTWIF
+	id S1756087AbXFTWIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 18:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXFTWIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 18:08:05 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:60162 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752447AbXFTWID (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 18:08:03 -0400
-Message-ID: <4679A53B.9090103@zytor.com>
-Date: Wed, 20 Jun 2007 15:07:55 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 20 Jun 2007 18:08:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44645 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755332AbXFTWIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 18:08:22 -0400
+Message-ID: <4679A558.1010107@redhat.com>
+Date: Wed, 20 Jun 2007 17:08:24 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
 MIME-Version: 1.0
-To: Karel Zak <kzak@redhat.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
- through other means
-References: <467994BD.6000403@zytor.com> <20070620220551.GX7226@petra.dvoda.cz>
-In-Reply-To: <20070620220551.GX7226@petra.dvoda.cz>
-X-Enigmail-Version: 0.95.0
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: ocfs2-devel@oss.oracle.com, cluster-devel@redhat.com,
+       samba-technical@lists.samba.org,
+       ext4 development <linux-ext4@vger.kernel.org>
+Subject: [PATCH] zero_user_page conversion
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karel Zak wrote:
-> On Wed, Jun 20, 2007 at 01:57:33PM -0700, H. Peter Anvin wrote:
->> We could add a field to /proc/mounts to add this information:
->>
->> /dev/md6 /export ext3 rw,data=ordered 0 0 /
->> /dev/md6 /home/foo ext3 rw,data=ordered 0 0 /users/foo
->> /dev/md6 /home/bar ext3 rw,data=ordered 0 0 /users/bar
-> 
->  I prefer this format. It's compatible with the mount(8) -- the mount
->  ignores extra columns.
-> 
->> ... or, alternatively, add a subfield to the first field (which would
->> entail escaping whatever separator we choose):
->>
->> /dev/md6 /export ext3 rw,data=ordered 0 0
->> /dev/md6:/users/foo /home/foo ext3 rw,data=ordered 0 0
->> /dev/md6:/users/bar /home/bar ext3 rw,data=ordered 0 0
-> 
->  We needn't a new separator (':') there already is one (' ').
-> 
->> I'm personally leaning toward the second option (/dev/md6:/users/foo).
->> Although that might confuse current utilities, those utilities are
->> *already* liable to get confused by the fact that the line doesn't mean
->> what they think it means.
-> 
->  Many people use "ln -s /proc/mounts /etc/mtab".
-> 
+Use zero_user_page() in cifs, ocfs2, ext4, and gfs2 where possible.
 
-Out of curiosity, and trying to better grok the problem, what would
-mount(8) do differently with the second format versus the first?
+Compile tested, reviews welcome.
 
-	-hpa
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+
+Index: linux-2.6.22-rc4-mm2/fs/cifs/inode.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/fs/cifs/inode.c
++++ linux-2.6.22-rc4-mm2/fs/cifs/inode.c
+@@ -1334,17 +1334,13 @@ static int cifs_truncate_page(struct add
+ 	pgoff_t index = from >> PAGE_CACHE_SHIFT;
+ 	unsigned offset = from & (PAGE_CACHE_SIZE - 1);
+ 	struct page *page;
+-	char *kaddr;
+ 	int rc = 0;
+ 
+ 	page = grab_cache_page(mapping, index);
+ 	if (!page)
+ 		return -ENOMEM;
+ 
+-	kaddr = kmap_atomic(page, KM_USER0);
+-	memset(kaddr + offset, 0, PAGE_CACHE_SIZE - offset);
+-	flush_dcache_page(page);
+-	kunmap_atomic(kaddr, KM_USER0);
++	zero_user_page(page, offset, PAGE_CACHE_SIZE - offset, KM_USER0);
+ 	unlock_page(page);
+ 	page_cache_release(page);
+ 	return rc;
+Index: linux-2.6.22-rc4-mm2/fs/ext4/inode.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/fs/ext4/inode.c
++++ linux-2.6.22-rc4-mm2/fs/ext4/inode.c
+@@ -1830,7 +1830,6 @@ int ext4_block_truncate_page(handle_t *h
+ 	struct inode *inode = mapping->host;
+ 	struct buffer_head *bh;
+ 	int err = 0;
+-	void *kaddr;
+ 
+ 	if ((EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) &&
+ 			test_opt(inode->i_sb, EXTENTS) &&
+@@ -1847,10 +1846,7 @@ int ext4_block_truncate_page(handle_t *h
+ 	 */
+ 	if (!page_has_buffers(page) && test_opt(inode->i_sb, NOBH) &&
+ 	     ext4_should_writeback_data(inode) && PageUptodate(page)) {
+-		kaddr = kmap_atomic(page, KM_USER0);
+-		memset(kaddr + offset, 0, length);
+-		flush_dcache_page(page);
+-		kunmap_atomic(kaddr, KM_USER0);
++		zero_user_page(page, offset, length, KM_USER0);
+ 		set_page_dirty(page);
+ 		goto unlock;
+ 	}
+@@ -1903,10 +1899,7 @@ int ext4_block_truncate_page(handle_t *h
+ 			goto unlock;
+ 	}
+ 
+-	kaddr = kmap_atomic(page, KM_USER0);
+-	memset(kaddr + offset, 0, length);
+-	flush_dcache_page(page);
+-	kunmap_atomic(kaddr, KM_USER0);
++	zero_user_page(page, offset, length, KM_USER0);
+ 
+ 	BUFFER_TRACE(bh, "zeroed end of block");
+ 
+Index: linux-2.6.22-rc4-mm2/fs/gfs2/ops_address.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/fs/gfs2/ops_address.c
++++ linux-2.6.22-rc4-mm2/fs/gfs2/ops_address.c
+@@ -207,10 +207,7 @@ static int stuffed_readpage(struct gfs2_
+ 	 * so we need to supply one here. It doesn't happen often.
+ 	 */
+ 	if (unlikely(page->index)) {
+-		kaddr = kmap_atomic(page, KM_USER0);
+-		memset(kaddr, 0, PAGE_CACHE_SIZE);
+-		kunmap_atomic(kaddr, KM_USER0);
+-		flush_dcache_page(page);
++		zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
+ 		SetPageUptodate(page);
+ 		return 0;
+ 	}
+Index: linux-2.6.22-rc4-mm2/fs/ocfs2/aops.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/fs/ocfs2/aops.c
++++ linux-2.6.22-rc4-mm2/fs/ocfs2/aops.c
+@@ -739,18 +739,13 @@ int ocfs2_map_page_blocks(struct page *p
+ 	bh = head;
+ 	block_start = 0;
+ 	do {
+-		void *kaddr;
+-
+ 		block_end = block_start + bsize;
+ 		if (block_end <= from)
+ 			goto next_bh;
+ 		if (block_start >= to)
+ 			break;
+ 
+-		kaddr = kmap_atomic(page, KM_USER0);
+-		memset(kaddr+block_start, 0, bh->b_size);
+-		flush_dcache_page(page);
+-		kunmap_atomic(kaddr, KM_USER0);
++		zero_user_page(page, block_start, bh->b_size, KM_USER0);
+ 		set_buffer_uptodate(bh);
+ 		mark_buffer_dirty(bh);
+ 
+@@ -895,15 +890,11 @@ static void ocfs2_zero_new_buffers(struc
+ 			if (block_end > from && block_start < to) {
+ 				if (!PageUptodate(page)) {
+ 					unsigned start, end;
+-					void *kaddr;
+ 
+ 					start = max(from, block_start);
+ 					end = min(to, block_end);
+ 
+-					kaddr = kmap_atomic(page, KM_USER0);
+-					memset(kaddr+start, 0, end - start);
+-					flush_dcache_page(page);
+-					kunmap_atomic(kaddr, KM_USER0);
++					zero_user_page(page, start, end - start, KM_USER0);
+ 					set_buffer_uptodate(bh);
+ 				}
+ 
+
