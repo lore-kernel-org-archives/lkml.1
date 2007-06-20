@@ -1,179 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbXFTN75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbXFTOBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbXFTN75 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 09:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbXFTN7u
+	id S1756919AbXFTOBQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 10:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXFTOBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 09:59:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49443 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750842AbXFTN7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 09:59:49 -0400
-Message-ID: <467932B4.6030800@redhat.com>
-Date: Wed, 20 Jun 2007 15:59:16 +0200
-From: Michal Schmidt <mschmidt@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070529)
+	Wed, 20 Jun 2007 10:01:04 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:58273 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751422AbXFTOBD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 10:01:03 -0400
+Date: Wed, 20 Jun 2007 10:01:01 -0400
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: David Schwartz <davids@webmaster.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070620140101.GU10008@csclub.uwaterloo.ca>
+References: <MDEHLPKNGKAHNMBLJOLKKEIFEKAC.davids@webmaster.com> <orodjfkzjt.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@redhat.com>
-CC: Steven Rostedt <srostedt@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -rt] irq nobody cared workaround for i386
-References: <4676CF81.2000205@redhat.com> <4677D7AF.7040700@redhat.com>
-In-Reply-To: <4677D7AF.7040700@redhat.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orodjfkzjt.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Schmidt wrote:
-> Steven Rostedt wrote:
->   
->> This is the final "design" for the nobody cared bug. For all IO-APICS 
->> other than the first one (the chained IO-APICS) we use the PCIX version 
->> of the mask and unmask interrupt routines.  This changes the interrupt 
->> from level to edge for mask and edge to level for unmask. This keeps the 
->> PCI-E from thinking it's in legacy mode and assert an old fashion INT# 
->> interrupt which might spread to other interrupts.
->>
->>   
->>     
->
-> Here's a port of the workaround to i386. I tested it successfully on IBM
-> LS21.
-> Notice I had to disable the quirk handling in ack_ioapic_quirk_irq. The
-> code path was triggering on LS21 and because it plays with the Interrupt
-> Mask bit, it produced the doubled interrupts again. I don't like it and
-> I need to think about a solution which would handle both quirks correctly.
->   
+On Sun, Jun 17, 2007 at 12:52:38AM -0300, Alexandre Oliva wrote:
+> What it does is impose conditions for whoever wants to distribute the
+> software.  And GPLv3 makes it explicit that one such condition is to
+> permit the user to install and run modified versions of the program in
+> the hardware that ships with the program.  A condition that is
+> arguably already encoded in the "no further restrictions to the rights
+> granted" by the license" and to the requirement for complete
+> corresponding source code to accompany the binary.
+> 
+> That you disagree with it doesn't make you right.
+> 
+> But that it is within the spirit of the GPL defined by its authors
+> (which is all I'm trying to show here), it is.
+> 
+> > The GPL (at least through version 2) is about free access to source
+> > code.
+> 
+> Some think so, but this was GPLv1.
+> 
+> v2 added stuff such as:
+> 
+>   if a patent license would not permit royalty-free redistribution of
+>   the Program by all those who receive copies directly or indirectly
+>   through you, then the only way you could satisfy both it and this
+>   License would be to refrain entirely from distribution of the
+>   Program
+> 
+> Do you realize that the patent is unrelated with the program, but
+> nevertheless the copyright license establishes conditions about what
+> kind of patent licenses you may accept in order for you to have
+> permission to distribute the program.
+> 
+> Why should restrictions through patents be unacceptable, but
+> restrictions through hardware and software be acceptable.
+> 
+> Both are means to disrespect users' freedoms.
 
-I came to the conclusion that the IO-APICs which need the fix for the
-nobody cared bug don't have the issue ack_ioapic_quirk_irq is designed
-to work-around. It should be safe simply to use the normal
-ack_ioapic_irq as the .eoi method in pcix_ioapic_chip.
-So this is the port of Steven's fix for the nobody cared bug to i386. It
-works fine on IBM LS21 I have access to.
+A patent prevents you from using the software in any way at all, while a
+hardware restriction prevents you from using the software on that
+particular hardware, but not on lots of other hardware.  Very big
+difference.
 
-Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+> It is the duty of the FSF to defend these freedoms.  It's its public
+> mission.  That's a publicly stated goal of the GPL, for anyone who
+> cares to understand it, or miss it completely and then complain about
+> changes in spirit.
 
---- arch/i386/kernel/io_apic.c.orig	2007-06-19 08:40:05.000000000 -0400
-+++ arch/i386/kernel/io_apic.c	2007-06-20 09:03:55.000000000 -0400
-@@ -261,6 +261,18 @@ static void __unmask_IO_APIC_irq (unsign
- 	__modify_IO_APIC_irq(irq, 0, 0x00010000);
- }
- 
-+/* trigger = 0 (edge mode) */
-+static void __pcix_mask_IO_APIC_irq (unsigned int irq)
-+{
-+	__modify_IO_APIC_irq(irq, 0, 0x00008000);
-+}
-+
-+/* mask = 0, trigger = 1 (level mode) */
-+static void __pcix_unmask_IO_APIC_irq (unsigned int irq)
-+{
-+	__modify_IO_APIC_irq(irq, 0x00008000, 0x00010000);
-+}
-+
- static void mask_IO_APIC_irq (unsigned int irq)
- {
- 	unsigned long flags;
-@@ -279,6 +291,24 @@ static void unmask_IO_APIC_irq (unsigned
- 	spin_unlock_irqrestore(&ioapic_lock, flags);
- }
- 
-+static void pcix_mask_IO_APIC_irq (unsigned int irq)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ioapic_lock, flags);
-+	__pcix_mask_IO_APIC_irq(irq);
-+	spin_unlock_irqrestore(&ioapic_lock, flags);
-+}
-+
-+static void pcix_unmask_IO_APIC_irq (unsigned int irq)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ioapic_lock, flags);
-+	__pcix_unmask_IO_APIC_irq(irq);
-+	spin_unlock_irqrestore(&ioapic_lock, flags);
-+}
-+
- static void clear_IO_APIC_pin(unsigned int apic, unsigned int pin)
- {
- 	struct IO_APIC_route_entry entry;
-@@ -1257,22 +1287,27 @@ static int assign_irq_vector(int irq)
- 
- 	return vector;
- }
-+
- static struct irq_chip ioapic_chip;
-+static struct irq_chip pcix_ioapic_chip;
- 
- #define IOAPIC_AUTO	-1
- #define IOAPIC_EDGE	0
- #define IOAPIC_LEVEL	1
- 
--static void ioapic_register_intr(int irq, int vector, unsigned long trigger)
-+static void ioapic_register_intr(int irq, int vector, unsigned long trigger,
-+				 int pcix)
- {
-+	struct irq_chip *chip = pcix ? &pcix_ioapic_chip : &ioapic_chip;
-+
- 	if ((trigger == IOAPIC_AUTO && IO_APIC_irq_trigger(irq)) ||
- 			trigger == IOAPIC_LEVEL)
--		set_irq_chip_and_handler_name(irq, &ioapic_chip,
--					 handle_fasteoi_irq, "fasteoi");
--	else {
--		set_irq_chip_and_handler_name(irq, &ioapic_chip,
--					 handle_edge_irq, "edge");
--	}
-+		set_irq_chip_and_handler_name(irq, chip, handle_fasteoi_irq,
-+					      pcix ? "pcix-fasteoi" : "fasteoi");
-+	else
-+		set_irq_chip_and_handler_name(irq, chip, handle_edge_irq,
-+					      pcix ? "pcix-edge" : "edge");
-+	
- 	set_intr_gate(vector, interrupt[irq]);
- }
- 
-@@ -1336,7 +1371,7 @@ static void __init setup_IO_APIC_irqs(vo
- 		if (IO_APIC_IRQ(irq)) {
- 			vector = assign_irq_vector(irq);
- 			entry.vector = vector;
--			ioapic_register_intr(irq, vector, IOAPIC_AUTO);
-+			ioapic_register_intr(irq, vector, IOAPIC_AUTO, apic>0);
- 		
- 			if (!apic && (irq < 16))
- 				disable_8259A_irq(irq);
-@@ -2058,6 +2093,18 @@ static struct irq_chip ioapic_chip __rea
- 	.retrigger	= ioapic_retrigger_irq,
- };
- 
-+static struct irq_chip pcix_ioapic_chip __read_mostly = {
-+	.name 		= "IO-APIC",
-+	.startup 	= startup_ioapic_irq,
-+	.mask	 	= pcix_mask_IO_APIC_irq,
-+	.unmask	 	= pcix_unmask_IO_APIC_irq,
-+	.ack 		= ack_ioapic_irq,
-+	.eoi 		= ack_ioapic_irq,
-+#ifdef CONFIG_SMP
-+	.set_affinity 	= set_ioapic_affinity_irq,
-+#endif
-+	.retrigger	= ioapic_retrigger_irq,
-+};
- 
- static inline void init_IO_APIC_traps(void)
- {
-@@ -2858,7 +2905,7 @@ int io_apic_set_pci_routing (int ioapic,
- 		mp_ioapics[ioapic].mpc_apicid, pin, entry.vector, irq,
- 		edge_level, active_high_low);
- 
--	ioapic_register_intr(irq, entry.vector, edge_level);
-+	ioapic_register_intr(irq, entry.vector, edge_level, ioapic>0);
- 
- 	if (!ioapic && (irq < 16))
- 		disable_8259A_irq(irq);
+I wouldn't call it a duty.  It is the chosen mission perhaps, but nobody
+is making them do it.
 
+> That's true.  Per the license, it's only who distributes the hardware
+> to you that shouldn't impose such restrictions.
 
+So what would happen if some company was to make software for a tivo and
+released their binaries signed with some specific key, and they released
+information on how to check this was signed with their key, and then
+some other companies went and made tivo hardware and decided that they
+would only allow code signed by the first companies key to run on it,
+because that company had software which was acceptable to the
+DMCA/RIAA/MPAA/etc and allowed them to get access to the hardware they
+wanted to use in their box.  The second company now sells hardware to
+make money, and the first company sells tv guide updates service to
+people who want to use their software releases fully.
 
+What does the GPL do now?  The software company still releases the
+sources to the GPL software, but their binary releases are signed with a
+key they don't give you.  They didn't provide you with any hardware, you
+have to buy that from the hardware company that makes a product that
+happens to run that software because it has the right bits of hardware
+to record tv programs and such.  The hardware company put restrictions
+on what software the box will run, although techicly the software
+company that has the signing key could make lots of compatible software
+for that particular locked down hardware, including vxworks or windows
+based code if they chose to do so, while the hardware company just makes
+hardware and decided to only allow software with the signature to run.
+They didn't distribute any software, the buyer has to go get that from
+the software company if they want the box to be useful (probably not a
+good business plan for the majority of customers, but still possible in
+theory).
+
+> That's right.  But one of the obligations is to impose no further
+> restrictions on the exercise of the rights.  What is "imposing a
+> restriction"?  Installing the software in ROM isn't regarded as such,
+> it's just a technical decision.  Installing the software in modifiable
+> non-volatile storage, but denying the user the ability to change it,
+> is regarded as imposing a restriction.  (note the "denying")  It is a
+> matter of intent.
+> 
+> It's not because you only install say 32MB of RAM on the machine that
+> you're denying the user the ability to run OOo on the machine.  But if
+> you ship the computer with plenty of memory, but somehow configure the
+> hardware or the operating system so as to prevent the user from
+> upgrading an OOo that shipped with it, while you can still install
+> that upgrade, then you're actively placing limits on the user's
+> freedom WRT to that software, and an anti-tivoization clause would
+> then stop you from distributing the software under these conditions.
+> 
+> I've never disputed that this is how they perceive it.
+> 
+> I've never disputed that GPLv2 serves this goal.
+> 
+> I still think GPLv3 serves this same goal, and better than v2.
+> 
+> But this is not what my participation here is about.
+> 
+> My participation here is about showing that GPLv3, and anti-tivozation
+> in particular, don't violate the spirit of the defending users'
+> freedoms WRT the covered software, such that the Free Software remains
+> Free.
+
+Well many people in the community disagrees, and you can't change their
+mind on that it would seem, just as they can't change yours (or the FSFs
+for that matter).  I would not be surprised to see some code forks when
+the GPLv3 is finally released.
+
+--
+Len Sorensen
