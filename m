@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762218AbXFTFW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762425AbXFTFXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762218AbXFTFW7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 01:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbXFTFWv
+	id S1762425AbXFTFXw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 01:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbXFTFXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 01:22:51 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:6838 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755148AbXFTFWu (ORCPT
+	Wed, 20 Jun 2007 01:23:45 -0400
+Received: from mtoichi14.ns.itscom.net ([219.110.2.184]:57176 "EHLO
+	mtoichi14.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755148AbXFTFXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 01:22:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QALkpj2iLE77vFywYSVx1VsVaomzxt+LA5PoAVUP4zpxmLRZ1gpl/+OxbKcQW2qU2iOI1AOLjAn2oNY1Wv2xVa2UPSwnG+C80nE9+qBJOZr0JG3BGWwZ41qIKCEUXYfeCWx9FtJsvkGcI660FSvi4w5I7Qd5cvc/H5yfzht/pdQ=
-Message-ID: <a8e1da0706192222h1a47a103y38ea2b41b83ceb35@mail.gmail.com>
-Date: Wed, 20 Jun 2007 05:22:49 +0000
-From: "dave young" <hidave.darkstar@gmail.com>
-To: "Li Yang-r58472" <LeoLi@freescale.com>
-Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Cc: "WANG Cong" <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, "TripleX Chung" <xxx.phy@gmail.com>,
-       "Maggie Chen" <chenqi@beyondsoft.com>, "Tejun Heo" <htejun@gmail.com>,
-       "Fengguang Wu" <fengguang.wu@gmail.com>,
-       "Chen Li-jun" <cljun@xiyou.edu.cn>
-In-Reply-To: <989B956029373F45A0B8AF0297081890D82DF1@zch01exm26.fsl.freescale.net>
+	Wed, 20 Jun 2007 01:23:44 -0400
+Date: Wed, 20 Jun 2007 14:22:23 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: can't suspend on vaio sz (rc4 and rc5 are ok) [was Re: 2.6.22-rc4-mm2]
+Message-ID: <20070620052222.GA4452@inferi.kami.home>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a8e1da0706191858w73a453dfjf28895150af85cfe@mail.gmail.com>
-	 <989B956029373F45A0B8AF0297081890D82DF1@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.22-rc4-mm2-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-2007/6/20, Li Yang-r58472 <LeoLi@freescale.com>:
-> > -----Original Message-----
-> > From: dave young [mailto:hidave.darkstar@gmail.com]
-> > Sent: Wednesday, June 20, 2007 9:58 AM
-> > To: WANG Cong
-> > Cc: Li Yang-r58472; linux-kernel@vger.kernel.org; gregkh@suse.de;
-> TripleX Chung;
-> > Maggie Chen; Tejun Heo; Fengguang Wu; Chen Li-jun
-> > Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-> >
-> > Hi,
-> > IMHO, it is not very suitable  for translations  merging into kernel.
-> >
-> > first, It's impossible to be 100% accurate.
->
-> It can be accurate by meaning.  And it can be improved.
->
-> > second, two or more language need to be synced with english one, it's
-> > a problem in  the long run.
->
-> This can be done through good maintenance.  I don't think it's harder
-> than maintaining the code in kernel source tree.
+On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/
 
-Yes, but  the documents updating are always  late than the sources.
+Hello,
+on this vaio sz72b I can't suspend if usb-storage is loaded. Bisecting
+is becoming troublesome as different sets have slightly different
+problems.
+At one point (with the GREGKH usb stuff built) I had the kernel
+reporting it cannot stop the usb-storage thread so I guess that
+something later in the series made things worse (freezable workqueues?).
 
-In my personal opinion, Of course chinese translaton is a valuable
-work, But I don't like huge kernel source with tuns of translations,
-english only is always better choice.
-
-Anyway thanks for the work :)
-
-Regards
-dave
+Clues?
+-- 
+mattia
+:wq!
