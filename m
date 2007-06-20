@@ -1,121 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbXFTPsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbXFTPu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbXFTPsX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 11:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXFTPsQ
+	id S1756058AbXFTPu7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 11:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbXFTPuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 11:48:16 -0400
-Received: from dovecot.org ([82.118.211.50]:55963 "EHLO dovecot.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752407AbXFTPsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 11:48:15 -0400
-Subject: Re: SMP read() stopping at memory page boundaries
-From: Timo Sirainen <tss@iki.fi>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <1182351171.3768.65.camel@hurina>
-References: <1182351171.3768.65.camel@hurina>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-1IppvHwtzOiuXG0COxtj"
-Date: Wed, 20 Jun 2007 18:48:13 +0300
-Message-Id: <1182354493.3768.80.camel@hurina>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 20 Jun 2007 11:50:52 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:46462 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753031AbXFTPuv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 11:50:51 -0400
+Message-ID: <46794CB3.4000305@zytor.com>
+Date: Wed, 20 Jun 2007 08:50:11 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Alexandre Oliva <aoliva@redhat.com>
+CC: Anders Larsen <al@alarsen.net>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <1182156596l.29108l.0l@ecxwww1.reanet.de> <or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or1wg9ccyd.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alexandre Oliva wrote:
+> 
+>> b) the manufacturer is able to update the device _in_ _the_ _field_.
+> Sure, it would be more costly, but it's not like the
+> law (or the agreements in place) *mandate* tivoization.
+> 
 
---=-1IppvHwtzOiuXG0COxtj
-Content-Type: multipart/mixed; boundary="=-32LprqJESYLghVLqsryc"
+The sad part is that the FCC, especially, are pretty fond of doing
+exactly that.  This comes more from a general cluelessness about
+technology (FCC is mostly stuffed with political shills which have more
+to do with who stuffed money into the current President's campaign than
+anything else) than malice, but "not modifiable by the end user" is a
+common requirement in FCC regulations, which have the force of law.
 
-
---=-32LprqJESYLghVLqsryc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2007-06-20 at 17:52 +0300, Timo Sirainen wrote:
-> Sometimes read() returns only 4096 bytes. I'm locking the file, so I
-> don't think this should ever happen, right?
-
-Sorry, the problem was with file truncating so there's no bug with
-locking. I didn't notice it first because it happened to work with
-FreeBSD and Solaris.
-
-Without locking there's a problem that I'd want to avoid, but I guess
-it's not necessarily a bug (although it doesn't seem to happen with
-FreeBSD or Solaris):
-
-Process 1:
-
- - create "foo2"
- - rename() to "foo"
- - lock
- - write(4096 + 16 bytes)
- - [fsync() here doesn't change anything]
- - pwrite("1111" to offset=3D4096-4)
- - unlock
-
-Process 2:
-
- - open("foo")
- - read(8192 bytes)
-
-read() sometimes returns 4096 bytes but with the "1111" already included
-in the data. Is there a way to avoid this without locking the file while
-reading? The "1111" tries to act as a kind of a lock.
-
-Again attached a test program, which should really do what I
-intended. :)
-
---=-32LprqJESYLghVLqsryc
-Content-Disposition: attachment; filename=concurrency.c
-Content-Type: text/x-csrc; name=concurrency.c; charset=ISO-8859-15
-Content-Transfer-Encoding: base64
-
-LyoNCiAgIGdjYyBjb25jdXJyZW5jeS5jIC1vIGNvbmN1cnJlbmN5IC1XYWxsDQoNCiAgIHN0YXJ0
-IHR3byBib3RoIGEgcmVhZGVyIGFuZCBhIHdyaXRlcjoNCg0KICAgLi9jb25jdXJyZW5jeQ0KICAg
-Li9jb25jdXJyZW5jeSAxDQoqLw0KI2RlZmluZSBfWE9QRU5fU09VUkNFIDUwMA0KI2luY2x1ZGUg
-PHN0ZGlvLmg+DQojaW5jbHVkZSA8c3RkbGliLmg+DQojaW5jbHVkZSA8c3RyaW5nLmg+DQojaW5j
-bHVkZSA8ZmNudGwuaD4NCiNpbmNsdWRlIDx1bmlzdGQuaD4NCiNpbmNsdWRlIDxhc3NlcnQuaD4N
-CiNpbmNsdWRlIDxzeXMvZmlsZS5oPg0KDQojZGVmaW5lIE1BWF9QQUdFU0laRSA4MTkyDQoNCmlu
-dCBtYWluKGludCBhcmdjLCBjaGFyICphcmd2W10pDQp7DQoJY2hhciBidWZbTUFYX1BBR0VTSVpF
-KjJdLCBvbmVzWzRdID0geyAxLCAxLCAxLCAxIH07DQoJaW50IGZkLCByZXQsIHBhZ2VzaXplOw0K
-DQoJbWVtc2V0KGJ1ZiwgMCwgc2l6ZW9mKGJ1ZikpOw0KDQoJcGFnZXNpemUgPSBnZXRwYWdlc2l6
-ZSgpOw0KCWFzc2VydChwYWdlc2l6ZSA8PSBNQVhfUEFHRVNJWkUpOw0KDQoJYnVmW3BhZ2VzaXpl
-XSA9ICdoJzsNCglpZiAoYXJnYyA9PSAxKSB7DQoJCXByaW50Zigid3JpdGluZywgcGFnZSBzaXpl
-ID0gJWRcbiIsIHBhZ2VzaXplKTsNCgkJZm9yICg7Oykgew0KCQkJZmQgPSBvcGVuKCJmb28yIiwg
-T19SRFdSIHwgT19DUkVBVCB8IE9fVFJVTkMsIDA2MDApOw0KCQkJaWYgKGZkID09IC0xKSB7DQoJ
-CQkJcGVycm9yKCJvcGVuKCkiKTsNCgkJCQlyZXR1cm4gMTsNCgkJCX0NCgkJCWlmIChyZW5hbWUo
-ImZvbzIiLCAiZm9vIikgPCAwKQ0KCQkJCXBlcnJvcigicmVuYW1lKCkiKTsNCgkJCXVzbGVlcChy
-YW5kKCkgJSAxMDAwKTsNCg0KCQkJaWYgKGZsb2NrKGZkLCBMT0NLX0VYKSA8IDApDQoJCQkJcGVy
-cm9yKCJmbG9jaygpIik7DQoJCQlwd3JpdGUoZmQsIGJ1ZiwgcGFnZXNpemUrMTYsIDApOw0KCQkJ
-Ly91c2xlZXAocmFuZCgpICUgMTAwMCk7DQoJCQkvL2ZkYXRhc3luYyhmZCk7DQoJCQlwd3JpdGUo
-ZmQsIG9uZXMsIDQsIHBhZ2VzaXplLTQpOw0KCQkJaWYgKGZsb2NrKGZkLCBMT0NLX1VOKSA8IDAp
-DQoJCQkJcGVycm9yKCJmbG9jaygpIik7DQoJCQl1c2xlZXAocmFuZCgpICUgMTAwMCk7DQoJCQlj
-bG9zZShmZCk7DQoJCX0NCgl9IGVsc2Ugew0KCQlwcmludGYoInJlYWRpbmcsIHBhZ2Ugc2l6ZSA9
-ICVkXG4iLCBwYWdlc2l6ZSk7DQoJCWZvciAoOzsgY2xvc2UoZmQpKSB7DQoJCQlmZCA9IG9wZW4o
-ImZvbyIsIE9fUkRXUiwgMDYwMCk7DQoJCQlpZiAoZmQgPT0gLTEpIHsNCgkJCQlwZXJyb3IoIm9w
-ZW4oKSIpOw0KCQkJCXJldHVybiAxOw0KCQkJfQ0KDQoJCQlyZXQgPSBwcmVhZChmZCwgYnVmLCBz
-aXplb2YoYnVmKSwgMCk7DQoJCQlpZiAocmV0IDwgcGFnZXNpemUpIHsNCgkJCQlpZiAocmV0ID4g
-MCkNCgkJCQkJcHJpbnRmKCJsZXNzIHRoYW4gYSBwYWdlOiAlZFxuIiwgcmV0KTsNCgkJCQljb250
-aW51ZTsNCgkJCX0NCg0KCQkJaWYgKG1lbWNtcChidWYgKyBwYWdlc2l6ZSAtIDQsIG9uZXMsIDQp
-ID09IDApIHsNCgkJCQlpZiAocmV0ID09IHBhZ2VzaXplKSB7DQoJCQkJCXByaW50ZigicGFnZSBz
-aXplIGN1dFxuIik7DQoJCQkJfSBlbHNlIGlmIChidWZbcGFnZXNpemVdICE9ICdoJykgew0KCQkJ
-CQlwcmludGYoImJyb2tlbiBkYXRhXG4iKTsNCgkJCQl9DQoJCQl9DQoJCX0NCgl9DQoJcmV0dXJu
-IDA7DQp9DQo=
-
-
---=-32LprqJESYLghVLqsryc--
-
---=-1IppvHwtzOiuXG0COxtj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGeUw9yUhSUUBViskRAkpKAJ4uDlvXTs8J4xnthJ3IjDcAFKhOvgCgpvVl
-5a3g2/bgAyhqvUTzoTSgXwM=
-=LDg9
------END PGP SIGNATURE-----
-
---=-1IppvHwtzOiuXG0COxtj--
-
+	-hpa
