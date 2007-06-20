@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbXFTHHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbXFTHOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761592AbXFTHHg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 03:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbXFTHH3
+	id S932070AbXFTHOF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 03:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759622AbXFTHNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 03:07:29 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1714 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756122AbXFTHH2 (ORCPT
+	Wed, 20 Jun 2007 03:13:54 -0400
+Received: from ananke.telenet-ops.be ([195.130.137.78]:33492 "EHLO
+	ananke.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757860AbXFTHNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 03:07:28 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Wed, 20 Jun 2007 00:07:08 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOENJELAC.davids@webmaster.com>
+	Wed, 20 Jun 2007 03:13:54 -0400
+Date: Wed, 20 Jun 2007 09:13:52 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Olaf Hering <olaf@aepfle.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: exported fb_find_logo references __initdata
+In-Reply-To: <20070619201957.GA21306@aepfle.de>
+Message-ID: <Pine.LNX.4.64.0706200913281.16573@anakin>
+References: <20070619201957.GA21306@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <161717d50706192034l65287cfct58410f6887ec33a3@mail.gmail.com>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 20 Jun 2007 00:07:39 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 20 Jun 2007 00:07:39 -0700
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 19 Jun 2007, Olaf Hering wrote:
+> fb_find_logo() refences a few structs marked as __initdata. The structs
+> itself have a member ->data which is marked as __initdata as well.
+> scripts/pnmtologo.c write_footer() and write_header() create those
+> structs.
+> 
+> What is the correct fix, and why does it work at all?
 
-> Much as I hate to extend the life of this execrable thread, since I
-> think Alexandre makes Sisyphus look like a hard-nosed pragmatist, it
-> seems pretty clear that TiVO impinges "[my] freedom to run the
-> program, for any purpose" if "any purpose" includes "make my TiVO do
-> what I want," and likewise to "adapt it to [my] needs" -- freedoms 0
-> and part of 1. It is just disingenuous to argue otherwise.
->
-> Dave
+commit 70802c60379fb843c485dfd4cab9e8f527d8fe81
+Author: Antonino A. Daplas <adaplas@gmail.com>
+Date:   Tue May 8 00:38:14 2007 -0700
 
-The freedom to "run the program, for any purpose" is just as much violated
-by Microsoft when they make the Xbox. You can't run the Linux kernel on that
-either, for the exact same reasons you can't run a modified Linux kernel on
-the Tivo. It is manifestly obvious that the "freedom to run the program for
-any purpose" must be limited to those pieces of hardware where you are the
-one who decides what hardware runs on that software. (And GPL rights were
-always applicable equally to all hardware in the universe, not specially to
-some hardware and not others.)
+    fbdev: don't show logo if driver or fbcon are modular
+    
+    It was always intended for the logo to be drawn only if both fbcon and the
+    driver that is mapped to it are both compiled statically.  Currently, if fbc
+    is loaded prior to the driver, the logo is not shown.  Reverse the order, an
+    the code may attempt to draw the logo which is __initdata.  By accident, thi
+    bug is rarely seen because this method of loading the modules is not common
+    and secondly, a code in fb_prepare_logo() that checks the height of the logo
+    (now a random value) rarely succeeds.
+    
+    Fix by drawing the logo only if both fbcon and the driver are statically
+    compiled.
 
-DS
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
