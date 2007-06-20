@@ -1,38 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXFTWtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbXFTWuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbXFTWtA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 18:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbXFTWsu
+	id S1757013AbXFTWuL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 18:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbXFTWt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 18:48:50 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:54696 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752875AbXFTWst (ORCPT
+	Wed, 20 Jun 2007 18:49:59 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3700 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbXFTWt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 18:48:49 -0400
-Date: Thu, 21 Jun 2007 00:48:47 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: linux-kernel@vger.kernel.org
-Subject: SATA Harddisk speed drop of 100 MB/s
-Message-ID: <20070620224847.GA5488@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	linux-kernel@vger.kernel.org
+	Wed, 20 Jun 2007 18:49:58 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Wed, 20 Jun 2007 15:49:54 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKIECOEMAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Importance: Normal
+In-Reply-To: <87645is82q.fsf@graviton.dyn.troilus.org>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 20 Jun 2007 15:50:14 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 20 Jun 2007 15:50:15 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hdparm -tT gives over 160 MB/s for my tripple 10k rpm Raptor RAID5
-on 2.6.18, as expected.
 
-In 2.6.22-rc5 this dropped to only 60 MB/s !
+> I do not say that the BIOS is doing anything (legally) wrong.  The
+> wrong act is distributing the binary kernel image without distributing
+> complete source code for it.
 
-Is this a known issue?
+Why are you not complaining that Linus does not distribute the keys he uses
+to sign kernel source distributions? If a digital signature is part of the
+distribution, why is the key used to produce that signature not part of the
+distribution?
 
-I also measured it with bonnie; I get 108 MB/s reading speed on
-2.6.18 and only 68 MB/s on 2.6.22-rc5.
+If you can cite some legal reason there is a difference, I would be quite
+impressed.
 
--- 
-Carlo Wood <carlo@alinoe.com>
+In any event, the argument is obvious nonsense. The signature is merely
+aggregated with the kernel. Cooperation, dependent function, and convergent
+design can't break mere aggregation or you get ridiculous results. (For
+example, a device shipped with the Linux kernel and some applications would
+have to GPL all the applications.)
+
+DS
+
+
