@@ -1,85 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbXFTKZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932157AbXFTKZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbXFTKZZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 06:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759901AbXFTKXp
+	id S932157AbXFTKZp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 06:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760502AbXFTKXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 06:23:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36154 "EHLO mx2.suse.de"
+	Wed, 20 Jun 2007 06:23:47 -0400
+Received: from ns2.suse.de ([195.135.220.15]:36157 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757211AbXFTKXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757203AbXFTKXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Jun 2007 06:23:38 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200706201223.443613000@suse.de>
 In-Reply-To: <200706201223.443613000@suse.de>
-To: righiandr@users.sourceforge.net, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, patches@x86-64.org
-Subject: [PATCH for 2.6.22] [1/10] i386: bug in i386 MTRR initialization
-Message-Id: <20070620102329.9248A14ACF@wotan.suse.de>
-Date: Wed, 20 Jun 2007 12:23:29 +0200 (CEST)
+To: torvalds@osdl.org, linux-kernel@vger.kernel.org, patches@x86-64.org
+Subject: [PATCH for 2.6.22] [2/10] x86_64: Fix readahead/sync_file_range/fadvise64 compat calls
+Message-Id: <20070620102330.A249114AD5@wotan.suse.de>
+Date: Wed, 20 Jun 2007 12:23:30 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Andrea Righi <righiandr@users.sourceforge.net>
-BUG: at include/linux/slub_def.h:77 kmalloc_index()
- [<c0168eb0>] get_slab+0x1d0/0x260
- [<c0169056>] __kmalloc+0x16/0x70
- [<c042b0ff>] sysenter_setup+0x6f/0x330
- [<c010baed>] mtrr_bp_init+0xcd/0x270
- [<c041a480>] unknown_bootoption+0x0/0x250
- [<c041a480>] unknown_bootoption+0x0/0x250
- [<c0423f78>] check_bugs+0x8/0x160
- [<c01a644c>] proc_sys_init+0xc/0x30
- [<c041a8ef>] start_kernel+0x21f/0x2b0
- [<c041a480>] unknown_bootoption+0x0/0x250
- =======================
+Correctly convert the u64 arguments from 32bit to 64bit.
 
-Reproduced running 2.6.22-rc2 (using SLUB) in a virtual machine with qemu 0.9.0
-+ kqemu 1.3.0pre11. It occurs only using "-kernel-kqemu" option (full
-virtualization mode).
+Pointed out by Heiko Carstens.
 
-In this case mtrr is supported by the real cpu, but no mtrr range is found,
-resulting in a kmalloc(0, GFP_KERNEL) in get_mtrr_state() and init_table().
+I guess this proves Linus' theory that nobody uses the more exotic Linux 
+specific syscalls.  It wasn't discovered by a user.
 
-I don't know if it's an incorrect behaviour of qemu in the mtrr emulation, but I
-think it should be handled properly.
-
-Signed-off-by: Andrea Righi <a.righi@cineca.it>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/kernel/cpu/mtrr/generic.c |    3 +++
- arch/i386/kernel/cpu/mtrr/main.c    |    5 +++++
- 2 files changed, 8 insertions(+)
+ arch/x86_64/ia32/ia32entry.S |    6 +++---
+ arch/x86_64/ia32/sys_ia32.c  |   19 +++++++++++++++++++
+ 2 files changed, 22 insertions(+), 3 deletions(-)
 
-Index: linux/arch/i386/kernel/cpu/mtrr/generic.c
+Index: linux/arch/x86_64/ia32/ia32entry.S
 ===================================================================
---- linux.orig/arch/i386/kernel/cpu/mtrr/generic.c
-+++ linux/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -84,6 +84,9 @@ void get_mtrr_state(void)
- 	struct mtrr_var_range *vrs;
- 	unsigned lo, dummy;
- 
-+	if (!num_var_ranges)
-+		return;
-+
- 	if (!mtrr_state.var_ranges) {
- 		mtrr_state.var_ranges = kmalloc(num_var_ranges * sizeof (struct mtrr_var_range), 
- 						GFP_KERNEL);
-Index: linux/arch/i386/kernel/cpu/mtrr/main.c
+--- linux.orig/arch/x86_64/ia32/ia32entry.S
++++ linux/arch/x86_64/ia32/ia32entry.S
+@@ -620,7 +620,7 @@ ia32_sys_call_table:
+ 	.quad quiet_ni_syscall		/* tux */
+ 	.quad quiet_ni_syscall    	/* security */
+ 	.quad sys_gettid	
+-	.quad sys_readahead	/* 225 */
++	.quad sys32_readahead	/* 225 */
+ 	.quad sys_setxattr
+ 	.quad sys_lsetxattr
+ 	.quad sys_fsetxattr
+@@ -645,7 +645,7 @@ ia32_sys_call_table:
+ 	.quad compat_sys_io_getevents
+ 	.quad compat_sys_io_submit
+ 	.quad sys_io_cancel
+-	.quad sys_fadvise64		/* 250 */
++	.quad sys32_fadvise64		/* 250 */
+ 	.quad quiet_ni_syscall 	/* free_huge_pages */
+ 	.quad sys_exit_group
+ 	.quad sys32_lookup_dcookie
+@@ -709,7 +709,7 @@ ia32_sys_call_table:
+ 	.quad compat_sys_set_robust_list
+ 	.quad compat_sys_get_robust_list
+ 	.quad sys_splice
+-	.quad sys_sync_file_range
++	.quad sys32_sync_file_range
+ 	.quad sys_tee			/* 315 */
+ 	.quad compat_sys_vmsplice
+ 	.quad compat_sys_move_pages
+Index: linux/arch/x86_64/ia32/sys_ia32.c
 ===================================================================
---- linux.orig/arch/i386/kernel/cpu/mtrr/main.c
-+++ linux/arch/i386/kernel/cpu/mtrr/main.c
-@@ -120,6 +120,11 @@ static void __init init_table(void)
- {
- 	int i, max;
+--- linux.orig/arch/x86_64/ia32/sys_ia32.c
++++ linux/arch/x86_64/ia32/sys_ia32.c
+@@ -860,3 +860,22 @@ long sys32_lookup_dcookie(u32 addr_low, 
+ 	return sys_lookup_dcookie(((u64)addr_high << 32) | addr_low, buf, len);
+ }
  
-+	if (!num_var_ranges) {
-+		printk(KERN_ERR "mtrr: no MTRR range found.\n");
-+		return;
-+	}
++asmlinkage ssize_t sys32_readahead(int fd, unsigned off_lo, unsigned off_hi, size_t count)
++{
++	return sys_readahead(fd, ((u64)off_hi << 32) | off_lo, count);
++}
 +
- 	max = num_var_ranges;
- 	if ((usage_table = kmalloc(max * sizeof *usage_table, GFP_KERNEL))
- 	    == NULL) {
++asmlinkage long sys32_sync_file_range(int fd, unsigned off_low, unsigned off_hi,
++			   unsigned n_low, unsigned n_hi,  int flags)
++{
++	return sys_sync_file_range(fd,
++				   ((u64)off_hi << 32) | off_low,
++				   ((u64)n_hi << 32) | n_low, flags);
++}
++
++asmlinkage long sys32_fadvise64(int fd, unsigned offset_lo, unsigned offset_hi, size_t len,
++		     int advice)
++{
++	return sys_fadvise64_64(fd, ((u64)offset_hi << 32) | offset_lo,
++				len, advice);
++}
