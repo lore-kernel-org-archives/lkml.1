@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbXFTVUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXFTVVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbXFTVUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 17:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXFTVUc
+	id S1754681AbXFTVVa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 17:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbXFTVVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 17:20:32 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:53515 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751459AbXFTVUb (ORCPT
+	Wed, 20 Jun 2007 17:21:23 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:39600
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752052AbXFTVVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 17:20:31 -0400
-Message-ID: <46799948.8000106@gmail.com>
-Date: Wed, 20 Jun 2007 23:16:56 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Wed, 20 Jun 2007 17:21:22 -0400
+Date: Wed, 20 Jun 2007 14:20:19 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
+       debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <orfy4mtjt4.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706201419170.30395@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+ <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
+ <ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
+ <or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
+ <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
+ <orfy4mtjt4.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Christoph Hellwig <hch@infradead.org>, Boaz Harrosh <bharrosh@panasas.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix req->cmd == INT cases
-References: <4677FD50.2090803@panasas.com> <20070619171610.GH18863@kernel.dk> <4679072C.2010604@panasas.com> <20070620122247.GA4443@infradead.org> <20070620122409.GU18863@kernel.dk>
-In-Reply-To: <20070620122409.GU18863@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/20/2007 02:24 PM, Jens Axboe wrote:
+On Wed, 20 Jun 2007, Alexandre Oliva wrote:
 
-> On Wed, Jun 20 2007, Christoph Hellwig wrote:
->> On Wed, Jun 20, 2007 at 01:53:32PM +0300, Boaz Harrosh wrote:
+> On Jun 20, 2007, "Jesper Juhl" <jesper.juhl@gmail.com> wrote:
+>
+>> On 19/06/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+>>> On Jun 18, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>>> In the GPLv3 world, we have already discussed in this thread how you can
+>>>> follow the GPLv3 by making the TECHNICALLY INFERIOR choice of using a ROM
+>>>> instead of using a flash device.
+>>>
+>>> Yes.  This is one option that doesn't bring any benefits to anyone.
+>>> It maintains the status quo for users and the community, but it loses
+>>> the ability for the vendor to upgrade, fix or otherwise control the
+>>> users.  Bad for the vendor.
+>
+>> Also bad for the user
+>
+> We already know the vendor doesn't care about the user, so why should
+> we take this into account when analyzing the reasoning of the vendor?
 
->>>  drivers/cdrom/aztcd.c
->>>  drivers/cdrom/cm206.c
->>>  drivers/cdrom/gscd.c
->>>  drivers/cdrom/mcdx.c
->>>  drivers/cdrom/optcd.c
->>>  drivers/cdrom/sjcd.c
->>> 
->> These are old cdrom drivers that are broken in various ways and
->> probably should be killed off aswell.
-> 
-> I agree (with both sentiments), would anyone mind if I just killed them
-> off?
+no, we don't know this. you attribute the reason for the lockdown to be 
+anti-user. others view it as being pro-user becouse it lets the user get 
+functionality that they wouldn't have access to otherwise.
 
-I wouldn't. As far as I'm concerned everything in drivers/cdrom except 
-viocd.c and cdrom.c itself can go, assuming I'll be allowed to bring back 
-support for the legacy cdrom types I'd still like to have supported -- in 
-the first place mitsumi (mcdx), panasonic (sbpcd) and sony (cdu31a) and 
-perhaps at some point other types if/when I happen across the hardware.
-
-The old drivers serve as a source of hardware information but at least mcdx 
-was broken in so many ways that it only did so at the source level. When I 
-wanted to check throughput with the old driver I actually had to go back as 
-far as 2.0.34 to find a working driver (the old mcd.c, already removed since 
-2.6.10). 2.0.34 sources are available from kernel.org, and 2.6.22 sources 
-even from my local machine...
-
-> mitsumi support is being reworked, that can get reintroduced once the
-> driver is in a stable state.
-
-... which, by the way, is still waiting on comment from anyone with a clue 
-as to why it makes the machine go boom (easily repeatable when using CFQ, 
-not or not easily when using AS):
-
-http://lkml.org/lkml/2007/6/4/50
-
-Rene.
-
+David Lang
