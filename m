@@ -1,104 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbXFTTOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759886AbXFTTQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759592AbXFTTOd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 15:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbXFTTO1
+	id S1759886AbXFTTQn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 15:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbXFTTQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 15:14:27 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1174 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755852AbXFTTO0 (ORCPT
+	Wed, 20 Jun 2007 15:16:35 -0400
+Received: from mga06.intel.com ([134.134.136.21]:53127 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753316AbXFTTQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 15:14:26 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 20 Jun 2007 12:14:23 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch] exclude sync signals from signalfd sets
-Message-ID: <Pine.LNX.4.64.0706201209570.6029@alien.or.mcafeemobile.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 20 Jun 2007 15:16:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,444,1175497200"; 
+   d="scan'208";a="256880941"
+Message-ID: <46797CB1.8070008@linux.intel.com>
+Date: Wed, 20 Jun 2007 12:14:57 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <peterz@infradead.org>
+CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures in	dma	map
+ api calls
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>	 <20070619213808.798646000@askeshav-devel.jf.intel.com>	 <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com>	 <20070620173038.GA25516@linux-os.sc.intel.com> <1182362703.21117.79.camel@twins>
+In-Reply-To: <1182362703.21117.79.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-The following patch excludes synchronous signals from being dequeued
-by a signalfd. It also re-enable signalfd from fetching signals (that
-are not synchronous) sent with sys_tkill() and sys_tgkill(), to the
-thread that created the signalfd.
-The behaviour of a signalfd will hence be:
-
-- Does not, in any case, fetch synchronous signals
-
-- Does fetch shared signals of the thread group of the thread that
-  created the signalfd
-
-- Does fetch private signals sent using sys_tkill() or sys_tgkill(),
-  to the thread that created the signalfd
+Peter Zijlstra wrote:
+> So a reclaim context (kswapd and direct reclaim) set PF_MEMALLOC to
+> ensure they themselves will not block on a memory allocation. And it is
+> understood that these code paths have a bounded memory footprint.
 
 
-
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-
-
-- Davide
-
-
-
----
- fs/signalfd.c   |   10 +++++++++-
- kernel/signal.c |    6 +-----
- 2 files changed, 10 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.mod/fs/signalfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/signalfd.c	2007-06-19 18:58:15.000000000 -0700
-+++ linux-2.6.mod/fs/signalfd.c	2007-06-19 19:02:57.000000000 -0700
-@@ -26,6 +26,14 @@
- #include <linux/anon_inodes.h>
- #include <linux/signalfd.h>
- 
-+/*
-+ * Signals that a signalfd should never fetch.
-+ */
-+#define SIGNALFD_EXCLUDE_MASK (sigmask(SIGILL) | sigmask(SIGKILL) | \
-+				       sigmask(SIGSTOP) | sigmask(SIGTRAP) | \
-+				       sigmask(SIGFPE) | sigmask(SIGSEGV) | \
-+				       sigmask(SIGBUS))
-+
- struct signalfd_ctx {
- 	struct list_head lnk;
- 	wait_queue_head_t wqh;
-@@ -320,7 +328,7 @@
- 	if (sizemask != sizeof(sigset_t) ||
- 	    copy_from_user(&sigmask, user_mask, sizeof(sigmask)))
- 		return error = -EINVAL;
--	sigdelsetmask(&sigmask, sigmask(SIGKILL) | sigmask(SIGSTOP));
-+	sigdelsetmask(&sigmask, SIGNALFD_EXCLUDE_MASK);
- 	signotset(&sigmask);
- 
- 	if (ufd == -1) {
-Index: linux-2.6.mod/kernel/signal.c
-===================================================================
---- linux-2.6.mod.orig/kernel/signal.c	2007-06-19 18:55:07.000000000 -0700
-+++ linux-2.6.mod/kernel/signal.c	2007-06-19 18:58:43.000000000 -0700
-@@ -365,11 +365,7 @@
- {
- 	int signr = 0;
- 
--	/* We only dequeue private signals from ourselves, we don't let
--	 * signalfd steal them
--	 */
--	if (tsk == current)
--		signr = __dequeue_signal(&tsk->pending, mask, info);
-+	signr = __dequeue_signal(&tsk->pending, mask, info);
- 	if (!signr) {
- 		signr = __dequeue_signal(&tsk->signal->shared_pending,
- 					 mask, info);
+that's a too simplistic view though; what happens is that kswapd will 
+queue the IO, but the irq context will then take the IO from the queue 
+and do the DMA mapping... which needs the memory.....
