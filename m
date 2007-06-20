@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbXFTNhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbXFTNl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbXFTNhz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 09:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXFTNho
+	id S1756280AbXFTNl5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 09:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXFTNlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 09:37:44 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:51322 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751876AbXFTNhm (ORCPT
+	Wed, 20 Jun 2007 09:41:50 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:58975 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751266AbXFTNlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 09:37:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DZsRCVsB/l1tsgYbG17ZE6uwEmPQsCwUQd5er7OrheU9U4ShZyJNDgVGHCBk2PZuLJ13k3TKjORiOvuz9estdYi2ClepMRreYSniIFPukjt2xmIU8PzjW/6RQC5mE/LRWQpqxG7lcekiMyDSAwRhhH5AdeJHYJywGrCI/VCamAY=
-Message-ID: <6bffcb0e0706200637m33b02ea7le7c8f64c66e159b2@mail.gmail.com>
-Date: Wed, 20 Jun 2007 15:37:41 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Stephen Hemminger" <shemminger@linux-foundation.org>
-Subject: Re: [2/2] 2.6.22-rc5: known regressions with patches
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Dave Airlie" <airlied@linux.ie>,
-       "Andrea Righi" <righiandr@users.sourceforge.net>,
-       Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
-       "Samuel Ortiz" <samuel@sortiz.org>,
-       "Andrey Borzenkov" <arvidjaar@mail.ru>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Chad Tindel" <ctindel@users.sourceforge.net>,
-       "Dan Aloni" <da-x@monatomic.org>, "Jay Vosburgh" <fubar@us.ibm.com>,
-       "Stephen Smalley" <sds@tycho.nsa.gov>,
-       "James Morris" <jmorris@namei.org>,
-       "Eric Paris" <eparis@parisplace.org>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-usb-devel@lists.sourceforge.net,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Paulo Pereira" <pfmp.404@gmail.com>,
-       "Alan Stern" <stern@rowland.harvard.edu>
-In-Reply-To: <20070618100905.7fc1176c@localhost.localdomain>
+	Wed, 20 Jun 2007 09:41:49 -0400
+Date: Wed, 20 Jun 2007 09:41:48 -0400
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Bron Gondwana <brong@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070620134148.GT10008@csclub.uwaterloo.ca>
+References: <20070614112329.3645c397@the-village.bc.nu> <20070614103846.GA7902@elte.hu> <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614195517.GA4933@elte.hu> <orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614235004.GA14952@elte.hu> <20070615041149.GA6741@brong.net> <orzm313hge.fsf@oliva.athome.lsd.ic.unicamp.br> <20070615072322.GA7594@brong.net> <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4675430B.2000304@googlemail.com> <46754400.2080101@googlemail.com>
-	 <20070618100905.7fc1176c@localhost.localdomain>
+In-Reply-To: <orabv110k5.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18/06/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> On Sun, 17 Jun 2007 16:24:00 +0200
-> Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->
-> > Hi all,
-> >
-> > Here is a list of some known regressions in 2.6.22-rc5
-> > with patches available.
-> >
-> > Feel free to add new regressions/remove fixed etc.
-> > http://kernelnewbies.org/known_regressions
-> >
-> >
-> >
-> > Memory management
-> >
-> > Subject    : bug in i386 MTRR initialization
-> > References : http://lkml.org/lkml/2007/5/19/93
-> > Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
-> > Status     : patch available
-> >
-> >
-> >
-> > Networking
-> > Subject    : commit 9093bbb2d96d0184f037cea9b4e952a44ebe7c32 broke the bonding driver
-> > References : http://lkml.org/lkml/2007/6/13/65
-> > Submitter  : Dan Aloni <da-x@monatomic.org>
-> > Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
-> > Status     : patch available
-> >              (I cannot find it in archives. Stephen, please resend the patch)
-> >
->
-> http://www.mail-archive.com/netdev@vger.kernel.org/msg40352.html
+On Fri, Jun 15, 2007 at 04:26:34PM -0300, Alexandre Oliva wrote:
+> If the bug is in the non-GPLed BIOS, not in the GPLed code, too bad.
+> One more reason to dislike non-Free Software.
 
-Thanks!
+Maybe the Tivo only loading signed kernels is a bug in their bios. :)
 
-Regards,
-Michal
+> The freedom the GPL defends is not the freedom to modify and debug the
+> system, but rather the covered software.
+> 
+> Now, if you find evidence that the "bug" is actually intentionally put
+> there to stop you from doing what you wanted with the software, then
+> there's clearly a violation of the spirit of the license, and you
+> might even have a case of copyright infringement, but IANAL.
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+There are many interesting bugs out there.  Who is to say what was
+intensional?
+
+--
+Len Sorensen
