@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbXFTXWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbXFTXYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbXFTXWt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 19:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXFTXWm
+	id S1756124AbXFTXYw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 19:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbXFTXYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 19:22:42 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:59818 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753345AbXFTXWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 19:22:41 -0400
-Date: Thu, 21 Jun 2007 01:22:34 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Timo Sirainen <tss@iki.fi>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ray Lee <ray-lk@madrabbit.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: SMP read() stopping at memory page boundaries
-In-Reply-To: <1182361700.3768.107.camel@hurina>
-Message-ID: <Pine.LNX.4.64.0706210121310.3068@twin.jikos.cz>
-References: <1182351171.3768.65.camel@hurina>  <1182354493.3768.80.camel@hurina>
-  <2c0942db0706200922i15ce44b0xceaed95d002dba33@mail.gmail.com> 
- <1182358622.3768.98.camel@hurina>  <20070620180500.6e2d600a@the-village.bc.nu>
- <1182361700.3768.107.camel@hurina>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 20 Jun 2007 19:24:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:32808 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbXFTXYo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 19:24:44 -0400
+Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ian McDonald <ian.mcdonald@jandi.co.nz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       William Cohen <wcohen@redhat.com>,
+       "S. P. Prasanna" <prasanna@in.ibm.com>,
+       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
+       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
+       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
+References: <467543FA.60905@googlemail.com>
+	 <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com>
+	 <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 20 Jun 2007 16:21:07 -0700
+Message-Id: <1182381667.2701.7.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Timo Sirainen wrote:
 
-> > It will occur if you are reading as someone else changes the file size.
-> > Use file locking, it exists for a reason ;)
-> Annoying extra overhead. Especially with NFS, when nowadays you can't
-> even use flock() to create local locks..
+> Kprobes fundamntally disagrees with DEBUG_RODATA, there's no point in 
+> "working around it". Better just admit it.
 
-It's not only "nowadays", it has been like that for quite a some time.
+that's wrong. KPROBE fundamentally disagrees with TEXT being read only,
+which is a 2.6.22 new "feature".. and a buggy one at that.
 
-On the other hand you can use fcntl(F_SETLK) though, which works even 
-through NFS (v3).
 
--- 
-Jiri Kosina
+the real fix would be something like this instead:
+
+--- linux-2.6.22-rc5/arch/x86_64/mm/init.c.org	2007-06-21 04:20:10.000000000 -0700
++++ linux-2.6.22-rc5/arch/x86_64/mm/init.c	2007-06-21 04:21:01.000000000 -0700
+@@ -605,6 +605,11 @@ void mark_rodata_ro(void)
+ 	if (num_possible_cpus() > 1)
+ 		start = (unsigned long)_etext;
+ #endif
++
++#ifdef CONFIG_KPROBES
++	start = (unsigned long)_etext;
++#endif
++	
+ 	end = (unsigned long)__end_rodata;
+ 	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
+ 	end &= PAGE_MASK;
+
+
