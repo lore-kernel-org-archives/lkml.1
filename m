@@ -1,132 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbXFTREg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbXFTRHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756768AbXFTREg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbXFTRE1
+	id S1752653AbXFTRHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXFTRGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:04:27 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:33546 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752928AbXFTRE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:04:27 -0400
-Date: Wed, 20 Jun 2007 19:04:24 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Alexander Gabert <pappy@gentoo.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, libc-alpha@sourceware.org,
-       linux-kernel@vger.kernel.org, hardened@gentoo.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] get_random_long() and AT_ENTROPY for auxv, kernel
- 2.6.21.5
-Message-Id: <20070620190424.cf718ea1.dada1@cosmosbay.com>
-In-Reply-To: <467948F5.3010709@gentoo.org>
-References: <4675C678.3080807@gentoo.org>
-	<1182128803.22999.9.camel@laptopd505.fenrus.org>
-	<4675DFA8.6060703@gentoo.org>
-	<1182130680.22999.13.camel@laptopd505.fenrus.org>
-	<4676601A.7070209@gentoo.org>
-	<467948F5.3010709@gentoo.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Jun 2007 13:06:54 -0400
+Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:44145 "EHLO
+	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753154AbXFTRGx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 13:06:53 -0400
+Date: Thu, 21 Jun 2007 02:06:18 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Len Brown <lenb@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH 3/3] ACPI autoloading - Create __mod_acpi_device_table symbol for all acpi drivers.
+Message-ID: <20070620170617.GA3226@inferi.kami.home>
+References: <1182112047.4204.12.camel@noname> <1182111863.4204.6.camel@noname>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182111863.4204.6.camel@noname>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.22-rc5-2 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007 17:34:13 +0200
-Alexander Gabert <pappy@gentoo.org> wrote:
+On Sun, Jun 17, 2007 at 10:24:23PM +0200, Thomas Renninger wrote:
+> Create __mod_acpi_device_table symbol for all acpi drivers.
+> 
+> modpost is going to use this one to create modules.alias
+> 
+> Hopefully thinkpad module still works.
+> IMO this one should get restructured and make use of acpi_bus_register_driver
+> and try to avoid to test for HIDs/CIDs for its own.
+> 
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
 
-> Hi,
+Tested, except for the compile error already reported it does its job on
+my vaios.
+A question though:
 
-Hello Alexander
-
-> 
-> http://dev.gentoo.org/~pappy/kernel/linux-2.6.21.5-get_urandom_long-AT_ENTROPY.patch
-> 
-> this patch adds the function drivers/char/random.c:get_random_long()
-> and adds an AT_ENTROPY field in the auxv without config option
-> (the config option was removed as suggested by Arjan on LKML).
-> 
-> README: get_random_long() and AT_ENTROPY support for auxv
-> NAME: Alexander Gabert
-> EMAIL: pappy@gentoo.org
-> 
-> 
-> 
-> diff -Nru linux-2.6.21.5.ORIG/drivers/char/random.c 
-> linux-2.6.21.5/drivers/char/random.c
-> --- linux-2.6.21.5.ORIG/drivers/char/random.c    2007-06-11 
-> 20:37:06.000000000 +0200
-> +++ linux-2.6.21.5/drivers/char/random.c    2007-06-20 
-> 17:00:35.000000000 +0200
-> @@ -1654,6 +1654,53 @@
+> Index: linux-2.6.22-rc4/drivers/misc/sony-laptop.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/drivers/misc/sony-laptop.c
+> +++ linux-2.6.22-rc4/drivers/misc/sony-laptop.c
+> @@ -890,10 +890,22 @@ static int sony_nc_remove(struct acpi_de
+>  	return 0;
 >  }
 >  
->  /*
-> + * get_random_long() returns a randomized unsigned long word.
-> + * It recycles it's entropy cache for a given time period and
-> + * uses half_md4_transform to generate a unique return value.
-> + * Every REKEY_INTERVAL the cache is reloaded with fresh
-> + * randomization data using get_random_bytes().
-> + * This function is not intended for strong cryptographic routines.
-> + */
-> +unsigned long get_random_long(void)
-> +{
-> +  /* remember the last time we refreshed the cache with random entropy */
-> +  static time_t   rekey_time;
+> +static const struct acpi_device_id sony_device_ids[] = {
+> +	{SONY_NC_HID, 0},
+> +	{SONY_PIC_HID, 0},
+> +	{"", 0},
+> +};
+> +MODULE_DEVICE_TABLE(acpi, sony_device_ids);
 > +
-> +  time_t          t;
+> +static const struct acpi_device_id sony_nc_device_ids[] = {
+> +	{SONY_NC_HID, 0},
+> +	{"", 0},
+> +};
 > +
-> +  /*
-> +   * the following data in the buffer is unchanged during REKEY_INTERVAL:
-> +   * |----|----|KKKK|KKKK|KKKK|KKKK|KKKK|KKKK|----|----|----|----|
-> +   * ___0____1____2____3____4____5____6____7____8____9___10___11__
-> +   *
-> +   * the following data is updated during the first half_md4_transform call
-> +   * |----|YYYY|----|----|----|----|----|----|ZZZZ|ZZZZ|ZZZZ|ZZZZ|
-> +   * ___0____1____2____3____4____5____6____7____8____9___10___11__
-> +   *
-> +   * the following data is updated during the second half_md4_transform
-> +   * |XXXX|----|----|----|----|----|----|----|ZZZZ|ZZZZ|ZZZZ|ZZZZ|
-> +   * ___0____1____2____3____4____5____6____7____8____9___10___11__
-> +   */
-> +  static __u32    entropycache[12];
+...
+> +static const struct acpi_device_id sony_pic_device_ids[] = {
+> +	{SONY_PIC_HID, 0},
+> +	{"", 0},
+> +};
 > +
-> +  /* get the current time in seconds */
-> +  t = get_seconds();
-> +
-> +  /* check for REKEY_INTERVAL */
-> +  if (t && (!rekey_time || ((t - rekey_time) > REKEY_INTERVAL))) {
-> +    rekey_time = t;
-> +    /* refresh with random entropy */
-> +    get_random_bytes(entropycache, sizeof(entropycache));
-> +  }
 
-Maybe this rekeying can be added in rekey_seq_generator(), so that you dont have to test rekey_time each time get_random_long() is called. You probably could refresh only 8 values, not the full 12 values.
+is it really necessary to have those duplicate entries?
 
-> +
-> +  /* transform the buffer to a new state, thus generating new return 
-> value */
-> +  entropycache[1] = half_md4_transform(entropycache+8, entropycache);
-> +  entropycache[0] = half_md4_transform(entropycache+8, entropycache);
-> +
-> +  return *(unsigned long *)entropycache;
+Also, I guess that when this patch set is applied we also should declare
+sonypi obsolete as sony-laptop will grab the same device that sonypi
+wants (the SPIC one). sony-laptop has options to avoid doing that would
+make things clear to users.
+I still haven't received reports of mafunctioning vaios using the new
+sony-laptop instead of sonypi but 2.6.22 isn't final yet.
 
-This is not valid on some arches, as entropycache[] alignment (u32 -> 4) might be smaller then alignment for a long (4 or 8). 
-
-This also adds about 400 instructions (half_md4_transform() is about 200 instructions, about 700 bytes of code on x86_64) in exec() path, but this is probably minor given the cost of exec()
-
-I am not sure why you unconditionally call half_md4_transform() twice, since the entropycache[1] wont be used on 32bits platforms.
-
-I suggest spliting your entropycache into two parts :
-
-One part, with 8 u32, that is read_mostly (and shared by all cpus), updated once every 300 seconds in rekey_seq_generator()
-static u32 entropycache_shared[8] __read_mostly;
-
-One part, with (16/sizeof(long)) long, percpu to avoid false sharing between cpus.
-static DEFINE_PER_CPU(unsigned long , entropycache_pcpu)[16 / sizeof(unsigned long)];
-
-then call half_md4_transform() once :
-
-half_md4_transform((u32 *)entropycache_pcpu, entropycache_shared);
-return entropycache_pcpu[0];
-
+-- 
+mattia
+:wq!
