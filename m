@@ -1,132 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbXFTQw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbXFTQwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbXFTQw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 12:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXFTQwH
+	id S1754901AbXFTQwq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 12:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbXFTQw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 12:52:07 -0400
-Received: from homer.mvista.com ([63.81.120.155]:53333 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752479AbXFTQwG (ORCPT
+	Wed, 20 Jun 2007 12:52:28 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50910 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754203AbXFTQw0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 12:52:06 -0400
-Message-ID: <46795B9B.2020401@ru.mvista.com>
-Date: Wed, 20 Jun 2007 20:53:47 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Daniel Walker <dwalker@mvista.com>, Andrew Morton <akpm@osdl.org>,
-       john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC] clocksouce implementation for powerpc
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>	<20070616101637.107940593@inhelltoy.tec.linutronix.de>	<1182009083.11539.369.camel@imap.mvista.com> <20070620065710.GR9768@bakeyournoodle.com>
-In-Reply-To: <20070620065710.GR9768@bakeyournoodle.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 20 Jun 2007 12:52:26 -0400
+Date: Wed, 20 Jun 2007 17:56:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew McKay <amckay@iders.ca>
+Cc: Alexandre Oliva <aoliva@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070620175627.319a6c55@the-village.bc.nu>
+In-Reply-To: <4679557C.5080907@iders.ca>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614195517.GA4933@elte.hu>
+	<orzm329s9k.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070614235004.GA14952@elte.hu>
+	<20070615011012.6c09066e@the-village.bc.nu>
+	<20070615012623.GA25189@elte.hu>
+	<20070615101007.0cbfd078@the-village.bc.nu>
+	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4673CA7C.5040207@t-online.de>
+	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616181902.GB21478@ftp.linux.org.uk>
+	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4679557C.5080907@iders.ca>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+> Secondly GPLv3 will cause companies like TIVO, router companies, security 
+> companies to not adopt Linux as an operating system, because they can't secure 
+> their system.  Placing code in a ROM so they can't upgrade their own systems is 
 
-Tony Breeds wrote:
+You've made an important mistake. You said "their system". Now its "our
+code" and "whoever bought the units' hardware" so it isn't their anything.
 
->>>plain text document attachment
->>>(clocksource-add-settimeofday-hook.patch)
->>>From: Tony Breeds <tony@bakeyournoodle.com >
+You've made a second mistake I think by assuming that vendor held keys
+"improve" security and must be vendor held and secret for it to work. In
+fact vendor owned key systems that cannot be changed usually reduce
+security.
 
->>>I'm working on a clocksource implementation for all powerpc platforms.
->>>some of these platforms needs to do a little work as part of the
->>>settimeofday() syscall and I can't see a way to do that without adding
->>>this hook to clocksource.
+There are very very good reasons for having vendor owned secret keys.
+There are also very very good reasons for being able to rekey or disable
+the key on your box.
 
->>I'd like to see how this is used? If the code that uses this API change
->>isn't ready yet, then this patch should really wait..
+Ask people whose product vendor went bankrupt. With the ability to
+override/replace the keys they could have maintained their system
+securely instead they could make no updates and the boxes were left
+insecure.
 
-> This is my current patch to rework arch/powerpc/kernel/time.c to create
-> a clocksource.  It's not ready for inclusion.
+RPM for example intentionally follows this approach. RPM will check keys
+and the keys for different vendors/projects will not be released. However
+you can add keys, remove keys or even tell rpm "forget the key checking".
 
-    I guess it's been based on the prior work by John Stultz (and me too :-)?
+A silly example that rather makes the point is the X-Box. Using a bug in
+a game you can get into the X-box system and run Linux instead. As the
+owner of an X-box you can't fix the bug in the game because you don't
+know the signing key, but if you could change or add keys you could stop
+the "problem" occurring.
 
-> powerpc needs to keep the vdso in sync whenener settimeodfay() is
-> called.  Adding the hook the to the clocksource structure was my way of
-> allowing this to happen.  There are other approaches, but this seemed to
-> best allow for runtime.  Initially I considered using update_vsyscall()
-> but this is called from do_timer(), and I don't need this code run then
-> :(
+The Xbox is perhaps an oddity in that the insecurity is widely preferred
+by the owners but the situation applies in cases where the owner would
+prefer the reverse were true.
 
-> This has been booted on pSeries and iSeries (I'm using glibc 2.5, which
-> uses the vdso gettimeoday())
-
-[...]
-> Index: working/arch/powerpc/kernel/time.c
-> ===================================================================
-> --- working.orig/arch/powerpc/kernel/time.c
-> +++ working/arch/powerpc/kernel/time.c
-> @@ -74,6 +74,30 @@
->  #endif
->  #include <asm/smp.h>
->  
-> +/* powerpc clocksource/clockevent code */
-> +
-> +/* TODO:
-> + *  o Code style
-> + *    * Variable names ... be consistent.
-> + *
-> + * TODO: Clocksource
-> + *  o Need a _USE_RTC() clocksource impelementation
-> + *  o xtime:  Either time.c manages it, or clocksource does, not both
-
-    If you mean the init. part, this has been already done by me -- I've 
-implemented read_persistent_clock() and got rid of xtime setting. What's left 
-is to implemet update_persistent_clock() and get rid of timer_check_rtc()...
-
-> + */
-> +
-> +#include <linux/clocksource.h>
-> +
-> +static struct clocksource clocksource_timebase = {
-> +	.name         = "timebase",
-> +	.rating       = 200,
-
-    Perhaps we even need to raise the rating to 300 or 400 -- according to 
-what <linux/clocksource.h> says?
-
-> +	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
-> +	.mask         = CLOCKSOURCE_MASK(64),
-> +	.shift        = 22,
-
-    PPC64 has issues with the fixed shift value, see:
-
-http://patchwork.ozlabs.org/linuxppc/patch?id=11125
-
-> +	.mult         = 0,	/* To be filled in */
-> +	.read         = NULL,   /* To be filled in */
-> +	.settimeofday = NULL,   /* To be filled in */
-
-    I don't quite understand why not just init them right away?  The values 
-are fixed anyways.
-
-> +};
-> +
->  /* keep track of when we need to update the rtc */
->  time_t last_rtc_update;
->  #ifdef CONFIG_PPC_ISERIES
-[...]
-> @@ -666,8 +631,8 @@ void timer_interrupt(struct pt_regs * re
->  		if (per_cpu(last_jiffy, cpu) >= tb_next_jiffy) {
->  			tb_last_jiffy = tb_next_jiffy;
->  			do_timer(1);
-> -			timer_recalc_offset(tb_last_jiffy);
-> -			timer_check_rtc();
-> +			/* timer_recalc_offset() && timer_check_rtc()
-> +			 * are now called from update_vsyscall() */
-
-    I.e. in the softirq context...
-
-[...]
-
-WBR, Sergei
