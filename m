@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbXFTMLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbXFTMWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759956AbXFTMLE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 08:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbXFTMK4
+	id S1756559AbXFTMWz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 08:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbXFTMWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 08:10:56 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:55621 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754792AbXFTMKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 08:10:55 -0400
-Message-ID: <46791945.6090203@rfo.atmel.com>
-Date: Wed, 20 Jun 2007 14:10:45 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Andrew Victor <andrew@sanpeople.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-Subject: Re: [PATCH] atmel_lcdfb: Fix STN LCD support
-References: <467252C4.50203@rfo.atmel.com> <20070619094752.1b7ba108@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20070619094752.1b7ba108@dhcp-255-175.norway.atmel.com>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
-Content-Transfer-Encoding: 7bit
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: 
+	Wed, 20 Jun 2007 08:22:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59832 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811AbXFTMWu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 08:22:50 -0400
+Date: Wed, 20 Jun 2007 13:22:47 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix req->cmd == INT cases
+Message-ID: <20070620122247.GA4443@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Boaz Harrosh <bharrosh@panasas.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	linux-kernel@vger.kernel.org
+References: <4677FD50.2090803@panasas.com> <20070619171610.GH18863@kernel.dk> <4679072C.2010604@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4679072C.2010604@panasas.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen :
-> On Fri, 15 Jun 2007 10:50:12 +0200
-> Nicolas Ferre <nicolas.ferre@rfo.atmel.com> wrote:
+On Wed, Jun 20, 2007 at 01:53:32PM +0300, Boaz Harrosh wrote:
+> Jens Axboe wrote:
+> > 
+> > If you look at most of the code, it's inside ifdef debug statements or
+> > comments most of them. So I don't think you can base any removal
+> > suggestion on that.
+> > 
+> > The patch itself looks fine though, if you send one that isn't mangled
+> > I'll apply it to the 2.6.23 branch.
+> > 
+> Sorry new Thunderbird Installation. I forgot it does that.
 > 
->> From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
->>
->> Fixes STN LCD support for the atmel_lcdfb framebuffer driver.
->>
->> Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+>  - I have unearthed very old bugs in stale drivers that still
+>    used request->cmd as a READ|WRITE int
+>  - This patch is maybe a proof that these drivers have not been
+>    used for a long time. Should they be removed completely?
 > 
-> Looks correct to me. Although...
-> 
->> Index: b/drivers/video/Kconfig
->> ===================================================================
->> --- a/drivers/video/Kconfig	2007-05-14 11:02:16.000000000 +0200
->> +++ b/drivers/video/Kconfig	2007-06-13 11:04:10.000000000 +0200
->> @@ -701,6 +701,16 @@
->>  	  Say Y if you want to map Frame Buffer in internal SRAM. Say N if you want
->>  	  to let frame buffer in external SDRAM.
->>  
->> +config FB_ATMEL_STN
->> +	bool "Use a STN display with AT91/AT32 LCD Controller"
->> +	depends on FB_ATMEL && ARCH_AT91SAM9261
->> +	default n
->> +	help
->> +	  Say Y if you want to connect a STN LCD display to the AT91/AT32 LCD
->> +	  Controller. Say N if you want to connect a TFT.
->> +
->> +	  If unsure, say N.
->> +
-> 
-> I don't think it's appropriate to include chip-specific options here.
-> This option will not affect the driver at all, it will only affect the
-> board-specific setup code, so IMO it should be under Platform-specific
-> options or something like that.
+> Drivers that currently do not work for sure:
+>  drivers/acorn/block/fd1772.c
+>  drivers/acorn/block/mfmhd.c
 
-True in a "code centric" point of view. I do not think it is very usable 
-to move this switch in the board setup : The user will have to check if 
-an option is appearing in the board menu while he select the Atmel LCD 
-driver. He is supposed to have already selected the chip'n'board he is 
-using.
-Moreover, this option will not show its nose until the board that 
-implements it is not included in depends.
-(It is basically the same case with the option just above, with the very 
-same arguments).
+Afaik these are old arm26 driver, and that port is dead and should
+probably be removed from the tree entirely.
 
-> Also, the text says AT91/AT32 but it depends on one particular AT91
-> chip.
+>  drivers/cdrom/aztcd.c
+>  drivers/cdrom/cm206.c
+>  drivers/cdrom/gscd.c
+>  drivers/cdrom/mcdx.c
+>  drivers/cdrom/optcd.c
+>  drivers/cdrom/sjcd.c
 
-Ok, will move it to a board switch (MACH_AT91SAM9261EK for instance). 
-This will grow as STN configuration will be implemented for boards.
-
-Regards,
--- 
-Nicolas Ferre
-
-
+These are old cdrom drivers that are broken in various ways and probably
+should be killed off aswell.
