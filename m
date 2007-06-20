@@ -1,102 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbXFTRTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbXFTRTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757720AbXFTRTT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 13:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbXFTRTK
+	id S1757920AbXFTRTr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 13:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbXFTRTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 13:19:10 -0400
-Received: from homer.mvista.com ([63.81.120.155]:53723 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754562AbXFTRTI (ORCPT
+	Wed, 20 Jun 2007 13:19:39 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:29293 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754092AbXFTRTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 13:19:08 -0400
-Message-ID: <467961F1.1060909@ru.mvista.com>
-Date: Wed, 20 Jun 2007 21:20:49 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Wed, 20 Jun 2007 13:19:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=SFGpBt3jGO8YQms+EvGgmOjGiQmEYBCT561ozn0iOLNNqqanrOkg4aFqlR6dhxVsHGmkLChMFyetPkkTTrNmiUf2pH4TOIV8cmlKuyXKf2QldAClSk7O1SYUaUEI60V+OSoZAcgs9NF5xFrRgVn3PNWwPizSqNDmhV5MTIskViI=
+Message-ID: <161717d50706201019l11d82b3bmf7596572f872fb61@mail.gmail.com>
+Date: Wed, 20 Jun 2007 13:19:36 -0400
+From: "Dave Neuer" <mr.fred.smoothie@pobox.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Helge Hafting" <helge.hafting@aitel.hist.no>,
+       "Alexandre Oliva" <aoliva@redhat.com>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Chris Friesen" <cfriesen@nortel.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Greg KH" <greg@kroah.com>, "debian developer" <debiandev@gmail.com>,
+       "david@lang.hm" <david@lang.hm>, "Tarkan Erimer" <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu
+In-Reply-To: <20070620181626.1e70b4f0@the-village.bc.nu>
 MIME-Version: 1.0
-To: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Daniel Walker <dwalker@mvista.com>, Andrew Morton <akpm@osdl.org>,
-       john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC] clocksouce implementation for powerpc
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de>	<20070616101637.107940593@inhelltoy.tec.linutronix.de>	<1182009083.11539.369.camel@imap.mvista.com>	<20070620065710.GR9768@bakeyournoodle.com> <1182351439.18168.79.camel@imap.mvista.com>
-In-Reply-To: <1182351439.18168.79.camel@imap.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
+	 <4671B734.1040401@nortel.com>
+	 <orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <200706142155.34298.dhazelton@enter.net>
+	 <or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org>
+	 <46791A35.4000009@aitel.hist.no>
+	 <alpine.LFD.0.98.0706200930070.3593@woody.linux-foundation.org>
+	 <161717d50706200958o53ae986fv635e18b9b6a17e85@mail.gmail.com>
+	 <20070620181626.1e70b4f0@the-village.bc.nu>
+X-Google-Sender-Auth: efcfe0cd9f03a478
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
->>+static void clocksource_settimeofday(struct clocksource *cs,
->>+                                     struct timespec *ts)
->>+{
->>+	u64 new_xsec;
->>+
->>+#ifdef CONFIG_PPC_ISERIES
->>+	if (firmware_has_feature(FW_FEATURE_ISERIES) && first_settimeofday) {
->>+		iSeries_tb_recal();
->>+		first_settimeofday = 0;
->>+	}
->>+#endif
->>+
->>+	/* Make userspace gettimeofday spin until we're done. */
->>+	++vdso_data->tb_update_count;
->>+	smp_mb();
->>+
->>+	/* In case of a large backwards jump in time with NTP, we want the
->>+	 * clock to be updated as soon as the PLL is again in lock.
->>+	 */
->>+	last_rtc_update = xtime.tv_sec - 658;
->>+
->>+	new_xsec = xtime.tv_nsec;
->>+	if (new_xsec != 0) {
->>+		new_xsec *= XSEC_PER_SEC;
->>+		do_div(new_xsec, NSEC_PER_SEC);
->>+	}
->>+
->>+	new_xsec += (u64)xtime.tv_sec * XSEC_PER_SEC;
->>+
->>+	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
->>+	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
+On 6/20/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > To call people who draw the line in
+> > a different place than you hypocrites is BS.
+>
+> Very poor example. In many parts of the world "Just quit" is "just starve
+> to death".
 
-    I'm not sure why these are copied *only* here. Shouldn't they be copied 
-only once, at init. time?
+> So please DON'T equate the two. Tivo is a minor control argument about a
+> silly little TV recording box. Employee rights is a matter of life, death
+> and slavery for many many people.
 
->>+
->>+	update_gtod(tb_last_jiffy, new_xsec, do_gtod.varp->tb_to_xs);
->>+}
+Well, I consider your eloquent counter-argument to have strengthened
+my point that such "rights to moral coercion" arguments are inherently
+subjective and highly context-dependent.
 
-> It does look too large to run from interrupt context,
-
-    You mean if this would have been "included" into update_vsyscall()?
-
-> but it also looks
-> like it could get cleaned out more ..
-
-    Yeah, at least new_xsec calculation is duplicated in timer_recalc_offset()..
-
->>+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
->>+{
->>+	timer_recalc_offset(tb_last_jiffy);
->>+	timer_check_rtc();
->>+}
-
-> Hmm .. This doesn't look like it's taking into account that the time has
-> changed ..
-
-    Why? By the time it gets called (form the timer softirq context) 
-tb_last_jiffy should've been incremented. Well, this won't happen wither in or 
-right after the timer interrupt... since timer has no IRQ on PowerPC -- it 
-signals "exception". Well, HRT works somehow anyway. :-)
-
-> Your time has effectively incremented by one jiffie .. The
-> vdso_data doesn't appear to be updated ..
-
-    Moreover, it will get called for settimeofday() as well which would seem 
-to double the overhead since your clocksource hook will get called beforehand.
-
-WBR, Sergei
+Dave
