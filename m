@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762484AbXFTF6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbXFTGDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762484AbXFTF6B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 01:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758423AbXFTF5x
+	id S1762609AbXFTGDT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 02:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbXFTGDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 01:57:53 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51120 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757616AbXFTF5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 01:57:52 -0400
-Date: Tue, 19 Jun 2007 22:57:02 -0700
-From: Greg KH <gregkh@suse.de>
-To: dave young <hidave.darkstar@gmail.com>
-Cc: Li Yang-r58472 <LeoLi@freescale.com>, WANG Cong <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org, TripleX Chung <xxx.phy@gmail.com>,
-       Maggie Chen <chenqi@beyondsoft.com>, Tejun Heo <htejun@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, Chen Li-jun <cljun@xiyou.edu.cn>
-Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Message-ID: <20070620055702.GA4794@suse.de>
-References: <a8e1da0706191858w73a453dfjf28895150af85cfe@mail.gmail.com> <989B956029373F45A0B8AF0297081890D82DF1@zch01exm26.fsl.freescale.net> <a8e1da0706192222h1a47a103y38ea2b41b83ceb35@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0706192222h1a47a103y38ea2b41b83ceb35@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Wed, 20 Jun 2007 02:03:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48278 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757380AbXFTGDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 02:03:12 -0400
+Subject: Re: [RFC PATCH 1/4] Union mount documentation.
+From: Arjan van de Ven <arjan@infradead.org>
+To: bharata@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070620055157.GC4267@in.ibm.com>
+References: <20070620055050.GB4267@in.ibm.com>
+	 <20070620055157.GC4267@in.ibm.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Tue, 19 Jun 2007 22:59:51 -0700
+Message-Id: <1182319191.2700.9.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 05:22:49AM +0000, dave young wrote:
->  Hi,
->  2007/6/20, Li Yang-r58472 <LeoLi@freescale.com>:
-> > > -----Original Message-----
-> > > From: dave young [mailto:hidave.darkstar@gmail.com]
-> > > Sent: Wednesday, June 20, 2007 9:58 AM
-> > > To: WANG Cong
-> > > Cc: Li Yang-r58472; linux-kernel@vger.kernel.org; gregkh@suse.de;
-> > TripleX Chung;
-> > > Maggie Chen; Tejun Heo; Fengguang Wu; Chen Li-jun
-> > > Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-> > >
-> > > Hi,
-> > > IMHO, it is not very suitable  for translations  merging into kernel.
-> > >
-> > > first, It's impossible to be 100% accurate.
-> >
-> > It can be accurate by meaning.  And it can be improved.
-> >
-> > > second, two or more language need to be synced with english one, it's
-> > > a problem in  the long run.
-> >
-> > This can be done through good maintenance.  I don't think it's harder
-> > than maintaining the code in kernel source tree.
-> 
->  Yes, but  the documents updating are always  late than the sources.
+On Wed, 2007-06-20 at 11:21 +0530, Bharata B Rao wrote:
+> From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Subject: Union mount documentation.
+Hi,
 
-These files change _very_ slowly, only 5 minor changes in the past 3
-years or so.  I think the translators can keep up with that :)
+first of all I'm happy to see that people are still working on unionfs;
+I'd love to have functionality like this show up in Linux.
 
-thanks,
+I'll not claim to have any VFS knowledge whatsoever, but I was just
+wondering what happens in the following scenario:
 
-greg k-h
+FS A is mounted twice, in /mnt/A and /mnt/union
+
+FS B is mounted twice, in /mnt/B and as topmost union mount
+on /mnt/union
+
+lets for simplicity say both filesystems are entirely empty
+
+user does on FS A: 
+mkdir  /mnt/A/somedir
+touch /mnt/A/somedir/somefile
+
+and then 2 things happen in parallel
+1) touch /mnt/B/somefile
+2) mv /mnt/union/somedir /mnt/union/somefile
+
+since the underlying FS for 2) is FS A... how will this work out locking
+wise? Will the VS lock the union directory only? Or will this operate
+only on the underlying FS? How is dcache consistency guaranteed for
+scenarios like this?
+
+
+Greetings,
+   Arjan van de Ven
+
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
