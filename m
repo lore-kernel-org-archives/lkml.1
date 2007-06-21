@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbXFUUIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbXFUUJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbXFUUIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 16:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbXFUUIF
+	id S1758227AbXFUUJd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 16:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbXFUUJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 16:08:05 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43708 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753194AbXFUUIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 16:08:02 -0400
-Date: Thu, 21 Jun 2007 22:07:40 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Lars Marowsky-Bree <lmb@suse.de>
-Cc: Crispin Cowan <crispin@novell.com>, Greg KH <greg@kroah.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070621200740.GG18990@elf.ucw.cz>
-References: <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz> <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz> <20070621192407.GF20105@marowsky-bree.de>
+	Thu, 21 Jun 2007 16:09:24 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:38007 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbXFUUJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 16:09:23 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: David Chinner <dgc@sgi.com>, Avi Kivity <avi@argo.co.il>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+	<18034.479.256870.600360@notabene.brown>
+	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+	<18034.3676.477575.490448@notabene.brown>
+	<467273AB.9010202@argo.co.il>
+	<18035.3009.568832.785308@notabene.brown>
+	<20070618045759.GD85884050@sgi.com>
+	<18041.59628.370832.633244@notabene.brown>
+From: Nix <nix@esperi.org.uk>
+Emacs: more than just a Lisp interpreter, a text editor as well!
+Date: Thu, 21 Jun 2007 21:08:54 +0100
+In-Reply-To: <18041.59628.370832.633244@notabene.brown> (Neil Brown's message of "21 Jun 2007 03:57:09 +0100")
+Message-ID: <87d4zp1355.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070621192407.GF20105@marowsky-bree.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+X-DCC-CTc-dcc2-Metrics: hades 1031; Body=6 Fuz1=6 Fuz2=6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 21 Jun 2007, Neil Brown stated:
+> I have that - apparently naive - idea that drives use strong checksum,
+> and will never return bad data, only good data or an error.  If this
+> isn't right, then it would really help to understand what the cause of
+> other failures are before working out how to handle them....
 
-> > I believe AA breaks POSIX, already. rename() is not expected to change
-> > permissions on target, nor is link link. And yes, both of these make
-> > AA insecure.
-> 
-> AA is supposed to allow valid access patterns, so for non-buggy apps +
-> policies, the rename will be fine and does not change the (observed)
-> permissions.
+Look at the section `Disks and errors' in Val Henson's excellent report
+on last year's filesystems workshop: <http://lwn.net/Articles/190223/>.
+Most of the error modes given there lead to valid checksums and wrong
+data...
 
-That still breaks POSIX, right? Hopefully it will not break any apps,
-but...
+(while you're there, read the first part too :) )
 
-> > > If that is the only way to implement AA on top of SELinux - and so far,
-> > > noone has made a better suggestion - I'm convinced that AA has technical
-> > > merit: it does something the on-disk label based approach cannot handle,
-> > > and for which there is demand.
-> > What demand? SELinux is superior to AA, and there was very little
-> > demand for AA. Compare demand for reiser4 or suspend2 with demand for
-> > AA.
-> 
-> SELinux is superior to AA for a certain scenario of use cases; as we can
-> see here, it is not superior to AA for _all_ use cases.
-
-The scenario where it does not seem superior is "I have system with AA
-here and I'd like to keep using it".
-
-> > > The code has improved, and continues to improve, to meet all the coding
-> > > style feedback except the bits which are essential to AA's function
-> > Which are exactly the bits Christoph Hellwig and Al Viro
-> > vetoed. http://www.uwsg.iu.edu/hypermail/linux/kernel/0706.1/2587.html
-> > . I believe it takes more than "2 users want it" to overcome veto of
-> > VFS maintainer.
-> 
-> A veto is not a technical argument. All technical arguments (except for
-> "path name is ugly, yuk yuk!") have been addressed, have they not?
-
-There still is "it does not work with long pathnames".
-
-Plus IIRC we have something like "AA has to allocate path-sized
-buffers along every syscall".
-
-I guess Al Viro or Christoph Hellwig would be able to detail on
-that. I don't think they are vetoing stuff for fun.
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+`... in the sense that dragons logically follow evolution so they would
+ be able to wield metal.' --- Kenneth Eng's colourless green ideas sleep
+ furiously
