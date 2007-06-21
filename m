@@ -1,91 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbXFUEPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbXFUERT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753950AbXFUEPq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 00:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbXFUEPj
+	id S1754348AbXFUERT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 00:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbXFUERH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 00:15:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:10991 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbXFUEPj (ORCPT
+	Thu, 21 Jun 2007 00:17:07 -0400
+Received: from mtoichi13.ns.itscom.net ([219.110.2.183]:62962 "EHLO
+	mtoichi13.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751218AbXFUERF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 00:15:39 -0400
-Message-ID: <553a3bb80706202115j443ba9d7r57b536278652150b@mail.gmail.com>
-Date: Thu, 21 Jun 2007 13:15:37 +0900
-From: "Soon-Son Kwon(Shawn)" <kss@kldp.org>
-To: linux-kernel@vger.kernel.org
-Subject: ELC-Europe 2007 Call for Presentations
+	Thu, 21 Jun 2007 00:17:05 -0400
+Date: Thu, 21 Jun 2007 13:16:14 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Len Brown <lenb@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       acpi4asus-user <acpi4asus-user@lists.sourceforge.net>
+Subject: Re: [PATCH 3/3] ACPI autoloading - Create __mod_acpi_device_table symbol for all acpi drivers.
+Message-ID: <20070621041614.GA6433@inferi.kami.home>
+References: <1182112047.4204.12.camel@noname> <1182111863.4204.6.camel@noname> <20070620170617.GA3226@inferi.kami.home> <1182361643.28514.708.camel@queen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1182361643.28514.708.camel@queen.suse.de>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.22-rc5-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After the successful Embedded Linux Conference in San Jose earlier
-this year, it's time for an event targeted at the European embedded
-Linux community!
+On Wed, Jun 20, 2007 at 07:47:23PM +0200, Thomas Renninger wrote:
+> On Thu, 2007-06-21 at 02:06 +0900, Mattia Dongili wrote:
+> > On Sun, Jun 17, 2007 at 10:24:23PM +0200, Thomas Renninger wrote:
+...
+> > > +static const struct acpi_device_id sony_device_ids[] = {
+> > > +	{SONY_NC_HID, 0},
+> > > +	{SONY_PIC_HID, 0},
+> > > +	{"", 0},
+> > > +};
+> > > +MODULE_DEVICE_TABLE(acpi, sony_device_ids);
+> > > +
+> > > +static const struct acpi_device_id sony_nc_device_ids[] = {
+> > > +	{SONY_NC_HID, 0},
+> > > +	{"", 0},
+> > > +};
+> > > +
+> > ...
+> > > +static const struct acpi_device_id sony_pic_device_ids[] = {
+> > > +	{SONY_PIC_HID, 0},
+> > > +	{"", 0},
+> > > +};
+> > > +
+> > 
+> > is it really necessary to have those duplicate entries?
+> In this case, yes.
+> 
+> It's because two independent ACPI drivers are set up here.
+> If you could put these together, only set up
+> acpi_bus_register_driver(..) once in .init and get the pic and nc driver
+> handled together it would work.
+> 
+> I don't know whether this could be done.
 
-The CE Linux Forum would like to invite you to make a presentation
-at our upcoming Embedded Linux Conference - Europe.
-The conference will be held November 2 and 3 in Linz, Austria, in
-conjunction with the 9th Real Time Linux Workshop.
-See http://tree.celinuxforum.org/CelfPubWiki/ELCEurope2007
-for more information.
+probably, I guess the the acpi_device.pnp structs contain enough
+informations to detect which one is being handled. I'll get to that
+later.
 
-= Guidelines =
-Presentations should be of a technical nature, covering topics
-related to use of Linux in embedded systems.
-The CE Linux Forum is focused on the use of Linux in consumer
-electronics products, but presentations may cover use of Linux
-in other embedded areas, as long as the topic is of general
-relevance to most embedded users.
-Presentations that are commercial advertisements or sales
-pitches are not appropriate for this conference.
+> If not, IMO this driver should get split up in two separate drivers, one
+> serving SONY_PIC_HID and one serving SONY_NC_HID.
 
-Presentations on the following topics are encouraged:
+Oh no, we just merged them :)
+Anyway, please feel free to add
+Acked-by: Mattia Dongili <malattia@linux.it>
+to this patch.
 
-   * Audio, Video, and Graphics systems for embedded products
-   * Security
-   * System size
-   * Bootup time
-   * Meeting real-time constraints
-   * Power management
-   * Streaming media
-   * Flash memory devices and filesystems
-   * Technologies related to cell phones, digital settop boxes,
-     handheld devices, or other CE products
-   * Development tools for embedded users
-   * Use of Linux in actual products, practical experience and
-     war stories
-   * Standards for CE products
+> > Also, I guess that when this patch set is applied we also should declare
+> > sonypi obsolete as sony-laptop will grab the same device that sonypi
+> > wants (the SPIC one). sony-laptop has options to avoid doing that would
+> > make things clear to users.
+> > I still haven't received reports of mafunctioning vaios using the new
+> > sony-laptop instead of sonypi but 2.6.22 isn't final yet.
+> 
+> Sounds sane.
+> Another problem that could come up in future is that new laptops could
+> make use of the ACPI video spec (Appendix B) and of these vendor
+> specific devices (I already saw this on an ASUS).
+> While autoloading should still be ok (both are tried, maybe even both
+> are needed), we need to find out which one need to be used in which
+> condition.
 
-A paper submission is NOT required in conjunction with
-the presentation. However, if a paper is produced, it is
-requested to be published on the Embedded Linux Wiki,
-in MediaWiki format. (http://www.elinux.org)
+AFAIK as far as vaios are concerned the spic device (ioport) is mostly
+disappearing from newer models and most of the platform specific
+operations are gathered through the methods of the acpi only SNC.
+I'm also trying to get as many reports as possible[1] from vaio users to
+build dmi {black,white}list for functionalities.
+So I guess we are going the right direction.
 
-You may also submit a request to present a tutorial.
-Tutorials are intended to be longer, interactive learning
-sessions. A tutorial may occupy more than one session
-slot at the conference.
+[1]: with the help of TJ who has setup this nice page:
+http://tjworld.net/sony-laptop/
 
-We prefer presentations that have not been previously
-presented. Exceptions will be made for material that is
-either of great interest or has been seen previously only
-by a limited audience, like e.g. (updated) key presentations
-of ELC 2007, San Jose.
-
-For examples of presentations from previous conferences, see:
-http://tree.celinuxforum.org/CelfPubWiki/ELC2006Presentations and
-http://tree.celinuxforum.org/CelfPubWiki/ELC2007Presentations
-
-= Deadlines =
-Proposals for presentations, demos and Birds-of-a-Feather
-sessions must be received by August 11, 2007.
-Speakers will be notified by September 15, 2007.
-
-Full details, including the e-mail address to use to submit a proposal, are at:
-http://tree.celinuxforum.org/CelfPubWiki/ELCE2007CallForPresentations
+Cheers
 -- 
-http://kldp.org/~kss
+mattia
+:wq!
