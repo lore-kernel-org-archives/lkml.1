@@ -1,83 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbXFUT5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759769AbXFUT6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbXFUT5B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759494AbXFUT4u
+	id S1759769AbXFUT6P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXFUT56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:56:50 -0400
-Received: from mga02.intel.com ([134.134.136.20]:15356 "EHLO mga02.intel.com"
+	Thu, 21 Jun 2007 15:57:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57433 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759467AbXFUT4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:56:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,448,1175497200"; 
-   d="scan'208";a="257350630"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Date: Thu, 21 Jun 2007 12:56:12 -0700
-User-Agent: KMail/1.9.7
-Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Justin Piszcz" <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200706071530.51552.jesse.barnes@intel.com> <86802c440706211240s27d58679k43cee4488ce8a70e@mail.gmail.com>
-In-Reply-To: <86802c440706211240s27d58679k43cee4488ce8a70e@mail.gmail.com>
+	id S1754795AbXFUT54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 15:57:56 -0400
+Date: Thu, 21 Jun 2007 21:56:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070621195659.GA22303@elte.hu>
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621202917.a2bfbfc7.dada1@cosmosbay.com> <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706211256.12551.jesse.barnes@intel.com>
+In-Reply-To: <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, June 21, 2007 12:40:58 Yinghai Lu wrote:
-> On 6/7/07, Jesse Barnes <jesse.barnes@intel.com> wrote:
-> > On some machines, buggy BIOSes don't properly setup WB MTRRs to
-> > cover all available RAM, meaning the last few megs (or even gigs)
-> > of memory will be marked uncached.  Since Linux tends to allocate
-> > from high memory addresses first, this causes the machine to be
-> > unusably slow as soon as the kernel starts really using memory
-> > (i.e. right around init time).
-> >
-> > This patch works around the problem by scanning the MTRRs at
-> > boot and figuring out whether the current end_pfn value (setup
-> > by early e820 code) goes beyond the highest WB MTRR range, and
-> > if so, trimming it to match.  A fairly obnoxious KERN_WARNING
-> > is printed too, letting the user know that not all of their
-> > memory is available due to a likely BIOS bug.
-> >
-> > Something similar could be done on i386 if needed, but the boot
-> > ordering would be slightly different, since the MTRR code on i386
-> > depends on the boot_cpu_data structure being setup.
-> >
-> > This patch incorporates the feedback from Eric and Andi:
-> >   - use MAX_VAR_RANGES instead of NUM_VAR_RANGES
-> >   - move array declaration to header file as an extern
-> >   - add command line disable option "disable_mtrr_trim"
-> >   - don't run the trim code if the MTRR default type is cacheable
-> >   - don't run the trim code on non-Intel machines
-> >
-> > Justin, feel free to test again if you have time and add your
-> > "Tested-by" signoff.
-> >
-> > Andi, as for large pages, do you think this is ok as is, or should
-> > I trim a larger granularity?  If so, what granularity?
-> >
-> > Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-> >
-> > Thanks,
-> > Jesse
->
-> NAK.
->
-> for AMD Rev F Opteron later CPU, BIOS will not set WB in MTRR for 4G
-> above mem.
->
-> This patch will get rid of those RAM.
 
-Yeah, Eric already mentioned that.  I'll rework it to only run on Intel 
-CPUs per Eric's last mail.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Thanks,
-Jesse
+> Umm. i386 spinlocks could and should be *one*byte*.
+> 
+> In fact, I don't even know why they are wasting four bytes right now: 
+> the fact that somebody made them an "int" just wastes memory. All the 
+> actual code uses "decb", so it's not even a question of safety. I 
+> wonder why we have that 32-bit thing and the ugly casts.
+> 
+> Ingo, any memory of that?
+
+no real reason that i can recall - i guess nobody dared to touch it 
+because it used to have that 'volatile', indicating black voodoo ;-) Now 
+that the bad stigma has been removed, we could try the patch below. It 
+boots fine here, and we save 1K of kernel text size:
+
+     text    data     bss     dec     hex filename
+  6236003  611992  401408 7249403  6e9dfb vmlinux.before
+  6235075  611992  401408 7248475  6e9a5b vmlinux.after
+
+I can understand why no data is saved by this change: gcc is aligning 
+the next field to a natural boundary anyway and we dont really have 
+arrays of spinlocks (fortunately). [and we save no data even if using 
+the ((packed)) attribute.] Perhaps some data structure that is never in 
+the kernel image itself still got smaller? Any good way to determine 
+that?
+
+But why is the text size different? Ah: i think it's spin_lock_init() 
+getting shorter :-)
+
+but this is certainly not something for 2.6.22, it's an early 2.6.23 
+matter i suspect.
+
+	Ingo
+
+------------------->
+From: Ingo Molnar <mingo@elte.hu>
+Subject: [patch] spinlocks i386: change them to byte fields
+
+all spinlock ops are on byte operands, so change the spinlock field to 
+be unsigned char. This saves a bit of kernel text size:
+
+   text    data     bss     dec     hex filename
+6236003  611992  401408 7249403  6e9dfb vmlinux.before
+6235075  611992  401408 7248475  6e9a5b vmlinux.after
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-i386/spinlock_types.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/include/asm-i386/spinlock_types.h
+===================================================================
+--- linux.orig/include/asm-i386/spinlock_types.h
++++ linux/include/asm-i386/spinlock_types.h
+@@ -6,7 +6,7 @@
+ #endif
+ 
+ typedef struct {
+-	unsigned int slock;
++	unsigned char slock;
+ } raw_spinlock_t;
+ 
+ #define __RAW_SPIN_LOCK_UNLOCKED	{ 1 }
