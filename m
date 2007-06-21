@@ -1,107 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbXFUOxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbXFUOxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbXFUOxU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 10:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbXFUOxN
+	id S1757539AbXFUOxr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 10:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbXFUOxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 10:53:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42211 "EHLO mx1.redhat.com"
+	Thu, 21 Jun 2007 10:53:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52677 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753839AbXFUOxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 10:53:12 -0400
-Date: Thu, 21 Jun 2007 11:54:11 -0300
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
-Subject: [PATCH] Move functions declarations to header file
-Message-ID: <20070621145411.GA26091@redhat.com>
+	id S1753839AbXFUOxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 10:53:37 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
+Date: Thu, 21 Jun 2007 17:00:20 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200706182329.58917.rjw@sisk.pl> <20070621133015.GG18392@elf.ucw.cz>
+In-Reply-To: <20070621133015.GG18392@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="XsQoSWH+UP9D9v3l"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200706211700.21488.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, 21 June 2007 15:30, Pavel Machek wrote:
+> Hi!
+> 
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > At present, if a user mode helper is running while usermodehelper_pm_callback()
+> > is executed, the helper may be frozen and the completion in
+> > call_usermodehelper_exec() won't be completed until user space processes are
+> > thawed.  As a result, the freezing of kernel threads may fail, which is not
+> > desirable.
+> > 
+> > Prevent this from happening by introducing a counter of running user mode
+> > helpers and allowing usermodehelper_pm_callback() to succeed for
+> > action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+> > are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+> > RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+> > fails if that doesn't happen.]
+> > 
+> > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+> > versions of this patch and for very useful comments.
+> >
+> 
+> > -		return NOTIFY_OK;
+> > +		wait_event_timeout(running_helpers_waitq,
+> > +					atomic_read(&running_helpers) == 0,
+> > +					RUNNING_HELPERS_TIMEOUT);
+> > +		if (atomic_read(&running_helpers) == 0) {
+> 
+> Uff, this is suspect. What happens if running_helpers goes to 1 here.?
 
---XsQoSWH+UP9D9v3l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hmm, yes, this is racy.  We can use the value returned by wait_event_timeout()
+to close this race.
 
-Some interrupt entry points are currently defined in i8259.c
-They probably belong in a header. Right now, their only user is
-init_IRQ, justifying their declaration in-file. But when virtualization
-comes in, we may be interested in using that functions in late
-initializations.
+Updated patch follows.
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+Greetings,
+Rafael
 
--- 
-Glauber de Oliveira Costa
-Red Hat Inc.
-"Free as in Freedom"
 
---XsQoSWH+UP9D9v3l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="irq.patch"
+--- 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-diff --git a/arch/x86_64/kernel/i8259.c b/arch/x86_64/kernel/i8259.c
-index 4b32665..948cae6 100644
---- a/arch/x86_64/kernel/i8259.c
-+++ b/arch/x86_64/kernel/i8259.c
-@@ -444,24 +444,6 @@ void __init init_ISA_irqs (void)
+At present, if a user mode helper is running while usermodehelper_pm_callback()
+is executed, the helper may be frozen and the completion in
+call_usermodehelper_exec() won't be completed until user space processes are
+thawed.  As a result, the freezing of kernel threads may fail, which is not
+desirable.
+
+Prevent this from happening by introducing a counter of running user mode
+helpers and allowing usermodehelper_pm_callback() to succeed for
+action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+fails if that doesn't happen.]
+
+Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+versions of this patch and for very useful comments.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/kmod.c |   70 +++++++++++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 60 insertions(+), 10 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
++++ linux-2.6.22-rc4-mm2/kernel/kmod.c
+@@ -41,14 +41,6 @@ extern int max_threads;
+ 
+ static struct workqueue_struct *khelper_wq;
+ 
+-/*
+- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
+- * immediately returning -EBUSY.  Used for preventing user land processes from
+- * being created after the user land has been frozen during a system-wide
+- * hibernation or suspend operation.
+- */
+-static int usermodehelper_disabled;
+-
+ #ifdef CONFIG_KMOD
+ 
+ /*
+@@ -275,15 +267,48 @@ static void __call_usermodehelper(struct
  	}
  }
  
--void apic_timer_interrupt(void);
--void spurious_interrupt(void);
--void error_interrupt(void);
--void reschedule_interrupt(void);
--void call_function_interrupt(void);
--void irq_move_cleanup_interrupt(void);
--void invalidate_interrupt0(void);
--void invalidate_interrupt1(void);
--void invalidate_interrupt2(void);
--void invalidate_interrupt3(void);
--void invalidate_interrupt4(void);
--void invalidate_interrupt5(void);
--void invalidate_interrupt6(void);
--void invalidate_interrupt7(void);
--void thermal_interrupt(void);
--void threshold_interrupt(void);
--void i8254_timer_resume(void);
--
- static void setup_timer_hardware(void)
++#ifdef CONFIG_PM
++/*
++ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
++ * (used for preventing user land processes from being created after the user
++ * land has been frozen during a system-wide hibernation or suspend operation).
++ */
++static int usermodehelper_disabled;
++
++/* Number of helpers running */
++static atomic_t running_helpers = ATOMIC_INIT(0);
++
++/*
++ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
++ * helpers to finish.
++ */
++static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
++
++/*
++ * Time to wait for running_helpers to become zero before the setting of
++ * usermodehelper_disabled in usermodehelper_pm_callback() fails
++ */
++#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
++
+ static int usermodehelper_pm_callback(struct notifier_block *nfb,
+ 					unsigned long action,
+ 					void *ignored)
  {
- 	outb_p(0x34,0x43);		/* binary, mode 2, LSB/MSB, ch 0 */
-diff --git a/include/asm-x86_64/hw_irq.h b/include/asm-x86_64/hw_irq.h
-index 6153ae5..09dfc18 100644
---- a/include/asm-x86_64/hw_irq.h
-+++ b/include/asm-x86_64/hw_irq.h
-@@ -95,6 +95,26 @@
- 
- 
- #ifndef __ASSEMBLY__
++	long retval;
 +
-+/* Interrupt handlers registered during init_IRQ */
-+void apic_timer_interrupt(void);
-+void spurious_interrupt(void);
-+void error_interrupt(void);
-+void reschedule_interrupt(void);
-+void call_function_interrupt(void);
-+void irq_move_cleanup_interrupt(void);
-+void invalidate_interrupt0(void);
-+void invalidate_interrupt1(void);
-+void invalidate_interrupt2(void);
-+void invalidate_interrupt3(void);
-+void invalidate_interrupt4(void);
-+void invalidate_interrupt5(void);
-+void invalidate_interrupt6(void);
-+void invalidate_interrupt7(void);
-+void thermal_interrupt(void);
-+void threshold_interrupt(void);
-+void i8254_timer_resume(void);
+ 	switch (action) {
+ 	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
+ 		usermodehelper_disabled = 1;
+-		return NOTIFY_OK;
++		retval = wait_event_timeout(running_helpers_waitq,
++					atomic_read(&running_helpers) == 0,
++					RUNNING_HELPERS_TIMEOUT);
++		if (retval) {
++			return NOTIFY_OK;
++		} else {
++			usermodehelper_disabled = 0;
++			return NOTIFY_BAD;
++		}
+ 	case PM_POST_HIBERNATION:
+ 	case PM_POST_SUSPEND:
+ 		usermodehelper_disabled = 0;
+@@ -293,6 +318,29 @@ static int usermodehelper_pm_callback(st
+ 	return NOTIFY_DONE;
+ }
+ 
++static void new_helper(void)
++{
++	atomic_inc(&running_helpers);
++}
 +
- typedef int vector_irq_t[NR_VECTORS];
- DECLARE_PER_CPU(vector_irq_t, vector_irq);
- extern void __setup_vector_irq(int cpu);
-
---XsQoSWH+UP9D9v3l--
++static void helper_finished(void)
++{
++	if (atomic_dec_and_test(&running_helpers))
++		wake_up(&running_helpers_waitq);
++}
++
++static void register_pm_notifier_callback(void)
++{
++	pm_notifier(usermodehelper_pm_callback, 0);
++}
++#else /* CONFIG_PM */
++#define usermodehelper_disabled	0
++
++static inline void new_helper(void) {}
++static inline void helper_finished(void) {}
++static inline void register_pm_notifier_callback(void) {}
++#endif /* CONFIG_PM */
++
+ /**
+  * call_usermodehelper_setup - prepare to call a usermode helper
+  * @path - path to usermode executable
+@@ -397,6 +445,7 @@ int call_usermodehelper_exec(struct subp
+ 	DECLARE_COMPLETION_ONSTACK(done);
+ 	int retval;
+ 
++	new_helper();
+ 	if (sub_info->path[0] == '\0') {
+ 		retval = 0;
+ 		goto out;
+@@ -418,6 +467,7 @@ int call_usermodehelper_exec(struct subp
+ 
+   out:
+ 	call_usermodehelper_freeinfo(sub_info);
++	helper_finished();
+ 	return retval;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_exec);
+@@ -459,5 +509,5 @@ void __init usermodehelper_init(void)
+ {
+ 	khelper_wq = create_singlethread_workqueue("khelper");
+ 	BUG_ON(!khelper_wq);
+-	pm_notifier(usermodehelper_pm_callback, 0);
++	register_pm_notifier_callback();
+ }
