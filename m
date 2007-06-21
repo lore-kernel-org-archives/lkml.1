@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbXFUSvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbXFUSxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbXFUSvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbXFUSvL
+	id S1758460AbXFUSxn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbXFUSxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:51:11 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34257 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753317AbXFUSvK (ORCPT
+	Thu, 21 Jun 2007 14:53:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40954 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752934AbXFUSxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:51:10 -0400
-Date: Thu, 21 Jun 2007 11:51:10 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: linux-kernel@vger.kernel.org
-cc: mm-commits@vger.kernel.org
-Subject: Re: + slub-faster-more-efficient-slab-determination-for-__kmalloc.patch
- added to -mm tree
-In-Reply-To: <200706191919.l5JJJRh3019069@imap1.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706211149450.8284@schroedinger.engr.sgi.com>
-References: <200706191919.l5JJJRh3019069@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 21 Jun 2007 14:53:35 -0400
+Subject: Re: [PATCH] Check files' signatures before doing suid/sgid [2/4]
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
+Cc: linux-kernel@vger.kernel.org, arw@arw.name
+In-Reply-To: <20070621174612.GG9741@cip.informatik.uni-erlangen.de>
+References: <11824417551424-git-send-email-arw@arw.name>
+	 <1182446251.2704.0.camel@laptopd505.fenrus.org>
+	 <20070621172557.GE9741@cip.informatik.uni-erlangen.de>
+	 <1182446983.2704.4.camel@laptopd505.fenrus.org>
+	 <20070621174612.GG9741@cip.informatik.uni-erlangen.de>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Thu, 21 Jun 2007 11:49:48 -0700
+Message-Id: <1182451789.2704.9.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The loop to disable slabs can use step 8. Looks a bit strange the way it 
-is now.
+On Thu, 2007-06-21 at 19:46 +0200, Alexander Wuerstlein wrote:
+> On 070621 19:33, Arjan van de Ven <arjan@infradead.org> wrote:
+> > On Thu, 2007-06-21 at 19:25 +0200, Alexander Wuerstlein wrote:
+> > > On 070621 19:21, Arjan van de Ven <arjan@infradead.org> wrote:
+> > > > On Thu, 2007-06-21 at 18:02 +0200, Alexander Wuerstlein wrote:
+> > > > > Modified task_struct to hold a 'signed flag' which is set on exec(), inherited
+> > > > > on fork() and checked during exec before giving the new process suid/sgid
+> > > > > privileges.
+> > > > > 
+> > > > 
+> > > > 
+> > > > 
+> > > > do you also check the signature of glibc and every other shared library
+> > > > that the app uses (or dlopens)? if not.. the entire exercise is rather
+> > > > pointless...
+> > > 
+> > > We do check that, that is patch [3/4].
+> > > 
+> > > Of course we can only check mmap-ed files, if there is no file like with JIT
+> > > compilers we are out of luck.
+> > 
+> > or if the process uses read() not mmap().
+> 
+> If a process uses read() it needs some executable and writable memory. We do
+> check for this in mprotect(). There is a problem with the i386-architecture,
+> because it allows execution of any readable page (except with newer
+> processors). But beyond that ugliness of i386, it should not be possible to
+> execute anything without us noticing it (hopefully).
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+welcome to mprotect() where the app can just change the permissions
 
----
- mm/slub.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
-Index: linux-2.6.22-rc4-mm2/mm/slub.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/slub.c	2007-06-21 11:41:02.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/slub.c	2007-06-21 11:45:07.000000000 -0700
-@@ -2606,7 +2606,7 @@ void __init kmem_cache_init(void)
- 	BUG_ON(KMALLOC_MIN_SIZE > 256 ||
- 		(KMALLOC_MIN_SIZE & (KMALLOC_MIN_SIZE - 1)));
- 
--	for (i = 8; i < KMALLOC_MIN_SIZE;i++)
-+	for (i = 8; i < KMALLOC_MIN_SIZE; i += 8)
- 		size_index[(i - 1) / 8] = KMALLOC_SHIFT_LOW;
- 
- 	slab_state = UP;
