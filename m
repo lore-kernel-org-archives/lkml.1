@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbXFURTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbXFURUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbXFURTT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbXFURTM
+	id S1757029AbXFURUm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbXFURUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:19:12 -0400
-Received: from atlanta.zankel.net ([69.61.78.146]:4323 "EHLO
-	atlanta.zankel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754876AbXFURTK (ORCPT
+	Thu, 21 Jun 2007 13:20:35 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:12169 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750922AbXFURUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:19:10 -0400
-X-Greylist: delayed 1758 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Jun 2007 13:19:10 EDT
-Message-ID: <467AAC2A.8020101@zankel.net>
-Date: Thu, 21 Jun 2007 09:49:46 -0700
-From: Chris Zankel <chris@zankel.net>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 21 Jun 2007 13:20:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pDhCbD1sshpLl6cUuuo7dqNv5uBYtA8TLW72fkrhJ3kTKhFHXFrr5idfOzZ3tudEGL+Z120xe09VnUN5wyThFp0gNtCSzEwlQdA1Gloa/9STt8rvLq+4ydm/fmGT0Fh05+p3Gls3CZGEMfQ1RaCNndS2yRm2uRe2ZUXAisRJJZc=
+Message-ID: <9a8748490706211020g1d96bd2anc0caa0aa2fdc5045@mail.gmail.com>
+Date: Thu, 21 Jun 2007 19:20:33 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] bracing the loop in kernel/softirq.c
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070621134933.GA6589@cvg>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Arch <linux-arch@vger.kernel.org>,
-       Richard Henderson <rth@twiddle.net>, Ian Molton <spyro@f2s.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Aubrey Li <aubrey.li@analog.com>, Mikael Starvik <starvik@axis.com>,
-       David Howells <dhowells@redhat.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>, Andi Kleen <ak@suse.de>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Matthew Wilcox <matthew@wil.cx>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Miles Bader <uclinux-v850@lsi.nec.co.jp>
-Subject: Re: [PATCH] cross-architecture ELF clean up
-References: <20070620230854.246399397@goop.org> <20070620230902.387008536@goop.org>
-In-Reply-To: <20070620230902.387008536@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070620175737.GA6523@cvg>
+	 <9a8748490706201401m36b1e917g5a600951d48e4cf8@mail.gmail.com>
+	 <20070621134933.GA6589@cvg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy,
+On 21/06/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> [Jesper Juhl - Wed, Jun 20, 2007 at 11:01:44PM +0200]
+> | From: Jesper Juhl <jesper.juhl@gmail.com>
+> | To: Cyrill Gorcunov <gorcunov@gmail.com>
+> | Cc: LKML <linux-kernel@vger.kernel.org>
+> | Subject: Re: [PATCH] bracing the loop in kernel/softirq.c
+> | Date: Wed, 20 Jun 2007 23:01:44 +0200
+> |
+> > On 20/06/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> >> This trivial patch adds braces over a one-line
+> >> loop. That makes code...well... little bit
+> >> convenient for (possible) further modifications.
+> >>
+> > That's generally not done.
+> >
+> > It's even in Documentation/CodingStyle :
+> >
+> > "
+> > Do not unnecessarily use braces where a single statement will do.
+> >
+> > if (condition)
+> >        action();
+> > "
+>
+> look, the CodingStyle is absolutely right BUT:
+>
+>         - dropping the braces are good solution for 'if' statement indeed
+>         - dropping the braces are _not_ good for 'do' - 'while' loop 'case
+>           it fails on further loop modifications. Moreover adding these braces
+>           we don't change amount of lines in code! So why souldn't we? I don't
+>           see any reason not to do.
+>
 
-Could you please add the ELF architecture-magic number for Xtensa (94) 
-when you finally submit this patch?
+Personally, in this case, I don't care. I'm simply telling you that
+usually that's not a patch that would get accepted, that's all.  But
+it's all up to the maintainer of that area of the kernel (whom you
+probably want to at least Cc in addition to just LKML).   :-)
 
-Jeremy Fitzhardinge wrote:
-> This patch cleans up the ELF headers and their users.  It does several
-> related things:
-> --- /dev/null
-> +++ b/include/linux/elf-const.h
-> @@ -0,0 +1,222 @@
-> +#ifndef _LINUX_ELF_CONST_H
-> +#define _LINUX_ELF_CONST_H
-> +
-> +/* These constants define the various ELF target machines */
-> +#define EM_NONE		0
-...
-> +#define EM_V850		87	/* NEC v850 */
-> +#define EM_M32R		88	/* Renesas M32R */
-
-#define EM_XTENSA       94
-
-Thanks,
--Chris
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
