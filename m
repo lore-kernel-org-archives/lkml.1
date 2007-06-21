@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbXFUWec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751406AbXFUWwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbXFUWec (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 18:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbXFUWeY
+	id S1751406AbXFUWwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 18:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbXFUWwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 18:34:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54201 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbXFUWeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 18:34:23 -0400
-Message-ID: <467AFCEC.2070203@redhat.com>
-Date: Thu, 21 Jun 2007 18:34:20 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Thu, 21 Jun 2007 18:52:35 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47628 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbXFUWwe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 18:52:34 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <467B0125.1070609@s5r6.in-berlin.de>
+Date: Fri, 22 Jun 2007 00:52:21 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: =?ISO-8859-1?Q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>,
-       linux-kernel@vger.kernel.org
+To: =?ISO-8859-1?Q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>
+CC: linux-kernel@vger.kernel.org
 Subject: Re: Please release a stable kernel Linux 3.0
-References: <200706212349.54983.zoltan.hubert@zzaero.com> <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com>
-In-Reply-To: <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com>
+References: <200706212349.54983.zoltan.hubert@zzaero.com>
+In-Reply-To: <200706212349.54983.zoltan.hubert@zzaero.com>
+X-Enigmail-Version: 0.94.1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/21/2007 06:29 PM, Jesper Juhl wrote:
-> 
-> I myself have argued that we should be focusing more on stability and
-> regression fixing, but I'm not so sure that a 2.6.7 devel branch would
-> solve this. In general the 2.6.x.y -stable kernels seem to be doing
-> the job pretty good.
-> 
- 
-Even the good ones that get lots of fixes aren't all that good. The
-biggest problem ATM is that suspend is badly broken and keeps getting
-worse...
+Zoltán HUBERT wrote:
+> So I feel that a turning-point is coming where a really 
+> really really (x 15) stable and reliable kernel is NEEDED.
 
-
-
+Not satisfied with 2.6.16.y or one of the "enterprise" distro kernels?
+-- 
+Stefan Richter
+-=====-=-=== -==- =-==-
+http://arcgraph.de/sr/
