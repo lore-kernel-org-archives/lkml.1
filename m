@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbXFUVAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759673AbXFUVBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759369AbXFUVAz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 17:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbXFUVAq
+	id S1759673AbXFUVBU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 17:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbXFUVBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 17:00:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44274 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756011AbXFUVAp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 17:00:45 -0400
-Date: Thu, 21 Jun 2007 13:58:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [patch] spinlock debug: make looping nicer
-In-Reply-To: <20070621204234.GA1510@elte.hu>
-Message-ID: <alpine.LFD.0.98.0706211352530.3593@woody.linux-foundation.org>
-References: <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
- <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
- <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
- <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
- <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
- <alpine.LFD.0.98.0706211230130.3593@woody.linux-foundation.org>
- <20070621200941.GB22303@elte.hu> <alpine.LFD.0.98.0706211311350.3593@woody.linux-foundation.org>
- <20070621204234.GA1510@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 21 Jun 2007 17:01:07 -0400
+Received: from mxfep04.bredband.com ([195.54.107.79]:65528 "EHLO
+	mxfep04.bredband.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756011AbXFUVBF (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 17:01:05 -0400
+Subject: [BUG] Sky2 driver in 2.6.22-rc5-git1-cfs-v17
+From: Ian Kumlien <pomac@vapor.com>
+Reply-To: pomac@vapor.com
+To: Linux-kernel@vger.kernel.org
+Cc: shemminger@linux-foundation.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mCEI2KgbiS9LIV6qzobO"
+Date: Thu, 21 Jun 2007 22:51:32 +0200
+Message-Id: <1182459092.7032.11.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-mCEI2KgbiS9LIV6qzobO
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 21 Jun 2007, Ingo Molnar wrote:
-> 
-> btw., back then we also tried a spin_is_locked() based inner loop but it 
-> didnt help the ->tree_lock lockups either. In any case i very much agree 
-> that the 'nicer' looping should be added again - the patch below does 
-> that. (build and boot tested)
+Hi,=20
 
-Ok, I'm definitely not going to apply it right now, though.
+recently have started to see this in my dmesg:
 
-> and the reason that this didnt help the ->tree_lock lockup is likely the 
-> same why wait_task_inactive() broke _independently_ of the 'niceness' of 
-> the spin-lock operation: there were too few instructions between 
-> releasing the lock and re-acquiring it again can cause permanent 
-> starvation of another CPU. No amount of logic on the spinning side can 
-> overcome this, if acquire/release critical sections are following each 
-> other too fast.
+NETDEV WATCHDOG: eth0: transmit timed out
+sky2 eth0: tx timeout
+sky2 eth0: transmit ring 449 .. 408 report=3D449 done=3D449
+sky2 eth0: disabling interface
+sky2 eth0: enabling interface
+sky2 eth0: ram buffer 48K
+sky2 eth0: Link is up at 1000 Mbps, full duplex, flow control rx
 
-Exactly.
+I'm not using MSI since it seems to have caused problems in the past.
 
-The only way to handle that case is to make sure that the person who 
-*gets* the spinlock will slow down. The person who doesn't get it can't do 
-anything at all about the fact that he's locked out.
+I run with a 9k mtu
 
-A way to do that (as already mentioned) is to have a "this lock is 
-contended" flag, and have the person who gets the lock do something about 
-it (where the "something" might actually be as simple as saying "When I 
-release a lock that somebody marked as having lots of contention, I will 
-clear the contention flag, and then just delay myself").
+sky2 eth0: transmit ring 18 .. 489 report=3D18 done=3D18
+---- I assume ring max is 512 (ie 1-512) since:
+	Ring parameters for eth0:
+	Current hardware settings:
+	RX:             168
+	RX Mini:        0
+	RX Jumbo:       0
+	TX:             511
+=09
+	And 489 + 41 - 18 =3D 512
 
-Side note: that trivial approach only really helps for a *single* thread 
-that gets it very much (like the example in wait_task_inactive). For true 
-contention with multiple different CPU's that can *all* have the bad 
-behaviour, you do actually need real queueing.
+sky2 eth0: transmit ring 197 .. 156 report=3D197 done=3D197
+sky2 eth0: transmit ring 480 .. 439 report=3D480 done=3D480
+sky2 eth0: transmit ring 413 .. 372 report=3D413 done=3D413
+sky2 eth0: transmit ring 320 .. 279 report=3D320 done=3D320
 
-			Linus
+Else, they are all off by 41.
+
+Is this a known bug?
+Comments? ideas?
+
+Offload parameters for eth0:
+rx-checksumming: on
+tx-checksumming: on
+scatter-gather: on
+tcp segmentation offload: on
+udp fragmentation offload: off
+
+--=20
+Ian Kumlien <pomac (a) vapor ! com> -- http://pomac.netswarm.net
+
+--=-mCEI2KgbiS9LIV6qzobO
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7-ecc0.1.6 (GNU/Linux)
+
+iD8DBQBGeuTO7F3Euyc51N8RAmEmAKCY5W48RpurSDX3bH9aYLwR1KRn9wCgoaAI
+m+UqRYRJtaicAm0H+XXwAWE=
+=g0kC
+-----END PGP SIGNATURE-----
+
+--=-mCEI2KgbiS9LIV6qzobO--
