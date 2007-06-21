@@ -1,56 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbXFUPTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbXFUPY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbXFUPTR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbXFUPTI
+	id S1754422AbXFUPY6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbXFUPYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:19:08 -0400
-Received: from gateway12.iders.ca ([206.45.72.61]:57241 "EHLO koko.iders.ca"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbXFUPTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:19:07 -0400
-Message-ID: <467A96DC.1020906@iders.ca>
-Date: Thu, 21 Jun 2007 10:18:52 -0500
-From: Andrew McKay <amckay@iders.ca>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061219)
+	Thu, 21 Jun 2007 11:24:47 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55793 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752604AbXFUPYp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:24:45 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: davem@davemloft.net, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix race in AF_UNIX
+References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
+	<20070605.224128.104032917.davem@davemloft.net>
+	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
+	<20070607.184731.10907840.davem@davemloft.net>
+	<E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
+Date: Thu, 21 Jun 2007 09:18:38 -0600
+In-Reply-To: <E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's
+	message of "Mon, 11 Jun 2007 11:57:27 +0200")
+Message-ID: <m17ipxfi9d.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Alexandre Oliva <aoliva@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de> <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk> <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org> <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org> <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org> <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca> <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca> <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm> <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm> <orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Thu, 21 Jun 2007, Alexandre Oliva wrote:
-> 
->> On Jun 21, 2007, david@lang.hm wrote:
->>
->>> how exactly can they prevent a system that's been tampered with from
->>> accessing their network?
->>
->> By denying access to their servers?  By not granting whatever is
->> needed to initiate network sessions?
->>
->> And note, "it's been tampered with" is not necessarily enough of a
->> reason to cut someone off, it has to meet these requirements:
-> 
-> how can the server tell if it's been tampered with?
-> 
+Miklos Szeredi <miklos@szeredi.hu> writes:
 
-I agree with this statement.  Imagine a proprietary private network where a 
-device has been modified to run in an invisible promiscuous mode.  The device 
-looks as if it isn't doing anything wrong, but is forwarding the network out 
-another interface.  The only way to prevent that type of attack is to not allow 
-unauthorized signed Kernels onto that network.
+> [CC'd Al Viro and Alan Cox, restored patch]
+>
+>> > There are races involving the garbage collector, that can throw away
+>> > perfectly good packets with AF_UNIX sockets in them.
+>> > 
+>> > The problems arise when a socket goes from installed to in-flight or
+>> > vice versa during garbage collection.  Since gc is done with a
+>> > spinlock held, this only shows up on SMP.
+>> > 
+>> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+>> 
+>> I'm going to hold off on this one for now.
+>> 
+>> Holding all of the read locks kind of defeats the purpose of using
+>> the per-socket lock.
+>> 
+>> Can't you just lock purely around the receive queue operation?
+>
+> That's already protected by the receive queue spinlock.  The race
+> however happens _between_ pushing the root set and marking of the
+> in-flight but reachable sockets.
+>
+> If in that space any of the AF_UNIX sockets goes from in-flight to
+> installed into a file descriptor, the garbage collector can miss it.
+> If we want to protect against this using unix_sk(s)->readlock, then we
+> have to hold all of them for the duration of the marking.
+>
+> Al, Alan, you have more experience with this piece of code.  Do you
+> have better ideas about how to fix this?
 
-Andrew McKay
+I haven't looked at the code closely enough to be confident of
+changing something in this area.  However the classic solution to this
+kind of gc problem is to mark things that are manipulated during
+garbage collection as dirty (not orphaned).
+
+It should be possible to fix this problem by simply changing gc_tree
+when we perform a problematic manipulation of a passed socket, such
+as installing a passed socket into the file descriptors of a process.
+
+Essentially the idea is moving the current code in the direction of
+an incremental gc algorithm.
+
+
+If I understand the race properly.  What happens is that we dequeue
+a socket (which has packets in it passing sockets) before the
+garbage collector gets to it.  Therefore the garbage collector
+never processes that socket.  So it sounds like we just
+need to call maybe_unmark_and_push or possibly just wait for
+the garbage collector to complete when we do that and the packet
+we have pulled out 
+
+
+
+So just looking at this quickly.  It looks like we need to hold
+the u->readlock mutex in garbage.c while looking at the receive
+queue.  Otherwise we may be processing a packet and have
+the file descriptors in limbo.  Either that or we need
+to slightly extend the scope of the receive queue lock on the
+receive side.
+
+Additionally we need to modify unix_notinflight to mark the sockets
+as inuse, or to at least wait for the garbage collection to complete.
+While being very careful to not add a deadlock scenario.
+
+The require changes to fix this without adding heavy handed locking
+look a bit nasty to make.
+
+I half suspect switching to one of the simpler incremental garbage
+collection algorithms might not be equally easy to implement and
+give us more performance at the same time.  Having a garbage collector
+that can block has advantages.
+
+The practical problem is you can't modify the list of pushed object
+aka gc_tree without holding a lock.  And we never drop the
+unix_table_lock.
+
+
+Anyway hopefully that is enough fodder for someone to come up with
+a light weight fix for this problem.
+
+Eric
