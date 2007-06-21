@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbXFUXtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbXFUXvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbXFUXtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbXFUXtg
+	id S1754240AbXFUXvN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:51:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbXFUXu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:49:36 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35837 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbXFUXtf (ORCPT
+	Thu, 21 Jun 2007 19:50:59 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35898 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750716AbXFUXu6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:49:35 -0400
-Subject: Re: Please release a stable kernel Linux 3.0
-From: Arjan van de Ven <arjan@infradead.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Zolt?n HUBERT <zoltan.hubert@zzaero.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <467B04EB.2010105@redhat.com>
-References: <200706212349.54983.zoltan.hubert@zzaero.com>
-	 <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com>
-	 <467AFCEC.2070203@redhat.com> <20070621230126.GF10008@csclub.uwaterloo.ca>
-	 <467B04EB.2010105@redhat.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Thu, 21 Jun 2007 16:45:40 -0700
-Message-Id: <1182469541.2704.13.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 21 Jun 2007 19:50:58 -0400
+Date: Fri, 22 Jun 2007 01:51:17 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Oleg Verych <olecom@flower.upol.cz>, Martin Bligh <mbligh@mbligh.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
+Message-ID: <20070621235117.GD23017@stusta.de>
+References: <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com> <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de> <alpine.LFD.0.98.0706190732150.3593@woody.linux-foundation.org> <20070619165300.GD19904@flower.upol.cz> <alpine.LFD.0.98.0706190949440.3593@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706190949440.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 19:08 -0400, Chuck Ebbert wrote:
-> On 06/21/2007 07:01 PM, Lennart Sorensen wrote:
-> > On Thu, Jun 21, 2007 at 06:34:20PM -0400, Chuck Ebbert wrote:
-> >> Even the good ones that get lots of fixes aren't all that good. The
-> >> biggest problem ATM is that suspend is badly broken and keeps getting
-> >> worse...
-> > 
-> > I wasn't under the impression suspend had really ever worked.  Such a
-> > messy problem to solve.
-> > 
+On Tue, Jun 19, 2007 at 10:04:58AM -0700, Linus Torvalds wrote:
+>...
+> This is why I've been advocating bugzilla "forget" stuff, for example. I 
+> tend to see bugzilla as a place where noise accumulates, rather than a 
+> place where noise is made into a signal. 
 > 
-> It never worked reliably for everyone, but with each new release it
-> seems to get worse.
+> Which gets my to the real issue I have: the notion of having a process for 
+> _tracking_ all the information is actually totally counter-productive, if 
+> a big part of the process isn't also about throwing noise away.
+> 
+> We don't want to "save" all the crud. I don't want "smart tracking" to 
+> keep track of everything. I want "smart forgetting", so that we are only 
+> left with the major signal - the stuff that matters. 
 
-the thing is just fundamentally not designed right. Declaring it stable
-ain't gonna fix that. Having someone do a right design (which will
-obviously will go through some breakage period, even if it's an
-evolution of the current design) is a required step of getting s/r more
-reliable... but the current one doesn't get stable just by declaring it
-so.
+Even generating the perfect signal is a complete waste of time if 
+there's no recipient for the signal...
 
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
