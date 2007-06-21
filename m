@@ -1,130 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbXFUW2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759231AbXFUW3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbXFUW2f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 18:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbXFUW21
+	id S1759231AbXFUW3a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 18:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbXFUW3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 18:28:27 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:21312 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755031AbXFUW20 (ORCPT
+	Thu, 21 Jun 2007 18:29:22 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:55607 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753985AbXFUW3V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 18:28:26 -0400
-Date: Thu, 21 Jun 2007 23:27:45 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-cc: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
-       Pierre Ossman <drzeus@drzeus.cx>, Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-In-Reply-To: <467A4532.40301@rfo.atmel.com>
-Message-ID: <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
-References: <467A4532.40301@rfo.atmel.com>
+	Thu, 21 Jun 2007 18:29:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HUk6EkGu+gPF8mN1X1ho2u9gmYjnVYvfDSeZFp7LsbL49luckffE78MvO0pmwmbf3wsO0I6OgxpCnBhrslVHm3RWE7jpc9mzqyMYO+ck80xl4OgXg2oVmgivdwSt954ZPJSYs6T5xWgkhyr4g/EQHe7kuMTrDGBatUTt+VsRODI=
+Message-ID: <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com>
+Date: Fri, 22 Jun 2007 00:29:20 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "=?ISO-8859-1?Q?Zolt=E1n_HUBERT?=" <zoltan.hubert@zzaero.com>
+Subject: Re: Please release a stable kernel Linux 3.0
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200706212349.54983.zoltan.hubert@zzaero.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAACWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAY2xhbWV0ZXJAc2dpLmNvbQBhbmRyZXdAc2FucGVvcGxlLmNvbQBuaWNvbGFzLmZlcnJlQHJmby5hdG1lbC5jb20AbGludXgtYXJtLWtlcm5lbEBsaXN0cy5hcm0ubGludXgub3JnLnVrAHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRpb24ub3JnAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAbWFyYy5waWduYXRAaGV2cy5jaABkcnpldXNAZHJ6ZXVzLmN4AA==
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <200706212349.54983.zoltan.hubert@zzaero.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Nicolas Ferre wrote:
-> 
-> While debugging a Linux driver on my ARM platform (AT91), I switched on the
-> 2.6.22-rc5 kernel. While reconfiguring it I selected CONFIG_SLUB as a SLAB
-> allocator.
-> 
-> The sd/mmc driver I tried to run is vanilla driver which never, until now,
-> produces Oops (at91_mci.c).
-> 
-> The oops seems to occur after a page unmapping using dma_unmap_page() followed
-> by a flush_dcache_page() (in at91mci_post_dma_read()).
-... 
-> Unable to handle kernel NULL pointer dereference at virtual address 0000000d
-> pgd = c0004000
-> [0000000d] *pgd=00000000
-> Internal error: Oops: 1 [#1]
-> Modules linked in:
-> CPU: 0
-> PC is at get_index+0x1c/0x50
-> LR is at prio_tree_next+0x60/0x194
-> pc : [<c01098ac>]    lr : [<c0109fc4>]    Not tainted
-> sp : c3d0bca8  ip : ffffffdd  fp : c3d0bcb4
-> r10: 00000040  r9 : c3d0be78  r8 : c3d0bcc4
-> r7 : c3d0bcc0  r6 : 00000000  r5 : c029635c  r4 : c3d0bcfc
-> r3 : c3d0bcc0  r2 : c3d0bcc4  r1 : 00000001  r0 : c3d0bcc0
-> Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  Segment kernel
-> Control: 5317F
-> Table: 20004000  DAC: 00000017
-> Process kmmcd (pid: 761, stack limit = 0xc3d0a258)
-...
-> Backtrace:
-> [<c0109890>] (get_index+0x0/0x50) from [<c0109fc4>]
-> (prio_tree_next+0x60/0x194)
-> [<c0109f64>] (prio_tree_next+0x0/0x194) from [<c0067734>]
-> (vma_prio_tree_next+0x1c/0x88)
-> r8:c3d649e0 r7:c3d0be68 r6:c0298594 r5:00000000 r4:00000000
-> [<c0067718>] (vma_prio_tree_next+0x0/0x88) from [<c002bd0c>]
-> (flush_dcache_page+0x108/0x124)
-> [<c002bc04>] (flush_dcache_page+0x0/0x124) from [<c017df00>]
-> (at91_mci_irq+0x210/0x45c)
-> r6:00000000 r5:c3d0be68 r4:c3d0a000
-> [<c017dcf0>] (at91_mci_irq+0x0/0x45c) from [<c005a99c>]
-> (handle_IRQ_event+0x44/0x80)
-> [<c005a958>] (handle_IRQ_event+0x0/0x80) from [<c005bd04>]
-...
-> 
-> Do you find a reason why I cannot use SLUB ? Did I missed something or do I
-> use a bad dma_xx or cache flush call in the driver ?
+On 21/06/07, Zoltán HUBERT <zoltan.hubert@zzaero.com> wrote:
+[snip]
+> All people who might read this know that traditionally
+> stable releases are even numbered and development branches
+> are odd numbered. This changed during late develoment of
+> 2.6, according to my analysis because of the "invention" of
+> GIT which was itself necessary because of BitKeeper (insert
+> ooooooooold flame-wars here) and which allowed very dynamic
+> develoment.
 
-That looks serious: thanks a lot for reporting it.
+Git itself, nor bitkeeper was not the main reason behind the desition
+to maintain 2.6.x as the stable kernel going forward.
 
-(I see Marc has sent you a patch or two for the driver end:
-I didn't see their relevance, maybe they skirt around the
-problem somehow; but unless I'm mistaken, what you've found
-goes beyond that particular driver.)
+> While this has been effective, alternative
+> voices (Mr Morton complaining that more bugs were added
+> than repaired, semi-stable semi-supported 2.6.x.y branches
+> where invented...) come more and more into the front.
 
-Seems a little odd that it's gone throughout 2.6.22-rc unnoticed
-until now - nobody else trying SLUB on ARM or PA-RISC yet perhaps.
-As I understand it, you're not doing anything wrong (disclaimer:
-I'm no expert on dma_mapping things), but SLUB's reuse of struct
-page fields has collided with what flush_dcache_page is expecting.
+I myself have argued that we should be focusing more on stability and
+regression fixing, but I'm not so sure that a 2.6.7 devel branch would
+solve this. In general the 2.6.x.y -stable kernels seem to be doing
+the job pretty good.
 
-Here's a patch: I'm not convinced it's necessarily the best one
-(most uses of page_mapping will never see a slab page, it's a pity
-to be cluttering up that inline even further); but in case nobody
-else can provide a better...
+>The
+> upcoming GPL v3 versus v2 debate will make things worse,
+
+How is the GPLv2 vs GPLv3 debate relevant to kernel stability, ABI
+stability or anything else of the sort?
+
+> and we all know this. The un-ending stable ABI argument
+> goes into this same direction.
+
+What I think you are wishing for is a stable API - which is not going
+to happen; please read Documentation/stable_api_nonsense.txt
+(http://lxr.linux.no/source/Documentation/stable_api_nonsense.txt).
+A stable ABI we already have.
+
+[snip]
+> You might think it's easy for me to simply "use" Linux and
+> complain while you're doing the hard stuff. As it happens,
+> the current development/stable model makes our life as
+> "users" more and more difficult.
+
+In what way?
+
+Most users should be using distribution kernels anyway, not vanilla
+kernel.org kernels. Those distribution kernels should provide you with
+all the stability you require.
+
+>I'm using Linux since 1997
+> on a Mac thanks to LinuxPPC-1997, and I'm a hard pusher of
+> Linux whenever possible, sometimes against the common
+> sense, for example when I favor using National Instrument
+> cards with Linux drivers and custom written TCP/IP server
+> against easy LabView on Windows. While some of you dislike
+> closed source drivers, the choices "we users" face are:
+> - closed source drivers with closed source OS
+> - closed source drivers with open source OS
+> Please consider that we are living in a REAL world, and not
+> Disney-Land.
+>
+
+As far as I am aware, both nVidia and ATI have closed drivers
+available for you to use if you please. And they should work just fine
+with most distribution kernels as well as vanilla.
 
 
-[PATCH] page_mapping must avoid slub pages
+> So I've demonstrated that from a "users" perspective a new
+> stable Linux would be of advantage. I'll now list what I
+> suggest for this new stable branch:
+>
+I don't think you have demonstrated that.
+How specifically is the current development model hurting you?
+What exactely would we gain by switching back to the old
+stable/unstable branch model?
 
-Nicolas Ferre reports oops from flush_dcache_page() on ARM when using
-SLUB: which reuses page->mapping as page->slab.  The page_mapping()
-function, used by ARM and PA-RISC flush_dcache_page() implementations,
-must not confuse SLUB pages with those which have page->mapping set.
+[snip]
+> Why on earth
+> call "kernel object" things that are "kernel modules" ? And
+> that every person calls "modules" and not "objects" ? I
+> know I know, in UNIX dynamic libraries are .so "shared
+> objects", so what ? A "module" is a "module" and NOT an
+> "object", call a cat a cat.
+>
+It sure is an object, it's even called object code. I think the name
+suits just fine. In any case, it's just a name.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-That #ifdef I've put in there is not essential:
-it's perhaps more of a comment or an accusation ;)
+> Third, while a stable ABI in a dynamically developed kernel
+> is a difficult/impossible/unwanted feature,
 
- include/linux/mm.h |    4 ++++
- 1 file changed, 4 insertions(+)
+A stable ABI is very much a wanted feature and one that a lot of work
+goes into maintaining.
+Note; ABI != API.
 
---- 2.6.22-rc5/include/linux/mm.h	2007-05-26 07:16:48.000000000 +0100
-+++ linux/include/linux/mm.h	2007-06-21 15:52:47.000000000 +0100
-@@ -603,6 +603,10 @@ static inline struct address_space *page
- 
- 	if (unlikely(PageSwapCache(page)))
- 		mapping = &swapper_space;
-+#ifdef CONFIG_SLUB
-+	else if (unlikely(PageSlab(page)))
-+		mapping = NULL;
-+#endif
- 	else if (unlikely((unsigned long)mapping & PAGE_MAPPING_ANON))
- 		mapping = NULL;
- 	return mapping;
+> it should be
+> possible to implement in a stable branch. This could even
+> be a distinction between "stable" and "development"
+> branches. And it would certainly help vendors of
+> closed-source drivers.
+>
+If they want to keep their drivers closed they get to do all the hard
+work of tracking kernel API changes. Their choice, their problem. I
+don't think you'll find very many people on this list who gives a damn
+about the troubles of closed source driver developers.
 
+[snip]
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
