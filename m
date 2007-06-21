@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbXFUMP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXFUMRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbXFUMP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 08:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbXFUMPT
+	id S1756181AbXFUMRE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 08:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbXFUMQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 08:15:19 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:56439 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1752541AbXFUMPR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 08:15:17 -0400
-Date: Thu, 21 Jun 2007 16:20:19 +0400
-From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH RT] have x86_64 nmi watchdog also count irq 0
-Message-ID: <20070621162019.650c8aac@windmill.dev.rtsoft.ru>
-In-Reply-To: <1182365463.15228.39.camel@localhost.localdomain>
-References: <1182365463.15228.39.camel@localhost.localdomain>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.19; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 08:16:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58200 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754041AbXFUMQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 08:16:54 -0400
+Date: Thu, 21 Jun 2007 14:16:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: pj@sgi.com, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       Dinakar Guniguntala <dino@in.ibm.com>, akpm@linux-foundation.org
+Subject: Re: cpuset attach_task to touch per-cpu kernel threads?
+Message-ID: <20070621121635.GB19811@elte.hu>
+References: <20070621014935.GF10980@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070621014935.GF10980@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007 14:51:03 -0400
-Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> I was getting false reports about NMI lockups on CPU 3.  For some
-> reason CPU 0,1 and 2 where using apic timer, and CPU 3 was using the
-> irq 0 timer.
-> 
-I think you are telling about case when nmi_watchdog is set to IO_APIC
-(cmdline:nmi_watchdog=1). I've faced that problem too.
-In case when nmi_watchdog is set to IO_APIC local APIC timers are disabled
-kernel uses broadcast timer. External timer(PIT or PM I'm not sure) is used
-instead of local CPU apic timers. But even that lapic timers are disabled,
-lapic timer handler smp_apic_timer_interrupt() is triggered by broadcast timer
-IPIs with the same vector as local APIC IRQs.
-The problem is that IPIs are sent to all CPUs except CPU that is sending IPIs,
-so local_apic_timer_interrupt won't executed for CPU that initiated IPIs,
-instead high level timer code(event_handler) will be called explicitly. It's not a
-problem in general but in case of watchdog per CPU variable apic_timer_irqs won't
-be incremented, that's why we get lockup.
-Steven, I think you have Boot CPU with physical id 3, timer handler(irq 0) runs
-and sends broadcast IPIs only on Boot CPU so every time you get lockup on CPU3.
+* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
 
-Also I suggest to fix i386 kernel, we should use per CPU statistic:
-Index: git-linux-2.6/arch/i386/kernel/nmi.c
-===================================================================
---- git-linux-2.6.orig/arch/i386/kernel/nmi.c
-+++ git-linux-2.6/arch/i386/kernel/nmi.c
-@@ -351,7 +351,7 @@ __kprobes int nmi_watchdog_tick(struct p
-         * Take the local apic timer and PIT/HPET into account. We don't
-         * know which one is active, when we have highres/dyntick on
-         */
--       sum = per_cpu(irq_stat, cpu).apic_timer_irqs + kstat_irqs(0);
-+       sum = per_cpu(irq_stat, cpu).apic_timer_irqs + kstat_cpu(cpu).irqs[0];
+> But I am wondering if attach_task() should leave kernel threads alone 
+> and act only upon user-space threads. Or maybe allow movement if it 
+> doesn't result in changing kernel-threads's cpu affinity.
 
-        /* if the none of the timers isn't firing, this cpu isn't doing much */
-        if (!touched && last_irq_sums[cpu] == sum) {
+yeah, i'd agree with the latter. We could also special-case the 
+migration thread to never be migrated itself. (although that's not the 
+end of the matter either - two ksoftirqds on a cpu are not healty)
+
+	Ingo
