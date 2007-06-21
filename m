@@ -1,205 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbXFUXga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbXFUXiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752923AbXFUXga (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbXFUXgV
+	id S1753753AbXFUXiH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbXFUXh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:36:21 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45466 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750717AbXFUXgT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:36:19 -0400
-Date: Thu, 21 Jun 2007 16:35:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: rth@twiddle.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Dustin Marquess <jailbird@alcatraz.fdf.net>
-Subject: Re: [patch] alpha: fix alignment problem in csum_ipv6_magic()
-Message-Id: <20070621163501.00903134.akpm@linux-foundation.org>
-In-Reply-To: <20070617012020.A7626@jurassic.park.msu.ru>
-References: <20070617012020.A7626@jurassic.park.msu.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 19:37:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43655 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750936AbXFUXh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 19:37:56 -0400
+To: davids@webmaster.com
+Cc: "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <MDEHLPKNGKAHNMBLJOLKOEJBEMAC.davids@webmaster.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 21 Jun 2007 20:37:46 -0300
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEJBEMAC.davids@webmaster.com> (David Schwartz's message of "Thu\, 21 Jun 2007 14\:13\:36 -0700")
+Message-ID: <orr6o4j2ut.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 17 Jun 2007 01:20:20 +0400 Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
-> Hopefully this fixes http://bugzilla.kernel.org/show_bug.cgi?id=8635
-> 
-> The struct in6_addr passed to csum_ipv6_magic() is 4 byte aligned,
-> so we can't use the regular 64-bit loads.
-> Since the cost of handling of 4 byte and 1 byte aligned 64-bit data is
-> roughly the same, this code can cope with any src/dst [mis]alignment.
-> 
-> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> 
-> Ivan.
-> 
-> --- 2.6.22-rc4/arch/alpha/lib/ev6-csum_ipv6_magic.S	Sun Feb  4 21:44:54 2007
-> +++ linux/arch/alpha/lib/ev6-csum_ipv6_magic.S	Sun Jun 17 00:41:53 2007
-> @@ -46,6 +46,10 @@
->   * add the 3 low ushorts together, generating a uint
->   * a final add of the 2 lower ushorts
->   * truncating the result.
-> + *
-> + * Misalignment handling added by Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> + * The cost is 16 instructions (~8 cycles), including two extra loads which
-> + * may cause additional delay in rare cases (load-load replay traps).
->   */
->  
->  	.globl csum_ipv6_magic
-> @@ -55,25 +59,45 @@
->  csum_ipv6_magic:
->  	.prologue 0
->  
-> -	ldq	$0,0($16)	# L : Latency: 3
-> +	ldq_u	$0,0($16)	# L : Latency: 3
->  	inslh	$18,7,$4	# U : 0000000000AABBCC
-> -	ldq	$1,8($16)	# L : Latency: 3
-> +	ldq_u	$1,8($16)	# L : Latency: 3
->  	sll	$19,8,$7	# U : U L U L : 0x00000000 00aabb00
->  
-> +	and	$16,7,$6	# E : src misalignment
-> +	ldq_u	$5,15($16)	# L : Latency: 3
->  	zapnot	$20,15,$20	# U : zero extend incoming csum
-> -	ldq	$2,0($17)	# L : Latency: 3
-> -	sll	$19,24,$19	# U : U L L U : 0x000000aa bb000000
-> -	inswl	$18,3,$18	# U : 000000CCDD000000
-> +	ldq_u	$2,0($17)	# L : U L U L : Latency: 3
-> +
-> +	extql	$0,$6,$0	# U :
-> +	extqh	$1,$6,$22	# U :
-> +	ldq_u	$3,8($17)	# L : Latency: 3
-> +	sll	$19,24,$19	# U : U U L U : 0x000000aa bb000000
-> +
-> +	cmoveq	$6,$31,$22	# E : src aligned?
-> +	ldq_u	$23,15($17)	# L : Latency: 3
-> +	or	$18,$4,$18	# E : 000000CCDDAABBCC
-> +	extql	$1,$6,$1	# U : U L L U :
->  
-> -	ldq	$3,8($17)	# L : Latency: 3
-> -	bis	$18,$4,$18	# E : 000000CCDDAABBCC
-> +	or	$0,$22,$0	# E : 1st src word complete
-> +	extqh	$5,$6,$5	# U :
->  	addl	$19,$7,$19	# E : <sign bits>bbaabb00
-> -	nop			# E : U L U L
-> +	and	$17,7,$6	# E : L U L U : dst misalignment
->  
-> +	inswl	$18,3,$18	# U : 000000CCDD000000
-> +	or	$1,$5,$1	# E : 2nd src word complete
-> +	extql	$2,$6,$2	# U :
-> +	extqh	$3,$6,$22	# U : U L U U :
-> +
-> +	cmoveq	$6,$31,$22	# E : dst aligned?
-> +	extql	$3,$6,$3	# U :
->  	addq	$20,$0,$20	# E : begin summing the words
-> +	extqh	$23,$6,$23	# U : L U L U :
-> +
->  	srl	$18,16,$4	# U : 0000000000CCDDAA
-> +	or	$2,$22,$2	# E : 1st dst word complete
->  	zap	$19,0x3,$19	# U : <sign bits>bbaa0000
-> -	nop			# E : L U U L
-> +	or	$3,$23,$3	# E : U L U L : 2nd dst word complete
->  
->  	cmpult	$20,$0,$0	# E :
->  	addq	$20,$1,$20	# E :
-> --- 2.6.22-rc4/arch/alpha/lib/csum_ipv6_magic.S	Sun Feb  4 21:44:54 2007
-> +++ linux/arch/alpha/lib/csum_ipv6_magic.S	Sun Jun 17 00:29:28 2007
-> @@ -7,6 +7,9 @@
->   *                                __u32 len,
->   *                                unsigned short proto,
->   *                                unsigned int csum);
-> + *
-> + * Misalignment handling (which costs 16 instructions / 8 cycles) 
-> + * added by Ivan Kokshaysky <ink@jurassic.park.msu.ru>
->   */
->  
->  	.globl csum_ipv6_magic
-> @@ -16,37 +19,57 @@
->  csum_ipv6_magic:
->  	.prologue 0
->  
-> -	ldq	$0,0($16)	# e0    : load src & dst addr words
-> +	ldq_u	$0,0($16)	# e0    : load src & dst addr words
->  	zapnot	$20,15,$20	# .. e1 : zero extend incoming csum
->  	extqh	$18,1,$4	# e0    : byte swap len & proto while we wait
-> -	ldq	$1,8($16)	# .. e1 :
-> +	ldq_u	$21,7($16)	# .. e1 : handle misalignment
->  
->  	extbl	$18,1,$5	# e0	:
-> -	ldq	$2,0($17)	# .. e1 :
-> +	ldq_u	$1,8($16)	# .. e1 :
->  	extbl	$18,2,$6	# e0 	:
-> -	ldq	$3,8($17)	# .. e1 :
-> +	ldq_u	$22,15($16)	# .. e1 :
->  
->  	extbl	$18,3,$18	# e0	:
-> +	ldq_u	$2,0($17)	# .. e1 :
->  	sra	$4,32,$4	# e0	:
-> +	ldq_u	$23,7($17)	# .. e1 :
-> +
-> +	extql	$0,$16,$0	# e0	:
-> +	ldq_u	$3,8($17)	# .. e1 :
-> +	extqh	$21,$16,$21	# e0	:
-> +	ldq_u	$24,15($17)	# .. e1 :
-> +
->  	sll	$5,16,$5	# e0	:
-> +	or	$0,$21,$0	# .. e1 : 1st src word complete
-> +	extql	$1,$16,$1	# e0	:
->  	addq	$20,$0,$20	# .. e1 : begin summing the words
->  
-> -	sll	$6,8,$6		# e0	:
-> +	extqh	$22,$16,$22	# e0	:
->  	cmpult	$20,$0,$0	# .. e1 :
-> -	extwh	$19,7,$7	# e0    :
-> -	or	$4,$18,$18	# .. e1 :
-> +	sll	$6,8,$6		# e0	:
-> +	or	$1,$22,$1	# .. e1 : 2nd src word complete
->  
-> -	extbl	$19,1,$19	# e0    :
-> +	extql	$2,$17,$2	# e0	:
-> +	or	$4,$18,$18	# .. e1 :
-> +	extqh	$23,$17,$23	# e0	:
->  	or	$5,$6,$5	# .. e1 :
-> -	or	$18,$5,$18	# e0    : len complete
-> -	or	$19,$7,$19	# .. e1 :
->  
-> -	sll	$19,48,$19	# e0    :
-> +	extql	$3,$17,$3	# e0	:
-> +	or	$2,$23,$2	# .. e1 : 1st dst word complete
-> +	extqh	$24,$17,$24	# e0	:
-> +	or	$18,$5,$18	# .. e1 : len complete
-> +
-> +	extwh	$19,7,$7	# e0    :
-> +	or	$3,$24,$3	# .. e1 : 2nd dst word complete
-> +	extbl	$19,1,$19	# e0    :
->  	addq	$20,$1,$20	# .. e1 :
-> -	sra	$19,32,$19	# e0    : proto complete
-> +
-> +	or	$19,$7,$19	# e0    :
->  	cmpult	$20,$1,$1	# .. e1 :
-> +	sll	$19,48,$19	# e0    :
-> +	nop			# .. e0 :
->  
-> -	nop			# e0    :
-> +	sra	$19,32,$19	# e0    : proto complete
->  	addq	$20,$2,$20	# .. e1 :
->  	cmpult	$20,$2,$2	# e0    :
->  	addq	$20,$3,$20	# .. e1 :
-> @@ -84,7 +107,7 @@ csum_ipv6_magic:
->  	extwl	$0,2,$1		# e0    : fold 17-bit value
->  	zapnot	$0,3,$0		# .. e1 :
->  	addq	$0,$1,$0	# e0    :
-> -	not	$0,$0		# e1    : and complement.
-> +	not	$0,$0		# .. e1 : and complement.
->  
->  	zapnot	$0,3,$0		# e0    :
->  	ret			# .. e1 :
+On Jun 21, 2007, "David Schwartz" <davids@webmaster.com> wrote:
 
-In http://bugzilla.kernel.org/show_bug.cgi?id=8659, Dustin is reporting
-that this patch broke tcp-on-ipv6.
+> Are you seriously suggesting that the Linux kernel source contain code with
+> various different licenses
 
+It already does.  All the way from permissive Free Software licenses
+to GPLv2-incompatible non-Free Software licenses.
 
+> Over time, the code will get so combined and interwoven that the
+> intersection of all permitted licenses would soon apply to
+> effectively the entire kernel.
+
+If you don't keep things clearly separate, yes.
+
+I was honestly thinking more along the lines of ZFS as a separate
+driver than about your bringing GPLv3 code into the core of the
+kernel.
+
+But then, it would be your call either way.
+
+This option of mutual cooperation wouldn't work for either party if
+you're not willing to cooperate, and that's what I believe makes it
+fair.
+
+Now, if you guys can't recognize a goodwill gesture when you see one,
+and prefer to live in the paranoid beliefs that "those evil FSFers are
+trying to force me into a situation in which they'll then be able to
+steal my code", that's really up to you.  Don't try to shift the blame
+of your decisions onto the FSF.
+
+One thing is missing the spirit of the GPL and using it to serve a
+different purpose, without realizing it doesn't provide you with
+exactly what you want (tivoization, for example); another completely
+different is to try to put it as FSF's fault that clarifications and
+amendments are desirable to ensure the ability for authors to enforce
+the intent of the GPL.
+
+> Unless, that is, GPLv3 makes itself compatible with GPlv2.
+
+Hey, but that was precisely what I was suggesting!  Except that it
+wasn't with GPLv2 alone, because this doesn't work.  Each copyleft
+license insists that it be *the* license.  So, in order to be able to
+combine two copyleft licenses, you need mutual compatibility
+provisions in both.  Which is what I was proposing.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
