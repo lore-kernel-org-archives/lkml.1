@@ -1,34 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbXFUQfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbXFUQf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758296AbXFUQfm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXFUQfb
+	id S1758551AbXFUQf7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXFUQft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:35:31 -0400
+	Thu, 21 Jun 2007 12:35:49 -0400
 Received: from ug-out-1314.google.com ([66.249.92.171]:41733 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755900AbXFUQf3 (ORCPT
+	with ESMTP id S1758429AbXFUQfq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:35:29 -0400
+	Thu, 21 Jun 2007 12:35:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=d7JF9UYYr+3VzR7puPOLmqwle/c6Oz2I2ZZldXgdVVLSX6ZZ75A/OLpUr/W8Qg4wRZcDhViULid27FACQ8C+U07NhWjQ3yjahPWfMHnsm9IRzd+S/gcsUflm6dwDUnxhPWOwqSnXJLpcWOgkfykvxiGZiNwT5zlorwmHOXlyjv0=
-Message-ID: <467AA8AB.2010107@googlemail.com>
-Date: Thu, 21 Jun 2007 18:34:51 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=Lt7uhiu46RhNq/I7yQ/q1Pfgo0DuKPvch5WX7hqoda17CY5iRwyYQth5ufwcvZvzMt5CJSJMjxPgPsAxXd2ipXmxD1f60SccJE6fJHWTDUw/FKa9iqZiNwNuOgIrniw1m6TNqbyQASxGGHZrHHeSBtnqfy6gOn784LRG7b00NP8=
+Message-ID: <467AA8BB.2060305@googlemail.com>
+Date: Thu, 21 Jun 2007 18:35:07 +0200
 User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Rodrigo Luiz <troops.of.doom@gmail.com>,
-       CHIKAMA Masaki <masaki-c@nict.go.jp>,
-       Christian Volkmann <haveaniceday@cv-sv.de>,
-       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
-       Ben Collins <bcollins@ubuntu.com>, reiserfs-devel@vger.kernel.org,
-       "Vladimir V. Saveliev" <vs@namesys.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [1/2] 2.6.22-rc5: known regressions v2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rodney Gordon II <meff@spherevision.org>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       Mark Fortescue <mark@mtfhpc.demon.co.uk>,
+       William Lee Irwin III <wli@holomorphy.com>, Andi Kleen <ak@suse.de>,
+       discuss@x86-64.org, Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [2/2] 2.6.22-rc5: known regressions v2
+References: <467AA5D2.3020500@googlemail.com>
+In-Reply-To: <467AA5D2.3020500@googlemail.com>
 Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
@@ -46,45 +48,36 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Unclassified
+SATA/PATA
 
-Subject    : PANIC: CPU too old for this kernel. with Crusoe CPU
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8647
-Submitter  : CHIKAMA Masaki <masaki-c@nict.go.jp>
-Caused-By  : Andi Kleen <ak@suse.de>
-             or Christian Volkmann <haveaniceday@cv-sv.de>
-             one of those commits:
-             commit 4c1f59d8be7e5da75d9380da23671005b363c45c
-             commit 39427d6e595ebee38fdd77bcf55d6b13d7a4324a
-             commit fd0581bbb40d8f4b0e4b3a4de2258a50df37bb57
-             commit c7f81c9453375d6416658995eafd3397cb9bba1d
-             commit 3671df8572a299acff9c9cac2bf7279ee614d154
+Subject    : libata IT821X driver still fails! Hard-freezes system
+References : http://lkml.org/lkml/2007/6/14/82
+Submitter  : Rodney Gordon II <meff@spherevision.org>
 Status     : unknown
 
-Subject    : Kernel hang on CMOS_READ
-References : http://lkml.org/lkml/2007/6/3/138
-Submitter  : Rodrigo Luiz <troops.of.doom@gmail.com>
-Status     : Unknown
 
 
+Sparc64
 
-ALSA
-
-Subject    : snd-aoa causes badness in lib/kref.c:33
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8513
-Submitter  : Ben Collins <bcollins@ubuntu.com>
-Handled-By : Takashi Iwai <tiwai@suse.de>
-Status     : Unknown
-
-
-
-FS
-
-Subject    : 2.6.22-rc4-git5 reiserfs: null ptr deref.
-References : http://lkml.org/lkml/2007/6/13/322
-Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
-Handled-By : Vladimir V. Saveliev <vs@namesys.com>
+Subject    : random invalid instruction occourances on sparc32 (sun4c)
+References : http://lkml.org/lkml/2007/6/17/111
+Submitter  : Mark Fortescue <mark@mtfhpc.demon.co.uk>
 Status     : problem is being debugged
+
+Subject    : 2.6.22-rc broke X on Ultra5
+References : http://lkml.org/lkml/2007/5/22/78
+Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+Handled-By : David Miller <davem@davemloft.net>
+Status     : problem is being debugged
+
+
+
+x86-64
+
+Subject    : x86-64 2.6.22-rc2 random segfaults
+References : http://lkml.org/lkml/2007/5/24/275
+Submitter  : Ioan Ionita <opslynx@gmail.com>
+Status     : Unknown
 
 
 
