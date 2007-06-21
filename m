@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbXFUSpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbXFUSrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbXFUSpZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXFUSpO
+	id S1758033AbXFUSrY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbXFUSrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:45:14 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43351 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752070AbXFUSpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:45:12 -0400
-Message-ID: <467AC742.7070007@suse.com>
-Date: Thu, 21 Jun 2007 14:45:22 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Thu, 21 Jun 2007 14:47:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47861 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752070AbXFUSrQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 14:47:16 -0400
+Date: Thu, 21 Jun 2007 11:44:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+In-Reply-To: <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
+Message-ID: <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
+References: <20070620093612.GA1626@ff.dom.local>
+ <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+ <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
+ <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
+ <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
+ <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Gerd Knorr <kraxel@bytesex.org>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] saa7134: fix thread shutdown handling
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This patch changes the test for the thread pid from >= 0 to > 0.
 
- When the saa8134 driver initialization fails after a certain point,
- it goes through the complete shutdown process for the driver. Part
- of shutting it down includes tearing down the thread for tv audio.
 
- The test for tearing down the thread tests for >= 0. Since the dev
- structure is kzalloc'd, the test will always be true if we haven't
- tried to start the thread yet. We end up waiting on pid 0 to complete,
- which will never happen, so we lock up.
+On Thu, 21 Jun 2007, Eric Dumazet wrote:
+> 
+> This reminds me Nick's proposal of 'queued spinlocks' 3 months ago
+> 
+> Maybe this should be re-considered ? (unlock is still a non atomic op, 
+> so we dont pay the serializing cost twice)
 
- This bug was observed in Novell Bugzilla 284718, when request_irq()
- failed.
+No. The point is simple:
 
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+	IF YOU NEED THIS, YOU ARE DOING SOMETHING WRONG!
 
----
+I don't understand why this is even controversial. Especially since we 
+have a patch for the problem that proves my point: the _proper_ way to fix 
+things is to just not do the bad thing, instead of trying to allow the bad 
+behaviour and try to handle it.
 
- drivers/media/video/saa7134/saa7134-tvaudio.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Things like queued spinlocks just make excuses for bad code. 
 
---- a/drivers/media/video/saa7134/saa7134-tvaudio.c	2007-06-12 15:45:16.000000000 -0400
-+++ b/drivers/media/video/saa7134/saa7134-tvaudio.c	2007-06-15 14:16:14.000000000 -0400
-@@ -1005,7 +1005,7 @@
- int saa7134_tvaudio_fini(struct saa7134_dev *dev)
- {
- 	/* shutdown tvaudio thread */
--	if (dev->thread.pid >= 0) {
-+	if (dev->thread.pid > 0) {
- 		dev->thread.shutdown = 1;
- 		wake_up_interruptible(&dev->thread.wq);
- 		wait_for_completion(&dev->thread.exit);
+We don't do nesting locking either, for exactly the same reason. Are 
+nesting locks "easier"? Absolutely. They are also almost always a sign of 
+a *bug*. So making spinlocks and/or mutexes nest by default is just a way 
+to encourage bad programming!
 
--- 
-Jeff Mahoney
-SUSE Labs
+> extract : 
+> 
+> Implement queued spinlocks for i386. This shouldn't increase the size of
+> the spinlock structure, while still able to handle 2^16 CPUs.
+
+Umm. i386 spinlocks could and should be *one*byte*.
+
+In fact, I don't even know why they are wasting four bytes right now: the 
+fact that somebody made them an "int" just wastes memory. All the actual 
+code uses "decb", so it's not even a question of safety. I wonder why we 
+have that 32-bit thing and the ugly casts.
+
+Ingo, any memory of that?
+
+(And no, on 32-bit x86, we don't allow more than 128 CPU's. I don't think 
+such an insane machine has ever existed).
+
+		Linus
