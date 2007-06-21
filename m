@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbXFUTm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbXFUToB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756523AbXFUTm7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXFUTmh
+	id S1759037AbXFUToB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbXFUTnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:42:37 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:37618 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754423AbXFUTme (ORCPT
+	Thu, 21 Jun 2007 15:43:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:60231 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754369AbXFUTnu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:42:34 -0400
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that through other means
-References: <467994BD.6000403@zytor.com> <87abuu2q3w.fsf@hades.wkstn.nix>
-	<E1I1KA8-0007Fu-00@dorka.pomaz.szeredi.hu>
-From: Nix <nix@esperi.org.uk>
-Emacs: it's all fun and games, until somebody tries to edit a file.
-Date: Thu, 21 Jun 2007 20:42:27 +0100
-In-Reply-To: <E1I1KA8-0007Fu-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's message of "Thu, 21 Jun 2007 12:45:16 +0200")
-Message-ID: <87sl8l14d8.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+	Thu, 21 Jun 2007 15:43:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=NmBMPNwl3e2EnTxYqVMDHafH8wPZmps9PDOIAbDIb3nc6nJKN8NErU55pTWhbps4sJWCkhNUhuebqgQEJnWeNafIdXrBrHORYUSbw7Z03BnTJgueVAbUurFjD1R2CqtiQeTUcdGl0F3E2U9UsBvMGLiPRExc3CaQIAwnE3zs754=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 1/5] ide: add short cables support
+Date: Thu, 21 Jun 2007 21:38:23 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200706101558.08990.bzolnier@gmail.com> <200706160140.28380.bzolnier@gmail.com> <467569BD.9070506@ru.mvista.com>
+In-Reply-To: <467569BD.9070506@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=5 Fuz1=5 Fuz2=5
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706212138.23623.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21 Jun 2007, Miklos Szeredi said:
-> I'm working on this actually.  See this (and related patches) in -mm:
->
->   http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc4/2.6.22-rc4-mm2/broken-out/unprivileged-mounts-add-user-mounts-to-the-kernel.patch
->
-> This solves the "user=" thing, but is not a generic solution for other
-> options.  And I'm wondering if there is really a need for that.
+On Sunday 17 June 2007, Sergei Shtylyov wrote:
 
-I'm not sure there is, actually...
+[ ... ]
 
-> Which quota options are you thinking about?  Some quota options
-> (e.g. for ext*) seem to be already present in /proc/mounts.
+> >>>Index: b/drivers/ide/pci/alim15x3.c
+> >>>===================================================================
+> >>>--- a/drivers/ide/pci/alim15x3.c
+> >>>+++ b/drivers/ide/pci/alim15x3.c
+> >>>@@ -594,7 +594,7 @@ out:
+> >>>  *	FIXME: frobs bits that are not defined on newer ALi devicea
+> >>>  */
+> >>> 
+> >>>-static unsigned int __devinit ata66_ali15x3 (ide_hwif_t *hwif)
+> >>>+static u8 __devinit ata66_ali15x3(ide_hwif_t *hwif)
+> >>> {
+> >>> 	struct pci_dev *dev	= hwif->pci_dev;
+> >>> 	unsigned int ata66	= 0;
+> >>>@@ -657,7 +657,7 @@ static unsigned int __devinit ata66_ali1
+> >>> 
+> >>> 	local_irq_restore(flags);
+> >>> 
+> >>>-	return(ata66);
+> >>>+	return ata66 ? ATA_CBL_PATA80 : ATA_CBL_PATA40;
+> 
+> >>    Ahem... I'd think it was about the right time to fix the abomination which
+> >>those ata66 and cable_80_pin[2] are, something like this:
+> 
+> >>static unsigned int __devinit ata66_ali15x3 (ide_hwif_t *hwif)
+> >>{
+> >>         struct pci_dev *dev     = hwif->pci_dev;
+> >>         unsigned int cbl        = ATA_CBL_PATA40;
+> >>         unsigned long flags;
+> >>         u8 tmpbyte, mask	= hwif->channel ? 0x02 : 0x01;
+> >>
+> >>         local_irq_save(flags); /* Not sure if it's necessary... */
+> >>
+> >>         if (m5229_revision >= 0xC2) {
+> >>                 /*
+> >>                  * Ultra66 cable detection (from Host View)
+> >>                  * m5229, 0x4a, bit0: primary, bit1: secondary
+> >>		 * 0: 80 pin, 1: 40 pin
+> >>                  */
+> >>                 pci_read_config_byte(dev, 0x4a, &tmpbyte);
+> >>                 /*
+> >>                  * Allow ata66 if cable of current channel has 80 pins
+> >>                  */
+> >>                 cbl = (tmpbyte & mask) ? ATA_CBL_PATA40 : ATA_CBL_PATA80;
+> >>         } else {
+> 
+> >>[Following code frankly speaking has no business being in this function]
+> 
+> > patch #3/5 already takes care of cable_80_pin[2] part,
+> 
+>     I really should have looked thru all the series but lacked the time. :-<
+> 
+> > ata66 part was left as an exercise for the reader ;-)
+> 
+>     Hm, now that I've looked at that patch I saw both these things killed.
+> What, you don't know your own code? ;-)
 
-... last I checked, usrquota and grpquota weren't being propagated in,
-but that's changed sometime in the last, um, wow, has it been two
-years already? Perhaps I should have checked again before babbling
-nonsense to an audience of thousands, sorry!
+It seems that I indeed dealt with ata66 part already... :-)
 
-> Do you know any other options which are only in /etc/mtab, and need to
-> be stored along with each mount?
+However I had something different in mind while writing about code gymnastics
+- code unrelated to cable detection should be split off from ata66_ali15x3. 
 
-None presently, but in general it seems strange to have to modify the
-kernel in order to be able to reliably associate some new key/value pair
-with a mount point, let alone to have to do it on a filesystem-by-
-filesystem basis...
-
--- 
-`... in the sense that dragons logically follow evolution so they would
- be able to wield metal.' --- Kenneth Eng's colourless green ideas sleep
- furiously
+Thanks,
+Bart
