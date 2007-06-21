@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbXFUIhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbXFUIjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbXFUIhK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 04:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXFUIg6
+	id S1754978AbXFUIjy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 04:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbXFUIjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 04:36:58 -0400
-Received: from tayrelbas01.tay.hp.com ([161.114.80.244]:42889 "EHLO
-	tayrelbas01.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbXFUIg5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 04:36:57 -0400
-Date: Thu, 21 Jun 2007 01:36:45 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       Andi Kleen <ak@suse.de>, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       levon@movementarian.org, perfmon@napali.hpl.hp.com,
-       oprofile-list@lists.sourceforge.net, wcohen@redhat.com,
+	Thu, 21 Jun 2007 04:39:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52476 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753101AbXFUIjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 04:39:46 -0400
+Date: Thu, 21 Jun 2007 10:39:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, cebbert@redhat.com, chris@atlee.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
        akpm@linux-foundation.org
-Subject: Re: [perfmon] Re: [PATCH 1/2] Separate the performance counter allocation from the LAPIC NMI watchdog
-Message-ID: <20070621083645.GA26740@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070618103214.GA12045@atjola.homenet> <200706201431.44014.ak@suse.de> <20070620124959.GB24906@frankl.hpl.hp.com> <200706201501.02582.ak@suse.de> <20070620183315.GA3251@atjola.homenet> <20070620215933.GE26200@frankl.hpl.hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070621083931.GA18105@elte.hu>
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073800.GA1685@ff.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070620215933.GE26200@frankl.hpl.hp.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
+In-Reply-To: <20070621073800.GA1685@ff.dom.local>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn,
 
+* Jarek Poplawski <jarkao2@o2.pl> wrote:
 
-On Wed, Jun 20, 2007 at 02:59:33PM -0700, Stephane Eranian wrote:
-> Bjorn,
-> 
-> I ran into one issue related with the new allocator.
-> 
-> In the case of a Core 2 Duo processor, the PMU implements more
-> than just basic counters. In particular it supports fixed counters
-> and PEBS where both use another set of MSRs. Those are not within
-> a 66 bit distance from MSR_ARCH_PERFMON_EVNTSEL0. Thus the allocator
-> fails with an assertion.
-> 
-> I do know that perfmon is the only consumer of those extended 
-> features TODAY. Yet I think we need to define the allocator such
-> that it can work with other "distant" MSRs as well.
-> 
+> BTW, I've looked a bit at these NMI watchdog traces, and now I'm not 
+> even sure it's necessarily the spinlock's problem (but I don't exclude 
+> this possibility yet). It seems both processors use task_rq_lock(), so 
+> there could be also a problem with that loop. The way the correctness 
+> of the taken lock is verified is racy: there is a small probability 
+> that if we have taken the wrong lock the check inside the loop is done 
+> just before the value is beeing changed elsewhere under the right 
+> lock. Another possible problem could be a result of some wrong 
+> optimization or wrong propagation of change of this task_rq(p) value.
 
-I think that a workaround for this issue could be for the allocator
-to grant the requests for registers outside of the range, i.e., register
-that it does not see/manage.
+ok, could you elaborate this in a bit more detail? You say it's racy - 
+any correctness bug in task_rq_lock() will cause the kernel to blow up 
+in spectacular ways. It's a fairly straightforward loop:
 
-> On Wed, Jun 20, 2007 at 08:33:15PM +0200, Bj?rn Steinbrink wrote:
-> > On 2007.06.20 15:01:02 +0200, Andi Kleen wrote:
-> > > 
-> > > > Once this is fixed (which is what Bjorn did), then I will agree with you.
-> > > > For this, the allocator needs to be able to probe the CPU and initialize
-> > > > its own data structures.
-> > > 
-> > > Ok that sounds reasonable. Please someone send a patch that does only 
-> > > that.
-> > 
-> > OK, here come the bugfixes without any restructuring. The first patch
-> > enables unconditional probing of the watchdog. The second makes the
-> > perfmon nmi watchdog reserve the correct perfctr/evntsel.
-> > 
-> > Björn
-> > 
-> > -------------------------------------------------------------------------
-> > This SF.net email is sponsored by DB2 Express
-> > Download DB2 Express C - the FREE version of DB2 express and take
-> > control of your XML. No limits. Just data. Click to get it now.
-> > http://sourceforge.net/powerbar/db2/
-> > _______________________________________________
-> > oprofile-list mailing list
-> > oprofile-list@lists.sourceforge.net
-> > https://lists.sourceforge.net/lists/listinfo/oprofile-list
-> 
-> -- 
-> 
-> -Stephane
-> _______________________________________________
-> perfmon mailing list
-> perfmon@linux.hpl.hp.com
-> http://www.hpl.hp.com/hosted/linux/mail-archives/perfmon/
+ static inline struct rq *__task_rq_lock(struct task_struct *p)
+         __acquires(rq->lock)
+ {
+         struct rq *rq;
 
--- 
+ repeat_lock_task:
+         rq = task_rq(p);
+         spin_lock(&rq->lock);
+         if (unlikely(rq != task_rq(p))) {
+                 spin_unlock(&rq->lock);
+                 goto repeat_lock_task;
+         }
+         return rq;
+ }
 
--Stephane
+the result of task_rq() depends on p->thread_info->cpu wich will only 
+change if a task has migrated over to another CPU. That is a 
+fundamentally 'slow' operation, but even if a task does it intentionally 
+in a high frequency way (for example via repeated calls to 
+sched_setaffinity) there's no way it could be faster than the spinlock 
+code here. So ... what problems can you see with it?
+
+	Ingo
