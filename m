@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbXFUHNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbXFUHRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759001AbXFUHNZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 03:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbXFUHNQ
+	id S1758852AbXFUHRR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 03:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbXFUHRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 03:13:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50302 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754156AbXFUHNP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 03:13:15 -0400
-Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation
-	failures	in	dma	map api calls
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
-       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
-       davem@davemloft.net, clameter@sgi.com
-In-Reply-To: <20070621063730.GC6771@linux-os.sc.intel.com>
-References: <1182326799.21117.19.camel@twins>
-	 <46792586.20706@linux.intel.com>
-	 <20070620173038.GA25516@linux-os.sc.intel.com>
-	 <1182362703.21117.79.camel@twins> <46797CB1.8070008@linux.intel.com>
-	 <1182370132.21117.84.camel@twins>
-	 <20070620230337.GA6771@linux-os.sc.intel.com>
-	 <1182406212.21117.94.camel@twins> <467A1679.8090202@linux.intel.com>
-	 <1182407374.21117.106.camel@twins>
-	 <20070621063730.GC6771@linux-os.sc.intel.com>
-Content-Type: text/plain
-Date: Thu, 21 Jun 2007 09:13:11 +0200
-Message-Id: <1182409991.21117.112.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 03:17:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40790 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752647AbXFUHRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 03:17:05 -0400
+To: david@lang.hm
+Cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4673CA7C.5040207@t-online.de>
+	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070616181902.GB21478@ftp.linux.org.uk>
+	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4679557C.5080907@iders.ca>
+	<20070620175627.319a6c55@the-village.bc.nu>
+	<46797C52.4020907@iders.ca>
+	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
+	<ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
+	<orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 21 Jun 2007 04:16:11 -0300
+In-Reply-To: <Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm> (david@lang.hm's message of "Wed\, 20 Jun 2007 23\:39\:03 -0700 \(PDT\)")
+Message-ID: <ory7idpykk.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-20 at 23:37 -0700, Keshavamurthy, Anil S wrote:
-> On Thu, Jun 21, 2007 at 08:29:34AM +0200, Peter Zijlstra wrote:
-> > On Wed, 2007-06-20 at 23:11 -0700, Arjan van de Ven wrote:
-> > > Peter Zijlstra wrote:
-> > Also, the other iommu code you pointed me to, was happy to fail, it did
-> > not attempt to use the emergency reserves.
-> 
-> Is the same behavior acceptable here?
+On Jun 21, 2007, david@lang.hm wrote:
 
-I would say it is. Failure is a part of life.
+> no, one of the rules for the network is that the software must be
+> certified,
 
-If you have a (small) mempool with 16 pages or so, that should give you
-plenty megabytes of io-space to get out of a tight spot. That is, you
-can queue many pages with that. If it is depleted you know you have at
-least that many pages outstanding. So failing will just delay the next
-pages.
+In this case you might have grounds to enforce this restriction of the
+network on the network controller itself, I suppose.
 
-Throughput is not a key issue when that low on memory, a guarantee of
-progress is.
+Not that you should disable the network controller entirely (this
+would render the computer useless for many other purpose unrelated
+with blocking connections to your network).
 
+You could instead arrange for the network controller to send some
+signal that enables the network to recognize that the device is
+running certified software.
 
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
