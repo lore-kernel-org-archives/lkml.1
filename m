@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbXFUXXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbXFUXXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752960AbXFUXXS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXFUXXK
+	id S1753970AbXFUXXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbXFUXXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:23:10 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:51929 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750978AbXFUXXJ (ORCPT
+	Thu, 21 Jun 2007 19:23:23 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:51604 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbXFUXXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:23:09 -0400
-Date: Thu, 21 Jun 2007 19:23:08 -0400
-To: Zolt?n HUBERT <zoltan.hubert@zzaero.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Please release a stable kernel Linux 3.0
-Message-ID: <20070621232308.GG10008@csclub.uwaterloo.ca>
-References: <200706212349.54983.zoltan.hubert@zzaero.com> <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com> <200706220057.33984.zoltan.hubert@zzaero.com>
+	Thu, 21 Jun 2007 19:23:20 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Carsten Otte <cotte@de.ibm.com>
+Subject: Re: [BUG?]Set XIP mount option on ext2 bypass check.
+Date: Fri, 22 Jun 2007 01:22:41 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, Yan Zheng <yanzheng@21cn.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <4679A58C.2080008@21cn.com> <467A5E36.9030904@de.ibm.com> <1182431869.7145.7.camel@cotte.boeblingen.de.ibm.com>
+In-Reply-To: <1182431869.7145.7.camel@cotte.boeblingen.de.ibm.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200706220057.33984.zoltan.hubert@zzaero.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Message-Id: <200706220122.41586.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/fune8PYKZ2fD54khGQw6fThRX8diJv0yWfvS
+ J4PdgDrpjuoYzHp8MFFH9sRTZdQZrEGE7lCn5dzSmoWFVT3tL/
+ 2XEuyu1Nivvub9UkkfcnQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 12:57:33AM +0200, Zolt?n HUBERT wrote:
-> Well, I'm using SuSE Pro 9.3 (excellent choice by the way), 
-> coming with kernel 2.6.10-SuSE, on a ATI laptop, and the 
-> drivers privided wouldn't compile (suspend & freinds). The 
-> SATA disks were only supported from 2.6.15 (which just came 
-> out), so I had to edit the "source code" of a closed source 
-> driver to make it all work well. If that's "easy" for you I 
-> doubt it is for 99.999% of earth's population. "World 
-> domination" is far away.
+On Thursday 21 June 2007, Carsten Otte wrote:
+> 
+> This is an updated version of my bugfix patch. Yan Zheng pointed out,
+> that ext2_remount lacks checking if -o xip should be enabled or not.
+> This patch checks for presence of direct_access on the backing block
+> device and if the blocksize meets the requirements.
+> Andrew, please consider adding this patch to -mm.
+> 
+> Signed-off-by: Carsten Otte <cotte@de.ibm.com>
 
-Have you ever tried installing windows xp from scratch on a new laptop?
-Same (if not worse) problem.
+It looks to me like a local denial of service attack in case of
+user-mountable ext2 file systems in /etc/fstab.
 
-> Also, the 7 National Instruments cards I'm using for a 
-> deformable mirror in Adaptive Optics in an industrial PC 
-> are "certified" for SuSE 9.3 only. Which, this week, got 
-> discontinued. So what now ?
+Shouldn't that make it go into 2.6.22?
 
-If you buy hardware that only works with one particular release of one
-distribution, that is pretty much a way to ensure you will soon be
-unable to use that hardware anymore.  Don't do that.
-
-> ???? should ???? who do you think "users" are ????
-
-People that install a distribution and use it.  Sometimes they upgrade
-to the next release of the distribution.
-
-> Who said I was using vanilla kernels ?
-
-Well if you change the kernel on your distribution, then you aren't
-running that distribution anymore.  You changed something.
-
-> no, it's MY problem.
-
-Well it is their problem to fix, and your problem that you bought their
-stuff in the first place.
-
-> and what about their users ?
-
-The kernel developers can't fix the problems of the closed source code
-anyhow, so it isn't the kernel developers problem.  It is a problem of
-the closed source developer and their users (who chose that hardware
-themselves.)  The kernel developers didn't recomend the hardware, and
-didn't make the users buy that stuff.
-
---
-Len Sorensen
+	Arnd <><
