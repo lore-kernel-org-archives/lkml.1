@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbXFUEUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbXFUEYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbXFUEUQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 00:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbXFUEUE
+	id S1754880AbXFUEYg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 00:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbXFUEY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 00:20:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57271 "EHLO mx1.redhat.com"
+	Thu, 21 Jun 2007 00:24:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57951 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbXFUEUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 00:20:02 -0400
-To: david@lang.hm
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       David Schwartz <davids@webmaster.com>,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+	id S1751242AbXFUEY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 00:24:27 -0400
+To: "Tomas Neme" <lacrymology@gmail.com>
+Cc: "Andrew McKay" <amckay@iders.ca>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Al Viro" <viro@ftp.linux.org.uk>,
+       "Bernd Schmidt" <bernds_cb1@t-online.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "Daniel Hazelton" <dhazelton@enter.net>, "Greg KH" <greg@kroah.com>,
+       "debian developer" <debiandev@gmail.com>, david@lang.hm,
+       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <MDEHLPKNGKAHNMBLJOLKKEIFEKAC.davids@webmaster.com>
-	<orodjfkzjt.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070620140101.GU10008@csclub.uwaterloo.ca>
-	<or1wg6uz53.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706201407560.30395@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4679557C.5080907@iders.ca>
+	<20070620175627.319a6c55@the-village.bc.nu>
+	<46797C52.4020907@iders.ca>
+	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
 From: Alexandre Oliva <aoliva@redhat.com>
 Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 01:19:45 -0300
-In-Reply-To: <Pine.LNX.4.64.0706201407560.30395@asgard.lang.hm> (david@lang.hm's message of "Wed\, 20 Jun 2007 14\:09\:46 -0700 \(PDT\)")
-Message-ID: <orlkeerlb2.fsf@oliva.athome.lsd.ic.unicamp.br>
+Date: Thu, 21 Jun 2007 01:23:01 -0300
+In-Reply-To: <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com> (Tomas Neme's message of "Wed\, 20 Jun 2007 18\:14\:32 -0300")
+Message-ID: <orhcp2rl5m.fsf@oliva.athome.lsd.ic.unicamp.br>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 20, 2007, david@lang.hm wrote:
+On Jun 20, 2007, "Tomas Neme" <lacrymology@gmail.com> wrote:
 
-> On Wed, 20 Jun 2007, Alexandre Oliva wrote:
->> On Jun 20, 2007, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
->>>> It is the duty of the FSF to defend these freedoms.  It's its public
->>>> mission.  That's a publicly stated goal of the GPL, for anyone who
->>>> cares to understand it, or miss it completely and then complain about
->>>> changes in spirit.
+>> > However, I don't see how this would ever require a company like Tivo
+>> > or Mastercard to have their networks play nice with a unit that has
+>> > been modified by the end user, potentially opening up some serious
+>> > security holes.
 >> 
->>> I wouldn't call it a duty.  It is the chosen mission perhaps, but nobody
->>> is making them do it.
->> 
->> Everyone who donates to it does so understanding what the mission is.
->> Detracting from that mission would be failing the public commitment.
+>> Which is why the GPLv3 doesn't make the requirement that you stated.
 
-> true, but selecting the GPL as the license for your project is not
-> donating to the FSF.
+> Why, if you let user-compiled kernels to run in a TiVo, it might be
+> modified so the TiVo can be used to pirate-copy protected content,
 
-Oh, that's what you meant.  Indeed, absolutely not.
+And then the user who uses such features in ways not permitted by the
+copyright holders are committing a crime.  They can be prosecuted by
+the copyright holders and convicted of the crime.
 
-The GPL is "just" a set of permissions you, as an author, grant to
-anyone who comes across your program.
-
-Whether you share FSF's goals or not, you can do that.
-
-If you share FSF's goals of not only respecting users' freedoms, but
-also defending them as much as deemed legally possible under copyright
-law, you can also offer your code under any later version of the GPL,
-such that it remains usable by the community who cares about this.
-
-In theory, this shouldn't be a problem for anyone who chose the GPLv2,
-since all of the permissions granted by GPLv3 are granted by GPLv2,
-and this is how it should be.  The difference is that GPLv3 plugs some
-holes that were found in GPLv2, in a similar way that GPLv2 plugged
-holes found in GPLv1, and GPL "plugs holes" in LGPL, which "plugs
-holes" in other even more permissive licenses.
-
-Each GPL revision is expected to plug holes ("address new problems",
-as in the legal terms of GPLv2) that might enable licensees to deny
-other licensees the rights you meant to grant them.
-
-This will necessarily make each revision incompatible with the
-previous, for being stricter, thus imposing further restrictions, even
-if only by removing exploitable ambiguities.  This should have been
-clear since GPLv1, anyone who understands the goals of the GPL and
-with enough foresight to understand the recommendation of permitting
-relicensing under newer versions should be able to see this.
-
-So, since new restrictions are always on licensees' ways to deny other
-licensees the enjoyment of the permissions you meant to grant them, if
-you mean to permit people to use your work in the ways permitted by
-GPLv2, not permitting them to be used in GPLv3 software amounts to
-pure selfishness: "if I won't get to use your code, you don't get to
-use mine."  Tit-for-tat, for sure, but certainly not in the spirit of
-sharing clearly established early in the preamble of every version of
-the GPL.
-
-Permitting such relicensing wouldn't deny anyone any freedom, and it
-wouldn't create any obligations whatsoever for the licensor.  Whoever
-wanted to use the work under the more liberal terms of the earlier
-version of the GPL under which the work was licensed still could: this
-license can't be unilaterally revoked, not by you, not by anyone else.
+That TiVo can somehow become liable for this just shows how broken the
+legal system in the US is.  It's like making a knife manufacturer
+liable for a killing using a knife they made, just because the knife
+didn't have technical measures intended to prevent the knife from
+being used to kill people.
 
 -- 
 Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
