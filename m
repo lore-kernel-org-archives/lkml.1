@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbXFUQtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbXFUQtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755661AbXFUQtc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbXFUQtQ
+	id S1755336AbXFUQtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbXFUQtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:49:16 -0400
-Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:49673 "EHLO
-	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755531AbXFUQtP (ORCPT
+	Thu, 21 Jun 2007 12:49:41 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:33700
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755838AbXFUQtj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:49:15 -0400
-Date: Thu, 21 Jun 2007 18:49:12 +0200
-From: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Alexander Wuerstlein <arw@arw.name>, linux-kernel@vger.kernel.org,
-       Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
-Subject: Re: [PATCH] sns: add syscall to check signed state of a process
-	[4/4]
-Message-ID: <20070621164912.GD9741@cip.informatik.uni-erlangen.de>
-References: <11824417553291-git-send-email-arw@arw.name> <961aa3350706210934m11e7f0cq96f384056878cb43@mail.gmail.com>
+	Thu, 21 Jun 2007 12:49:39 -0400
+Date: Thu, 21 Jun 2007 09:48:38 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Mattias Wadenstein <maswan@acc.umu.se>
+cc: Neil Brown <neilb@suse.de>, David Chinner <dgc@sgi.com>,
+       Avi Kivity <avi@argo.co.il>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <Pine.GSO.4.64.0706211417180.15647@montezuma.acc.umu.se>
+Message-ID: <Pine.LNX.4.64.0706210947090.31603@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+ <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+ <18034.3676.477575.490448@notabene.brown> <467273AB.9010202@argo.co.il>
+ <18035.3009.568832.785308@notabene.brown> <20070618045759.GD85884050@sgi.com>
+ <18041.59628.370832.633244@notabene.brown> <Pine.GSO.4.64.0706211417180.15647@montezuma.acc.umu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <961aa3350706210934m11e7f0cq96f384056878cb43@mail.gmail.com>
-X-Echelon-Scan: plutonium bomb dirty irak allah satan bush victory c4
-	cocaine saddam wtc holy war believe god cia nsa
-X-Echelon-Result: Terrorist
-User-Agent: Mutt/1.5.15 (2007-05-02)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 070621 18:34, Akinobu Mita <akinobu.mita@gmail.com> wrote:
-> 2007/6/22, Alexander Wuerstlein <arw@arw.name>:
+On Thu, 21 Jun 2007, Mattias Wadenstein wrote:
+
+> On Thu, 21 Jun 2007, Neil Brown wrote:
 >
->> +asmlinkage int sys_sns_is_trusted(pid_t p)
->> +{
->> +       struct task_struct *t;
->> +       rcu_read_lock();
->> +       t = find_task_by_pid(p);
->> +       if (IS_ERR(t)) {
+>>  I have that - apparently naive - idea that drives use strong checksum,
+>>  and will never return bad data, only good data or an error.  If this
+>>  isn't right, then it would really help to understand what the cause of
+>>  other failures are before working out how to handle them....
 >
-> Shouldn't it be:
-> if (!t) {
->        ...
-> ?
+> In theory, that's how storage should work. In practice, silent data 
+> corruption does happen. If not from the disks themselves, somewhere along the 
+> path of cables, controllers, drivers, buses, etc. If you add in fcal, you'll 
+> get even more sources of failure, but usually you can avoid SANs (if you care 
+> about your data).
+
+heh, the pitch I get from the self proclaimed experts is that if you care 
+about your data you put it on the san (so you can take advantage of the 
+more expensive disk arrays, various backup advantages, and replication 
+features that tend to be focused on the san becouse it's a big target)
+
+David Lang
+
+> Well, here is a couple of the issues that I've seen myself:
 >
-> find_task_by_pid() returns NULL on failure.
-
-You seem to be right, the rest of the kernel just does 'if (!t)'. We just used
-IS_ERR() as the 'check for evil pointers' function.
-
-
-
-
-Ciao,
-
-Alexander Wuerstlein.
+> A hw-raid controller returning every 64th bit as 0, no matter what's on disk. 
+> With no error condition at all. (I've also heard from a collegue about this 
+> on every 64k, but not seen that myself.)
+>
+> An fcal switch occasionally resetting, garbling the blocks in transit with 
+> random data. Lost a few TB of user data that way.
+>
+> Add to this the random driver breakage that happens now and then. I've also 
+> had a few broken filesystems due to in-memory corruption due to bad ram, not 
+> sure there is much hope of fixing that though.
+>
+> Also, this presentation is pretty worrying on the frequency of silent data 
+> corruption:
+>
+> https://indico.desy.de/contributionDisplay.py?contribId=65&sessionId=42&confId=257
+>
+> /Mattias Wadenstein
+>
+>
