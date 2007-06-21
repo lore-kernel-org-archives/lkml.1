@@ -1,96 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbXFUQIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbXFUQJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbXFUQIz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbXFUQIs
+	id S1754085AbXFUQJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbXFUQJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:08:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56469 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750922AbXFUQIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:08:47 -0400
-Date: Thu, 21 Jun 2007 18:08:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070621160817.GA22897@elte.hu>
-References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 21 Jun 2007 12:09:03 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:46770 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755524AbXFUQJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 12:09:00 -0400
+Date: Thu, 21 Jun 2007 18:08:40 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>
+Cc: Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
+Message-ID: <20070621160840.GA20105@marowsky-bree.de>
+References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070616000251.GG2616@elf.ucw.cz>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've caught up on this thread with growing disbelief while reading the
+mails, so much that I've found it hard to decide where to reply to.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+So people are claiming that AA is ugly, because it introduces pathnames
+and possibly a regex interpreter. Ok, taste differs. We've got many
+different flavours of filesystems in the kernel because of that.
 
-> On Thu, 21 Jun 2007, Ingo Molnar wrote:
-> > 
-> > what worries me a bit though is that my patch that made spinlocks 
-> > equally agressive to that loop didnt solve the hangs!
-> 
-> Your parch kept doing "spin_trylock()", didn't it?
+However, the suggested cure makes me cringe.
 
-yeah - it changed spin_lock()'s assembly to do a "LOCK BTRL", which is a 
-trylock which tries to dirty the cacheline. There was a "REP NOP" after 
-it and a loop back to the "LOCK BTRL".
+You're saying that relabeling file(s) from user-space after a rename is
+a possible solution.
 
-> That's a read-modify-write thing, and keeps bouncing the cacheline 
-> back and forth, and together with the fact that even *after* you get 
-> the spinlock the "wait_for_inactive()" would actually end up looping 
-> back, releasing it, and re-getting it.
-> 
-> So the problem was that "wait_for_inactive()" kept the lock (because 
-> it actually *got* it), and looped over getting it, and because it was 
-> an exclusive cacheline ownership, that implies that somebody else is 
-> not getting it, and is kept from ever getting it.
+This breaks POSIX - renames must be atomic. It is possibly insecure; if
+this is fixed by making a rename automatically default to restrictive
+permissions, it'll be even more inconvenient. It will break applications
+which expect to be able to access the file(s) immediately after a
+rename. It is slow, and can possibly cause a lot of disk access.
+Possibly over NFS or via slow disks. By going through user-space - which
+could block and introduce all sorts of memory deadlocks (compared to
+that deadlock, a regex is harmless.) (I also wonder how you propose to
+relabel files on a r/o mount if the policy changes, btw; or if the NFS
+mount is made available on several nodes w/different permissions.) AA
+only enforces user-space defined policy - the argument that policy
+doesn't belong into the kernel is bull. Adding a wrapper to glibc to
+block until relabeling is complete?
 
-ok, it's not completely clear where exactly the other core was spinning, 
-but i took it from Miklos' observations that the other core was hanging 
-in the _very same_ task_rq_lock() - which is a true spinlock as well 
-that acquires it. So on one core the spin_lock() was starving, on 
-another one it was always succeeding.
+"Let's first do the implementation and later worry about performance."?
+"The timing window is neglible."? "30 minutes during installation does
+not seem silly."?
 
-> So trying to use "trylock" doesn't help. It still has all the same bad 
-> sides - it still gets the lock (getting the lock wasn't the problem: 
-> _holding_ the lock was the problem), and it still kept the cache line 
-> for the lock on one core.
+You _must_ be kidding. The cure is worse than the problem.
 
-so the problem was not the trylock based spin_lock() itself (no matter 
-how it's structured in the assembly), the problem was actually modifying 
-the lock and re-modifying it again and again in a very tight 
-high-frequency loop, and hence not giving it to the other core?
+If that is the only way to implement AA on top of SELinux - and so far,
+noone has made a better suggestion - I'm convinced that AA has technical
+merit: it does something the on-disk label based approach cannot handle,
+and for which there is demand.
 
-> The only way to avoid lock contention is to avoid any exclusive use at 
-> all.
+The code has improved, and continues to improve, to meet all the coding
+style feedback except the bits which are essential to AA's function
+(like the pathname lookup and the regex parser; though I'm sure that in
+particular the later one could be swapped for a less complex matcher as
+well). It certainly isn't worse than many other areas of the kernel.
 
-yeah - i'm not at all arguing in favor of the BTRL patch i did: i always 
-liked the 'nicer' inner loop of spinlocks, which could btw also easily 
-use MONITOR/MWAIT. (my patch is also quite close to what we did in 
-spinlocks many years ago, so it's more of a step backwards than real 
-progress.)
+You're pointing to each other's opposition to the features - that, my
+dear gentlemen, is a circular argument. One of you could readily break
+the chain.
 
-So it seems the problem was that if a core kept _truly_ modifying a 
-cacheline via atomics in a high enough frequency, it could artificially 
-starve the other core. (which would keep waiting for the cacheline to be 
-released one day, and which kept the first core from ever making any 
-progress) To me that looks like a real problem on the hardware side - 
-shouldnt cacheline ownership be arbitrated a bit better than that?
+This is trying to get rid of AA for the sake of it, masquerading as
+technical reasons. At least fucking admit it. Don't lie. This is
+distasteful.
 
-Up to the point where some external event (perhaps a periodic SMM 
-related to thermal management) broke the deadlock/livelock scenario?
 
-	Ingo
+Regards,
+    Lars
+
+-- 
+Teamlead Kernel, SuSE Labs, Research and Development
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+
