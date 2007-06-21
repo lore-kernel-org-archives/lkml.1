@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXFUPtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbXFUPwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbXFUPtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbXFUPtG
+	id S1755800AbXFUPwq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbXFUPwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:49:06 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:57351 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752975AbXFUPtF (ORCPT
+	Thu, 21 Jun 2007 11:52:39 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53195 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751020AbXFUPwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:49:05 -0400
-Message-ID: <467A9DE6.4010505@s5r6.in-berlin.de>
-Date: Thu, 21 Jun 2007 17:48:54 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2
+	Thu, 21 Jun 2007 11:52:38 -0400
+Date: Thu, 21 Jun 2007 08:50:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+In-Reply-To: <20070621073031.GA683@elte.hu>
+Message-ID: <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
+References: <20070620093612.GA1626@ff.dom.local>
+ <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+ <20070621073031.GA683@elte.hu>
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: How to improve the quality of the kernel?
-References: <200706180141.41101.a1426z@gawab.com> <200706180655.47998.a1426z@gawab.com> <20070620213419.GI12950@stusta.de> <200706210626.20429.a1426z@gawab.com>
-In-Reply-To: <200706210626.20429.a1426z@gawab.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> Adrian Bunk wrote:
->> On Mon, Jun 18, 2007 at 06:55:47AM +0300, Al Boldi wrote:
->> > Michal Piotrowski wrote:
->> > > On 18/06/07, Al Boldi <a1426z@gawab.com> wrote:
->> > > > Bartlomiej Zolnierkiewicz wrote:
 
-[on the tracking of review status of patches]
 
->> > > > > however we need to educate each and every developer
->> > > > > about importance of the code review and proper recognition of
->> > > > > reviewers.
->> > > >
->> > > > That's as easy to manage as is currently done with rc-regressions.
->> > >
->> > > Are you a volunteer?
->> >
->> > Probably not, as this task requires a real PRO!
->> >...
->>
->> That's wrong.
->>
->> We are talking about _tracking_.
->>
->> I'm not sure whether it makes much sense, and it would cost an enormous
->> amount of time, but tracking patches should be possible without any
->> knowledge of the kernel.
+On Thu, 21 Jun 2007, Ingo Molnar wrote:
+> 
+> what worries me a bit though is that my patch that made spinlocks 
+> equally agressive to that loop didnt solve the hangs!
 
-I suspect you are...
+Your parch kept doing "spin_trylock()", didn't it?
 
-> If that's really true, which I can't imagine, then the proper way forward 
-> would probably involve a fully automated system.
+That's a read-modify-write thing, and keeps bouncing the cacheline back 
+and forth, and together with the fact that even *after* you get the 
+spinlock the "wait_for_inactive()" would actually end up looping back, 
+releasing it, and re-getting it.
 
-...both wrong --- because patches have varying requirements WRT review
-and testing.
+So the problem was that "wait_for_inactive()" kept the lock (because it 
+actually *got* it), and looped over getting it, and because it was an 
+exclusive cacheline ownership, that implies that somebody else is not 
+getting it, and is kept from ever getting it.
 
-What you discuss here under the label "patch tracking" blends into, how
-shall I call it, "patch handling" as done by maintainers.  Neither a
-layman nor an automaton is able to
-  1. measure required vs. accomplished review and testing of a patch,
-  2. recruit reviewers and testers.
+So trying to use "trylock" doesn't help. It still has all the same bad 
+sides - it still gets the lock (getting the lock wasn't the problem: 
+_holding_ the lock was the problem), and it still kept the cache line for 
+the lock on one core.
 
-And IMO *these* two are the points where we typically fail.  We
-occasionally underestimate the required amount of review and testing,
-but more importantly, we are chronically short of reviewers and
-partially of testers.  (Hmm, I think Adrian and one or another guy
-already said as much.)
+The only way to avoid lock contention is to avoid any exclusive use at 
+all.
 
-A "Reviewed-by" tag in a patch is not a simple hard fact.  Neither a
-layman nor an automaton can draw appropriate conclusions from it.  That
-doesn't mean I'm against such tags, on the contrary.  They may help us
-to (a) look harder for review, (b) have a better picture of actual lack
-of review, patch by patch, subsystem by subsystem, and (c) get more
-volunteer reviewers by emphasizing the merits of code review.  Alas,
-experience and broad knowledge in kernel development are certainly
-prerequisites to become a good reviewer, so don't get high hopes that
-reviewers will suddenly come in droves when we appropriately credit
-their work.
--- 
-Stefan Richter
--=====-=-=== -==- =-=-=
-http://arcgraph.de/sr/
+			Linus
