@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757044AbXFUPGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbXFUPGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757044AbXFUPGI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754807AbXFUPF5
+	id S1757700AbXFUPGv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbXFUPGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:05:57 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:38734 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753934AbXFUPF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:05:56 -0400
-Message-ID: <467A93BF.9020104@free.fr>
-Date: Thu, 21 Jun 2007 17:05:35 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Selective system profiling
-References: <46779B8D.6050900@free.fr>
-In-Reply-To: <46779B8D.6050900@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 21 Jun 2007 11:06:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58501 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbXFUPGm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:06:42 -0400
+Subject: Re: Request for Linux Kernel Mailing List archives
+From: David Woodhouse <dwmw2@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: webguy@theaimsgroup.com, postmaster@lkml.org, postmaster@ussg.iu.edu,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       postmaster@vger.kernel.org
+In-Reply-To: <467949CC.9090405@zytor.com>
+References: <467949CC.9090405@zytor.com>
+Content-Type: text/plain
+Date: Thu, 21 Jun 2007 23:06:50 +0800
+Message-Id: <1182438411.10524.4.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Sigler wrote:
+On Wed, 2007-06-20 at 08:37 -0700, H. Peter Anvin wrote: 
+> I would like to make a request to LKML archives.  It would be a highly
+> useful feature to have an archive site where one can algorithmically
+> produce a URL from the Message-ID, so one can post a clickable URL from
+> a delivered message without having to look it up every time.
+> 
+> For example, if a message had:
+> 
+> Message-ID: <4676C78D.8040208@zytor.com>
+> 
+> ... and I could just generate a URL:
+> 
+> http://linux-kernel.example.com/msgid/4676C78D.8040208@zytor.com
+> 
+> ... that would be highly convenient.
+> 
+> (Extra points if all the vger lists are available, not just LKML.)
 
-> Hello everyone,
-> 
-> Here's my situation:
-> 
-> I'm pushing data in chunks of 1316 bytes to a PCI device at 38 Mbit/s.
-> In other words, I write 1316 bytes to the device every 277 microseconds.
-> 
-> I've noticed that the latency of this operation varies immensely. Most 
-> of the time it completes in 50-80 microseconds, but there are occasions 
-> when it takes several milliseconds (I've even logged 23 ms).
-> 
-> The pseudo-code looks like this:
-> 
->   deadline = now;
-> 
->   while ( 1 )
->   {
->     deadline += 277 µs
->     sleep_until(deadline)
->     t0 = now;
->     write 1316 bytes to PCI device
->     t1 = now;
->     if (t1-t0 > 100 µs) scream & panic
->   }
-> 
-> Relevant (?) information about the setup:
-> 
-> I'm running a PREEMPT_RT kernel with high-resolution timers.
-> (Specifically 2.6.20.7-rt8)
-> http://rt.wiki.kernel.org/index.php/Main_Page
-> HZ=100
-> The process is in SCHED_RR with priority 75.
-> The only "process" (?) with higher priority is posix_cpu_timer.
-> write() is implemented as an ioctl in the driver.
-> You might think that write() blocks when the buffers on the PCI board 
-> are full, but I am 99.9% sure that the buffers are never full.
-> 
-> 
-> Here's my question:
-> 
-> When my process comes back from a write operation, and I find that I 
-> have been blocked for more than X ms, can I call a function from a 
-> system profiler (oprofile perhaps?) to know exactly where in the kernel 
-> the CPU has been for the last X ms, and how much time has been spent in 
-> each function, either sleeping or doing something?
+Even more extra points if there's a mailto: link allowing people to
+reply, which actually gets the threading information right. E.g.:
 
-Perhaps I could take this matter to a different list?
+mailto:hpa@zytor.com,linux-kernel@vger.kernel.org?Subject=Re:%20Request %20for%20Linux%20Kernel%20Mailing%20List%20archives&In-Reply-To=4676C78D.8040208@zytor.com
+
+-- 
+dwmw2
+
