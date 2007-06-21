@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbXFUXa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbXFUXa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbXFUXa1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbXFUXaS
+	id S1754279AbXFUXa5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbXFUXau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:30:18 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:26441 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751152AbXFUXaQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:30:16 -0400
-Date: Fri, 22 Jun 2007 01:30:15 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: =?ISO-8859-1?Q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Please release a stable kernel Linux 3.0
-In-Reply-To: <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706220124050.26568@fbirervta.pbzchgretzou.qr>
-References: <200706212349.54983.zoltan.hubert@zzaero.com>
- <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-721175904-1182468615=:26568"
+	Thu, 21 Jun 2007 19:30:50 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57303 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751176AbXFUXat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 19:30:49 -0400
+Subject: Re: Fix signalfd interaction with thread-private signals
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070621185856.GA153@tv-sign.ru>
+References: <20070619091452.GA94@tv-sign.ru>
+	 <1182254988.26853.334.camel@localhost.localdomain>
+	 <20070619140646.GB27343@tv-sign.ru>
+	 <1182295473.26853.386.camel@localhost.localdomain>
+	 <20070620111415.GA91@tv-sign.ru>
+	 <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org>
+	 <20070621082509.GA88@tv-sign.ru>
+	 <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org>
+	 <20070621182340.GA92@tv-sign.ru>
+	 <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
+	 <20070621185856.GA153@tv-sign.ru>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 09:30:04 +1000
+Message-Id: <1182468604.24740.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 2007-06-21 at 22:58 +0400, Oleg Nesterov wrote:
+> 
+> > No "stealing". No signalfd, no *nothing*. Just normal signal
+> behaviour.
+> 
+> _Another_ thread could steal SIGSEGV via read(signalfd) without Ben's patch.
+> This is what Ben and Davide are worried about. I think we should not worry,
+> we have the same situation if this "another" thread does
+> 
+>         for (;;)
+>                 signal(SIGSEGV, SIG_IGN);
+> 
+> do_sigaction() does rm_from_queue_full().
 
----699020219-721175904-1182468615=:26568
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Yeah well... I wanted to have the least surprise path... that is,
+without my patch, signalfd will "sometimes" steal the SIGSEGV depending
+on who races to the lock first, thus causing the target thread to
+re-execute the faulting instruction and taking another SIGSEGV, and
+sometimes not. It's bad from both the faulting thread point of view and
+the signalfd use who gets signals "sometimes" without any guarantee.
 
+I like the current code that at least implement a precise semantic for
+all thread local signals -> they are only ever delivered to that thread,
+period. If you really want to do funky things from outside, you can
+still do ptrace ;-)
 
-On Jun 22 2007 00:29, Jesper Juhl wrote:
-> On 21/06/07, Zoltán HUBERT <zoltan.hubert@zzaero.com> wrote:
-> [snip]
->> All people who might read this know that traditionally
->> stable releases are even numbered and development branches
->> are odd numbered. This changed during late develoment of
->> 2.6, according to my analysis because of the "invention" of
->> GIT which was itself necessary because of BitKeeper (insert
->> ooooooooold flame-wars here) and which allowed very dynamic
->> develoment.
->[...]
-> I myself have argued that we should be focusing more on stability and
-> regression fixing, but I'm not so sure that a 2.6.7 devel branch would
-> solve this. In general the 2.6.x.y -stable kernels seem to be doing
-> the job pretty good.
-
-For my part, I think the 2.6.<odd> did not go as well as the 2.6.<even>,
-beginning with x=16.
-
->> Why on earth call "kernel object" things that are "kernel modules"
->> ? And that every person calls "modules" and not "objects" ? I know
->> I know, in UNIX dynamic libraries are .so "shared objects", so
->> what ? A "module" is a "module" and NOT an "object", call a cat a
->> cat.
->>
-> It sure is an object, it's even called object code. I think the name
-> suits just fine. In any case, it's just a name.
-
-Back in the 2.4 days and e.g. on Solaris (still) today, a kernel
-object file is [can be] a kernel module. Under Linux, this is not the
-case anymore since 2.6.x when kbuild started to postprocess modules
-(creating these nice .mod.c and .mod.o files and the benefits
-associated with it).
+Ben.
 
 
-
-	Jan
--- 
----699020219-721175904-1182468615=:26568--
