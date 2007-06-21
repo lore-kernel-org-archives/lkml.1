@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbXFUDGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbXFUDH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869AbXFUDGS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 23:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbXFUDGJ
+	id S1756730AbXFUDH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 23:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXFUDHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 23:06:09 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:56043
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbXFUDGH (ORCPT
+	Wed, 20 Jun 2007 23:07:20 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:31012 "EHLO
+	asav08.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752875AbXFUDHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 23:06:07 -0400
-Date: Wed, 20 Jun 2007 20:06:17 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Michael Poole <mdpoole@troilus.org>
-cc: davids@webmaster.com, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <87ejk6qbco.fsf@graviton.dyn.troilus.org>
-Message-ID: <Pine.LNX.4.64.0706201959110.31603@asgard.lang.hm>
-References: <MDEHLPKNGKAHNMBLJOLKGEDMEMAC.davids@webmaster.com>
- <87ejk6qbco.fsf@graviton.dyn.troilus.org>
+	Wed, 20 Jun 2007 23:07:19 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhQuAGyIeUZKhRO4R2dsb2JhbACHI4dvAQEbDQYRAQ
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Qi Yong <qiyong@mail.fc-cn.com>
+Subject: Re: [patch] add printk_ratelimit to atkbd_interrupt
+Date: Wed, 20 Jun 2007 23:07:17 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, michal.k.k.piotrowski@gmail.com
+References: <20070620011753.GA16692@virgo.fc-cn.com> <200706200013.13029.dtor@insightbb.com> <4678D882.3090606@mail.fc-cn.com>
+In-Reply-To: <4678D882.3090606@mail.fc-cn.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706202307.18565.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Jun 2007, Michael Poole wrote:
+On Wednesday 20 June 2007 03:34, Qi Yong wrote:
+> Dmitry Torokhov wrote:
+> > On Tuesday 19 June 2007 21:17, Qi Yong wrote:
+> >   
+> >> Add printk_ratelimit() to atkbd_interrupt(). I get "Spurious ACK" messages flushing on my
+> >> screen. This patch helps to read the screen.
+> >>
+> >>     
+> >
+> > Will apply, thank you.
+> >
+> > Do you have any idea why you are getting spurios ACK messages? Do you have
+> > an application fiddling with keyboard port or do you have blink driver
+> > enabled?
+> 
+> No idea. It is at boot time.
+> Yes, i have CONFIG_BLINK=y.
 
-> David Schwartz writes:
->
->>> However, compilations (even to the extent they are creative
->>> combinations) are not necessarily derivative works of their elements.
->>> For more details, see
->>> http://www.copyright.gov/circs/circ14.html#compilations
->>
->> Because compilation copyrights don't really affect the Tivo and GPLv2/GPLv3
->> issue, I tend to ignore them when discussing that subject. If you think I'm
->> wrong and there is some relationship between them, please let me know. I
->> admit I may not have given that possibility enough thought.
->
-> I believe compilation copyrights do bear on GPL-licensed software, by
-> virtue of the GPL's sentence "[...] rather, the intent is to exercise
-> the right to control the distribution of derivative _or collective_
-> works based on the Program." (emphasis added).
->
-> There is a lot of grey and/or arguable area about what constitutes a
-> GPL-encumbered collective work versus mere aggregation.  Although I
-> disagree, I understand and respect that some believe that the kernel
-> plus a digital signature over it is "mere aggregation".  I would like
-> to focus the discussion on that question, though, rather than whether
-> the GPL is worded to control the rights to compilations-in-general
-> that include GPLed works.
+Disable it.
 
-if the GPL can excercise control over compilations, then if Oracle were to 
-ship a Oracle Linux live CD that contained the Oracle Database in the 
-filesystem image, ready to run. then the GPL would be able to control the 
-Oracle Database code.
-
-if the GPL can't do this then it can't control the checksum either.
-
-again, it's not just the kernel that's part of the checksum on a tivo, the 
-checksum is over the kernel + initial filesystem, much of which contains 
-code not covered by the gPL)
-
-David Lang
+-- 
+Dmitry
