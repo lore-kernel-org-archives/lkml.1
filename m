@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbXFURdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbXFURdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbXFURdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbXFURd3
+	id S1756292AbXFURdt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbXFURdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:33:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55498 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755285AbXFURd2 (ORCPT
+	Thu, 21 Jun 2007 13:33:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56557 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758230AbXFURdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:33:28 -0400
-Subject: Re: [PATCH] Check files' signatures before doing suid/sgid [2/4]
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
-Cc: Alexander Wuerstlein <arw@arw.name>, linux-kernel@vger.kernel.org,
-       Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
-In-Reply-To: <20070621172557.GE9741@cip.informatik.uni-erlangen.de>
-References: <11824417551424-git-send-email-arw@arw.name>
-	 <1182446251.2704.0.camel@laptopd505.fenrus.org>
-	 <20070621172557.GE9741@cip.informatik.uni-erlangen.de>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Thu, 21 Jun 2007 10:29:43 -0700
-Message-Id: <1182446983.2704.4.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 21 Jun 2007 13:33:39 -0400
+Date: Thu, 21 Jun 2007 10:31:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
+       Miklos Szeredi <miklos@szeredi.hu>, chris@atlee.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+In-Reply-To: <467AAB04.2070409@redhat.com>
+Message-ID: <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
+References: <20070620093612.GA1626@ff.dom.local>
+ <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+ <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
+ <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 19:25 +0200, Alexander Wuerstlein wrote:
-> On 070621 19:21, Arjan van de Ven <arjan@infradead.org> wrote:
-> > On Thu, 2007-06-21 at 18:02 +0200, Alexander Wuerstlein wrote:
-> > > Modified task_struct to hold a 'signed flag' which is set on exec(), inherited
-> > > on fork() and checked during exec before giving the new process suid/sgid
-> > > privileges.
-> > > 
-> > 
-> > 
-> > 
-> > do you also check the signature of glibc and every other shared library
-> > that the app uses (or dlopens)? if not.. the entire exercise is rather
-> > pointless...
+
+
+On Thu, 21 Jun 2007, Chuck Ebbert wrote:
 > 
-> We do check that, that is patch [3/4].
-> 
-> Of course we can only check mmap-ed files, if there is no file like with JIT
-> compilers we are out of luck.
+> A while ago I showed that spinlocks were a lot more fair when doing
+> unlock with the xchg instruction on x86. Probably the arbitration is all
+> screwed up because we use a mov instruction, which while atomic is not
+> locked.
 
-or if the process uses read() not mmap().
+No, the cache line arbitration doesn't know anything about "locked" vs 
+"unlocked" instructions (it could, but there really is no point).
 
-or .. or ...
+The real issue is that locked instructions on x86 are serializing, which 
+makes them extremely slow (compared to just a write), and then by being 
+slow they effectively just make the window for another core bigger.
 
+IOW, it doesn't "fix" anything, it just hides the bug with timing.
 
-so if perl is signed and it's the perl script that is setuid, and then
-it includes other perl libs... that's read() not mmap().
+You can hide the problem other ways by just increasing the delay between 
+the unlock and the lock (and adding one or more serializing instruction in 
+between is generally the best way of doing that, simply because otherwise 
+micro- architecture may just be re-ordering things on you, so that your 
+"delay" isn't actually in between any more!).
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+But adding delays doesn't really fix anything, of course. It makes things 
+"fairer" by making *both* sides suck more, but especially if both sides 
+are actually the same exact thing, I could well imagine that they'd both 
+just suck equally, and get into some pattern where they are now both 
+slower, but still see exactly the same problem!
 
+Of course, as long as interrupts are on, or things like DMA happen etc, 
+it's really *really* hard to be totally unlucky, and after a while you're 
+likely to break out of the steplock on your own, just because the CPU's 
+get interrupted by something else.
+
+It's in fact entirely possible that the long freezes have always been 
+there, but the NOHZ option meant that we had much longer stretches of time 
+without things like timer interrupts to jumble up the timing! So maybe the 
+freezes existed before, but with timer interrupts happening hundreds of 
+times a second, they weren't noticeable to humans.
+
+(Btw, that's just _one_ theory. Don't take it _too_ seriously, but it 
+could be one of the reasons why this showed up as a "new" problem, even 
+though I don't think the "wait_for_inactive()" thing has changed lately.)
+
+		Linus
