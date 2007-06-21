@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758500AbXFUG4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbXFUG7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758500AbXFUG4v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 02:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbXFUG4o
+	id S1758673AbXFUG7c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 02:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbXFUG7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 02:56:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:64461 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752584AbXFUG4n (ORCPT
+	Thu, 21 Jun 2007 02:59:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47231 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753000AbXFUG7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 02:56:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=LOhTPMCtW+RzQQ2VrlfMNa9UnocTZx0/pBiSXjRzhAaHRCx4Ih53P4sFOPY6pa7NoFrcFAPWXrErucag0GeTQ+fyAbrvoHo4aLcNCbK0WXyrEdQpkn5LH/GjK7/xtUAaHvfe+dXfTndODbvg9fJKoTR/ourjI4AXXUo0g1mSsL4=
-Message-ID: <467A2121.7010407@gmail.com>
-Date: Thu, 21 Jun 2007 10:56:33 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: Alexandre Oliva <aoliva@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu, Andrew de Quincey <adq_dvb@lidskialf.net>,
-       Sigmund Augdal <sigmund@snap.tv>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <20070610160531.GA12179@kroah.com> <f24d23310706121107y2ef218a4wc1c8f9a52fc9bdd7@mail.gmail.com> <20070612184110.GB7980@kroah.com> <orir9smp3u.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706131223051.14121@woody.linux-foundation.org> <or7iq7mx7f.fsf@oliva.athome.lsd.ic.unicamp.br> <20070613211432.GH10008@csclub.uwaterloo.ca> <orodjjlbu1.fsf@oliva.athome.lsd.ic.unicamp.br> <20070614175305.GI10008@csclub.uwaterloo.ca> <4677F616.3080406@gmail.com> <20070620194626.GX10008@csclub.uwaterloo.ca>
-In-Reply-To: <20070620194626.GX10008@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 02:59:24 -0400
+Date: Thu, 21 Jun 2007 07:59:20 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Tom Spink <tspink@gmail.com>, Toralf F?rster <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Paolo Giarrusso <blaisorblade@yahoo.it>,
+       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+Subject: Re: build failure due to ROOT_DEV in mtd module (was Re: linux-2.6.22-rc5-g7c8545e build #298 failed ...)
+Message-ID: <20070621065920.GA9792@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Satyam Sharma <satyam.sharma@gmail.com>,
+	Tom Spink <tspink@gmail.com>,
+	Toralf F?rster <toralf.foerster@gmx.de>,
+	linux-kernel@vger.kernel.org,
+	Paolo Giarrusso <blaisorblade@yahoo.it>,
+	David Woodhouse <dwmw2@infradead.org>,
+	linux-mtd@lists.infradead.org
+References: <a781481a0706202352u1efed48fo5a101f8c015638d7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a781481a0706202352u1efed48fo5a101f8c015638d7@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Tue, Jun 19, 2007 at 07:28:22PM +0400, Manu Abraham wrote:
->> Well, it is not Tivo alone -- look at http://aminocom.com/ for an
->> example. If you want the kernel sources pay USD 50k and we will provide
->> the kernel sources, was their attitude.
-> 
-> Hmm, set top boxes are often rented from the cable company rather than
-> sold.  Stupid grey area for sure.  At least tivo does give you the
-> sources, without demanding more money.  Rather big difference.
+On Thu, Jun 21, 2007 at 12:22:01PM +0530, Satyam Sharma wrote:
+> >> The build seems to fail because of:
+> >> ERROR: "ROOT_DEV" [drivers/mtd/maps/nettel.ko] undefined!
+> >>
+> >> After taking a quick look at the code, I can't immediately see why
+> >> this would be, since there is an include for linux/root_dev.h at the
+> >> top, there.
+> >>
+> >> There's only one occurrence of ROOT_DEV (line 425), and after a quick
+> >> look at the git history, it seems the include was originally missing,
+> >> but was put back in, in commit
+> >> 6cc449c7d0292cb9b993f0df84fd3225e3099492.
 
-I am not talking about the rented aspect, since these STB's are usually
-sold rather than rented.
-
->> Well, it is not Tivo alone, a large chunk of the vendors do that. The
->> vendors who actually do it the clean way are just few and can be counted
->> very easily.
-> 
-> Well at least where I work we don't try to lock down the hardware, we do
-> contribute our changes and bug fixes to upstream when it makes sense
-> (and where our changes wouldn't make sense for upstream, they are still
-> clearly included with the sources we have.)  If a customer wants a copy
-> of the sources, they will get a nice DVD, although strangely none have
-> asked for one yet.
-
-
-Providing the changes back itself is a great thing altogether.
-
+Please just the reference to ROOT_DEV from this driver.  Just because
+someone builds this driver there should be no change in the default root
+device.
