@@ -1,73 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760560AbXFUSGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbXFUSGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760560AbXFUSGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758671AbXFUSFk
+	id S1760586AbXFUSGp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759139AbXFUSGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:05:40 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:56766 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756817AbXFUSFj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:05:39 -0400
-Date: Thu, 21 Jun 2007 14:05:38 -0400
-To: david@lang.hm
-Cc: Michael Poole <mdpoole@troilus.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070621180538.GE10008@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.64.0706201200550.30395@asgard.lang.hm> <87sl8ms9z5.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm> <87k5tys8w5.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201253120.30395@asgard.lang.hm> <87645is82q.fsf@graviton.dyn.troilus.org> <20070621171612.GC10008@csclub.uwaterloo.ca> <Pine.LNX.4.64.0706211019510.31603@asgard.lang.hm> <20070621174332.GD10008@csclub.uwaterloo.ca> <Pine.LNX.4.64.0706211046511.31603@asgard.lang.hm>
+	Thu, 21 Jun 2007 14:06:34 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:53939 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758973AbXFUSGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 14:06:33 -0400
+Message-ID: <467ABE25.7060303@dgreaves.com>
+Date: Thu, 21 Jun 2007 19:06:29 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706211046511.31603@asgard.lang.hm>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: Tejun Heo <htejun@gmail.com>
+Cc: David Chinner <dgc@sgi.com>, David Robinson <zxvdr.au@gmail.com>,
+       LVM general discussion and development 
+	<linux-lvm@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-lvm] 2.6.22-rc5 XFS fails after hibernate/resume
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com> <4676D97E.4000403@dgreaves.com> <4677A0C7.4000306@dgreaves.com> <4677A596.7090404@gmail.com> <4677E496.3080506@dgreaves.com> <4678DF56.1020903@gmail.com>
+In-Reply-To: <4678DF56.1020903@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 10:51:06AM -0700, david@lang.hm wrote:
-> you snippede the bit about not knowing how to stop it
+been away, back now...
 
-I did?  As far as I can tell I quoted it all.  What did I miss?
+Tejun Heo wrote:
+> David Greaves wrote:
+>> Tejun Heo wrote:
+>>> How reproducible is the problem?  Does the problem go away or occur more
+>>> often if you change the drive you write the memory image to?
+>> I don't think there should be activity on the sda drive during resume
+>> itself.
+>>
+>> [I broke my / md mirror and am using some of that for swap/resume for now]
+>>
+>> I did change the swap/resume device to sdd2 (different controller,
+>> onboard sata_via) and there was no EH during resume. The system seemed
+>> OK, wrote a few Gb of video and did a kernel compile.
+>> I repeated this test, no EH during resume, no problems.
+>> I even ran xfs_fsr, the defragment utility, to stress the fs.
+>>
+>> I retain this configuration and try again tonight but it looks like
+>> there _may_ be a link between EH during resume and my problems...
+Having retained this new configuration for a couple of days now I haven't had 
+any problems.
+This is good but not really ideal since / isn't mirrored anymore :(
 
-> they call the section the anti-tivoization, how much more explicit can 
-> they get?
+>> Of course, I don't understand why it *should* EH during resume, it
+>> doesn't during boot or normal operation...
+> 
+> EH occurs during boot, suspend and resume all the time.  It just runs in
+> quiet mode to avoid disturbing the users too much.  In your case, EH is
+> kicking in due to actual exception conditions so it's being verbose to
+> give clue about what's going on.
+I was trying to say that I don't actually see any errors being handled in normal 
+operation.
+I'm not sure if you are saying that these PHY RDY events are normally handled 
+quietly (which would explain it).
 
-They could be as explicit as: 
-You can't use this code if you cooporate with anyone that requires
-DRM systems.
 
-All their attempts to define user devices and such is just going to
-screw up and miss some things they wanted covered, and disallow things
-they didn't intend to disallow (assuming there is any such thing).
+> It's really weird tho.  The PHY RDY status changed events are coming
+> from the device which is NOT used while resuming
+yes - but the erroring device which is not being used is on the same controller 
+as the device with the in-use resume partition.
 
-> by the way, just in case anyone is misunderstanding me. I don't believe 
-> for a moment that all these anti-tamper features actually work in the real 
-> world (the PS3 hacking kits are proof of the lengths people will go to to 
-> make the 'hard' hardware-level hacking trivial to do) but the approach 
-> needs to be at secure modulo hardware tampering or software bugs.
+> and it's before any
+> actual PM events are triggered.  Your kernel just boots, swsusp realizes
+> it's resuming and tries to read memory image from the swap device.
+yes
 
-DRM is completely pointless.  It only stops casual end users from doing
-things.  It doesn't stop anyone with any technical clue from doing
-things.  I keep hoping one day the people in charge at the big media
-companies will understand this, and stop asking for people to implement
-it.  Of course in the mean time there are companies perfectly willing to
-claim to have unbreakable DRM for sale, while knowing full well (if they
-are competent) that it is a lie.  So as long as the people in charge at
-big media are clueless about technology, and as long as there are
-companies willing to lie to them for money, then we will probably
-continue to have DRM crap to deal with.
+> While reading, the disk controller raises consecutive PHY readiness
+> changed interrupts.  EH recovers them alright but the end result seems
+> to indicate that the loaded image is corrupt.
+Yes, that's consistent with what I'm seeing.
 
-I don't think the GPLv3 is the place to try to remove DRM.  What the FSF
-should be doing is try to educate the people who are advocating the use
-of DRM about the fact that it can't ever work.  You can make more and
-more stupid laws about how people can't remove the DRM, but people who
-break copyright obviously already are breaking the law, so what is the
-point in having more lows for them to break.  That is where this problem
-should be fought, not in the GPLv3.  The GPLv3 is never going to solve
-the problem, only educating people can do that.
+When I move the swap/resume partition to a different controller (ie when I broke 
+the / mirror and used the freed space) the problem seems to go away.
 
---
-Len Sorensen
+I am seeing messages in dmesg though:
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ata1.00: configured for UDMA/100
+ata2.00: revalidation failed (errno=-2)
+ata2: failed to recover some devices, retrying in 5 secs
+sd 0:0:0:0: [sda] 390721968 512-byte hardware sectors (200050 MB)
+
+sd 0:0:0:0: resuming
+sd 0:0:0:0: [sda] Starting disk
+ATA: abnormal status 0x7F on port 0x00019807
+ATA: abnormal status 0x7F on port 0x00019007
+ATA: abnormal status 0x7F on port 0x00019007
+ATA: abnormal status 0x7F on port 0x00019807
+
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ATA: abnormal status 0xD0 on port 0xf881e0c7
+ata1.00: configured for UDMA/100
+ata2.00: revalidation failed (errno=-2)
+ata2: failed to recover some devices, retrying in 5 secs
+
+
+> So, there's no device suspend/resume code involved at all.  The kernel
+> just booted and is trying to read data from the drive.  Please try with
+> only the first drive attached and see what happens.
+That's kinda hard; swap and root are on different drives...
+
+Does it help that although the errors above appear, the system seems OK when I 
+just use the other controller?
+
+I have to be cautious what I do with this machine as it's the wife's active 
+desktop box <grin>.
+
+David
