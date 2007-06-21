@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXFUPg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbXFUPjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbXFUPg2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXFUPgV
+	id S1755856AbXFUPjY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXFUPjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:36:21 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:43982 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbXFUPgU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:36:20 -0400
-Date: Thu, 21 Jun 2007 08:36:59 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: long-term regression
-Message-Id: <20070621083659.dabf3a22.randy.dunlap@oracle.com>
-In-Reply-To: <20070621052807.cc64605d.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0706171052240.28371@asgard.lang.hm>
-	<20070621052807.cc64605d.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
+	Thu, 21 Jun 2007 11:39:17 -0400
+Received: from xenotime.net ([66.160.160.81]:37857 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752336AbXFUPjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:39:16 -0400
+Date: Thu, 21 Jun 2007 08:41:01 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
+Subject: Re: [PATCH] Move functions declarations to header file
+Message-Id: <20070621084101.73254fe7.rdunlap@xenotime.net>
+In-Reply-To: <20070621145411.GA26091@redhat.com>
+References: <20070621145411.GA26091@redhat.com>
+Organization: YPO4
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007 05:28:07 -0700 Andrew Morton wrote:
+On Thu, 21 Jun 2007 11:54:11 -0300 Glauber de Oliveira Costa wrote:
 
-> > On Sun, 17 Jun 2007 10:57:55 -0700 (PDT) david@lang.hm wrote:
-> > I haven't had time to bisect this, but I'm having a problem on a AMD64 
-> > gentoo system where the printer doesn't work with recent kernels.
-> > 
-> > 2.6.18-rc3 worked
-> > 2.6.21.1 doesn't
-> > 2.6.22-rc4 doesn't
-> > 
-> > unfortunantly the system is gooted on 2.6.18 at the moment and I'm out of 
-> > town so my ability to test is limited I can provide the 2.6.22-rc4 
-> > (attached) and 2.6.18-rc3 configs.
-> > 
-> > dmesg appears to show the port being detected, but writes to the port 
-> > under newer kernels appear to complete, but no data gets to the printer.
-> > 
-> > any suggestions other then doing the large bisect?
+> Some interrupt entry points are currently defined in i8259.c
+> They probably belong in a header. Right now, their only user is
+> init_IRQ, justifying their declaration in-file. But when virtualization
+> comes in, we may be interested in using that functions in late
+> initializations.
 > 
-> That would be good, thanks.  Please be sure to cc linux-usb-devel on 
-> the results.
+> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 
-OK, I'm curious about how someone deduced that this is a problem
-with a USB printer vs. parallel port printer since the config file has:
-
-CONFIG_PRINTER=y
-CONFIG_USB_PRINTER=y
-
-The kernel boot log should probably be posted also.
+Patch is OK with me, but please insert patches inline in emails.
+Lots of people who use mutt do this, so it must work and is the
+preferred way.
 
 ---
 ~Randy
