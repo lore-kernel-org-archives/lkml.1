@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbXFUS2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbXFUS3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbXFUS2M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbXFUS16
+	id S1756237AbXFUS3A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbXFUS2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:27:58 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60937 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752872AbXFUS15 (ORCPT
+	Thu, 21 Jun 2007 14:28:52 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:51588
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752433AbXFUS2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:27:57 -0400
-Date: Thu, 21 Jun 2007 11:27:53 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Marco Berizzi <pupilla@hotmail.com>
-cc: Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21.3 Oops (was Re: XFS internal error xfs_da_do_buf(2) at
- line 2087 of file fs/xfs/xfs_da_btree.c. Caller 0xc01b00bd)
-In-Reply-To: <BAY103-DAV717DD455F57B3BB064E3CB2100@phx.gbl>
-Message-ID: <Pine.LNX.4.64.0706211121520.7711@schroedinger.engr.sgi.com>
-References: <BAY103-DAV717DD455F57B3BB064E3CB2100@phx.gbl>
+	Thu, 21 Jun 2007 14:28:51 -0400
+Date: Thu, 21 Jun 2007 11:29:04 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: Michael Poole <mdpoole@troilus.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Tomas Neme <lacrymology@gmail.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <20070621180538.GE10008@csclub.uwaterloo.ca>
+Message-ID: <Pine.LNX.4.64.0706211110340.31603@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706201200550.30395@asgard.lang.hm>
+ <87sl8ms9z5.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm>
+ <87k5tys8w5.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201253120.30395@asgard.lang.hm>
+ <87645is82q.fsf@graviton.dyn.troilus.org> <20070621171612.GC10008@csclub.uwaterloo.ca>
+ <Pine.LNX.4.64.0706211019510.31603@asgard.lang.hm> <20070621174332.GD10008@csclub.uwaterloo.ca>
+ <Pine.LNX.4.64.0706211046511.31603@asgard.lang.hm> <20070621180538.GE10008@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Marco Berizzi wrote:
+On Thu, 21 Jun 2007, Lennart Sorensen wrote:
 
-> > > Some RCU callback (that calls kmem_cache_free()) oopsed and
-> > > panic'ed his box. [ Marco had experienced fs issues lately, so we
-> > could
-> > > suspect file_free_rcu() here, but I can't really tell from the stack
-> > trace;
-> > > BTW whats with the rampant disease in the kernel to declare as
-> inline
-> > > even those functions exclusively meant to be dereferenced and passed
-> > > as pointers to call_rcu()?! ]
+> On Thu, Jun 21, 2007 at 10:51:06AM -0700, david@lang.hm wrote:
+>> you snippede the bit about not knowing how to stop it
+>
+> I did?  As far as I can tell I quoted it all.  What did I miss?
+>
+>> they call the section the anti-tivoization, how much more explicit can
+>> they get?
+>
+> They could be as explicit as:
+> You can't use this code if you cooporate with anyone that requires
+> DRM systems.
 
+I think their earlier versions did say this.
 
-The BUG_ON that triggers this signals us that someone tried to perform
-a kfree or kmem_cache_free on an object that is not in a slab page.
+> All their attempts to define user devices and such is just going to
+> screw up and miss some things they wanted covered, and disallow things
+> they didn't intend to disallow (assuming there is any such thing).
+>
+>> by the way, just in case anyone is misunderstanding me. I don't believe
+>> for a moment that all these anti-tamper features actually work in the real
+>> world (the PS3 hacking kits are proof of the lengths people will go to to
+>> make the 'hard' hardware-level hacking trivial to do) but the approach
+>> needs to be at secure modulo hardware tampering or software bugs.
+>
+> DRM is completely pointless.  It only stops casual end users from doing
+> things.  It doesn't stop anyone with any technical clue from doing
+> things.  I keep hoping one day the people in charge at the big media
+> companies will understand this, and stop asking for people to implement
+> it.  Of course in the mean time there are companies perfectly willing to
+> claim to have unbreakable DRM for sale, while knowing full well (if they
+> are competent) that it is a lie.  So as long as the people in charge at
+> big media are clueless about technology, and as long as there are
+> companies willing to lie to them for money, then we will probably
+> continue to have DRM crap to deal with.
 
+DRM does have some legitimate uses, for example redhat installations not 
+installing unsigned software is a form of DRM
 
-> Hello everybody.
-> Few minutes ago 2.6.22-rc5 has been
-> crashed with this error (see also the
-> bitmap at http://80.204.235.230/foto2.jpg).
-> Just for record: if I build linux
-> with 'Debug slab memory allocations'
-> the box doesn't crash.
+> I don't think the GPLv3 is the place to try to remove DRM.  What the FSF
+> should be doing is try to educate the people who are advocating the use
+> of DRM about the fact that it can't ever work.  You can make more and
+> more stupid laws about how people can't remove the DRM, but people who
+> break copyright obviously already are breaking the law, so what is the
+> point in having more lows for them to break.  That is where this problem
+> should be fought, not in the GPLv3.  The GPLv3 is never going to solve
+> the problem, only educating people can do that.
 
-Hmmm.. That is strange and could point to some sort of race condition.
+this is exactly what most of the people who are arguing against this 
+provision are saying.
 
-1. The object is freed. It is the last page on the slab. Thus slab 
-decommissions the page and resets PageSlab.
-
-2. Another process tries to free the object again. Now the page is no 
-longer marked as being a SLAB page. Thus the BUG_ON is triggered.
-
-Can you try the same with SLUB? Boot with "slub_debug". If you cannot 
-trigger the error anymore do limited debugging by booting with
-"slub_debug=F". Maybe that will be enough to trigger the race.
-
-> Jun 21 14:27:43 Pleiadi kernel: ------------[ cut here ]------------
-> Jun 21 14:27:43 Pleiadi kernel: kernel BUG at mm/slab.c:591!
-
-BUG_ON(!PageSlab(page));
-
-> Jun 21 14:27:43 Pleiadi kernel: Call Trace:
-> Jun 21 14:27:43 Pleiadi kernel:  [<c016a9c0>] d_kill+0x40/0x52
-> Jun 21 14:27:43 Pleiadi kernel:  [<c016aa3c>] dput+0x6a/0xdc
-> Jun 21 14:27:43 Pleiadi kernel:  [<c015be3f>] __fput+0xf8/0x15b
-> Jun 21 14:27:43 Pleiadi kernel:  [<c015a5c3>] filp_close+0x3c/0x7b
-> Jun 21 14:27:43 Pleiadi kernel:  [<c021342d>] copy_to_user+0x32/0x45
-> Jun 21 14:27:43 Pleiadi kernel:  [<c015a665>] sys_close+0x63/0xb2
-> Jun 21 14:27:43 Pleiadi kernel:  [<c0102834>] syscall_call+0x7/0xb
-
-dentry already freed?
+David Lang
