@@ -1,34 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbXFUQg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbXFUQgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758099AbXFUQg0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758563AbXFUQgB
+	id S1754751AbXFUQgk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbXFUQgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:36:01 -0400
+	Thu, 21 Jun 2007 12:36:12 -0400
 Received: from ug-out-1314.google.com ([66.249.92.172]:42263 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758542AbXFUQf7 (ORCPT
+	with ESMTP id S1757834AbXFUQgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:35:59 -0400
+	Thu, 21 Jun 2007 12:36:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
-        b=VrFbQCJyKgKbA7hRtNHqE3QOxRYeMqopg7hN6ZAcOdkDPdKWupHUbDnDAi7mkSYYZhjh1VZr77q2pWZCZIod1gShrYGvcEMMjuLj6UbEYuClFh7k9XuDhnEs5RqQl+sdlVpKG49JHNabI4MK7Z5qBLDpAv6R74qI0sr+Rxho2Is=
-Message-ID: <467AA8CA.2020206@googlemail.com>
-Date: Thu, 21 Jun 2007 18:35:22 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=s7Hy9nz/PO26IfHhppM38AKf8bKxhJ5h/zALW6LhtNumgPT6wgg27xlrGvoRawJjEy6mDC6zM3GsDzHKvvDsbZpPgnk500mHsOxEpdlr2qwSKrYsj8WmNW60z7e2f9iLZ96a61EB3Rziv9NTJ/lU/KHDH6iwmp5DG8JlTLQ3Beo=
+Message-ID: <467AA8D2.5050305@googlemail.com>
+Date: Thu, 21 Jun 2007 18:35:30 +0200
 User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       =?ISO-8859-2?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>,
-       Jean Delvare <khali@linux-fr.org>, Rudolf Marek <r.marek@assembler.cz>
-Subject: [1/2] 2.6.22-rc5: known regressions with patches v2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, Dave Airlie <airlied@linux.ie>,
+       Andrea Righi <righiandr@users.sourceforge.net>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Marc Pignat <marc.pignat@hevs.ch>, Netdev <netdev@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, Samuel Ortiz <samuel@sortiz.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Chad Tindel <ctindel@users.sourceforge.net>,
+       Olaf Hering <olaf@aepfle.de>
+Subject: Re: [2/2] 2.6.22-rc5: known regressions with patches v2
+References: <467AA7E3.3030404@googlemail.com>
+In-Reply-To: <467AA7E3.3030404@googlemail.com>
 Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -45,45 +51,41 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Unclassified
+Memory management
 
-Subject    : Device hang when offlining a CPU due to IRQ misrouting
-References : http://lkml.org/lkml/2007/5/31/419
-Submitter  : Darrick J. Wong <djwong@us.ibm.com>
-Handled-By : Siddha, Suresh B <suresh.b.siddha@intel.com>
-Patch      : http://lkml.org/lkml/2007/6/19/422
+Subject    : bug in i386 MTRR initialization
+References : http://lkml.org/lkml/2007/5/19/93
+Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
 Status     : patch available
 
-Subject    : long freezes on thinkpad t60
-References : http://lkml.org/lkml/2007/5/24/100
-Submitter  : Miklos Szeredi <miklos@szeredi.hu>
-Handled-By : Ingo Molnar <mingo@elte.hu>
-Patch      : http://lkml.org/lkml/2007/6/16/81
-Status     : patch was suggested
+
+
+MMC
+
+Subject    : Oops in a driver while using SLUB as a SLAB allocator
+References : http://lkml.org/lkml/2007/6/21/69
+Submitter  : Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Handled-By : Marc Pignat <marc.pignat@hevs.ch>
+Patch      : http://lkml.org/lkml/2007/6/21/140
+Status     : patch available
 
 
 
-FBDEV
+Networking
 
-Subject    : mach64 breakage in 2.6.22
-References : http://lkml.org/lkml/2007/6/14/73
+Subject    : ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
+References : http://lkml.org/lkml/2007/6/19/310
 Submitter  : Olaf Hering <olaf@aepfle.de>
-Handled-By : Ville Syrjälä <syrjala@sci.fi>
-Patch      : http://lkml.org/lkml/2007/6/14/273
+Patch      : http://lkml.org/lkml/2007/6/19/382
 Status     : patch was suggested
 
-
-
-HWMON
-
-Subject    : latest coretemp changes break s2ram
-References : http://lkml.org/lkml/2007/6/16/173
-Submitter  : Soeren Sonnenburg <kernel@nn7.de>
-Caused-By  : Rudolf Marek <r.marek@assembler.cz>
-             commit 67f363b1f6a31cf5027a97372f64bcced4f05ba6
-Handled-By : Jean Delvare <khali@linux-fr.org>
-Patch      : http://lkml.org/lkml/2007/6/16/177
-Status     : patch available
+Subject    : no irda0 interface (2.6.21 was OK), smsc does not find chip
+References : http://lkml.org/lkml/2007/6/3/16
+Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
+Handled-By : Samuel Ortiz <samuel@sortiz.org>
+             Bjorn Helgaas <bjorn.helgaas@hp.com>
+Patch      : http://lkml.org/lkml/2007/6/7/237
+Status     : patch was suggested
 
 
 
