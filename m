@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbXFUPyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbXFUPzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbXFUPyT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbXFUPyL
+	id S1756513AbXFUPzS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbXFUPzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:54:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52312 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753730AbXFUPyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:54:10 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18ygxgXfykyO4wzXmQEF631NeK6H3K0VzXTbG0zV8
-	tI/HNc7qBG+tWz
-Date: Thu, 21 Jun 2007 17:54:14 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, webguy@theaimsgroup.com,
-       postmaster@lkml.org, postmaster@ussg.iu.edu,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       postmaster@vger.kernel.org
-Subject: Re: Request for Linux Kernel Mailing List archives
-Message-ID: <20070621155414.GA12413@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	David Woodhouse <dwmw2@infradead.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, webguy@theaimsgroup.com,
-	postmaster@lkml.org, postmaster@ussg.iu.edu,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	postmaster@vger.kernel.org
-References: <467949CC.9090405@zytor.com> <1182438411.10524.4.camel@shinybook.infradead.org>
+	Thu, 21 Jun 2007 11:55:01 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34223 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754165AbXFUPy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:54:59 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
+Date: Thu, 21 Jun 2007 17:54:19 +0200
+User-Agent: KMail/1.9.5
+Cc: Karl MacMillan <kmacmill@redhat.com>, Greg KH <greg@kroah.com>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Crispin Cowan <crispin@novell.com>, Pavel Machek <pavel@ucw.cz>,
+       jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <1181931330.17547.866.camel@moss-spartans.epoch.ncsc.mil> <1181946250.9809.45.camel@localhost.localdomain> <1182173585.7236.53.camel@moss-spartans.epoch.ncsc.mil>
+In-Reply-To: <1182173585.7236.53.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1182438411.10524.4.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+X-Length: 3795
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706211754.19708.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.06.21 23:06:50 +0800, David Woodhouse wrote:
-> On Wed, 2007-06-20 at 08:37 -0700, H. Peter Anvin wrote: 
-> > I would like to make a request to LKML archives.  It would be a highly
-> > useful feature to have an archive site where one can algorithmically
-> > produce a URL from the Message-ID, so one can post a clickable URL from
-> > a delivered message without having to look it up every time.
-> > 
-> > For example, if a message had:
-> > 
-> > Message-ID: <4676C78D.8040208@zytor.com>
-> > 
-> > ... and I could just generate a URL:
-> > 
-> > http://linux-kernel.example.com/msgid/4676C78D.8040208@zytor.com
-> > 
-> > ... that would be highly convenient.
-> > 
-> > (Extra points if all the vger lists are available, not just LKML.)
-> 
-> Even more extra points if there's a mailto: link allowing people to
-> reply, which actually gets the threading information right. E.g.:
-> 
-> mailto:hpa@zytor.com,linux-kernel@vger.kernel.org?Subject=Re:%20Request %20for%20Linux%20Kernel%20Mailing%20List%20archives&In-Reply-To=4676C78D.8040208@zytor.com
+On Monday 18 June 2007 15:33, Stephen Smalley wrote:
+> On Fri, 2007-06-15 at 18:24 -0400, Karl MacMillan wrote:
+> > There are two things:
+> >
+> > 1) relabeling (non-tranquility) is very problematic in general because
+> > revocation is hard (and non-solved in Linux). So you would have to
+> > address concerns about that.
+>
+> I think we need to distinguish between relying on restorecond-like
+> mechanisms for the security of SELinux vs. relying on them for emulating
+> pathname-based security.  The former would be a problem.  The latter is
+> no worse than pathname-based security already, because pathname-based
+> security is inherently ambiguous and non-tranquil, and revocation isn't
+> addressed fully in AA either.
 
-Or maybe alternatively a feature that forwards the mail to you. I find
-it preferable to actually have the email you reply to. No copy'n'paste
-for quoting, no manual quote marking, no manual "On $date wrote $author"
-line, ...
+Emulation using lazy relabeling introduces a window where the files have the 
+wrong label. In those windows, the pathname based policy is being violated, 
+and unintended side effects are suddenly possible. This includes granting of 
+access to files that applications should no longer have access to according 
+to the pathname based policy, which would be similar to what happens when a 
+process keeps an open file handle right now. But it also includes denial of 
+access to files that applications should have access to, and this might cause 
+those applications to fail. So this is where relabeling from user space is 
+much worse.
 
-lkml.org has that.
+The only way to get rid of the denial of service problem would be to make the 
+rename and relabel an atomic operation. The time this can take is huge 
+though, so that's not acceptable.
 
-Björn
+Another, less catastrophic problem is that rename has always been relatively 
+fast and inexpensive, and I'm sure plenty of applications rely on this 
+performance characteristic. Making rename a very expensive operation in at 
+least some cases (which are more than theoretical) would hurt those 
+applications, and nothing much could be done about it.
+
+Adding better new-file mechanisms to SELinux probably is a good idea, and it 
+would weaken the SELinux seurity model for all I can tell. It doesn't address 
+the relabeling problem though.
+
+Andreas
