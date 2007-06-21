@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbXFUGLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbXFUGMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbXFUGLV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 02:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXFUGLN
+	id S1756665AbXFUGMy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 02:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXFUGMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 02:11:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49950 "EHLO mx1.redhat.com"
+	Thu, 21 Jun 2007 02:12:47 -0400
+Received: from mga09.intel.com ([134.134.136.24]:40252 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbXFUGLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 02:11:12 -0400
-To: david@lang.hm
-Cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070615012623.GA25189@elte.hu>
-	<20070615101007.0cbfd078@the-village.bc.nu>
-	<orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4673CA7C.5040207@t-online.de>
-	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616181902.GB21478@ftp.linux.org.uk>
-	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
-	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4679557C.5080907@iders.ca>
-	<20070620175627.319a6c55@the-village.bc.nu>
-	<46797C52.4020907@iders.ca>
-	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
-	<ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 03:10:05 -0300
-In-Reply-To: <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm> (david@lang.hm's message of "Wed\, 20 Jun 2007 22\:30\:35 -0700 \(PDT\)")
-Message-ID: <orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1750895AbXFUGMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 02:12:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,445,1175497200"; 
+   d="scan'208";a="98683614"
+Message-ID: <467A1679.8090202@linux.intel.com>
+Date: Wed, 20 Jun 2007 23:11:05 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5 (Windows/20051201)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Peter Zijlstra <peterz@infradead.org>
+CC: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures	in	dma	map
+ api calls
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>	 <20070619213808.798646000@askeshav-devel.jf.intel.com>	 <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com>	 <20070620173038.GA25516@linux-os.sc.intel.com>	 <1182362703.21117.79.camel@twins> <46797CB1.8070008@linux.intel.com>	 <1182370132.21117.84.camel@twins>	 <20070620230337.GA6771@linux-os.sc.intel.com> <1182406212.21117.94.camel@twins>
+In-Reply-To: <1182406212.21117.94.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, david@lang.hm wrote:
+Peter Zijlstra wrote:
+> What I'm saying is that if you do use the reserves, you should ensure
+> the use is bounded. I'm not seeing anything like that.
 
-> how exactly can they prevent a system that's been tampered with from
-> accessing their network?
+each mapping takes at most 3 pages
+> 
+> This is a generic API, who is to ensure some other non-swap device will
+> not deplete memory and deadlock the reclaim process?
+>
 
-By denying access to their servers?  By not granting whatever is
-needed to initiate network sessions?
+that information is not available at this level ;(
 
-And note, "it's been tampered with" is not necessarily enough of a
-reason to cut someone off, it has to meet these requirements:
+> 
+> 
+> Also, explain to me how an IOMMU is different from bounce buffers? They
+> both do the same thing, no? They both need memory in order to complete
+> DMA.
 
->   when the modification itself materially and adversely affects the
->   operation of the network or violates the rules and protocols for
->   communication across the network.
+bounce buffers happen in a place where you can sleep.... that makes a 
+lot of difference.
 
-> (something even you say they have a right to do)
+> 
+> Is it just a broken API you're working against? If so, isn't the Linux
+> way to fix these things, that is why we have the source code after all.
 
-as long as this right is not used by the software distributor to
-impose restrictions on the user's ability to adapt the software to
-their own needs.  The GPLv3 paragraph above makes a fair concession in
-this regard, don't you agree?
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+well yes and no... the other iommu's snuck in as well... it's not 
+entirely fair to hold this one back until a 2 year, 1400 driver 
+project is completed ;(
