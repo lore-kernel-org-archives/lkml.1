@@ -1,398 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbXFUCSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXFUCS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbXFUCSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 22:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbXFUCSe
+	id S1758349AbXFUCS5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 22:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXFUCSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 22:18:34 -0400
-Received: from mga02.intel.com ([134.134.136.20]:41175 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763AbXFUCSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 22:18:36 -0400
+Received: from bjm2.server.18mail.cn ([218.241.65.156]:60105 "EHLO
+	bjm1.server.18mail.cn" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750753AbXFUCSd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Jun 2007 22:18:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,445,1175497200"; 
-   d="scan'208";a="257018963"
-Subject: [PATCH] driver core: multithreaded probing - more parallelism
-	control
-From: "Huang, Ying" <ying.huang@intel.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 21 Jun 2007 10:17:32 +0000
-Message-Id: <1182421052.14562.3.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-X-OriginalArrivalTime: 21 Jun 2007 02:18:24.0660 (UTC) FILETIME=[7249CD40:01C7B3AA]
+Message-ID: <4679DFFF.2050801@18mail.cn>
+Date: Thu, 21 Jun 2007 10:18:39 +0800
+From: TripleX <zhongyu@18mail.cn>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: WANG Cong <xiyou.wangcong@gmail.com>
+CC: linux-kernel@vger.kernel.org, gshan@alcatel-lucent.com,
+       Bryan Wu <bryan.wu@analog.com>, Tejun Heo <htejun@gmail.com>,
+       Lijun Chen <cljun@xiyou.edu.cn>, Fengguang Wu <fengguang.wu@gmail.com>
+Subject: Re: [PATCH] Chinese translated version of Documentation/stable_api_nonsense.txt
+References: <4677F8FC.6080101@18mail.cn> <20070620063849.GA2776@localhost.localdomain>
+In-Reply-To: <20070620063849.GA2776@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-18mail-spam: W 0.00000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-This is a new version of multithreaded probing patch, with more
-parallelism control added.
-
-There are more control over which devices and drivers will be probed
-parallelized or serially. For example, in IEEE1394 subsystem, the
-different "units" in one "node" can be probed serially while the
-different "nodes" can be probed parallelized.
-
-The number of threads can be controlled through a kernel command line
-parameters.
-
-The patch is against 2.6.22-rc5. The "wait_for_probes" function in the
-patch comes from the original multithreaded probing patch. If I need do
-anything because of it, please let me know.
-
-Any comment is welcome.
-
-Best Regards,
-Huang Ying
-
----
-
-This patch add multithreaded probing with more parallelism control.
-
-The device/driver probing is done on a probing queue, which is a
-customized version of work queue, where the thread of probing queue will
-come and go on demand. There is a queue No. for each probing queue. The
-queue No. ranges from 0 to (unsigned short) ~0U, any queue No. can be
-used by probing independent of the underlying thread number.
-
-The device/driver probing is submitted to a probing queue though
-"schedule_probe" function with probing queue No, a probing function and
-corresponding parameter specified. The probing with same probing queue
-No. will be done serially, while the probing with different probing
-queue No. may be done parallelized.
-
-"schedule_probe" is a general interface of multithreaded probing. While
-convenient interfaces are as follow.
-
-A field named "probe_queue_no" is added to "struct device", which
-indicates probing queue No. on which the probing of the device will be
-done. The subsystem can control the parallelism through this field. For
-example, in IEEE1394 subsystems, the same probe_queue_no can be assigned
-for different "units" in same "node" while different probe_queue_no can
-be assigned to different "nodes".
-
-Fields named "has_probe_queue" and "probe_queue_no" are added to "struct
-device_driver". This let the probing queue can be controlled through
-driver side too. If "has_probe_queue" is set, the "probe_queue_no" of
-"struct device_driver" is used, otherwise that of "struct device" is
-used.
-
-There are other rules to control the parallelism.
-
-1. The child device will not start probing until the probing of its
-parent has been done.
-2. The different drivers of same device will be probed serially.
-
-If it is intended to separate the probing process of the device/driver
-into synchronous part and asynchronous part, the ".probe" of "struct
-device_driver" is used as the synchronous interface of device probing,
-while the asynchronous part of probing can be submitted through
-"schedule_probe" in ".probe" function. All the synchronous part will be
-submitted with same probing queue number.
-
-More strict serialization can be gotten through this mechanism if
-needed. For example, if two USB driver is inserted into kernel
-simultaneously, in original driver probing code, two USB device may be
-probed simultaneously, while they will be probed serially if two device
-has same probing queue No. in probing queue based probing code.
-
-There is a problem of this multithreaded probing mechanism. There are
-some code in kernel doing hardware access but not in the driver ".probe"
-function, which may conflict with the multithreaded probiMore strict
-serialization can be gotten through this mechanism if
-needed. For example, if two USB driver is inserted into kernel
-simultaneously, in original driver probing code, two USB device may be
-probed simultaneously, while they will be probed serially if two device
-has same probing queue No. in probing queue based probing code.
-
-There is a problem of this multithreaded probing mechanism. There are
-some code in kernel doing hardware access but not in the driver ".probe"
-function, which may conflict with the multithreaded probing driver code.
-A possible mechanism is executing those hardware access code in a
-probing queue through "schedule_probe".ng driver code. A possible
-mechanism is executing those hardware access code in a probing queue
-through "schedule_probe".
-
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-
----
-
- drivers/base/dd.c      |  182 ++++++++++++++++++++++++++++++++++++++++++++++---
- include/linux/device.h |   27 ++++++-
- 2 files changed, 199 insertions(+), 10 deletions(-)
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index b0088b0..a5cd629 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -23,6 +23,162 @@
- #include "base.h"
- #include "power/power.h"
+Thanks for your help :-) I will update the patch soon.
  
-+struct probe_queue {
-+	spinlock_t lock;
-+	struct list_head probe_list;
-+	unsigned has_thread : 1;
-+};
-+
-+struct simple_probe {
-+	struct probe probe;
-+	struct device *dev;
-+	struct device_driver *drv;
-+};
-+
-+static struct probe_queue *probe_queues;
-+static atomic_t probe_count = ATOMIC_INIT(0);
-+static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
-+
-+static int probe_thread_num = 1;
-+
-+static int __init set_probe_thread_num(char *str)
-+{
-+	get_option(&str, &probe_thread_num);
-+	if (probe_thread_num <= 0 || probe_thread_num > (unsigned short) ~0U)
-+		probe_thread_num = 1;
-+	return 1;
-+}
-+
-+__setup("probe_thread_num=", set_probe_thread_num);
-+
-+static int really_probe(struct probe *probe);
-+
-+static void init_probe_queue(struct probe_queue *probe_queue)
-+{
-+	spin_lock_init(&probe_queue->lock);
-+	INIT_LIST_HEAD(&probe_queue->probe_list);
-+	probe_queue->has_thread = 0;
-+}
-+
-+static int probe_thread(void *data)
-+{
-+	struct probe_queue *probe_queue = data;
-+	struct probe *probe;
-+	int ret = 0;
-+
-+	while (1) {
-+		spin_lock(&probe_queue->lock);
-+		if (list_empty(&probe_queue->probe_list)) {
-+			probe_queue->has_thread = 0;
-+			spin_unlock(&probe_queue->lock);
-+			break;
-+		}
-+		probe = list_entry(probe_queue->probe_list.next,
-+				   struct probe, entry);
-+		list_del_init(probe_queue->probe_list.next);
-+		spin_unlock(&probe_queue->lock);
-+		ret = probe->probe_func(probe);
-+		atomic_dec(&probe_count);
-+		wake_up(&probe_waitqueue);
-+	}
-+	return ret;
-+}
-+
-+/**
-+ * schedule_probe - schedule a probing to be done later
-+ * @probe_queue_no: probing queue No. on which the probing will be done
-+ * @probe: probing information include probing function and parameter
-+ *
-+ * Schedule a probing to be done later on specified probing queue. The
-+ * probing with same probing queue No. will be probed serially while
-+ * the probing with different probing queue No. may be probed
-+ * simultaneously.
-+ */
-+
-+int schedule_probe(unsigned short probe_queue_no, struct probe *probe)
-+{
-+	int ret = 0;
-+	struct task_struct *thread;
-+	struct probe_queue *probe_queue =
-+		&probe_queues[probe_queue_no%probe_thread_num];
-+
-+	atomic_inc(&probe_count);
-+	probe->probe_queue_no = probe_queue_no;
-+	spin_lock(&probe_queue->lock);
-+	list_add_tail(&probe->entry, &probe_queue->probe_list);
-+	if (probe_queue->has_thread) {
-+		spin_unlock(&probe_queue->lock);
-+		return ret;
-+	}
-+	probe_queue->has_thread = 1;
-+	spin_unlock(&probe_queue->lock);
-+	thread = kthread_run(probe_thread, probe_queue,
-+			     "probe-%u", probe_queue_no);
-+	if (!thread)
-+		ret = probe_thread(probe_queue);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(schedule_probe);
-+
-+static int simple_schedule_probe(struct device *dev,
-+				 struct device_driver *drv)
-+{
-+	struct simple_probe *simple_probe;
-+	unsigned short probe_queue_no;
-+
-+	pr_debug("simple_schedule:%s,%s\n", dev->bus_id, drv->name);
-+	simple_probe = kmalloc(sizeof(struct simple_probe), GFP_KERNEL);
-+	if (!simple_probe)
-+		return -ENOMEM;
-+	INIT_PROBE(&simple_probe->probe, really_probe);
-+	simple_probe->dev = get_device(dev);
-+	simple_probe->drv = get_driver(drv);
-+	dev->is_probing = 1;
-+	if (drv->has_probe_queue)
-+		probe_queue_no = drv->probe_queue_no;
-+	else
-+		probe_queue_no = dev->probe_queue_no;
-+	return schedule_probe(probe_queue_no, &simple_probe->probe);
-+}
-+
-+static int __init init_probe_queues(void)
-+{
-+	int i;
-+
-+	probe_queues = kmalloc(probe_thread_num * sizeof(struct probe_queue),
-+			       GFP_KERNEL);
-+	if (!probe_queues)
-+		return -ENOMEM;
-+	for (i = 0; i < probe_thread_num; i++)
-+		init_probe_queue(&probe_queues[i]);
-+	return 0;
-+}
-+
-+core_initcall_sync(init_probe_queues);
-+
-+static int __init wait_for_probes(void)
-+{
-+	DEFINE_WAIT(wait);
-+
-+	if (!atomic_read(&probe_count))
-+		return 0;
-+	while (atomic_read(&probe_count)) {
-+		prepare_to_wait(&probe_waitqueue, &wait, TASK_UNINTERRUPTIBLE);
-+		if (atomic_read(&probe_count))
-+			schedule();
-+	}
-+	finish_wait(&probe_waitqueue, &wait);
-+	return 0;
-+}
-+
-+core_initcall_sync(wait_for_probes);
-+postcore_initcall_sync(wait_for_probes);
-+arch_initcall_sync(wait_for_probes);
-+subsys_initcall_sync(wait_for_probes);
-+fs_initcall_sync(wait_for_probes);
-+device_initcall_sync(wait_for_probes);
-+late_initcall_sync(wait_for_probes);
-+
- #define to_drv(node) container_of(node, struct device_driver, kobj.entry)
- 
- 
-@@ -94,18 +250,25 @@ int device_bind_driver(struct device *dev)
- 	return ret;
- }
- 
--static atomic_t probe_count = ATOMIC_INIT(0);
--static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
--
--static int really_probe(struct device *dev, struct device_driver *drv)
-+static int really_probe(struct probe *probe)
- {
-+	struct device *dev, *parent;
-+	struct device_driver *drv;
-+	struct simple_probe *simple_probe;
- 	int ret = 0;
- 
--	atomic_inc(&probe_count);
-+	simple_probe = container_of(probe, struct simple_probe, probe);
-+	dev = simple_probe->dev;
-+	drv = simple_probe->drv;
-+	parent = get_device(dev->parent);
-+	while (parent && parent->is_probing)
-+		yield();
-+	put_device(parent);
- 	pr_debug("%s: Probing driver %s with device %s\n",
- 		 drv->bus->name, drv->name, dev->bus_id);
- 	WARN_ON(!list_empty(&dev->devres_head));
- 
-+	down(&dev->sem);
- 	dev->driver = drv;
- 	if (driver_sysfs_add(dev)) {
- 		printk(KERN_ERR "%s: driver_sysfs_add(%s) failed\n",
-@@ -146,8 +309,11 @@ probe_failed:
- 	 */
- 	ret = 0;
- done:
--	atomic_dec(&probe_count);
--	wake_up(&probe_waitqueue);
-+	dev->is_probing = 0;
-+	up(&dev->sem);
-+	put_device(dev);
-+	put_driver(drv);
-+	kfree(simple_probe);
- 	return ret;
- }
- 
-@@ -195,7 +361,7 @@ int driver_probe_device(struct device_driver * drv, struct device * dev)
- 	pr_debug("%s: Matched Device %s with Driver %s\n",
- 		 drv->bus->name, dev->bus_id, drv->name);
- 
--	ret = really_probe(dev, drv);
-+	ret = simple_schedule_probe(dev, drv);
- 
- done:
- 	return ret;
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 2e1a298..9e63602 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -133,6 +133,9 @@ struct device_driver {
- 	const char 		* mod_name;	/* used for built-in modules */
- 	struct module_kobject	* mkobj;
- 
-+	unsigned short		has_probe_queue:1;
-+	unsigned short		probe_queue_no;
-+
- 	int	(*probe)	(struct device * dev);
- 	int	(*remove)	(struct device * dev);
- 	void	(*shutdown)	(struct device * dev);
-@@ -417,8 +420,10 @@ struct device {
- 	struct kobject kobj;
- 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
- 	struct device_type	*type;
--	unsigned		is_registered:1;
--	unsigned		uevent_suppress:1;
-+	unsigned short		is_registered:1;
-+	unsigned short		uevent_suppress:1;
-+	unsigned short		is_probing:1;
-+	unsigned short		probe_queue_no;
- 	struct device_attribute uevent_attr;
- 	struct device_attribute *devt_attr;
- 
-@@ -526,6 +531,24 @@ extern int  __must_check device_attach(struct device * dev);
- extern int __must_check driver_attach(struct device_driver *drv);
- extern int __must_check device_reprobe(struct device *dev);
- 
-+struct probe {
-+	struct list_head entry;
-+	int ( * probe_func)(struct probe *probe);
-+	unsigned short probe_queue_no;
-+};
-+
-+/**
-+ * initialize the probing item
-+ */
-+#define INIT_PROBE(_probe, _probe_func)				\
-+	do {							\
-+		INIT_LIST_HEAD(&(_probe)->entry);		\
-+		(_probe)->probe_func = (_probe_func);		\
-+		(_probe)->probe_queue_no = 0;			\
-+	 } while (0);
-+
-+int schedule_probe(unsigned short probe_queue_no, struct probe *probe);
-+
- /*
-  * Easy functions for dynamically creating devices on the fly
-  */
+WANG Cong wrote:
+> On Tue, Jun 19, 2007 at 11:40:44PM +0800, TripleX wrote:
+>   
+>> This is the Chinese translated version of 
+>> Documentation/stable_api_nonsense.txt
+>>
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> Signed-off-by: TripleX Chung <zhongyu@18mail.cn>
+>>
+>>     
+>
+> Thanks for your work! It's a good work.
+>
+> As in the HOWTO translation, I will give my comments on the
+> following patch. I hope you can consider my comments carefully
+> and other people who don't understand Chinese won't mind about
+> my Chinese comments. ;)
+>
+>   
+>> ---
+>> Documentation/zh_CN/stable_api_nonsense.txt | 158 
+>> +++++++++++++++++++++++++++
+>> 1 files changed, 158 insertions(+), 0 deletions(-)
+>> create mode 100644 Documentation/zh_CN/stable_api_nonsense.txt
+>>
+>> diff --git a/Documentation/zh_CN/stable_api_nonsense.txt 
+>> b/Documentation/zh_CN/stable_api_nonsense.txt
+>> new file mode 100644
+>> index 0000000..32dca8c
+>> --- /dev/null
+>> +++ b/Documentation/zh_CN/stable_api_nonsense.txt
+>> @@ -0,0 +1,158 @@
+>> +Chinese translated version of Documentation/stable_api_nonsense.txt
+>> +
+>> +If you have any comment or update to the content, please contact the
+>> +original document maintainer directly. However, if you have problem
+>> +communicating in English you can also ask the Chinese maintainer for
+>> +help. Contact the Chinese maintainer, if this translation is
+>> +outdated or there is problem with translation.
+>> +
+>> +Maintainer: Greg Kroah-Hartman <greg@kroah.com>
+>> +Chinese maintainer: TripleX Chung <zhongyu@18mail.cn>
+>> +---------------------------------------------------------------------
+>> +Documentation/stable_api_nonsense.txt 的中文翻译
+>> +
+>> +如果想评论或更新本文的内容，请直接联系原文档的维护者。如果你使用英文
+>> +交流有困难的话，也可以向中文版维护者求助。如果本翻译更新不及时或者翻
+>> +译存在问题，请联系中文版维护者。
+>> +
+>> +英文版维护者： Greg Kroah-Hartman <greg@kroah.com>
+>> +中文版维护者： 钟宇 TripleX Chung <zhongyu@18mail.cn>
+>> +中文版翻译者： 钟宇 TripleX Chung <zhongyu@18mail.cn>
+>> +中文版校译者： 李阳 Li Yang <leoli@freescale.com>
+>> +以下为正文
+>> +---------------------------------------------------------------------
+>>     
+>
+>
+> 首先建议译文中的linux都改为Linux（大写首字母），毕竟原文就是这样的。
+>
+>
+>   
+>> +
+>> +写作本文档的目的，是为了解释为什么linux既没有一个二进制内核接口，也没有
+>> +一个稳定的内核接口。这里所说的内核接口，是指内核里的接口，而不是内核和
+>>     
+>
+>
+> 据我了解，这种情况下，“a”是没必要翻译出来的。
+>
+>
+>   
+>> +用户空间的接口。内核到用户空间的接口，是提供给应用程序使用的系统调用，
+>> +系统调用在历史上几乎没有过变化，将来也不会有变化。我有一些老应用程序是
+>> +在0.9版本或者更早版本的内核上编译的，在使用2.6版本内核的Linux发布上依然
+>> +用得很好。用户和应用程序作者可以将这个接口看成是稳定的。
+>> +
+>> +
+>> +执行纲要
+>> + --------
+>> +
+>> +你也许以为自己想要一个稳定的内核接口，但是你不清楚你要的实际上不是这个
+>> +。你需要的其实是一个稳定的驱动程序，而你只有将驱动程序放到公版内核的源
+>> +代码树里，才有可能达到这个目的。而且这样做还有很多其他好处，正是因为这
+>>     
+>
+>
+> s/其他/其它/ ？
+>
+>
+>   
+>> +些好处使得Linux能成为强壮，稳定，成熟的操作系统，这也是你最开始选择Linux
+>> +的原因。
+>> +
+>> +
+>> +入门
+>> + -----
+>> +
+>> +只有那些写驱动程序的“怪人”才会担心内核接口的改变，对广大用户来说，既
+>> +看不到内核接口，也不需要去关心它。
+>> +
+>> +首先，我不打算讨论关于任何非GPL许可的内核驱动的法律问题，这些非GPL许可
+>> +的驱动程序包括不公开源代码，隐藏源代码，二进制或者是用源代码包装，或者
+>> +是其它任何形式的不能以GPL许可公开源代码的驱动程序。如果有法律问题，请咨
+>> +询律师，我只是一个程序员，所以我只打算探讨技术问题（不是小看法律问题，
+>> +法律问题很实际，并且需要一直关注）。
+>> +
+>> +既然只谈技术问题，我们就有了下面两个主题：二进制内核接口和稳定的内核源
+>> +代码接口。这两个问题是互相关联的，让我们先解决掉二进制接口的问题。
+>> +
+>> +
+>> +二进制内核接口
+>> + --------------
+>> +假如我们有一个稳定的内核源代码接口，那么自然的，我们就拥有了稳定的二进
+>>     
+>
+>
+> “那么自然而然...”怎样？
+>
+>
+>   
+>> +制接口，是这样的吗？错。让我们看看关于linux内核的几点事实：
+>> + - 取决于所用的c编译器的版本，不同的内核数据结构里的结构体的对齐方
+>>     
+>
+>
+> s/c/C/
+>
+>
+>   
+>> +式会有差别，代码中不同函数的表现形式也不一样（函数是不是被inline编译取
+>> +决于编译器行为）。不同的函数的表现形式并不重要，但是数据结构内部的对齐
+>> +方式很关键。
+>> + - 取决于内核的配置选项，不同的选项会让内核的很多东西发生改变：
+>> + - 同一个结构体可能包含不同的成员变量
+>> + - 有的函数可能根本不会被实现（比如编译的时候没有选择 SMP支持
+>> +，一些锁函数就会被定义成空函数）。
+>> + - 内核使用的内存会以不同的方式对齐，这取决于不同的内核配置选
+>> +项。
+>> + - linux可以在很多的不同体系结构的处理器上运行。在某个体系结构上编
+>> +译好的二进制驱动程序，不可能在另外一个体系结构上正确的运行。
+>> +
+>> +对于一个特定的内核，满足这些条件并不难，使用同一个c编译器和同样的内核配
+>> +置选项来编译驱动程序模块就可以了。这对于给一个特定linux发布的特定版本提
+>> +供驱动程序，是完全可以满足需求的。但是如果你要给不同的发布不同版本都发
+>> +布一个驱动程序，就需要在每个发布上用不同的内核设置参数都编译一次内核，
+>> +这简直跟噩梦一样。而且还要注意到，每个linux发布还提供不同的Linux内核，
+>> +这些内核都针对不同的硬件类型进行了优化（有很多种不同的处理器，还有不同
+>> +的内核设置选项）。所以每发布一次驱动程序 ，都需要提供很多不同版本的内核
+>> +模块。
+>> +
+>> +相信我，如果你真的要采取这种发布方式，一定会慢慢疯掉，我很久以前就有过
+>> +深刻的教训...
+>> +
+>> +
+>> +稳定的内核源代码接口
+>> + --------------------
+>> +
+>> +如果有人不将他的内核驱动程序，放入公版内核的源代码树，而又想让驱动程序
+>> +一直保持在最新的内核中可用，那么这个话题将会变得没完没了。
+>> + 内核开发是持续而且快节奏的，从来都不会慢下来。内核开发人员在当前接口中
+>> +找到bug，或者找到更好的实现方式。一旦发现这些，他们就很快会去修改当前的
+>> +接口。修改接口意味着，函数名可能会改变，结构体可能被扩充或者删减，函数
+>> +的参数也可能发生改变。一旦接口被修改，内核中使用这些接口的地方需要同时
+>> +修正，这样才能保证所有的东西继续工作。
+>> +
+>> +举一个例子，内核的USB驱动程序接口在USB子系统的整个生命周期中，至少经历
+>> +了三次重构。这些重构解决以下问题：
+>>     
+>
+>
+> 个人认为，rework翻译为“重写”更好一些。
+>
+>
+>   
+>> + - 把数据流从同步模式改成非同步模式，这个改动减少了一些驱动程序的
+>> +复杂度，提高了所有USB驱动程序的吞吐率，这样几乎所有的USB设备都能以最大
+>> +速率工作了。
+>> + - 修改了USB核心代码中为USB驱动分配数据包内存的方式，所有的驱动都
+>> +需要提供更多的参数给USB核心，以修正了很多已经被记录在案的死锁。
+>> +
+>> +这和一些封闭源代码的操作系统形成鲜明的对比，那些在那些操作系统上，不得
+>>     
+>
+>
+> “那些在那些操作系统上”读不通，请修改。
+>
+>
+>   
+>> +不额外的维护旧的USB接口。这导致了一个可能性，新的开发者依然会不小心使用
+>> +旧的接口，以不恰当的方式编写代码，进而影响到操作系统的稳定性。
+>> + 在上面的例子中，所有的开发者都同意这些重要的改动，在这样的情况下修改代
+>> +价很低。如果Linux保持一个稳定的内核源代码，那么就得创建一个新的接口；旧
+>>     
+>
+>
+> 原文是“If Linux ... a stable source interface”，而不是“source code”。
+>
+>
+>   
+>> +的，有问题的接口必须一直维护，给Linux USB开发者带来额外的工作。既然所有
+>> +的Linux USB驱动的作者都是利用自己的时间工作，那么要求他们去做毫无意义的
+>> +免费额外工作，是不可能的。
+>> + 安全问题对Linux来说十分重要。一个安全问题被发现，就会在短时间内得到修
+>> +正。在很多情况下，这将导致Linux内核中的一些接口被重构，以从根本上避免安
+>> +全问题。一 旦接口被重构，所有使用这些接口的驱动程序，必须同时得到修正，
+>> +以确定安全问题已经得到修复并且不可能在未来还有同样的安全问题。如果内核
+>> +内部接口不允许改变，那么就不可能修复这样的安全问题，也不可能确认这样的
+>> +安全问题以后不会发生。
+>> +开发者一直在清理内核接口。如果一个接口没有人在使用了，它就会被删除。这
+>> +样可以确保内核尽可能的小，而且所有潜在的接口都会得到尽可能完整的测试
+>> +（没有人使用的接口是不可能得到良好的测试的）。
+>> +
+>> +
+>> +要做什么
+>> + -------
+>> +
+>> +如果你写了一个Linux内核驱动，但是它还不在linux源代码树里，作为一个开发
+>> +者，你应该怎么做？为每个发布的每个版本提供一个二进制驱动，那简直是一个
+>> +噩梦，要跟上 永远处于变化之中的内核接口，也是一件辛苦活。
+>>     
+>
+>
+> 上面这一句多一个空格，;)
+>
+>
+>   
+>> + 很简单，让你的驱动进入内核源代码树（要记得我们在谈论的是以GPL许可发行
+>> +的驱动，如果你的代码不符合GPL，那么祝你好运，你只能自己解决这个问题了，
+>> +你这个吸血鬼<把Andrew和Linus对吸血鬼的定义链接到这里>）。当你的代码加入
+>> +公版内核源代码树之后，如果一个内核接口改变，你的驱动会直接被修改接口的
+>> +那个人修改。保证你的驱动永远都可以编译通过，并且一直工作，你几乎不需要
+>> +做什么事情。
+>> +
+>> +把驱动放到内核源代码树里会有很多的好处：
+>> + - 驱动的质量会提升，而维护成本（对原始作者来说）会下降。
+>> + - 其他人会给驱动添加新特性。
+>> + - 其他人会找到驱动中的bug并修复。
+>> + - 其他人会在驱动中找到性能优化的机会。
+>> + - 当外部的接口的改变需要修改驱动程序的时候，其他人会修改驱动程序
+>> +。
+>> + - 不需要联系任何发行商，这个驱动会自动的随着所有的linux发布一起发
+>> +布。
+>>     
+>
+>
+> s/的/地/
+>
+>
+>   
+>> +
+>> +和别的操作系统相比，Linux为很多的不同设备提供现成的驱动，而且能在更多不
+>> +同体系结构的处理器上支持这些设备。这个经过考验的开发模式，必然是错不了
+>> +的 :)
+>> +
+>> +-------------
+>> +感谢 Randy Dunlap, Andrew Morton, David Brownell, Hanna Linder,
+>> +Robert Love, and Nishanth Aravamudan 对于本文档早期版本的评审和建议。
+>> +
+>> +英文版维护者： Greg Kroah-Hartman <greg@kroah.com>
+>> -- 
+>>     
+>
+> Add some CCs:
+>
+> CC: Lijun Chen <cljun@xiyou.edu.cn>
+> CC: Fengguang Wu <fengguang.wu@gmail.com>
+> CC: gshan@alcatel-lucent.com
+> CC: Bryan Wu <bryan.wu@analog.com>
+> CC: Tejun Heo <htejun@gmail.com>
+>
+> Regards!
+>
+>
+> WANG Cong
+>
+>
+>
+>   
+
+
