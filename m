@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbXFUVc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbXFUVeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758204AbXFUVc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 17:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbXFUVcv
+	id S1758915AbXFUVeI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 17:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbXFUVd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 17:32:51 -0400
-Received: from [212.12.190.189] ([212.12.190.189]:32991 "EHLO raad.intranet"
+	Thu, 21 Jun 2007 17:33:57 -0400
+Received: from [212.12.190.189] ([212.12.190.189]:33002 "EHLO raad.intranet"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755140AbXFUVcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 17:32:50 -0400
+	id S1755883AbXFUVd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 17:33:56 -0400
 From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: NUMA BOF @OLS
-Date: Fri, 22 Jun 2007 00:33:10 +0300
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: How to improve the quality of the kernel?
+Date: Fri, 22 Jun 2007 00:33:13 +0300
 User-Agent: KMail/1.5
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+References: <200706180141.41101.a1426z@gawab.com> <200706211641.28504.a1426z@gawab.com> <20070621135744.GO12950@stusta.de>
+In-Reply-To: <20070621135744.GO12950@stusta.de>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706220033.10820.a1426z@gawab.com>
+Content-Disposition: inline
+Message-Id: <200706220033.13932.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
+Adrian Bunk wrote:
+> On Thu, Jun 21, 2007 at 04:41:28PM +0300, Al Boldi wrote:
+> > Adrian Bunk wrote:
+> > > Talk is cheap, but unless YOU will do it your emails will only be a
+> > > waste of bandwidth.
+> >
+> > Thanks, and good luck with involving people with this kind of response!
 >
-> Everyone is invited to the NUMA BOF at the Ottawa Linux Symposium
->
-> Friday Jun 29th, 2007 19:00 - 20:00 in Rockhopper
->
-> The main interest seems to be a discussion on the use of memory policies.
-> Lee Schermerhorn will talk a bit about his work and then I may say
-> something about the problems with memory policies.
->
-> More subjects:
->
-> - Memoryless node support
->
-> - Restricting subsystems to not allocate on certain nodes
->   (f.e. huge pages only on some nodes, slab only on some nodes,
->   kernel memory only on some nodes).
->
-> - Cpusets and containers
->
-> - Do we need to have more support for multicore issues in the NUMA layers?
->
-> - Issues with the scheduler on NUMA.
+> It's simply how kernel development works - not by talking but by doing
+> the work.
 
-  - NUMA-over-EtherNet
+This sounds like a brute-force approach, akin to hacking.
 
-> If you have another subject that should be brought up then please contact
-> me.
+I think it's much more productive to analyze the problem and then design a 
+solution accordingly.
+
+> Many people thought long-term maintainance for 2.6.16 wouldn't make sense.
+> And I didn't start long discussions whether we need regression tracking -
+> I simply did it.
+
+Maybe because you are a PRO.
+
+> These are things that simply happened because I thought they were
+> important - and because I got my ass up to do them myself.
+>
+> Don't expect anyone to jump up to do it only because of your talk.
+> YOU must offer something, and it will work if it's then accepted by
+> people.
+>
+> If you think what you have in mind is both doable and important just do
+> it. You will find out where the problems lie yourself.
+> You might be able to prove me and all other people who think it would
+> not work wrong.
+> You might fail, e.g. because people will not adopt whatever you have in
+> mind because they don't like it for some reason, but that's part of how
+> development works, and you'll never know unless you try it.
 
 
 Thanks!
