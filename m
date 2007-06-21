@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbXFUVOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbXFUVOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758949AbXFUVOg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 17:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbXFUVO2
+	id S1759495AbXFUVOt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 17:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756436AbXFUVO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 21 Jun 2007 17:14:29 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:1569 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756233AbXFUVO2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 21 Jun 2007 17:14:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:42339 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755082AbXFUVO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 17:14:27 -0400
-Date: Thu, 21 Jun 2007 23:14:19 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, nigel@nigel.suspend2.net,
-       linux-kernel@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       akpm@linux-foundation.org
-Subject: Re: [Suspend-devel] [PATCH, 3rd try] make disable_console_suspend runtime configurable
-Message-ID: <20070621211419.GD31090@suse.de>
-References: <20070613200303.GB11437@suse.de> <200706141414.22152.rjw@sisk.pl> <200706141559.54242.fseidel@suse.de> <200706150020.29189.rjw@sisk.pl> <20070617213530.GE1803@elf.ucw.cz> <20070617214940.GA1951@elf.ucw.cz> <20070618052747.GA15173@suse.de> <20070621132008.GE18392@elf.ucw.cz>
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Date: Thu, 21 Jun 2007 14:13:36 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKOEJBEMAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070621132008.GE18392@elf.ucw.cz>
-X-Operating-System: openSUSE 10.3 (i586) Alpha5, Kernel 2.6.22-rc4-git6-2-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <orlkedjcsz.fsf@oliva.athome.lsd.ic.unicamp.br>
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 21 Jun 2007 14:14:06 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 21 Jun 2007 14:14:07 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 03:20:08PM +0200, Pavel Machek wrote:
-> Hi!
- 
-> > No, i don't agree at all.
-> > 
-> > In this case, "no config needed" == "not possible to debug suspend
-> > problems".
-> 
-> No, sorry.
-> 
-> My proposed solution is "figure out which console drivers can survive
-> being on while machines go down, and keep them on".
-> 
-> So, "no config needed" == "kernel always does the right thing, keeping
-> console during suspend when possible" == "possible to debug suspend
-> problems without having to change CONFIG_ or /sys/*".
 
-Ok. Deal. Once you fixed all the console drivers, i'll gladly send a patch
-that reverts the patch we are discussing now.
+Alexandre Oliva wrote:
 
-Note that this patch actually helps fixing those drivers, since you can
-test much easier if a given driver survives suspend ;-)
--- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+> With a mere permission to combine, I can only enforce these provisions
+> over my own code.
 
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+What does "my own code" mean when we're talking about derivative works and
+code in the codebase influencing the design of later code? Code from one
+module gets copied into another. Code in one module influences the design of
+code in the kernel. New files are added with pieces from multiple other
+files.
+
+Are you seriously suggesting that the Linux kernel source contain code with
+various different licenses with an obligation for those who work on the
+source too keep track of which licenses apply to bits of code when they work
+on them? That seems impossible as a practical matter.
+
+All the kernel code not being available under the same license is a short
+term problem. Over time, the code will get so combined and interwoven that
+the intersection of all permitted licenses would soon apply to effectively
+the entire kernel.
+
+This would be no different from adopting GPLv3. Unless, that is, GPLv3 makes
+itself compatible with GPlv2. In which case it would be no different from
+doing nothing at all. (Except for all the pain it would cause as people
+diligently try to figure out what licenses apply to their code and try not
+to borrow code from parts of the kernel that have a different license from
+the parts they are working on.)
+
+DS
+
+
