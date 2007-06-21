@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbXFUHMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbXFUHNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758709AbXFUHMy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 03:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbXFUHMr
+	id S1759001AbXFUHNZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 03:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbXFUHNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 03:12:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39336 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753462AbXFUHMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 03:12:46 -0400
-To: david@lang.hm
-Cc: Michael Poole <mdpoole@troilus.org>, Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
-	<ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
-	<or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
-	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
-	<2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
-	<871wg6trnx.fsf@graviton.dyn.troilus.org>
-	<2e6659dd0706201205i52e0b836oe642e2b442e425d7@mail.gmail.com>
-	<87wsxysaad.fsf@graviton.dyn.troilus.org>
-	<Pine.LNX.4.64.0706201232290.30395@asgard.lang.hm>
-	<87odjas9f7.fsf@graviton.dyn.troilus.org>
-	<Pine.LNX.4.64.0706201241060.30395@asgard.lang.hm>
-	<ortzt2rmuk.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202106040.31603@asgard.lang.hm>
-	<orir9hrge3.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202326110.31603@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 04:12:30 -0300
-In-Reply-To: <Pine.LNX.4.64.0706202326110.31603@asgard.lang.hm> (david@lang.hm's message of "Wed\, 20 Jun 2007 23\:29\:29 -0700 \(PDT\)")
-Message-ID: <or3b0lrdb5.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 21 Jun 2007 03:13:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50302 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754156AbXFUHNP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 03:13:15 -0400
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation
+	failures	in	dma	map api calls
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+In-Reply-To: <20070621063730.GC6771@linux-os.sc.intel.com>
+References: <1182326799.21117.19.camel@twins>
+	 <46792586.20706@linux.intel.com>
+	 <20070620173038.GA25516@linux-os.sc.intel.com>
+	 <1182362703.21117.79.camel@twins> <46797CB1.8070008@linux.intel.com>
+	 <1182370132.21117.84.camel@twins>
+	 <20070620230337.GA6771@linux-os.sc.intel.com>
+	 <1182406212.21117.94.camel@twins> <467A1679.8090202@linux.intel.com>
+	 <1182407374.21117.106.camel@twins>
+	 <20070621063730.GC6771@linux-os.sc.intel.com>
+Content-Type: text/plain
+Date: Thu, 21 Jun 2007 09:13:11 +0200
+Message-Id: <1182409991.21117.112.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, david@lang.hm wrote:
+On Wed, 2007-06-20 at 23:37 -0700, Keshavamurthy, Anil S wrote:
+> On Thu, Jun 21, 2007 at 08:29:34AM +0200, Peter Zijlstra wrote:
+> > On Wed, 2007-06-20 at 23:11 -0700, Arjan van de Ven wrote:
+> > > Peter Zijlstra wrote:
+> > Also, the other iommu code you pointed me to, was happy to fail, it did
+> > not attempt to use the emergency reserves.
+> 
+> Is the same behavior acceptable here?
 
-> frankly, I haven't checked the licenses on the software. I'd suggest
-> going to www.tivo.com/linux and download all the source for all the
-> different versions there.
+I would say it is. Failure is a part of life.
 
-Yeah, thanks, I remembered someone had posted that URL the second
-after a hit Send :-(
+If you have a (small) mempool with 16 pages or so, that should give you
+plenty megabytes of io-space to get out of a tight spot. That is, you
+can queue many pages with that. If it is depleted you know you have at
+least that many pages outstanding. So failing will just delay the next
+pages.
 
-I've already got cmd.tar.gz and I'm looking at it now.
+Throughput is not a key issue when that low on memory, a guarantee of
+progress is.
 
-Thanks again,
 
-> by the way, it looks like there is one wireless driver that they ship
-> in some releases but don't provide the source for. but if you plan on
-> going after them for that you better go after everyone who ships
-> binary kernel modules.
-
-Only copyright holders of Linux can go after them on matters of kernel
-drivers.  Or is this driver derived from any software copyrighted by
-myself?  Or did you mean the FSF, with whom I'm not associated in any
-way other than ideologically?
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
