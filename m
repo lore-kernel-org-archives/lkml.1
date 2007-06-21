@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbXFUN0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbXFUNa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbXFUN0m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 09:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbXFUN0e
+	id S1757057AbXFUNa5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 09:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbXFUNau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 09:26:34 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:56338 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754837AbXFUN0e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 09:26:34 -0400
-Message-ID: <467A7C88.2040102@csn.ul.ie>
-Date: Thu, 21 Jun 2007 14:26:32 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Thu, 21 Jun 2007 09:30:50 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41161 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753899AbXFUNat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 09:30:49 -0400
+Date: Thu, 21 Jun 2007 15:30:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [RFC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
+Message-ID: <20070621133015.GG18392@elf.ucw.cz>
+References: <200706182329.58917.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Subject: Re: [PATCH 7/7] Compact memory directly by a process when a high-order
- allocation fails
-References: <20070618092821.7790.52015.sendpatchset@skynet.skynet.ie>	<20070618093042.7790.30669.sendpatchset@skynet.skynet.ie> <20070621052813.ac93e12e.akpm@linux-foundation.org>
-In-Reply-To: <20070621052813.ac93e12e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706182329.58917.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> On Mon, 18 Jun 2007 10:30:42 +0100 (IST) Mel Gorman <mel@csn.ul.ie> wrote:
->> +
->> +			/*
->> +			 * It's a race if compaction frees a suitable page but
->> +			 * someone else allocates it
->> +			 */
->> +			count_vm_event(COMPACTRACE);
->> +		}
+Hi!
+
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Could perhaps cause arbitrarily long starvation. 
+> At present, if a user mode helper is running while usermodehelper_pm_callback()
+> is executed, the helper may be frozen and the completion in
+> call_usermodehelper_exec() won't be completed until user space processes are
+> thawed.  As a result, the freezing of kernel threads may fail, which is not
+> desirable.
+> 
+> Prevent this from happening by introducing a counter of running user mode
+> helpers and allowing usermodehelper_pm_callback() to succeed for
+> action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+> are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+> RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+> fails if that doesn't happen.]
+> 
+> Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+> versions of this patch and for very useful comments.
+>
 
-More likely it will just fail allocations where it could have succeeded.
-I knew the situation would occur so I thought I would count how often it
-happens before doing.
+> -		return NOTIFY_OK;
+> +		wait_event_timeout(running_helpers_waitq,
+> +					atomic_read(&running_helpers) == 0,
+> +					RUNNING_HELPERS_TIMEOUT);
+> +		if (atomic_read(&running_helpers) == 0) {
 
-> A fix would be to free
-> the synchronously-compacted higher-order page into somewhere which is
-> private to this task (a new field in task_struct would be one such place).
+Uff, this is suspect. What happens if running_helpers goes to 1 here.?
 
-There used to be such fields and a process flag PF_FREE_PAGES for a
-similar purpose. I'll look into reintroducing it. Thanks
+> +			return NOTIFY_OK;
 
+
+									Pavel
 -- 
-Mel Gorman
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
