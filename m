@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXFULI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbXFULJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbXFULI5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 07:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXFULIt
+	id S1756643AbXFULJR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 07:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbXFULIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 07:08:49 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:59015 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753811AbXFULIs (ORCPT
+	Thu, 21 Jun 2007 07:08:54 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34873 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754601AbXFULIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 07:08:48 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: JIT emulator needs
-To: Albert Cahalan <acahalan@gmail.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Thu, 21 Jun 2007 13:08:36 +0200
-References: <8tGiE-2Hv-1@gated-at.bofh.it> <8xNvm-2Tw-29@gated-at.bofh.it> <8xYTM-3So-13@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1I1KWi-0000nV-8s@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18IURlR7KxJwthUZHhxB2tl3Avlh4bHK3+g41g
- 22pfLhA85MYF5dqXfLCb8y3OCfpTp47FFFV30fFsYqqDKqrRFp
- xkM6VaAYIL4QF2y8WxWVA==
+	Thu, 21 Jun 2007 07:08:53 -0400
+Date: Thu, 21 Jun 2007 12:14:38 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: davids@webmaster.com
+Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070621121438.46a35c0d@the-village.bc.nu>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKEEBLEMAC.davids@webmaster.com>
+References: <87wsxysaad.fsf@graviton.dyn.troilus.org>
+	<MDEHLPKNGKAHNMBLJOLKEEBLEMAC.davids@webmaster.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Albert Cahalan <acahalan@gmail.com> wrote:
-> On 6/19/07, William Lee Irwin III <wli@holomorphy.com> wrote:
->> On Fri, Jun 08, 2007 at 02:35:22AM -0400, Albert Cahalan wrote:
+On Wed, 20 Jun 2007 12:55:10 -0700
+"David Schwartz" <davids@webmaster.com> wrote:
 
->>> Right now, Linux isn't all that friendly to JIT emulators.
->>> Here are the problems and suggestions to improve the situation.
->>> There is an SE Linux execmem restriction that enforces W^X.
->>> Assuming you don't wish to just disable SE Linux, there are
->>> two ugly ways around the problem. You can mmap a file twice,
->>> or you can abuse SysV shared memory. The mmap method requires
->>> that you know of a filesystem mounted rw,exec where you can
->>> write a very large temporary file. This arbitrary filesystem,
->>> rather than swap space, will be the backing store. The SysV
->>> shared memory method requires an undocumented flag and is
->>> subject to some annoying size limits. Both methods create
->>> objects that will fail to be deleted if the program dies
->>> before marking the objects for deletion.
->>
->> If the policy forbidding self-modifying code lacks a method of
->> exempting programs such as JIT interpreters (which I doubt) then
->> it's a problem. I'm with Alan on this one.
 > 
-> It does and it doesn't. There is not a reasonable way for a
-> user to mark an app as needing full self-modifying ability.
-> It's not like the executable stack, which can be set via the
-> ELF note markings on the executable. (ELF note markings are
-> ideal because they can not be used via a ret-to-libc attack)
+> > The kernel you build from the source code that Tivo distributes must
+> > be accepted by Tivo's hardware without making other modifications (to
+> > Tivo's hardware or bootloader).  If that is possible, I will retract
+> > what I said.  If it is not possible, they are omitting part of the
+> > program's source code:
+> >
+> >     A "computer program" is a set of statements or instructions to be
+> >     used directly or indirectly in a computer in order to bring about
+> >     a certain result.
+> >     -- US Code, Title 17, Section 101
 > 
-> With admin privs, one can change SE Linux settings. Mark the
-> executable, disable the protection system-wide, generate a
-> completely new SE Linux policy, or just turn SE Linux off.
+> A key is a number. A signature is a number. They are neither statements nor
+> instructions. The argument that GPLv2 prohibits Tivoization is really and
+> truly absurd. It has neither a legal nor a moral leg to stand on.
 
-According to the documents I found about SELinux, you can also
- - create a this-app-needs-selfmodification type
- - allow users to change the context type of their files to this type
- - configure a domain to allow self-modification
- - configure the domain transition
+A computer program is a number too.
 
-Brave words from someone who did not yet successfully find the magic in
-order to install the refpolicy on debilian (after finding their refpolicy-foo
-to be incomplete and their refpolicy-src to not compile).
--- 
-Why do women have smaller feet than men?
-It's one of those "evolutionary things" that allows them to stand
-closer to the kitchen sink.
-Friﬂ, Spammer: Jy@jRwxq.7eggert.dyndns.org d-afnhbe@p9J.7eggert.dyndns.org
+Alan
