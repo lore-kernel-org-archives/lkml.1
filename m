@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbXFURgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbXFURgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759205AbXFURgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbXFURgH
+	id S1759366AbXFURgi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbXFURg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:36:07 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:48577 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754878AbXFURgF (ORCPT
+	Thu, 21 Jun 2007 13:36:28 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:56914 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756459AbXFURg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:36:05 -0400
-Message-ID: <467AB5EE.3030909@zytor.com>
-Date: Thu, 21 Jun 2007 10:31:26 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 21 Jun 2007 13:36:27 -0400
+Date: Thu, 21 Jun 2007 19:36:28 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Andi Kleen <ak@suse.de>
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for 2.6.22] [6/10] x86: Only make Macintosh drivers default on Macs
+Message-ID: <20070621173628.GA21243@aepfle.de>
+References: <200706201223.443613000@suse.de> <20070620102334.DD01814AD0@wotan.suse.de>
 MIME-Version: 1.0
-To: Ram Pai <linuxram@us.ibm.com>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
- through other means
-References: <467994BD.6000403@zytor.com>	 <20070620210343.GQ21478@ftp.linux.org.uk>  <46799A31.10301@zytor.com> <1182442837.3342.13.camel@ram.us.ibm.com>
-In-Reply-To: <1182442837.3342.13.camel@ram.us.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070620102334.DD01814AD0@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ram Pai wrote:
+On Wed, Jun 20, Andi Kleen wrote:
+
 > 
-> Peter, I am not working on it currently. But i am interested in getting
-> it done. I have the seed set of patches which had Al Viro's ideas
-> incorporated. Infact those patches were sent on lkml 2 months back.
-> Shall we start with those patches?
+> It's already annoying that they appear on x86 now -- that's for the 3button
+> emulation needed on x86 macs -- but at least don't make them default.
 > 
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> ---
+>  drivers/macintosh/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux/drivers/macintosh/Kconfig
+> ===================================================================
+> --- linux.orig/drivers/macintosh/Kconfig
+> +++ linux/drivers/macintosh/Kconfig
+> @@ -2,7 +2,7 @@
+>  menuconfig MACINTOSH_DRIVERS
+>  	bool "Macintosh device drivers"
+>  	depends on PPC || MAC || X86
+> -	default y
+> +	default y if MAC
 
-Okay, so what I see in your patches are:
+This looks incorrect because my macdrivers were almost gone now when
+updating from 2.6.21 to 2.6.22. 
+A better one may be something like this, to not lose everything on a G5:
 
-> > path-from-root: mount point of the mount from /
-> > path-from-root-of-its-sb: path from its own root dentry.
-> > propagation-flag: SHARED, SLAVE, UNBINDABLE, PRIVATE
-> > peer-mount-id: the mount-id of its peer mount (if this mount is shared)
-> > master-mount-id: the mount-id of its master mount (if this mount is
-slave)
+        depends on PPC_PMAC || MAC || X86
+        default y if (PPC_PMAC || MAC)
 
-Other than cosmetic, I don't see anything terribly wrong with this,
-although getting a flag when the directory is overmounted would be nice.
-
-I guess I suggest a single comma-separated field with flags and optional
-":argument":
-
-	private
-	shared:<peer>
-	slave:<master>
-	unbindable
-	overmounted
-
-So we could end up with something like:
-
-rootfs / rootfs rw 0 0 0:1 / 1 private,overmounted
-
-... where 1 is the mnt_id (sequence number).
-
-[Please see my other comments in this thread... basically I believe we
-should just add fields to /proc/mounts.]
-
-	-hpa
