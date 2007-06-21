@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbXFURnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759403AbXFURqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbXFURnm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757763AbXFURne
+	id S1759403AbXFURqV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbXFURqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:43:34 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:33429 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755782AbXFURnd (ORCPT
+	Thu, 21 Jun 2007 13:46:14 -0400
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:55881 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755978AbXFURqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:43:33 -0400
-Date: Thu, 21 Jun 2007 13:43:32 -0400
-To: david@lang.hm
-Cc: Michael Poole <mdpoole@troilus.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070621174332.GD10008@csclub.uwaterloo.ca>
-References: <871wg6trnx.fsf@graviton.dyn.troilus.org> <467977F7.2040506@zytor.com> <Pine.LNX.4.64.0706201200550.30395@asgard.lang.hm> <87sl8ms9z5.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm> <87k5tys8w5.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201253120.30395@asgard.lang.hm> <87645is82q.fsf@graviton.dyn.troilus.org> <20070621171612.GC10008@csclub.uwaterloo.ca> <Pine.LNX.4.64.0706211019510.31603@asgard.lang.hm>
+	Thu, 21 Jun 2007 13:46:13 -0400
+Date: Thu, 21 Jun 2007 19:46:13 +0200
+From: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, arw@arw.name
+Subject: Re: [PATCH] Check files' signatures before doing suid/sgid [2/4]
+Message-ID: <20070621174612.GG9741@cip.informatik.uni-erlangen.de>
+References: <11824417551424-git-send-email-arw@arw.name> <1182446251.2704.0.camel@laptopd505.fenrus.org> <20070621172557.GE9741@cip.informatik.uni-erlangen.de> <1182446983.2704.4.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706211019510.31603@asgard.lang.hm>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <1182446983.2704.4.camel@laptopd505.fenrus.org>
+X-Echelon-Scan: plutonium bomb dirty irak allah satan bush victory c4
+	cocaine saddam wtc holy war believe god cia nsa
+X-Echelon-Result: Terrorist
+User-Agent: Mutt/1.5.15 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 10:26:04AM -0700, david@lang.hm wrote:
-> the bios doesn't have enough capability to talk to the outside world for 
-> updates.
-
-Of course, although perhaps it could.  More likely my thought was that
-the service when it decides to download an update, would include the
-updated bios image and put it on the boot drive where the existing bios
-can find it.  No signature needs to be added to the boot drive or
-kernel, just checksums in the bios image.
-
-> what tivo actually does is very similar to this
+On 070621 19:33, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Thu, 2007-06-21 at 19:25 +0200, Alexander Wuerstlein wrote:
+> > On 070621 19:21, Arjan van de Ven <arjan@infradead.org> wrote:
+> > > On Thu, 2007-06-21 at 18:02 +0200, Alexander Wuerstlein wrote:
+> > > > Modified task_struct to hold a 'signed flag' which is set on exec(), inherited
+> > > > on fork() and checked during exec before giving the new process suid/sgid
+> > > > privileges.
+> > > > 
+> > > 
+> > > 
+> > > 
+> > > do you also check the signature of glibc and every other shared library
+> > > that the app uses (or dlopens)? if not.. the entire exercise is rather
+> > > pointless...
+> > 
+> > We do check that, that is patch [3/4].
+> > 
+> > Of course we can only check mmap-ed files, if there is no file like with JIT
+> > compilers we are out of luck.
 > 
-> they encode into the bios the ability to check a checksum/signature for 
-> the kernel+boot filesystem and if they don't match look to see if there is 
-> another kernel+boot filesystem available
-> 
-> then software on the boot filesystem checks to see if the rest of the 
-> system has been tampered with before it mounts /
-> 
-> the GPLv3 is trying to do this.
+> or if the process uses read() not mmap().
 
-Perhaps they should just explicitly say that then.
+If a process uses read() it needs some executable and writable memory. We do
+check for this in mprotect(). There is a problem with the i386-architecture,
+because it allows execution of any readable page (except with newer
+processors). But beyond that ugliness of i386, it should not be possible to
+execute anything without us noticing it (hopefully).
 
---
-Len Sorensen
+Scripting languages are of course problematic. In the suid-case you could just
+call anyone insane who wants to use a suid-shellscript. But in other cases one
+might want signed binaries for, we do have a problem. With java or shell one
+would need an interpreter/vm which is signed and reasonably trustworthy itself
+and checks the signature of the shellscript or classfile it executes.  The
+(probably not all too complicated) writing of such an interpreter is left as an
+exercise to the reader ;)
+
+
+
+Ciao,
+
+Alexander Wuerstlein.
