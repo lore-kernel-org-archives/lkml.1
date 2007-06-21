@@ -1,86 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbXFUH3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbXFUHaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbXFUH3r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 03:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXFUH3j
+	id S1756112AbXFUHaV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 03:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbXFUHaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 03:29:39 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34646
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbXFUH3i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 03:29:38 -0400
-Date: Thu, 21 Jun 2007 00:29:47 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Michael Poole <mdpoole@troilus.org>, Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <or3b0lrdb5.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706210024340.31603@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
- <or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
- <orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
- <9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
- <2e6659dd0706201110x20fa5c28n5d6fc094e9f5c832@mail.gmail.com>
- <871wg6trnx.fsf@graviton.dyn.troilus.org> <2e6659dd0706201205i52e0b836oe642e2b442e425d7@mail.gmail.com>
- <87wsxysaad.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201232290.30395@asgard.lang.hm>
- <87odjas9f7.fsf@graviton.dyn.troilus.org> <Pine.LNX.4.64.0706201241060.30395@asgard.lang.hm>
- <ortzt2rmuk.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202106040.31603@asgard.lang.hm>
- <orir9hrge3.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202326110.31603@asgard.lang.hm>
- <or3b0lrdb5.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 21 Jun 2007 03:30:06 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:33629 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751964AbXFUHaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 03:30:04 -0400
+Date: Thu, 21 Jun 2007 09:38:00 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Miklos Szeredi <miklos@szeredi.hu>,
+       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070621073800.GA1685@ff.dom.local>
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Alexandre Oliva wrote:
+On Wed, Jun 20, 2007 at 10:34:15AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 20 Jun 2007, Jarek Poplawski wrote:
+> > 
+> > I don't agree with this (+ I know it doesn't matter).
+> > 
+> > The real bug is what Chuck Ebbert wrote: "Spinlocks aren't fair".
+> > And here they are simply lawlessly not fair.
+> 
+> Well, that's certainly a valid standpoint. I wouldn't claim you're 
+> _wrong_.
+> 
+> At least in theory.
+> 
+> In *practice*, fair spinlocks are simply not possible. Not as in "it's 
+> hard to do", but as in "you simply cannot do it".
 
-> On Jun 21, 2007, david@lang.hm wrote:
->
->> frankly, I haven't checked the licenses on the software. I'd suggest
->> going to www.tivo.com/linux and download all the source for all the
->> different versions there.
->
-> Yeah, thanks, I remembered someone had posted that URL the second
-> after a hit Send :-(
->
-> I've already got cmd.tar.gz and I'm looking at it now.
->
-> Thanks again,
->
->> by the way, it looks like there is one wireless driver that they ship
->> in some releases but don't provide the source for. but if you plan on
->> going after them for that you better go after everyone who ships
->> binary kernel modules.
->
-> Only copyright holders of Linux can go after them on matters of kernel
-> drivers.  Or is this driver derived from any software copyrighted by
-> myself?  Or did you mean the FSF, with whom I'm not associated in any
-> way other than ideologically?
+I think we can agree it was more about some minimal fairness.
 
-from the page listed above
+...
+> Which gets us to the next level: we can consider hardware that isn't 
+> "fair" in its cache coherency to be buggy hardware.
 
-NOTE: 4.0.1a and later releases contain Atmel WLAN drivers in addition to 
-the other network adapter drivers that are posted here. These WLAN drivers 
-were received by TiVo directly from Atmel and are under the terms of a 
-formal non-disclosure agreement, so we cannot publish them under the terms 
-of the GPL version 2. Atmel has since released a different version of the 
-drivers under the GPL version 2; however, that release does not change our 
-prior obligation with Atmel. At this time, we have no plans to use Atmel's 
-publicly released drivers in our development.
+IMHO, we shouldn't try to blame the hardware until we know exactly
+the source of this bug.
 
-when I talked about 'going after tivo' I wasn't just refering to doing so 
-with lawsuits. the way some people in this thread have acted I could see 
-people trying to use this as 'the smoking gun' that proves that the evil 
-tivo people didn't release everything they were supposed to.
+...
+> In other words, spinlocks are optimized for *lack* of contention. If a 
+> spinlock has contention, you don't try to make the spinlock "fair". No, 
+> you try to fix the contention instead!
+> 
+> That way, you fix many things. You probably speed things up, _and_ you 
+> make it fairer. It might sometimes take some brains and effort, but it's 
+> worth it.
 
-modules are a grey area, some are clearly derived from the kernel and some 
-are just as clearly not derived from the kernel, most are not as clear. I 
-don't know the situation for this particular module, but that has nothing 
-to do with this topic.
+I could agree with this, but only when we know exactly what place
+should be fixed if we don't care about speed. Then, of course, the
+cost could be estimated. But after last Ingo's patch I'm not sure
+he, or anybody else here, has this knowledge. I'd also remind that
+adding one smp_mb() also did the work, and it doesn't look like a
+big performance hit. We should only better know why this works.
 
-David Lang
+> The patch I sent out was an example of that. You *can* fix contention 
+> problems. Does it take clever approaches? Yes. It's why we have hashed 
+> spinlocks, RCU, and code sequences that are entirely lockless and use 
+> optimistic approaches. And suddenly you get fairness *and* performance!
+> 
+> It's a win-win situation. It does require a bit of effort, but hey, we're 
+> good at effort.
+
+Not necessarily so. Until the exact reason isn't known "for sure",
+this one place could be fixed, but the same problem could appear
+somewhere else in more masked form or is far less repeatable.
+
+BTW, I've looked a bit at these NMI watchdog traces, and now I'm not
+even sure it's necessarily the spinlock's problem (but I don't exclude
+this possibility yet). It seems both processors use task_rq_lock(), so
+there could be also a problem with that loop. The way the correctness
+of the taken lock is verified is racy: there is a small probability
+that if we have taken the wrong lock the check inside the loop is done
+just before the value is beeing changed elsewhere under the right lock.
+Another possible problem could be a result of some wrong optimization
+or wrong propagation of change of this task_rq(p) value.
+
+Thanks for response & best regards,
+Jarek P.
