@@ -1,59 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbXFUSa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbXFUSb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbXFUSa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXFUSav
+	id S1757788AbXFUSb3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXFUSbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:30:51 -0400
-Received: from smtp-03.mandic.com.br ([200.225.81.143]:54427 "EHLO
-	smtp-03.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbXFUSau (ORCPT
+	Thu, 21 Jun 2007 14:31:17 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33573 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbXFUSbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:30:50 -0400
-Message-ID: <467AC3D3.8080405@mandic.com.br>
-Date: Thu, 21 Jun 2007 15:30:43 -0300
-From: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 21 Jun 2007 14:31:16 -0400
+To: Mattias Wadenstein <maswan@acc.umu.se>
+Cc: Neil Brown <neilb@suse.de>, David Chinner <dgc@sgi.com>,
+       Avi Kivity <avi@argo.co.il>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+	<18034.479.256870.600360@notabene.brown>
+	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+	<18034.3676.477575.490448@notabene.brown>
+	<467273AB.9010202@argo.co.il>
+	<18035.3009.568832.785308@notabene.brown>
+	<20070618045759.GD85884050@sgi.com>
+	<18041.59628.370832.633244@notabene.brown>
+	<Pine.GSO.4.64.0706211417180.15647@montezuma.acc.umu.se>
+Date: Thu, 21 Jun 2007 14:30:29 -0400
+In-Reply-To: <Pine.GSO.4.64.0706211417180.15647@montezuma.acc.umu.se> (Mattias Wadenstein's message of "Thu, 21 Jun 2007 14:40:44 +0200 (MEST)")
+Message-ID: <yq1zm2ttb22.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.50 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: kitame@debian.org, joss@debian.org
-Subject: gconfd messages about permissions in some positions
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I don't understand this messages available in /var/log/messages about 
-gconfd.
+>>>>> "Mattias" == Mattias Wadenstein <maswan@acc.umu.se> writes:
 
-I don't use gnome (my desktop installed is KDE on Debian Etch, with 
-tasks="standard, kde-desktop" in boot line of installer DVD).
+Mattias> In theory, that's how storage should work. In practice,
+Mattias> silent data corruption does happen. If not from the disks
+Mattias> themselves, somewhere along the path of cables, controllers,
+Mattias> drivers, buses, etc. If you add in fcal, you'll get even more
+Mattias> sources of failure, but usually you can avoid SANs (if you
+Mattias> care about your data).
 
-======
-gconfd (yamane-4120): GConf server is not in use, turn-off.
-gconfd (yamane-4120): Finishing
+Oracle cares a lot about people's data 8).  And we've seen many cases
+of silent data corruption.  Often the problem goes unnoticed for
+months.  And by the time you find out about it you may have gone
+through your backup cycle so the data is simply lost.
 
-gconfd (yamane-5230): starting (version 2.16.1), pid 5230 user 'yamane'
+The Oracle database in combination with certain high-end arrays
+supports a technology called HARD (Hardware Assisted Resilient Data)
+which allows the array front end to verify the integrity of an I/O
+before committing it to disk.  The downside to HARD is that it's
+proprietary and only really high-end customers use it (many
+enterprises actually mandate HARD).
 
-gconfd (yamane-5230): Address 
-"xml:readonly:/etc/gconf/gconf.xml.mandatory" resolved from a config 
-source with only read permissions in position 0
+A couple of years ago some changes started to trickle into the SCSI
+Block Commands spec.  And as some of you know I've been working on
+implementing support for this Data Integrity Field in Linux.
 
-gconfd (yamane-5230): Address "xml:readwrite:/home/yamane/.gconf" 
-resolved from a config source with write permissions in position 1
+What DIF allows you to do is to attach some integrity metadata to an
+I/O.  We can attach this metadata all the way up in the userland
+application context where the risk of corruption is relatively small.
+The metadata passes all the way through the I/O stack, gets verified
+by the HBA firmware, through the fabric, gets verified by the array
+front end and finally again by the disk drive before the change is
+committed to platter.  Any discrepancy will cause the I/O to be
+failed.  And thanks to the intermediate checks you also get fault
+isolation.
 
-gconfd (yamane-5230): Address 
-"xml:readonly:/etc/gconf/gconf.xml.defaults" resolved from a config 
-source with only read permissions in position 2
+The DIF integrity metadata contains a CRC of the data block as well as
+a reference tag that (for Type 1) needs to match the target sector on
+disk.  This way the common problem of misdirected writes can be
+alleviated.
 
-gconfd (yamane-5230): Address 
-"xml:readonly:/var/lib/gconf/debian.defaults" resolved from a config 
-source with only read permissions in position 3
+Initially, DIF is going to be offered in the FC/SAS space.  But I
+encourage everybody to lean on their SATA drive manufacturer of choice
+and encourage them to provide a similar functionality on consumer or
+at the very least nearline drives.
 
-gconfd (yamane-5230): Address "xml:readonly:/var/lib/gconf/defaults" 
-resolved from a config source with only read permissions in position 4
-======
 
-Best regards,
-Renato S. Yamane
+Note there's a difference between FS checksums and DIF.  Filesystem
+checksums (plug: http://oss.oracle.com/projects/btrfs/) allows the
+filesystem to detect that it read something bad.  And as discussed
+earlier we can potentially retry the read from another mirror or
+reconstruct in the case of RAID5/6.
+
+DIF, however, is a proactive technology.  It prevents bad stuff from
+being written to disk in the first place.  You'll know right away when
+corruption happens, not 4 months later when you try to read the data
+back.
+
+So DIF and filesystem checksumming go hand in hand in preventing data
+corruption...
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
+
