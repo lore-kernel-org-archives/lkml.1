@@ -1,72 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbXFULBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbXFULEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756069AbXFULBV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 07:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbXFULBN
+	id S1755929AbXFULEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 07:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbXFULEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 07:01:13 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:55741 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753508AbXFULBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 07:01:12 -0400
-Date: Thu, 21 Jun 2007 13:09:09 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, cebbert@redhat.com, chris@atlee.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070621110909.GB1685@ff.dom.local>
-References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073800.GA1685@ff.dom.local> <20070621083931.GA18105@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070621083931.GA18105@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 21 Jun 2007 07:04:41 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:62313 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753876AbXFULEk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 07:04:40 -0400
+Message-ID: <467A5B1F.5080204@linux.vnet.ibm.com>
+Date: Thu, 21 Jun 2007 16:33:59 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-mm <linux-mm@kvack.org>, Balbir Singh <balbir@in.ibm.com>,
+       Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
+       Kirill Korotaev <dev@sw.ru>, devel@openvz.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
+       Aubrey Li <aubreylee@gmail.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [RFC] mm-controller
+References: <1182418364.21117.134.camel@twins>
+In-Reply-To: <1182418364.21117.134.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 10:39:31AM +0200, Ingo Molnar wrote:
+Peter Zijlstra wrote:
+> Having read the RSS and Pagecache controllers some things bothered me.
 > 
-> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+>  - the duplication of much of the reclaim data (not code)
+>    and the size increase as a result thereof.
 > 
-> > BTW, I've looked a bit at these NMI watchdog traces, and now I'm not 
-> > even sure it's necessarily the spinlock's problem (but I don't exclude 
-> > this possibility yet). It seems both processors use task_rq_lock(), so 
-> > there could be also a problem with that loop. The way the correctness 
-> > of the taken lock is verified is racy: there is a small probability 
-> > that if we have taken the wrong lock the check inside the loop is done 
-> > just before the value is beeing changed elsewhere under the right 
-> > lock. Another possible problem could be a result of some wrong 
-> > optimization or wrong propagation of change of this task_rq(p) value.
-> 
-> ok, could you elaborate this in a bit more detail? You say it's racy - 
-> any correctness bug in task_rq_lock() will cause the kernel to blow up 
-> in spectacular ways. It's a fairly straightforward loop:
-> 
->  static inline struct rq *__task_rq_lock(struct task_struct *p)
->          __acquires(rq->lock)
->  {
->          struct rq *rq;
-> 
->  repeat_lock_task:
->          rq = task_rq(p);
->          spin_lock(&rq->lock);
->          if (unlikely(rq != task_rq(p))) {
->                  spin_unlock(&rq->lock);
->                  goto repeat_lock_task;
->          }
->          return rq;
->  }
-> 
-> the result of task_rq() depends on p->thread_info->cpu wich will only 
-> change if a task has migrated over to another CPU. That is a 
-> fundamentally 'slow' operation, but even if a task does it intentionally 
-> in a high frequency way (for example via repeated calls to 
-> sched_setaffinity) there's no way it could be faster than the spinlock 
-> code here. So ... what problems can you see with it?
 
-OK, you are right - I withdraw this "idea". Sorry!
+Are you referring to the duplication due to the per container LRU list?
 
-Jarek P.
+>  - the clear distinction between mapped (RSS) and unmapped (pagecache)
+>    limits. Linux doesn't impose individual limits on these, so I don't
+>    see why containers should.
+> 
+
+Linux doesn't impose induvidual limits, but we do have vm_swappiness and
+vm_dirty_ratio to get some form of control over what pages we evict.
+The advantage of splitting RSS and unmapped page cache is that
+
+1. Users get more control over their containers
+2. It's easier to implement containers in phases
+
+We don't add any overhead by splitting out the control this way
+
+>  - lack of soft limits (but I understand that that is WIP :-)
+> 
+
+Yes, that is correct.
+
+>  - while I appreciate the statistical nature of one container
+>    per page, I'm bit sceptical because there is no forced migration
+>    cycle.
+> 
+
+I have patches for per container page_referenced() feature and we
+mark_page_accessed() is already container aware
+
+Please see http://lkml.org/lkml/2007/4/26/482
+
+There is no forced migration, but when a container hits its limit.
+
+http://lwn.net/Articles/237851/ talks about our current TODOs.
+
+> 
+> 
+> So, while pondering the problem, I wrote down some ideas....
+> 
+> While I appreciate that people do not like to start over again, I think
+> it would be fruit-full to at least discuss the various design decisions.
+> 
+
+First, thank you for your interest and your proposal. My opinion on
+the new design is that, we should not move to it, _unless the current
+design_ is completely non-fixable. 
+
+Don Knuth says he often re-learnt that
+("Premature optimization is the root of all evil -- C.A.R Hoare").
+Could you please try our patches
+
+
+> 
+> (Will be travelling shorty, so replies might take longer than usual)
+> 
+> 
+
+Me too...
+
+> Mapped pages:
+> ~~~~~~~~~~~~
+> 
+> Basic premises:
+>   - accounting per address_space/anon_vma
+> 
+
+In the future, we also want to account for slab usage and page tables, etc.
+
+> Because, if the data is shared between containers isolation is broken anyway
+> and we might as well charge them equally [1].
+> 
+> Move the full reclaim structures from struct zone to these structures.
+> 
+> 
+> 	struct reclaim;
+> 
+> 	struct reclaim_zone {
+> 		spinlock_t		lru_lock;
+> 
+> 		struct list_head 	active;
+> 		struct list_head 	inactive;
+> 
+> 		unsigned long		nr_active;
+> 		unsigned long		nr_inactive;
+> 
+> 		struct reclaim		*reclaim;
+> 	};
+> 
+> 	struct reclaim {
+> 		struct reclaim_zone	zone_reclaim[MAX_NR_ZONES];
+> 
+> 		spinlock_t		containers_lock;
+> 		struct list_head	containers;
+> 		unsigned long		nr_containers;
+> 	};
+> 
+> 
+> 	struct address_space {
+> 		...
+> 		struct reclaim reclaim;
+> 	};
+> 
+
+Each address space has a struct reclaim? which inturn has a per zone reclaim
+LRU list?
+
+> 	struct anon_vma {
+> 		...
+> 		struct reclaim reclaim;
+> 	};
+> 
+
+Same comment as above
+
+> 
+> Then, on instantiation of either address_space or anon_vma we string together
+> these reclaim domains with a reclaim scheduler.
+> 
+> 
+> 	struct sched_item;
+> 
+> 	struct reclaim_item {
+> 		struct sched_item	sched_item;
+> 		struct reclaim_zone	*reclaim_zone;
+> 	};
+> 
+> 
+> 	struct container {
+> 		...
+> 		struct sched_queue	reclaim_queue;
+> 	};
+> 
+> 
+> 	sched_enqueue(&container->reclaim_queue, &reclaim_item.sched_item);
+> 
+> 
+> Then, shrink_zone() would use the appropriate containers' reclaim_queue
+> to find an reclaim_item to run isolate_pages on.
+> 
+> 
+> 	struct sched_item *si;
+> 	struct reclaim_item *ri;
+> 	struct reclaim_zone *rzone;
+> 	LIST_HEAD(pages);
+> 
+> 	si = sched_current(&container->reclaim_queue);
+> 	ri = container_of(si, struct reclaim_item, sched_item); 
+> 	rzone = ri->reclaim_zone;
+> 	nr_scanned = isolate_pages(rzone, &pages);
+> 
+> 	weight = (rzone->nr_active + rzone->nr_inactive) /
+> 			(nr_scanned * rzone->reclaim->nr_containers);
+> 
+> 	sched_account(&container->reclaim_queue,
+> 			 &rzone->sched_item, weight);
+> 
+> 
+> We use a scheduler to interleave the various lists instead of a sequence of
+> lists to create the appearance of a single longer list. That is, we want each
+> tail to be of equal age.
+> 
+>  [ it would probably make sense to drive the shrinking of the active list
+>    from the use of the inactive list. This has the advantage of 'hiding' 
+>    the active list.
+> 
+>    Much like proposed here: http://lkml.org/lkml/2005/12/7/57
+>    and here: http://programming.kicks-ass.net/kernel-patches/page-replace/2.6.21-pr0/useonce-new-shrinker.patch
+> ]
+> 
+
+I worry about the scheduler approach. In a system with 100 containers, with 50 of them over their limit
+and many sharing VMA's, how do we string together the container LRU list? What do we do on global
+memory pressure?
+
+> Unmapped pages:
+> ~~~~~~~~~~~~~~
+> 
+> 
+> Since unmapped pages lack a 'release' (or dis-associate) event, the fairest 
+> thing is to account each container a fraction relative to its use of these
+> unmapped pages.
+> 
+
+Currently, we use the "page is reclaimed" event to mark the release event.
+
+> Use would constitute of the following events:
+>   - pagecache insertion
+>   - pagecache lookup
+> 
+> 
+> Each containers proportion will be calculated using the floating proportions
+> introduced in the per BDI dirty limit patches.
+> 
+> 	struct prop_global	pagecache_proportion;
+> 	struct reclaim		pagecache_reclaim;
+> 
+> 	enum reclaim_item_flags {
+> 		ri_pagecache,
+> 	};
+> 
+> 	struct reclaim_item {
+> 		...
+> 		unsigned long flags;
+> 	};
+> 
+> 	struct container {
+> 		...
+> 		struct prop_local_single pagecache_usage;
+> 	};
+> 
+> 
+> and add it to the vm scheduler.
+> 
+> 
+> 	if (ri->flags & ri_pagecache) {
+> 		unsigned long num, denom;
+> 		unsigned long long w;
+> 		
+> 		prop_fraction(&pagecache_proportion,
+> 			      &container->pagecache_usage,
+> 			      &num, &denom);
+> 
+> 		w = (rzone->nr_active + rzone->nr_inactive) * denom;
+> 		do_div(w, num);
+> 		
+> 		weight = (unsigned long)w * nr_scanned;
+> 	} else
+> 		....
+> 
+> 
+> Considerations:
+> ~~~~~~~~~~~~~~
+> 
+> 
+> Advantages:
+>  - each page is on a single list
+>  - no distinction between container vs global reclaim
+>  - no increase of sizeof(struct page)
+>  - pages are but on a single list
+>  - breaks up lru_lock (might get a scheduler lock in return)
+> 
+> Disadvantages:
+>  - major overhaul of the reclaim code
+>  - naive container usage calculation will be O(nr vmas)
+>    however a smarter scheme would still be O(nr containers)
+> 
+> 
+> Notes:
+> ~~~~~
+> 
+> [1] if needed one could refine this using floating proportions
+>     charging each container a fraction relative to its usage
+> 
+> 
+> 
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
