@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbXFURvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbXFURwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758488AbXFURvI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759496AbXFURux
+	id S1759072AbXFURwJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbXFURv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:50:53 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34196
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759077AbXFURuw (ORCPT
+	Thu, 21 Jun 2007 13:51:57 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58693 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755030AbXFURv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:50:52 -0400
-Date: Thu, 21 Jun 2007 10:51:06 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-cc: Michael Poole <mdpoole@troilus.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <20070621174332.GD10008@csclub.uwaterloo.ca>
-Message-ID: <Pine.LNX.4.64.0706211046511.31603@asgard.lang.hm>
-References: <871wg6trnx.fsf@graviton.dyn.troilus.org> <467977F7.2040506@zytor.com>
- <Pine.LNX.4.64.0706201200550.30395@asgard.lang.hm> <87sl8ms9z5.fsf@graviton.dyn.troilus.org>
- <Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm> <87k5tys8w5.fsf@graviton.dyn.troilus.org>
- <Pine.LNX.4.64.0706201253120.30395@asgard.lang.hm> <87645is82q.fsf@graviton.dyn.troilus.org>
- <20070621171612.GC10008@csclub.uwaterloo.ca> <Pine.LNX.4.64.0706211019510.31603@asgard.lang.hm>
- <20070621174332.GD10008@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 21 Jun 2007 13:51:56 -0400
+Date: Thu, 21 Jun 2007 10:51:52 -0700
+From: Paul Jackson <pj@sgi.com>
+To: vatsa@linux.vnet.ibm.com
+Cc: mingo@elte.hu, clameter@sgi.com, linux-kernel@vger.kernel.org,
+       dino@in.ibm.com, akpm@linux-foundation.org
+Subject: Re: cpuset attach_task to touch per-cpu kernel threads?
+Message-Id: <20070621105152.8daf87ad.pj@sgi.com>
+In-Reply-To: <20070621173232.GP10980@linux.vnet.ibm.com>
+References: <20070621014935.GF10980@linux.vnet.ibm.com>
+	<20070621121635.GB19811@elte.hu>
+	<20070621100712.52a4784a.pj@sgi.com>
+	<20070621173232.GP10980@linux.vnet.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Lennart Sorensen wrote:
+> Yeah .."allow movement if it doesn't result in changing kernel-threads's cpu 
+> affinity" sounds good, except it is hard to implement in cpuset's
+> context I think. For ex: we now have to take additional steps when
+> changing 'cpus_allowed' of a cpuset such that it doesn't violate any cpu
+> affinity of kernel threads bound to the cpuset. That itself makes the
+> implementation complex I think.
 
-> On Thu, Jun 21, 2007 at 10:26:04AM -0700, david@lang.hm wrote:
->> the bios doesn't have enough capability to talk to the outside world for
->> updates.
->
-> Of course, although perhaps it could.  More likely my thought was that
-> the service when it decides to download an update, would include the
-> updated bios image and put it on the boot drive where the existing bios
-> can find it.  No signature needs to be added to the boot drive or
-> kernel, just checksums in the bios image.
->
->> what tivo actually does is very similar to this
->>
->> they encode into the bios the ability to check a checksum/signature for
->> the kernel+boot filesystem and if they don't match look to see if there is
->> another kernel+boot filesystem available
->>
->> then software on the boot filesystem checks to see if the rest of the
->> system has been tampered with before it mounts /
+Yes, that would be more complex than we need.  You're right.
 
-you snippede the bit about not knowing how to stop it
+The only problem comes with kernel tasks that are pinned to less than
+the entire system, and that are in the top cpuset.
 
->> the GPLv3 is trying to do this.
->
-> Perhaps they should just explicitly say that then.
+They should remain in the top cpuset.  Since the top cpuset is never
+allowed to have less than all the cpus in the system, such kernel
+threads can then be assured of being allowed to use the cpus they need
+to use.
 
-they call the section the anti-tivoization, how much more explicit can 
-they get?
+Could you try coding something like the following in kernel/cpuset.c,
+Srivatsa?
 
-David Lang
+/* Call with task_lock held on tsk */
+is_pinned_kernel_thread(tsk)
+{
+	/* "pinned" means constrained to a strict subset of online cpus */
+	int is_pinned = !cpus_subset(cpus_online_map, tsk->cpus_allowed);
+	int is_kthread = !tsk->mm || (tsk->flags & PF_BORROWED_MM);
 
-by the way, just in case anyone is misunderstanding me. I don't believe 
-for a moment that all these anti-tamper features actually work in the real 
-world (the PS3 hacking kits are proof of the lengths people will go to to 
-make the 'hard' hardware-level hacking trivial to do) but the approach 
-needs to be at secure modulo hardware tampering or software bugs.
+	return is_pinned && is_kthread;
+}
 
+Then call it from kernel/cpuset.c:attach_task() with:
+
+	/* Don't moved pinned kernel threads out of top cpuset */
+	if (is_pinned_kernel_thread(tsk) && oldcs == &top_cpuset && cs != oldcs) {
+                task_unlock(tsk);
+                mutex_unlock(&callback_mutex);
+                put_task_struct(tsk);
+		return -EINVAL;
+	}
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
