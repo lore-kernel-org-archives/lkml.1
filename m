@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbXFUHaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbXFUHeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756464AbXFUHaz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 03:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbXFUHar
+	id S1755065AbXFUHeI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 03:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXFUHd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 03:30:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47894 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752659AbXFUHaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 03:30:46 -0400
-Date: Thu, 21 Jun 2007 09:30:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070621073031.GA683@elte.hu>
-References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+	Thu, 21 Jun 2007 03:33:57 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34661
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbXFUHd4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 03:33:56 -0400
+Date: Thu, 21 Jun 2007 00:33:12 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <ory7idpykk.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706210031280.31603@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070616181902.GB21478@ftp.linux.org.uk> <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+ <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+ <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+ <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca>
+ <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca>
+ <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
+ <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
+ <orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
+ <ory7idpykk.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 21 Jun 2007, Alexandre Oliva wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Jun 21, 2007, david@lang.hm wrote:
+>
+>> no, one of the rules for the network is that the software must be
+>> certified,
+>
+> In this case you might have grounds to enforce this restriction of the
+> network on the network controller itself, I suppose.
 
-> In other words, spinlocks are optimized for *lack* of contention. If a 
-> spinlock has contention, you don't try to make the spinlock "fair". 
-> No, you try to fix the contention instead!
+how would the network controller know if the software has been modified?
 
-yeah, and if there's no easy solution, change it to a mutex. Fastpath 
-performance of spinlocks and mutexes is essentially the same, and if 
-there's any measurable contention then the scheduler is pretty good at 
-sorting things out. Say if the average contention is longer than 10-20 
-microseconds then likely we could already win by scheduling away to some 
-other task. (the best is of course to have no contention at all - but 
-there are causes where it is real hard, and there are cases where it's 
-outright unmaintainable.)
+> Not that you should disable the network controller entirely (this
+> would render the computer useless for many other purpose unrelated
+> with blocking connections to your network).
+>
+> You could instead arrange for the network controller to send some
+> signal that enables the network to recognize that the device is
+> running certified software.
 
-Hw makers are currently producing transistors disproportionatly faster 
-than humans are producing parallel code, as a result of which we've got 
-more CPU cache than ever, even taking natural application bloat into 
-account. (it just makes no sense to spend those transistors on 
-parallelism when applications are just not making use of it yet. Plus 
-caches are a lot less power intense than functional units of the CPU, 
-and the limit these days is power input.)
+what sort of signal can the network controller send that couldn't be 
+forged by the OS?
 
-So scheduling more frequently and more agressively makes more sense than 
-ever before and that trend will likely not stop for some time to come. 
+how would you do this where the device is a receiver on the netwoek (such 
+as a satellite receiver)
 
-> The patch I sent out was an example of that. You *can* fix contention 
-> problems. Does it take clever approaches? Yes. It's why we have hashed 
-> spinlocks, RCU, and code sequences that are entirely lockless and use 
-> optimistic approaches. And suddenly you get fairness *and* 
-> performance!
-
-what worries me a bit though is that my patch that made spinlocks 
-equally agressive to that loop didnt solve the hangs! So there is some 
-issue we dont understand yet - why was the wait_inactive_task() 
-open-coded spin-trylock loop starving the other core which had ... an 
-open-coded spin-trylock loop coded up in assembly? And we've got a 
-handful of other open-coded loops in the kernel (networking for example) 
-so this issue could come back and haunt us in a situation where we dont 
-have a gifted hacker like Miklos being able to spend _weeks_ to track 
-down the problem...
-
-	Ingo
+David Lang
