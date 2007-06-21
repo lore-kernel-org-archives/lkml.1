@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbXFUXw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbXFUXxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbXFUXw6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbXFUXvx
+	id S1756085AbXFUXxZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbXFUXv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:51:53 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35914 "EHLO
+	Thu, 21 Jun 2007 19:51:57 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35917 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755133AbXFUXvw (ORCPT
+	with ESMTP id S1755237AbXFUXv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:51:52 -0400
-Date: Fri, 22 Jun 2007 01:52:11 +0200
+	Thu, 21 Jun 2007 19:51:56 -0400
+Date: Fri, 22 Jun 2007 01:52:15 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC: 2.6 patch] schedule BLK_DEV_IDE_SATA for removal
-Message-ID: <20070621235211.GH23017@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Dan Williams <dan.j.williams@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] mark calibrate_xor_blocks() __init
+Message-ID: <20070621235215.GI23017@stusta.de>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Users should use the libata based drivers for SATA drives.
+On Wed, Jun 06, 2007 at 10:03:13PM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.22-rc4-mm1:
+>...
+>  git-md-accel.patch
+>...
+>  git trees
+>...
+
+calibrate_xor_blocks() can be marked __init.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.22-rc4-mm2/Documentation/feature-removal-schedule.txt.old	2007-06-21 23:41:03.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/Documentation/feature-removal-schedule.txt	2007-06-21 23:42:03.000000000 +0200
-@@ -347,3 +347,10 @@
- Who:	Jean Delvare <khali@linux-fr.org>
+--- linux-2.6.22-rc4-mm2/crypto/xor.c.old	2007-06-21 23:47:56.000000000 +0200
++++ linux-2.6.22-rc4-mm2/crypto/xor.c	2007-06-21 23:48:39.000000000 +0200
+@@ -94,7 +94,7 @@
+ 	       speed / 1000, speed % 1000);
+ }
  
- ---------------------------
-+
-+What:  CONFIG_BLK_DEV_IDE_SATA
-+When:  December 2007
-+Why:   users should use the libata based drivers for SATA
-+Who:   Adrian Bunk <bunk@stusta.de>
-+
-+---------------------------
+-static int
++static int __init
+ calibrate_xor_blocks(void)
+ {
+ 	void *b1, *b2;
 
