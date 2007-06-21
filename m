@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbXFUQFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXFUQFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbXFUQFX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXFUQFL
+	id S1753994AbXFUQFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbXFUQFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:05:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33646 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751434AbXFUQFJ (ORCPT
+	Thu, 21 Jun 2007 12:05:17 -0400
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:45539 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753661AbXFUQFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:05:09 -0400
-Date: Thu, 21 Jun 2007 09:03:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-cc: Dave Jones <davej@redhat.com>, Ian McDonald <ian.mcdonald@jandi.co.nz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       William Cohen <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [PATCH] Alternative fix for kprobes&DEBUG_RODATA was Re: [1/2]
- 2.6.22-rc5: known regressions with patches
-In-Reply-To: <200706211119.07754.ak@suse.de>
-Message-ID: <alpine.LFD.0.98.0706210902380.3593@woody.linux-foundation.org>
-References: <467543FA.60905@googlemail.com> <20070620230751.GA15092@redhat.com>
- <alpine.LFD.0.98.0706201647350.3593@woody.linux-foundation.org>
- <200706211119.07754.ak@suse.de>
+	Thu, 21 Jun 2007 12:05:15 -0400
+X-Greylist: delayed 598 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Jun 2007 12:05:15 EDT
+From: Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
+Date: Thu, 21 Jun 2007 17:55:16 +0200
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] signed binaries support [0/4]
+Message-ID: <20070621155516.GA6838@faui01.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+We (two students of CS) built a system for signing binaries and verifying them
+before executing. Our main focus was to implement a way to inhibit execution
+of suid-binaries, which are not trustworthy (i.e. not signed). Of course this
+can also be used to grant other access rights, capabilities, etc.
 
-On Thu, 21 Jun 2007, Andi Kleen wrote:
+The signature (e.g. HMAC-SHA1 with a shared secret) is stored in extended
+filesystem attributes (userland-signing-tool provided) [1]. Depending on the
+outcome of our check (performed during exec) a newly introduced flag in
+the task_struct is set. To be able to also check libraries, we introduced a
+similar flag in the vm_area struct. Depending on the state of the flag, the
+suid/sgid bit on the file is honored or ignored. If a process behaves badly
+(e.g mapping executable memory writable or loading an untrusted library) it
+is handled appropriately (killed in our current implementation).
 
-> Ok, here's a patch to do this. With that 55181000cd60334fe920c65ffbcdfe0e3f1de406
-> should be reverted because it isn't needed anymore.
+In the current state our code is of course very expermimental and should be
+handled with care.
 
-This seems buggy:
+We mainly seek comments, suggestions and wisdom before we tackle the more
+difficult tasks, like proper signatures (public-key-systems, etc.).
 
-> +	int notext = 0;
->  
-> +#ifdef CONFIG_KPROBES
-> +	notext = 1;
-> +#endif
->  #ifdef CONFIG_HOTPLUG_CPU
->  	/* It must still be possible to apply SMP alternatives. */
-> -	if (num_possible_cpus() <= 1)
-> +	notext = (num_possible_cpus() > 1);
->  #endif
+regards,
+	Johannes
 
-The CONFIG_HOTPLUG_CPU case will overwrite the CONFIG_KPROBES, and turn it 
-back to zero for a single CPU.
+[1] http://git.informatik.uni-erlangen.de/?p=ssuid-userland&a=snapshot;h=HEAD
 
-		Linus
+-- 
+Johannes Schlumberger                      Department of Computer Science IV
+Martensstrasse 1  D-91058 Erlangen Germany  University of Erlangen-Nuremberg
+             http://wwwcip.informatik.uni-erlangen.de/~spjsschl
