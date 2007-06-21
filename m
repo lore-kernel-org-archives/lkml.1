@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbXFUBOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbXFUBjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757102AbXFUBOe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 21:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXFUBOZ
+	id S1756850AbXFUBjf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 21:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbXFUBj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 21:14:25 -0400
-Received: from mailhub.hp.com ([192.151.27.10]:52128 "EHLO mailhub.hp.com"
+	Wed, 20 Jun 2007 21:39:27 -0400
+Received: from mga09.intel.com ([134.134.136.24]:56647 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752048AbXFUBOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 21:14:25 -0400
-From: "Bob Picco" <bob.picco@hp.com>
-Date: Wed, 20 Jun 2007 21:14:22 -0400
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Bob Picco <bob.picco@hp.com>, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: mm snapshot broken-out-2007-06-20-10-12.tar.gz uploaded
-Message-ID: <20070621011422.GF10927@localhost>
-References: <200706201714.l5KHEYh6010297@imap1.linux-foundation.org> <20070621005122.GD10927@localhost> <20070620180711.1d4d6b6e.randy.dunlap@oracle.com>
+	id S1753383AbXFUBj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 21:39:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,445,1175497200"; 
+   d="scan'208";a="98625893"
+Subject: Re: [PATCH] driver core: multithreaded probing - more parallelism
+	control
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Greg K-H <greg@kroah.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Adrian Bunk <bunk@stusta.de>, "david@lang.hm" <david@lang.hm>,
+       David Miller <davem@davemloft.net>,
+       Duncan Sands <duncan.sands@math.u-psud.fr>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <46794343.3080204@s5r6.in-berlin.de>
+References: <1182373258.30574.30.camel@caritas-dev.intel.com>
+	 <46794343.3080204@s5r6.in-berlin.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 21 Jun 2007 09:38:31 +0000
+Message-Id: <1182418711.12959.3.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070620180711.1d4d6b6e.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.3 
+X-OriginalArrivalTime: 21 Jun 2007 01:39:23.0780 (UTC) FILETIME=[FF03DC40:01C7B3A4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:	[Wed Jun 20 2007, 09:07:11PM EDT]
-> On Wed, 20 Jun 2007 20:51:22 -0400 Bob Picco wrote:
-> 
-> > akpm@linux-foundation.org wrote:	[Wed Jun 20 2007, 01:14:34PM EDT]
-> > [snip]
-> > 
-> > Build breakage. pci_mmcfg_late_init is for i386.
-> 
-> then you want CONFIG_X86_32 instead of CONFIG_X86.
-> CONFIG_X86 is set/true for both X86_32 and X86_64.
-Then what I stated within the patch description is incorrect. pci.h which is the
-required include for the declaration is conditionally for CONFIG_X86. So it is
-both I guess?
+On Wed, 2007-06-20 at 17:09 +0200, Stefan Richter wrote:
+> I'd call it probe_queue_number or maybe probe_queue_id.  The term "no"
+> is ambiguous.
 
-bob
-> 
-> 
-> > Signed-off-by: Bob Picco <bob.picco@hp.com>
-> > 
-> >  drivers/acpi/bus.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > Index: linux-2.6.22-rc5-mm1/drivers/acpi/bus.c
-> > ===================================================================
-> > --- linux-2.6.22-rc5-mm1.orig/drivers/acpi/bus.c	2007-06-20 14:09:07.000000000 -0400
-> > +++ linux-2.6.22-rc5-mm1/drivers/acpi/bus.c	2007-06-20 20:32:00.000000000 -0400
-> > @@ -757,7 +757,9 @@ static int __init acpi_init(void)
-> >  	result = acpi_bus_init();
-> >  
-> >  	if (!result) {
-> > +#ifdef CONFIG_X86
-> >  		pci_mmcfg_late_init();
-> > +#endif
-> >  #ifdef CONFIG_PM_LEGACY
-> >  		if (!PM_IS_ACTIVE())
-> >  			pm_active = 1;
-> 
-> 
-> ---
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+Yes, I think probe_queue_id is better.
+
+> Is the queue number kernel-global or per subsystem?
+
+The queue number is kernel-global. I think this is easy to be
+implemented. And the serialization demand between subsystem can be
+satisfied too.
+
+> > + * @probe: probing infromation include probing function and parameter
+>                       ^^^^^^^^^^^
+> typo: information
+
+Sorry, I will correct it in the next version.
+
+Best Regards,
+Huang Ying
