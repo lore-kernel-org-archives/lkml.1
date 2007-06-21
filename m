@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbXFUUJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759095AbXFUUK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758227AbXFUUJd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 16:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbXFUUJY
+	id S1759095AbXFUUK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 16:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbXFUUKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 16:09:24 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:38007 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbXFUUJX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 16:09:23 -0400
-To: Neil Brown <neilb@suse.de>
-Cc: David Chinner <dgc@sgi.com>, Avi Kivity <avi@argo.co.il>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
-	<18034.479.256870.600360@notabene.brown>
-	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
-	<18034.3676.477575.490448@notabene.brown>
-	<467273AB.9010202@argo.co.il>
-	<18035.3009.568832.785308@notabene.brown>
-	<20070618045759.GD85884050@sgi.com>
-	<18041.59628.370832.633244@notabene.brown>
-From: Nix <nix@esperi.org.uk>
-Emacs: more than just a Lisp interpreter, a text editor as well!
-Date: Thu, 21 Jun 2007 21:08:54 +0100
-In-Reply-To: <18041.59628.370832.633244@notabene.brown> (Neil Brown's message of "21 Jun 2007 03:57:09 +0100")
-Message-ID: <87d4zp1355.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.5-b27 (linux)
+	Thu, 21 Jun 2007 16:10:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35352 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754022AbXFUUKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 16:10:19 -0400
+Date: Thu, 21 Jun 2007 22:09:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070621200941.GB22303@elte.hu>
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621202917.a2bfbfc7.dada1@cosmosbay.com> <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org> <alpine.LFD.0.98.0706211230130.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=6 Fuz1=6 Fuz2=6
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706211230130.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21 Jun 2007, Neil Brown stated:
-> I have that - apparently naive - idea that drives use strong checksum,
-> and will never return bad data, only good data or an error.  If this
-> isn't right, then it would really help to understand what the cause of
-> other failures are before working out how to handle them....
 
-Look at the section `Disks and errors' in Val Henson's excellent report
-on last year's filesystems workshop: <http://lwn.net/Articles/190223/>.
-Most of the error modes given there lead to valid checksums and wrong
-data...
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-(while you're there, read the first part too :) )
+> If somebody can actually come up with a sequence where we have 
+> spinlock starvation, and it's not about an example of bad locking, and 
+> nobody really can come up with any other way to fix it, we may 
+> eventually have to add the notion of "fair spinlocks".
 
--- 
-`... in the sense that dragons logically follow evolution so they would
- be able to wield metal.' --- Kenneth Eng's colourless green ideas sleep
- furiously
+there was one bad case i can remember: the spinlock debugging code had a 
+trylock open-coded loop and on certain Opterons CPUs were starving each 
+other. This used to trigger with the ->tree_lock rwlock i think, on 
+heavy MM loads. The starvation got so bad that the NMI watchdog started 
+triggering ...
+
+interestingly, this only triggered for certain rwlocks. Thus we, after a 
+few failed attempts to pacify this open-coded loop, currently have that 
+code disabled in lib/spinlock_debug.c:
+
+ #if 0           /* This can cause lockups */
+ static void __write_lock_debug(rwlock_t *lock)
+ {
+         u64 i;
+         u64 loops = loops_per_jiffy * HZ;
+         int print_once = 1;
+
+         for (;;) {
+                 for (i = 0; i < loops; i++) {
+                         if (__raw_write_trylock(&lock->raw_lock))
+                                 return;
+                         __delay(1);
+                 }
+
+the weird thing is that we still have the _very same_ construct in 
+__spin_lock_debug():
+
+                 for (i = 0; i < loops; i++) {
+                         if (__raw_spin_trylock(&lock->raw_lock))
+                                 return;
+                         __delay(1);
+                 }
+
+if there are any problems with this then people are not complaining loud 
+enough :-)
+
+note that because this is a trylock based loop, the acquire+release 
+sequence problem should not apply to this problem.
+
+	Ingo
