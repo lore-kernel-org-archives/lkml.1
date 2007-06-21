@@ -1,307 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbXFULEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXFULI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbXFULEs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 07:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbXFULEl
+	id S1756146AbXFULI5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 07:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXFULIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 07:04:41 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:62313 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753876AbXFULEk (ORCPT
+	Thu, 21 Jun 2007 07:08:49 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:59015 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753811AbXFULIs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 07:04:40 -0400
-Message-ID: <467A5B1F.5080204@linux.vnet.ibm.com>
-Date: Thu, 21 Jun 2007 16:33:59 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Thu, 21 Jun 2007 07:08:48 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: JIT emulator needs
+To: Albert Cahalan <acahalan@gmail.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Thu, 21 Jun 2007 13:08:36 +0200
+References: <8tGiE-2Hv-1@gated-at.bofh.it> <8xNvm-2Tw-29@gated-at.bofh.it> <8xYTM-3So-13@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-mm <linux-mm@kvack.org>, Balbir Singh <balbir@in.ibm.com>,
-       Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
-       Kirill Korotaev <dev@sw.ru>, devel@openvz.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
-       Aubrey Li <aubreylee@gmail.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [RFC] mm-controller
-References: <1182418364.21117.134.camel@twins>
-In-Reply-To: <1182418364.21117.134.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1I1KWi-0000nV-8s@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX18IURlR7KxJwthUZHhxB2tl3Avlh4bHK3+g41g
+ 22pfLhA85MYF5dqXfLCb8y3OCfpTp47FFFV30fFsYqqDKqrRFp
+ xkM6VaAYIL4QF2y8WxWVA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Having read the RSS and Pagecache controllers some things bothered me.
-> 
->  - the duplication of much of the reclaim data (not code)
->    and the size increase as a result thereof.
-> 
+Albert Cahalan <acahalan@gmail.com> wrote:
+> On 6/19/07, William Lee Irwin III <wli@holomorphy.com> wrote:
+>> On Fri, Jun 08, 2007 at 02:35:22AM -0400, Albert Cahalan wrote:
 
-Are you referring to the duplication due to the per container LRU list?
+>>> Right now, Linux isn't all that friendly to JIT emulators.
+>>> Here are the problems and suggestions to improve the situation.
+>>> There is an SE Linux execmem restriction that enforces W^X.
+>>> Assuming you don't wish to just disable SE Linux, there are
+>>> two ugly ways around the problem. You can mmap a file twice,
+>>> or you can abuse SysV shared memory. The mmap method requires
+>>> that you know of a filesystem mounted rw,exec where you can
+>>> write a very large temporary file. This arbitrary filesystem,
+>>> rather than swap space, will be the backing store. The SysV
+>>> shared memory method requires an undocumented flag and is
+>>> subject to some annoying size limits. Both methods create
+>>> objects that will fail to be deleted if the program dies
+>>> before marking the objects for deletion.
+>>
+>> If the policy forbidding self-modifying code lacks a method of
+>> exempting programs such as JIT interpreters (which I doubt) then
+>> it's a problem. I'm with Alan on this one.
+> 
+> It does and it doesn't. There is not a reasonable way for a
+> user to mark an app as needing full self-modifying ability.
+> It's not like the executable stack, which can be set via the
+> ELF note markings on the executable. (ELF note markings are
+> ideal because they can not be used via a ret-to-libc attack)
+> 
+> With admin privs, one can change SE Linux settings. Mark the
+> executable, disable the protection system-wide, generate a
+> completely new SE Linux policy, or just turn SE Linux off.
 
->  - the clear distinction between mapped (RSS) and unmapped (pagecache)
->    limits. Linux doesn't impose individual limits on these, so I don't
->    see why containers should.
-> 
+According to the documents I found about SELinux, you can also
+ - create a this-app-needs-selfmodification type
+ - allow users to change the context type of their files to this type
+ - configure a domain to allow self-modification
+ - configure the domain transition
 
-Linux doesn't impose induvidual limits, but we do have vm_swappiness and
-vm_dirty_ratio to get some form of control over what pages we evict.
-The advantage of splitting RSS and unmapped page cache is that
-
-1. Users get more control over their containers
-2. It's easier to implement containers in phases
-
-We don't add any overhead by splitting out the control this way
-
->  - lack of soft limits (but I understand that that is WIP :-)
-> 
-
-Yes, that is correct.
-
->  - while I appreciate the statistical nature of one container
->    per page, I'm bit sceptical because there is no forced migration
->    cycle.
-> 
-
-I have patches for per container page_referenced() feature and we
-mark_page_accessed() is already container aware
-
-Please see http://lkml.org/lkml/2007/4/26/482
-
-There is no forced migration, but when a container hits its limit.
-
-http://lwn.net/Articles/237851/ talks about our current TODOs.
-
-> 
-> 
-> So, while pondering the problem, I wrote down some ideas....
-> 
-> While I appreciate that people do not like to start over again, I think
-> it would be fruit-full to at least discuss the various design decisions.
-> 
-
-First, thank you for your interest and your proposal. My opinion on
-the new design is that, we should not move to it, _unless the current
-design_ is completely non-fixable. 
-
-Don Knuth says he often re-learnt that
-("Premature optimization is the root of all evil -- C.A.R Hoare").
-Could you please try our patches
-
-
-> 
-> (Will be travelling shorty, so replies might take longer than usual)
-> 
-> 
-
-Me too...
-
-> Mapped pages:
-> ~~~~~~~~~~~~
-> 
-> Basic premises:
->   - accounting per address_space/anon_vma
-> 
-
-In the future, we also want to account for slab usage and page tables, etc.
-
-> Because, if the data is shared between containers isolation is broken anyway
-> and we might as well charge them equally [1].
-> 
-> Move the full reclaim structures from struct zone to these structures.
-> 
-> 
-> 	struct reclaim;
-> 
-> 	struct reclaim_zone {
-> 		spinlock_t		lru_lock;
-> 
-> 		struct list_head 	active;
-> 		struct list_head 	inactive;
-> 
-> 		unsigned long		nr_active;
-> 		unsigned long		nr_inactive;
-> 
-> 		struct reclaim		*reclaim;
-> 	};
-> 
-> 	struct reclaim {
-> 		struct reclaim_zone	zone_reclaim[MAX_NR_ZONES];
-> 
-> 		spinlock_t		containers_lock;
-> 		struct list_head	containers;
-> 		unsigned long		nr_containers;
-> 	};
-> 
-> 
-> 	struct address_space {
-> 		...
-> 		struct reclaim reclaim;
-> 	};
-> 
-
-Each address space has a struct reclaim? which inturn has a per zone reclaim
-LRU list?
-
-> 	struct anon_vma {
-> 		...
-> 		struct reclaim reclaim;
-> 	};
-> 
-
-Same comment as above
-
-> 
-> Then, on instantiation of either address_space or anon_vma we string together
-> these reclaim domains with a reclaim scheduler.
-> 
-> 
-> 	struct sched_item;
-> 
-> 	struct reclaim_item {
-> 		struct sched_item	sched_item;
-> 		struct reclaim_zone	*reclaim_zone;
-> 	};
-> 
-> 
-> 	struct container {
-> 		...
-> 		struct sched_queue	reclaim_queue;
-> 	};
-> 
-> 
-> 	sched_enqueue(&container->reclaim_queue, &reclaim_item.sched_item);
-> 
-> 
-> Then, shrink_zone() would use the appropriate containers' reclaim_queue
-> to find an reclaim_item to run isolate_pages on.
-> 
-> 
-> 	struct sched_item *si;
-> 	struct reclaim_item *ri;
-> 	struct reclaim_zone *rzone;
-> 	LIST_HEAD(pages);
-> 
-> 	si = sched_current(&container->reclaim_queue);
-> 	ri = container_of(si, struct reclaim_item, sched_item); 
-> 	rzone = ri->reclaim_zone;
-> 	nr_scanned = isolate_pages(rzone, &pages);
-> 
-> 	weight = (rzone->nr_active + rzone->nr_inactive) /
-> 			(nr_scanned * rzone->reclaim->nr_containers);
-> 
-> 	sched_account(&container->reclaim_queue,
-> 			 &rzone->sched_item, weight);
-> 
-> 
-> We use a scheduler to interleave the various lists instead of a sequence of
-> lists to create the appearance of a single longer list. That is, we want each
-> tail to be of equal age.
-> 
->  [ it would probably make sense to drive the shrinking of the active list
->    from the use of the inactive list. This has the advantage of 'hiding' 
->    the active list.
-> 
->    Much like proposed here: http://lkml.org/lkml/2005/12/7/57
->    and here: http://programming.kicks-ass.net/kernel-patches/page-replace/2.6.21-pr0/useonce-new-shrinker.patch
-> ]
-> 
-
-I worry about the scheduler approach. In a system with 100 containers, with 50 of them over their limit
-and many sharing VMA's, how do we string together the container LRU list? What do we do on global
-memory pressure?
-
-> Unmapped pages:
-> ~~~~~~~~~~~~~~
-> 
-> 
-> Since unmapped pages lack a 'release' (or dis-associate) event, the fairest 
-> thing is to account each container a fraction relative to its use of these
-> unmapped pages.
-> 
-
-Currently, we use the "page is reclaimed" event to mark the release event.
-
-> Use would constitute of the following events:
->   - pagecache insertion
->   - pagecache lookup
-> 
-> 
-> Each containers proportion will be calculated using the floating proportions
-> introduced in the per BDI dirty limit patches.
-> 
-> 	struct prop_global	pagecache_proportion;
-> 	struct reclaim		pagecache_reclaim;
-> 
-> 	enum reclaim_item_flags {
-> 		ri_pagecache,
-> 	};
-> 
-> 	struct reclaim_item {
-> 		...
-> 		unsigned long flags;
-> 	};
-> 
-> 	struct container {
-> 		...
-> 		struct prop_local_single pagecache_usage;
-> 	};
-> 
-> 
-> and add it to the vm scheduler.
-> 
-> 
-> 	if (ri->flags & ri_pagecache) {
-> 		unsigned long num, denom;
-> 		unsigned long long w;
-> 		
-> 		prop_fraction(&pagecache_proportion,
-> 			      &container->pagecache_usage,
-> 			      &num, &denom);
-> 
-> 		w = (rzone->nr_active + rzone->nr_inactive) * denom;
-> 		do_div(w, num);
-> 		
-> 		weight = (unsigned long)w * nr_scanned;
-> 	} else
-> 		....
-> 
-> 
-> Considerations:
-> ~~~~~~~~~~~~~~
-> 
-> 
-> Advantages:
->  - each page is on a single list
->  - no distinction between container vs global reclaim
->  - no increase of sizeof(struct page)
->  - pages are but on a single list
->  - breaks up lru_lock (might get a scheduler lock in return)
-> 
-> Disadvantages:
->  - major overhaul of the reclaim code
->  - naive container usage calculation will be O(nr vmas)
->    however a smarter scheme would still be O(nr containers)
-> 
-> 
-> Notes:
-> ~~~~~
-> 
-> [1] if needed one could refine this using floating proportions
->     charging each container a fraction relative to its usage
-> 
-> 
-> 
-
-
+Brave words from someone who did not yet successfully find the magic in
+order to install the refpolicy on debilian (after finding their refpolicy-foo
+to be incomplete and their refpolicy-src to not compile).
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Why do women have smaller feet than men?
+It's one of those "evolutionary things" that allows them to stand
+closer to the kitchen sink.
+Friﬂ, Spammer: Jy@jRwxq.7eggert.dyndns.org d-afnhbe@p9J.7eggert.dyndns.org
