@@ -1,130 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbXFUF1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbXFUFbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbXFUF1U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 01:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbXFUF1I
+	id S1755431AbXFUFbe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 01:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbXFUFb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 01:27:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55237 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbXFUF1H (ORCPT
+	Thu, 21 Jun 2007 01:31:27 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:42067
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbXFUFb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 01:27:07 -0400
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ian McDonald <ian.mcdonald@jandi.co.nz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       William Cohen <wcohen@redhat.com>,
-       "S. P. Prasanna" <prasanna@in.ibm.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <alpine.LFD.0.98.0706201649060.3593@woody.linux-foundation.org>
-References: <467543FA.60905@googlemail.com>
-	 <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com>
-	 <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org>
-	 <1182381667.2701.7.camel@laptopd505.fenrus.org>
-	 <alpine.LFD.0.98.0706201649060.3593@woody.linux-foundation.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 20 Jun 2007 22:23:21 -0700
-Message-Id: <1182403401.2863.10.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 21 Jun 2007 01:31:26 -0400
+Date: Wed, 20 Jun 2007 22:30:35 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <20070615012623.GA25189@elte.hu> <20070615101007.0cbfd078@the-village.bc.nu>
+ <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de>
+ <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk>
+ <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+ <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+ <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+ <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca>
+ <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca>
+ <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
+ <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-20 at 16:50 -0700, Linus Torvalds wrote:
-> 
-> On Wed, 20 Jun 2007, Arjan van de Ven wrote:
-> > 
-> > the real fix would be something like this instead:
-> 
-> If people can test this, and confirm it works, please send a patch that 
-> not only does this ad undoes the Kconfig language.  It looks like the 
-> right thing to do, but I won't touch it without somebody who actually 
-> tested these combinarions sending in a patch.
+On Thu, 21 Jun 2007, Alexandre Oliva wrote:
 
-Hi,
+> On Jun 20, 2007, david@lang.hm wrote:
+>
+>> On Wed, 20 Jun 2007, Alexandre Oliva wrote:
+>>> Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+>>>
+>>> On Jun 20, 2007, Andrew McKay <amckay@iders.ca> wrote:
+>>>
+>>>> However, I don't see how this would ever require a company like Tivo
+>>>> or Mastercard to have their networks play nice with a unit that has
+>>>> been modified by the end user, potentially opening up some serious
+>>>> security holes.
+>>>
+>>> Which is why the GPLv3 doesn't make the requirement that you stated.
+>
+>> so if the BIOS checked the checksum of the boot image and if it found
+>> it wasn't correct would disable the video input hardware but let you
+>> boot the system otherwise it would be acceptable to you and the GPLv3?
+>
+> I don't think so, but IANAL.  What do you think?  Here's what I
+> think to be the relevant passages.
+>
+>  [...] The information must suffice to ensure that the continued
+>  functioning of the modified object code is in no case prevented or
+>  interfered with solely because modification has been made.
+>
+>  [...]
+>
+>  The requirement to provide Installation Information does not include
+>  a requirement to continue to provide support service, warranty, or
+>  updates for a work that has been modified or installed by the
+>  recipient, or for the User Product in which it has been modified or
+>  installed.  Network access may be denied when the modification
+>  itself materially and adversely affects the operation of the network
+>  or violates the rules and protocols for communication across the
+>  network.
 
-I have tested this on x86_64, and without the config language, the
-original oopses, while with the patch below it works fine (as expected).
-I've not been able to test the i386 one (no 32 bit testboxes since 2
-years) but the change is even simpler there, just an ifdef around the
-entire kernel text marking.
+Ok, so if refusing to run software that's tampered with isn't acceptable, 
+and disabling the hardware that would be needed to talk on the network 
+isn't acceptable. how exactly can they prevent a system that's been 
+tampered with from accessing their network? (something even you say they 
+have a right to do)
 
+asking a device that's running software that you haven't verified to give 
+you a checksum of itself isn't going to work becouse the software can just 
+lie to you.
 
+you claim they have this right, but then claim to prohibit every possible 
+method of them excercising that right.
 
-Do not mark the kernel text read only if KPROBES is in the kernel;
-kprobes needs to hot-patch the kernel text to insert it's
-instrumentation. In this case, only mark the .rodata segment as read
-only.
+pick one side or the other, you don't get both.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-
---- linux-2.6.22-rc5/arch/i386/Kconfig.debug.org	2007-06-20 22:20:30.000000000 -0700
-+++ linux-2.6.22-rc5/arch/i386/Kconfig.debug	2007-06-20 22:20:55.000000000 -0700
-@@ -49,7 +49,6 @@ config DEBUG_PAGEALLOC
- config DEBUG_RODATA
- 	bool "Write protect kernel read-only data structures"
- 	depends on DEBUG_KERNEL
--	depends on !KPROBES # temporary for 2.6.22
- 	help
- 	  Mark the kernel read-only data as write-protected in the pagetables,
- 	  in order to catch accidental (and incorrect) writes to such const
---- linux-2.6.22-rc5/arch/x86_64/Kconfig.debug.org	2007-06-20 22:20:28.000000000 -0700
-+++ linux-2.6.22-rc5/arch/x86_64/Kconfig.debug	2007-06-20 22:20:44.000000000 -0700
-@@ -9,7 +9,6 @@ source "lib/Kconfig.debug"
- config DEBUG_RODATA
-        bool "Write protect kernel read-only data structures"
-        depends on DEBUG_KERNEL
--       depends on !KPROBES # temporary for 2.6.22
-        help
- 	 Mark the kernel read-only data as write-protected in the pagetables,
- 	 in order to catch accidental (and incorrect) writes to such const data.
---- linux-2.6.22-rc5/arch/i386/mm/init.c.org	2007-06-20 22:18:40.000000000 -0700
-+++ linux-2.6.22-rc5/arch/i386/mm/init.c	2007-06-20 22:19:45.000000000 -0700
-@@ -799,6 +799,7 @@ void mark_rodata_ro(void)
- 	unsigned long start = PFN_ALIGN(_text);
- 	unsigned long size = PFN_ALIGN(_etext) - start;
- 
-+#ifndef CONFIG_KPROBES
- #ifdef CONFIG_HOTPLUG_CPU
- 	/* It must still be possible to apply SMP alternatives. */
- 	if (num_possible_cpus() <= 1)
-@@ -808,7 +809,7 @@ void mark_rodata_ro(void)
- 		                 size >> PAGE_SHIFT, PAGE_KERNEL_RX);
- 		printk("Write protecting the kernel text: %luk\n", size >> 10);
- 	}
--
-+#endif
- 	start += size;
- 	size = (unsigned long)__end_rodata - start;
- 	change_page_attr(virt_to_page(start),
---- linux-2.6.22-rc5/arch/x86_64/mm/init.c.org	2007-06-20 21:44:15.000000000 -0700
-+++ linux-2.6.22-rc5/arch/x86_64/mm/init.c	2007-06-20 22:17:45.000000000 -0700
-@@ -605,6 +605,11 @@ void mark_rodata_ro(void)
- 	if (num_possible_cpus() > 1)
- 		start = (unsigned long)_etext;
- #endif
-+
-+#ifdef CONFIG_KPROBES
-+	start = (unsigned long)__start_rodata;
-+#endif
-+	
- 	end = (unsigned long)__end_rodata;
- 	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
- 	end &= PAGE_MASK;
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+David Lang
