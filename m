@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758992AbXFUTjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbXFUTlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758992AbXFUTjs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbXFUTjj
+	id S1758557AbXFUTlQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbXFUTlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:39:39 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:43555 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754477AbXFUTji (ORCPT
+	Thu, 21 Jun 2007 15:41:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:60524 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754533AbXFUTk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:39:38 -0400
-Date: Thu, 21 Jun 2007 15:39:37 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Mattia Dongili <malattia@linux.it>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: can't suspend on vaio sz (rc4 and rc5 are ok) [was Re:
- 2.6.22-rc4-mm2]
-In-Reply-To: <200706210003.30536.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0706211533420.2933-100000@iolanthe.rowland.org>
+	Thu, 21 Jun 2007 15:40:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KhQoNiTGVgPvzsCveHzaG4PgQWI9WXxJqesd1ZPJdPq/xL2O4fFhFw0EjYk5aCKUMtAXJBiJbja2ApKVGLsysd8OLDEcqsFuzFZUI9fFWlHMmsohxNsCOg8RDmF495ux8K5RIPT/Uq1iux7tlXywaVgrkktTVRvmqZl97bk8RFc=
+Message-ID: <86802c440706211240s27d58679k43cee4488ce8a70e@mail.gmail.com>
+Date: Thu, 21 Jun 2007 12:40:58 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jesse Barnes" <jesse.barnes@intel.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Justin Piszcz" <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <200706071530.51552.jesse.barnes@intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200706071530.51552.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Rafael J. Wysocki wrote:
+On 6/7/07, Jesse Barnes <jesse.barnes@intel.com> wrote:
+> On some machines, buggy BIOSes don't properly setup WB MTRRs to
+> cover all available RAM, meaning the last few megs (or even gigs)
+> of memory will be marked uncached.  Since Linux tends to allocate
+> from high memory addresses first, this causes the machine to be
+> unusably slow as soon as the kernel starts really using memory
+> (i.e. right around init time).
+>
+> This patch works around the problem by scanning the MTRRs at
+> boot and figuring out whether the current end_pfn value (setup
+> by early e820 code) goes beyond the highest WB MTRR range, and
+> if so, trimming it to match.  A fairly obnoxious KERN_WARNING
+> is printed too, letting the user know that not all of their
+> memory is available due to a likely BIOS bug.
+>
+> Something similar could be done on i386 if needed, but the boot
+> ordering would be slightly different, since the MTRR code on i386
+> depends on the boot_cpu_data structure being setup.
+>
+> This patch incorporates the feedback from Eric and Andi:
+>   - use MAX_VAR_RANGES instead of NUM_VAR_RANGES
+>   - move array declaration to header file as an extern
+>   - add command line disable option "disable_mtrr_trim"
+>   - don't run the trim code if the MTRR default type is cacheable
+>   - don't run the trim code on non-Intel machines
+>
+> Justin, feel free to test again if you have time and add your
+> "Tested-by" signoff.
+>
+> Andi, as for large pages, do you think this is ok as is, or should
+> I trim a larger granularity?  If so, what granularity?
+>
+> Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
+>
+> Thanks,
+> Jesse
+>
 
-> > I'll see if I can reproduce your problem here.
-> 
-> Yes, I can.  It's only necessary to load usb-storage (without any devices
-> actually using it) and it fails device_suspend() immediately (I don't think
-> it's freezer-related).
-> 
-> I've got the following trace from it:
-> 
-> usb_endpoint usbdev3.2_ep81: PM: suspend 0->1, parent 3-1:1.0 already 2
-> Suspending device 3-1:1.0
-> Suspending device usbdev3.2_ep00
-> Suspending device 3-1
-> Suspending device eth1
-> Suspending device eth0
-> Suspending device usbdev3.1
-> Suspending device usbdev3.1_ep81
-> Suspending device 3-0:1.0
-> Suspending device usbdev3.1_ep00
-> Suspending device usb3
-> hub 3-0:1.0: hub_suspend
-> ohci_hcd 0000:00:02.1: needs reinit!
-> usb usb3: suspend fail, err -16
-> usb usb3: 'global' suspend -16
-> hub 3-0:1.0: hub_resume
-> hub 3-0:1.0: activate --> -108
-> suspend_device(): usb_suspend+0x0/0x30() returns -16
-> Could not suspend device usb3: error -16
-> WARNING: at /home/rafael/src/mm/linux-2.6.22-rc4-mm2/drivers/usb/core/urb.c:293 usb_submit_urb()
+NAK.
 
-Well, a large part of the problem is that
+for AMD Rev F Opteron later CPU, BIOS will not set WB in MTRR for 4G above mem.
 
-	usb-try-to-debug-bug-8561.patch
+This patch will get rid of those RAM.
 
-hasn't been reverted in 2.6.22-rc4-mm2.  Andrew, that patch is supposed 
-to be completely gone.  It isn't still present in your tree, is it?
-
-Alan Stern
-
+YH
