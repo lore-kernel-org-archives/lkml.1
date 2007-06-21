@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbXFUHeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbXFUHiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755065AbXFUHeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 03:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXFUHd5
+	id S1755566AbXFUHiW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 03:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbXFUHiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 03:33:57 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34661
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbXFUHd4 (ORCPT
+	Thu, 21 Jun 2007 03:38:15 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:4077 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751103AbXFUHiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 03:33:56 -0400
-Date: Thu, 21 Jun 2007 00:33:12 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alexandre Oliva <aoliva@redhat.com>
-cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <ory7idpykk.fsf@oliva.athome.lsd.ic.unicamp.br>
-Message-ID: <Pine.LNX.4.64.0706210031280.31603@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
- <20070616181902.GB21478@ftp.linux.org.uk> <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
- <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
- <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
- <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
- <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca>
- <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca>
- <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
- <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
- <orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
- <ory7idpykk.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Thu, 21 Jun 2007 03:38:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CECs59rYB5Yn0vjAozCDhKPbnY3EUe7LPEFyCkoXP27wZgRABzy6MeFEWP3C5ClZV1699hzEivz2/sWV8pONGL+fIVXfaaY6IlWKslGBJ2IzUMm4uR9D6WjCkQtCdKmdfQ6nydYuciejye9F+5lA/psC7GN50ZJBoB0+OrVByVw=
+Message-ID: <787b0d920706210038t11f1e327hb5e295f7ce5a84a2@mail.gmail.com>
+Date: Thu, 21 Jun 2007 03:38:13 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: JIT emulator needs
+Cc: "William Lee Irwin III" <wli@holomorphy.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4679F14F.9050008@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+	 <20070619150824.GH11781@holomorphy.com>
+	 <787b0d920706192016l660dd5b0mbf300581db81ac62@mail.gmail.com>
+	 <20070620160116.GI6909@holomorphy.com> <467957CB.8020704@zytor.com>
+	 <787b0d920706201125g2368a4e1i2d115b0b2d5399e5@mail.gmail.com>
+	 <46797747.9020904@zytor.com>
+	 <787b0d920706202021t567b2fefu869a03ef76f245da@mail.gmail.com>
+	 <4679F14F.9050008@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Alexandre Oliva wrote:
+On 6/20/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Albert Cahalan wrote:
 
-> On Jun 21, 2007, david@lang.hm wrote:
+> > Look, let's back up a bit here. At a high level, what exactly do
+> > you imagine that this behavior was intended for? I suggest you
+> > list some examples of the attacks that are blocked.
+> >
+> > Can you come up with a reasonable argument that the current behavior
+> > is the least painful restriction required to block those attacks?
+> > Does the current behavior block any attack that the proposed behavior
+> > would not? (list the attacks please)
 >
->> no, one of the rules for the network is that the software must be
->> certified,
->
-> In this case you might have grounds to enforce this restriction of the
-> network on the network controller itself, I suppose.
+> See above.
 
-how would the network controller know if the software has been modified?
-
-> Not that you should disable the network controller entirely (this
-> would render the computer useless for many other purpose unrelated
-> with blocking connections to your network).
->
-> You could instead arrange for the network controller to send some
-> signal that enables the network to recognize that the device is
-> running certified software.
-
-what sort of signal can the network controller send that couldn't be 
-forged by the OS?
-
-how would you do this where the device is a receiver on the netwoek (such 
-as a satellite receiver)
-
-David Lang
+Nope. I asked you to justify the existing behavior. Apparently you
+are unable to do so. This should be a hint.
