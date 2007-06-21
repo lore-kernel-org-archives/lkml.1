@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbXFUShu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbXFUSjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758249AbXFUShu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbXFUShm
+	id S1756264AbXFUSjQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXFUSjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:37:42 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:1379 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752433AbXFUShl (ORCPT
+	Thu, 21 Jun 2007 14:39:03 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39903 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753477AbXFUSjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:37:41 -0400
-Date: Thu, 21 Jun 2007 20:38:43 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Dmitry Torokhov <dtor@insightbb.com>, LKML <linux-kernel@vger.kernel.org>,
-       Vojtech Pavlik <vojtech@ucw.cz>
-Subject: Re: Writing a driver for a legacy serial device
-Message-ID: <20070621203843.044fd19a@hyperion.delvare>
-In-Reply-To: <1182437233.2782.36.camel@shinybook.infradead.org>
-References: <20070619190502.05d4e0c8@hyperion.delvare>
-	<d120d5000706191159w29ebd0dajbd6cb9ac78d4faa2@mail.gmail.com>
-	<20070620105648.6d18ad66@hyperion.delvare>
-	<200706202311.33326.dtor@insightbb.com>
-	<20070621113358.1d65678d@hyperion.delvare>
-	<1182437233.2782.36.camel@shinybook.infradead.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Thu, 21 Jun 2007 14:39:00 -0400
+Date: Thu, 21 Jun 2007 19:42:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Alexandre Oliva <aoliva@redhat.com>, Tomas Neme <lacrymology@gmail.com>,
+       Andrew McKay <amckay@iders.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070621194233.5e207a12@the-village.bc.nu>
+In-Reply-To: <20070621163404.GB10008@csclub.uwaterloo.ca>
+References: <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4679557C.5080907@iders.ca>
+	<20070620175627.319a6c55@the-village.bc.nu>
+	<46797C52.4020907@iders.ca>
+	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
+	<orhcp2rl5m.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070621163404.GB10008@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+> So much for "Land of the free". :(
 
-On Thu, 21 Jun 2007 22:47:12 +0800, David Woodhouse wrote:
-> On Thu, 2007-06-21 at 11:33 +0200, Jean Delvare wrote:
-> > OK. This leads me to a question: is it OK for me to add support for my
-> > non-input device to inputattach, or is a separate, dedicated helper
-> > tool preferred? Both ways are fine with me, I don't know what the
-> > input subsystem maintainers expect.
-> 
-> You might do better to implement it as a line discipline instead. 
-> Or just do it in userspace. What exactly are you trying to do?
-
-I am writing a driver for a TAOS evaluation module. This device is a
-limited SMBus master, connecting to the serial port. The evaluation
-chip is connected to the SMBus. In my case this is a TSL2550 light
-sensor, but virtually all compatible TAOS evaluation modules could be
-supported.
-
-I2C bus drivers have to be implemented in the kernel, so user-space
-isn't an option for me.
-
-I just posted a first (working) version of my driver, if you want to
-take a look:
-http://lists.lm-sensors.org/pipermail/i2c/2007-June/001508.html
-
-Thanks,
--- 
-Jean Delvare
+That was always just a typo. Its the Land of the Fee
