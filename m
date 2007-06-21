@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758493AbXFURX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbXFURYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758493AbXFURX6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbXFURXs
+	id S1755357AbXFURYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758120AbXFURXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:23:48 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:33126 "EHLO e1.ny.us.ibm.com"
+	Thu, 21 Jun 2007 13:23:55 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33178 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753782AbXFURXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:23:46 -0400
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
-	through other means
-From: Ram Pai <linuxram@us.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-In-Reply-To: <467AA76F.9090107@zytor.com>
-References: <467994BD.6000403@zytor.com>
-	 <20070620210343.GQ21478@ftp.linux.org.uk>  <46799A31.10301@zytor.com>
-	 <1182442837.3342.13.camel@ram.us.ibm.com>  <467AA76F.9090107@zytor.com>
-Content-Type: text/plain
-Date: Thu, 21 Jun 2007 10:20:55 -0700
-Message-Id: <1182446456.3342.18.camel@ram.us.ibm.com>
+	id S1756702AbXFURXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 13:23:54 -0400
+Date: Thu, 21 Jun 2007 23:02:32 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, dino@in.ibm.com,
+       akpm@linux-foundation.org
+Subject: Re: cpuset attach_task to touch per-cpu kernel threads?
+Message-ID: <20070621173232.GP10980@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070621014935.GF10980@linux.vnet.ibm.com> <20070621121635.GB19811@elte.hu> <20070621100712.52a4784a.pj@sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070621100712.52a4784a.pj@sgi.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 09:29 -0700, H. Peter Anvin wrote:
-> Ram Pai wrote:
+On Thu, Jun 21, 2007 at 10:07:12AM -0700, Paul Jackson wrote:
+> Ingo, responding to Srivatsa:
+> > > Or maybe allow movement if it 
+> > > doesn't result in changing kernel-threads's cpu affinity.
 > > 
-> > Peter, I am not working on it currently. But i am interested in getting
-> > it done. I have the seed set of patches which had Al Viro's ideas
-> > incorporated. Infact those patches were sent on lkml 2 months back.
-> > Shall we start with those patches?
-> > 
+> > yeah, i'd agree ..
 > 
-> Are these the "unprivileged mount syscall" patches?
+> Good point.  I'd agree too.
 
-no. but those patches were sent in the same thread. Karel had provided
-suggestions which I am yet to incorporate.
+Yeah .."allow movement if it doesn't result in changing kernel-threads's cpu 
+affinity" sounds good, except it is hard to implement in cpuset's
+context I think. For ex: we now have to take additional steps when
+changing 'cpus_allowed' of a cpuset such that it doesn't violate any cpu
+affinity of kernel threads bound to the cpuset. That itself makes the
+implementation complex I think.
 
-Give me today. I will send out the patches incorporating the comment
-later in the evening.
-
-ok?
-RP
-
-> 
-> Otherwise I don't see any patches in my personal LKML cache (apparently
-> my subscription to fsdevel was dropped at some point, so I don't have a
-> stash of it.)
+How about a simpler patch which bans movement of kernel threads from its
+home cpuset (i.e top cpuset)?
 
 
-> 
-> 	-hpa
+Index: current/kernel/cpuset.c
+===================================================================
+--- current.orig/kernel/cpuset.c	2007-06-21 19:42:18.000000000 +0530
++++ current/kernel/cpuset.c	2007-06-21 22:24:38.000000000 +0530
+@@ -881,6 +881,10 @@
+ 	if (cpus_empty(cs->cpus_allowed) || nodes_empty(cs->mems_allowed))
+ 		return -ENOSPC;
+ 
++	/* Don't allow kernel threads to be moved */
++	if (!tsk->mm)
++		return -EINVAL;
++
+ 	return security_task_setscheduler(tsk, 0, NULL);
+ }
+ 
 
+This probably catches exiting user-space tasks also (whose ->mm pointer is 
+null).  Hmm ..there should be a better check for kernel threads.
+
+
+-- 
+Regards,
+vatsa
