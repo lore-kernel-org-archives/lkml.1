@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbXFUJUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbXFUJY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbXFUJUm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 05:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbXFUJUd
+	id S1755626AbXFUJY4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 05:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbXFUJYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 05:20:33 -0400
-Received: from ns.firmix.at ([62.141.48.66]:35379 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbXFUJUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 05:20:32 -0400
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Tomas Neme <lacrymology@gmail.com>
-Cc: Alexandre Oliva <aoliva@redhat.com>, Andrew McKay <amckay@iders.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	 <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	 <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca>
-	 <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca>
-	 <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Thu, 21 Jun 2007 11:20:08 +0200
-Message-Id: <1182417608.30700.23.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Thu, 21 Jun 2007 05:24:44 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:47784 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752870AbXFUJYn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 05:24:43 -0400
+Message-ID: <467A43BC.7030309@bx.jp.nec.com>
+Date: Thu, 21 Jun 2007 18:24:12 +0900
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm take5 4/7] using symlink for the net_device
+References: <466FC455.5060001@bx.jp.nec.com> <466FC6ED.9060208@bx.jp.nec.com>	 <a781481a0706130949j7b35e33ds9cda5d8a551c9d7d@mail.gmail.com>	 <a781481a0706131203g405a4407y1212bb397f14e8eb@mail.gmail.com>	 <4677AA23.1080708@bx.jp.nec.com> <a781481a0706190740w14ae94f1r1ea8449524c5fb99@mail.gmail.com>
+In-Reply-To: <a781481a0706190740w14ae94f1r1ea8449524c5fb99@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -1.102 () AWL
-X-Firmix-Spam-Status: No, hits=-1.102 required=5
-X-Spam-Score: -1.102 () AWL
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-20 at 18:14 -0300, Tomas Neme wrote:
-[....]
-> Why, if you let user-compiled kernels to run in a TiVo, it might be
-> modified so the TiVo can be used to pirate-copy protected content,
+Hello Satyam,
 
-Or it might be modified to fix a bug - either a technical one or a legal
-one as described below.
+> In any case, however, the point to extend the critical section here
+> to encapsulate all the three parts still stands. We wouldn't want
+> ioctl(NETCON_REMOVE_TARGET) on the specified target to
+> return without removing the target that the user specified just
+> because that target's ethernet interface happens to be currently
+> undergoing a name change. The correct behaviour would be to
+> sleep on a mutex till the renaming has completed (which will
+> then relinquish the mutex) and then (after acquiring the mutex)
+> proceed to remove it, IMHO.
 
-> which is a serious security hole. TiVo would need to read, approve of,
+You're right. I misunderstood. All the three parts needs to encapsulate.
 
-"Pirate copying" is forbidden anyways in almost every jurisdiction
-AFAIK. Perhaps we should disallow cars on the streets since one could
-drive too fast with them.
+>> >> +static char *make_netdev_class_name(char *netdev_name)
+>> >> +{
+>> >> +       char *name;
+>> >> +
+>> >> +       name = kasprintf(GFP_KERNEL, "net:%s", netdev_name);
+>> >
+>> > Why the "net:" prefix in the filename?
+>>
+>> Because I drew upon dev_change_name() method in net/core/dev.c.
+>> The device_rename() in the above function makes use of same prefix
+>> related to netdev.
+> 
+> I think you're referring to make_class_name() here? That seems to
+> be somewhat bulkier than simply being a wrapper over kasprintf()
+> like the make_netdev_class_name() here. I'd definitely recommend
+> not obfuscating this simple functionality here.
 
-And it is not a security hole for the owner of the hardware (I consider
-secret keys somewhere else a much greater security threat) to the Linux
-community or a lot of other entities. Probably just music industry
-thinks like above.
+I understand. The wrapper method such as make_netdev_class_name() isn't
+appropriate in this case.
 
-And there are legislations were it is *legal* to make private copies
-(for sure as long as you don't pass them on and somewhere even giving
-away for nothing is legal). So I actually have a *right* (which also
-can't be killed by contracts) to copy that movie for my private use. And
-up to now it is actually legal in .at to do (more or less) everything to
-get this right (and that may include hacking the device).
-
-> and sign any modified kernels the users intend to use on their
-> hardware. If GPLv3 allows for this, it'd be doing exactly that
-
-	Bernd
+Thanks
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+Keiichi KII
+NEC Corporation OSS Platform Development Division
+E-mail: k-keiichi@bx.jp.nec.com
 
