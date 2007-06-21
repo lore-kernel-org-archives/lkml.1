@@ -1,104 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbXFUGkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbXFUGl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753096AbXFUGkQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 02:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXFUGj5
+	id S1757926AbXFUGl4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 02:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXFUGlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 02:39:57 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52086 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757358AbXFUGjy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 02:39:54 -0400
-Date: Thu, 21 Jun 2007 16:39:36 +1000
-From: David Chinner <dgc@sgi.com>
-To: Neil Brown <neilb@suse.de>
-Cc: David Chinner <dgc@sgi.com>, Avi Kivity <avi@argo.co.il>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-Message-ID: <20070621063936.GT85884050@sgi.com>
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <467273AB.9010202@argo.co.il> <18035.3009.568832.785308@notabene.brown> <20070618045759.GD85884050@sgi.com> <18041.59628.370832.633244@notabene.brown>
+	Thu, 21 Jun 2007 02:41:49 -0400
+Received: from mga01.intel.com ([192.55.52.88]:59199 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752274AbXFUGls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 02:41:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,446,1175497200"; 
+   d="scan'208";a="259404653"
+Date: Wed, 20 Jun 2007 23:37:31 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures	in	dma	map api calls
+Message-ID: <20070621063730.GC6771@linux-os.sc.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com> <20070620173038.GA25516@linux-os.sc.intel.com> <1182362703.21117.79.camel@twins> <46797CB1.8070008@linux.intel.com> <1182370132.21117.84.camel@twins> <20070620230337.GA6771@linux-os.sc.intel.com> <1182406212.21117.94.camel@twins> <467A1679.8090202@linux.intel.com> <1182407374.21117.106.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18041.59628.370832.633244@notabene.brown>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1182407374.21117.106.camel@twins>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 12:56:44PM +1000, Neil Brown wrote:
-> On Monday June 18, dgc@sgi.com wrote:
-> > On Sat, Jun 16, 2007 at 07:59:29AM +1000, Neil Brown wrote:
-> > > Combining these thoughts, it would make a lot of sense for the
-> > > filesystem to be able to say to the block device "That blocks looks
-> > > wrong - can you find me another copy to try?".  That is an example of
-> > > the sort of closer integration between filesystem and RAID that would
-> > > make sense.
-> > 
-> > I think that this would only be useful on devices that store
-> > discrete copies of the blocks on different devices i.e. mirrors. If
-> > it's an XOR based RAID, you don't have another copy you can
-> > retreive....
-> 
-> You could reconstruct the block in question from all the other blocks
-> (including parity) and see if that differs from the data block read
-> from disk...  For RAID6, there would be a number of different ways to
-> calculate alternate blocks.   Not convinced that it is actually
-> something we want to do, but it is a possibility.
+On Thu, Jun 21, 2007 at 08:29:34AM +0200, Peter Zijlstra wrote:
+> On Wed, 2007-06-20 at 23:11 -0700, Arjan van de Ven wrote:
+> > Peter Zijlstra wrote:
+> Also, the other iommu code you pointed me to, was happy to fail, it did
+> not attempt to use the emergency reserves.
 
-Agreed - it's not as straight forward as a mirror, and it kind of assumes
-that you have software RAID.
+Is the same behavior acceptable here?
 
-/me had his head stuck in hw raid land ;)
-
-> I have that - apparently naive - idea that drives use strong checksum,
-> and will never return bad data, only good data or an error.  If this
-> isn't right, then it would really help to understand what the cause of
-> other failures are before working out how to handle them....
-
-The drive is not the only source of errors, though.  You could
-have a path problem that is corrupting random bits between the drive
-and the filesystem. So the data on the disk might be fine, and
-reading it via a redundant path might be all that is needed.
-
-Yeah, so I can see how having a different retry semantic would be a
-good idea. i.e. if we do a READ_VERIFY I/O, the underlying device
-attempts to verify the data is good in as many ways as possible
-before returning the verified data or an error.
-
-I guess a filesystem read would become something like this:
-
-	verified = 0
-	error = read(block)
-	if (error) {
-read_verify:
-		error = read_verify(block)
-		if (error) {
-			OMG THE SKY IS FALLING
-			return error
-		}
-		verified = 1
-	}
-	/* check contents */
-	if (contents are bad) {
-		if (!verified)
-			goto read_verify
-		OMG THE SKY HAS FALLEN
-		return -EIO
-	}
-
-Is this the sort of erro handling and re-issuing of
-I/O that you had in mind?
-
-FWIW, I don't think this really removes the need for a filesystem to
-be able to keep multiple copies of stuff about. If the copy(s) on a
-device are gone, you've still got to have another copy somewhere
-else to get it back...
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+-Anil
