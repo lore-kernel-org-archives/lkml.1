@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbXFUSCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXFUSDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760233AbXFUSCe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758027AbXFUSC0
+	id S1760091AbXFUSDq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbXFUSDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:02:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54348 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755044AbXFUSCY (ORCPT
+	Thu, 21 Jun 2007 14:03:38 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:52221 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757192AbXFUSDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:02:24 -0400
-Date: Thu, 21 Jun 2007 11:01:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Fix signalfd interaction with thread-private signals
-In-Reply-To: <20070621082509.GA88@tv-sign.ru>
-Message-ID: <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org>
-References: <1182125303.3794.8.camel@entropy>
- <Pine.LNX.4.64.0706171715320.5316@alien.or.mcafeemobile.com>
- <1182127391.26853.207.camel@localhost.localdomain>
- <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
- <20070619091452.GA94@tv-sign.ru> <1182254988.26853.334.camel@localhost.localdomain>
- <20070619140646.GB27343@tv-sign.ru> <1182295473.26853.386.camel@localhost.localdomain>
- <20070620111415.GA91@tv-sign.ru> <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org>
- <20070621082509.GA88@tv-sign.ru>
+	Thu, 21 Jun 2007 14:03:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=lN87bVnhMkYkAH0e5Rfwc6WaVKVU6LWpLZWA+N3PSKxY3AJBFRVgPFjDOPugk874OmcDADEWyUydBLhzl26Nqa32kBH97fA9vHX/rZU7PXyzdkNPUF5Lf5Pu++PqrjNmSf7RS4bylvwczjG5zsAEgmeapl/Ta9ovBF/HMr2oywE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 19/19] ide: use PIO/MMIO operations directly where possible
+Date: Thu, 21 Jun 2007 20:19:17 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070112042621.28794.6937.sendpatchset@localhost.localdomain> <20070112042807.28794.8251.sendpatchset@localhost.localdomain> <467AB253.8010902@ru.mvista.com>
+In-Reply-To: <467AB253.8010902@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200706212019.18001.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Hi Sergei,
 
-On Thu, 21 Jun 2007, Oleg Nesterov wrote:
+On Thursday 21 June 2007, Sergei Shtylyov wrote:
+> Hello.
 > 
-> Yes, force_sig() unblocks and un-ignores the signal. However, unlike group-wide
-> signals, thread-specific signals do not convert themselves to SIGKILL on delivery.
-> The target thread should dequeue SIGSEGV and then it calls do_group_exit().
+> Bartlomiej Zolnierkiewicz wrote:
+> > [PATCH] ide: use PIO/MMIO operations directly where possible
+> 
+> > This results in smaller/faster/simpler code and allows future optimizations.
+> > Also remove no longer needed ide[_mm]_{inl,outl}() and ide_hwif_t.{INL,OUTL}.
+> 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+> > Index: a/drivers/ide/pci/hpt366.c
+> > ===================================================================
+> > --- a.orig/drivers/ide/pci/hpt366.c
+> > +++ a/drivers/ide/pci/hpt366.c
+> > @@ -836,7 +836,7 @@ static int hpt374_ide_dma_test_irq(ide_d
+> >  		return 0;
+> >  	}
+> >  
+> > -	dma_stat = hwif->INB(hwif->dma_status);
+> > +	dma_stat = inb(hwif->dma_status);
+> >  	/* return 1 if INTR asserted */
+> >  	if (dma_stat & 4)
+> >  		return 1;
+> 
+>     Hmm... this driver *still* has a lot more indirect I/O accessors -- I 
+> wonder why only this one had been converted then?
 
-No it couldn't.
+The reason for this is that my patch was done before some of your patches
+for HPT IDE driver and I never really got to doing follow-up patch.
 
-Why? Because the target thread is the one that *caused* the SIGSEGV in the 
-first place. It's not going to dequeue *anything*. It's either going to 
-take the SIGSEGV, or it's going to get another SIGSEGV and now it's no 
-longer masked/handled and it's going to die.
+IIRC piix.c and and tc86c100.c may also want an update.
 
-		Linus
+Thanks,
+Bart
