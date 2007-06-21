@@ -1,184 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbXFUN4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbXFUN5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756768AbXFUN4G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 09:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXFUNzz
+	id S1757314AbXFUN5g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 09:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbXFUN51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 09:55:55 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:55695 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751319AbXFUNzy (ORCPT
+	Thu, 21 Jun 2007 09:57:27 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35409 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751433AbXFUN50 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 09:55:54 -0400
-Date: Thu, 21 Jun 2007 09:55:51 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mbligh@google.com
-Subject: Re: [patch 1/9] Conditional Calls - Architecture Independent Code
-Message-ID: <20070621135551.GA21601@Krystal>
-References: <20070530140025.917261793@polymtl.ca> <20070530140227.070136408@polymtl.ca> <20070604190102.GY5500@stusta.de> <20070613155724.GA8703@Krystal> <20070613215104.GK3588@stusta.de> <20070614160241.GA21119@Krystal> <20070614210643.GW3588@stusta.de> <20070620215927.GA25495@Krystal> <20070621130037.GM12950@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 09:57:26 -0400
+Date: Thu, 21 Jun 2007 15:57:44 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: How to improve the quality of the kernel?
+Message-ID: <20070621135744.GO12950@stusta.de>
+References: <200706180141.41101.a1426z@gawab.com> <200706210626.20429.a1426z@gawab.com> <20070621130737.GN12950@stusta.de> <200706211641.28504.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070621130037.GM12950@stusta.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:24:48 up 23 days, 22:03,  3 users,  load average: 1.26, 0.84, 0.49
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200706211641.28504.a1426z@gawab.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@stusta.de) wrote:
-> On Wed, Jun 20, 2007 at 05:59:27PM -0400, Mathieu Desnoyers wrote:
-> > * Adrian Bunk (bunk@stusta.de) wrote:
-> > > On Thu, Jun 14, 2007 at 12:02:42PM -0400, Mathieu Desnoyers wrote:
-> > > >...
-> > > > Well, we must take into account where these markers are added and how
-> > > > often the marked code is run. Since I mark very highly used code paths
-> > > > (interrupt handlers, page faults, lockdep code) and also plan to mark
-> > > > other code paths like the VM subsystem, adding cycles to these code
-> > > > paths seems like a no-go solution for standard distribution kernels.
-> > > >...
-> > > > People can get really picky when they have to decide wether or not they
-> > > > compile-in a profiling or tracing infrastructure in a distribution
-> > > > kernel.  If the impact is detectable when they are not doing any tracing
-> > > > nor profiling, their reflex will be to compile it out so they can have
-> > > > the "maximum performance". This is why I am going through the trouble of
-> > > > making the markers impact as small as possible.
-> > > 
-> > > Now that we finally hear what this code is required for, can we discuss 
-> > > on this basis whether this is wanted and required?
-> > > 
-> > > Including the question which abuse possibilities such an infrastructure 
-> > > offers, and whether this is wanted in distribution kernels.
-> > 
-> > Hi Adrian,
+On Thu, Jun 21, 2007 at 04:41:28PM +0300, Al Boldi wrote:
+> Adrian Bunk wrote:
+> > On Thu, Jun 21, 2007 at 06:26:20AM +0300, Al Boldi wrote:
+> > > Adrian Bunk wrote:
+> > > > We are talking about _tracking_.
+> > > >
+> > > > I'm not sure whether it makes much sense, and it would cost an
+> > > > enormous amount of time, but tracking patches should be possible
+> > > > without any knowledge of the kernel.
+> > >
+> > > If that's really true, which I can't imagine, then the proper way
+> > > forward would probably involve a fully automated system.
+> >
+> > If you consider any kind of patch tracking valuable, you should either
+> > do it yourself or write the tool yourself. In both cases, the
+> > interesting parts would be how to integrate it into the workflow of
+> > kernel development without creating extra work for anyone and how to get
+> > the information into the got commits.
 > 
-> Hi Mathieu,
+> Integration is the easy part, really.  Just filter all the patches from the 
+> mailing list into a patch-bin, then sort, categorize, and prioritize them, 
+> responding with a validation status to all parties involved.
 > 
-> > The purpose of this infrastructure has never been a secret; it is a
-> > piece taken from the Linux Kernel Markers. I proposed the first
-> > implementation of markers in December 2006.
-> > 
-> > Please use the following link as a starting point to the thorough
-> > discussion that has already been held on this matter.
-> > 
-> > First, a huge discussion thread back in November 2006, where the need
-> > for a marker infrastructure has been recognized:
-> > http://lwn.net/Articles/200059/
-> > 
-> > A good summary of my recent previous post on kerneltrap:
-> > http://kerneltrap.org/node/8186
-> > 
-> > If you have new specific concerns to bring forward, I will be glad to
-> > discuss them with you.
+> And after that comes the Tracking part.
+
+Tracking shouldn't be much more than seeing what different threads are 
+about the same patch and then do more or less the same as what you 
+called "the easy part".
+
+> > "requires a real PRO" and "would probably involve" sound like cheap
+> > phrases for avoiding doing any work yourself.
 > 
-> sorry if I was a bit harsh, but at least for me it wasn't clear that the 
-> main (and perhaps only) reasonable use case for your conditional calls 
-> was to get markers enabled in distribution kernels.
+> I have learned from this list that premature involvement is 
+> counterproductive.
 > 
-> Please correct me, but my understanding is:
-> - conditional calls aim at getting markers enabled in distribution
->   kernels
-
-Hi Adrian,
-
-Putting markers in a distribution kernel would be of great benefit to
-many users, this is true. The issue is not whether distros use it or
-not, but whether we can allow users, poweruser to senior kernel
-developer, even if they compile their own kernel, to turn on a tracing
-infrastructure on-the-fly to study a problem in their system (problem
-coming either from user-space, kernel, hypervisor...).
-
-The key aspect here is to provide instrumentation of every privilege
-level.
-
-> - markers are a valuable debugging tool
-
-If ptrace() is also called a valuable debugging tool, then yes. Does it
-make it less suitable for distributions ? The main goal here is not to
-be used as a debugging tool by kernel developers, this is just a nice
-side-effect.  The main purpose of this tracer is to give an overall view
-of the system activity to help _userspace_ developers determine what is
-going wrong with the complex interactions between their multithreaded
-application, X server and network sockets running 8 CPUs and using a
-distributed FS...  the more interaction we have between (many) processes
-and the OS, the harder it becomes to study that with the traditional
-ptrace() approach. When looking for the cause of a slowdown, people
-often just does not know even _which_ process is guilty for the problem,
-or if they should blame the kernel.
-
-
-> - you don't need markers during normal operation
-
-False. Considering that application development is part of what I call
-"normal operation", these tools are needed not just as part of a
-particular kernel debug option.
-
-Moreover, we have some stories ready (see upcoming Martin Bligh's
-presentation/paper next week at OLS2007 "Linux Kernel Debugging on
-Google-Sized Clusters") showing that some nasty problems a reproducible
-so rarely, and only when monitored on such a great number of machines,
-that they become nearly impossible to track without a preexisting
-tracing infrastructure deployed on production machines.
-
-
-> - markers allow normal modules doing things they shouldn't be doing,
->   implying that markers should _not_ be enabled in normal distribution
->   kernels
+> > Talk is cheap, but unless YOU will do it your emails will only be a
+> > waste of bandwidth.
 > 
+> Thanks, and good luck with involving people with this kind of response!
 
-Not exactly.
+It's simply how kernel development works - not by talking but by doing 
+the work.
 
-1 - Markers are flexible enough to permit defining a custom probe that
-can be loaded dynamically as a module, but the "standard" probe will be
-coming in some of my awaiting patches : it parses the format string to
-serialize the information into trace buffers. Therefore, the "standard"
-marker usage won't require people to write their own module; just to
-enable which marker they want.
+Many people thought long-term maintainance for 2.6.16 wouldn't make sense.
+And I didn't start long discussions whether we need regression tracking -
+I simply did it.
 
-2 - kprobes is an example of an infrastructure enabled in distribution
-kernels (Redhat at least) that permits calling modules from arbitrary
-breakpoints. Markers somewhat limits this by specifying where the
-markers are, therefore making the mechanism faster, offers better
-reentrancy characteristics and is better suited to a kernel tree in
-constant evolution (markers follow the kernel code and are not
-maintained as a separate mapping to fixed kernel symbols/addresses).
+These are things that simply happened because I thought they were 
+important - and because I got my ass up to do them myself.
 
-3 - Providing a probe implies using a function that is exported as
-*_GPL(). What exactly is such a module not supposed to be doing? Are
-your expressing some kind of twisted pseudo-security concern? Once your
-are executing code in kernel space with write access in memory, you can
-do pretty much anything. I think that the right way to do it is to
-provide the flexibility required to help users do what they need to do
-(along with guide lines to help them not shoot themselves in the foot),
-but not _restrict_ what is exported to GPL modules just because one
-_can_ shoot himself in the foot. Since when are we supposed to provide
-protection against modules? Should they run in user-space?
+Don't expect anyone to jump up to do it only because of your talk.
+YOU must offer something, and it will work if it's then accepted by 
+people.
 
-Redards,
+If you think what you have in mind is both doable and important just do it.
+You will find out where the problems lie yourself.
+You might be able to prove me and all other people who think it would 
+not work wrong.
+You might fail, e.g. because people will not adopt whatever you have in 
+mind because they don't like it for some reason, but that's part of how 
+development works, and you'll never know unless you try it.
 
-Mathieu
+> Al
 
-
-> > Regards,
-> > 
-> > Mathieu
-> 
-> cu
-> Adrian
-> 
-> -- 
-> 
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
-> 
+cu
+Adrian
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
