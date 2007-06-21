@@ -1,90 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbXFUDLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbXFUDPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbXFUDLm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 23:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbXFUDLe
+	id S1755403AbXFUDPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 23:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXFUDPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 23:11:34 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:33490 "EHLO
-	asav08.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751842AbXFUDLd (ORCPT
+	Wed, 20 Jun 2007 23:15:46 -0400
+Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:50120
+	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752471AbXFUDPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 23:11:33 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhQuAJiJeUZKhRO4R2dsb2JhbACHI4dvAQEbDQYRAQ
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: Writing a driver for a legacy serial device
-Date: Wed, 20 Jun 2007 23:11:32 -0400
-User-Agent: KMail/1.9.3
-Cc: LKML <linux-kernel@vger.kernel.org>, Vojtech Pavlik <vojtech@ucw.cz>
-References: <20070619190502.05d4e0c8@hyperion.delvare> <d120d5000706191159w29ebd0dajbd6cb9ac78d4faa2@mail.gmail.com> <20070620105648.6d18ad66@hyperion.delvare>
-In-Reply-To: <20070620105648.6d18ad66@hyperion.delvare>
+	Wed, 20 Jun 2007 23:15:45 -0400
+To: david@lang.hm
+Cc: davids@webmaster.com, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <MDEHLPKNGKAHNMBLJOLKGEDMEMAC.davids@webmaster.com>
+	<87ejk6qbco.fsf@graviton.dyn.troilus.org>
+	<Pine.LNX.4.64.0706201959110.31603@asgard.lang.hm>
+From: Michael Poole <mdpoole@troilus.org>
+Date: Wed, 20 Jun 2007 23:15:43 -0400
+In-Reply-To: <Pine.LNX.4.64.0706201959110.31603@asgard.lang.hm> (david@lang.hm's message of "Wed\, 20 Jun 2007 20\:06\:17 -0700 \(PDT\)")
+Message-ID: <87645iq9pc.fsf@graviton.dyn.troilus.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706202311.33326.dtor@insightbb.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 June 2007 04:56, Jean Delvare wrote:
-> Hi Dmitry,
-> 
-> Thanks for your answer, very much appreciated.
-> 
-> On Tue, 19 Jun 2007 14:59:34 -0400, Dmitry Torokhov wrote:
-> > 
-> > You need to load serport modue and play with inputattach utility.
-> 
-> Ah, I see. There's no way to detect what device is connected to the
-> serial port, so we need a user-space tool to bind the port to the right
-> driver? Makes some sense, even though it's a but strange that I need
-> something called inputattach for a device which isn't an input device.
+david@lang.hm writes:
 
-Because serio interface is mostly used with input devices. For all other
-devices I think universal answer is "userspace" but with input devices
-we want to do processing in kernel so we can route events into console
-and other standard interfaces (although one coudl use uinput to achieve
-similar result).
+> if the GPL can excercise control over compilations, then if Oracle
+> were to ship a Oracle Linux live CD that contained the Oracle Database
+> in the filesystem image, ready to run. then the GPL would be able to
+> control the Oracle Database code.
 
-> 
-> So I've set CONFIG_SERIO_SERPORT=m, compiled and loaded serport. Then I
-> added a new protocol number in <linux/serio.h>:
-> 
-> #define SERIO_TAOSEVM	0x40
-> 
-> Then I added the following entry to inputattach and recompiled it:
-> 
-> { "--taos-evm",		"-taos",	B1200, CS8,			SERIO_TAOSEVM,	0,	0,	0,	NULL },
-> 
-> Then I changed my driver code to:
-> 
-> static struct serio_device_id taos_serio_ids[] = {
-> 	{
-> 		.type	= SERIO_RS232,
-> 		.proto	= SERIO_TAOSEVM,
-> 		.id	= SERIO_ANY,
-> 		.extra	= SERIO_ANY,
-> 	},
-> 	{ 0 }
-> };
-> 
-> And lastly I ran, as root:
-> 
-> ./inputattach -taos /dev/ttyS0
-> 
-> I see the following line in the logs as a result:
-> 
-> serio: Serial port ttyS0
-> 
-> But unfortunately, my driver's .connect function is still not called.
-> I guess that I missed one step? Any idea what it would be?
-> 
+By copyright law, it could.  By its language, it does not.
 
-Not sure. Could you check /sys/bus/serio/devices/serioX/id/* and verify
-that inputattach sets up serio port properly?
+> if the GPL can't do this then it can't control the checksum either.
+>
+> again, it's not just the kernel that's part of the checksum on a tivo,
+> the checksum is over the kernel + initial filesystem, much of which
+> contains code not covered by the gPL)
 
--- 
-Dmitry
+Again, did you miss where I pointed out that this makes it *worse* for
+Tivo, because they are tying together -- and making inseparable -- a
+combination that would otherwise be "mere aggregation"?
+
+Michael Poole
