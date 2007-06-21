@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbXFUS1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbXFUS2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbXFUS1T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXFUS1I
+	id S1755865AbXFUS2M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbXFUS16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:27:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35825 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751862AbXFUS1G (ORCPT
+	Thu, 21 Jun 2007 14:27:58 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60937 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752872AbXFUS15 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:27:06 -0400
-Date: Thu, 21 Jun 2007 11:26:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-cc: Olaf Hering <olaf@aepfle.de>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for 2.6.22] [6/10] x86: Only make Macintosh drivers
- default on Macs
-In-Reply-To: <1182448725.25426.19.camel@farscape.rchland.ibm.com>
-Message-ID: <alpine.LFD.0.98.0706211125100.3593@woody.linux-foundation.org>
-References: <200706201223.443613000@suse.de>  <20070620102334.DD01814AD0@wotan.suse.de>
-  <20070621173628.GA21243@aepfle.de>
- <1182448725.25426.19.camel@farscape.rchland.ibm.com>
+	Thu, 21 Jun 2007 14:27:57 -0400
+Date: Thu, 21 Jun 2007 11:27:53 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Marco Berizzi <pupilla@hotmail.com>
+cc: Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21.3 Oops (was Re: XFS internal error xfs_da_do_buf(2) at
+ line 2087 of file fs/xfs/xfs_da_btree.c. Caller 0xc01b00bd)
+In-Reply-To: <BAY103-DAV717DD455F57B3BB064E3CB2100@phx.gbl>
+Message-ID: <Pine.LNX.4.64.0706211121520.7711@schroedinger.engr.sgi.com>
+References: <BAY103-DAV717DD455F57B3BB064E3CB2100@phx.gbl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 21 Jun 2007, Marco Berizzi wrote:
+
+> > > Some RCU callback (that calls kmem_cache_free()) oopsed and
+> > > panic'ed his box. [ Marco had experienced fs issues lately, so we
+> > could
+> > > suspect file_free_rcu() here, but I can't really tell from the stack
+> > trace;
+> > > BTW whats with the rampant disease in the kernel to declare as
+> inline
+> > > even those functions exclusively meant to be dereferenced and passed
+> > > as pointers to call_rcu()?! ]
 
 
-On Thu, 21 Jun 2007, Will Schmidt wrote:
->
-> I'll second that.  The obvious gotcha is that on a G5, the windfarm
-> drivers don't get automatically selected, thus the fans run at full
-> speed, and my office becomes a windtunnel. :-) 
+The BUG_ON that triggers this signals us that someone tried to perform
+a kfree or kmem_cache_free on an object that is not in a slab page.
 
-Since when has "default" been anything but "default". It doesn't mean that 
-you can't override it. And if "make oldconfig" doesn't take the _old_ 
-setting into account over the new one, there's something wrong.
 
-Of course, if there is no actual question, "default" ends up being what it 
-always chosen (because no explicit choice is allowed), but in this case 
-we're talking about:
+> Hello everybody.
+> Few minutes ago 2.6.22-rc5 has been
+> crashed with this error (see also the
+> bitmap at http://80.204.235.230/foto2.jpg).
+> Just for record: if I build linux
+> with 'Debug slab memory allocations'
+> the box doesn't crash.
 
-	bool "Macintosh device drivers"
+Hmmm.. That is strange and could point to some sort of race condition.
 
-which definitely has that question.
+1. The object is freed. It is the last page on the slab. Thus slab 
+decommissions the page and resets PageSlab.
 
-		Linus
+2. Another process tries to free the object again. Now the page is no 
+longer marked as being a SLAB page. Thus the BUG_ON is triggered.
+
+Can you try the same with SLUB? Boot with "slub_debug". If you cannot 
+trigger the error anymore do limited debugging by booting with
+"slub_debug=F". Maybe that will be enough to trigger the race.
+
+> Jun 21 14:27:43 Pleiadi kernel: ------------[ cut here ]------------
+> Jun 21 14:27:43 Pleiadi kernel: kernel BUG at mm/slab.c:591!
+
+BUG_ON(!PageSlab(page));
+
+> Jun 21 14:27:43 Pleiadi kernel: Call Trace:
+> Jun 21 14:27:43 Pleiadi kernel:  [<c016a9c0>] d_kill+0x40/0x52
+> Jun 21 14:27:43 Pleiadi kernel:  [<c016aa3c>] dput+0x6a/0xdc
+> Jun 21 14:27:43 Pleiadi kernel:  [<c015be3f>] __fput+0xf8/0x15b
+> Jun 21 14:27:43 Pleiadi kernel:  [<c015a5c3>] filp_close+0x3c/0x7b
+> Jun 21 14:27:43 Pleiadi kernel:  [<c021342d>] copy_to_user+0x32/0x45
+> Jun 21 14:27:43 Pleiadi kernel:  [<c015a665>] sys_close+0x63/0xb2
+> Jun 21 14:27:43 Pleiadi kernel:  [<c0102834>] syscall_call+0x7/0xb
+
+dentry already freed?
