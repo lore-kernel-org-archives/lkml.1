@@ -1,55 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbXFUIa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbXFUIhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbXFUIa0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 04:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbXFUIaP
+	id S1754167AbXFUIhK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 04:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbXFUIg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 04:30:15 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:18953 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbXFUIaM (ORCPT
+	Thu, 21 Jun 2007 04:36:58 -0400
+Received: from tayrelbas01.tay.hp.com ([161.114.80.244]:42889 "EHLO
+	tayrelbas01.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751443AbXFUIg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 04:30:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CyTciPNSKs/7Z7HjPqHPtBH2gTJ3UiJkMrpkHuxEOs0+Lxh8RyEwQ3QPOB++XZPBB6cHcj8a1q3kaHQxB7INnuLAp1vHZ+UqfnCDfxvIOll7l1CsaAwROex+ksXhOCnx8ibusFCXurW/PZ0zI1jWwb3u7jWZZkHaKe+MCN1ZEMA=
-Message-ID: <6bffcb0e0706210130h227dcd62n52f34e45dfd8e818@mail.gmail.com>
-Date: Thu, 21 Jun 2007 10:30:11 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: =?WINDOWS-1252?Q?Re:_[ANNOUNCE]_Linux_Kernel_Tester=92s_Guide_v0.3-rc1?=
-Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Maciej Rutecki" <maciej.rutecki@gmail.com>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Jarek Poplawski" <jarkao2@o2.pl>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
-In-Reply-To: <661de9470706210031s36396c31xff5428ff60042073@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 04:36:57 -0400
+Date: Thu, 21 Jun 2007 01:36:45 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Andi Kleen <ak@suse.de>, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       levon@movementarian.org, perfmon@napali.hpl.hp.com,
+       oprofile-list@lists.sourceforge.net, wcohen@redhat.com,
+       akpm@linux-foundation.org
+Subject: Re: [perfmon] Re: [PATCH 1/2] Separate the performance counter allocation from the LAPIC NMI watchdog
+Message-ID: <20070621083645.GA26740@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070618103214.GA12045@atjola.homenet> <200706201431.44014.ak@suse.de> <20070620124959.GB24906@frankl.hpl.hp.com> <200706201501.02582.ak@suse.de> <20070620183315.GA3251@atjola.homenet> <20070620215933.GE26200@frankl.hpl.hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <4676E707.8020109@googlemail.com>
-	 <661de9470706210031s36396c31xff5428ff60042073@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070620215933.GE26200@frankl.hpl.hp.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir,
+Bjorn,
 
-On 21/06/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> Wonderful! Are there any plans to start using the fault injection framework
-> to catch more defects?
 
-There are plans for the second part called "debugging techniques", but
-I really don't know when I'll start writing this.
+On Wed, Jun 20, 2007 at 02:59:33PM -0700, Stephane Eranian wrote:
+> Bjorn,
+> 
+> I ran into one issue related with the new allocator.
+> 
+> In the case of a Core 2 Duo processor, the PMU implements more
+> than just basic counters. In particular it supports fixed counters
+> and PEBS where both use another set of MSRs. Those are not within
+> a 66 bit distance from MSR_ARCH_PERFMON_EVNTSEL0. Thus the allocator
+> fails with an assertion.
+> 
+> I do know that perfmon is the only consumer of those extended 
+> features TODAY. Yet I think we need to define the allocator such
+> that it can work with other "distant" MSRs as well.
+> 
 
-In fact I don't even know if it will be useful for testers. IMHO it is
-for developers not for testers.
+I think that a workaround for this issue could be for the allocator
+to grant the requests for registers outside of the range, i.e., register
+that it does not see/manage.
 
-Regards,
-Michal
+> On Wed, Jun 20, 2007 at 08:33:15PM +0200, Bj?rn Steinbrink wrote:
+> > On 2007.06.20 15:01:02 +0200, Andi Kleen wrote:
+> > > 
+> > > > Once this is fixed (which is what Bjorn did), then I will agree with you.
+> > > > For this, the allocator needs to be able to probe the CPU and initialize
+> > > > its own data structures.
+> > > 
+> > > Ok that sounds reasonable. Please someone send a patch that does only 
+> > > that.
+> > 
+> > OK, here come the bugfixes without any restructuring. The first patch
+> > enables unconditional probing of the watchdog. The second makes the
+> > perfmon nmi watchdog reserve the correct perfctr/evntsel.
+> > 
+> > Björn
+> > 
+> > -------------------------------------------------------------------------
+> > This SF.net email is sponsored by DB2 Express
+> > Download DB2 Express C - the FREE version of DB2 express and take
+> > control of your XML. No limits. Just data. Click to get it now.
+> > http://sourceforge.net/powerbar/db2/
+> > _______________________________________________
+> > oprofile-list mailing list
+> > oprofile-list@lists.sourceforge.net
+> > https://lists.sourceforge.net/lists/listinfo/oprofile-list
+> 
+> -- 
+> 
+> -Stephane
+> _______________________________________________
+> perfmon mailing list
+> perfmon@linux.hpl.hp.com
+> http://www.hpl.hp.com/hosted/linux/mail-archives/perfmon/
 
 -- 
-LOG
-http://www.stardust.webpages.pl/log/
+
+-Stephane
