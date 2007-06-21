@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbXFUP2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbXFUPaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbXFUP2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbXFUP2L
+	id S1755606AbXFUPaR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbXFUPaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:28:11 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:41493 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753354AbXFUP2K (ORCPT
+	Thu, 21 Jun 2007 11:30:07 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:52741 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753354AbXFUPaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:28:10 -0400
-Date: Thu, 21 Jun 2007 11:28:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Mattia Dongili <malattia@linux.it>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: can't suspend on vaio sz (rc4 and rc5 are ok) [was Re:
- 2.6.22-rc4-mm2]
-In-Reply-To: <200706210003.30536.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0706211124490.3547-100000@iolanthe.rowland.org>
+	Thu, 21 Jun 2007 11:30:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from:sender;
+        b=Jw+rgYHP+z1aVnh7vv23b6OruUPagjhjRbTeJwaWL6/m0nwmwiAnlCeEhtAU53KgolnqMklbSxbrmQG2PaoA6geuqHFmCkYh15eR2p22yY9TY+5vBZqLe07u29k1rcT1ZR/e7KXDMPq3QA5/mjmkD2EpnHDBeO+iYU0V3QY77G0=
+Date: Thu, 21 Jun 2007 23:29:58 +0800
+To: Li Yang <leoli@freescale.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
+       Maggie Chen <chenqi@beyondsoft.com>
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+Message-ID: <20070621152958.GA23761@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+References: <1182436817579-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182436817579-git-send-email-leoli@freescale.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+From: Eugene Teo <eugeneteo@kernel.sg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Rafael J. Wysocki wrote:
-
-> > I'll see if I can reproduce your problem here.
+<quote sender="Li Yang">
+> This is a Chinese translated version of Documentation/HOWTO.  Currently
+> Chinese involvement in Linux kernel is very low, especially comparing to
+> its largest population base.  Language could be the main obstacle.  Hope
+> this document will help more Chinese to contribute to Linux kernel.
 > 
-> Yes, I can.  It's only necessary to load usb-storage (without any devices
-> actually using it) and it fails device_suspend() immediately (I don't think
-> it's freezer-related).
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: TripleX Chung <xxx.phy@gmail.com>
+> Signed-off-by: Maggie Chen <chenqi@beyondsoft.com>
+> ---
+> Address comments from Wang Cong.
+>  Documentation/zh_CN/HOWTO |  536 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 536 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/zh_CN/HOWTO
 > 
-> I've got the following trace from it:
-> 
-> usb_endpoint usbdev3.2_ep81: PM: suspend 0->1, parent 3-1:1.0 already 2
-> Suspending device 3-1:1.0
-> Suspending device usbdev3.2_ep00
-> Suspending device 3-1
-> Suspending device eth1
-> Suspending device eth0
-> Suspending device usbdev3.1
-> Suspending device usbdev3.1_ep81
-> Suspending device 3-0:1.0
-> Suspending device usbdev3.1_ep00
-> Suspending device usb3
-> hub 3-0:1.0: hub_suspend
-> ohci_hcd 0000:00:02.1: needs reinit!
-> usb usb3: suspend fail, err -16
-> usb usb3: 'global' suspend -16
+> diff --git a/Documentation/zh_CN/HOWTO b/Documentation/zh_CN/HOWTO
+> new file mode 100644
+> index 0000000..c70debd
+> --- /dev/null
+> +++ b/Documentation/zh_CN/HOWTO
+[...]
 
-Odd.  This has nothing at all to do with usb-storage.  The "needs 
-reinnit!" message means that an OHCI controller was in a reset state -- 
-not running and not suspended -- when the suspend method was called.
+I read through the translated HOWTO. Looks good to me.
 
-This happened with plain old 2.6.22-rc4-mm2?  I'll try to reproduce it.
-
-Alan Stern
+Eugene
 
