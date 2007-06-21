@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbXFUQgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbXFUQkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbXFUQgk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbXFUQgM
+	id S1758175AbXFUQkB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbXFUQjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:36:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:42263 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757834AbXFUQgI (ORCPT
+	Thu, 21 Jun 2007 12:39:53 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:38517 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754691AbXFUQjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:36:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=s7Hy9nz/PO26IfHhppM38AKf8bKxhJ5h/zALW6LhtNumgPT6wgg27xlrGvoRawJjEy6mDC6zM3GsDzHKvvDsbZpPgnk500mHsOxEpdlr2qwSKrYsj8WmNW60z7e2f9iLZ96a61EB3Rziv9NTJ/lU/KHDH6iwmp5DG8JlTLQ3Beo=
-Message-ID: <467AA8D2.5050305@googlemail.com>
-Date: Thu, 21 Jun 2007 18:35:30 +0200
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, Dave Airlie <airlied@linux.ie>,
-       Andrea Righi <righiandr@users.sourceforge.net>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, Netdev <netdev@vger.kernel.org>,
-       linux-wireless@vger.kernel.org, Samuel Ortiz <samuel@sortiz.org>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, Samuel Ortiz <samuel@sortiz.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Chad Tindel <ctindel@users.sourceforge.net>,
-       Olaf Hering <olaf@aepfle.de>
-Subject: Re: [2/2] 2.6.22-rc5: known regressions with patches v2
-References: <467AA7E3.3030404@googlemail.com>
-In-Reply-To: <467AA7E3.3030404@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Thu, 21 Jun 2007 12:39:52 -0400
+Date: Thu, 21 Jun 2007 12:39:38 -0400
+Message-Id: <200706211639.l5LGdc1I019274@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Cc: Bharata B Rao <bharata.rao@gmail.com>, Erez Zadok <ezk@cs.sunysb.edu>,
+       Jan Blunck <jblunck@suse.de>, linux-kernel@vger.kernel.org,
+       bharata@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH 1/4] Union mount documentation. 
+In-reply-to: Your message of "Thu, 21 Jun 2007 12:29:00 EDT."
+             <20070621162900.GA9457@filer.fsl.cs.sunysb.edu> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+In message <20070621162900.GA9457@filer.fsl.cs.sunysb.edu>, Josef Sipek writes:
+> On Thu, Jun 21, 2007 at 10:55:45AM +0530, Bharata B Rao wrote:
+> ... 
+> > Talking about copyup and whiteout at VFS layer, we have already
+> > demonstrated what complexity it takes to have these within VFS. Please
+> > take a look at the copyup and whiteout patches in our previous
+> > releases at:
+> > 
+> > http://lkml.org/lkml/2007/4/17/150
+> > http://lkml.org/lkml/2007/5/14/69
+> > 
+> > Or may be wait till I clean all those up to work with the new union
+> > new stack infrastructure which I have posted here.
+> 
+> Really, the problem for both, union mounts and unionfs, is that the concept
+> of unioning spans the two layers. You have the unification part - which is
+> very VFS-level concept, but at the same time, you got whiteouts, copyup,
+> (semi-?)persistent inode numbers, and a bunch of other details that just
+> don't belong in the VFS at all.
+> 
+> Josef "Jeff" Sipek.
 
-Here is a list of some known regressions in 2.6.22-rc5
-with patches available.
+Yup, which is why I feel that the eventual solution may involve a hybrid
+solution: a file system "driver" plus ample VFS support.  The question will
+always be how much should go into the VFS and how much should go into the
+f/s driver?  Our approach w/ unionfs had been to keep as much of it into the
+f/s driver, and slowly offer VFS-level support, so as not to perturb the VFS
+too much all at once.  That way we can offer users something that works now,
+and internally change the implementation with minimal user-visible changes.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
-
-(BTW. There is a new category called "Will be fixed in 2.6.23")
-
-
-
-Memory management
-
-Subject    : bug in i386 MTRR initialization
-References : http://lkml.org/lkml/2007/5/19/93
-Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
-Status     : patch available
-
-
-
-MMC
-
-Subject    : Oops in a driver while using SLUB as a SLAB allocator
-References : http://lkml.org/lkml/2007/6/21/69
-Submitter  : Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Handled-By : Marc Pignat <marc.pignat@hevs.ch>
-Patch      : http://lkml.org/lkml/2007/6/21/140
-Status     : patch available
-
-
-
-Networking
-
-Subject    : ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-References : http://lkml.org/lkml/2007/6/19/310
-Submitter  : Olaf Hering <olaf@aepfle.de>
-Patch      : http://lkml.org/lkml/2007/6/19/382
-Status     : patch was suggested
-
-Subject    : no irda0 interface (2.6.21 was OK), smsc does not find chip
-References : http://lkml.org/lkml/2007/6/3/16
-Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
-Handled-By : Samuel Ortiz <samuel@sortiz.org>
-             Bjorn Helgaas <bjorn.helgaas@hp.com>
-Patch      : http://lkml.org/lkml/2007/6/7/237
-Status     : patch was suggested
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+Erez.
