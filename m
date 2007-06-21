@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbXFUXbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbXFUXco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbXFUXbw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbXFUXbp
+	id S1754568AbXFUXco (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbXFUXch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:31:45 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:50030 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbXFUXbo (ORCPT
+	Thu, 21 Jun 2007 19:32:37 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46248
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbXFUXcg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:31:44 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: Writing a driver for a legacy serial device
-Date: Fri, 22 Jun 2007 01:31:08 +0200
-User-Agent: KMail/1.9.6
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Dmitry Torokhov <dtor@insightbb.com>,
-       LKML <linux-kernel@vger.kernel.org>, Vojtech Pavlik <vojtech@ucw.cz>
-References: <20070619190502.05d4e0c8@hyperion.delvare> <1182437233.2782.36.camel@shinybook.infradead.org> <20070621203843.044fd19a@hyperion.delvare>
-In-Reply-To: <20070621203843.044fd19a@hyperion.delvare>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Thu, 21 Jun 2007 19:32:36 -0400
+Date: Thu, 21 Jun 2007 16:32:50 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       =?ISO-8859-1?Q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Please release a stable kernel Linux 3.0
+In-Reply-To: <Pine.LNX.4.64.0706220124050.26568@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0706211631120.31603@asgard.lang.hm>
+References: <200706212349.54983.zoltan.hubert@zzaero.com>
+ <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com>
+ <Pine.LNX.4.64.0706220124050.26568@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706220131.08954.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX187ztGrPaouietp8+TiRXgZwyBqfBQ1tiS24UN
- KukGOAbbF5jUkFUjKSXtttR/evkayfk+dDPnndHhi93sTrJfsJ
- T5626uN6eTPKmqFLsgkHw==
+Content-Type: MULTIPART/Mixed; BOUNDARY="-699020219-721175904-1182468615=:26568"
+Content-ID: <Pine.LNX.4.64.0706211631121.31603@asgard.lang.hm>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 June 2007, Jean Delvare wrote:
-> I2C bus drivers have to be implemented in the kernel, so user-space
-> isn't an option for me.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Well, you could have an i2c_algorithm that exports a character device
-node to user space, and then have a trivial user application that
-simply relays between that and the serial port.
+---699020219-721175904-1182468615=:26568
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0706211631122.31603@asgard.lang.hm>
 
-It's probably not much different to what you have in the end though.
+On Fri, 22 Jun 2007, Jan Engelhardt wrote:
 
-	Arnd <><
+> On Jun 22 2007 00:29, Jesper Juhl wrote:
+>> On 21/06/07, Zoltán HUBERT <zoltan.hubert@zzaero.com> wrote:
+>> [snip]
+>>> All people who might read this know that traditionally
+>>> stable releases are even numbered and development branches
+>>> are odd numbered. This changed during late develoment of
+>>> 2.6, according to my analysis because of the "invention" of
+>>> GIT which was itself necessary because of BitKeeper (insert
+>>> ooooooooold flame-wars here) and which allowed very dynamic
+>>> develoment.
+>> [...]
+>> I myself have argued that we should be focusing more on stability and
+>> regression fixing, but I'm not so sure that a 2.6.7 devel branch would
+>> solve this. In general the 2.6.x.y -stable kernels seem to be doing
+>> the job pretty good.
+>
+> For my part, I think the 2.6.<odd> did not go as well as the 2.6.<even>,
+> beginning with x=16.
+
+you misunderstood the even/odd it was never 2.x.y with y odd/even being 
+stable / development, it was the x being even/odd to indicate stable / 
+development.
+
+all 2.6.x are stable, all 2.5.x were development.
+
+David Lang
+---699020219-721175904-1182468615=:26568--
