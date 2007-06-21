@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbXFUWN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbXFUWR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758021AbXFUWN0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 18:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXFUWNR
+	id S1758122AbXFUWR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 18:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbXFUWRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 18:13:17 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:42883 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbXFUWNR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 18:13:17 -0400
-Message-ID: <467AF7C3.2030107@us.ibm.com>
-Date: Thu, 21 Jun 2007 15:12:19 -0700
-From: David Wilder <dwilder@us.ibm.com>
-User-Agent: Mozilla Thunderbird 1.0.7 (X11/20050923)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: linux-kernel@vger.kernel.org, systemtap@sources.redhat.com
-Subject: Re: [RFC] Generic Trace Setup and Control (GTSC) kernel API (2/3)
-References: <4676108B.9030203@us.ibm.com> <20070618194301.GA6038@martell.zuzino.mipt.ru>
-In-Reply-To: <20070618194301.GA6038@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 21 Jun 2007 18:17:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49920 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755069AbXFUWRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 18:17:21 -0400
+Date: Thu, 21 Jun 2007 15:18:35 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: greg@kroah.com
+Cc: zaitcev@redhat.com, linux-usb-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, <vojtech@suse.cz>
+Subject: USB: Take over usblp
+Message-Id: <20070621151835.472feff1.zaitcev@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I forgot to CC the list in my response to Alexey.
+Vojtech agreed to pass usblp over to me, so if you find bugs don't bug him.
 
-I plan to address Alexey's concerns in a couple of days (as soon as I 
-get past the OLS push).
+Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
+Signed-off-by: Vojtech Pavlik <vojtech@suse.cz>
 
-Alexey Dobriyan wrote:
-
->Can we get another user to justify this generalizing?
->
->
->  
->
-Systemtap has plans to use the GTSC also.
-
--- 
-David Wilder
-IBM Linux Technology Center
-Beaverton, Oregon, USA 
-dwilder@us.ibm.com
-(503)578-3789
-
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3702,12 +3702,12 @@ L:	linux-usb-devel@lists.sourceforge.net
+ W:	http://pegasus2.sourceforge.net/
+ S:	Maintained
+ 
+-USB PRINTER DRIVER
+-P:	Vojtech Pavlik
+-M:	vojtech@suse.cz
++USB PRINTER DRIVER (usblp)
++P:	Pete Zaitcev
++M:	zaitcev@redhat.com
+ L:	linux-usb-users@lists.sourceforge.net
+ L:	linux-usb-devel@lists.sourceforge.net
+-S:	Maintained
++S:	Supported
+ 
+ USB RTL8150 DRIVER
+ P:	Petko Manolov
