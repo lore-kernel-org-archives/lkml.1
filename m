@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbXFUPwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbXFUPyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755800AbXFUPwq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbXFUPwj
+	id S1756897AbXFUPyT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbXFUPyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:52:39 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53195 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751020AbXFUPwi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:52:38 -0400
-Date: Thu, 21 Jun 2007 08:50:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-In-Reply-To: <20070621073031.GA683@elte.hu>
-Message-ID: <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
-References: <20070620093612.GA1626@ff.dom.local>
- <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
- <20070621073031.GA683@elte.hu>
+	Thu, 21 Jun 2007 11:54:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52312 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753730AbXFUPyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:54:10 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18ygxgXfykyO4wzXmQEF631NeK6H3K0VzXTbG0zV8
+	tI/HNc7qBG+tWz
+Date: Thu, 21 Jun 2007 17:54:14 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, webguy@theaimsgroup.com,
+       postmaster@lkml.org, postmaster@ussg.iu.edu,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       postmaster@vger.kernel.org
+Subject: Re: Request for Linux Kernel Mailing List archives
+Message-ID: <20070621155414.GA12413@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	David Woodhouse <dwmw2@infradead.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, webguy@theaimsgroup.com,
+	postmaster@lkml.org, postmaster@ussg.iu.edu,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	postmaster@vger.kernel.org
+References: <467949CC.9090405@zytor.com> <1182438411.10524.4.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1182438411.10524.4.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 21 Jun 2007, Ingo Molnar wrote:
+On 2007.06.21 23:06:50 +0800, David Woodhouse wrote:
+> On Wed, 2007-06-20 at 08:37 -0700, H. Peter Anvin wrote: 
+> > I would like to make a request to LKML archives.  It would be a highly
+> > useful feature to have an archive site where one can algorithmically
+> > produce a URL from the Message-ID, so one can post a clickable URL from
+> > a delivered message without having to look it up every time.
+> > 
+> > For example, if a message had:
+> > 
+> > Message-ID: <4676C78D.8040208@zytor.com>
+> > 
+> > ... and I could just generate a URL:
+> > 
+> > http://linux-kernel.example.com/msgid/4676C78D.8040208@zytor.com
+> > 
+> > ... that would be highly convenient.
+> > 
+> > (Extra points if all the vger lists are available, not just LKML.)
 > 
-> what worries me a bit though is that my patch that made spinlocks 
-> equally agressive to that loop didnt solve the hangs!
+> Even more extra points if there's a mailto: link allowing people to
+> reply, which actually gets the threading information right. E.g.:
+> 
+> mailto:hpa@zytor.com,linux-kernel@vger.kernel.org?Subject=Re:%20Request %20for%20Linux%20Kernel%20Mailing%20List%20archives&In-Reply-To=4676C78D.8040208@zytor.com
 
-Your parch kept doing "spin_trylock()", didn't it?
+Or maybe alternatively a feature that forwards the mail to you. I find
+it preferable to actually have the email you reply to. No copy'n'paste
+for quoting, no manual quote marking, no manual "On $date wrote $author"
+line, ...
 
-That's a read-modify-write thing, and keeps bouncing the cacheline back 
-and forth, and together with the fact that even *after* you get the 
-spinlock the "wait_for_inactive()" would actually end up looping back, 
-releasing it, and re-getting it.
+lkml.org has that.
 
-So the problem was that "wait_for_inactive()" kept the lock (because it 
-actually *got* it), and looped over getting it, and because it was an 
-exclusive cacheline ownership, that implies that somebody else is not 
-getting it, and is kept from ever getting it.
-
-So trying to use "trylock" doesn't help. It still has all the same bad 
-sides - it still gets the lock (getting the lock wasn't the problem: 
-_holding_ the lock was the problem), and it still kept the cache line for 
-the lock on one core.
-
-The only way to avoid lock contention is to avoid any exclusive use at 
-all.
-
-			Linus
+Björn
