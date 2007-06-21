@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbXFUGfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbXFUGjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756977AbXFUGfK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 02:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXFUGe7
+	id S1757142AbXFUGjw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 02:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbXFUGjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 02:34:59 -0400
-Received: from mga01.intel.com ([192.55.52.88]:34821 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751694AbXFUGe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 02:34:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,446,1175497200"; 
-   d="scan'208";a="259402783"
-Date: Wed, 20 Jun 2007 23:30:40 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
-       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
-       davem@davemloft.net, clameter@sgi.com
-Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures	in	dma	map api calls
-Message-ID: <20070621063039.GB6771@linux-os.sc.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <20070619213808.798646000@askeshav-devel.jf.intel.com> <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com> <20070620173038.GA25516@linux-os.sc.intel.com> <1182362703.21117.79.camel@twins> <46797CB1.8070008@linux.intel.com> <1182370132.21117.84.camel@twins> <20070620230337.GA6771@linux-os.sc.intel.com> <1182406212.21117.94.camel@twins> <467A1679.8090202@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <467A1679.8090202@linux.intel.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 21 Jun 2007 02:39:44 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:56713
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbXFUGjn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 02:39:43 -0400
+Date: Wed, 20 Jun 2007 23:39:03 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alexandre Oliva <aoliva@redhat.com>
+cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>
+Message-ID: <Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br> <4673CA7C.5040207@t-online.de>
+ <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br> <20070616181902.GB21478@ftp.linux.org.uk>
+ <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+ <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+ <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+ <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+ <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca>
+ <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca>
+ <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
+ <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br> <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
+ <orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 11:11:05PM -0700, Arjan van de Ven wrote:
-> Peter Zijlstra wrote:
-> >What I'm saying is that if you do use the reserves, you should ensure
-> >the use is bounded. I'm not seeing anything like that.
-> 
-> each mapping takes at most 3 pages
-With 3 pages(3 level page table), IOMMU can map at 
-most 2MB and each additional last level page helps
-map another 2MB. Again, the IOMMU driver re-uses the
-virtual address instead of giving contiguous virtual address
-which helps to keep the page table growth and helps
-reuse the same page table entries, in that sense we are
-bounded, again we are not sure how much IO will be in flight
-on a perticular system so as to reserve that many pages for
-IOMMU page table setup.
+On Thu, 21 Jun 2007, Alexandre Oliva wrote:
 
--Anil
+> On Jun 21, 2007, david@lang.hm wrote:
+>
+>> how exactly can they prevent a system that's been tampered with from
+>> accessing their network?
+>
+> By denying access to their servers?  By not granting whatever is
+> needed to initiate network sessions?
+>
+> And note, "it's been tampered with" is not necessarily enough of a
+> reason to cut someone off, it has to meet these requirements:
+
+how can the server tell if it's been tampered with?
+
+>>   when the modification itself materially and adversely affects the
+>>   operation of the network or violates the rules and protocols for
+>>   communication across the network.
+>
+>> (something even you say they have a right to do)
+>
+> as long as this right is not used by the software distributor to
+> impose restrictions on the user's ability to adapt the software to
+> their own needs.  The GPLv3 paragraph above makes a fair concession in
+> this regard, don't you agree?
+
+no, one of the rules for the network is that the software must be 
+certified, you are requireing the device to permit the software to be 
+changed to an uncertified version.(to store credit card numbers and send 
+them to a third party for example)
+
+David Lang
