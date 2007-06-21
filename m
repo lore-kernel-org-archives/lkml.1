@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbXFUUDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbXFUUET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759355AbXFUUDR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 16:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbXFUUDJ
+	id S1759546AbXFUUET (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 16:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbXFUUEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 16:03:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52699 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752640AbXFUUDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 16:03:07 -0400
-To: david@lang.hm
-Cc: jimmy bahuleyan <knight.camelot@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-References: <orlkedpryc.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<467A6290.80602@gmail.com>
-	<orr6o5kxdr.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706211055160.31603@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 17:02:52 -0300
-In-Reply-To: <Pine.LNX.4.64.0706211055160.31603@asgard.lang.hm> (david@lang.hm's message of "Thu\, 21 Jun 2007 11\:00\:40 -0700 \(PDT\)")
-Message-ID: <orlkedjcsz.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 21 Jun 2007 16:04:12 -0400
+Received: from gateway12.iders.ca ([206.45.72.61]:58001 "EHLO koko.iders.ca"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755492AbXFUUEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 16:04:11 -0400
+Message-ID: <467AD9B5.9020502@iders.ca>
+Date: Thu, 21 Jun 2007 15:04:05 -0500
+From: Andrew McKay <amckay@iders.ca>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Alexandre Oliva <aoliva@redhat.com>
+CC: david@lang.hm, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>	<20070616181902.GB21478@ftp.linux.org.uk>	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>	<4679557C.5080907@iders.ca>	<20070620175627.319a6c55@the-village.bc.nu>	<46797C52.4020907@iders.ca>	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>	<Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>	<ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>	<Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>	<orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>	<Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>	<467A96DC.1020906@iders.ca> <or3b0lks66.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <or3b0lks66.fsf@oliva.athome.lsd.ic.unicamp.br>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, david@lang.hm wrote:
+Alexandre Oliva wrote:
+> On Jun 21, 2007, Andrew McKay <amckay@iders.ca> wrote:
+> 
+>> david@lang.hm wrote:
+>>> how can the server tell if it's been tampered with?
+> 
+>> I agree with this statement.
+> 
+> Err...  That's a question, not a statement ;-)
+> 
 
-> this is standard dual-licensing, not special just becouse both
-> licenses are GPL versions
+Sorry, that's what happens when one types before getting a cup of coffee in the 
+morning.
 
-No, seriously, it's not, it's quite different.
-
-If you dual-license your code between GPLv2 and GPLv3, I could combine
-your code with code under GPLv3, distribute it, and if anyone tivoized
-your code, I might be able to enforce the anti-tivoization provisions
-against the tivoizer.
-
-With a mere permission to combine, I can only enforce these provisions
-over my own code.
-
-
-I see that, for tivoization, the end result is very much the same as
-an all-GPL, although the tivoizer still has the option of removing the
-GPLv3 code and hoping GPLv2's implicit anti-tivoization provisions are
-not enforced.  This would be just undoing the additional cooperation
-that this additional permission would have provided.
-
-However, for other GPLv3 defenses, it would make a difference.  For
-example, on the patent licenses that are implicit in GPLv2 and
-explicit in GPLv3.
-
-> and for people who don't like one or the other of the two licenses
-> this will not be acceptable becouse it would allow someone else to
-> take their work, modify it a bit, and release the result only under
-> the license that they don't like
-
-Which is precisely why I suggested this approach of permission to
-combine, rather than as dual licensing.  Because then nobody could do
-what you say.
-
-> one of the big problems that people don't realize is that if it takes
-> GPLv3+ exception to be compatible with the apache license
-
-For the record, it doesn't, GPLv3 is going to be compatible with the
-apache 2.0 license, no additional exceptions needed.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Andrew
