@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbXFUQbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbXFUQdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbXFUQbZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbXFUQbR
+	id S1756683AbXFUQdZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbXFUQdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:31:17 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:52619
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312AbXFUQbQ (ORCPT
+	Thu, 21 Jun 2007 12:33:16 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45002 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857AbXFUQdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:31:16 -0400
-Date: Thu, 21 Jun 2007 09:30:29 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Tomas Neme <lacrymology@gmail.com>
-cc: Alexandre Oliva <aoliva@redhat.com>, Andrew McKay <amckay@iders.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-In-Reply-To: <2e6659dd0706210553p5a854ad7yc8915818b358a27c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706210929110.31603@asgard.lang.hm>
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>  <4679557C.5080907@iders.ca>
-  <20070620175627.319a6c55@the-village.bc.nu>  <46797C52.4020907@iders.ca> 
- <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>  <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
-  <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br> 
- <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm> 
- <orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>  <Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
- <2e6659dd0706210553p5a854ad7yc8915818b358a27c@mail.gmail.com>
+	Thu, 21 Jun 2007 12:33:15 -0400
+Message-ID: <467AA76F.9090107@zytor.com>
+Date: Thu, 21 Jun 2007 09:29:35 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Ram Pai <linuxram@us.ibm.com>
+CC: Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
+ through other means
+References: <467994BD.6000403@zytor.com>	 <20070620210343.GQ21478@ftp.linux.org.uk>  <46799A31.10301@zytor.com> <1182442837.3342.13.camel@ram.us.ibm.com>
+In-Reply-To: <1182442837.3342.13.camel@ram.us.ibm.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Tomas Neme wrote:
+Ram Pai wrote:
+> 
+> Peter, I am not working on it currently. But i am interested in getting
+> it done. I have the seed set of patches which had Al Viro's ideas
+> incorporated. Infact those patches were sent on lkml 2 months back.
+> Shall we start with those patches?
+> 
 
->> >  as long as this right is not used by the software distributor to
->> >  impose restrictions on the user's ability to adapt the software to
->> >  their own needs.  The GPLv3 paragraph above makes a fair concession in
->> >  this regard, don't you agree?
->>
->>  no, one of the rules for the network is that the software must be
->>  certified, you are requireing the device to permit the software to be
->>  changed to an uncertified version.(to store credit card numbers and send
->>  them to a third party for example)
->
-> Also another way of doing this is having every network ask the kernel
-> for its key, and checking it. If it doesn't match a certified key,
-> then not allowing you to access the network.
+Are these the "unprivileged mount syscall" patches?
 
-no, this doesn't work becouse if the software has been altered you don't 
-know if the key it's giving you matches that software. it could be giving 
-you the key from the unmodified software.
+Otherwise I don't see any patches in my personal LKML cache (apparently
+my subscription to fsdevel was dropped at some point, so I don't have a
+stash of it.)
 
-David Lang
-
+	-hpa
