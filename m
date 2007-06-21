@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbXFUPGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877AbXFUPHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757700AbXFUPGv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbXFUPGn
+	id S1757877AbXFUPHt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbXFUPHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:06:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58501 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbXFUPGm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:06:42 -0400
-Subject: Re: Request for Linux Kernel Mailing List archives
-From: David Woodhouse <dwmw2@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: webguy@theaimsgroup.com, postmaster@lkml.org, postmaster@ussg.iu.edu,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       postmaster@vger.kernel.org
-In-Reply-To: <467949CC.9090405@zytor.com>
-References: <467949CC.9090405@zytor.com>
-Content-Type: text/plain
-Date: Thu, 21 Jun 2007 23:06:50 +0800
-Message-Id: <1182438411.10524.4.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+	Thu, 21 Jun 2007 11:07:40 -0400
+Received: from gw.goop.org ([64.81.55.164]:60299 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755576AbXFUPHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:07:39 -0400
+Message-ID: <467A93F3.3050407@goop.org>
+Date: Thu, 21 Jun 2007 08:06:27 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: ian <spyro@f2s.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Arch <linux-arch@vger.kernel.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Aubrey Li <aubrey.li@analog.com>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Matthew Wilcox <matthew@wil.cx>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+       Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH] cross-architecture ELF clean up
+References: <20070620230854.246399397@goop.org>	 <20070620230902.387008536@goop.org> <1182414053.2942.0.camel@wirenth>
+In-Reply-To: <1182414053.2942.0.camel@wirenth>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-20 at 08:37 -0700, H. Peter Anvin wrote: 
-> I would like to make a request to LKML archives.  It would be a highly
-> useful feature to have an archive site where one can algorithmically
-> produce a URL from the Message-ID, so one can post a clickable URL from
-> a delivered message without having to look it up every time.
-> 
-> For example, if a message had:
-> 
-> Message-ID: <4676C78D.8040208@zytor.com>
-> 
-> ... and I could just generate a URL:
-> 
-> http://linux-kernel.example.com/msgid/4676C78D.8040208@zytor.com
-> 
-> ... that would be highly convenient.
-> 
-> (Extra points if all the vger lists are available, not just LKML.)
+ian wrote:
+> On Wed, 2007-06-20 at 16:08 -0700, Jeremy Fitzhardinge wrote:
+>
+> arm26 changes acked-by: Ian Molton <spyro@f2s.com>
 
-Even more extra points if there's a mailto: link allowing people to
-reply, which actually gets the threading information right. E.g.:
+Did you try building it to flush out any missing-header problems?
 
-mailto:hpa@zytor.com,linux-kernel@vger.kernel.org?Subject=Re:%20Request %20for%20Linux%20Kernel%20Mailing%20List%20archives&In-Reply-To=4676C78D.8040208@zytor.com
-
--- 
-dwmw2
-
+    J
