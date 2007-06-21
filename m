@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbXFUXa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbXFUXbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbXFUXa5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbXFUXau
+	id S1754482AbXFUXbw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbXFUXbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:30:50 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57303 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751176AbXFUXat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:30:49 -0400
-Subject: Re: Fix signalfd interaction with thread-private signals
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070621185856.GA153@tv-sign.ru>
-References: <20070619091452.GA94@tv-sign.ru>
-	 <1182254988.26853.334.camel@localhost.localdomain>
-	 <20070619140646.GB27343@tv-sign.ru>
-	 <1182295473.26853.386.camel@localhost.localdomain>
-	 <20070620111415.GA91@tv-sign.ru>
-	 <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org>
-	 <20070621082509.GA88@tv-sign.ru>
-	 <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org>
-	 <20070621182340.GA92@tv-sign.ru>
-	 <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
-	 <20070621185856.GA153@tv-sign.ru>
-Content-Type: text/plain
-Date: Fri, 22 Jun 2007 09:30:04 +1000
-Message-Id: <1182468604.24740.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 21 Jun 2007 19:31:45 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:50030 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751303AbXFUXbo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 19:31:44 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: Writing a driver for a legacy serial device
+Date: Fri, 22 Jun 2007 01:31:08 +0200
+User-Agent: KMail/1.9.6
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Dmitry Torokhov <dtor@insightbb.com>,
+       LKML <linux-kernel@vger.kernel.org>, Vojtech Pavlik <vojtech@ucw.cz>
+References: <20070619190502.05d4e0c8@hyperion.delvare> <1182437233.2782.36.camel@shinybook.infradead.org> <20070621203843.044fd19a@hyperion.delvare>
+In-Reply-To: <20070621203843.044fd19a@hyperion.delvare>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706220131.08954.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX187ztGrPaouietp8+TiRXgZwyBqfBQ1tiS24UN
+ KukGOAbbF5jUkFUjKSXtttR/evkayfk+dDPnndHhi93sTrJfsJ
+ T5626uN6eTPKmqFLsgkHw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 22:58 +0400, Oleg Nesterov wrote:
-> 
-> > No "stealing". No signalfd, no *nothing*. Just normal signal
-> behaviour.
-> 
-> _Another_ thread could steal SIGSEGV via read(signalfd) without Ben's patch.
-> This is what Ben and Davide are worried about. I think we should not worry,
-> we have the same situation if this "another" thread does
-> 
->         for (;;)
->                 signal(SIGSEGV, SIG_IGN);
-> 
-> do_sigaction() does rm_from_queue_full().
+On Thursday 21 June 2007, Jean Delvare wrote:
+> I2C bus drivers have to be implemented in the kernel, so user-space
+> isn't an option for me.
 
-Yeah well... I wanted to have the least surprise path... that is,
-without my patch, signalfd will "sometimes" steal the SIGSEGV depending
-on who races to the lock first, thus causing the target thread to
-re-execute the faulting instruction and taking another SIGSEGV, and
-sometimes not. It's bad from both the faulting thread point of view and
-the signalfd use who gets signals "sometimes" without any guarantee.
+Well, you could have an i2c_algorithm that exports a character device
+node to user space, and then have a trivial user application that
+simply relays between that and the serial port.
 
-I like the current code that at least implement a precise semantic for
-all thread local signals -> they are only ever delivered to that thread,
-period. If you really want to do funky things from outside, you can
-still do ptrace ;-)
+It's probably not much different to what you have in the end though.
 
-Ben.
-
-
+	Arnd <><
