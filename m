@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbXFUDH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbXFUDLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbXFUDH2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 23:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXFUDHU
+	id S1754629AbXFUDLm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 23:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbXFUDLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 23:07:20 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:31012 "EHLO
+	Wed, 20 Jun 2007 23:11:34 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:33490 "EHLO
 	asav08.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbXFUDHT (ORCPT
+	with ESMTP id S1751842AbXFUDLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 23:07:19 -0400
+	Wed, 20 Jun 2007 23:11:33 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhQuAGyIeUZKhRO4R2dsb2JhbACHI4dvAQEbDQYRAQ
+X-IronPort-Anti-Spam-Result: AhQuAJiJeUZKhRO4R2dsb2JhbACHI4dvAQEbDQYRAQ
 From: Dmitry Torokhov <dtor@insightbb.com>
-To: Qi Yong <qiyong@mail.fc-cn.com>
-Subject: Re: [patch] add printk_ratelimit to atkbd_interrupt
-Date: Wed, 20 Jun 2007 23:07:17 -0400
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: Writing a driver for a legacy serial device
+Date: Wed, 20 Jun 2007 23:11:32 -0400
 User-Agent: KMail/1.9.3
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, michal.k.k.piotrowski@gmail.com
-References: <20070620011753.GA16692@virgo.fc-cn.com> <200706200013.13029.dtor@insightbb.com> <4678D882.3090606@mail.fc-cn.com>
-In-Reply-To: <4678D882.3090606@mail.fc-cn.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Vojtech Pavlik <vojtech@ucw.cz>
+References: <20070619190502.05d4e0c8@hyperion.delvare> <d120d5000706191159w29ebd0dajbd6cb9ac78d4faa2@mail.gmail.com> <20070620105648.6d18ad66@hyperion.delvare>
+In-Reply-To: <20070620105648.6d18ad66@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706202307.18565.dtor@insightbb.com>
+Message-Id: <200706202311.33326.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 June 2007 03:34, Qi Yong wrote:
-> Dmitry Torokhov wrote:
-> > On Tuesday 19 June 2007 21:17, Qi Yong wrote:
-> >   
-> >> Add printk_ratelimit() to atkbd_interrupt(). I get "Spurious ACK" messages flushing on my
-> >> screen. This patch helps to read the screen.
-> >>
-> >>     
-> >
-> > Will apply, thank you.
-> >
-> > Do you have any idea why you are getting spurios ACK messages? Do you have
-> > an application fiddling with keyboard port or do you have blink driver
-> > enabled?
+On Wednesday 20 June 2007 04:56, Jean Delvare wrote:
+> Hi Dmitry,
 > 
-> No idea. It is at boot time.
-> Yes, i have CONFIG_BLINK=y.
+> Thanks for your answer, very much appreciated.
+> 
+> On Tue, 19 Jun 2007 14:59:34 -0400, Dmitry Torokhov wrote:
+> > 
+> > You need to load serport modue and play with inputattach utility.
+> 
+> Ah, I see. There's no way to detect what device is connected to the
+> serial port, so we need a user-space tool to bind the port to the right
+> driver? Makes some sense, even though it's a but strange that I need
+> something called inputattach for a device which isn't an input device.
 
-Disable it.
+Because serio interface is mostly used with input devices. For all other
+devices I think universal answer is "userspace" but with input devices
+we want to do processing in kernel so we can route events into console
+and other standard interfaces (although one coudl use uinput to achieve
+similar result).
+
+> 
+> So I've set CONFIG_SERIO_SERPORT=m, compiled and loaded serport. Then I
+> added a new protocol number in <linux/serio.h>:
+> 
+> #define SERIO_TAOSEVM	0x40
+> 
+> Then I added the following entry to inputattach and recompiled it:
+> 
+> { "--taos-evm",		"-taos",	B1200, CS8,			SERIO_TAOSEVM,	0,	0,	0,	NULL },
+> 
+> Then I changed my driver code to:
+> 
+> static struct serio_device_id taos_serio_ids[] = {
+> 	{
+> 		.type	= SERIO_RS232,
+> 		.proto	= SERIO_TAOSEVM,
+> 		.id	= SERIO_ANY,
+> 		.extra	= SERIO_ANY,
+> 	},
+> 	{ 0 }
+> };
+> 
+> And lastly I ran, as root:
+> 
+> ./inputattach -taos /dev/ttyS0
+> 
+> I see the following line in the logs as a result:
+> 
+> serio: Serial port ttyS0
+> 
+> But unfortunately, my driver's .connect function is still not called.
+> I guess that I missed one step? Any idea what it would be?
+> 
+
+Not sure. Could you check /sys/bus/serio/devices/serioX/id/* and verify
+that inputattach sets up serio port properly?
 
 -- 
 Dmitry
