@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752426AbXFUWyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbXFUWzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752426AbXFUWyL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 18:54:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbXFUWx5
+	id S1751971AbXFUWzN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 18:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbXFUWzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 18:53:57 -0400
-Received: from waste.org ([66.93.16.53]:60875 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbXFUWx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 18:53:56 -0400
-Date: Thu, 21 Jun 2007 17:53:20 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, davej@redhat.com,
-       tim.c.chen@linux.intel.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: Change in default vm_dirty_ratio
-Message-ID: <20070621225320.GP11166@waste.org>
-References: <1182201271.4883.22.camel@localhost.localdomain> <20070618164711.9de1c38e.akpm@linux-foundation.org> <20070620042434.GC12096@redhat.com> <20070619214407.dfff0ca6.akpm@linux-foundation.org> <1182328536.21117.24.camel@twins> <20070620015826.03f1d71a.akpm@linux-foundation.org> <20070620091404.GO18863@kernel.dk> <1182331182.21117.39.camel@twins> <20070620092058.GP18863@kernel.dk>
+	Thu, 21 Jun 2007 18:55:00 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:58956 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbXFUWy7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 18:54:59 -0400
+From: =?iso-8859-1?q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: Please release a stable kernel Linux 3.0
+Date: Fri, 22 Jun 2007 00:59:11 +0200
+User-Agent: KMail/1.8
+Cc: linux-kernel@vger.kernel.org
+References: <200706212349.54983.zoltan.hubert@zzaero.com> <467B0125.1070609@s5r6.in-berlin.de>
+In-Reply-To: <467B0125.1070609@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070620092058.GP18863@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706220059.11508.zoltan.hubert@zzaero.com>
+X-Provags-ID: V01U2FsdGVkX18uqDKFJayF7ikOuuJwoAzbNdv3rJsqNcwV6S4
+ 3c05hkk5upSvY0cCzvMp6JnTnXsRL+WTGx64ic4vilx+Xjlax8
+ tQfGK9AZZTDoPja8c25ELYUnHXypu4l
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 11:20:59AM +0200, Jens Axboe wrote:
-> On Wed, Jun 20 2007, Peter Zijlstra wrote:
-> > On Wed, 2007-06-20 at 11:14 +0200, Jens Axboe wrote:
-> > > On Wed, Jun 20 2007, Andrew Morton wrote:
-> > > > Perhaps our queues are too long - if the VFS _does_ back off, it'll take
-> > > > some time for that to have an effect.
-> > > > 
-> > > > Perhaps the fact that the queue size knows nothing about the _size_ of the
-> > > > requests in the queue is a problem.
-> > > 
-> > > It's complicated, the size may not matter a lot. 128 sequential 512kb IO
-> > > may complete faster than 128 random 4kb IO's.
-> > 
-> > Yes, is there any way a queue could be limited to a certain amount of
-> > 'completion time' ?
-> 
-> Not easily, we'd need some sort of disk profile for that to be remotely
-> reliable.
+On Friday 22 June 2007 00:52, Stefan Richter wrote:
+> Zoltán HUBERT wrote:
+> > So I feel that a turning-point is coming where a really
+> > really really (x 15) stable and reliable kernel is
+> > NEEDED.
+>
+> Not satisfied with 2.6.16.y or one of the "enterprise"
+> distro kernels?
 
-Perhaps we want to throw some sliding window algorithms at it. We can
-bound requests and total I/O and if requests get retired too slowly we
-can shrink the windows. Alternately, we can grow the window if we're
-retiring things within our desired timeframe.
+so why not call this a day and make it 2.6-stable and the 
+others 2.7 ?
+
+z
+
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+ 
+________________________
+
+Zoltan
+________________________
+
+ 
