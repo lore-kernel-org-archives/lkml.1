@@ -1,102 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbXFURwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbXFURx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbXFURwl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759640AbXFURw2
+	id S1759724AbXFURx0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbXFURxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:52:28 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:11180 "EHLO
-	outbound8-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758361AbXFURw1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:52:27 -0400
-X-BigFish: VP
-X-FB-SS: 0,0,
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
-Date: Thu, 21 Jun 2007 19:51:22 +0200
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Avi Kivity" <avi@qumranet.com>
-cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] SVM: reliably detect if SVM was disabled by BIOS
-Message-ID: <20070621175122.GE25896@amd.com>
+	Thu, 21 Jun 2007 13:53:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56360 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757240AbXFURxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 13:53:16 -0400
+To: jimmy bahuleyan <knight.camelot@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <orlkedpryc.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<467A6290.80602@gmail.com>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 21 Jun 2007 14:53:04 -0300
+In-Reply-To: <467A6290.80602@gmail.com> (jimmy bahuleyan's message of "Thu\, 21 Jun 2007 17\:05\:44 +0530")
+Message-ID: <orr6o5kxdr.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 21 Jun 2007 17:51:32.0997 (UTC)
- FILETIME=[CDF00B50:01C7B42C]
-X-WSS-ID: 6A646548R0G895588-01-01
-Content-Type: multipart/mixed;
- boundary=z6Eq5LdranGa6ru8
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 21, 2007, jimmy bahuleyan <knight.camelot@gmail.com> wrote:
 
---z6Eq5LdranGa6ru8
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+> There, that right there, wouldn't it again require a 'nod' from all
+> those who have contributed to the kernel (because at the time they did,
+> the license was GPLv2 without any additions)?
+
+That's my understanding, yes, but IANAL.
 
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+Similarly, any GPLv2 and GPLv3 projects that wish to cooperate with
+each other could introduce mutual additional permissions in the way I
+suggested, even if neither GPLv2 nor GPLv3 themselves make such
+provisions.  This is a decision that copyright holders can make, in
+very much the same way that they can make their decisions as to
+permitting relicensing under newer versions of the GPL, or even older
+versions of the GPL.
 
-This patch adds an implementation to the svm is_disabled function to
-detect reliably if the BIOS disabled the SVM feature in the CPU. This
-fixes the issues with kernel panics when loading the kvm-amd module on
-machines where SVM is available but disabled.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+BTW, I should probably have made clear that, as usual, I was speaking
+my own mind, not speaking on behalf of FSFLA or Red Hat, with whom I'm
+associated, and certainly not on behalf of FSF, with whom I'm not
+associated.  Just in case this wasn't clear yet ;-)
 
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
---z6Eq5LdranGa6ru8
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: attachment;
- filename=svm-detect-svm-disable.patch
-Content-Transfer-Encoding: 7bit
-
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index fa17d6d..54aa83a 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -1727,6 +1727,12 @@ static void svm_inject_page_fault(struct kvm_vcpu *vcpu,
- 
- static int is_disabled(void)
- {
-+	uint64_t vm_cr;
-+
-+	rdmsrl(MSR_VM_CR, vm_cr);
-+	if (vm_cr & (1 << SVM_VM_CR_SVM_DISABLE))
-+		return 1;
-+
- 	return 0;
- }
- 
-diff --git a/drivers/kvm/svm.h b/drivers/kvm/svm.h
-index 5e93814..005a9c5 100644
---- a/drivers/kvm/svm.h
-+++ b/drivers/kvm/svm.h
-@@ -175,8 +175,11 @@ struct __attribute__ ((__packed__)) vmcb {
- #define SVM_CPUID_FUNC 0x8000000a
- 
- #define MSR_EFER_SVME_MASK (1ULL << 12)
-+#define MSR_VM_CR       0xc0010114ULL
- #define MSR_VM_HSAVE_PA 0xc0010117ULL
- 
-+#define SVM_VM_CR_SVM_DISABLE 4
-+
- #define SVM_SELECTOR_S_SHIFT 4
- #define SVM_SELECTOR_DPL_SHIFT 5
- #define SVM_SELECTOR_P_SHIFT 7
-
---z6Eq5LdranGa6ru8--
-
-
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
