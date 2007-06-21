@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbXFUNU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbXFUNVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757071AbXFUNU1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 09:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbXFUNUU
+	id S1757256AbXFUNVj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 09:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755147AbXFUNVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 09:20:20 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39706 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755292AbXFUNUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 09:20:19 -0400
-Date: Thu, 21 Jun 2007 15:20:08 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Stefan Seyfried <seife@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, nigel@nigel.suspend2.net,
-       linux-kernel@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       akpm@linux-foundation.org
-Subject: Re: [Suspend-devel] [PATCH, 3rd try] make disable_console_suspend runtime configurable
-Message-ID: <20070621132008.GE18392@elf.ucw.cz>
-References: <20070613200303.GB11437@suse.de> <200706141414.22152.rjw@sisk.pl> <200706141559.54242.fseidel@suse.de> <200706150020.29189.rjw@sisk.pl> <20070617213530.GE1803@elf.ucw.cz> <20070617214940.GA1951@elf.ucw.cz> <20070618052747.GA15173@suse.de>
+	Thu, 21 Jun 2007 09:21:31 -0400
+Received: from ik-out-1112.google.com ([66.249.90.182]:8062 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753001AbXFUNVa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 09:21:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GpbzhM+LsHrFm9B4NtKxayM864rWzcU/FUKpPLvCHDbkRAaJDkzyQ5GnVdJ2JrpNhfXLFoOT+GjbwDIs7ljnINrA3MLcYDZ6QIqDhQ5sTOH0MN0RIG9Y+/+kl4iBoKaDKJzqrWe7vg0NwO8ronZqs4FzJ9TQrZq/g1eVsFRL60o=
+Message-ID: <91b13c310706210621n29a2da43lc5caaf14df2bd47b@mail.gmail.com>
+Date: Thu, 21 Jun 2007 21:21:28 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] trivial: the memset operation on a automatic array variable should be optimized out by data initialization
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4676BBC9.3060707@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070618052747.GA15173@suse.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+References: <467658db.0f98600a.5a55.ffffdd79@mx.google.com>
+	 <4676BBC9.3060707@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 6/19/07, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Denis Cheng wrote:
+> > From: Denis Cheng <crquan@gmail.com>
+> >
+> > the explicit memset call could be optimized out by data initialization,
+> > thus all the fill working can be done by the compiler implicitly.
+> >
+>
+> How does the generated code change?  Does gcc do something stupid like
+> statically allocate a prototype structure full of zeros, and then memcpy
+> it in?  Or does it generate a series of explicit assignments for each
+> member?  Or does it generate a memset anyway?
+>
+> Seems to me that this gives gcc the opportunity to be more stupid, and
+> the only right answer is what we're doing anyway.
+>
+>     J
+>
+Technically speaking, C standard guarantees the data be initialized correctly;
+just from the point view of code style, let the compiler selects how
+to initialize will be better, this could let the compiler has more
+optimization points.
 
-> > > Sorry for not screaming when CONFIG_DISABLE_CONSOLE_SUSPEND went in,
-> > > but please lets solve this correctly....
-> > 
-> > Ouch and sorry for not screaming at "try 1" time. But it still does
-> > not make the patch right, and I believe that even patch authors agree
-> > that "no-config-needed" is superior solution.
-> 
-> No, i don't agree at all.
-> 
-> In this case, "no config needed" == "not possible to debug suspend
-> problems".
-
-No, sorry.
-
-My proposed solution is "figure out which console drivers can survive
-being on while machines go down, and keep them on".
-
-So, "no config needed" == "kernel always does the right thing, keeping
-console during suspend when possible" == "possible to debug suspend
-problems without having to change CONFIG_ or /sys/*".
-
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Denis Cheng
+Linux Application Developer
