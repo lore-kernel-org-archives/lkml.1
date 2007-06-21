@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbXFUPjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbXFUPox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbXFUPjY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXFUPjR
+	id S1755912AbXFUPox (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXFUPop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:39:17 -0400
-Received: from xenotime.net ([66.160.160.81]:37857 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752336AbXFUPjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:39:16 -0400
-Date: Thu, 21 Jun 2007 08:41:01 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Glauber de Oliveira Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
-Subject: Re: [PATCH] Move functions declarations to header file
-Message-Id: <20070621084101.73254fe7.rdunlap@xenotime.net>
-In-Reply-To: <20070621145411.GA26091@redhat.com>
-References: <20070621145411.GA26091@redhat.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 21 Jun 2007 11:44:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:20377 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990AbXFUPoo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:44:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JVchorUPKLN/sicZNPvw5Eo+ocOAkQhfP4uscvY8HjjX7u0GryY5172eh2CL6vG4EeaH6/2u8un3IzUOcyhLgWbA0kEozZCSxweczfjOVsRnPFFoQ4uE+p4wA0GhLQ8H7t8X1BudGm1824vOK+8y6mcCwRPktHFLN16azvY7zNU=
+Message-ID: <6bffcb0e0706210844k6f83a0f8n4ee60d98344e7bd8@mail.gmail.com>
+Date: Thu, 21 Jun 2007 17:44:43 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: reproducible hang with reiserfs and bash_shared_mapping
+Cc: reiserfs-dev@namesys.com, reiserfs-devel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200706211226.03994.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200706211226.03994.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007 11:54:11 -0300 Glauber de Oliveira Costa wrote:
+Hi Oliver,
 
-> Some interrupt entry points are currently defined in i8259.c
-> They probably belong in a header. Right now, their only user is
-> init_IRQ, justifying their declaration in-file. But when virtualization
-> comes in, we may be interested in using that functions in late
-> initializations.
-> 
-> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+On 21/06/07, Oliver Neukum <oliver@neukum.org> wrote:
+> Hi,
+>
+> I get reproducible hangs when running bash_shared_mapping from the
+> autotest suite. I've tested with a USB mass storage device and a PATA
+> hard drive. No difference. Vanilla 2.6.22-rc5 and -git5 are affected. Ext3
+> works flawlessly on both devices. Below is the result of sysrq-t while
+> tasks are hanging.
+>
 
-Patch is OK with me, but please insert patches inline in emails.
-Lots of people who use mutt do this, so it must work and is the
-preferred way.
+Is this a regression?
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
