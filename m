@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbXFUXvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbXFUXwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbXFUXvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbXFUXvk
+	id S1755358AbXFUXwH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXFUXvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:51:40 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35907 "EHLO
+	Thu, 21 Jun 2007 19:51:46 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35908 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751268AbXFUXvk (ORCPT
+	with ESMTP id S1754582AbXFUXvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:51:40 -0400
-Date: Fri, 22 Jun 2007 01:51:59 +0200
+	Thu, 21 Jun 2007 19:51:45 -0400
+Date: Fri, 22 Jun 2007 01:52:04 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC: 2.6 patch] allow disabling DNOTIFY without EMBEDDED
-Message-ID: <20070621235159.GE23017@stusta.de>
+To: James Simmons <jsimmons@infradead.org>,
+       "Antonino A. Daplas" <adaplas@pol.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6.22 patch] don't offer DISPLAY_SUPPORT for now
+Message-ID: <20070621235204.GF23017@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,38 +24,44 @@ User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows disabling DNOTIFY with CIONFIG_EMBEDDED=n.
+DISPLAY_SUPPORT offers support code without any users currently in the 
+tree. For a user it's quite confusing that the help text talks about
+"proper drivers" when none are available.
 
-I'm currently running a kernel with dnotify disabled and I haven't run 
-into any problem. Is there any popular application left that breaks 
-without dnotify support in the kernel?
-
-Note that this patch does not remove dnotify support, it still defaults
-to "y", and the help text recommends enabling it.
+This patch therefore lets DISPLAY_SUPPORT depend on BROKEN until there 
+will be user.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.22-rc4-mm2/fs/Kconfig.old	2007-06-21 18:25:20.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/fs/Kconfig	2007-06-21 18:25:54.000000000 +0200
-@@ -585,17 +585,17 @@
- 	depends on XFS_QUOTA || QUOTA
- 	default y
+--- linux-2.6.22-rc4-mm2/drivers/video/display/Kconfig.old	2007-06-21 18:41:26.000000000 +0200
++++ linux-2.6.22-rc4-mm2/drivers/video/display/Kconfig	2007-06-21 18:41:41.000000000 +0200
+@@ -1,24 +1,25 @@
+ #
+ # Display drivers configuration
+ #
  
- config DNOTIFY
--	bool "Dnotify support" if EMBEDDED
-+	bool "Dnotify support"
- 	default y
- 	help
- 	  Dnotify is a directory-based per-fd file change notification system
- 	  that uses signals to communicate events to user-space.  There exist
- 	  superior alternatives, but some applications may still rely on
- 	  dnotify.
+ menu "Display device support"
  
--	  Because of this, if unsure, say Y.
-+	  If unsure, say Y.
+ config DISPLAY_SUPPORT
+ 	tristate "Display panel/monitor support"
++	depends on BROKEN  #  lacks users
+ 	---help---
+ 	  This framework adds support for low-level control of a display.
+ 	  This includes support for power.
  
- config AUTOFS_FS
- 	tristate "Kernel automounter support"
- 	help
+ 	  Enable this to be able to choose the drivers for controlling the
+ 	  physical display panel/monitor on some platforms. This not only
+ 	  covers LCD displays for PDAs but also other types of displays
+ 	  such as CRT, TVout etc.
+ 
+ 	  To have support for your specific display panel you will have to
+ 	  select the proper drivers which depend on this option.
+ 
+ comment "Display hardware drivers"
+ 	depends on DISPLAY_SUPPORT
+ 
+ endmenu
+
+
 
