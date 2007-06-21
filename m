@@ -1,76 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758353AbXFUQex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbXFUQfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758353AbXFUQex (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757968AbXFUQeT
+	id S1758296AbXFUQfm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXFUQfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:34:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56772 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757834AbXFUQeR (ORCPT
+	Thu, 21 Jun 2007 12:35:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:41733 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755900AbXFUQf3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:34:17 -0400
-Date: Thu, 21 Jun 2007 09:32:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-In-Reply-To: <20070621160817.GA22897@elte.hu>
-Message-ID: <alpine.LFD.0.98.0706210923000.3593@woody.linux-foundation.org>
-References: <20070620093612.GA1626@ff.dom.local>
- <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
- <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
- <20070621160817.GA22897@elte.hu>
+	Thu, 21 Jun 2007 12:35:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=d7JF9UYYr+3VzR7puPOLmqwle/c6Oz2I2ZZldXgdVVLSX6ZZ75A/OLpUr/W8Qg4wRZcDhViULid27FACQ8C+U07NhWjQ3yjahPWfMHnsm9IRzd+S/gcsUflm6dwDUnxhPWOwqSnXJLpcWOgkfykvxiGZiNwT5zlorwmHOXlyjv0=
+Message-ID: <467AA8AB.2010107@googlemail.com>
+Date: Thu, 21 Jun 2007 18:34:51 +0200
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Rodrigo Luiz <troops.of.doom@gmail.com>,
+       CHIKAMA Masaki <masaki-c@nict.go.jp>,
+       Christian Volkmann <haveaniceday@cv-sv.de>,
+       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
+       Ben Collins <bcollins@ubuntu.com>, reiserfs-devel@vger.kernel.org,
+       "Vladimir V. Saveliev" <vs@namesys.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [1/2] 2.6.22-rc5: known regressions v2
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
+
+Here is a list of some known regressions in 2.6.22-rc5.
+
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+(BTW. There is a new category called "Will be fixed in 2.6.23")
 
 
-On Thu, 21 Jun 2007, Ingo Molnar wrote:
-> 
-> so the problem was not the trylock based spin_lock() itself (no matter 
-> how it's structured in the assembly), the problem was actually modifying 
-> the lock and re-modifying it again and again in a very tight 
-> high-frequency loop, and hence not giving it to the other core?
 
-That's what I think, yes.
+Unclassified
 
-And it matches the behaviour we've seen before (remember the whole thread 
-about whether Opteron or Core 2 hardware is "more fair" between cores?)
+Subject    : PANIC: CPU too old for this kernel. with Crusoe CPU
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8647
+Submitter  : CHIKAMA Masaki <masaki-c@nict.go.jp>
+Caused-By  : Andi Kleen <ak@suse.de>
+             or Christian Volkmann <haveaniceday@cv-sv.de>
+             one of those commits:
+             commit 4c1f59d8be7e5da75d9380da23671005b363c45c
+             commit 39427d6e595ebee38fdd77bcf55d6b13d7a4324a
+             commit fd0581bbb40d8f4b0e4b3a4de2258a50df37bb57
+             commit c7f81c9453375d6416658995eafd3397cb9bba1d
+             commit 3671df8572a299acff9c9cac2bf7279ee614d154
+Status     : unknown
 
-It all simply boils down to the fact that releasing and almost immediately 
-re-taking a lock is "invisible" to outside cores, because it will happen 
-entirely within the L1 cache of one core if the cacheline is already in 
-"owned" state.
+Subject    : Kernel hang on CMOS_READ
+References : http://lkml.org/lkml/2007/6/3/138
+Submitter  : Rodrigo Luiz <troops.of.doom@gmail.com>
+Status     : Unknown
 
-Another core that spins wildly trying to get it ends up using a much 
-slower "beat" (the cache coherency clock), and with just a bit of bad luck 
-the L1 cache would simply never get probed, and the line never stolen, at 
-the point where the lock happens to be released.
 
-The fact that writes (as in the store that releases the lock) 
-automatically get delayed by any x86 core by the store buffer, and the 
-fact that atomic read-modify-write cycles do *not* get delayed, just means 
-that if the "spinlock release" was "fairly close" to the "reacquire" in a 
-software sense, the hardware will actually make them *even*closer*.
 
-So you could make the spinlock release be a read-modify-write cycle, and 
-it would make the spinlock much slower, but it would also make it much 
-more likely that the other core will *see* the release.
+ALSA
 
-For the same reasons, if you add a "smp_mb()" in between the release and 
-the re-acquire, the other core is much more likely to see it: it means 
-that the release won't be delayed, and thus it just won't be as "close" to 
-the re-acquire.
+Subject    : snd-aoa causes badness in lib/kref.c:33
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8513
+Submitter  : Ben Collins <bcollins@ubuntu.com>
+Handled-By : Takashi Iwai <tiwai@suse.de>
+Status     : Unknown
 
-So you can *hide* this problem in many ways, but it's still just hiding 
-it.
 
-The proper fix is to not do that kind of "release and re-acquire" 
-behaviour in a loop.
 
-			Linus
+FS
+
+Subject    : 2.6.22-rc4-git5 reiserfs: null ptr deref.
+References : http://lkml.org/lkml/2007/6/13/322
+Submitter  : Randy Dunlap <randy.dunlap@oracle.com>
+Handled-By : Vladimir V. Saveliev <vs@namesys.com>
+Status     : problem is being debugged
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
