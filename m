@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbXFUWzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751660AbXFUXBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751971AbXFUWzN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 18:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbXFUWzA
+	id S1751660AbXFUXBg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbXFUXB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 18:55:00 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:58956 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbXFUWy7 convert rfc822-to-8bit (ORCPT
+	Thu, 21 Jun 2007 19:01:28 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:51301 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750716AbXFUXB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 18:54:59 -0400
-From: =?iso-8859-1?q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+	Thu, 21 Jun 2007 19:01:27 -0400
+Date: Thu, 21 Jun 2007 19:01:26 -0400
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Zolt?n HUBERT <zoltan.hubert@zzaero.com>, linux-kernel@vger.kernel.org
 Subject: Re: Please release a stable kernel Linux 3.0
-Date: Fri, 22 Jun 2007 00:59:11 +0200
-User-Agent: KMail/1.8
-Cc: linux-kernel@vger.kernel.org
-References: <200706212349.54983.zoltan.hubert@zzaero.com> <467B0125.1070609@s5r6.in-berlin.de>
-In-Reply-To: <467B0125.1070609@s5r6.in-berlin.de>
+Message-ID: <20070621230126.GF10008@csclub.uwaterloo.ca>
+References: <200706212349.54983.zoltan.hubert@zzaero.com> <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com> <467AFCEC.2070203@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706220059.11508.zoltan.hubert@zzaero.com>
-X-Provags-ID: V01U2FsdGVkX18uqDKFJayF7ikOuuJwoAzbNdv3rJsqNcwV6S4
- 3c05hkk5upSvY0cCzvMp6JnTnXsRL+WTGx64ic4vilx+Xjlax8
- tQfGK9AZZTDoPja8c25ELYUnHXypu4l
+In-Reply-To: <467AFCEC.2070203@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 June 2007 00:52, Stefan Richter wrote:
-> Zoltán HUBERT wrote:
-> > So I feel that a turning-point is coming where a really
-> > really really (x 15) stable and reliable kernel is
-> > NEEDED.
->
-> Not satisfied with 2.6.16.y or one of the "enterprise"
-> distro kernels?
+On Thu, Jun 21, 2007 at 06:34:20PM -0400, Chuck Ebbert wrote:
+> Even the good ones that get lots of fixes aren't all that good. The
+> biggest problem ATM is that suspend is badly broken and keeps getting
+> worse...
 
-so why not call this a day and make it 2.6-stable and the 
-others 2.7 ?
+I wasn't under the impression suspend had really ever worked.  Such a
+messy problem to solve.
 
-z
+And how does going back to having new features only arive in stable
+kernels every 2 years an improvement over the current system?  Getting
+support for new hardware (which lots of users keep insistingon because
+for some reason they keep insisting on buying the stuff that is currently
+for sale) also requires writing new code.
 
-
--- 
- 
-________________________
-
-Zoltan
-________________________
-
- 
+--
+Len Sorensen
