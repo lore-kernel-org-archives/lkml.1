@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbXFUQXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbXFUQYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbXFUQXs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbXFUQXi
+	id S1756996AbXFUQYA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbXFUQXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:23:38 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:53386 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312AbXFUQXg (ORCPT
+	Thu, 21 Jun 2007 12:23:47 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:25508 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755082AbXFUQXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:23:36 -0400
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
-	through other means
-From: Ram Pai <linuxram@us.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-In-Reply-To: <46799A31.10301@zytor.com>
-References: <467994BD.6000403@zytor.com>
-	 <20070620210343.GQ21478@ftp.linux.org.uk>  <46799A31.10301@zytor.com>
+	Thu, 21 Jun 2007 12:23:46 -0400
+X-IronPort-AV: i="4.16,448,1175486400"; 
+   d="scan'208"; a="33012923:sNHT23305380"
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Li Yang <leoli@freescale.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
+       Maggie Chen <chenqi@beyondsoft.com>
+In-Reply-To: <1182436817579-git-send-email-leoli@freescale.com>
+References: <1182436817579-git-send-email-leoli@freescale.com>
 Content-Type: text/plain
-Date: Thu, 21 Jun 2007 09:20:37 -0700
-Message-Id: <1182442837.3342.13.camel@ram.us.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Fri, 22 Jun 2007 00:23:41 +0800
+Message-Id: <1182443021.5969.2.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 21 Jun 2007 16:23:44.0768 (UTC) FILETIME=[89D41800:01C7B420]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-20 at 14:20 -0700, H. Peter Anvin wrote:
-> Al Viro wrote:
-> > On Wed, Jun 20, 2007 at 01:57:33PM -0700, H. Peter Anvin wrote:
-> >> ... or, alternatively, add a subfield to the first field (which would
-> >> entail escaping whatever separator we choose):
-> >>
-> >> /dev/md6 /export ext3 rw,data=ordered 0 0
-> >> /dev/md6:/users/foo /home/foo ext3 rw,data=ordered 0 0
-> >> /dev/md6:/users/bar /home/bar ext3 rw,data=ordered 0 0
-> > 
-> > Hell, no.  The first field is in principle impossible to parse unless
-> > you know the fs type.
-> > 
-> > How about making a new file with sane format?  From the very
-> > beginning.  E.g. mountpoint + ID + relative path + type + options,
-> > where ID uniquely identifies superblock (e.g. numeric st_dev)
-> > and backing device (if any) is sitting among the options...
-> 
-> Okay, I see there has been some discussion on this earlier, based on a
-> proposal by Ram Pai, so it pretty much comes down to redesigning this
-> right.  I see some issues with his proposal (device numbers exported to
-> userspace in text form should be separated into major:minor form, for
-> one thing.)  I know the util-linux-ng people have also had issues with
-> /proc/mounts that they would like resolved in order to finally nuke
-> /etc/mtab.
-> 
-> Is Ram still working on this?  I'd like to help make this happen so we
-> can be done with it.
+On Thu, 2007-06-21 at 22:40 +0800, Li Yang wrote:
+> This is a Chinese translated version of Documentation/HOWTO.  Currently
+> Chinese involvement in Linux kernel is very low, especially comparing to
+> its largest population base.  Language could be the main obstacle.  Hope
+> this document will help more Chinese to contribute to Linux kernel.
 
-Peter, I am not working on it currently. But i am interested in getting
-it done. I have the seed set of patches which had Al Viro's ideas
-incorporated. Infact those patches were sent on lkml 2 months back.
-Shall we start with those patches?
+I tried to find some bugs in this translation, but I failed, -:)).
 
-RP
+Thanks a lot for your work, I hope I can do some help next time.
 
-
-> 
-> 	-hpa
-> 
-> 
-
+Best Regards,
+- Bryan Wu
