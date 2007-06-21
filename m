@@ -1,109 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbXFUXDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbXFUXET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbXFUXDW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbXFUXCs
+	id S1753341AbXFUXET (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXFUXEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:02:48 -0400
-Received: from mail.tmr.com ([64.65.253.246]:38860 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752609AbXFUXCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:02:46 -0400
-Message-ID: <467B03C1.50809@tmr.com>
-Date: Thu, 21 Jun 2007 19:03:29 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Neil Brown <neilb@suse.de>, david@lang.hm, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>	<18034.479.256870.600360@notabene.brown>	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <46756BE2.7010401@tmr.com>
-In-Reply-To: <46756BE2.7010401@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 19:04:08 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44385 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbXFUXEH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 19:04:07 -0400
+Date: Fri, 22 Jun 2007 00:04:05 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Message-ID: <20070621230404.GS21478@ftp.linux.org.uk>
+References: <orlkedpryc.fsf@oliva.athome.lsd.ic.unicamp.br> <20070621180029.GR21478@ftp.linux.org.uk> <orhcp1jc8o.fsf@oliva.athome.lsd.ic.unicamp.br>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orhcp1jc8o.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I didn't get a comment on my suggestion for a quick and dirty fix for 
--assume-clean issues...
+On Thu, Jun 21, 2007 at 05:15:03PM -0300, Alexandre Oliva wrote:
+> On Jun 21, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
+> 
+> > On Thu, Jun 21, 2007 at 06:39:07AM -0300, Alexandre Oliva wrote:
+> 
+> >> - the kernel Linux could use code from GPLv3 projects
+> 
+> > ... and inherit GPLv3 additional restrictions.  No.
+> 
+> Respecting the wishes of the author of that code.  Are you suggesting
+> they should not be respected?
 
-Bill Davidsen wrote:
-> Neil Brown wrote:
->> On Thursday June 14, david@lang.hm wrote:
->>  
->>> it's now churning away 'rebuilding' the brand new array.
->>>
->>> a few questions/thoughts.
->>>
->>> why does it need to do a rebuild when makeing a new array? couldn't 
->>> it just zero all the drives instead? (or better still just record 
->>> most of the space as 'unused' and initialize it as it starts useing 
->>> it?)
->>>     
->>
->> Yes, it could zero all the drives first.  But that would take the same
->> length of time (unless p/q generation was very very slow), and you
->> wouldn't be able to start writing data until it had finished.
->> You can "dd" /dev/zero onto all drives and then create the array with
->> --assume-clean if you want to.  You could even write a shell script to
->> do it for you.
->>
->> Yes, you could record which space is used vs unused, but I really
->> don't think the complexity is worth it.
->>
->>   
-> How about a simple solution which would get an array on line and still 
-> be safe? All it would take is a flag which forced reconstruct writes 
-> for RAID-5. You could set it with an option, or automatically if 
-> someone puts --assume-clean with --create, leave it in the superblock 
-> until the first "repair" runs to completion. And for repair you could 
-> make some assumptions about bad parity not being caused by error but 
-> just unwritten.
+Do piss off.  You know full well what I'm saying.
+ 
+> Anyone who's not happy about it can still take that portion out,
+> unless you accept changes that make this nearly impossible, which I
+> suppose you wouldn't given how strongly you feel about this.
+
+Oh, right.  "Anyone who doesn't like proprietary code in the tree
+can just remove it, what's the big deal?" analog.  Sorry, doesn't work.
+
+> Without this provision, you wouldn't be able to use the code in the
+> first place, so I don't perceive any loss for anyone.  Do you?
+
+Replace GPLv3 with proprietary in your argument and look in archives.
+That had come up quite a few time in such form.
+
+> >> - GPLv3 projects could use code from Linux
+> 
+> > Oh, rapture!  How could one object against such a glorious outcome?
+> 
+> Exactly ;-)
+
+Look up "sarcasm".
+> 
+> Two-way cooperation.  I'm told that's good.  I was told this was even
+> desirable.
+
+Again, replace v3 with proprietary and reread your argument.
+
+> I can see that one-way cooperation could be perceived as unfair, even
+> if permissions granted by GPLv3 are all granted by GPLv2 as well.
+
+... but not the other way round.  So in effect we get a change of kernel
+license, GPLv3 people *do* *not* get any license changes on their projects.
+And you are saying that it's not one-way?
+
+> > ... except for that pesky "no added restrictions" part, but hey, who
+> > cares?
+> 
+> But see, nobody would be adding restrictions to *your* code.
+
+Liar.  I'm sorry, but I do _not_ believe that you are honestly clueless
+about GPL to that extent, especially given your claims of participation
+of v3 development.  What you are saying is "but your code will be still
+available under GPLv2".  Yes, it will.  So it will be if e.g. SCO pulls
+it into proprietary codebase.  And you know damn well that this _is_
+against the intentions of the license.  Besides, changes to code should
+be available under the same license.  The first change in v3 project
+affecting both imported v2 code and native v3 one will create a big problem.
+
+> > ... because it's For The Benefit Of User Freedoms!!!
+> 
+> It is either way.  Do you deny that tivoization also benefits one
+> user/licensee?  And in detriment of others, while at that?
+
+You know, we have another wanker here starting another thread from
+hell - one about allowing stable driver ABI, to make the life of
+proprietary modules more convenient.  The funny thing is, it's _also_
+said to be for the benefit of users.  I.e. it's basically an equivalent
+of "Will somebody think of chiiildrun!!!?!?!?"
+ 
+> > No.  Permission denied.
+> 
+> Your opinion is duly noted.  Thanks.
+
+It's not an opinion.  It's a lack of permission to distribute GPLv2 code
+under conditions violating its license.
+
+> > If somebody wants to dual-license *others* code,
+> 
+> This is not about dual licensing at all, and this is not about others
+> code.  This is a decision you would have to make in order to enable
+> cooperation between projects.
 >
-> Thought 2: I think the unwritten bit is easier than you think, you 
-> only need it on parity blocks for RAID5, not on data blocks. When a 
-> write is done, if the bit is set do a reconstruct, write the parity 
-> block, and clear the bit. Keeping a bit per data block is madness, and 
-> appears to be unnecessary as well.
->>> while I consider zfs to be ~80% hype, one advantage it could have 
->>> (but I don't know if it has) is that since the filesystem an raid 
->>> are integrated into one layer they can optimize the case where files 
->>> are being written onto unallocated space and instead of reading 
->>> blocks from disk to calculate the parity they could just put zeros 
->>> in the unallocated space, potentially speeding up the system by 
->>> reducing the amount of disk I/O.
->>>     
->>
->> Certainly.  But the raid doesn't need to be tightly integrated
->> into the filesystem to achieve this.  The filesystem need only know
->> the geometry of the RAID and when it comes to write, it tries to write
->> full stripes at a time.  If that means writing some extra blocks full
->> of zeros, it can try to do that.  This would require a little bit
->> better communication between filesystem and raid, but not much.  If
->> anyone has a filesystem that they want to be able to talk to raid
->> better, they need only ask...
->>  
->>  
->>> is there any way that linux would be able to do this sort of thing? 
->>> or is it impossible due to the layering preventing the nessasary 
->>> knowledge from being in the right place?
->>>     
->>
->> Linux can do anything we want it to.  Interfaces can be changed.  All
->> it takes is a fairly well defined requirement, and the will to make it
->> happen (and some technical expertise, and lots of time .... and
->> coffee?).
->>   
-> Well, I gave you two thoughts, one which would be slow until a repair 
-> but sounds easy to do, and one which is slightly harder but works 
-> better and minimizes performance impact.
->
+> If you don't want to make this decision, that's fine.  Nobody can be
+> forced to cooperate.  This works in both directions.
+> 
+> Don't try to frame those who want to respect and defend users'
+> freedoms as uncooperative.  This is *your* decision, and your decision
+> alone.
 
-
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+Ah.  Got it.  Nice spin.  "Your license doesn't allow to put your code
+under the license we want, you are mean and uncooperative!  Giiiimmeeee!!!
+Or be condemned as a Bad Person and an Enemy of Freedom"
