@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbXFUUXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbXFUUYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758010AbXFUUXc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 16:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbXFUUXZ
+	id S1759255AbXFUUYO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 16:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbXFUUX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 16:23:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:39319 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752386AbXFUUXX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 16:23:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=uR4msuOgMfcuoLkyhGA6rMvn4JQJ3FXLlLCgpfVue2L2PR1Sp9P2+3g/e+ueeJMbcw5t7d12a2IpqIRhIZgf0HMRLaCLbmSueKd96RfVM8o9JWfCFkXW7DqBNbBe1E6b5+lMI1u2DIHIWISZ13cUUwf0SU769v/SqIhhYQKIctE=
-Message-ID: <467ADE12.7020303@googlemail.com>
-Date: Thu, 21 Jun 2007 22:22:42 +0200
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
+	Thu, 21 Jun 2007 16:23:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48638 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752894AbXFUUX5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 16:23:57 -0400
+Date: Thu, 21 Jun 2007 22:23:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
-       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
-       Rudolf Marek <r.marek@assembler.cz>,
-       =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       Stephane Eranian <eranian@hpl.hp.com>
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches v2
-References: <467AA8CA.2020206@googlemail.com> <alpine.LFD.0.98.0706211115380.3593@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0706211115380.3593@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070621202314.GA32051@elte.hu>
+References: <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621202917.a2bfbfc7.dada1@cosmosbay.com> <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org> <20070621195659.GA22303@elte.hu> <alpine.LFD.0.98.0706211304480.3593@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706211304480.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds pisze:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Thu, 21 Jun 2007, Ingo Molnar wrote:
+> > 
+> > I can understand why no data is saved by this change: gcc is 
+> > aligning the next field to a natural boundary anyway and we dont 
+> > really have arrays of spinlocks (fortunately).
 > 
-> On Thu, 21 Jun 2007, Michal Piotrowski wrote:
->> Subject    : long freezes on thinkpad t60
->> References : http://lkml.org/lkml/2007/5/24/100
->> Submitter  : Miklos Szeredi <miklos@szeredi.hu>
->> Handled-By : Ingo Molnar <mingo@elte.hu>
->> Patch      : http://lkml.org/lkml/2007/6/16/81
->> Status     : patch was suggested
+> Actually, some data structures could well shrink.
 > 
-> This one is fixed, and tested by Miklos. It's commit fa490cfd15: "Fix 
-> possible runqueue lock starvation in wait_task_inactive()".
+> Look at "struct task_struct", for example. Right now it has two 
+> spinlocks right next to each other (alloc_lock and pi_lock).
 
-Thanks for the information.
+yeah. We've got init_task's task-struct embedded in the vmlinux, but 
+it's aligned to 32 bytes, which probably hides this effect. We'd only 
+see it if the size change just happened to bring a key data structure 
+(which is also embedded in the vmlinux) just below a modulo 32 bytes 
+boundary. The chance for that is around 6:32 per 'merge' event. That 
+means that there cannot be all that many such cases ;-)
 
-BTW. Björn noticed that I accidentally removed this regression.
+anyway, the shorter init sequence is worth it already.
 
-Subject    : OProfile issues
-References : http://lkml.org/lkml/2007/6/12/207
-Submitter  : Stephane Eranian <eranian@hpl.hp.com>
-Handled-By : Björn Steinbrink <B.Steinbrink@gmx.de>
-Patch      : http://lkml.org/lkml/2007/6/12/392
-Status     : patch was suggested
-
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+	Ingo
