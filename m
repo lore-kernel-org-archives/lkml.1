@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbXFUTzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbXFUTzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359AbXFUTzQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758883AbXFUTyU
+	id S1759824AbXFUTzm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbXFUTyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:54:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48664 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758326AbXFUTyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:54:19 -0400
-To: david@lang.hm
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Michael Poole <mdpoole@troilus.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Tomas Neme <lacrymology@gmail.com>,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706201200550.30395@asgard.lang.hm>
-	<87sl8ms9z5.fsf@graviton.dyn.troilus.org>
-	<Pine.LNX.4.64.0706201234230.30395@asgard.lang.hm>
-	<87k5tys8w5.fsf@graviton.dyn.troilus.org>
-	<Pine.LNX.4.64.0706201253120.30395@asgard.lang.hm>
-	<87645is82q.fsf@graviton.dyn.troilus.org>
-	<20070621171612.GC10008@csclub.uwaterloo.ca>
-	<Pine.LNX.4.64.0706211019510.31603@asgard.lang.hm>
-	<20070621174332.GD10008@csclub.uwaterloo.ca>
-	<Pine.LNX.4.64.0706211046511.31603@asgard.lang.hm>
-	<20070621180538.GE10008@csclub.uwaterloo.ca>
-	<Pine.LNX.4.64.0706211110340.31603@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 16:54:08 -0300
-In-Reply-To: <Pine.LNX.4.64.0706211110340.31603@asgard.lang.hm> (david@lang.hm's message of "Thu\, 21 Jun 2007 11\:29\:04 -0700 \(PDT\)")
-Message-ID: <ortzt1jd7j.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 21 Jun 2007 15:54:44 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:48212 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759573AbXFUTyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 15:54:41 -0400
+Date: Thu, 21 Jun 2007 21:54:00 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: James Morris <jmorris@namei.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
+       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
+       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
+Message-ID: <20070621195400.GK20105@marowsky-bree.de>
+References: <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz> <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz> <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, david@lang.hm wrote:
+On 2007-06-21T15:42:28, James Morris <jmorris@namei.org> wrote:
 
-> On Thu, 21 Jun 2007, Lennart Sorensen wrote:
+> > A veto is not a technical argument. All technical arguments (except for
+> > "path name is ugly, yuk yuk!") have been addressed, have they not?
+> AppArmor doesn't actually provide confinement, because it only operates on 
+> filesystem objects.
+> 
+> What you define in AppArmor policy does _not_ reflect the actual 
+> confinement properties of the policy.  Applications can simply use other 
+> mechanisms to access objects, and the policy is effectively meaningless.
 
->> You can't use this code if you cooporate with anyone that requires
->> DRM systems.
+Only if they have access to another process which provides them with
+that data.
 
-> I think their earlier versions did say this.
+And now, yes, I know AA doesn't mediate IPC or networking (yet), but
+that's a missing feature, not broken by design.
 
-Show me a GPLv3 draft that did it?
+> You might define this as a non-technical issue, but the fact that AppArmor 
+> simply does not and can not work is a fairly significant consideration, I 
+> would imagine.
 
-Start here, section 3:
-http://gplv3.fsf.org/gpl-draft-2006-01-16.html
+If I restrict my Mozilla to not access my on-disk mail folder, it can't
+get there. (Barring bugs in programs which Mozilla is allowed to run
+unconfined, sure.)
 
-> DRM does have some legitimate uses, for example redhat installations
-> not installing unsigned software is a form of DRM
+If the argument is that AA provides somewhat different semantics - and
+for some use cases "weaker" ones - than SE Linux, that is undoubtly
+true. However, it appears to be the case that those are the differences
+which make AA's model different from SELinux as well, so it appears a
+trade-off best left to the admin / user to choose what fits their needs
+best.
 
-Doh.  Then chmod og-r is DRM too.  And stronger DRM while at that,
-since the user denied permission to read the file cannot take it back,
-whereas the verification of unsigned software is just a warning, that
-you can often bypass by telling the software to go ahead and install
-it regardless of signatures.
+
+Regards,
+    Lars
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Teamlead Kernel, SuSE Labs, Research and Development
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+
