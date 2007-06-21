@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbXFUEbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbXFUEcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758240AbXFUEbu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 00:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbXFUEa6
+	id S1757352AbXFUEcM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 00:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbXFUEbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 00:30:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59233 "EHLO mx1.redhat.com"
+	Thu, 21 Jun 2007 00:31:04 -0400
+Received: from ns1.suse.de ([195.135.220.2]:41718 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756737AbXFUEa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 00:30:57 -0400
-To: david@lang.hm
-Cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Hazelton <dhazelton@enter.net>, Greg KH <greg@kroah.com>,
-       debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181104570.14121@woody.linux-foundation.org>
-	<ork5u1awtq.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181232230.3593@woody.linux-foundation.org>
-	<or7iq1atex.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706181344080.3593@woody.linux-foundation.org>
-	<orhcp4algt.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<9a8748490706201034j43139301w5a18c172d688c724@mail.gmail.com>
-	<orfy4mtjt4.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706201419170.30395@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 01:30:09 -0300
-In-Reply-To: <Pine.LNX.4.64.0706201419170.30395@asgard.lang.hm> (david@lang.hm's message of "Wed\, 20 Jun 2007 14\:20\:19 -0700 \(PDT\)")
-Message-ID: <or8xaerktq.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752776AbXFUEbC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 00:31:02 -0400
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 21 Jun 2007 14:30:52 +1000
+Message-Id: <1070621043052.1096@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: Benny Halevy <bhalevy@panasas.com>
+Cc: "J. Bruce Fields" <bfields@citi.umich.edu>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Neil Brown <neilb@suse.de>
+Subject: [PATCH 004 of 8] knfsd: nfsd4: fix enc_stateid_sz for nfsd callbacks
+References: <20070621142604.727.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 20, 2007, david@lang.hm wrote:
 
-> On Wed, 20 Jun 2007, Alexandre Oliva wrote:
->> We already know the vendor doesn't care about the user, so why should
->> we take this into account when analyzing the reasoning of the vendor?
+From: "J. Bruce Fields" <bfields@fieldses.org>
 
-> no, we don't know this. you attribute the reason for the lockdown to
-> be anti-user. others view it as being pro-user becouse it lets the
-> user get functionality that they wouldn't have access to otherwise.
 
-Yeah, yeah, now please put your hands to the back such that I can
-place your handcuffs, such that you can't use your hands to kill
-someone.  Well, you might still be able to use your hands for this
-purpose if you're really clever, or you can kill people by other
-means.  But at least I'll be able to claim that I did my part.
+enc_stateid_sz should be given in u32 words units, not bytes, so we were
+overestimating the buffer space needed here.
 
-:-/
+Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
+Signed-off-by: Neil Brown <neilb@suse.de>
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+### Diffstat output
+ ./fs/nfsd/nfs4callback.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff .prev/fs/nfsd/nfs4callback.c ./fs/nfsd/nfs4callback.c
+--- .prev/fs/nfsd/nfs4callback.c	2007-06-21 13:46:38.000000000 +1000
++++ ./fs/nfsd/nfs4callback.c	2007-06-21 14:10:31.000000000 +1000
+@@ -75,7 +75,7 @@ enum nfs_cb_opnum4 {
+ #define op_enc_sz			1
+ #define op_dec_sz			2
+ #define enc_nfs4_fh_sz			(1 + (NFS4_FHSIZE >> 2))
+-#define enc_stateid_sz			16
++#define enc_stateid_sz			(NFS4_STATEID_SIZE >> 2)
+ #define NFS4_enc_cb_recall_sz		(cb_compound_enc_hdr_sz +       \
+ 					1 + enc_stateid_sz +            \
+ 					enc_nfs4_fh_sz)
