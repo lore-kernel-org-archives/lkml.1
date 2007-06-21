@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbXFUXCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbXFUXC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753092AbXFUXCl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbXFUXCV
+	id S1753145AbXFUXC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXFUXCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:02:21 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:20400 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbXFUXCU (ORCPT
+	Thu, 21 Jun 2007 19:02:35 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:55798 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884AbXFUXCe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:02:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Rni9ioBxHATLOwUq7g3g73CyLo8uj6C6roFmFpYVEfGix9Rv+BryWvdGRu9ZLINeJpget76Q0ucnDIBPuZj1GRGbJHia8It3n69oq2kxPsRnZ3h+UAjQ0TgFPvhGD4VFbAriSIGZ2clYjRowJghwxrQ9+k4DiCIjrsecD4TTmEM=
-Message-ID: <20f65d530706211602v67f410aaoec92030737505ab9@mail.gmail.com>
-Date: Fri, 22 Jun 2007 11:02:19 +1200
-From: "Keith Chew" <keith.chew@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: iTCO_wdt stops CPU fan control
+	Thu, 21 Jun 2007 19:02:34 -0400
+Message-ID: <467B02B3.2090903@gmail.com>
+Date: Fri, 22 Jun 2007 00:58:59 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: =?ISO-8859-15?Q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Please release a stable kernel Linux 3.0
+References: <200706212349.54983.zoltan.hubert@zzaero.com>
+In-Reply-To: <200706212349.54983.zoltan.hubert@zzaero.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On 06/21/2007 11:49 PM, Zoltán HUBERT wrote:
 
-After many hours to testing, we found that the Hardware Watchdog Timer
-module causes our motherboard's BIOS CPU fan control to stop
-controlling the fan. On Linux bootup, the fan speed stays constant all
-the time.
+> Please consider that we are living in a REAL world, and not 
+> Disney-Land.
 
-Setup:
-- kernel 2.6.20.1 and 2.6.21.5
-- iTCO_wdt loaded with ICH4 chip on motherboard
+Well, I don't know about that so much; I've always thought Linus bears a 
+striking resemblance to Mickey Mouse.
 
-If watchdog module is excluded from the kernel build, fan control
-works as normal.
+More to the point though -- could you please consider just going away for at 
+least a month? Subscribers to this list just sat through a massive licensing 
+flamefest and could at this point sort of do without a (delayed) bitkeeper, 
+development branch, stable API and reiser4 one.
 
-Regards
-Keith
+Deal? See you in a month?
+
+Thanks in advance!
+
+Rene.
+
