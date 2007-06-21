@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbXFUQeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbXFUQeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757581AbXFUQeX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbXFUQeJ
+	id S1757531AbXFUQeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbXFUQeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:34:09 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:40795 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755096AbXFUQeH (ORCPT
+	Thu, 21 Jun 2007 12:34:10 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:59455 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755044AbXFUQeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 21 Jun 2007 12:34:07 -0400
-Date: Thu, 21 Jun 2007 12:34:04 -0400
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: Tomas Neme <lacrymology@gmail.com>, Andrew McKay <amckay@iders.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       david@lang.hm, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Message-ID: <20070621163404.GB10008@csclub.uwaterloo.ca>
-References: <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org> <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br> <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org> <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca> <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca> <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br> <2e6659dd0706201414g3a6af30cvfb50720962e9dc1c@mail.gmail.com> <orhcp2rl5m.fsf@oliva.athome.lsd.ic.unicamp.br>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fe0UW+E75z3G9LyiTfouS3pDIIsiqYyjgedLwK6r+KCKPo71WtKdHD6GeV79CiF73yhQaJ2J8ZdO+01u5a2z1/98Dd2EAbbZ7maD4I8hU6+4LgP+KTGzs8k0f5S4Gz247+v66nH7zE9FGAzgOzcDVEKhnaAd4VBelfd1iiVI/DQ=
+Message-ID: <961aa3350706210934m11e7f0cq96f384056878cb43@mail.gmail.com>
+Date: Fri, 22 Jun 2007 01:34:06 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: "Alexander Wuerstlein" <arw@arw.name>
+Subject: Re: [PATCH] sns: add syscall to check signed state of a process [4/4]
+Cc: linux-kernel@vger.kernel.org,
+       "Johannes Schlumberger" <spjsschl@stud.informatik.uni-erlangen.de>
+In-Reply-To: <11824417553291-git-send-email-arw@arw.name>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <orhcp2rl5m.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <11824417553291-git-send-email-arw@arw.name>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 01:23:01AM -0300, Alexandre Oliva wrote:
-> And then the user who uses such features in ways not permitted by the
-> copyright holders are committing a crime.  They can be prosecuted by
-> the copyright holders and convicted of the crime.
+2007/6/22, Alexander Wuerstlein <arw@arw.name>:
 
-Well we already clearly know the content providers in the US don't trust
-anyone else, and certainly don't think just using copyright laws to sue
-people who violate copyright is enough.  No they want to put all sorts
-of things in place to try to prevent it from even being possible to
-violate copyright in the first place.  They don't believe in innocent
-until proven guilty at all.
+> +asmlinkage int sys_sns_is_trusted(pid_t p)
+> +{
+> +       struct task_struct *t;
+> +       rcu_read_lock();
+> +       t = find_task_by_pid(p);
+> +       if (IS_ERR(t)) {
 
-> That TiVo can somehow become liable for this just shows how broken the
-> legal system in the US is.  It's like making a knife manufacturer
-> liable for a killing using a knife they made, just because the knife
-> didn't have technical measures intended to prevent the knife from
-> being used to kill people.
+Shouldn't it be:
+if (!t) {
+        ...
+?
 
-So much for "Land of the free". :(
+find_task_by_pid() returns NULL on failure.
 
---
-Len Sorensen
+> +               rcu_read_unlock();
+> +               return -EINVAL;
+> +       }
+> +       p = t->sns_valid_sig; /*locking needed*/
+> +       rcu_read_unlock();
+> +       return p;
+> +}
