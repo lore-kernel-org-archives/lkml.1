@@ -1,61 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbXFUFFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbXFUFNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbXFUFFp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 01:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbXFUFFi
+	id S1753531AbXFUFNN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 01:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXFUFNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 01:05:38 -0400
-Received: from mail.bmlv.gv.at ([193.171.152.37]:60811 "EHLO mail.bmlv.gv.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbXFUFFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 01:05:37 -0400
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+	Thu, 21 Jun 2007 01:13:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:11056 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbXFUFNB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 01:13:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=pQ0Sck1Guj+uNVkJXhoF/lEF6xoYLxdfjmBvhsXXG+ZsL4akWLECBVLU27dMyz18cpqsI4/CAJyRSeMcPNHRZlqa7fXvBjnK7iVJ7BQOllHTLe9Zr6GGxPKFZJnBEEaFNuu0OOIFLxVyzEbDDsVY7ygYubIeaLyXW7S0szbXsw0=
+Message-ID: <4104961b0706202213p16df5ca5s579de4b949efbf16@mail.gmail.com>
+Date: Thu, 21 Jun 2007 13:13:00 +0800
+From: "jidong xiao" <jidong.xiao@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: TUX2 filesystem
-Date: Thu, 21 Jun 2007 07:05:34 +0200
-User-Agent: KMail/1.9.7
-Cc: phillips@istop.com
+Subject: What's does KPROBE_ENTRY mean?
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706210705.34702.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Daniel,
-hello everbody else,
+I searched in linux kernel 2.6.10, didn't find it, then I tried
+2.6.20, it is there. But I am not familiar with assembly language, so
+can anybody kindly explain it, I don't know the difference between
+KPROBE_ENTRY and ENTRY, however, I can find both of these items in
+some files, such as arch/x86_64/kernel/entry.S.
 
+Thank you.
 
-in Oct 2000 there's been some discussion "Tux2 - evil patents sighted" 
-(http://www.ussg.iu.edu/hypermail/linux/kernel/0010.0/0343.html), and in Aug 
-2002 (http://www.uwsg.iu.edu/hypermail/linux/kernel/0208.3/0332.html) Daniel 
-wrote
-> It's well down my list of priorities because of uncertainties due to
-> the U.S. patent system. 
-> Does anybody want to know if patent chill exists, and is it hurting
-> open source? The answer is yes. 
-
-
-With the recent Supreme Court decisions 
-(http://www.groklaw.net/article.php?story=20070430121005424) and the fact 
-that Daniel wrote that he did most of his work in *1989* (which is now 18 
-years ago!) is there a chance for newer developments?
-
-
-It seems to me that this kind of filesystem could solve a few problems that 
-are currently attacked:
-- Atomic snapshots. Make a new superblock, and mount this copy in another
-  directory. As long as it's not overwritten, it stays consistent.
-- Speed/Consistency for Flash media. There is a list of superblocks, and when
-  the new block has been written the pointer from the old gets set - until the
-  first block in the list gets re-written.
-
-There may be some other nice things I didn't think about - but just having 
-this filesystem for harddisks might be good, too.
-
-
-Regards,
-
-Phil
+Regards
+Jason Xiao
