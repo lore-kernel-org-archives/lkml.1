@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbXFUQu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbXFUQya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758747AbXFUQu3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbXFUQuQ
+	id S1757532AbXFUQya (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbXFUQyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:50:16 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45795 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754682AbXFUQuO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:50:14 -0400
-Date: Thu, 21 Jun 2007 09:51:39 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: 2.6.22-rc4-mm2: serial-convert-early_uart-to-earlycon-for-8250
-In-reply-to: <467A825E.9000708@shadowen.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <467AAC9B.3040905@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
-Content-transfer-encoding: 7BIT
-References: <467A825E.9000708@shadowen.org>
+	Thu, 21 Jun 2007 12:54:23 -0400
+Received: from rtr.ca ([64.26.128.89]:1708 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755030AbXFUQyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 12:54:22 -0400
+Message-ID: <467AAD3C.8020200@rtr.ca>
+Date: Thu, 21 Jun 2007 12:54:20 -0400
+From: Mark Lord <lkml@rtr.ca>
 User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, davej@redhat.com,
+       tim.c.chen@linux.intel.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: Change in default vm_dirty_ratio
+References: <1182201271.4883.22.camel@localhost.localdomain>	<20070618164711.9de1c38e.akpm@linux-foundation.org>	<20070620042434.GC12096@redhat.com>	<20070619214407.dfff0ca6.akpm@linux-foundation.org>	<1182328536.21117.24.camel@twins> <20070620015826.03f1d71a.akpm@linux-foundation.org>
+In-Reply-To: <20070620015826.03f1d71a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> The following patch to 2.6.22-rc4-mm2 seems to update the early console
-> support for the 8250 uarts:
-> 
->     serial-convert-early_uart-to-earlycon-for-8250
-> 
-> This moved from naming the 8250 uart 'uart' to 'uart8250' in the
-> console= kernel parameter.  While this is sensible long term to allow
-> other uarts to be supported sanely this puts existing users with
-> existing console configurations in a difficult position as their console
-> output just stops appearing.  It makes life almost impossible for any
-> automatic testers as they now need to have different command lines for
-> different versions of the kernel.
-> 
-> I think we need to maintain 'uart' as an alias here.
+Andrew Morton wrote:
+>
+> What do we actually want the kernel to *do*?  Stated in terms of "when the
+> dirty memory state is A, do B" and "when userspace does C, the kernel should
+> do D".
 
-I will try to make one patch to use uart too.
+When we have dirty pages awaiting write-out,
+and the write-out device is completely idle,
+then we should be writing them out.
 
-YH
+That's the easy bit taken care of.  ;)
