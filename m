@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbXFUKJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbXFUKTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754601AbXFUKJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 06:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXFUKJe
+	id S1754202AbXFUKTB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 06:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbXFUKSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 06:09:34 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:33125 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbXFUKJd (ORCPT
+	Thu, 21 Jun 2007 06:18:52 -0400
+Received: from srv1.netkinetics.net ([206.71.148.180]:33048 "EHLO
+	srv1.netkinetics.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbXFUKSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 06:09:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LkLYZRljMRZ2PgcWXjLMBVWmMnSf1us4eeUc0H71YLhMr6H9kMPToW0dSzY52Ih3TxVpbbOH80k1BoYuGLBaBYo0/e01aPm+qv8T4HHKH3+/sOM2QnR7HSWq5UximP3A+rr7aDr/vUgGJgNQuMAF2yVKWPGHKKRcdqLbpkRsiRw=
-Message-ID: <a781481a0706210309u5cb05787k83bd0d7cd95e7416@mail.gmail.com>
-Date: Thu, 21 Jun 2007 15:39:32 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Keiichi KII" <k-keiichi@bx.jp.nec.com>
-Subject: Re: [RFC][PATCH -mm take5 6/7] add ioctls for adding/removing target
-Cc: "Matt Mackall" <mpm@selenic.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <467A43B1.3010308@bx.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 21 Jun 2007 06:18:51 -0400
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+From: Tim Post <tim.post@netkinetics.net>
+Reply-To: tim.post@netkinetics.net
+To: david@lang.hm
+Cc: Alexandre Oliva <aoliva@redhat.com>, Andrew McKay <amckay@iders.ca>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070615012623.GA25189@elte.hu>
+	 <20070615101007.0cbfd078@the-village.bc.nu>
+	 <orir9p10xw.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <4673CA7C.5040207@t-online.de>
+	 <orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <20070616181902.GB21478@ftp.linux.org.uk>
+	 <or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
+	 <orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
+	 <or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	 <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br> <4679557C.5080907@iders.ca>
+	 <20070620175627.319a6c55@the-village.bc.nu> <46797C52.4020907@iders.ca>
+	 <orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
+	 <ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
+Content-Type: text/plain
+Organization: Net Kinetics
+Date: Thu, 21 Jun 2007 18:15:36 +0800
+Message-Id: <1182420936.9012.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466FC455.5060001@bx.jp.nec.com> <466FC76A.6050006@bx.jp.nec.com>
-	 <a781481a0706131341k17170514q7a9d0ce052dbfe2a@mail.gmail.com>
-	 <4677AA3D.7010604@bx.jp.nec.com>
-	 <a781481a0706190809n3387caefv86d289cfd959f805@mail.gmail.com>
-	 <467A43B1.3010308@bx.jp.nec.com>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - srv1.netkinetics.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - netkinetics.net
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Keiichi,
+On Wed, 2007-06-20 at 22:30 -0700, david@lang.hm wrote:
 
-> > Please do consider configfs. Note that we'll have to lose the sysfs
-> > symlink from your target's kobject to the kobject of the ethernet
-> > device if we switch to configfs, but was that symlink needed for
-> > some essential functionality or was it simply for informational
-> > purpose? IMHO, this patchset only needs to bring in functionality
-> > to be able to create, destroy, and modify netconsole targets at
-> > run-time, and all these reconfiguration tasks would be handled
-> > quite well by configfs, AFAICT.
->
-> It was for informational pupose. But, if we used symlink to the net_device
-> kobject in sysfs, we could easily keep up with changing network device name by
-> changing symbolic link.
+> 
+> asking a device that's running software that you haven't verified to give 
+> you a checksum of itself isn't going to work becouse the software can just 
+> lie to you.
+> 
 
-In that case (because it is non-essential) we can drop that link entirely.
-(This means the associated code for the temporary modify_list, the
-extra mutex and the kasprintf() stuff can also be dropped too!) I guess
-the netconsole_event() notifier could now become simply:
+I don't think there is any way I _could_ make a device if it had to be
+tamper proof and use free software if that was the case. 
 
-	if (event == NETDEV_CHANGENAME) {
-		spin_lock_irqsave(&target_list_lock, ...);
-		list_for_each_entry(nt, ..., &target_list, ...)
-			if (nt->np.dev == dev)
-				strcpy(nt->np.dev_name, dev->name);
-		spin_unlock_irqrestore(&target_list_lock, ...);
-	}
+I'd need to make some kind of proprietary network connection back to my
+company that used its own network device. I could not trust it if the
+free kernel could touch it, if I wanted to allow a modified in place
+kernel.
 
-> In the case of configfs, Do we use config_item related to the network interface
-> because the configfs doesn't have symlink that refers to net_device kobject
-> (e.g. "network_interface" in configfs, "network_interface" value is "eth0")?
+If I hope for that device to use the internet to talk to me (i.e. just a
+secondary nic), I'd have to write my own kernel to power this second
+network device that was capable of encrypting and validating traffic
+over tcp-ip. Or I have to pull my own copper to every location where my
+device is used.
 
-Yes, that's a good idea, this way we continue to give the information we
-were giving previously. We could do this by defining another configfs
-attribute of the target's config_item which could then be a proxy for
-the char dev_name[IFNAMSIZ] member of the target's underlying netpoll
-structure. (this attribute would naturally be read-only from userspace;
-sort of similar to what you're doing for the local_mac attribute currently).
+So either way, I'm writing my own kernel if I want to do that, because I
+could not POSSIBLY allow the kernel talking to my private connection to
+the device to be modified. 
 
-Please feel free to discuss anything else regarding this with me off-list,
-if you want.
+What a nasty, vicious cycle that would be. Yikes!
+ 
 
-Thanks,
-Satyam
+--Tim
+
+
