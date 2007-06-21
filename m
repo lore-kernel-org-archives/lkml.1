@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759132AbXFUTqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbXFUTrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759132AbXFUTqs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbXFUTql
+	id S1759412AbXFUTrn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbXFUTre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:46:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45555 "EHLO mx1.redhat.com"
+	Thu, 21 Jun 2007 15:47:34 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:45330 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbXFUTqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:46:40 -0400
-To: Andrew McKay <amckay@iders.ca>
-Cc: david@lang.hm, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4673CA7C.5040207@t-online.de>
-	<orlkejrg4o.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070616181902.GB21478@ftp.linux.org.uk>
-	<or1wgbras9.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
-	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4679557C.5080907@iders.ca>
-	<20070620175627.319a6c55@the-village.bc.nu>
-	<46797C52.4020907@iders.ca>
-	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
-	<ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
-	<orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
-	<467A96DC.1020906@iders.ca>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 16:45:37 -0300
-In-Reply-To: <467A96DC.1020906@iders.ca> (Andrew McKay's message of "Thu\, 21 Jun 2007 10\:18\:52 -0500")
-Message-ID: <or3b0lks66.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1754423AbXFUTrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 15:47:33 -0400
+Date: Thu, 21 Jun 2007 14:47:31 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Stuart_Hayes@dell.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+Message-ID: <20070621194731.GB8840@austin.ibm.com>
+References: <20070618175713.GD5836@austin.ibm.com> <4677FFF1.2010308@ru.mvista.com> <20070619164854.GR5836@austin.ibm.com> <200706192043.40298.bzolnier@gmail.com> <46783777.10607@ru.mvista.com> <20070620162845.GY5836@austin.ibm.com> <20070620180123.642316ae@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070620180123.642316ae@the-village.bc.nu>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, Andrew McKay <amckay@iders.ca> wrote:
+On Wed, Jun 20, 2007 at 06:01:23PM +0100, Alan Cox wrote:
+> 
+> Its unlikely the command got lost. The IRQ could have done but the error
+> path tries to spot that case by reading the status register - which
+> hangs. So in theory it could be a lost IRQ and if the reset works we'll
+> find that out.
 
-> david@lang.hm wrote:
->> how can the server tell if it's been tampered with?
+OK, here's the libata trace info (transcribed by hand, may have typos,
+the numerical values should be correct).
 
-> I agree with this statement.
+This is during the first read of the partition table, during boot.
 
-Err...  That's a question, not a statement ;-)
+ata_scsi_dumb_cb: CDB(:1:0,0,0) 28 00 00 00 00 00 00 00 08
+ata_scsi_translate: ENTER
+scsi_10_lba_len: ten-byte command
+ata_sg_setup: ENTER, ata1
+ata_sg_setup: 1 sg elements mapped
+ata_fill_sg: PRD[0] = (0x2FEEF000, 0x1000)
+ata1: ata_dev_select: ENTER, device 0, wait 1
+ata_tf_load: feat 0x0 nsect 0x8 lba 0x0 0x0 0x0
+ata_tf_load: device 0xE0
+ata_exec_command: ta1: cmd 0xc8
+ata_scsi_translate: EXIT
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+then, 30 seconds later:
+
+sd 0:0:0:0 [sda] Done: 0xeff3aba0 TIMEOUT
+sd 0:0:0:0 [sda] Result: host_byte=DID_OK driver_byte=DRV_OK, SUG_OK
+sd 0:0:0:0 [sda] CDB: Read(10): 28 00 00 ... 00 08 00
+sd 0:0:0:0 [sda] scsi host busy 1 failed 0
+ata_scsi_timed_out: ENTER
+ata_scsi_timed_out: EXIT, ret=0
+ata_port_flush_task: ENTER
+ata_port_flush_task: flush #1
+ata1: ata_port_flush_task: flush #2
+ata_port_flush_task: EXIT
+
+Then a hard hang here.
+
+This was on 2.6.22-rc5-git1
+Again, this disk and controller combo work spotlessly when using 
+the ide drivers.
+
+
+--linas
