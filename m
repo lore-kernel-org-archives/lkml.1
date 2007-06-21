@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbXFUTD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbXFUTLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758703AbXFUTD7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbXFUTDw
+	id S1756177AbXFUTLi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbXFUTLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:03:52 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:36991 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753197AbXFUTDw (ORCPT
+	Thu, 21 Jun 2007 15:11:31 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:22566 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753004AbXFUTLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:03:52 -0400
-Date: Thu, 21 Jun 2007 12:02:28 -0700
-From: Reza Roboubi <reza@earthdetails.com>
-Subject: O_DIRECT, fdatasync_area, mwrite
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: torvalds@linux-foundation.org
-Message-id: <467ACB44.50209@earthdetails.com>
-Organization: Earth Details
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Thu, 21 Jun 2007 15:11:30 -0400
+Date: Thu, 21 Jun 2007 21:11:28 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jan Kandziora <jjj@gmx.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Limiting load of certain processes
+In-Reply-To: <200706212100.28381.jjj@gmx.de>
+Message-ID: <Pine.LNX.4.64.0706212110440.26568@fbirervta.pbzchgretzou.qr>
+References: <200706211950.40825.jjj@gmx.de> <Pine.LNX.4.64.0706212020520.26568@fbirervta.pbzchgretzou.qr>
+ <200706212100.28381.jjj@gmx.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds:
- > I suspect that this is about a few hundred lines of code (and a lot of
- > testing). And you can emulate O_DIRECT behavior with it, along with
- > splice (only for page-cache entities, though), and a lot of other
- > off-by-one uses.
-( http://lwn.net/2002/0516/a/lt-async.php3 )
 
-I have often read this message and wondered why no one has implemented 
-it yet.  We would love to have such clean features instead of O_DIRECT. 
-  At this very moment it's a bit hard for us to do this(given a 
-prerequisites learning curve amongst other factors.)  We may at some 
-point do it and I'd love to contribute.  What _are_ the issues with it, 
-  and is there a technical reason it hasn't been implemented yet by anybody?
+On Jun 21 2007 21:00, Jan Kandziora wrote:
 
-Further, is O_DIRECT to raw partition also unclean?
+>I know it's a crude idea for everyday Linux processes, but for
+>dosemu driven applications, which behave badly in a multitasking OS
+>*and* for which source code isn't available, it may be worth to
+>discuss.
 
-Thanks.
+Would dosbox do? (it does busy-loops too, but at least, it's got
+source)
 
-Reza.
+
+	Jan
 -- 
-Reza Roboubi
-Chief Technical Officer
-http://www.EarthDetails.com
