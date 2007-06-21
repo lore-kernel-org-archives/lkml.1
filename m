@@ -1,76 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbXFUSrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbXFUSuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbXFUSrY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbXFUSrR
+	id S1756524AbXFUSuZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbXFUSuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:47:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47861 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752070AbXFUSrQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:47:16 -0400
-Date: Thu, 21 Jun 2007 11:44:35 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-In-Reply-To: <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
-Message-ID: <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
-References: <20070620093612.GA1626@ff.dom.local>
- <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
- <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
- <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
- <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
- <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
+	Thu, 21 Jun 2007 14:50:12 -0400
+Received: from ms.trustica.cz ([82.208.32.68]:34638 "EHLO ms.trustica.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753267AbXFUSuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 14:50:11 -0400
+Message-ID: <467AC84A.303@assembler.cz>
+Date: Thu, 21 Jun 2007 20:49:46 +0200
+From: Rudolf Marek <r.marek@assembler.cz>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Luca Tettamanti <kronos.it@gmail.com>
+CC: lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [lm-sensors] [RFC] ACPI based hwmon driver for ASUS
+References: <20070513223329.GA29207@dreamland.darkstar.lan> <46520F36.4080006@assembler.cz> <68676e00705211453n69de6868lc5da2cad64f65699@mail.gmail.com> <46528B6F.3050701@assembler.cz> <20070602222829.GA11893@dreamland.darkstar.lan>
+In-Reply-To: <20070602222829.GA11893@dreamland.darkstar.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Luca,
 
+Sorry for delay,
 
-On Thu, 21 Jun 2007, Eric Dumazet wrote:
+> Ok, it makes sense :)
 > 
-> This reminds me Nick's proposal of 'queued spinlocks' 3 months ago
+> Name (FBUF, Package (0x06)
+> {
+>     0x03,
+>     CPUF,
+>     CHAF,
+>     PWRF,
+>     CHPF,
+>     CH2F
+> })
 > 
-> Maybe this should be re-considered ? (unlock is still a non atomic op, 
-> so we dont pay the serializing cost twice)
+> Clearly the first number is not the number of available readings (though
+> it matches the count in the other DSDTs I've seen); don't know what it
+> is :|
 
-No. The point is simple:
+Maybe study the Pro2.dll from Asus Probe II?
 
-	IF YOU NEED THIS, YOU ARE DOING SOMETHING WRONG!
 
-I don't understand why this is even controversial. Especially since we 
-have a patch for the problem that proves my point: the _proper_ way to fix 
-things is to just not do the bad thing, instead of trying to allow the bad 
-behaviour and try to handle it.
+> The last field of the individual fan packages is far more interesting: 0
+> means disabled, anything else means enabled. In your DSDT "CHIPSET FAN
+> Speed" is marked as disabled and there's no AML code to read the
+> rotation.
+> This may be true also for the other packages (temp and voltage), but for
+> now I've modified only the fan code.
 
-Things like queued spinlocks just make excuses for bad code. 
+Ok.
 
-We don't do nesting locking either, for exactly the same reason. Are 
-nesting locks "easier"? Absolutely. They are also almost always a sign of 
-a *bug*. So making spinlocks and/or mutexes nest by default is just a way 
-to encourage bad programming!
+Fan3 is disabled because the chip is programed to disabled - (IO pin)
 
-> extract : 
-> 
-> Implement queued spinlocks for i386. This shouldn't increase the size of
-> the spinlock structure, while still able to handle 2^16 CPUs.
+> Here's another iteration of the driver, please give it a try:
 
-Umm. i386 spinlocks could and should be *one*byte*.
+It loads now. I have moved my extra fan to some other connector, now it is fan1 
+for w83627EHF chip.
 
-In fact, I don't even know why they are wasting four bytes right now: the 
-fact that somebody made them an "int" just wastes memory. All the actual 
-code uses "decb", so it's not even a question of safety. I wonder why we 
-have that 32-bit thing and the ugly casts.
 
-Ingo, any memory of that?
+ATK0110 ATK0110:00: removing...
+ATK0110 ATK0110:00: atk: adding...
+ATK0110 ATK0110:00: board ID = A8VE-SE
+ATK0110 ATK0110:00: temp 0: 0x6030000 CPU Temperature [900-1250]
+ATK0110 ATK0110:00: temp 1: 0x6030001 MB Temperature [700-1250]
+ATK0110 ATK0110:00: voltage 0: 0x6020000 Vcore Voltage [1450-1750]
+ATK0110 ATK0110:00: voltage 1: 0x6020001  +3.3 Voltage [3000-3600]
+ATK0110 ATK0110:00: voltage 2: 0x6020002  +5.0 Voltage [4500-5500]
+ATK0110 ATK0110:00: voltage 3: 0x6020003 +12.0 Voltage [11200-13200]
+ATK0110 ATK0110:00: atk_enumerate_fan: invalid fan count? 3 (should be 5)
+ATK0110 ATK0110:00: fan 0: 0x6040000 CPU FAN Speed [0-1800] enabled
+ATK0110 ATK0110:00: fan 1: 0x6040001 CHASSIS FAN Speed [0-1800] enabled
+ATK0110 ATK0110:00: fan 2: 0x6040002 POWER FAN Speed [0-1800] enabled
+ATK0110 ATK0110:00: fan 3: 0x6040005 CHIPSET FAN Speed [0-1800] disabled
+ATK0110 ATK0110:00: fan 4: 0x6040006 CHASSIS2 FAN Speed [0-1800] enabled
+ATK0110 ATK0110:00: registering hwmon device
+ATK0110 ATK0110:00: populating sysfs directory
 
-(And no, on 32-bit x86, we don't allow more than 128 CPU's. I don't think 
-such an insane machine has ever existed).
+Although it says it has been registered to hwmon class, I cant find it in sysfs. 
+I have loaded/unloaded the driver several times before I checked the dir, so 
+maybe is something wrong?
 
-		Linus
+Does it show up in your /sys/class/hwmon?
+
+Thanks,
+
+Rudolf
