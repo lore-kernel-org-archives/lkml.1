@@ -1,39 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbXFUQya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbXFUQzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757532AbXFUQya (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbXFUQyX
+	id S1758285AbXFUQzv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbXFUQzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:54:23 -0400
-Received: from rtr.ca ([64.26.128.89]:1708 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755030AbXFUQyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:54:22 -0400
-Message-ID: <467AAD3C.8020200@rtr.ca>
-Date: Thu, 21 Jun 2007 12:54:20 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 21 Jun 2007 12:55:43 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:35649 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755433AbXFUQzl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 12:55:41 -0400
+Message-ID: <467AACAC.3040202@zytor.com>
+Date: Thu, 21 Jun 2007 09:51:56 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, davej@redhat.com,
-       tim.c.chen@linux.intel.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: Change in default vm_dirty_ratio
-References: <1182201271.4883.22.camel@localhost.localdomain>	<20070618164711.9de1c38e.akpm@linux-foundation.org>	<20070620042434.GC12096@redhat.com>	<20070619214407.dfff0ca6.akpm@linux-foundation.org>	<1182328536.21117.24.camel@twins> <20070620015826.03f1d71a.akpm@linux-foundation.org>
-In-Reply-To: <20070620015826.03f1d71a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
+ through other means
+References: <467994BD.6000403@zytor.com> <20070620210343.GQ21478@ftp.linux.org.uk> <467AA3B4.6090609@zytor.com> <20070621164907.GB28311@sergelap.austin.ibm.com>
+In-Reply-To: <20070621164907.GB28311@sergelap.austin.ibm.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->
-> What do we actually want the kernel to *do*?  Stated in terms of "when the
-> dirty memory state is A, do B" and "when userspace does C, the kernel should
-> do D".
+Serge E. Hallyn wrote:
+> 
+> Hmm, or do you actually mean that if i'd done
+> 
+> 	mount --bind /tmp/a /tmp
+> 	mount --bind /tmp/b /tmp
+> 	mount --bind /tmp/c /tmp
+> 
+> that you would want to see information about the first two mounts?
+> 
 
-When we have dirty pages awaiting write-out,
-and the write-out device is completely idle,
-then we should be writing them out.
+Yes.  Right now, you see all three without any reliable way of knowing
+which one is on top.
 
-That's the easy bit taken care of.  ;)
+	-hpa
