@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbXFUAww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbXFUBGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbXFUAww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 20:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXFUAwp
+	id S1756473AbXFUBGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 21:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXFUBGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 20:52:45 -0400
-Received: from ccerelrim02.cce.hp.com ([161.114.21.23]:11575 "EHLO
-	ccerelrim02.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbXFUAwo (ORCPT
+	Wed, 20 Jun 2007 21:06:32 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:27922 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbXFUBGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 20:52:44 -0400
-From: "Bob Picco" <bob.picco@hp.com>
-Date: Wed, 20 Jun 2007 20:52:41 -0400
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
+	Wed, 20 Jun 2007 21:06:31 -0400
+Date: Wed, 20 Jun 2007 18:07:11 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Bob Picco" <bob.picco@hp.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 Subject: Re: mm snapshot broken-out-2007-06-20-10-12.tar.gz uploaded
-Message-ID: <20070621005241.GE10927@localhost>
+Message-Id: <20070620180711.1d4d6b6e.randy.dunlap@oracle.com>
+In-Reply-To: <20070621005122.GD10927@localhost>
 References: <200706201714.l5KHEYh6010297@imap1.linux-foundation.org>
+	<20070621005122.GD10927@localhost>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706201714.l5KHEYh6010297@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.11
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.6.20.173532
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:	[Wed Jun 20 2007, 01:14:34PM EDT]
-[snip] 
+On Wed, 20 Jun 2007 20:51:22 -0400 Bob Picco wrote:
 
-More build breakage. efi_range_is_wc is referenced but not declared.
+> akpm@linux-foundation.org wrote:	[Wed Jun 20 2007, 01:14:34PM EDT]
+> [snip]
+> 
+> Build breakage. pci_mmcfg_late_init is for i386.
+
+then you want CONFIG_X86_32 instead of CONFIG_X86.
+CONFIG_X86 is set/true for both X86_32 and X86_64.
 
 
-Signed-off-by: Bob Picco <bob.picco@hp.com>
+> Signed-off-by: Bob Picco <bob.picco@hp.com>
+> 
+>  drivers/acpi/bus.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6.22-rc5-mm1/drivers/acpi/bus.c
+> ===================================================================
+> --- linux-2.6.22-rc5-mm1.orig/drivers/acpi/bus.c	2007-06-20 14:09:07.000000000 -0400
+> +++ linux-2.6.22-rc5-mm1/drivers/acpi/bus.c	2007-06-20 20:32:00.000000000 -0400
+> @@ -757,7 +757,9 @@ static int __init acpi_init(void)
+>  	result = acpi_bus_init();
+>  
+>  	if (!result) {
+> +#ifdef CONFIG_X86
+>  		pci_mmcfg_late_init();
+> +#endif
+>  #ifdef CONFIG_PM_LEGACY
+>  		if (!PM_IS_ACTIVE())
+>  			pm_active = 1;
 
- include/asm-ia64/fb.h |    1 +
- 1 file changed, 1 insertion(+)
 
-Index: linux-2.6.22-rc5-mm1/include/asm-ia64/fb.h
-===================================================================
---- linux-2.6.22-rc5-mm1.orig/include/asm-ia64/fb.h	2007-06-20 14:09:18.000000000 -0400
-+++ linux-2.6.22-rc5-mm1/include/asm-ia64/fb.h	2007-06-20 20:40:48.000000000 -0400
-@@ -3,6 +3,7 @@
- 
- #include <linux/fb.h>
- #include <linux/fs.h>
-+#include <linux/efi.h>
- #include <asm/page.h>
- 
- static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
