@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbXFUVeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbXFUVgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758915AbXFUVeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 17:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbXFUVd5
+	id S1759048AbXFUVgP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 17:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbXFUVgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 17:33:57 -0400
-Received: from [212.12.190.189] ([212.12.190.189]:33002 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755883AbXFUVd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 17:33:56 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: How to improve the quality of the kernel?
-Date: Fri, 22 Jun 2007 00:33:13 +0300
-User-Agent: KMail/1.5
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <200706180141.41101.a1426z@gawab.com> <200706211641.28504.a1426z@gawab.com> <20070621135744.GO12950@stusta.de>
-In-Reply-To: <20070621135744.GO12950@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 21 Jun 2007 17:36:00 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55220 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755140AbXFUVf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 17:35:58 -0400
+Date: Thu, 21 Jun 2007 22:41:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Linas Vepstas <linas@austin.ibm.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Stuart_Hayes@dell.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
+Message-ID: <20070621224102.1ae04397@the-village.bc.nu>
+In-Reply-To: <467ABC4D.5010004@ru.mvista.com>
+References: <20070618175713.GD5836@austin.ibm.com>
+	<4677FFF1.2010308@ru.mvista.com>
+	<20070619164854.GR5836@austin.ibm.com>
+	<200706192043.40298.bzolnier@gmail.com>
+	<46783777.10607@ru.mvista.com>
+	<20070620162845.GY5836@austin.ibm.com>
+	<20070620180123.642316ae@the-village.bc.nu>
+	<467ABC4D.5010004@ru.mvista.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706220033.13932.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Thu, Jun 21, 2007 at 04:41:28PM +0300, Al Boldi wrote:
-> > Adrian Bunk wrote:
-> > > Talk is cheap, but unless YOU will do it your emails will only be a
-> > > waste of bandwidth.
-> >
-> > Thanks, and good luck with involving people with this kind of response!
->
-> It's simply how kernel development works - not by talking but by doing
-> the work.
+> > queue ? You are overestimating IDE ;)
+> 
+>     He's not -- there is queued commands support since ATA[PI]-5. I'm not sure 
+> why but Linux decided not to support it.
 
-This sounds like a brute-force approach, akin to hacking.
+Almost no hardware supports it and the functionality is really really
+ugly to use when it works at all - NCQ is rather more elegant.
 
-I think it's much more productive to analyze the problem and then design a 
-solution accordingly.
-
-> Many people thought long-term maintainance for 2.6.16 wouldn't make sense.
-> And I didn't start long discussions whether we need regression tracking -
-> I simply did it.
-
-Maybe because you are a PRO.
-
-> These are things that simply happened because I thought they were
-> important - and because I got my ass up to do them myself.
->
-> Don't expect anyone to jump up to do it only because of your talk.
-> YOU must offer something, and it will work if it's then accepted by
-> people.
->
-> If you think what you have in mind is both doable and important just do
-> it. You will find out where the problems lie yourself.
-> You might be able to prove me and all other people who think it would
-> not work wrong.
-> You might fail, e.g. because people will not adopt whatever you have in
-> mind because they don't like it for some reason, but that's part of how
-> development works, and you'll never know unless you try it.
-
-
-Thanks!
-
---
-Al
-
+Alan
