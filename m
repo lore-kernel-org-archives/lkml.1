@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbXFUVHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbXFUVJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758039AbXFUVHV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 17:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbXFUVHJ
+	id S1758301AbXFUVJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 17:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbXFUVJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 17:07:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58271 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755343AbXFUVHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 17:07:07 -0400
-Date: Thu, 21 Jun 2007 23:06:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
-       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070621210630.GA7521@elte.hu>
-References: <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621202917.a2bfbfc7.dada1@cosmosbay.com> <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org> <alpine.LFD.0.98.0706211230130.3593@woody.linux-foundation.org> <20070621200941.GB22303@elte.hu> <alpine.LFD.0.98.0706211311350.3593@woody.linux-foundation.org> <20070621203013.GA466@elte.hu> <alpine.LFD.0.98.0706211342230.3593@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706211342230.3593@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 21 Jun 2007 17:09:33 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:50557 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755550AbXFUVJc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 17:09:32 -0400
+Subject: Re: [PATCH for 2.6.22] [6/10] x86: Only make Macintosh drivers
+	default on Macs
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Reply-To: will_schmidt@vnet.ibm.com
+To: Olaf Hering <olaf@aepfle.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070621185442.GA23424@aepfle.de>
+References: <200706201223.443613000@suse.de>
+	 <20070620102334.DD01814AD0@wotan.suse.de>
+	 <20070621173628.GA21243@aepfle.de>
+	 <1182448725.25426.19.camel@farscape.rchland.ibm.com>
+	 <alpine.LFD.0.98.0706211125100.3593@woody.linux-foundation.org>
+	 <20070621185442.GA23424@aepfle.de>
+Content-Type: text/plain
+Organization: IBM
+Date: Thu, 21 Jun 2007 16:09:14 -0500
+Message-Id: <1182460154.25426.31.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Thu, 21 Jun 2007, Ingo Molnar wrote:
+On Thu, 2007-06-21 at 20:54 +0200, Olaf Hering wrote:
+> On Thu, Jun 21, Linus Torvalds wrote: 
 > > 
-> > damn, i first wrote up an explanation about why that ugly __delay(1) is 
-> > there (it almost hurts my eyes when i look at it!) but then deleted it 
-> > as superfluous :-/
+> > On Thu, 21 Jun 2007, Will Schmidt wrote:
+> > >
+> > > I'll second that.  The obvious gotcha is that on a G5, the windfarm
+> > > drivers don't get automatically selected, thus the fans run at full
+> > > speed, and my office becomes a windtunnel. :-) 
+> > 
+> > Since when has "default" been anything but "default". It doesn't mean that 
+> > you can't override it. And if "make oldconfig" doesn't take the _old_ 
+> > setting into account over the new one, there's something wrong.
+
+> I said no to all new options (except IDE_PROC_FS and FIREWIRE), until
+> CONFIG_MACINTOSH_DRIVERS. If I say y, everything else was disabled.
 > 
-> I'm fine with a delay, but the __delay(1) is simply not "correct". It 
-> doesn't do anything.
+>   mkdir ../$$$$
+>   gzip  -cd  < /tmp/config.gz > ../$$$$/.config
+>   make -kj3 O=../$$$$ ARCH=powerpc
+> 
 
-it's a bit trickier than that. Yes, it's a simple 1-entry loop and thus 
-makes little sense to call. But it's a loop that got boot-time 
-calibrated, so we can do this in the spinlock-debug code:
+I copy in the g5_defconfig and then do my "make oldconfig".   which
+eventually prompts with:
+	Macintosh device drivers (MACINTOSH_DRIVERS) [N/y] (NEW)     
 
-        u64 loops = loops_per_jiffy * HZ;
+But I see what got me..    The g5_defconfig hasnt been updated since
+before the MACINTOSH_DRIVERS option was added back in April; so I have
+no old setting to carry over into the new.
 
-this guarantees that we will loop for _at least_ 1 second before 
-printing a message. (in practice it's much longer, especially with the 
-current naive trylock approach)
+Unless someone beats me to it, I'll spin up a new g5_defconfig via the
+ppc-dev list shortly.   :-)
 
-Why? Because as part of the activities that the spin-loop does, we also 
-do everything that an mdelay(1000) would do. We do it 'piecemail-wise', 
-and we do it very inefficiently, but the lower time-bound should be 
-guaranteed. This is done because most of the problems were caused by too 
-short looping and bogus debug printouts. So this is basically an 
-open-coded udelay implementation.
+-Will
 
-Furthermore, with the spin_is_locked() fix i just sent, the __loop(1) 
-solution should actually be quite close to a real udelay() thing, 
-without the delay effect. It would probably more accurate to increase it 
-to loops_per_jiffy*10*HZ/16 and to call a __loop(16) thing, to get 
-closer timings. (but then some people would argue 'why dont you take the 
-lock as soon as it's released'.)
-
-	Ingo
