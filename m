@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbXFUTix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbXFUTjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758788AbXFUTix (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXFUTio
+	id S1758967AbXFUTjO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758739AbXFUTiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:38:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43000 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754261AbXFUTin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:38:43 -0400
-To: davids@webmaster.com
-Cc: <alan@lxorguk.ukuu.org.uk>,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <MDEHLPKNGKAHNMBLJOLKCEHKEMAC.davids@webmaster.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 16:38:30 -0300
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEHKEMAC.davids@webmaster.com> (David Schwartz's message of "Thu\, 21 Jun 2007 11\:17\:50 -0700")
-Message-ID: <orbqf9ksi1.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 21 Jun 2007 15:38:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49196 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758611AbXFUTiv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 15:38:51 -0400
+Date: Thu, 21 Jun 2007 12:35:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Chuck Ebbert <cebbert@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+In-Reply-To: <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0706211230130.3593@woody.linux-foundation.org>
+References: <20070620093612.GA1626@ff.dom.local>
+ <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
+ <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
+ <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
+ <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
+ <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
+ <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, "David Schwartz" <davids@webmaster.com> wrote:
 
->> On Wed, 20 Jun 2007 12:55:10 -0700
->> "David Schwartz" <davids@webmaster.com> wrote:
 
->> > A key is a number. A signature is a number. They are neither
->> > statements nor
->> > instructions. The argument that GPLv2 prohibits Tivoization is
->> > really and
->> > truly absurd. It has neither a legal nor a moral leg to stand on.
+On Thu, 21 Jun 2007, Linus Torvalds wrote:
+> 
+> We don't do nesting locking either, for exactly the same reason. Are 
+> nesting locks "easier"? Absolutely. They are also almost always a sign of 
+> a *bug*. So making spinlocks and/or mutexes nest by default is just a way 
+> to encourage bad programming!
 
->> A computer program is a number too.
+Side note, and as a "truth in advertising" section: I'll have to admit 
+that I argued against fair semaphores on the same grounds. I was wrong 
+then (and eventually admitted it, and we obviously try to make our mutexes 
+and semaphores fair these days!), and maybe I'm wrong now.
 
-> No, it's not. It can be expressed as a number, but it is not a number.
+If somebody can actually come up with a sequence where we have spinlock 
+starvation, and it's not about an example of bad locking, and nobody 
+really can come up with any other way to fix it, we may eventually have to 
+add the notion of "fair spinlocks".
 
-By this logic, then a key is a key, and a signature is a signature.
-They can be expressed as numbers, sure.
+So my arguments are purely pragmatic. It's not that I hate fairness per 
+se. I dislike it only when it's used to "solve" (aka hide) other problems.
 
-> A computer program is a set of instructions to accomplish a particular
-> result. It can be expressed as a number, but that doesn't mean it is a
-> number.
+In the end, some situations do need fairness, and the fact that aiming for 
+fairness is often harder, slower, and more complicated than not doing so 
+at that point turns into a non-argument. If you need it, you need it.
 
-A key is an input to a cryptographical algorithm, and a signature is
-an output.  I could try to come up with more creative definitions, but
-you get the idea already.
+I just don't think we need it, and we're better off solving problems other 
+ways.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+(For example, we might also solve such problems by creating a separate
+"fair_spin_lock" abstraction, and only making the particular users that 
+need it actually use it. It would depend a bit on whether the cost of 
+implementing the fairness is noticeable enough for it to be worth having 
+a separate construct for it).
+
+		Linus
