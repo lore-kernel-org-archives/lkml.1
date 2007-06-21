@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbXFUPzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757840AbXFUP4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757612AbXFUPzo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbXFUPzH
+	id S1757840AbXFUP4r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbXFUP4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:55:07 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:56475 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754382AbXFUPzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:55:03 -0400
-Message-ID: <467A9F43.1050007@rfo.atmel.com>
-Date: Thu, 21 Jun 2007 17:54:43 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: Marc Pignat <marc.pignat@hevs.ch>
-CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <andrew@sanpeople.com>, Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-References: <467A4532.40301@rfo.atmel.com> <200706211657.49427.marc.pignat@hevs.ch>
-In-Reply-To: <200706211657.49427.marc.pignat@hevs.ch>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
-Content-Transfer-Encoding: 7bit
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: 
+	Thu, 21 Jun 2007 11:56:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48525 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754694AbXFUP4h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:56:37 -0400
+Subject: Re: Request for Linux Kernel Mailing List archives
+From: David Woodhouse <dwmw2@infradead.org>
+To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, webguy@theaimsgroup.com,
+       postmaster@lkml.org, postmaster@ussg.iu.edu,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       postmaster@vger.kernel.org
+In-Reply-To: <20070621155414.GA12413@atjola.homenet>
+References: <467949CC.9090405@zytor.com>
+	 <1182438411.10524.4.camel@shinybook.infradead.org>
+	 <20070621155414.GA12413@atjola.homenet>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 21 Jun 2007 23:56:44 +0800
+Message-Id: <1182441405.10524.9.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marc Pignat :
-> please use this patch, sorry for the later
+On Thu, 2007-06-21 at 17:54 +0200, Björn Steinbrink wrote:
+> Or maybe alternatively a feature that forwards the mail to you. 
 
-My eyes are too tired or this patch is the same as the previous one :-\
+A mailing list where you actually _receive_ the mail. Such an innovative
+idea... :)
 
-Cheers,
+But yes, I agree that's quite cute. You could even do it as an anonymous
+read-only IMAP mailbox, perhaps?
+
+> I find it preferable to actually have the email you reply to. No
+> copy'n'paste for quoting, no manual quote marking, no manual "On $date
+> wrote $author" line, ...
+
+You can put all that into a mailto: URL :)
+
 -- 
-Nicolas Ferre
-
+dwmw2
 
