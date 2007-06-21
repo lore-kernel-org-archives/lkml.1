@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbXFUVAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbXFUVAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758485AbXFUVAY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 17:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbXFUVAI
+	id S1759369AbXFUVAz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 17:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbXFUVAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 17:00:08 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:47025 "EHLO jazzhorn.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756220AbXFUVAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 17:00:05 -0400
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
-	pathname matching
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Lars Marowsky-Bree <lmb@suse.de>
-Cc: James Morris <jmorris@namei.org>, Pavel Machek <pavel@ucw.cz>,
-       Crispin Cowan <crispin@novell.com>, Greg KH <greg@kroah.com>,
-       Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070621195400.GK20105@marowsky-bree.de>
-References: <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com>
-	 <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com>
-	 <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz>
-	 <20070621160840.GA20105@marowsky-bree.de>
-	 <20070621183311.GC18990@elf.ucw.cz>
-	 <20070621192407.GF20105@marowsky-bree.de>
-	 <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
-	 <20070621195400.GK20105@marowsky-bree.de>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 21 Jun 2007 16:59:54 -0400
-Message-Id: <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 17:00:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44274 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756011AbXFUVAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 17:00:45 -0400
+Date: Thu, 21 Jun 2007 13:58:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [patch] spinlock debug: make looping nicer
+In-Reply-To: <20070621204234.GA1510@elte.hu>
+Message-ID: <alpine.LFD.0.98.0706211352530.3593@woody.linux-foundation.org>
+References: <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
+ <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
+ <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
+ <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
+ <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
+ <alpine.LFD.0.98.0706211230130.3593@woody.linux-foundation.org>
+ <20070621200941.GB22303@elte.hu> <alpine.LFD.0.98.0706211311350.3593@woody.linux-foundation.org>
+ <20070621204234.GA1510@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 21:54 +0200, Lars Marowsky-Bree wrote:
-> On 2007-06-21T15:42:28, James Morris <jmorris@namei.org> wrote:
+
+
+On Thu, 21 Jun 2007, Ingo Molnar wrote:
 > 
-> > > A veto is not a technical argument. All technical arguments (except for
-> > > "path name is ugly, yuk yuk!") have been addressed, have they not?
-> > AppArmor doesn't actually provide confinement, because it only operates on 
-> > filesystem objects.
-> > 
-> > What you define in AppArmor policy does _not_ reflect the actual 
-> > confinement properties of the policy.  Applications can simply use other 
-> > mechanisms to access objects, and the policy is effectively meaningless.
-> 
-> Only if they have access to another process which provides them with
-> that data.
+> btw., back then we also tried a spin_is_locked() based inner loop but it 
+> didnt help the ->tree_lock lockups either. In any case i very much agree 
+> that the 'nicer' looping should be added again - the patch below does 
+> that. (build and boot tested)
 
-Or can access the data under a different path to which their profile
-does give them access, whether in its final destination or in some
-temporary file processed along the way.
+Ok, I'm definitely not going to apply it right now, though.
 
-> And now, yes, I know AA doesn't mediate IPC or networking (yet), but
-> that's a missing feature, not broken by design.
+> and the reason that this didnt help the ->tree_lock lockup is likely the 
+> same why wait_task_inactive() broke _independently_ of the 'niceness' of 
+> the spin-lock operation: there were too few instructions between 
+> releasing the lock and re-acquiring it again can cause permanent 
+> starvation of another CPU. No amount of logic on the spinning side can 
+> overcome this, if acquire/release critical sections are following each 
+> other too fast.
 
-The incomplete mediation flows from the design, since the pathname-based
-mediation doesn't generalize to cover all objects unlike label- or
-attribute-based mediation.  And the "use the natural abstraction for
-each object type" approach likewise doesn't yield any general model or
-anything that you can analyze systematically for data flow.
+Exactly.
 
-The emphasis on never modifying applications for security in AA likewise
-has an adverse impact here, as you will ultimately have to deal with
-application mediation of access to their own objects and operations not
-directly visible to the kernel (as we have already done in SELinux for
-D-BUS and others and are doing for X).  Otherwise, your "protection" of
-desktop applications is easily subverted.
+The only way to handle that case is to make sure that the person who 
+*gets* the spinlock will slow down. The person who doesn't get it can't do 
+anything at all about the fact that he's locked out.
 
-> > You might define this as a non-technical issue, but the fact that AppArmor 
-> > simply does not and can not work is a fairly significant consideration, I 
-> > would imagine.
-> 
-> If I restrict my Mozilla to not access my on-disk mail folder, it can't
-> get there. (Barring bugs in programs which Mozilla is allowed to run
-> unconfined, sure.)
+A way to do that (as already mentioned) is to have a "this lock is 
+contended" flag, and have the person who gets the lock do something about 
+it (where the "something" might actually be as simple as saying "When I 
+release a lock that somebody marked as having lots of contention, I will 
+clear the contention flag, and then just delay myself").
 
-Um, no.  It might not be able to directly open files via that path, but
-showing that it can never read or write your mail is a rather different
-matter.
+Side note: that trivial approach only really helps for a *single* thread 
+that gets it very much (like the example in wait_task_inactive). For true 
+contention with multiple different CPU's that can *all* have the bad 
+behaviour, you do actually need real queueing.
 
--- 
-Stephen Smalley
-National Security Agency
-
+			Linus
