@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbXFUGIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbXFUGK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbXFUGIm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 02:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbXFUGIf
+	id S1754043AbXFUGK1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 02:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbXFUGKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 02:08:35 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:54016 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbXFUGIf (ORCPT
+	Thu, 21 Jun 2007 02:10:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33745 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbXFUGKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 02:08:35 -0400
-To: Ben Pfaff <blp@cs.stanford.edu>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       postmaster@vger.kernel.org, webguy@theaimsgroup.com,
-       postmaster@lkml.org, postmaster@ussg.iu.edu
-Subject: Re: Request for Linux Kernel Mailing List archives
-In-Reply-To: <87sl8mbioi.fsf@blp.benpfaff.org>
-References: <467949CC.9090405@zytor.com> <87sl8mbioi.fsf@blp.benpfaff.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: jed (x86_64-pc-linux-glibc-debian)
-X-Mailer: slrn
-Date: Thu, 21 Jun 2007 08:21:03 +0200
-Message-Id: <E1I1G2R-00058L-JT@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	Thu, 21 Jun 2007 02:10:19 -0400
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures
+	in	dma	map api calls
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
+       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+In-Reply-To: <20070620230337.GA6771@linux-os.sc.intel.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
+	 <20070619213808.798646000@askeshav-devel.jf.intel.com>
+	 <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com>
+	 <20070620173038.GA25516@linux-os.sc.intel.com>
+	 <1182362703.21117.79.camel@twins> <46797CB1.8070008@linux.intel.com>
+	 <1182370132.21117.84.camel@twins>
+	 <20070620230337.GA6771@linux-os.sc.intel.com>
+Content-Type: text/plain
+Date: Thu, 21 Jun 2007 08:10:12 +0200
+Message-Id: <1182406212.21117.94.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Newsgroups: gmane.linux.kernel
-* Date: Wed, 20 Jun 2007 11:10:53 -0700
->
->> For example, if a message had:
->>
->> Message-ID: <4676C78D.8040208@zytor.com>
->>
->> ... and I could just generate a URL:
->>
->> http://linux-kernel.example.com/msgid/4676C78D.8040208@zytor.com
->
-> gmane can do that:
->         http://mid.gmane.org/4676C78D.8040208@zytor.com
+On Wed, 2007-06-20 at 16:03 -0700, Keshavamurthy, Anil S wrote:
+> On Wed, Jun 20, 2007 at 10:08:51PM +0200, Peter Zijlstra wrote:
+> > On Wed, 2007-06-20 at 12:14 -0700, Arjan van de Ven wrote:
+> > > Peter Zijlstra wrote:
+> > > > So a reclaim context (kswapd and direct reclaim) set PF_MEMALLOC to
+> > > > ensure they themselves will not block on a memory allocation. And it is
+> > > > understood that these code paths have a bounded memory footprint.
+> > > 
+> > > 
+> > > that's a too simplistic view though; what happens is that kswapd will 
+> > > queue the IO, but the irq context will then take the IO from the queue 
+> > > and do the DMA mapping... which needs the memory.....
+> 
+> As Arjan is saying, that a reclaim context sets PF_MEMALLOC flag
+> and submits the IO, but the controller driver decides to queue the IO,
+> and later in the interrupt context it de-queues and calls the
+> IOMMU driver for mapping the DMA physical address and in this DMA 
+> map api call we may need the memory to satisfy the DMA map api call.
+> Hence PF_MEMALLOC set by the reclaim context should work from 
+> interrupt context too, if it is not then that needs to be fixed.
 
-To have Gmane (news<=>e-mail [and web]) engine[s] on the kernel.org will
-be the best thing ever!
+PF_MEMALLOC cannot work from interrupt context, nor should it. But there
+are other options.
 
-The "News<=>e-mail" part is major because of things, i've learned after
-using it with (_mature_ news reader) slrn. Any web interface, basic like
-in marcs.info, or comprehensive, like Gmane's one can't replace
-functionality news server(Gmane)/reader is giving to you (summary):
+What I'm saying is that if you do use the reserves, you should ensure
+the use is bounded. I'm not seeing anything like that.
 
-* You don't receive (or annoyingly bounce) huge traffic.
-  . big backlogs are handled easily in many cases, like getting
-    e-mails, replying in interesting threads, just don't care about
-    flames. I've just removed (by one key-press) 300, 200, 100 messages
-    of Dual-Licensing thread, because i trust Linus.
+This is a generic API, who is to ensure some other non-swap device will
+not deplete memory and deadlock the reclaim process?
 
-* Interesting discussions are easily saved(by threads) on your side, so
-  you can search them or read (any mbox format reader, like `mutt -f`)
 
-* (slrn) Searching Message-Id as easy as one key-combination and one
-  copy/paste {1}
+Also, please do explain why mempools are not usable? those will have
+exactly the same semantics as you are now getting (if PF_MEMALLOC would
+work from interrupt context).
 
-* (slrn) Restoring of whole thread from one e-mail (or {1}) -- one
-  key-combination
 
-* (slrn + Gmane) headers have "Archived-At" entry, so i can just
-  copy/paste it for web-based users
+Also, explain to me how an IOMMU is different from bounce buffers? They
+both do the same thing, no? They both need memory in order to complete
+DMA.
 
-* (slrn + Gmane) listing of news-groups (actually ML<=>Gmane-NEWS)
-  as easy as all above: patterns, one key-combination
-  
-* i bet much more, than i've just told.
+Is it just a broken API you're working against? If so, isn't the Linux
+way to fix these things, that is why we have the source code after all.
 
-And that's pretty why i'm happy to be with. After abandoning Mozilla
-(buggy, memory hungry ever stuff), X and having console, screen, slrn,
-lynx, emacs-nox i'm a pretty much more efficient that any time back.
 
-All web, rss, other XML/WEB-2.0 crap does will not help. Get your
-developers back -- use and publish healthy ways and tools to use!
-
-I mean, come on, that's easy, rather than develop IMHO useless
-e-mail/patch brokenness (WRT plain-text) checkers and docs.
-
-Publish your way of being productive and saving environment! (tm:)
-
->> (Extra points if all the vger lists are available, not just LKML.)
->
-> gmane has thousands of free software mailing lists.  I don't know
-> whether it has all of the vger lists.
-
-There are many, that i'm aware of: kernel, commits, ide, net, usb,
-archs(amd64 at least), sparse, git...
-
-Namespace in Gmane is a little bit wrong. For example
-gmane.linux.kernel and gmane.linux.debian.*
-
-I.e. Linux kernel (with sub-parts) is in noise of distributions, while
-latter can have different kernel actually (e.g. kfreebsd in the Debian).
-____
