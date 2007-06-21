@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbXFUXN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbXFUXR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbXFUXN6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbXFUXNv
+	id S1753267AbXFUXR2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbXFUXRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:13:51 -0400
-Received: from mother.pmc-sierra.com ([216.241.224.12]:59061 "HELO
-	mother.pmc-sierra.bc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750740AbXFUXNu (ORCPT
+	Thu, 21 Jun 2007 19:17:21 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:64296 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbXFUXRU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:13:50 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Jun 2007 19:13:50 EDT
-Message-ID: <467B0492.1080007@pmc-sierra.com>
-From: Marc St-Jean <Marc_St-Jean@pmc-sierra.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, Tom Spink <tspink@gmail.com>,
-       Toralf F?rster <toralf.foerster@gmx.de>, linux-kernel@vger.kernel.org,
-       Paolo Giarrusso <blaisorblade@yahoo.it>,
-       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
-       linux-mips@linux-mips.org,
-       Brian Oostenbrink <Brian_Oostenbrink@pmc-sierra.com>,
-       Dan Doucette <Dan_Doucette@pmc-sierra.com>
-Subject: Re: build failure due to ROOT_DEV in mtd module (was Re: linux-2.
-	6.22-rc5-g7c8545e build #298 failed ...)
-Date: Thu, 21 Jun 2007 16:06:58 -0700
+	Thu, 21 Jun 2007 19:17:20 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "C. Scott Ananian" <cscott@laptop.org>
+Subject: Re: inotify and /proc?
+Date: Fri, 22 Jun 2007 01:17:09 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <c6d9bea0706211254r6d457e36wfb3722880a3b4abd@mail.gmail.com>
+In-Reply-To: <c6d9bea0706211254r6d457e36wfb3722880a3b4abd@mail.gmail.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-x-originalarrivaltime: 21 Jun 2007 23:06:59.0299 (UTC) FILETIME=[DEE48B30:01C7B458]
-user-agent: Thunderbird 1.5.0.12 (X11/20070509)
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200706220117.09966.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19flSmXK3MT5L54ryL6DfUInxpRL0Iz3l9Q3Cd
+ BYOUukEDCF5ZcwGOCIxqOMJiECgc8CoVnZV7+FYANWep/gMWIp
+ kZUbmibtzLpqk5yb21fEw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Jun 21, 2007 at 04:13:27 EST, Satyam Sharma wrote:
-> On 6/21/07, Christoph Hellwig <hch@infradead.org> wrote:
->> On Thu, Jun 21, 2007 at 12:22:01PM +0530, Satyam Sharma wrote:
->> > >> The build seems to fail because of:
->> > >> ERROR: "ROOT_DEV" [drivers/mtd/maps/nettel.ko] undefined!
->> > >>
->> > >> After taking a quick look at the code, I can't immediately see why
->> > >> this would be, since there is an include for linux/root_dev.h at the
->> > >> top, there.
->> > >>
->> > >> There's only one occurrence of ROOT_DEV (line 425), and after a quick
->> > >> look at the git history, it seems the include was originally missing,
->> > >> but was put back in, in commit
->> > >> 6cc449c7d0292cb9b993f0df84fd3225e3099492.
->>
->> Please just the reference to ROOT_DEV from this driver.  Just because
->> someone builds this driver there should be no change in the default root
->> device.
+On Thursday 21 June 2007, C. Scott Ananian wrote:
 > 
-> I agree, but this (drivers/mtd/maps/nettel.c) isn't the only modular driver
-> referencing ROOT_DEV. We also have drivers/mtd/maps/pmcmsp-ramroot.c
-> using ROOT_DEV (in fact the purpose of that driver seems to be precisely
-> to special-case the root fs and do something with it ...) but considering
-> that other driver's (tristate) Kconfig option depends on another symbol that
-> is non-existent in the mainline tree, there is no way someone can build
-> pmcmsp-ramroot and so we'll never actually  hit that problem even with an
-> allmodconfig build.
-> 
-> Anyway, I'll leave this up to David / linux-mtd to sort out. [ No other
-> modular user of ROOT_DEV in the tree other than the two mtd drivers
-> mentioned here. ]han the two mtd drivers
-> mentioned here. ]]
+> I'd like to make a read-only /proc file which supports inotify -- that
+> is, the kernel can send change notifications to userland via the
+> inotify mechanism.  I've found fsnotify_modify() (in
+> include/linux/fsnotify.h) which seems to do what I want, but it takes
+> a struct dentry * -- how can I get a dentry from a struct
+> proc_dir_entry and increment its ref count to keep it around?  Any
+> help would be appreciated.  Thanks!
 
-Hi Satyam,
+It sounds a little fishy to want that in the first place. If we wanted
+inotify on /proc, it should work on all files I guess, but that's
+an immense amount of work.
 
-The support for the platform which introduced drivers/mtd/maps/pmcmsp-ramroot.c
-is being queued in the linux-mips tree at linux-mips.org. At some point it should
-work it's way to the main tree and be buildable.
+What file are you talking about in particular?
+Why does it have to be in /proc?
+Why not use another notification mechanism -- blocking read(), poll(),
+uevent, ...?
 
-Marc
+	Arnd <><
