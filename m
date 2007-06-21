@@ -1,109 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbXFUQtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbXFUQtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757452AbXFUQtU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbXFUQtK
+	id S1755661AbXFUQtc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbXFUQtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:49:10 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:52507 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763AbXFUQtH (ORCPT
+	Thu, 21 Jun 2007 12:49:16 -0400
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:49673 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755531AbXFUQtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:49:07 -0400
-Date: Thu, 21 Jun 2007 11:49:07 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that through other means
-Message-ID: <20070621164907.GB28311@sergelap.austin.ibm.com>
-References: <467994BD.6000403@zytor.com> <20070620210343.GQ21478@ftp.linux.org.uk> <467AA3B4.6090609@zytor.com>
+	Thu, 21 Jun 2007 12:49:15 -0400
+Date: Thu, 21 Jun 2007 18:49:12 +0200
+From: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Alexander Wuerstlein <arw@arw.name>, linux-kernel@vger.kernel.org,
+       Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
+Subject: Re: [PATCH] sns: add syscall to check signed state of a process
+	[4/4]
+Message-ID: <20070621164912.GD9741@cip.informatik.uni-erlangen.de>
+References: <11824417553291-git-send-email-arw@arw.name> <961aa3350706210934m11e7f0cq96f384056878cb43@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <467AA3B4.6090609@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <961aa3350706210934m11e7f0cq96f384056878cb43@mail.gmail.com>
+X-Echelon-Scan: plutonium bomb dirty irak allah satan bush victory c4
+	cocaine saddam wtc holy war believe god cia nsa
+X-Echelon-Result: Terrorist
+User-Agent: Mutt/1.5.15 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting H. Peter Anvin (hpa@zytor.com):
-> Al Viro wrote:
-> > On Wed, Jun 20, 2007 at 01:57:33PM -0700, H. Peter Anvin wrote:
-> >> ... or, alternatively, add a subfield to the first field (which would
-> >> entail escaping whatever separator we choose):
-> >>
-> >> /dev/md6 /export ext3 rw,data=ordered 0 0
-> >> /dev/md6:/users/foo /home/foo ext3 rw,data=ordered 0 0
-> >> /dev/md6:/users/bar /home/bar ext3 rw,data=ordered 0 0
-> > 
-> > Hell, no.  The first field is in principle impossible to parse unless
-> > you know the fs type.
-> > 
-> > How about making a new file with sane format?  From the very
-> > beginning.  E.g. mountpoint + ID + relative path + type + options,
-> > where ID uniquely identifies superblock (e.g. numeric st_dev)
-> > and backing device (if any) is sitting among the options...
-> 
-> The more I'm thinking about this, I think it's simplest to just add
-> fields to the right of the existing /proc/*/mounts.  Yes, the format is
-> ugly, and it will end up being uglier still, but it's also ugly to have
-> a bunch of different chunks of information formatted in different ways.
+On 070621 18:34, Akinobu Mita <akinobu.mita@gmail.com> wrote:
+> 2007/6/22, Alexander Wuerstlein <arw@arw.name>:
+>
+>> +asmlinkage int sys_sns_is_trusted(pid_t p)
+>> +{
+>> +       struct task_struct *t;
+>> +       rcu_read_lock();
+>> +       t = find_task_by_pid(p);
+>> +       if (IS_ERR(t)) {
+>
+> Shouldn't it be:
+> if (!t) {
+>        ...
+> ?
+>
+> find_task_by_pid() returns NULL on failure.
 
-Since we're defining the order "arbitrarily" in any case, I really don't
-think it's all that ugly.
+You seem to be right, the rest of the kernel just does 'if (!t)'. We just used
+IS_ERR() as the 'check for evil pointers' function.
 
-Are there any existing tools which would not be able to handle the extra
-fields?
 
-(suppose it's easiest to just add the fields, try a few distros, and see
-which balk)
 
-> So, the existing fields are:
-> 
-> mnt_devname mnt_path filesystem_type options 0 0
-> 
-> ... and we'd want to add ...
-> 
-> mnt_id propagation_info sb_dev path_to_fs_root
-> 
-> As previously stated, in order to avoid having to expose kernel
-> addresses to userspace, I suggest we simply add a counter field to
-> struct vfsmount and use that for mnt_id.
 
-Agreed - even if it weren't frowned upon to expose the kernel addresses,
-it would just be much nicer to have easier to remember ids.  Somehow
-with the kernel address, even with just a set of 5 of them printed in
-front of me it takes me 2 minutes to figure out which ones are the
-same...
+Ciao,
 
-> I'm not all that up on what is needed for propagation_info.  I presume
-> we want to be able to deduce the full mount lattice.  One particularly
-
-I think Ram's existing patches just provided "PEER (next-peer-id)" or
-"SLAVE (master-id)".
-
-> important thing in my mind is to be able to distinguish overmounted
-> filesystems (which I think is possible in the current setup only by
-
-What exactly do you mean here?  Do you mean information about stackable
-filesystems - i.e. ecryptfs, unionfs, etc?
-
-If so, maybe a last column which the fs itself can fill in with such
-information is the best way to go then?  Ecryptfs would have just one
-pathname to fill in (the location of the encrypted dir), unionfs might
-have several (the full stack of unioned directories).
-
-> ordering -- the filesystem on top I believe will end up last in
-> /proc/mounts, but I don't know if there actually is anything that
-> enforces that.)
-
-Hmm, or do you actually mean that if i'd done
-
-	mount --bind /tmp/a /tmp
-	mount --bind /tmp/b /tmp
-	mount --bind /tmp/c /tmp
-
-that you would want to see information about the first two mounts?
-
--serge
+Alexander Wuerstlein.
