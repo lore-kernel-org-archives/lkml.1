@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbXFUUap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbXFUUbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757367AbXFUUap (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 16:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbXFUUag
+	id S1758769AbXFUUbB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 16:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbXFUUau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 16:30:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34485 "EHLO mx1.redhat.com"
+	Thu, 21 Jun 2007 16:30:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58035 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751931AbXFUUaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 16:30:35 -0400
-To: david@lang.hm
-Cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706161952280.14121@woody.linux-foundation.org>
-	<orabuzkw0i.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4679557C.5080907@iders.ca>
-	<20070620175627.319a6c55@the-village.bc.nu>
-	<46797C52.4020907@iders.ca>
-	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
-	<ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
-	<orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
-	<ory7idpykk.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706210031280.31603@asgard.lang.hm>
-	<ork5txksp0.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706211300200.31603@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 17:28:29 -0300
-In-Reply-To: <Pine.LNX.4.64.0706211300200.31603@asgard.lang.hm> (david@lang.hm's message of "Thu\, 21 Jun 2007 13\:01\:15 -0700 \(PDT\)")
-Message-ID: <or8xadjbma.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	id S1758080AbXFUUat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 16:30:49 -0400
+Date: Thu, 21 Jun 2007 22:30:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Miklos Szeredi <miklos@szeredi.hu>,
+       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070621203013.GA466@elte.hu>
+References: <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621202917.a2bfbfc7.dada1@cosmosbay.com> <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org> <alpine.LFD.0.98.0706211230130.3593@woody.linux-foundation.org> <20070621200941.GB22303@elte.hu> <alpine.LFD.0.98.0706211311350.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706211311350.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, david@lang.hm wrote:
 
-> On Thu, 21 Jun 2007, Alexandre Oliva wrote:
->> If it's input-only, then you can't possibly harm the operation of the
->> network by only listening in, can you?
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> Ok, so you consider any anti-piracy measures to be something that
-> GPLv3 should prohibit.
+> >          for (;;) {
+> >                  for (i = 0; i < loops; i++) {
+> >                          if (__raw_write_trylock(&lock->raw_lock))
+> >                                  return;
+> >                          __delay(1);
+> >                  }
+> 
+> What a piece of crap. 
+> 
+> Anybody who ever waits for a lock by busy-looping over it is BUGGY, 
+> dammit!
+> 
+> The only correct way to wait for a lock is:
+> 
+>   (a) try it *once* with an atomic r-m-w 
+>   (b) loop over just _reading_ it (and something that implies a memory 
+>       barrier, _not_ "__delay()". Use "cpu_relax()" or "smp_rmb()")
+>   (c) rinse and repeat.
 
-In general, I object to the use of my code in ways that don't permit
-users to run it for any purpose, study it, adapt it to suit their own
-needs, modify the code and distribute it, modified or not.
+damn, i first wrote up an explanation about why that ugly __delay(1) is 
+there (it almost hurts my eyes when i look at it!) but then deleted it 
+as superfluous :-/
 
-If this means my code can't be used to implement DRM, that's a good
-thing.
+really, it's not because i'm stupid (although i might still be stupid 
+for other resons ;-), it wasnt there in earlier spin-debug versions. We 
+even had an inner spin_is_locked() loop at a stage (and should add it 
+again).
 
-All anti-piracy measures I've ever known deprive users of legitimate
-rights too.  So, yes, I don't agree with these measures.
+the reason for the __delay(1) was really mundane: to be able to figure 
+out when to print a 'we locked up' message to the user. If it's 1 
+second, it causes false positive on some systems. If it's 10 minutes, 
+people press reset before we print out any useful data. It used to be 
+just a loop of rep_nop()s, but that was hard to calibrate: on certain 
+newer hardware it was triggering as fast as in 2 seconds, causing many 
+false positives. We cannot use jiffies nor any other clocksource in this 
+debug code.
 
-I believe in punishing the guilty, not in punishing innocent
-bystanders just such that the guilty have to find work arounds to
-become guilty.
+so i settled for the butt-ugly but working __delay(1) thing, to be able 
+to time the debug messages.
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+	Ingo
