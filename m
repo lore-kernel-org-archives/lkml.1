@@ -1,102 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbXFUN5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbXFUOBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757314AbXFUN5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 09:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbXFUN51
+	id S1756635AbXFUOBL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 10:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXFUOA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 09:57:27 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35409 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751433AbXFUN50 (ORCPT
+	Thu, 21 Jun 2007 10:00:58 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:53224 "EHLO
+	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751581AbXFUOA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 09:57:26 -0400
-Date: Thu, 21 Jun 2007 15:57:44 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: How to improve the quality of the kernel?
-Message-ID: <20070621135744.GO12950@stusta.de>
-References: <200706180141.41101.a1426z@gawab.com> <200706210626.20429.a1426z@gawab.com> <20070621130737.GN12950@stusta.de> <200706211641.28504.a1426z@gawab.com>
+	Thu, 21 Jun 2007 10:00:57 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Thu, 21 Jun 2007 16:00:24 +0200
+From: "Robert Richter" <robert.richter@amd.com>
+To: "David Rientjes" <rientjes@google.com>
+cc: "Stephane Eranian" <eranian@hpl.hp.com>,
+       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/8] 2.6.22-rc3 perfmon2 : Debug messages added
+Message-ID: <20070621140024.GW24544@erda.amd.com>
+References: <20070620182126.248753000@amd.com>
+ <20070620184113.GC5874@erda.amd.com>
+ <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <alpine.DEB.0.99.0706201245490.4562@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 21 Jun 2007 14:00:24.0866 (UTC)
+ FILETIME=[83E33020:01C7B40C]
+X-WSS-ID: 6A645B061S41035448-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200706211641.28504.a1426z@gawab.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 04:41:28PM +0300, Al Boldi wrote:
-> Adrian Bunk wrote:
-> > On Thu, Jun 21, 2007 at 06:26:20AM +0300, Al Boldi wrote:
-> > > Adrian Bunk wrote:
-> > > > We are talking about _tracking_.
-> > > >
-> > > > I'm not sure whether it makes much sense, and it would cost an
-> > > > enormous amount of time, but tracking patches should be possible
-> > > > without any knowledge of the kernel.
-> > >
-> > > If that's really true, which I can't imagine, then the proper way
-> > > forward would probably involve a fully automated system.
-> >
-> > If you consider any kind of patch tracking valuable, you should either
-> > do it yourself or write the tool yourself. In both cases, the
-> > interesting parts would be how to integrate it into the workflow of
-> > kernel development without creating extra work for anyone and how to get
-> > the information into the got commits.
+On 20.06.07 12:49:05, David Rientjes wrote:
+> On Wed, 20 Jun 2007, Robert Richter wrote:
 > 
-> Integration is the easy part, really.  Just filter all the patches from the 
-> mailing list into a patch-bin, then sort, categorize, and prioritize them, 
-> responding with a validation status to all parties involved.
+> > Debug messages added for better debugging.
+> > 
 > 
-> And after that comes the Tracking part.
-
-Tracking shouldn't be much more than seeing what different threads are 
-about the same patch and then do more or less the same as what you 
-called "the easy part".
-
-> > "requires a real PRO" and "would probably involve" sound like cheap
-> > phrases for avoiding doing any work yourself.
+> And you added BUG_ON()'s.
 > 
-> I have learned from this list that premature involvement is 
-> counterproductive.
+> > Signed-off-by: Robert Richter <robert.richter@amd.com>
+> > 
+> > Index: linux-2.6.22-rc3/perfmon/perfmon_file.c
+> > ===================================================================
+> > --- linux-2.6.22-rc3.orig/perfmon/perfmon_file.c
+> > +++ linux-2.6.22-rc3/perfmon/perfmon_file.c
+> > @@ -192,6 +192,8 @@ static int pfm_mmap(struct file *file, s
+> >  	unsigned long flags;
+> >  	int ret;
+> >  
+> > +	PFM_DBG("pfm_file_ops");
 > 
-> > Talk is cheap, but unless YOU will do it your emails will only be a
-> > waste of bandwidth.
+> After commenting on your first set of patches, I've been using it a little 
+> more.  In my use, these debugging messages weren't very helpful because 
+> "pfm_file_ops" can indicate pfm_mmap, pfm_read, pfm_poll, etc.  Could 
+> these be changed to be more specific based on the function they're in?
 > 
-> Thanks, and good luck with involving people with this kind of response!
+> > Index: linux-2.6.22-rc3/perfmon/perfmon_syscalls.c
+> > ===================================================================
+> > --- linux-2.6.22-rc3.orig/perfmon/perfmon_syscalls.c
+> > +++ linux-2.6.22-rc3/perfmon/perfmon_syscalls.c
+> > @@ -403,6 +403,8 @@ asmlinkage long sys_pfm_create_context(s
+> >  	void *fmt_arg = NULL;
+> >  	int ret;
+> >  
+> > +	PFM_DBG("syscall");
+> 
+> Likewise.  Using "syscall" for all debugging messages in the syscall 
+> handlers isn't very informative.  Could this be PFM_DBG(__FUNCTION__) 
+> instead?
+> 
+> > +
+> >  	if (atomic_read(&perfmon_disabled))
+> >  		return -ENOSYS;
+> >  
+> > @@ -433,8 +435,12 @@ asmlinkage long sys_pfm_write_pmcs(int f
+> >  	size_t sz;
+> >  	int ret, fput_needed;
+> >  
+> > -	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
+> > +	PFM_DBG("syscall");
+> > +
+> > +	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq)) {
+> > +                PFM_DBG("invalid arg count %d", count);
+> 
+> This is whitespace damaged.
 
-It's simply how kernel development works - not by talking but by doing 
-the work.
+Fixed in patch version 3.
 
-Many people thought long-term maintainance for 2.6.16 wouldn't make sense.
-And I didn't start long discussions whether we need regression tracking -
-I simply did it.
+> 
+> >  		return -EINVAL;
+> > +	}
+> >  
+> >  	sz = count*sizeof(*ureq);
+> >  
+> > @@ -475,6 +481,8 @@ asmlinkage long sys_pfm_write_pmcs(int f
+> >  		kfree(fptr);
+> >  error:
+> >  	fput_light(filp, fput_needed);
+> > +	if (ret)
+> > +		PFM_DBG("failed: errno=%d", -ret);
+> 
+> What failed?  More information would be helpful since this is, after all, 
+> a diagnostic message.
 
-These are things that simply happened because I thought they were 
-important - and because I got my ass up to do them myself.
+Removed in version 3.
 
-Don't expect anyone to jump up to do it only because of your talk.
-YOU must offer something, and it will work if it's then accepted by 
-people.
+> 
+> > Index: linux-2.6.22-rc3/include/asm-i386/perfmon.h
+> > ===================================================================
+> > --- linux-2.6.22-rc3.orig/include/asm-i386/perfmon.h
+> > +++ linux-2.6.22-rc3/include/asm-i386/perfmon.h
+> > @@ -140,6 +140,10 @@ static inline void pfm_arch_write_pmc(st
+> >  	if (ctx && ctx->flags.started == 0)
+> >  		return;
+> >  
+> > +	PFM_DBG_ovfl("pfm_arch_write_pmc(0x%016Lx, 0x%016Lx)",
+> > +		     (unsigned long long) pfm_pmu_conf->pmc_desc[cnum].hw_addr,
+> > +		     (unsigned long long) value);
+> 
+> Casting here should be unnecessary.  Changing %L would be advisible to 
+> display the data as it is stored in the object.
 
-If you think what you have in mind is both doable and important just do it.
-You will find out where the problems lie yourself.
-You might be able to prove me and all other people who think it would 
-not work wrong.
-You might fail, e.g. because people will not adopt whatever you have in 
-mind because they don't like it for some reason, but that's part of how 
-development works, and you'll never know unless you try it.
+Not casting here would lead to warnings if compiling a 32 bit kernel.
 
-> Al
+> 
+> > +	BUG_ON(pfm_pmu_conf->pmc_desc[cnum].type & PFM_REG_V);
+> >  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
+> >  		__pfm_write_reg_p4(&arch_info->pmc_addrs[cnum], value);
+> >  	else
+> > @@ -155,6 +159,10 @@ static inline void pfm_arch_write_pmd(st
+> >  	if (pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_C64)
+> >  		value |= ~pfm_pmu_conf->ovfl_mask;
+> >  
+> > +	PFM_DBG_ovfl("pfm_arch_write_pmd(0x%016Lx, 0x%016Lx)",
+> > +		     (unsigned long long) pfm_pmu_conf->pmd_desc[cnum].hw_addr,
+> > +		     (unsigned long long) value);
+> > +	BUG_ON(pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_V);
+> >  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
+> >  		__pfm_write_reg_p4(&arch_info->pmd_addrs[cnum], value);
+> >  	else
+> > @@ -165,10 +173,14 @@ static inline u64 pfm_arch_read_pmd(stru
+> >  {
+> >  	struct pfm_arch_pmu_info *arch_info = pfm_pmu_conf->arch_info;
+> >  	u64 tmp;
+> > +	BUG_ON(pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_V);
+> >  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
+> >  		__pfm_read_reg_p4(&arch_info->pmd_addrs[cnum], &tmp);
+> >  	else
+> >  		rdmsrl(pfm_pmu_conf->pmd_desc[cnum].hw_addr, tmp);
+> > +	PFM_DBG_ovfl("pfm_arch_read_pmd(0x%016Lx) = 0x%016Lx",
+> > +		     (unsigned long long) pfm_pmu_conf->pmd_desc[cnum].hw_addr,
+> > +		     (unsigned long long) tmp);
+> >  	return tmp;
+> >  }
+> >  
+> > @@ -176,10 +188,14 @@ static inline u64 pfm_arch_read_pmc(stru
+> >  {
+> >  	struct pfm_arch_pmu_info *arch_info = pfm_pmu_conf->arch_info;
+> >  	u64 tmp;
+> > +	BUG_ON(pfm_pmu_conf->pmc_desc[cnum].type & PFM_REG_V);
+> >  	if (arch_info->pmu_style == PFM_X86_PMU_P4)
+> >  		__pfm_read_reg_p4(&arch_info->pmc_addrs[cnum], &tmp);
+> >  	else
+> >  		rdmsrl(pfm_pmu_conf->pmc_desc[cnum].hw_addr, tmp);
+> > +        PFM_DBG_ovfl("pfm_arch_read_pmc(0x%016Lx) = 0x%016Lx",
+> > +		     (unsigned long long) pfm_pmu_conf->pmc_desc[cnum].hw_addr,
+> > +		     (unsigned long long) tmp);
+> 
+> More whitespace damage.
 
-cu
-Adrian
+Fixed in patch version 3.
+
+> 
+> 
+
+-Robert
 
 -- 
+AMD Saxony, Dresden, Germany
+Operating System Research Center
+email: robert.richter@amd.com
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+
 
