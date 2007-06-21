@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbXFUGl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbXFUGpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbXFUGl4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 02:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXFUGlt
+	id S1758058AbXFUGpv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 02:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbXFUGpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 02:41:49 -0400
-Received: from mga01.intel.com ([192.55.52.88]:59199 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752274AbXFUGls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 02:41:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,446,1175497200"; 
-   d="scan'208";a="259404653"
-Date: Wed, 20 Jun 2007 23:37:31 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, ak@suse.de,
-       gregkh@suse.de, muli@il.ibm.com, ashok.raj@intel.com,
-       davem@davemloft.net, clameter@sgi.com
-Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures	in	dma	map api calls
-Message-ID: <20070621063730.GC6771@linux-os.sc.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <1182326799.21117.19.camel@twins> <46792586.20706@linux.intel.com> <20070620173038.GA25516@linux-os.sc.intel.com> <1182362703.21117.79.camel@twins> <46797CB1.8070008@linux.intel.com> <1182370132.21117.84.camel@twins> <20070620230337.GA6771@linux-os.sc.intel.com> <1182406212.21117.94.camel@twins> <467A1679.8090202@linux.intel.com> <1182407374.21117.106.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1182407374.21117.106.camel@twins>
-User-Agent: Mutt/1.4.1i
+	Thu, 21 Jun 2007 02:45:42 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:55535
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbXFUGpl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 02:45:41 -0400
+Date: Wed, 20 Jun 2007 23:45:25 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Chinner <dgc@sgi.com>
+cc: Neil Brown <neilb@suse.de>, Avi Kivity <avi@argo.co.il>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <20070621063936.GT85884050@sgi.com>
+Message-ID: <Pine.LNX.4.64.0706202341080.31603@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+ <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+ <18034.3676.477575.490448@notabene.brown> <467273AB.9010202@argo.co.il>
+ <18035.3009.568832.785308@notabene.brown> <20070618045759.GD85884050@sgi.com>
+ <18041.59628.370832.633244@notabene.brown> <20070621063936.GT85884050@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 08:29:34AM +0200, Peter Zijlstra wrote:
-> On Wed, 2007-06-20 at 23:11 -0700, Arjan van de Ven wrote:
-> > Peter Zijlstra wrote:
-> Also, the other iommu code you pointed me to, was happy to fail, it did
-> not attempt to use the emergency reserves.
+On Thu, 21 Jun 2007, David Chinner wrote:
 
-Is the same behavior acceptable here?
+> On Thu, Jun 21, 2007 at 12:56:44PM +1000, Neil Brown wrote:
+>
+>> I have that - apparently naive - idea that drives use strong checksum,
+>> and will never return bad data, only good data or an error.  If this
+>> isn't right, then it would really help to understand what the cause of
+>> other failures are before working out how to handle them....
+>
+> The drive is not the only source of errors, though.  You could
+> have a path problem that is corrupting random bits between the drive
+> and the filesystem. So the data on the disk might be fine, and
+> reading it via a redundant path might be all that is needed.
 
--Anil
+one of the 'killer features' of zfs is that it does checksums of every 
+file on disk. so many people don't consider the disk infallable.
+
+several other filesystems also do checksums
+
+both bitkeeper and git do checksums of files to detect disk corruption
+
+as david C points out there are many points in the path where the data 
+could get corrupted besides on the platter.
+
+David Lang
