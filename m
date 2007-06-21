@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbXFUSxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbXFUSx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758460AbXFUSxn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbXFUSxg
+	id S1758748AbXFUSx5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756210AbXFUSxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:53:36 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40954 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752934AbXFUSxf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:53:35 -0400
-Subject: Re: [PATCH] Check files' signatures before doing suid/sgid [2/4]
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
-Cc: linux-kernel@vger.kernel.org, arw@arw.name
-In-Reply-To: <20070621174612.GG9741@cip.informatik.uni-erlangen.de>
-References: <11824417551424-git-send-email-arw@arw.name>
-	 <1182446251.2704.0.camel@laptopd505.fenrus.org>
-	 <20070621172557.GE9741@cip.informatik.uni-erlangen.de>
-	 <1182446983.2704.4.camel@laptopd505.fenrus.org>
-	 <20070621174612.GG9741@cip.informatik.uni-erlangen.de>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Thu, 21 Jun 2007 11:49:48 -0700
-Message-Id: <1182451789.2704.9.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+	Thu, 21 Jun 2007 14:53:40 -0400
+Received: from gw.goop.org ([64.81.55.164]:46919 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755865AbXFUSxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 14:53:39 -0400
+Message-ID: <467AC8E9.1000605@goop.org>
+Date: Thu, 21 Jun 2007 11:52:25 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] bracing the loop in kernel/softirq.c
+References: <20070620175737.GA6523@cvg> <9a8748490706201401m36b1e917g5a600951d48e4cf8@mail.gmail.com>
+In-Reply-To: <9a8748490706201401m36b1e917g5a600951d48e4cf8@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 19:46 +0200, Alexander Wuerstlein wrote:
-> On 070621 19:33, Arjan van de Ven <arjan@infradead.org> wrote:
-> > On Thu, 2007-06-21 at 19:25 +0200, Alexander Wuerstlein wrote:
-> > > On 070621 19:21, Arjan van de Ven <arjan@infradead.org> wrote:
-> > > > On Thu, 2007-06-21 at 18:02 +0200, Alexander Wuerstlein wrote:
-> > > > > Modified task_struct to hold a 'signed flag' which is set on exec(), inherited
-> > > > > on fork() and checked during exec before giving the new process suid/sgid
-> > > > > privileges.
-> > > > > 
-> > > > 
-> > > > 
-> > > > 
-> > > > do you also check the signature of glibc and every other shared library
-> > > > that the app uses (or dlopens)? if not.. the entire exercise is rather
-> > > > pointless...
-> > > 
-> > > We do check that, that is patch [3/4].
-> > > 
-> > > Of course we can only check mmap-ed files, if there is no file like with JIT
-> > > compilers we are out of luck.
-> > 
-> > or if the process uses read() not mmap().
-> 
-> If a process uses read() it needs some executable and writable memory. We do
-> check for this in mprotect(). There is a problem with the i386-architecture,
-> because it allows execution of any readable page (except with newer
-> processors). But beyond that ugliness of i386, it should not be possible to
-> execute anything without us noticing it (hopefully).
+Jesper Juhl wrote:
+> On 20/06/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>> This trivial patch adds braces over a one-line
+>> loop. That makes code...well... little bit
+>> convenient for (possible) further modifications.
+>>
+> That's generally not done.
+>
+> It's even in Documentation/CodingStyle :
+>
+> "
+> Do not unnecessarily use braces where a single statement will do.
+>
+> if (condition)
+>        action();
+> "
 
-welcome to mprotect() where the app can just change the permissions
+I tend to see "do {} while()" as an exception to this.  I find the 
+construct is sufficiently rare that it helps to emphasize it a bit.  For 
+example if I'm scanning code and I see:
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+	while (foo != NULL);
 
+in the corner of my eye, I'm going to think "huh?".  But:
+
+	} while (foo != NULL);
+
+visually "parses" properly, regardless of how near or far the 
+corresponding "do  {" is.
+
+(And of course, its consistent with the super extra special while-while 
+loop:
+
+	while (foo != NULL) {
+		foo = bar();
+		piffle();
+	} while (foo != NULL);	// make sure we loop properly
+
+;)
+
+    J
