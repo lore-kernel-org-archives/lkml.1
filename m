@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbXFULAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbXFULBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbXFULAr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 07:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXFULAh
+	id S1756069AbXFULBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 07:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbXFULBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 07:00:37 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35849 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752697AbXFULAg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 07:00:36 -0400
-Date: Thu, 21 Jun 2007 21:00:12 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Neil Brown <neilb@suse.de>, Avi Kivity <avi@argo.co.il>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-Message-ID: <20070621110006.GU85884050@sgi.com>
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <467273AB.9010202@argo.co.il> <18035.3009.568832.785308@notabene.brown> <20070618045759.GD85884050@sgi.com> <18041.59628.370832.633244@notabene.brown> <20070621063936.GT85884050@sgi.com>
+	Thu, 21 Jun 2007 07:01:13 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:55741 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753508AbXFULBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 07:01:12 -0400
+Date: Thu, 21 Jun 2007 13:09:09 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, cebbert@redhat.com, chris@atlee.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070621110909.GB1685@ff.dom.local>
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073800.GA1685@ff.dom.local> <20070621083931.GA18105@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070621063936.GT85884050@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070621083931.GA18105@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 04:39:36PM +1000, David Chinner wrote:
-> FWIW, I don't think this really removes the need for a filesystem to
-> be able to keep multiple copies of stuff about. If the copy(s) on a
-> device are gone, you've still got to have another copy somewhere
-> else to get it back...
+On Thu, Jun 21, 2007 at 10:39:31AM +0200, Ingo Molnar wrote:
+> 
+> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> 
+> > BTW, I've looked a bit at these NMI watchdog traces, and now I'm not 
+> > even sure it's necessarily the spinlock's problem (but I don't exclude 
+> > this possibility yet). It seems both processors use task_rq_lock(), so 
+> > there could be also a problem with that loop. The way the correctness 
+> > of the taken lock is verified is racy: there is a small probability 
+> > that if we have taken the wrong lock the check inside the loop is done 
+> > just before the value is beeing changed elsewhere under the right 
+> > lock. Another possible problem could be a result of some wrong 
+> > optimization or wrong propagation of change of this task_rq(p) value.
+> 
+> ok, could you elaborate this in a bit more detail? You say it's racy - 
+> any correctness bug in task_rq_lock() will cause the kernel to blow up 
+> in spectacular ways. It's a fairly straightforward loop:
+> 
+>  static inline struct rq *__task_rq_lock(struct task_struct *p)
+>          __acquires(rq->lock)
+>  {
+>          struct rq *rq;
+> 
+>  repeat_lock_task:
+>          rq = task_rq(p);
+>          spin_lock(&rq->lock);
+>          if (unlikely(rq != task_rq(p))) {
+>                  spin_unlock(&rq->lock);
+>                  goto repeat_lock_task;
+>          }
+>          return rq;
+>  }
+> 
+> the result of task_rq() depends on p->thread_info->cpu wich will only 
+> change if a task has migrated over to another CPU. That is a 
+> fundamentally 'slow' operation, but even if a task does it intentionally 
+> in a high frequency way (for example via repeated calls to 
+> sched_setaffinity) there's no way it could be faster than the spinlock 
+> code here. So ... what problems can you see with it?
 
-Speaking of knowing where you can safely put multiple copies, I'm in
-the process of telling XFS about linear alignment of the underlying
-array so that we can:
+OK, you are right - I withdraw this "idea". Sorry!
 
-	- spread out the load across it faster.
-	- provide workload isolation
-	- know where *not* to put duplicate or EDAC data
-
-I'm aiming at identical subvolumes so it's simple to implement.  All
-I need to know is the size of each subvolume. I can supply that at
-mkfs time or in a mount option, but I want something that can works
-automatically so I need to query dm to find out the size of each
-underlying device during mount.  We should also pass stripe
-unit/width with the same interface while we are at it...
-
-What's the correct and safe way to get this information from dm
-both into the kernel and out to userspace (mkfs)?
-
-FWIW, my end goal is to be able to map the underlying block device
-address spaces directly into the filesystem so that the filesystem
-is able to use the underlying devices intelligently and I can
-logically separate caches and writeback for the separate subdevices.
-A struct address_space per subdevice would be ideal - anyone got
-ideas on how to get that?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Jarek P.
