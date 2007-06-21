@@ -1,114 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbXFVN4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbXFVN5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbXFVN4p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 09:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbXFVN4i
+	id S1757901AbXFVN5G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 09:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbXFVN4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 09:56:38 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:56496 "EHLO
-	outbound6-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753963AbXFVN4h (ORCPT
+	Fri, 22 Jun 2007 09:56:54 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:35704 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755223AbXFVN4x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 09:56:37 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Fri, 22 Jun 2007 15:57:34 +0200
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: [patch] usbnet: fix kconfig for usbnet drivers
-Message-ID: <20070622135734.GO5193@alberich.amd.com>
+	Fri, 22 Jun 2007 09:56:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=M+kKv8f8DAB19FBSbVD2LhrWHmp8xNd4mBr1nhPYfvUR7Qalm6ZvvVZ5fTdEl7AilKtCvh71uHP7m4xkqbmwOGh1oltW1w0bV4Yr4hAsYrQ1Q+ooaVu9Lv2M3qlv7C+9hZxFVEYOQZho4F0jrGh0LVO6uMJyeBUMhTlVljTVP6Q=
+Date: Thu, 21 Jun 2007 23:11:09 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] bracing the loop in kernel/softirq.c
+Message-ID: <20070621191109.GA13853@cvg>
+References: <20070620175737.GA6523@cvg> <9a8748490706201401m36b1e917g5a600951d48e4cf8@mail.gmail.com> <467AC8E9.1000605@goop.org>
 MIME-Version: 1.0
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 22 Jun 2007 13:56:25.0666 (UTC)
- FILETIME=[1FB9EA20:01C7B4D5]
-X-WSS-ID: 6A650A861S41140777-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <467AC8E9.1000605@goop.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix kernel build error:
+[Jeremy Fitzhardinge - Thu, Jun 21, 2007 at 11:52:25AM -0700]
+> Jesper Juhl wrote:
+>> On 20/06/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>>> This trivial patch adds braces over a one-line
+>>> loop. That makes code...well... little bit
+>>> convenient for (possible) further modifications.
+>>>
+>> That's generally not done.
+>>
+>> It's even in Documentation/CodingStyle :
+>>
+>> "
+>> Do not unnecessarily use braces where a single statement will do.
+>>
+>> if (condition)
+>>        action();
+>> "
+>
+> I tend to see "do {} while()" as an exception to this.  I find the 
+> construct is sufficiently rare that it helps to emphasize it a bit.  For 
+> example if I'm scanning code and I see:
+>
+> 	while (foo != NULL);
+>
+> in the corner of my eye, I'm going to think "huh?".  But:
+>
+> 	} while (foo != NULL);
+>
+> visually "parses" properly, regardless of how near or far the corresponding 
+> "do  {" is.
+>
+> (And of course, its consistent with the super extra special while-while 
+> loop:
+>
+> 	while (foo != NULL) {
+> 		foo = bar();
+> 		piffle();
+> 	} while (foo != NULL);	// make sure we loop properly
+>
+> ;)
+>
+>    J
+>
 
- drivers/built-in.o: In function `usbnet_set_settings':
- : undefined reference to `mii_ethtool_sset'
- drivers/built-in.o: In function `usbnet_get_settings':
- : undefined reference to `mii_ethtool_gset'
- drivers/built-in.o: In function `usbnet_get_link':
- : undefined reference to `mii_link_ok'
- drivers/built-in.o: In function `usbnet_nway_reset':
- : undefined reference to `mii_nway_restart'
+Indeed, 'do-while' is a special case.
+Btw, Jeremy, I'm always getting into rapture on 'while-while' loop ;)
 
-This occurs when an USBNET device is built-in but MII is
-selected as module.
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-
-diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
-index 8dc09a3..5a38fa2 100644
---- a/drivers/net/usb/Kconfig
-+++ b/drivers/net/usb/Kconfig
-@@ -68,6 +68,7 @@ config USB_KAWETH
- 
- config USB_PEGASUS
- 	tristate "USB Pegasus/Pegasus-II based ethernet device support"
-+	select NET_ETHERNET
- 	select MII
- 	---help---
- 	  Say Y here if you know you have Pegasus or Pegasus-II based adapter.
-@@ -84,6 +85,7 @@ config USB_PEGASUS
- config USB_RTL8150
- 	tristate "USB RTL8150 based ethernet device support (EXPERIMENTAL)"
- 	depends on EXPERIMENTAL
-+	select NET_ETHERNET
- 	select MII
- 	help
- 	  Say Y here if you have RTL8150 based usb-ethernet adapter.
-@@ -93,13 +95,8 @@ config USB_RTL8150
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called rtl8150.
- 
--config USB_USBNET_MII
--	tristate
--	default n
--
- config USB_USBNET
- 	tristate "Multi-purpose USB Networking Framework"
--	select MII if USB_USBNET_MII != n
- 	---help---
- 	  This driver supports several kinds of network links over USB,
- 	  with "minidrivers" built around a common network driver core
-@@ -135,7 +132,7 @@ config USB_NET_AX8817X
- 	tristate "ASIX AX88xxx Based USB 2.0 Ethernet Adapters"
- 	depends on USB_USBNET && NET_ETHERNET
- 	select CRC32
--	select USB_USBNET_MII
-+	select MII
- 	default y
- 	help
- 	  This option adds support for ASIX AX88xxx based USB 2.0
-@@ -190,7 +187,8 @@ config USB_NET_DM9601
- 	tristate "Davicom DM9601 based USB 1.1 10/100 ethernet devices"
- 	depends on USB_USBNET
- 	select CRC32
--	select USB_USBNET_MII
-+	select NET_ETHERNET
-+	select MII
- 	help
- 	  This option adds support for Davicom DM9601 based USB 1.1
- 	  10/100 Ethernet adapters.
-@@ -225,7 +223,8 @@ config USB_NET_PLUSB
- config USB_NET_MCS7830
- 	tristate "MosChip MCS7830 based Ethernet adapters"
- 	depends on USB_USBNET
--	select USB_USBNET_MII
-+	select NET_ETHERNET
-+	select MII
- 	help
- 	  Choose this option if you're using a 10/100 Ethernet USB2
- 	  adapter based on the MosChip 7830 controller. This includes
-
-
+		Cyrill
 
