@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbXFURwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbXFURw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759072AbXFURwJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:52:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbXFURv5
+	id S1759624AbXFURw0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbXFURv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:51:57 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58693 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755030AbXFURv4 (ORCPT
+	Thu, 21 Jun 2007 13:51:59 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:49231 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757218AbXFURv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:51:56 -0400
-Date: Thu, 21 Jun 2007 10:51:52 -0700
-From: Paul Jackson <pj@sgi.com>
-To: vatsa@linux.vnet.ibm.com
-Cc: mingo@elte.hu, clameter@sgi.com, linux-kernel@vger.kernel.org,
-       dino@in.ibm.com, akpm@linux-foundation.org
-Subject: Re: cpuset attach_task to touch per-cpu kernel threads?
-Message-Id: <20070621105152.8daf87ad.pj@sgi.com>
-In-Reply-To: <20070621173232.GP10980@linux.vnet.ibm.com>
-References: <20070621014935.GF10980@linux.vnet.ibm.com>
-	<20070621121635.GB19811@elte.hu>
-	<20070621100712.52a4784a.pj@sgi.com>
-	<20070621173232.GP10980@linux.vnet.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 13:51:58 -0400
+Date: Thu, 21 Jun 2007 19:52:00 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Andi Kleen <ak@suse.de>
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for 2.6.22] [6/10] x86: Only make Macintosh drivers default on Macs
+Message-ID: <20070621175200.GA22507@aepfle.de>
+References: <200706201223.443613000@suse.de> <20070620102334.DD01814AD0@wotan.suse.de> <20070621173628.GA21243@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070621173628.GA21243@aepfle.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yeah .."allow movement if it doesn't result in changing kernel-threads's cpu 
-> affinity" sounds good, except it is hard to implement in cpuset's
-> context I think. For ex: we now have to take additional steps when
-> changing 'cpus_allowed' of a cpuset such that it doesn't violate any cpu
-> affinity of kernel threads bound to the cpuset. That itself makes the
-> implementation complex I think.
+On Thu, Jun 21, Olaf Hering wrote:
 
-Yes, that would be more complex than we need.  You're right.
+> On Wed, Jun 20, Andi Kleen wrote:
 
-The only problem comes with kernel tasks that are pinned to less than
-the entire system, and that are in the top cpuset.
+> > It's already annoying that they appear on x86 now -- that's for the 3button
+> > emulation needed on x86 macs -- but at least don't make them default.
 
-They should remain in the top cpuset.  Since the top cpuset is never
-allowed to have less than all the cpus in the system, such kernel
-threads can then be assured of being allowed to use the cpus they need
-to use.
+> > +++ linux/drivers/macintosh/Kconfig
+> > @@ -2,7 +2,7 @@
+> >  menuconfig MACINTOSH_DRIVERS
+> >  	bool "Macintosh device drivers"
+> >  	depends on PPC || MAC || X86
+> > -	default y
+> > +	default y if MAC
+> 
+> This looks incorrect because my macdrivers were almost gone now when
+> updating from 2.6.21 to 2.6.22. 
+> A better one may be something like this, to not lose everything on a G5:
 
-Could you try coding something like the following in kernel/cpuset.c,
-Srivatsa?
+This one works. 
+Without it, every previously enabled option will default to N during
+make oldconfig.
+With it, every previously enabled option remains the same because make
+oldcconfig does not touch them.
 
-/* Call with task_lock held on tsk */
-is_pinned_kernel_thread(tsk)
-{
-	/* "pinned" means constrained to a strict subset of online cpus */
-	int is_pinned = !cpus_subset(cpus_online_map, tsk->cpus_allowed);
-	int is_kthread = !tsk->mm || (tsk->flags & PF_BORROWED_MM);
 
-	return is_pinned && is_kthread;
-}
 
-Then call it from kernel/cpuset.c:attach_task() with:
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-	/* Don't moved pinned kernel threads out of top cpuset */
-	if (is_pinned_kernel_thread(tsk) && oldcs == &top_cpuset && cs != oldcs) {
-                task_unlock(tsk);
-                mutex_unlock(&callback_mutex);
-                put_task_struct(tsk);
-		return -EINVAL;
-	}
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index 0852d33..dbe9626 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -2,7 +2,7 @@
+ menuconfig MACINTOSH_DRIVERS
+ 	bool "Macintosh device drivers"
+ 	depends on PPC || MAC || X86
+-	default y if MAC
++	default y if (PPC_PMAC || MAC)
+ 
+ if MACINTOSH_DRIVERS
+ 
