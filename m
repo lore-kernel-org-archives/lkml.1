@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbXFUSSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbXFUST3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbXFUSSB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbXFUSRy
+	id S1757804AbXFUST3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbXFUSTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:17:54 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1530 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753593AbXFUSRx (ORCPT
+	Thu, 21 Jun 2007 14:19:22 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59287 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754682AbXFUSTW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:17:53 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <alan@lxorguk.ukuu.org.uk>
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 21 Jun 2007 11:17:50 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEHKEMAC.davids@webmaster.com>
+	Thu, 21 Jun 2007 14:19:22 -0400
+Date: Thu, 21 Jun 2007 11:17:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
+       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
+       Rudolf Marek <r.marek@assembler.cz>
+Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches v2
+In-Reply-To: <467AA8CA.2020206@googlemail.com>
+Message-ID: <alpine.LFD.0.98.0706211115380.3593@woody.linux-foundation.org>
+References: <467AA8CA.2020206@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <20070621121438.46a35c0d@the-village.bc.nu>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 21 Jun 2007 11:18:13 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 21 Jun 2007 11:18:15 -0700
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 20 Jun 2007 12:55:10 -0700
-
-> "David Schwartz" <davids@webmaster.com> wrote:
-
-> > A key is a number. A signature is a number. They are neither
-> > statements nor
-> > instructions. The argument that GPLv2 prohibits Tivoization is
-> > really and
-> > truly absurd. It has neither a legal nor a moral leg to stand on.
-
-> A computer program is a number too.
-
-No, it's not. It can be expressed as a number, but it is not a number.
-
-Keys are purely numbers, they are nothing else. Signatures are pure
-primitive facts encoded as numbers (authority X blessed object Y).
-
-A computer program is a set of instructions to accomplish a particular
-result. It can be expressed as a number, but that doesn't mean it is a
-number.
-
-It might be true in principle to develop a scheme whereby every physical
-object uniquely corresponds to an extremely large number. That doesn't turn
-physical objects into numbers.
-
-DS
 
 
+On Thu, 21 Jun 2007, Michal Piotrowski wrote:
+> 
+> Subject    : long freezes on thinkpad t60
+> References : http://lkml.org/lkml/2007/5/24/100
+> Submitter  : Miklos Szeredi <miklos@szeredi.hu>
+> Handled-By : Ingo Molnar <mingo@elte.hu>
+> Patch      : http://lkml.org/lkml/2007/6/16/81
+> Status     : patch was suggested
+
+This one is fixed, and tested by Miklos. It's commit fa490cfd15: "Fix 
+possible runqueue lock starvation in wait_task_inactive()".
+
+			Linus
