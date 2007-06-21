@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbXFUPox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbXFUPrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbXFUPox (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbXFUPop
+	id S1755662AbXFUPrf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbXFUPrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:44:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:20377 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbXFUPoo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:44:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JVchorUPKLN/sicZNPvw5Eo+ocOAkQhfP4uscvY8HjjX7u0GryY5172eh2CL6vG4EeaH6/2u8un3IzUOcyhLgWbA0kEozZCSxweczfjOVsRnPFFoQ4uE+p4wA0GhLQ8H7t8X1BudGm1824vOK+8y6mcCwRPktHFLN16azvY7zNU=
-Message-ID: <6bffcb0e0706210844k6f83a0f8n4ee60d98344e7bd8@mail.gmail.com>
-Date: Thu, 21 Jun 2007 17:44:43 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: reproducible hang with reiserfs and bash_shared_mapping
-Cc: reiserfs-dev@namesys.com, reiserfs-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200706211226.03994.oliver@neukum.org>
+	Thu, 21 Jun 2007 11:47:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37210 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751448AbXFUPrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:47:24 -0400
+Message-ID: <467A9D67.8060504@redhat.com>
+Date: Thu, 21 Jun 2007 11:46:47 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ian McDonald <ian.mcdonald@jandi.co.nz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       Andi Kleen <ak@suse.de>, Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       William Cohen <wcohen@redhat.com>,
+       "S. P. Prasanna" <prasanna@in.ibm.com>,
+       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
+       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
+       Rudolf Marek <r.marek@assembler.cz>, Soeren Sonnenburg <kernel@nn7.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches
+References: <467543FA.60905@googlemail.com>  <5640c7e00706201508g3c1fc40eq82a1db05c9156b5d@mail.gmail.com>  <alpine.LFD.0.98.0706201536161.3593@woody.linux-foundation.org> <5640c7e00706201541g3ecaf8c5i524d8b464d8fcc2d@mail.gmail.com> <alpine.LFD.0.98.0706201550480.3593@woody.linux-foundation.org> <alpine.LFD.0.98.0706201601100.3593@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706201601100.3593@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706211226.03994.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oliver,
+On 06/20/2007 07:04 PM, Linus Torvalds wrote:
+> As far as I know, the biggest reason to use DEBUG_RODATA is
+> 
+>  (a) Hey, it's a cheap way to check one thing
+> 
+>  (b) An added layer of security (which it's not that great for, but it 
+>      might make sense to make it more of a real security feature).
+> 
 
-On 21/06/07, Oliver Neukum <oliver@neukum.org> wrote:
-> Hi,
->
-> I get reproducible hangs when running bash_shared_mapping from the
-> autotest suite. I've tested with a USB mass storage device and a PATA
-> hard drive. No difference. Vanilla 2.6.22-rc5 and -git5 are affected. Ext3
-> works flawlessly on both devices. Below is the result of sysrq-t while
-> tasks are hanging.
->
-
-Is this a regression?
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+And as a security feature it's pretty useless if kprobes are allowed.
