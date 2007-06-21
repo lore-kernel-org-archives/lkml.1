@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbXFUTCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbXFUTD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758383AbXFUTCV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbXFUTCL
+	id S1758703AbXFUTD7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbXFUTDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:02:11 -0400
-Received: from ms.trustica.cz ([82.208.32.68]:36329 "EHLO ms.trustica.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752433AbXFUTCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:02:09 -0400
-Message-ID: <467ACB2A.4070707@assembler.cz>
-Date: Thu, 21 Jun 2007 21:02:02 +0200
-From: Rudolf Marek <r.marek@assembler.cz>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
-MIME-Version: 1.0
-To: Luca Tettamanti <kronos.it@gmail.com>
-CC: lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [lm-sensors] [RFC] ACPI based hwmon driver for ASUS
-References: <20070513223329.GA29207@dreamland.darkstar.lan> <46520F36.4080006@assembler.cz> <68676e00705211453n69de6868lc5da2cad64f65699@mail.gmail.com> <46528B6F.3050701@assembler.cz> <20070602222829.GA11893@dreamland.darkstar.lan>
-In-Reply-To: <20070602222829.GA11893@dreamland.darkstar.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 15:03:52 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:36991 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753197AbXFUTDw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 15:03:52 -0400
+Date: Thu, 21 Jun 2007 12:02:28 -0700
+From: Reza Roboubi <reza@earthdetails.com>
+Subject: O_DIRECT, fdatasync_area, mwrite
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: torvalds@linux-foundation.org
+Message-id: <467ACB44.50209@earthdetails.com>
+Organization: Earth Details
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again,
+Linus Torvalds:
+ > I suspect that this is about a few hundred lines of code (and a lot of
+ > testing). And you can emulate O_DIRECT behavior with it, along with
+ > splice (only for page-cache entities, though), and a lot of other
+ > off-by-one uses.
+( http://lwn.net/2002/0516/a/lt-async.php3 )
 
-Of course it is not there because I removed it myself :/ The "sensors" command 
-will just produce "general parse error" this is because of the unknown device 
-class (imho). So I removed that and forgot. Well now I have the sysfs files:
+I have often read this message and wondered why no one has implemented 
+it yet.  We would love to have such clean features instead of O_DIRECT. 
+  At this very moment it's a bit hard for us to do this(given a 
+prerequisites learning curve amongst other factors.)  We may at some 
+point do it and I'd love to contribute.  What _are_ the issues with it, 
+  and is there a technical reason it hasn't been implemented yet by anybody?
 
-/sys/class/hwmon/hwmon2/device/:
-bus         fan0_min    fan2_input  fan3_label    in0_input  in1_label  in2_max 
-    in3_min    temp0_crit   temp1_input
-driver      fan1_input  fan2_label  fan3_max      in0_label  in1_max    in2_min 
-    name       temp0_input  temp1_label
-fan0_input  fan1_label  fan2_max    fan3_min      in0_max    in1_min 
-in3_input  path       temp0_label  temp1_max
-fan0_label  fan1_max    fan2_min    hid           in0_min    in2_input 
-in3_label  power      temp0_max    uevent
-fan0_max    fan1_min    fan3_input  hwmon:hwmon2  in1_input  in2_label  in3_max 
-    subsystem  temp1_crit
+Further, is O_DIRECT to raw partition also unclean?
 
+Thanks.
 
-Please note that in kernelsrc/Documentation/hwmon/sysfs-interface
-is defined the interface. We have fans starting from 1 and not 0
-Also temperatures are in milidegrees. So your 3200 should be 32000.
-Temps file starts also from 1 and not 0. (so no temp0...)
-
-Please can you fix this issues? I will do the review later once this things are 
-fixed. Values seems to match.
-
-Thanks,
-Rudolf
+Reza.
+-- 
+Reza Roboubi
+Chief Technical Officer
+http://www.EarthDetails.com
