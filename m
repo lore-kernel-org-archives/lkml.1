@@ -1,115 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbXFUPY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbXFUP2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbXFUPY6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbXFUPYr
+	id S1755211AbXFUP2S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbXFUP2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:24:47 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55793 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752604AbXFUPYp (ORCPT
+	Thu, 21 Jun 2007 11:28:11 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:41493 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753354AbXFUP2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:24:45 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: davem@davemloft.net, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix race in AF_UNIX
-References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
-	<20070605.224128.104032917.davem@davemloft.net>
-	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
-	<20070607.184731.10907840.davem@davemloft.net>
-	<E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
-Date: Thu, 21 Jun 2007 09:18:38 -0600
-In-Reply-To: <E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's
-	message of "Mon, 11 Jun 2007 11:57:27 +0200")
-Message-ID: <m17ipxfi9d.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 21 Jun 2007 11:28:10 -0400
+Date: Thu, 21 Jun 2007 11:28:07 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Mattia Dongili <malattia@linux.it>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: can't suspend on vaio sz (rc4 and rc5 are ok) [was Re:
+ 2.6.22-rc4-mm2]
+In-Reply-To: <200706210003.30536.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0706211124490.3547-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> writes:
+On Thu, 21 Jun 2007, Rafael J. Wysocki wrote:
 
-> [CC'd Al Viro and Alan Cox, restored patch]
->
->> > There are races involving the garbage collector, that can throw away
->> > perfectly good packets with AF_UNIX sockets in them.
->> > 
->> > The problems arise when a socket goes from installed to in-flight or
->> > vice versa during garbage collection.  Since gc is done with a
->> > spinlock held, this only shows up on SMP.
->> > 
->> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
->> 
->> I'm going to hold off on this one for now.
->> 
->> Holding all of the read locks kind of defeats the purpose of using
->> the per-socket lock.
->> 
->> Can't you just lock purely around the receive queue operation?
->
-> That's already protected by the receive queue spinlock.  The race
-> however happens _between_ pushing the root set and marking of the
-> in-flight but reachable sockets.
->
-> If in that space any of the AF_UNIX sockets goes from in-flight to
-> installed into a file descriptor, the garbage collector can miss it.
-> If we want to protect against this using unix_sk(s)->readlock, then we
-> have to hold all of them for the duration of the marking.
->
-> Al, Alan, you have more experience with this piece of code.  Do you
-> have better ideas about how to fix this?
+> > I'll see if I can reproduce your problem here.
+> 
+> Yes, I can.  It's only necessary to load usb-storage (without any devices
+> actually using it) and it fails device_suspend() immediately (I don't think
+> it's freezer-related).
+> 
+> I've got the following trace from it:
+> 
+> usb_endpoint usbdev3.2_ep81: PM: suspend 0->1, parent 3-1:1.0 already 2
+> Suspending device 3-1:1.0
+> Suspending device usbdev3.2_ep00
+> Suspending device 3-1
+> Suspending device eth1
+> Suspending device eth0
+> Suspending device usbdev3.1
+> Suspending device usbdev3.1_ep81
+> Suspending device 3-0:1.0
+> Suspending device usbdev3.1_ep00
+> Suspending device usb3
+> hub 3-0:1.0: hub_suspend
+> ohci_hcd 0000:00:02.1: needs reinit!
+> usb usb3: suspend fail, err -16
+> usb usb3: 'global' suspend -16
 
-I haven't looked at the code closely enough to be confident of
-changing something in this area.  However the classic solution to this
-kind of gc problem is to mark things that are manipulated during
-garbage collection as dirty (not orphaned).
+Odd.  This has nothing at all to do with usb-storage.  The "needs 
+reinnit!" message means that an OHCI controller was in a reset state -- 
+not running and not suspended -- when the suspend method was called.
 
-It should be possible to fix this problem by simply changing gc_tree
-when we perform a problematic manipulation of a passed socket, such
-as installing a passed socket into the file descriptors of a process.
+This happened with plain old 2.6.22-rc4-mm2?  I'll try to reproduce it.
 
-Essentially the idea is moving the current code in the direction of
-an incremental gc algorithm.
+Alan Stern
 
-
-If I understand the race properly.  What happens is that we dequeue
-a socket (which has packets in it passing sockets) before the
-garbage collector gets to it.  Therefore the garbage collector
-never processes that socket.  So it sounds like we just
-need to call maybe_unmark_and_push or possibly just wait for
-the garbage collector to complete when we do that and the packet
-we have pulled out 
-
-
-
-So just looking at this quickly.  It looks like we need to hold
-the u->readlock mutex in garbage.c while looking at the receive
-queue.  Otherwise we may be processing a packet and have
-the file descriptors in limbo.  Either that or we need
-to slightly extend the scope of the receive queue lock on the
-receive side.
-
-Additionally we need to modify unix_notinflight to mark the sockets
-as inuse, or to at least wait for the garbage collection to complete.
-While being very careful to not add a deadlock scenario.
-
-The require changes to fix this without adding heavy handed locking
-look a bit nasty to make.
-
-I half suspect switching to one of the simpler incremental garbage
-collection algorithms might not be equally easy to implement and
-give us more performance at the same time.  Having a garbage collector
-that can block has advantages.
-
-The practical problem is you can't modify the list of pushed object
-aka gc_tree without holding a lock.  And we never drop the
-unix_table_lock.
-
-
-Anyway hopefully that is enough fodder for someone to come up with
-a light weight fix for this problem.
-
-Eric
