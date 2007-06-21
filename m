@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbXFUS0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbXFUS1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbXFUS0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbXFUS0Q
+	id S1755421AbXFUS1T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXFUS1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:26:16 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:3550 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751396AbXFUS0P (ORCPT
+	Thu, 21 Jun 2007 14:27:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35825 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751862AbXFUS1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:26:15 -0400
-Date: Thu, 21 Jun 2007 20:26:14 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Jan Kandziora <jjj@gmx.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Limiting load of certain processes
-In-Reply-To: <200706211950.40825.jjj@gmx.de>
-Message-ID: <Pine.LNX.4.64.0706212020520.26568@fbirervta.pbzchgretzou.qr>
-References: <200706211950.40825.jjj@gmx.de>
+	Thu, 21 Jun 2007 14:27:06 -0400
+Date: Thu, 21 Jun 2007 11:26:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+cc: Olaf Hering <olaf@aepfle.de>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for 2.6.22] [6/10] x86: Only make Macintosh drivers
+ default on Macs
+In-Reply-To: <1182448725.25426.19.camel@farscape.rchland.ibm.com>
+Message-ID: <alpine.LFD.0.98.0706211125100.3593@woody.linux-foundation.org>
+References: <200706201223.443613000@suse.de>  <20070620102334.DD01814AD0@wotan.suse.de>
+  <20070621173628.GA21243@aepfle.de>
+ <1182448725.25426.19.camel@farscape.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 21 2007 19:50, Jan Kandziora wrote:
+
+On Thu, 21 Jun 2007, Will Schmidt wrote:
 >
->Dear all,
->
->I like to use an old DOS/Clipper application through DOSEMU on a Linux
->application server in a hotel. It works, but (as usual with DOS), it causes
->a processor load of 100% in certain situations, while just waiting for user
->interaction.
+> I'll second that.  The obvious gotcha is that on a G5, the windfarm
+> drivers don't get automatically selected, thus the fans run at full
+> speed, and my office becomes a windtunnel. :-) 
 
-That's how it is. When DOS was written, cpu relaxing like the HLT instruction
-was not known yet (or was it?), so everything was (and still is) a busy loop.
+Since when has "default" been anything but "default". It doesn't mean that 
+you can't override it. And if "make oldconfig" doesn't take the _old_ 
+setting into account over the new one, there's something wrong.
 
-(Yes, including today's typical x86 BIOSes. Aw crap!)
+Of course, if there is no actual question, "default" ends up being what it 
+always chosen (because no explicit choice is allowed), but in this case 
+we're talking about:
 
-Of course there may be hacks that try to figure out if a DOS window is idle,
-waiting for user input. (Seems like a new invention in Windows 2000 and up).
-Since dosemu and all the emulators are not running a genuine Microsoft DOS /
-have source, it should be easy game for them to wait non-busily. Or maybe
-busy-waiting is _part_ of the emulation; maybe some DOS driver(s) require it.
+	bool "Macintosh device drivers"
 
+which definitely has that question.
 
-	Jan
--- 
+		Linus
