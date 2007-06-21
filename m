@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbXFUDcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758312AbXFUDei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757581AbXFUDcm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Jun 2007 23:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbXFUDcf
+	id S1758312AbXFUDei (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Jun 2007 23:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbXFUDeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Jun 2007 23:32:35 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:59715 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbXFUDce (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Jun 2007 23:32:34 -0400
-Message-ID: <4679F14F.9050008@zytor.com>
-Date: Wed, 20 Jun 2007 20:32:31 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 20 Jun 2007 23:34:31 -0400
+Received: from gw.goop.org ([64.81.55.164]:59393 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753118AbXFUDea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Jun 2007 23:34:30 -0400
+Message-ID: <4679F17E.4060305@goop.org>
+Date: Wed, 20 Jun 2007 20:33:18 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-To: Albert Cahalan <acahalan@gmail.com>
-CC: William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: JIT emulator needs
-References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>	 <20070619150824.GH11781@holomorphy.com>	 <787b0d920706192016l660dd5b0mbf300581db81ac62@mail.gmail.com>	 <20070620160116.GI6909@holomorphy.com> <467957CB.8020704@zytor.com>	 <787b0d920706201125g2368a4e1i2d115b0b2d5399e5@mail.gmail.com>	 <46797747.9020904@zytor.com> <787b0d920706202021t567b2fefu869a03ef76f245da@mail.gmail.com>
-In-Reply-To: <787b0d920706202021t567b2fefu869a03ef76f245da@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: akpm@linux-foundation.org
+CC: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-06-20-10-12.tar.gz uploaded
+References: <200706201714.l5KHEYh6010297@imap1.linux-foundation.org>
+In-Reply-To: <200706201714.l5KHEYh6010297@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Albert Cahalan wrote:
->>
->> That's fine.  That's a policy decision.  That's what a security policy
->> *is*.  The owner of the system has decided, by security policy, that
->> that is not allowed.  Bypassing that is not acceptable.
-> 
-> Fixing a bug should be acceptable.
-> 
+akpm@linux-foundation.org wrote:
+> git-r8169-fixup.patch
+>   
+This causes a compile failure:
 
-That's not what you're trying to do, though.  You're trying to change
-the behaviour underneath the security policy.  If there is a bug, it's
-in the security policy and that's where it needs to be changed.
+/home/jeremy/hg/xen/paravirt/linux/drivers/net/r8169.c: In function 'rtl8169_rx_interrupt':
+/home/jeremy/hg/xen/paravirt/linux/drivers/net/r8169.c:2569: error: too many arguments to function 'rtl8169_try_rx_copy'
 
-> Look, let's back up a bit here. At a high level, what exactly do
-> you imagine that this behavior was intended for? I suggest you
-> list some examples of the attacks that are blocked.
-> 
-> Can you come up with a reasonable argument that the current behavior
-> is the least painful restriction required to block those attacks?
-> Does the current behavior block any attack that the proposed behavior
-> would not? (list the attacks please)
+with an allyesconfig on x86-64.  Should git-r8169-fixup.patch also be 
+changing the callers?
 
-See above.
-
-	-hpa
+    J
