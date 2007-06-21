@@ -1,142 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbXFUJza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbXFUKJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754601AbXFUJza (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 05:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXFUJzT
+	id S1754601AbXFUKJo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 06:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXFUKJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 05:55:19 -0400
-Received: from mx.neterion.com ([72.1.205.142]:53776 "EHLO owa.neterion.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750716AbXFUJzR convert rfc822-to-8bit (ORCPT
+	Thu, 21 Jun 2007 06:09:34 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:33125 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbXFUKJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 05:55:17 -0400
-X-MIMEOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 21 Jun 2007 06:09:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LkLYZRljMRZ2PgcWXjLMBVWmMnSf1us4eeUc0H71YLhMr6H9kMPToW0dSzY52Ih3TxVpbbOH80k1BoYuGLBaBYo0/e01aPm+qv8T4HHKH3+/sOM2QnR7HSWq5UximP3A+rr7aDr/vUgGJgNQuMAF2yVKWPGHKKRcdqLbpkRsiRw=
+Message-ID: <a781481a0706210309u5cb05787k83bd0d7cd95e7416@mail.gmail.com>
+Date: Thu, 21 Jun 2007 15:39:32 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Keiichi KII" <k-keiichi@bx.jp.nec.com>
+Subject: Re: [RFC][PATCH -mm take5 6/7] add ioctls for adding/removing target
+Cc: "Matt Mackall" <mpm@selenic.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <467A43B1.3010308@bx.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-Date: Thu, 21 Jun 2007 05:55:13 -0400
-Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD7701C190FF@nekter>
-In-Reply-To: <20070619204110.GA21384@aepfle.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-Thread-Index: AceytEyNHNqR5OFOQy+hTqFz9jFDKABNcLpA
-From: "Sivakumar Subramani" <Sivakumar.Subramani@neterion.com>
-To: "Olaf Hering" <olaf@aepfle.de>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       "Leonid Grossman" <Leonid.Grossman@neterion.com>,
-       "Rastapur Santosh" <santosh.rastapur@neterion.com>,
-       "Ramkrishna Vepa" <ram.vepa@neterion.com>,
-       "Sriram Rapuru" <Sriram.Rapuru@neterion.com>,
-       "Sreenivasa Honnur" <Sreenivasa.Honnur@neterion.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <466FC455.5060001@bx.jp.nec.com> <466FC76A.6050006@bx.jp.nec.com>
+	 <a781481a0706131341k17170514q7a9d0ce052dbfe2a@mail.gmail.com>
+	 <4677AA3D.7010604@bx.jp.nec.com>
+	 <a781481a0706190809n3387caefv86d289cfd959f805@mail.gmail.com>
+	 <467A43B1.3010308@bx.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Keiichi,
 
-We will include this fix in next set of patch submission. Thanks for the
-fix.
+> > Please do consider configfs. Note that we'll have to lose the sysfs
+> > symlink from your target's kobject to the kobject of the ethernet
+> > device if we switch to configfs, but was that symlink needed for
+> > some essential functionality or was it simply for informational
+> > purpose? IMHO, this patchset only needs to bring in functionality
+> > to be able to create, destroy, and modify netconsole targets at
+> > run-time, and all these reconfiguration tasks would be handled
+> > quite well by configfs, AFAICT.
+>
+> It was for informational pupose. But, if we used symlink to the net_device
+> kobject in sysfs, we could easily keep up with changing network device name by
+> changing symbolic link.
+
+In that case (because it is non-essential) we can drop that link entirely.
+(This means the associated code for the temporary modify_list, the
+extra mutex and the kasprintf() stuff can also be dropped too!) I guess
+the netconsole_event() notifier could now become simply:
+
+	if (event == NETDEV_CHANGENAME) {
+		spin_lock_irqsave(&target_list_lock, ...);
+		list_for_each_entry(nt, ..., &target_list, ...)
+			if (nt->np.dev == dev)
+				strcpy(nt->np.dev_name, dev->name);
+		spin_unlock_irqrestore(&target_list_lock, ...);
+	}
+
+> In the case of configfs, Do we use config_item related to the network interface
+> because the configfs doesn't have symlink that refers to net_device kobject
+> (e.g. "network_interface" in configfs, "network_interface" value is "eth0")?
+
+Yes, that's a good idea, this way we continue to give the information we
+were giving previously. We could do this by defining another configfs
+attribute of the target's config_item which could then be a proxy for
+the char dev_name[IFNAMSIZ] member of the target's underlying netpoll
+structure. (this attribute would naturally be read-only from userspace;
+sort of similar to what you're doing for the local_mac attribute currently).
+
+Please feel free to discuss anything else regarding this with me off-list,
+if you want.
 
 Thanks,
-~Siva 
------Original Message-----
-From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org]
-On Behalf Of Olaf Hering
-Sent: Wednesday, June 20, 2007 2:11 AM
-To: Stephen Hemminger
-Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org
-Subject: Re: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-
-On Tue, Jun 19, Stephen Hemminger wrote:
-
-> On Tue, 19 Jun 2007 21:02:53 +0200
-> Olaf Hering <olaf@aepfle.de> wrote:
-> 
-> > 
-> > What happend to __ucmpdi2 from David Woodhouse?
-> > google has a few hits about stuff like this on 32bit powerpc with
-gcc 4.1.2:
-> > 
-> > ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-> > 
-> > using the drivers/net/s2io* files from 2.6.21 with 2.6.22-rc5 fixes 
-> > the compile.
-> > 
-> > 25805dcf9d83098cf5492117ad2669cd14cc9b24 adds two u64 >>= 48 
-> > followed by a switch statement (line 2889 and 6816).
-> 
-> Probably the "switch(err) {" needs a cast to a smaller type (like u8).
-
-This change removes the calls to __ucmpdi2.
-
----
- drivers/net/s2io.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
-
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -2868,6 +2868,7 @@ static void tx_intr_handler(struct fifo_
- 	struct tx_curr_get_info get_info, put_info;
- 	struct sk_buff *skb;
- 	struct TxD *txdlp;
-+	u8 err_mask;
- 
- 	get_info = fifo_data->tx_curr_get_info;
- 	memcpy(&put_info, &fifo_data->tx_curr_put_info,
-sizeof(put_info)); @@ -2886,8 +2887,8 @@ static void
-tx_intr_handler(struct fifo_
- 			}
- 
- 			/* update t_code statistics */
--			err >>= 48;
--			switch(err) {
-+			err_mask = err >> 48;
-+			switch(err_mask) {
- 				case 2:
- 
-nic->mac_control.stats_info->sw_stat.
- 
-tx_buf_abort_cnt++;
-@@ -6805,6 +6806,7 @@ static int rx_osm_handler(struct ring_in
- 	u16 l3_csum, l4_csum;
- 	unsigned long long err = rxdp->Control_1 & RXD_T_CODE;
- 	struct lro *lro;
-+	u8 err_mask;
- 
- 	skb->dev = dev;
- 
-@@ -6813,8 +6815,8 @@ static int rx_osm_handler(struct ring_in
- 		if (err & 0x1) {
- 
-sp->mac_control.stats_info->sw_stat.parity_err_cnt++;
- 		}
--		err >>= 48;
--		switch(err) {
-+		err_mask = err >> 48;
-+		switch(err_mask) {
- 			case 1:
- 				sp->mac_control.stats_info->sw_stat.
- 				rx_parity_err_cnt++;
-@@ -6867,9 +6869,9 @@ static int rx_osm_handler(struct ring_in
- 		* Note that in this case, since checksum will be
-incorrect,
- 		* stack will validate the same.
- 		*/
--		if (err != 0x5) {
--			DBG_PRINT(ERR_DBG, "%s: Rx error Value:
-0x%llx\n",
--				dev->name, err);
-+		if (err_mask != 0x5) {
-+			DBG_PRINT(ERR_DBG, "%s: Rx error Value: 0x%x\n",
-+				dev->name, err_mask);
- 			sp->stats.rx_crc_errors++;
- 			sp->mac_control.stats_info->sw_stat.mem_freed 
- 				+= skb->truesize;
--
-To unsubscribe from this list: send the line "unsubscribe netdev" in the
-body of a message to majordomo@vger.kernel.org More majordomo info at
-http://vger.kernel.org/majordomo-info.html
+Satyam
