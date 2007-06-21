@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXFUQK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbXFUQKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755933AbXFUQK2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 12:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXFUQKR
+	id S1756669AbXFUQKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 12:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbXFUQKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 12:10:17 -0400
-Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:46110 "EHLO
+	Thu, 21 Jun 2007 12:10:18 -0400
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:46118 "EHLO
 	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752958AbXFUQKP (ORCPT
+	by vger.kernel.org with ESMTP id S1753996AbXFUQKQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 12:10:15 -0400
+	Thu, 21 Jun 2007 12:10:16 -0400
 From: Alexander Wuerstlein <arw@arw.name>
 To: linux-kernel@vger.kernel.org
-Cc: Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
-Subject: [PATCH] export xattr_resolve_name_sns [1/4]
-Date: Thu, 21 Jun 2007 18:02:25 +0200
-Message-Id: <1182441748840-git-send-email-arw@arw.name>
+Cc: Alexander Wuerstlein <arw@arw.name>,
+       Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
+Subject: [PATCH] sns: add syscall to check signed state of a process [4/4]
+Date: Thu, 21 Jun 2007 18:02:28 +0200
+Message-Id: <11824417553291-git-send-email-arw@arw.name>
 X-Mailer: git-send-email 1.5.2.1
 In-Reply-To: 20070621155516.GA6838@faui01.informatik.uni-erlangen.de
 References: 20070621155516.GA6838@faui01.informatik.uni-erlangen.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Schlumberger <spjsschl@cip.informatik.uni-erlangen.de>
-
-Makes it possible to get extended attributes for a given inode.  We need this
-for cases where we no longer have the corresponding direntry.
+Makes it possible for a userspace process to ask for the trustworthiness of
+another process.
 
 Signed-off-by: Johannes Schlumberger <spjsschl@cip.informatik.uni-erlangen.de>
 ---
- fs/xattr.c            |   18 ++++++++++++++++++
- include/linux/xattr.h |    1 +
- 2 files changed, 19 insertions(+), 0 deletions(-)
+ arch/i386/kernel/syscall_table.S |    1 +
+ include/asm-i386/unistd.h        |    3 ++-
+ security/sns.c                   |   15 +++++++++++++++
+ 3 files changed, 18 insertions(+), 1 deletions(-)
 
-diff --git a/fs/xattr.c b/fs/xattr.c
-index 4523aca..467417f 100644
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -538,6 +538,24 @@ xattr_resolve_name(struct xattr_handler **handlers, const char **name)
- 	return handler;
+diff --git a/arch/i386/kernel/syscall_table.S b/arch/i386/kernel/syscall_table.S
+index bf6adce..e8ba35a 100644
+--- a/arch/i386/kernel/syscall_table.S
++++ b/arch/i386/kernel/syscall_table.S
+@@ -323,3 +323,4 @@ ENTRY(sys_call_table)
+ 	.long sys_signalfd
+ 	.long sys_timerfd
+ 	.long sys_eventfd
++	.long sys_sns_is_trusted	/* 320 */
+diff --git a/include/asm-i386/unistd.h b/include/asm-i386/unistd.h
+index e84ace1..3f8df3e 100644
+--- a/include/asm-i386/unistd.h
++++ b/include/asm-i386/unistd.h
+@@ -329,10 +329,11 @@
+ #define __NR_signalfd		321
+ #define __NR_timerfd		322
+ #define __NR_eventfd		323
++#define __NR_sns_is_trusted	324
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 324
++#define NR_syscalls 325
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+diff --git a/security/sns.c b/security/sns.c
+index 3192a90..1978f7c 100644
+--- a/security/sns.c
++++ b/security/sns.c
+@@ -112,3 +112,18 @@ int sns_signature_valid(struct file *file)
+ 	crypto_free_hash(tfm);
+ 	return ret;
  }
- 
-+struct xattr_handler *
-+xattr_resolve_name_sns(struct xattr_handler **handlers, const char **name)
++
++asmlinkage int sys_sns_is_trusted(pid_t p)
 +{
-+	struct xattr_handler *handler;
-+
-+	if (!*name)
-+		return NULL;
-+
-+	for_each_xattr_handler(handlers, handler) {
-+		const char *n = strcmp_prefix(*name, handler->prefix);
-+		if (n) {
-+			*name = n;
-+			break;
-+		}
++	struct task_struct *t;
++	rcu_read_lock();
++	t = find_task_by_pid(p);
++	if (IS_ERR(t)) {
++		rcu_read_unlock();
++		return -EINVAL;
 +	}
-+	return handler;
++	p = t->sns_valid_sig; /*locking needed*/
++	rcu_read_unlock();
++	return p;
 +}
-+
- /*
-  * Find the handler for the prefix and dispatch its get() operation.
-  */
-diff --git a/include/linux/xattr.h b/include/linux/xattr.h
-index def131a..5653508 100644
---- a/include/linux/xattr.h
-+++ b/include/linux/xattr.h
-@@ -46,6 +46,7 @@ struct xattr_handler {
- 		   size_t size, int flags);
- };
- 
-+struct xattr_handler * xattr_resolve_name_sns(struct xattr_handler **, const char **);
- ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
- ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
- int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
++EXPORT_SYMBOL_GPL(sys_sns_is_trusted);
 -- 
 1.5.2.1
 
