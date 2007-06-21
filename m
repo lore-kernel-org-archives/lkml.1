@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbXFVAAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbXFVABh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281AbXFVAAe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 20:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbXFVAA0
+	id S1755473AbXFVABh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 20:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXFVABa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 20:00:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50567 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751348AbXFVAAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 20:00:25 -0400
-To: david@lang.hm
-Cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171157400.14121@woody.linux-foundation.org>
-	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4679557C.5080907@iders.ca>
-	<20070620175627.319a6c55@the-village.bc.nu>
-	<46797C52.4020907@iders.ca>
-	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
-	<ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
-	<orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
-	<ory7idpykk.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706210031280.31603@asgard.lang.hm>
-	<ork5txksp0.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706211300200.31603@asgard.lang.hm>
-	<or8xadjbma.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706211344500.31603@asgard.lang.hm>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 20:59:18 -0300
-In-Reply-To: <Pine.LNX.4.64.0706211344500.31603@asgard.lang.hm> (david@lang.hm's message of "Thu\, 21 Jun 2007 13\:45\:27 -0700 \(PDT\)")
-Message-ID: <orir9gj1ux.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 21 Jun 2007 20:01:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50518 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751407AbXFVAB3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 20:01:29 -0400
+Date: Thu, 21 Jun 2007 16:59:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@stusta.de>
+cc: Oleg Verych <olecom@flower.upol.cz>, Martin Bligh <mbligh@mbligh.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
+In-Reply-To: <20070621235117.GD23017@stusta.de>
+Message-ID: <alpine.LFD.0.98.0706211658270.3593@woody.linux-foundation.org>
+References: <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com>
+ <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com>
+ <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org>
+ <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de>
+ <alpine.LFD.0.98.0706190732150.3593@woody.linux-foundation.org>
+ <20070619165300.GD19904@flower.upol.cz> <alpine.LFD.0.98.0706190949440.3593@woody.linux-foundation.org>
+ <20070621235117.GD23017@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, david@lang.hm wrote:
 
-> this is your right with your code. please stop browbeating people who
-> disagree with you.
 
-For the record, GPLv2 is already meant to accomplish this.  I don't
-understand why people who disagree with this stance chose GPLv2.
-Isn't "no further restrictions" clear enough?
+On Fri, 22 Jun 2007, Adrian Bunk wrote:
+> On Tue, Jun 19, 2007 at 10:04:58AM -0700, Linus Torvalds wrote:
+> >...
+> > This is why I've been advocating bugzilla "forget" stuff, for example. I 
+> > tend to see bugzilla as a place where noise accumulates, rather than a 
+> > place where noise is made into a signal. 
+> > 
+> > Which gets my to the real issue I have: the notion of having a process for 
+> > _tracking_ all the information is actually totally counter-productive, if 
+> > a big part of the process isn't also about throwing noise away.
+> > 
+> > We don't want to "save" all the crud. I don't want "smart tracking" to 
+> > keep track of everything. I want "smart forgetting", so that we are only 
+> > left with the major signal - the stuff that matters. 
+> 
+> Even generating the perfect signal is a complete waste of time if 
+> there's no recipient for the signal...
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+My argument is that *if* we had "more signal, less noise", we'd probably 
+get more people looking at it.
+
+In fact, I guarantee that's the case. You may  not be 100% happy with the 
+regression list, but every single maintainer/developer I've talked to has 
+said they appreciated it and it made it easier (and thus more likely) for 
+them to actually look at what the outstanding issues were.
+
+		Linus
