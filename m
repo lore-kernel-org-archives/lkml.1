@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbXFUPOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbXFUPOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbXFUPOI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXFUPN4
+	id S1757539AbXFUPOY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbXFUPN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:13:56 -0400
+	Thu, 21 Jun 2007 11:13:58 -0400
 Received: from mail02.vsnet.ch ([153.109.10.41]:42825 "EHLO mail02.vsnet.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751755AbXFUPNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:13:55 -0400
+	id S1752022AbXFUPN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:13:57 -0400
 X-Greylist: delayed 1102 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Jun 2007 11:13:55 EDT
 From: Marc Pignat <marc.pignat@hevs.ch>
 Organization: HEVs
 To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
 Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-Date: Thu, 21 Jun 2007 16:57:49 +0200
+Date: Thu, 21 Jun 2007 16:54:30 +0200
 User-Agent: KMail/1.9.5
 Cc: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
        Linux Kernel list <linux-kernel@vger.kernel.org>,
@@ -26,12 +26,19 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706211657.49427.marc.pignat@hevs.ch>
+Message-Id: <200706211654.31463.marc.pignat@hevs.ch>
 X-VSnet-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please use this patch, sorry for the later
+Hello Nicolas!
+
+Good news!
+
+I think I've found the problem, this seems to work (tested with SLUB and SLAB).
+
+If you're in the cleanup stage, I think the whole kmap and kunmap can be in the 'if (cpu_is_at91rm9200())',
+we have no reason to kmap data we don't touch :-D
 
 Regards
 
@@ -53,7 +60,7 @@ Marc
  		}
 
 -		kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
-+		kunmap_atomic(buffer - sg->offset, KM_BIO_SRC_IRQ);
++		kunmap_atomic(buffer - sg->buffer, KM_BIO_SRC_IRQ);
  		flush_dcache_page(sg->page);
  	}
 
