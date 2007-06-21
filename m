@@ -1,56 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbXFUXR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbXFUXUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267AbXFUXR2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbXFUXRV
+	id S1752923AbXFUXUW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbXFUXUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:17:21 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:64296 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbXFUXRU convert rfc822-to-8bit (ORCPT
+	Thu, 21 Jun 2007 19:20:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:36158 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbXFUXUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:17:20 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "C. Scott Ananian" <cscott@laptop.org>
-Subject: Re: inotify and /proc?
-Date: Fri, 22 Jun 2007 01:17:09 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <c6d9bea0706211254r6d457e36wfb3722880a3b4abd@mail.gmail.com>
-In-Reply-To: <c6d9bea0706211254r6d457e36wfb3722880a3b4abd@mail.gmail.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Thu, 21 Jun 2007 19:20:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Dsk6CZwaxhUUD0v1hZZe++KdiCoh4gNRZhKmDGn3/1aDtaR3aBpkRy7i6XQkQvHLypo1cYEDkOFfdKvVl/qKYOWwaSLjW7cYrxdAno2gEnx4BMUqvI4AMorja6xitI45Hq7+9AlOut+PPZ/8KKwu98yO86C4xHxvhoRvsbmoQio=
+Message-ID: <9a8748490706211620l64178d16gcfd164929b62e83f@mail.gmail.com>
+Date: Fri, 22 Jun 2007 01:20:08 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Alexandre Oliva" <aoliva@redhat.com>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Cc: "jimmy bahuleyan" <knight.camelot@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <orzm2sj46y.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706220117.09966.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19flSmXK3MT5L54ryL6DfUInxpRL0Iz3l9Q3Cd
- BYOUukEDCF5ZcwGOCIxqOMJiECgc8CoVnZV7+FYANWep/gMWIp
- kZUbmibtzLpqk5yb21fEw==
+References: <orlkedpryc.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <467A6290.80602@gmail.com>
+	 <orr6o5kxdr.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <9a8748490706211344t83f8647m2b614b1325b5f3a3@mail.gmail.com>
+	 <orzm2sj46y.fsf@oliva.athome.lsd.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 June 2007, C. Scott Ananian wrote:
-> 
-> I'd like to make a read-only /proc file which supports inotify -- that
-> is, the kernel can send change notifications to userland via the
-> inotify mechanism.  I've found fsnotify_modify() (in
-> include/linux/fsnotify.h) which seems to do what I want, but it takes
-> a struct dentry * -- how can I get a dentry from a struct
-> proc_dir_entry and increment its ref count to keep it around?  Any
-> help would be appreciated.  Thanks!
+On 22/06/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+> On Jun 21, 2007, "Jesper Juhl" <jesper.juhl@gmail.com> wrote:
+>
+> > On 21/06/07, Alexandre Oliva <aoliva@redhat.com> wrote:
+> > [snip]
+> >>
+> >> BTW, I should probably have made clear that, as usual, I was speaking
+> >> my own mind, not speaking on behalf of FSFLA or Red Hat, with whom I'm
+> >> associated, and certainly not on behalf of FSF, with whom I'm not
+> >> associated.  Just in case this wasn't clear yet ;-)
+>
+> > Given your signature below, no, that's not at all clear :
+>
+> Do you assume I speak for the GNU project and for University of
+> Campinas as well, just because my signature implies that I am somehow
+> associated with them?
+>
+My point was that your signature does indicate your affiliation with a
+lot of different organizations/companies, so unless you explicitly
+state that you are not speaking on behalf of them it's easy to assume
+you do.
 
-It sounds a little fishy to want that in the first place. If we wanted
-inotify on /proc, it should work on all files I guess, but that's
-an immense amount of work.
+> >> FSF Latin America Board Member         http://www.fsfla.org/
+>
+> > If you don't speak for the FSF then adverticing the fact that you are
+> > a FSF board member seems a little odd.
+>
+> What's odd is your assuming that I'm an FSF board member.  Especially
+> when there's a URL just next to it that explains what FSFLA is, and
+> how it's not the FSF, but rather one of four members of the network of
+> FSFs.
+>
 
-What file are you talking about in particular?
-Why does it have to be in /proc?
-Why not use another notification mechanism -- blocking read(), poll(),
-uevent, ...?
+Quoting from that web page: "FSF Latin America is a sister
+organization of Free Software Foundation (FSF)"
 
-	Arnd <><
+So when your signature states that you are a "FSF Latin America Board
+Member" and FSFLA is a "sister organization of Free Software
+Foundation (FSF)" that, at least to me, implies some association with
+the FSF.
+
+> > I also fail to see (or at least wonder at) how a board member of the
+> > FSF can state that he's not associated with the FSF... hmm, the mind
+> > boggles..
+>
+> Yeah, it's really hard to clarify broken assumptions and jumping to
+> conclusions.
+>
+See above.
+
+> >> Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+>
+> > Same thing for the RedHat bit here, along with posting from a
+> > @redhat.com email addr.
+>
+> Why would this convey the impression that I'm speaking on behalf of
+> Red Hat, tell me.  It doesn't even say I'm president, CEO, PR manager,
+> press contact or any such thing...
+>
+No, it does not, but it's easy to mistake a post by someone posting
+from a company email and including that company in their signature for
+speaking for that company.
+
+> If I posted from my ISP e-mail address, would you assume I was
+> speaking for the ISP?
+>
+Of course not. The @redhat.com email is just one more thing, that
+added together with the signature could lead people to believe you are
+speaking on their behalf.
+
+You were the one who brought up the " I should probably have made
+clear that, as usual, I was speaking my own mind, not speaking on
+behalf of ..." bit. I'm simply replying to you that indeed it is not
+clear for whom you speak with all that info in your signature and the
+email address you post from.
+
+Especially the FSF association seems likely given that most of your
+emails seem heavily influenced by the FSF cool aid.
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
