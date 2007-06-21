@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbXFUFWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbXFUFZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753791AbXFUFWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 01:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXFUFV7
+	id S1754508AbXFUFZy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 01:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbXFUFZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 01:21:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40403 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751124AbXFUFV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 01:21:58 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Neuer <mr.fred.smoothie@pobox.com>,
-       Helge Hafting <helge.hafting@aitel.hist.no>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Mundt <lethal@linux-sh.org>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
-       "david\@lang.hm" <david@lang.hm>, Tarkan Erimer <tarkan@netone.net.tr>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <Pine.LNX.4.64.0706100150080.6675@asgard.lang.hm>
-	<4671B734.1040401@nortel.com>
-	<orhcpa88b0.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706142155.34298.dhazelton@enter.net>
-	<or4pl96gvr.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<alpine.LFD.0.98.0706142034240.14121@woody.linux-foundation.org>
-	<46791A35.4000009@aitel.hist.no>
-	<alpine.LFD.0.98.0706200930070.3593@woody.linux-foundation.org>
-	<161717d50706200958o53ae986fv635e18b9b6a17e85@mail.gmail.com>
-	<alpine.LFD.0.98.0706201040590.3593@woody.linux-foundation.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 02:19:32 -0300
-In-Reply-To: <alpine.LFD.0.98.0706201040590.3593@woody.linux-foundation.org> (Linus Torvalds's message of "Wed\, 20 Jun 2007 11\:03\:54 -0700 \(PDT\)")
-Message-ID: <orvedhrijf.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 21 Jun 2007 01:25:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:10502 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbXFUFZq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 01:25:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VsgRVyHNfCoNa+4OTOrgd6wIvTYXjmSjsYVlnksROISVEJ4ekKWIqGTg6SVExX+YcEsJBLl85j0PgVrtf/diVG0/6gFlo8IjeEN1LlGwePVVYx8Cun4j7fsOMHglVeNxfRX0gi/Qs/oT2xgG1fBS1kKj/8VH0raVjBPtMcavjhU=
+Message-ID: <344eb09a0706202225i6743159x68e3a5416850eed3@mail.gmail.com>
+Date: Thu, 21 Jun 2007 10:55:45 +0530
+From: "Bharata B Rao" <bharata.rao@gmail.com>
+To: "Erez Zadok" <ezk@cs.sunysb.edu>
+Subject: Re: [RFC PATCH 1/4] Union mount documentation.
+Cc: "Jan Blunck" <jblunck@suse.de>, linux-kernel@vger.kernel.org,
+       jsipek@ic.sunysb.edu, bharata@linux.vnet.ibm.com
+In-Reply-To: <200706201728.l5KHS9hj029372@agora.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f5al1i$foi$1@sea.gmane.org>
+	 <200706201728.l5KHS9hj029372@agora.fsl.cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 20, 2007, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On 6/20/07, Erez Zadok <ezk@cs.sunysb.edu> wrote:
+> In message <f5al1i$foi$1@sea.gmane.org>, Jan Blunck writes:
+> > On Tue, 19 Jun 2007 22:59:51 -0700, Arjan van de Ven wrote:
+> >
+> > > first of all I'm happy to see that people are still working on unionfs;
+> > > I'd love to have functionality like this show up in Linux.
+> >
+> > This has nothing to do with unionfs. This is about doing a VFS based
+> > approach to union mounts. Unification is a name-based construct so it
+> > belongs into VFS and not into a separate file system.
+>
+> Jan, while I agree with you in principle that unification is a VFS-level
+> namespace construct, I disagree with you that unioning doesn't belong in a
+> separate f/s.
+>
+> As someone whose group developed three generations of the stackable file
+> system Unionfs (see http://unionfs.filesystems.org/), I can tell you from my
+> experience and the experience of numerous users, that the devil is the
+> details -- or the so-called orthogonal issues.  To get a fully working
+> unioning implementation, one that the many current users of Unionfs could
+> use, you'll have to deal with many issues and corner cases: cache coherency,
+> inode persistency (and network f/s exports), copyups, whiteouts and opaque
+> dirs, how to deal with "odd" file systems which don't support native
+> whiteouts and such, directory reading (seekdir), and more.  Our third
+> generation Unionfs, the one with On-Disk Format (ODF), handles all of these.
+> Rather than reproduce all that discussion here, I'll point people to read
+> more info here: <http://www.filesystems.org/unionfs-odf.txt>
 
-> It allows everybody do make that choice that I consider to be really 
-> important: the choice of how something _you_ designed gets used.
+Erez, thanks, will definetely have to look at that to understand how
+unionfs is addressing all these corner cases.
 
-> And it does that exactly by *limiting* the license to only that one work. 
-> Not trying to extend it past the work.
+Though I don't understand all the issues involved with cache coherency
+atm, one of the things you said during unionfs 2.0 release is that it
+is now possible to make modifications to the lower layer directly and
+they will be visible from the union. Note that since we do unioning at
+VFS layer, we don't explicitly address this. Direct
+modifications/additions to the lower layer will automatically get
+reflected in the union. Anyway before commenting anything more on
+this, let me get back and study the coherency issues more closely :)
 
-Actually, the two paragraphs above are contradictory, and the second
-is not true in as much as it gives way to the former.
+>
+> So, to have a fully usable union mounts implementation, you're going to have
+> to support a lot of existing features; but if you were to support them all
+> at the VFS level, you will have bloated the VFS considerably with stuff that
+> many would argue does not belong in the VFS.
 
-Consider an independent file contributed to Linux.  It is an
-independent work.  But the moment it gets combined with Linux, the
-only license you can use is GPLv2.
+Talking about copyup and whiteout at VFS layer, we have already
+demonstrated what complexity it takes to have these within VFS. Please
+take a look at the copyup and whiteout patches in our previous
+releases at:
 
-Consider a patch, or any modified version of Linux.  It's another
-work.  But the license applies to it as well.
+http://lkml.org/lkml/2007/4/17/150
+http://lkml.org/lkml/2007/5/14/69
 
-Similarly, the GPL affects patents that somehow cover the work: the
-distributor can no longer enforce them against downstream users of the
-software.
+Or may be wait till I clean all those up to work with the new union
+new stack infrastructure which I have posted here.
 
-See?
-
-> The GPLv3 can never do that.
-
-It does it in just the same way that GPLv1 and GPLv2 do: "no further
-restrictions".  That it has to make some of them explicit, such that
-people understand they apply, or such that this provision can't be
-trampled on by other laws that by default trample copyright law, is
-just a legal implementation detail.
-
-> It's missing the point that "morals" are about _personal_ choices. You 
-> cannot force others to a certain moral standpoint. 
-
-FWIW, I tend to consider morals more of a society issue than an
-individual issue.  Morals encode what the society understands to be
-the common good, and that's often something evolutionary, even with
-biological roots.
-
-Laws (as you say) try to reflect the morals of the society, but since
-it's based on morals, it often lags behind.  Which is why some laws
-become forgotten and no longer applied, even if still applicable in
-theory.  And that's also why (as you alluded to in your message), when
-laws actively diverge from morals, you observe a lot of civil
-disobedience: think DRM, DMCA, non-benevolent dictatorships and other
-abusive regimes.
-
-
-I must say that it *is* lovely to watch you talk about morals in ways
-that I agree so much with, even if I dissent in a some details.  This
-has further increased my admiration for you.  Thank you.
-
+Regards,
+Bharata.
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+"Men come and go but mountains remain" -- Ruskin Bond.
