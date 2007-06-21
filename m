@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbXFURfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbXFURgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759268AbXFURfB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758545AbXFURer
+	id S1759205AbXFURgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbXFURgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:34:47 -0400
-Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:54538 "EHLO
-	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758405AbXFUReq (ORCPT
+	Thu, 21 Jun 2007 13:36:07 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:48577 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754878AbXFURgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:34:46 -0400
-Date: Thu, 21 Jun 2007 19:34:45 +0200
-From: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Alexander Wuerstlein <arw@arw.name>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] signed binaries support [0/4]
-Message-ID: <20070621173445.GF9741@cip.informatik.uni-erlangen.de>
-References: <20070621155516.GA6838@faui01.informatik.uni-erlangen.de> <20070621161758.GP12950@stusta.de> <20070621162917.GB9741@cip.informatik.uni-erlangen.de> <20070621172344.GQ12950@stusta.de>
+	Thu, 21 Jun 2007 13:36:05 -0400
+Message-ID: <467AB5EE.3030909@zytor.com>
+Date: Thu, 21 Jun 2007 10:31:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070621172344.GQ12950@stusta.de>
-X-Echelon-Scan: plutonium bomb dirty irak allah satan bush victory c4
-	cocaine saddam wtc holy war believe god cia nsa
-X-Echelon-Result: Terrorist
-User-Agent: Mutt/1.5.15 (2007-05-02)
+To: Ram Pai <linuxram@us.ibm.com>
+CC: Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
+ through other means
+References: <467994BD.6000403@zytor.com>	 <20070620210343.GQ21478@ftp.linux.org.uk>  <46799A31.10301@zytor.com> <1182442837.3342.13.camel@ram.us.ibm.com>
+In-Reply-To: <1182442837.3342.13.camel@ram.us.ibm.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 070621 19:26, Adrian Bunk <bunk@stusta.de> wrote:
-> On Thu, Jun 21, 2007 at 06:29:17PM +0200, Alexander Wuerstlein wrote:
-> > On 070621 18:19, Adrian Bunk <bunk@stusta.de> wrote:
-> > > On Thu, Jun 21, 2007 at 05:55:16PM +0200, Johannes Schlumberger wrote:
-> > > 
-> > > > Hi,
-> > > 
-> > > Hi Johannes,
-> > > 
-> > > > We (two students of CS) built a system for signing binaries and verifying them
-> > > > before executing. Our main focus was to implement a way to inhibit execution
-> > > > of suid-binaries, which are not trustworthy (i.e. not signed).
-> > > >...
-> > > 
-> > > doesn't anyone who is able to install a not trustworthy suid-binary 
-> > > already have the priviliges to do anything he wants to without requiring 
-> > > an suid bit?
-> > 
-> > Yes, quite correct in most cases. But if you have taken control of a computer
-> > on of the more common ways to keep the control for some time is the
-> > installation of a suid-binary (e.g. as part of a rootkit). 
+Ram Pai wrote:
 > 
-> There are so many ways for manipulating a computer that controlling 
-> setuid binaries hardly brings a real security gain.
+> Peter, I am not working on it currently. But i am interested in getting
+> it done. I have the seed set of patches which had Al Viro's ideas
+> incorporated. Infact those patches were sent on lkml 2 months back.
+> Shall we start with those patches?
+> 
 
-Even if it does not really improve security too much it can be helpful as a
-part of a larger system. For example around here we use a 'sbit-checker' that
-basically does a 'find' and 'chmod', which we would be able to replace by this
-patch.
+Okay, so what I see in your patches are:
 
-Also our patch is not solely about suid-binaries, we just implemented
-suid-checking because it seemed a simple and obvious thing to do.  Our real aim
-was to implement binary signatures, which can be used in numerous security
-related checks around the kernel. Btw. if you have any good ideas where one
-could use them, please tell us :)
+> > path-from-root: mount point of the mount from /
+> > path-from-root-of-its-sb: path from its own root dentry.
+> > propagation-flag: SHARED, SLAVE, UNBINDABLE, PRIVATE
+> > peer-mount-id: the mount-id of its peer mount (if this mount is shared)
+> > master-mount-id: the mount-id of its master mount (if this mount is
+slave)
 
+Other than cosmetic, I don't see anything terribly wrong with this,
+although getting a flag when the directory is overmounted would be nice.
 
+I guess I suggest a single comma-separated field with flags and optional
+":argument":
 
-Ciao,
+	private
+	shared:<peer>
+	slave:<master>
+	unbindable
+	overmounted
 
-Alexander Wuerstlein.
+So we could end up with something like:
+
+rootfs / rootfs rw 0 0 0:1 / 1 private,overmounted
+
+... where 1 is the mnt_id (sequence number).
+
+[Please see my other comments in this thread... basically I believe we
+should just add fields to /proc/mounts.]
+
+	-hpa
