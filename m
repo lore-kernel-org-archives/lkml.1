@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299AbXFUNAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbXFUNGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756299AbXFUNAe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 09:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbXFUNAZ
+	id S1756279AbXFUNGo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 09:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbXFUNGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 09:00:25 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35369 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753106AbXFUNAU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 09:00:20 -0400
-Date: Thu, 21 Jun 2007 15:00:38 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/9] Conditional Calls - Architecture Independent Code
-Message-ID: <20070621130037.GM12950@stusta.de>
-References: <20070530140025.917261793@polymtl.ca> <20070530140227.070136408@polymtl.ca> <20070604190102.GY5500@stusta.de> <20070613155724.GA8703@Krystal> <20070613215104.GK3588@stusta.de> <20070614160241.GA21119@Krystal> <20070614210643.GW3588@stusta.de> <20070620215927.GA25495@Krystal>
+	Thu, 21 Jun 2007 09:06:36 -0400
+Received: from mail.acc.umu.se ([130.239.18.156]:63938 "EHLO mail.acc.umu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752293AbXFUNGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 09:06:35 -0400
+X-Greylist: delayed 1545 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Jun 2007 09:06:35 EDT
+Date: Thu, 21 Jun 2007 14:40:44 +0200 (MEST)
+From: Mattias Wadenstein <maswan@acc.umu.se>
+To: Neil Brown <neilb@suse.de>
+cc: David Chinner <dgc@sgi.com>, Avi Kivity <avi@argo.co.il>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <18041.59628.370832.633244@notabene.brown>
+Message-ID: <Pine.GSO.4.64.0706211417180.15647@montezuma.acc.umu.se>
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+ <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+ <18034.3676.477575.490448@notabene.brown> <467273AB.9010202@argo.co.il>
+ <18035.3009.568832.785308@notabene.brown> <20070618045759.GD85884050@sgi.com>
+ <18041.59628.370832.633244@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070620215927.GA25495@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 05:59:27PM -0400, Mathieu Desnoyers wrote:
-> * Adrian Bunk (bunk@stusta.de) wrote:
-> > On Thu, Jun 14, 2007 at 12:02:42PM -0400, Mathieu Desnoyers wrote:
-> > >...
-> > > Well, we must take into account where these markers are added and how
-> > > often the marked code is run. Since I mark very highly used code paths
-> > > (interrupt handlers, page faults, lockdep code) and also plan to mark
-> > > other code paths like the VM subsystem, adding cycles to these code
-> > > paths seems like a no-go solution for standard distribution kernels.
-> > >...
-> > > People can get really picky when they have to decide wether or not they
-> > > compile-in a profiling or tracing infrastructure in a distribution
-> > > kernel.  If the impact is detectable when they are not doing any tracing
-> > > nor profiling, their reflex will be to compile it out so they can have
-> > > the "maximum performance". This is why I am going through the trouble of
-> > > making the markers impact as small as possible.
-> > 
-> > Now that we finally hear what this code is required for, can we discuss 
-> > on this basis whether this is wanted and required?
-> > 
-> > Including the question which abuse possibilities such an infrastructure 
-> > offers, and whether this is wanted in distribution kernels.
-> 
-> Hi Adrian,
+On Thu, 21 Jun 2007, Neil Brown wrote:
 
-Hi Mathieu,
+> I have that - apparently naive - idea that drives use strong checksum,
+> and will never return bad data, only good data or an error.  If this
+> isn't right, then it would really help to understand what the cause of
+> other failures are before working out how to handle them....
 
-> The purpose of this infrastructure has never been a secret; it is a
-> piece taken from the Linux Kernel Markers. I proposed the first
-> implementation of markers in December 2006.
-> 
-> Please use the following link as a starting point to the thorough
-> discussion that has already been held on this matter.
-> 
-> First, a huge discussion thread back in November 2006, where the need
-> for a marker infrastructure has been recognized:
-> http://lwn.net/Articles/200059/
-> 
-> A good summary of my recent previous post on kerneltrap:
-> http://kerneltrap.org/node/8186
-> 
-> If you have new specific concerns to bring forward, I will be glad to
-> discuss them with you.
+In theory, that's how storage should work. In practice, silent data 
+corruption does happen. If not from the disks themselves, somewhere along 
+the path of cables, controllers, drivers, buses, etc. If you add in fcal, 
+you'll get even more sources of failure, but usually you can avoid SANs 
+(if you care about your data).
 
-sorry if I was a bit harsh, but at least for me it wasn't clear that the 
-main (and perhaps only) reasonable use case for your conditional calls 
-was to get markers enabled in distribution kernels.
+Well, here is a couple of the issues that I've seen myself:
 
-Please correct me, but my understanding is:
-- conditional calls aim at getting markers enabled in distribution
-  kernels
-- markers are a valuable debugging tool
-- you don't need markers during normal operation
-- markers allow normal modules doing things they shouldn't be doing,
-  implying that markers should _not_ be enabled in normal distribution
-  kernels
+A hw-raid controller returning every 64th bit as 0, no matter what's on 
+disk. With no error condition at all. (I've also heard from a collegue 
+about this on every 64k, but not seen that myself.)
 
-> Regards,
-> 
-> Mathieu
+An fcal switch occasionally resetting, garbling the blocks in transit with 
+random data. Lost a few TB of user data that way.
 
-cu
-Adrian
+Add to this the random driver breakage that happens now and then. I've 
+also had a few broken filesystems due to in-memory corruption due to bad 
+ram, not sure there is much hope of fixing that though.
 
--- 
+Also, this presentation is pretty worrying on the frequency of silent data 
+corruption:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+https://indico.desy.de/contributionDisplay.py?contribId=65&sessionId=42&confId=257
 
+/Mattias Wadenstein
