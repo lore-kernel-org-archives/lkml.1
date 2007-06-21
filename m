@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbXFUJdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXFUJjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbXFUJdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 05:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbXFUJdF
+	id S1756702AbXFUJjf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 05:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbXFUJj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 05:33:05 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:2082 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757112AbXFUJdD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 05:33:03 -0400
-Date: Thu, 21 Jun 2007 11:33:58 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Vojtech Pavlik <vojtech@ucw.cz>
-Subject: Re: Writing a driver for a legacy serial device
-Message-ID: <20070621113358.1d65678d@hyperion.delvare>
-In-Reply-To: <200706202311.33326.dtor@insightbb.com>
-References: <20070619190502.05d4e0c8@hyperion.delvare>
-	<d120d5000706191159w29ebd0dajbd6cb9ac78d4faa2@mail.gmail.com>
-	<20070620105648.6d18ad66@hyperion.delvare>
-	<200706202311.33326.dtor@insightbb.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Jun 2007 05:39:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34479 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754119AbXFUJj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 05:39:27 -0400
+To: linux-kernel@vger.kernel.org
+Subject: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 21 Jun 2007 06:39:07 -0300
+Message-ID: <orlkedpryc.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+Here's an idea that just occurred to me, after all the discussions
+about motivations, tit-for-tat, authors' wishes and all.
 
-On Wed, 20 Jun 2007 23:11:32 -0400, Dmitry Torokhov wrote:
-> On Wednesday 20 June 2007 04:56, Jean Delvare wrote:
-> > Ah, I see. There's no way to detect what device is connected to the
-> > serial port, so we need a user-space tool to bind the port to the right
-> > driver? Makes some sense, even though it's a but strange that I need
-> > something called inputattach for a device which isn't an input device.
-> 
-> Because serio interface is mostly used with input devices. For all other
-> devices I think universal answer is "userspace" but with input devices
-> we want to do processing in kernel so we can route events into console
-> and other standard interfaces (although one coudl use uinput to achieve
-> similar result).
+If GPLv3 were to have a clause that permitted combination/linking with
+code under GPLv2, this wouldn't be enough for GPLv3 projects to use
+Linux code, and it wouldn't be enough for Linux code to use GPLv3
+projects.  That's because GPLv2 would still demand all code to be
+licensed under GPLv2, and GPLv3 wouldn't permit this.
 
-OK. This leads me to a question: is it OK for me to add support for my
-non-input device to inputattach, or is a separate, dedicated helper
-tool preferred? Both ways are fine with me, I don't know what the input
-subsystem maintainers expect.
+However, if GPLv3 had a permission to combine/link with code under
+GPLv2, *and* Linux (and any other projects interested in mutual
+compatibility) introduced an additional permission to combine/link
+with code under GPLv3 (or even GPLv3+, constrained by some condition
+if you will), then:
 
-> > But unfortunately, my driver's .connect function is still not called.
-> > I guess that I missed one step? Any idea what it would be?
-> 
-> Not sure. Could you check /sys/bus/serio/devices/serioX/id/* and verify
-> that inputattach sets up serio port properly?
+- the kernel Linux could use code from GPLv3 projects
 
-Thanks for the hint, I checked that and the proto value was 42 instead
-of the expected 40. Reading the source code of my local copy of
-inputattach.c, I found that SERIO_RS232 was OR'd to the value. This
-seems to be a rather old bug which is already fixed upstream:
+- GPLv3 projects could use code from Linux
 
-http://linuxconsole.cvs.sourceforge.net/linuxconsole/ruby/utils/inputattach.c?r1=1.23&r2=1.24
+- each copyright holder would still get to enforce the terms s/he
+  chose for his/her own code
 
-But for some reason the openSuse package is lagging behind. I'll go
-update it.
+Does this sound like something that would make sense for your
+community, so as to maintain/increase cooperation between authors who
+love GPLv2 and those who love defense for freedom, while respecting
+each author's not-always-compatible wishes?
 
-After fixing this, I finally see my .connect function being called! Now
-I can start doing the real driver development work. Thanks a lot for
-your highly valuable help, Dmitry :)
+In other words, does it even make sense for the FSF to consider
+introducing such a provision in GPLv3, that AFAICT, by itself, would
+have no effect whatsoever, since an additional permission would be
+needed for the GPLv2 side?
+
+
+If you were to permit compatibility with GPLv3+ (rather than GPLv3),
+would you constrain it?  Would something like:
+
+  as long as the later version grants each licensee the same
+  permissions as GPLv2, except for constraining permissions that would
+  enable one licensee to deny other licensees the exercise of the
+  permissions granted by both licenses
+
+do, subject to translation to proper legalese (if that's at all
+possible)?
+
+
+Do you know of any other communities that are like-minded with you,
+that are sticking with GPLv2, that I could poll about interest in such
+a provision in GPLv3?
+
+
+Thanks, and sorry for taking your attention away from coding one more
+time.  I hope you find it worth it this time.
 
 -- 
-Jean Delvare
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
