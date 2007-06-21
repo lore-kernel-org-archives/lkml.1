@@ -1,56 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbXFUGpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbXFUGvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbXFUGpv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 02:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbXFUGpm
+	id S1758159AbXFUGvG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 02:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbXFUGu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 02:45:42 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:55535
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbXFUGpl (ORCPT
+	Thu, 21 Jun 2007 02:50:56 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:18866 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751580AbXFUGuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 02:45:41 -0400
-Date: Wed, 20 Jun 2007 23:45:25 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: David Chinner <dgc@sgi.com>
-cc: Neil Brown <neilb@suse.de>, Avi Kivity <avi@argo.co.il>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-In-Reply-To: <20070621063936.GT85884050@sgi.com>
-Message-ID: <Pine.LNX.4.64.0706202341080.31603@asgard.lang.hm>
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
- <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
- <18034.3676.477575.490448@notabene.brown> <467273AB.9010202@argo.co.il>
- <18035.3009.568832.785308@notabene.brown> <20070618045759.GD85884050@sgi.com>
- <18041.59628.370832.633244@notabene.brown> <20070621063936.GT85884050@sgi.com>
+	Thu, 21 Jun 2007 02:50:55 -0400
+Date: Thu, 21 Jun 2007 08:50:54 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jarek Poplawski <jarkao2@o2.pl>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [ANNOUNCE] Linux Kernel =?UTF-8?B?VGVzdGVy4oCZcyBHdWlkZSB2MC4zLXI=?=
+ =?UTF-8?B?YzE=?=
+In-Reply-To: <4676E707.8020109@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0706210829040.20010@fbirervta.pbzchgretzou.qr>
+References: <4676E707.8020109@googlemail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-106555721-1182408654=:20010"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, David Chinner wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Thu, Jun 21, 2007 at 12:56:44PM +1000, Neil Brown wrote:
+---699020219-106555721-1182408654=:20010
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+
+<On Jun 18 2007 22:11, Michal Piotrowski wrote:
 >
->> I have that - apparently naive - idea that drives use strong checksum,
->> and will never return bad data, only good data or an error.  If this
->> isn't right, then it would really help to understand what the cause of
->> other failures are before working out how to handle them....
+> 1 The kernel, patches, trees and compilation
+> 1.1 The kernel
+
+Please do not advocate old-style tar option syntax.
+
+> 1.2 Patches
+> 1.3 Ketchup
+> 1.4 Trees
+> 1.5 The -mm tree
+> 1.6 Compilation and installation
+>   1.6.1 Kernel compilation
+>   1.6.2 Useful make options
+
+make O=/katalog  seems out of place.
+
+>   1.6.3 Kernel modules
+>   1.6.4 Kernel hacking options
+>   1.6.5 Magic SysRq
+>   1.6.6 Installation
+>   1.6.7 Automated conﬁguration and installation
+> 2 Testing
+> 2.1 Phase One
+> 2.2 Phase Two (AutoTest)
+> 2.3 Phase Three
+> 2.4 Measuring performance
+> 2.5 Hello world! or What exactly are we looking for?
+> 2.6 Binary drivers and distribution kernels
+> 3 Collecting kernel messages
+> 3.1 Syslog, console and dmesg
+> 3.2 Serial console
+
+Or set up minicom first... minicom -s ttyS0 (and then go to Serial port setup)
+
+> PDF version
+> http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf
+
+No HTML version?
+
 >
-> The drive is not the only source of errors, though.  You could
-> have a path problem that is corrupting random bits between the drive
-> and the filesystem. So the data on the disk might be fine, and
-> reading it via a redundant path might be all that is needed.
+> LaTeX source
+> http://www.stardust.webpages.pl/files/handbook/handbook-current.tar.bz2
+>
+> Any comments, suggestions and patches are welcome.
+>
+> Huge thanks goes to Rafael J. Wysocki who translated the entire guide into
+> English.
+> This is one of those rare cases when translation is better than original
+> version :).
+>
 
-one of the 'killer features' of zfs is that it does checksums of every 
-file on disk. so many people don't consider the disk infallable.
-
-several other filesystems also do checksums
-
-both bitkeeper and git do checksums of files to detect disk corruption
-
-as david C points out there are many points in the path where the data 
-could get corrupted besides on the platter.
-
-David Lang
+	Jan
+-- 
+---699020219-106555721-1182408654=:20010--
