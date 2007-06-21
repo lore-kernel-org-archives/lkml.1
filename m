@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbXFUUVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbXFUUXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbXFUUVz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 16:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXFUUVp
+	id S1758010AbXFUUXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 16:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbXFUUXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 16:21:45 -0400
-Received: from gate.in-addr.de ([212.8.193.158]:48382 "EHLO mx.in-addr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752070AbXFUUVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 16:21:44 -0400
-Date: Thu, 21 Jun 2007 22:21:07 +0200
-From: Lars Marowsky-Bree <lmb@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Crispin Cowan <crispin@novell.com>, Greg KH <greg@kroah.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070621202107.GM20105@marowsky-bree.de>
-References: <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz> <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz> <20070621192407.GF20105@marowsky-bree.de> <20070621200740.GG18990@elf.ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+	Thu, 21 Jun 2007 16:23:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:39319 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbXFUUXX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 16:23:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
+        b=uR4msuOgMfcuoLkyhGA6rMvn4JQJ3FXLlLCgpfVue2L2PR1Sp9P2+3g/e+ueeJMbcw5t7d12a2IpqIRhIZgf0HMRLaCLbmSueKd96RfVM8o9JWfCFkXW7DqBNbBe1E6b5+lMI1u2DIHIWISZ13cUUwf0SU769v/SqIhhYQKIctE=
+Message-ID: <467ADE12.7020303@googlemail.com>
+Date: Thu, 21 Jun 2007 22:22:42 +0200
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Antonino Daplas <adaplas@gmail.com>, Olaf Hering <olaf@aepfle.de>,
+       Ville Syrj?l? <syrjala@sci.fi>, Jean Delvare <khali@linux-fr.org>,
+       Rudolf Marek <r.marek@assembler.cz>,
+       =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       Stephane Eranian <eranian@hpl.hp.com>
+Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches v2
+References: <467AA8CA.2020206@googlemail.com> <alpine.LFD.0.98.0706211115380.3593@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706211115380.3593@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070621200740.GG18990@elf.ucw.cz>
-X-Ctuhulu: HASTUR
-User-Agent: Mutt/1.5.9i
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007-06-21T22:07:40, Pavel Machek <pavel@ucw.cz> wrote:
-
-> > AA is supposed to allow valid access patterns, so for non-buggy apps +
-> > policies, the rename will be fine and does not change the (observed)
-> > permissions.
-> That still breaks POSIX, right? Hopefully it will not break any apps,
-> but...
-
-No, it does not break POSIX.
-
-Unless, of course, there's a bug in the policy or in the program. Bugs
-are generally not covered by POSIX, for some strange reason.
-
-(The argument that POSIX codifies implementation bugs in Unix(tm)
-implementations of the time non-withstanding.)
-
-> > A veto is not a technical argument. All technical arguments (except for
-> > "path name is ugly, yuk yuk!") have been addressed, have they not?
-> There still is "it does not work with long pathnames".
+Linus Torvalds pisze:
 > 
-> Plus IIRC we have something like "AA has to allocate path-sized
-> buffers along every syscall".
+> On Thu, 21 Jun 2007, Michal Piotrowski wrote:
+>> Subject    : long freezes on thinkpad t60
+>> References : http://lkml.org/lkml/2007/5/24/100
+>> Submitter  : Miklos Szeredi <miklos@szeredi.hu>
+>> Handled-By : Ingo Molnar <mingo@elte.hu>
+>> Patch      : http://lkml.org/lkml/2007/6/16/81
+>> Status     : patch was suggested
+> 
+> This one is fixed, and tested by Miklos. It's commit fa490cfd15: "Fix 
+> possible runqueue lock starvation in wait_task_inactive()".
 
-That is an implementation bug though. I'm sure we have other bugs in the
-kernel too - this isn't a design flaw. 
+Thanks for the information.
 
-(If people are allowed to thinair solutions for implementing AA on top
-of SELinux, I can thinair that this can be solved by reverse-matching
-the dentry tree against the policy as the path is traversed and
-constructed, requiring a constant sized buffer.)
+BTW. Björn noticed that I accidentally removed this regression.
 
+Subject    : OProfile issues
+References : http://lkml.org/lkml/2007/6/12/207
+Submitter  : Stephane Eranian <eranian@hpl.hp.com>
+Handled-By : Björn Steinbrink <B.Steinbrink@gmx.de>
+Patch      : http://lkml.org/lkml/2007/6/12/392
+Status     : patch was suggested
 
 
 Regards,
-    Lars
+Michal
 
 -- 
-Teamlead Kernel, SuSE Labs, Research and Development
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
-
+LOG
+http://www.stardust.webpages.pl/log/
