@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbXFUTRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbXFUTTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbXFUTRu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 15:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbXFUTRn
+	id S1757359AbXFUTTr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXFUTTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 15:17:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:33342 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753934AbXFUTRm (ORCPT
+	Thu, 21 Jun 2007 15:19:38 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:33289 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753405AbXFUTTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 15:17:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=qBMFJubYZTB1l86RAo3BiSQWnyT++x5WmjFa0MHJVlG4Pq5xWQwwQap1fHjphBNxj
-	U/qWLT9RZuUC0tgg+Ihhw==
-Message-ID: <6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com>
-Date: Thu, 21 Jun 2007 12:17:27 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [patch -rss] Make RSS accounting display more user friendly
-Cc: "Andrew Morton" <akpm@osdl.org>, "Pavel Emelianov" <xemul@openvz.org>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070620154655.13844.42876.sendpatchset@balbir-laptop>
+	Thu, 21 Jun 2007 15:19:36 -0400
+Message-ID: <467ACF37.8050504@zytor.com>
+Date: Thu, 21 Jun 2007 12:19:19 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070620154655.13844.42876.sendpatchset@balbir-laptop>
+To: Hans-Peter Jansen <hpj@urpla.net>
+CC: linux-kernel@vger.kernel.org, "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Karel Zak <kzak@redhat.com>, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
+ through other means
+References: <467994BD.6000403@zytor.com> <20070620224135.GC6258@gallifrey> <4679AE5E.4050001@zytor.com> <200706212114.25705.hpj@urpla.net>
+In-Reply-To: <200706212114.25705.hpj@urpla.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/20/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->
-> Display the current usage and limit in a more user friendly manner. Number
-> of pages can be confusing if the page size is different. Some systems
-> can choose a page size of 64KB.
+Hans-Peter Jansen wrote:
+>> That's already handled just fine:
+>>
+>> bash-3.1$ mkdir /tmp/'Jag är: \
+>> en liten mask'
+>> bash-3.1$ sudo mount -t tmpfs none '/tmp/Jag är: \
+>> en liten mask'/
+>> bash-3.1$ tail -1 /proc/mounts
+>> none /tmp/Jag\040är:\040\134\012en\040liten\040mask tmpfs rw 0 0
+>> bash-3.1$
+> 
+> Hmm, and what about the even sicker case: /tmp/\040, parse as /tmp/\\040?
+> Do userspace cope with this?
 
-I'm not sure that's such a great idea. "Human-friendly"
-representations would make programmatic parsing harder.
+Look at the example above, it contains a backslash already.  It's
+escaped as \134.
 
-What's wrong with just showing counts in bytes in the control files?
+"Does userspace cope with this" is of course an impossible question to
+answer, since userspace is in theory unbounded.  However, if it doesn't,
+it is broken and needs to be fixed.
 
-Paul
+	-hpa
