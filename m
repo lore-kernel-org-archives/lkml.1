@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbXFUPdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXFUPg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756542AbXFUPdl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 11:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbXFUPde
+	id S1756181AbXFUPg2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXFUPgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 11:33:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:52145 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753550AbXFUPdd (ORCPT
+	Thu, 21 Jun 2007 11:36:21 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:43982 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752867AbXFUPgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 11:33:33 -0400
-Message-ID: <4683D4A0.3000100@anagramm.de>
-Date: Thu, 28 Jun 2007 17:32:48 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: pharon@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Dual slot PCI riser messes up ivtv
-References: <fa.ELPuDi4dcntxF8hk4oCNldcvgoc@ifi.uio.no> <467A89D4.6080607@shaw.ca>
-In-Reply-To: <467A89D4.6080607@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX19yVPm8P9NTLQsgKySOE64luE4WsNbLH3dLPdR
- W5fdc51Frqo9IGa5XmmuDAa5hEigzArjsacCiPcsDu/atR5PN1
- O/gzi33uOm4wh/SoUwfdw==
+	Thu, 21 Jun 2007 11:36:20 -0400
+Date: Thu, 21 Jun 2007 08:36:59 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: long-term regression
+Message-Id: <20070621083659.dabf3a22.randy.dunlap@oracle.com>
+In-Reply-To: <20070621052807.cc64605d.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0706171052240.28371@asgard.lang.hm>
+	<20070621052807.cc64605d.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Robert!
+On Thu, 21 Jun 2007 05:28:07 -0700 Andrew Morton wrote:
 
-Robert Hancock schrieb:
-> Islam Amer wrote:
- >> I am trying to build a settop box with two cards, a PVR-150 and a DVB
- >> card. The mini-ITX motherboard has only one PCI slot, so I bought an
- >> active PCI riser.
-
-Please define "active". Is there a PCI bridge chip on the riser card?
-Or better: Tell us manufacturer and type of this PCI riser card and the
-mini-ITX board.
-
-I am using a 1 to 3 PCI Bus riser card (passive, noname, bought it on ebay
-some years ago).
-The important thing is that in that case the IRQn lines as well as
-the REQ#n and GNT#n lines are routed and coupled to the right IDSEL's of
-the slots. It might be possible that the mini-ITX motherboard's PCI
-configuration (BIOS) is limited there.
-(This could propably be fixed in the kernel. At least in embedded
-environments, it's common to have all PCI ID/IRQ routing
-information in the kernel (or in the DeviceTree or OpenFirmware nowadays))
-
->> First I tried with two cheap lifeview cards on the riser and they
->> worked.
-
-Propably they didn't need an interrupt?
-$ cat /proc/interrupts ?
-
->> The PVR-150 is working fine alone, and so does the DVB card. But when I
->> use them with the riser nothing works.
+> > On Sun, 17 Jun 2007 10:57:55 -0700 (PDT) david@lang.hm wrote:
+> > I haven't had time to bisect this, but I'm having a problem on a AMD64 
+> > gentoo system where the printer doesn't work with recent kernels.
+> > 
+> > 2.6.18-rc3 worked
+> > 2.6.21.1 doesn't
+> > 2.6.22-rc4 doesn't
+> > 
+> > unfortunantly the system is gooted on 2.6.18 at the moment and I'm out of 
+> > town so my ability to test is limited I can provide the 2.6.22-rc4 
+> > (attached) and 2.6.18-rc3 configs.
+> > 
+> > dmesg appears to show the port being detected, but writes to the port 
+> > under newer kernels appear to complete, but no data gets to the printer.
+> > 
+> > any suggestions other then doing the large bisect?
 > 
-> Please post the output of lspci -vvv with the cards installed in the riser.
+> That would be good, thanks.  Please be sure to cc linux-usb-devel on 
+> the results.
 
-IRQ/IDSEL misconfiguration doesn't necessarily show up there.
-Drivers might end up doing strange things if the IRQ never comes thru.
-(experienced with Promise PDC20775 and PDC20269 HDD Controllers
-on embedded PowerPC)
+OK, I'm curious about how someone deduced that this is a problem
+with a USB printer vs. parallel port printer since the config file has:
 
-Just my $.05
+CONFIG_PRINTER=y
+CONFIG_USB_PRINTER=y
 
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+The kernel boot log should probably be posted also.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
