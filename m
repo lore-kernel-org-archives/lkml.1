@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbXFUS6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbXFUTAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbXFUS6t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbXFUS6m
+	id S1757602AbXFUTAj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 15:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbXFUTAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:58:42 -0400
-Received: from mail.screens.ru ([213.234.233.54]:57131 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752386AbXFUS6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:58:41 -0400
-Date: Thu, 21 Jun 2007 22:58:56 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Fix signalfd interaction with thread-private signals
-Message-ID: <20070621185856.GA153@tv-sign.ru>
-References: <20070619091452.GA94@tv-sign.ru> <1182254988.26853.334.camel@localhost.localdomain> <20070619140646.GB27343@tv-sign.ru> <1182295473.26853.386.camel@localhost.localdomain> <20070620111415.GA91@tv-sign.ru> <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org> <20070621082509.GA88@tv-sign.ru> <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org> <20070621182340.GA92@tv-sign.ru> <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 21 Jun 2007 15:00:33 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:60568 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753545AbXFUTAc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 15:00:32 -0400
+From: Jan Kandziora <jjj@gmx.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Limiting load of certain processes
+Date: Thu, 21 Jun 2007 21:00:28 +0200
+User-Agent: KMail/1.9.5
+References: <200706211950.40825.jjj@gmx.de> <Pine.LNX.4.64.0706212020520.26568@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0706212020520.26568@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Message-Id: <200706212100.28381.jjj@gmx.de>
+X-Provags-ID: V01U2FsdGVkX1+Sb0yjjFUFnjlqh2EX32Wv5H3XZloS6c83Toq
+ Ui9xaS0X3jgNeyF7BQzLXSckcgg5g2L7E5SC3QpsAQXlIDz4WF
+ yXfH0NXbP8OReFmLd/d9Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/21, Linus Torvalds wrote:
-> 
-> On Thu, 21 Jun 2007, Oleg Nesterov wrote:
-> > 
-> > Yes, the target thread is the one that caused the SIGSEGV, it sends the signal
-> > to itself. entry.S:ret_from_exception should notice this signal and _dequeue_
-> > it, no? This signal could be stealed by signal(SIG_IGN) which runs after it
-> > was delivered.
-> 
-> Right. But it will dequeue it by *taking* it.
-> 
-> IOW, this has absolutely nothing to do with signalfd.
-> 
-> That's all I mean.
+Am Donnerstag, 21. Juni 2007 20:26 schrieb Jan Engelhardt:
+>
+> Of course there may be hacks that try to figure out if a DOS window is
+> idle, waiting for user input. (Seems like a new invention in Windows 2000
+> and up). Since dosemu and all the emulators are not running a genuine
+> Microsoft DOS / have source, it should be easy game for them to wait
+> non-busily.
+>
+Well, the "tamedos" shareware does it that way. It works fairly well, but not 
+too well. DOSEMU doesn't address this problem besides from the suspending 
+whenever the dosemu window is iconified.
 
-Yes.
+My idea was *not* to schedule a process for running, even if it is the only 
+runnable one, if it is marked as a "presumably bad mannered" process and 
+consumed its previous timeslice to the whole. Instead an idle slice is done. 
+After a configureable amount of time, the bad mannered process is allowed to 
+run again.
 
-> > My point was that it is _possible_ to steal a thread-local SIGSEGV even without
-> > signalfd, nothing bad should happen.
-> 
-> That makes no sense.
-> 
-> You don't "steal" it. You take it. It's what SIGSEGV (and _any_ signal) 
-> has always been about. You get the signal, enter the signal handler, and 
-> handle it. 
-> 
-> No "stealing". No signalfd, no *nothing*. Just normal signal behaviour.
+I know it's a crude idea for everyday Linux processes, but for dosemu driven 
+applications, which behave badly in a multitasking OS *and* for which source 
+code isn't available, it may be worth to discuss.
 
-_Another_ thread could steal SIGSEGV via read(signalfd) without Ben's patch.
-This is what Ben and Davide are worried about. I think we should not worry,
-we have the same situation if this "another" thread does
+Kind regards
 
-	for (;;)
-		signal(SIGSEGV, SIG_IGN);
-
-do_sigaction() does rm_from_queue_full().
-
-Oleg.
+	Jan
 
