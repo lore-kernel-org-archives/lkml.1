@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbXFURw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbXFURwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759624AbXFURw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 13:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbXFURv7
+	id S1759784AbXFURwl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 13:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759640AbXFURw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 13:51:59 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:49231 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757218AbXFURv6 (ORCPT
+	Thu, 21 Jun 2007 13:52:28 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:11180 "EHLO
+	outbound8-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758361AbXFURw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 13:51:58 -0400
-Date: Thu, 21 Jun 2007 19:52:00 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Andi Kleen <ak@suse.de>
-Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for 2.6.22] [6/10] x86: Only make Macintosh drivers default on Macs
-Message-ID: <20070621175200.GA22507@aepfle.de>
-References: <200706201223.443613000@suse.de> <20070620102334.DD01814AD0@wotan.suse.de> <20070621173628.GA21243@aepfle.de>
+	Thu, 21 Jun 2007 13:52:27 -0400
+X-BigFish: VP
+X-FB-SS: 0,0,
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
+Date: Thu, 21 Jun 2007 19:51:22 +0200
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Avi Kivity" <avi@qumranet.com>
+cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] SVM: reliably detect if SVM was disabled by BIOS
+Message-ID: <20070621175122.GE25896@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 21 Jun 2007 17:51:32.0997 (UTC)
+ FILETIME=[CDF00B50:01C7B42C]
+X-WSS-ID: 6A646548R0G895588-01-01
+Content-Type: multipart/mixed;
+ boundary=z6Eq5LdranGa6ru8
 Content-Disposition: inline
-In-Reply-To: <20070621173628.GA21243@aepfle.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, Olaf Hering wrote:
 
-> On Wed, Jun 20, Andi Kleen wrote:
-
-> > It's already annoying that they appear on x86 now -- that's for the 3button
-> > emulation needed on x86 macs -- but at least don't make them default.
-
-> > +++ linux/drivers/macintosh/Kconfig
-> > @@ -2,7 +2,7 @@
-> >  menuconfig MACINTOSH_DRIVERS
-> >  	bool "Macintosh device drivers"
-> >  	depends on PPC || MAC || X86
-> > -	default y
-> > +	default y if MAC
-> 
-> This looks incorrect because my macdrivers were almost gone now when
-> updating from 2.6.21 to 2.6.22. 
-> A better one may be something like this, to not lose everything on a G5:
-
-This one works. 
-Without it, every previously enabled option will default to N during
-make oldconfig.
-With it, every previously enabled option remains the same because make
-oldcconfig does not touch them.
+--z6Eq5LdranGa6ru8
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
 
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+This patch adds an implementation to the svm is_disabled function to
+detect reliably if the BIOS disabled the SVM feature in the CPU. This
+fixes the issues with kernel panics when loading the kvm-amd module on
+machines where SVM is available but disabled.
 
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index 0852d33..dbe9626 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -2,7 +2,7 @@
- menuconfig MACINTOSH_DRIVERS
- 	bool "Macintosh device drivers"
- 	depends on PPC || MAC || X86
--	default y if MAC
-+	default y if (PPC_PMAC || MAC)
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+--z6Eq5LdranGa6ru8
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: attachment;
+ filename=svm-detect-svm-disable.patch
+Content-Transfer-Encoding: 7bit
+
+diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
+index fa17d6d..54aa83a 100644
+--- a/drivers/kvm/svm.c
++++ b/drivers/kvm/svm.c
+@@ -1727,6 +1727,12 @@ static void svm_inject_page_fault(struct kvm_vcpu *vcpu,
  
- if MACINTOSH_DRIVERS
+ static int is_disabled(void)
+ {
++	uint64_t vm_cr;
++
++	rdmsrl(MSR_VM_CR, vm_cr);
++	if (vm_cr & (1 << SVM_VM_CR_SVM_DISABLE))
++		return 1;
++
+ 	return 0;
+ }
  
+diff --git a/drivers/kvm/svm.h b/drivers/kvm/svm.h
+index 5e93814..005a9c5 100644
+--- a/drivers/kvm/svm.h
++++ b/drivers/kvm/svm.h
+@@ -175,8 +175,11 @@ struct __attribute__ ((__packed__)) vmcb {
+ #define SVM_CPUID_FUNC 0x8000000a
+ 
+ #define MSR_EFER_SVME_MASK (1ULL << 12)
++#define MSR_VM_CR       0xc0010114ULL
+ #define MSR_VM_HSAVE_PA 0xc0010117ULL
+ 
++#define SVM_VM_CR_SVM_DISABLE 4
++
+ #define SVM_SELECTOR_S_SHIFT 4
+ #define SVM_SELECTOR_DPL_SHIFT 5
+ #define SVM_SELECTOR_P_SHIFT 7
+
+--z6Eq5LdranGa6ru8--
+
+
