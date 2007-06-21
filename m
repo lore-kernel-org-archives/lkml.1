@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbXFUXwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbXFUXw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbXFUXwn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 19:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbXFUXvt
+	id S1755223AbXFUXw6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 19:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbXFUXvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 19:51:49 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35911 "EHLO
+	Thu, 21 Jun 2007 19:51:53 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35914 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754840AbXFUXvs (ORCPT
+	with ESMTP id S1755133AbXFUXvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 19:51:48 -0400
-Date: Fri, 22 Jun 2007 01:52:08 +0200
+	Thu, 21 Jun 2007 19:51:52 -0400
+Date: Fri, 22 Jun 2007 01:52:11 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] cafe_nand.c: the OLPC laptop is not available for $100
-Message-ID: <20070621235208.GG23017@stusta.de>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] schedule BLK_DEV_IDE_SATA for removal
+Message-ID: <20070621235211.GH23017@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The price might drop to $100 in a few years.
-
-But currently, a more reasonable name might be "$175 laptop".
-
-Let's simply call it "OLPC laptop" without any price tag.
+Users should use the libata based drivers for SATA drives.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.22-rc4-mm2/drivers/mtd/nand/Kconfig.old	2007-06-21 23:32:02.000000000 +0200
-+++ linux-2.6.22-rc4-mm2/drivers/mtd/nand/Kconfig	2007-06-21 23:32:17.000000000 +0200
-@@ -234,13 +234,13 @@
- config MTD_NAND_CAFE
- 	tristate "NAND support for OLPC CAFÉ chip"
- 	depends on PCI
- 	select REED_SOLOMON
- 	select REED_SOLOMON_DEC16
- 	help
--	  Use NAND flash attached to the CAFÉ chip designed for the $100
-+	  Use NAND flash attached to the CAFÉ chip designed for the OLPC
- 	  laptop.
+--- linux-2.6.22-rc4-mm2/Documentation/feature-removal-schedule.txt.old	2007-06-21 23:41:03.000000000 +0200
++++ linux-2.6.22-rc4-mm2/Documentation/feature-removal-schedule.txt	2007-06-21 23:42:03.000000000 +0200
+@@ -347,3 +347,10 @@
+ Who:	Jean Delvare <khali@linux-fr.org>
  
- config MTD_NAND_CS553X
- 	tristate "NAND support for CS5535/CS5536 (AMD Geode companion chip)"
- 	depends on X86_32 && (X86_PC || X86_GENERICARCH)
- 	help
+ ---------------------------
++
++What:  CONFIG_BLK_DEV_IDE_SATA
++When:  December 2007
++Why:   users should use the libata based drivers for SATA
++Who:   Adrian Bunk <bunk@stusta.de>
++
++---------------------------
 
