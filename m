@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbXFUSdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbXFUSgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758029AbXFUSdf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 14:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbXFUSd0
+	id S1757520AbXFUSgW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 14:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbXFUSgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 14:33:26 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54048 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753006AbXFUSdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 14:33:24 -0400
-Date: Thu, 21 Jun 2007 20:33:11 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Lars Marowsky-Bree <lmb@suse.de>
-Cc: Crispin Cowan <crispin@novell.com>, Greg KH <greg@kroah.com>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Stephen Smalley <sds@tycho.nsa.gov>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070621183311.GC18990@elf.ucw.cz>
-References: <20070514110607.549397248@suse.de> <200706090003.57722.agruen@suse.de> <20070609001703.GA17644@kroah.com> <466C303E.5010304@novell.com> <20070615165054.GA11345@kroah.com> <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz> <20070621160840.GA20105@marowsky-bree.de>
+	Thu, 21 Jun 2007 14:36:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44472 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750711AbXFUSgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 14:36:13 -0400
+Date: Thu, 21 Jun 2007 11:35:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix signalfd interaction with thread-private signals
+In-Reply-To: <20070621182340.GA92@tv-sign.ru>
+Message-ID: <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
+References: <1182127391.26853.207.camel@localhost.localdomain>
+ <alpine.LFD.0.98.0706181011460.14121@woody.linux-foundation.org>
+ <20070619091452.GA94@tv-sign.ru> <1182254988.26853.334.camel@localhost.localdomain>
+ <20070619140646.GB27343@tv-sign.ru> <1182295473.26853.386.camel@localhost.localdomain>
+ <20070620111415.GA91@tv-sign.ru> <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org>
+ <20070621082509.GA88@tv-sign.ru> <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org>
+ <20070621182340.GA92@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070621160840.GA20105@marowsky-bree.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> I've caught up on this thread with growing disbelief while reading the
-> mails, so much that I've found it hard to decide where to reply to.
+
+On Thu, 21 Jun 2007, Oleg Nesterov wrote:
 > 
-> So people are claiming that AA is ugly, because it introduces pathnames
-> and possibly a regex interpreter. Ok, taste differs. We've got many
-> different flavours of filesystems in the kernel because of that.
-> 
-> However, the suggested cure makes me cringe.
-> 
-> You're saying that relabeling file(s) from user-space after a rename is
-> a possible solution.
-> 
-> This breaks POSIX - renames must be atomic. It is possibly insecure; if
-> this is fixed by making a rename automatically default to restrictive
-> permissions, it'll be even more inconvenient. It will break
-> applications
+> Yes, the target thread is the one that caused the SIGSEGV, it sends the signal
+> to itself. entry.S:ret_from_exception should notice this signal and _dequeue_
+> it, no? This signal could be stealed by signal(SIG_IGN) which runs after it
+> was delivered.
 
-inconvenient, yes, insecure, no.
+Right. But it will dequeue it by *taking* it.
 
-I believe AA breaks POSIX, already. rename() is not expected to change
-permissions on target, nor is link link. And yes, both of these make
-AA insecure.
+IOW, this has absolutely nothing to do with signalfd.
 
-> You _must_ be kidding. The cure is worse than the problem.
+That's all I mean.
 
-Possibly.
+> My point was that it is _possible_ to steal a thread-local SIGSEGV even without
+> signalfd, nothing bad should happen.
 
-> If that is the only way to implement AA on top of SELinux - and so far,
-> noone has made a better suggestion - I'm convinced that AA has technical
-> merit: it does something the on-disk label based approach cannot handle,
-> and for which there is demand.
+That makes no sense.
 
-What demand? SELinux is superior to AA, and there was very little
-demand for AA. Compare demand for reiser4 or suspend2 with demand for
-AA.
+You don't "steal" it. You take it. It's what SIGSEGV (and _any_ signal) 
+has always been about. You get the signal, enter the signal handler, and 
+handle it. 
 
-> The code has improved, and continues to improve, to meet all the coding
-> style feedback except the bits which are essential to AA's function
+No "stealing". No signalfd, no *nothing*. Just normal signal behaviour.
 
-Which are exactly the bits Christoph Hellwig and Al Viro
-vetoed. http://www.uwsg.iu.edu/hypermail/linux/kernel/0706.1/2587.html
-. I believe it takes more than "2 users want it" to overcome veto of
-VFS maintainer.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+		Linus
