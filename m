@@ -1,238 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbXFUJdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbXFUJdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757027AbXFUJdA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 05:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXFUJcw
+	id S1754978AbXFUJdV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 05:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbXFUJdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 05:32:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37025 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753811AbXFUJcv (ORCPT
+	Thu, 21 Jun 2007 05:33:05 -0400
+Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:2082 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757112AbXFUJdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 05:32:51 -0400
-Subject: [RFC] mm-controller
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-mm <linux-mm@kvack.org>
-Cc: Balbir Singh <balbir@in.ibm.com>, Pavel Emelianov <xemul@sw.ru>,
-       Paul Menage <menage@google.com>, Kirill Korotaev <dev@sw.ru>,
-       devel@openvz.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
-       Aubrey Li <aubreylee@gmail.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 21 Jun 2007 11:32:44 +0200
-Message-Id: <1182418364.21117.134.camel@twins>
+	Thu, 21 Jun 2007 05:33:03 -0400
+Date: Thu, 21 Jun 2007 11:33:58 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Dmitry Torokhov <dtor@insightbb.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Vojtech Pavlik <vojtech@ucw.cz>
+Subject: Re: Writing a driver for a legacy serial device
+Message-ID: <20070621113358.1d65678d@hyperion.delvare>
+In-Reply-To: <200706202311.33326.dtor@insightbb.com>
+References: <20070619190502.05d4e0c8@hyperion.delvare>
+	<d120d5000706191159w29ebd0dajbd6cb9ac78d4faa2@mail.gmail.com>
+	<20070620105648.6d18ad66@hyperion.delvare>
+	<200706202311.33326.dtor@insightbb.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Having read the RSS and Pagecache controllers some things bothered me.
-
- - the duplication of much of the reclaim data (not code)
-   and the size increase as a result thereof.
-
- - the clear distinction between mapped (RSS) and unmapped (pagecache)
-   limits. Linux doesn't impose individual limits on these, so I don't
-   see why containers should.
-
- - lack of soft limits (but I understand that that is WIP :-)
-
- - while I appreciate the statistical nature of one container
-   per page, I'm bit sceptical because there is no forced migration
-   cycle.
-
-
-
-So, while pondering the problem, I wrote down some ideas....
-
-While I appreciate that people do not like to start over again, I think
-it would be fruit-full to at least discuss the various design decisions.
-
-
-(Will be travelling shorty, so replies might take longer than usual)
-
-
-Mapped pages:
-~~~~~~~~~~~~
-
-Basic premises:
-  - accounting per address_space/anon_vma
-
-Because, if the data is shared between containers isolation is broken anyway
-and we might as well charge them equally [1].
-
-Move the full reclaim structures from struct zone to these structures.
-
-
-	struct reclaim;
-
-	struct reclaim_zone {
-		spinlock_t		lru_lock;
-
-		struct list_head 	active;
-		struct list_head 	inactive;
-
-		unsigned long		nr_active;
-		unsigned long		nr_inactive;
-
-		struct reclaim		*reclaim;
-	};
-
-	struct reclaim {
-		struct reclaim_zone	zone_reclaim[MAX_NR_ZONES];
-
-		spinlock_t		containers_lock;
-		struct list_head	containers;
-		unsigned long		nr_containers;
-	};
-
-
-	struct address_space {
-		...
-		struct reclaim reclaim;
-	};
-
-	struct anon_vma {
-		...
-		struct reclaim reclaim;
-	};
-
-
-Then, on instantiation of either address_space or anon_vma we string together
-these reclaim domains with a reclaim scheduler.
-
-
-	struct sched_item;
-
-	struct reclaim_item {
-		struct sched_item	sched_item;
-		struct reclaim_zone	*reclaim_zone;
-	};
-
-
-	struct container {
-		...
-		struct sched_queue	reclaim_queue;
-	};
-
-
-	sched_enqueue(&container->reclaim_queue, &reclaim_item.sched_item);
-
-
-Then, shrink_zone() would use the appropriate containers' reclaim_queue
-to find an reclaim_item to run isolate_pages on.
-
-
-	struct sched_item *si;
-	struct reclaim_item *ri;
-	struct reclaim_zone *rzone;
-	LIST_HEAD(pages);
-
-	si = sched_current(&container->reclaim_queue);
-	ri = container_of(si, struct reclaim_item, sched_item); 
-	rzone = ri->reclaim_zone;
-	nr_scanned = isolate_pages(rzone, &pages);
-
-	weight = (rzone->nr_active + rzone->nr_inactive) /
-			(nr_scanned * rzone->reclaim->nr_containers);
-
-	sched_account(&container->reclaim_queue,
-			 &rzone->sched_item, weight);
-
-
-We use a scheduler to interleave the various lists instead of a sequence of
-lists to create the appearance of a single longer list. That is, we want each
-tail to be of equal age.
-
- [ it would probably make sense to drive the shrinking of the active list
-   from the use of the inactive list. This has the advantage of 'hiding' 
-   the active list.
-
-   Much like proposed here: http://lkml.org/lkml/2005/12/7/57
-   and here: http://programming.kicks-ass.net/kernel-patches/page-replace/2.6.21-pr0/useonce-new-shrinker.patch
-]
-
-Unmapped pages:
-~~~~~~~~~~~~~~
-
-
-Since unmapped pages lack a 'release' (or dis-associate) event, the fairest 
-thing is to account each container a fraction relative to its use of these
-unmapped pages.
-
-Use would constitute of the following events:
-  - pagecache insertion
-  - pagecache lookup
-
-
-Each containers proportion will be calculated using the floating proportions
-introduced in the per BDI dirty limit patches.
-
-	struct prop_global	pagecache_proportion;
-	struct reclaim		pagecache_reclaim;
-
-	enum reclaim_item_flags {
-		ri_pagecache,
-	};
-
-	struct reclaim_item {
-		...
-		unsigned long flags;
-	};
-
-	struct container {
-		...
-		struct prop_local_single pagecache_usage;
-	};
-
-
-and add it to the vm scheduler.
-
-
-	if (ri->flags & ri_pagecache) {
-		unsigned long num, denom;
-		unsigned long long w;
-		
-		prop_fraction(&pagecache_proportion,
-			      &container->pagecache_usage,
-			      &num, &denom);
-
-		w = (rzone->nr_active + rzone->nr_inactive) * denom;
-		do_div(w, num);
-		
-		weight = (unsigned long)w * nr_scanned;
-	} else
-		....
-
-
-Considerations:
-~~~~~~~~~~~~~~
-
-
-Advantages:
- - each page is on a single list
- - no distinction between container vs global reclaim
- - no increase of sizeof(struct page)
- - pages are but on a single list
- - breaks up lru_lock (might get a scheduler lock in return)
-
-Disadvantages:
- - major overhaul of the reclaim code
- - naive container usage calculation will be O(nr vmas)
-   however a smarter scheme would still be O(nr containers)
-
-
-Notes:
-~~~~~
-
-[1] if needed one could refine this using floating proportions
-    charging each container a fraction relative to its usage
-
-
-
+Hi Dmitry,
+
+On Wed, 20 Jun 2007 23:11:32 -0400, Dmitry Torokhov wrote:
+> On Wednesday 20 June 2007 04:56, Jean Delvare wrote:
+> > Ah, I see. There's no way to detect what device is connected to the
+> > serial port, so we need a user-space tool to bind the port to the right
+> > driver? Makes some sense, even though it's a but strange that I need
+> > something called inputattach for a device which isn't an input device.
+> 
+> Because serio interface is mostly used with input devices. For all other
+> devices I think universal answer is "userspace" but with input devices
+> we want to do processing in kernel so we can route events into console
+> and other standard interfaces (although one coudl use uinput to achieve
+> similar result).
+
+OK. This leads me to a question: is it OK for me to add support for my
+non-input device to inputattach, or is a separate, dedicated helper
+tool preferred? Both ways are fine with me, I don't know what the input
+subsystem maintainers expect.
+
+> > But unfortunately, my driver's .connect function is still not called.
+> > I guess that I missed one step? Any idea what it would be?
+> 
+> Not sure. Could you check /sys/bus/serio/devices/serioX/id/* and verify
+> that inputattach sets up serio port properly?
+
+Thanks for the hint, I checked that and the proto value was 42 instead
+of the expected 40. Reading the source code of my local copy of
+inputattach.c, I found that SERIO_RS232 was OR'd to the value. This
+seems to be a rather old bug which is already fixed upstream:
+
+http://linuxconsole.cvs.sourceforge.net/linuxconsole/ruby/utils/inputattach.c?r1=1.23&r2=1.24
+
+But for some reason the openSuse package is lagging behind. I'll go
+update it.
+
+After fixing this, I finally see my .connect function being called! Now
+I can start doing the real driver development work. Thanks a lot for
+your highly valuable help, Dmitry :)
+
+-- 
+Jean Delvare
