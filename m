@@ -1,216 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbXFUOxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757232AbXFUPAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbXFUOxr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 10:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbXFUOxi
+	id S1757232AbXFUPAb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 11:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbXFUPAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 10:53:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52677 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753839AbXFUOxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 10:53:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
-Date: Thu, 21 Jun 2007 17:00:20 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Uli Luckas <u.luckas@road.de>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200706182329.58917.rjw@sisk.pl> <20070621133015.GG18392@elf.ucw.cz>
-In-Reply-To: <20070621133015.GG18392@elf.ucw.cz>
+	Thu, 21 Jun 2007 11:00:24 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:38653 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752588AbXFUPAX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 11:00:23 -0400
+Date: Thu, 21 Jun 2007 11:00:22 -0400
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: David Schwartz <davids@webmaster.com>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Message-ID: <20070621150022.GY10008@csclub.uwaterloo.ca>
+References: <MDEHLPKNGKAHNMBLJOLKKEIFEKAC.davids@webmaster.com> <orodjfkzjt.fsf@oliva.athome.lsd.ic.unicamp.br> <20070620140101.GU10008@csclub.uwaterloo.ca> <or1wg6uz53.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706211700.21488.rjw@sisk.pl>
+In-Reply-To: <or1wg6uz53.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 21 June 2007 15:30, Pavel Machek wrote:
-> Hi!
+On Wed, Jun 20, 2007 at 05:52:40PM -0300, Alexandre Oliva wrote:
+> On Jun 20, 2007, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+> > A patent prevents you from using the software in any way at all,
+> > while a hardware restriction prevents you from using the software on
+> > that particular hardware, but not on lots of other hardware.  Very
+> > big difference.
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > At present, if a user mode helper is running while usermodehelper_pm_callback()
-> > is executed, the helper may be frozen and the completion in
-> > call_usermodehelper_exec() won't be completed until user space processes are
-> > thawed.  As a result, the freezing of kernel threads may fail, which is not
-> > desirable.
-> > 
-> > Prevent this from happening by introducing a counter of running user mode
-> > helpers and allowing usermodehelper_pm_callback() to succeed for
-> > action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
-> > are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
-> > RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
-> > fails if that doesn't happen.]
-> > 
-> > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-> > versions of this patch and for very useful comments.
-> >
+> So, one disrespects a lot, the other disrespects a little.  Is that
+> relevant, when the requirement is "no further restrictions"?
+
+What about the freedom to buy devices with certified code on it, while
+still being able to look through the source code and verify for yourself
+that it is correct and not full of bugs?  Would it be better if the
+devices that have to be certified and locked down used secret code so
+that the purchaser can't verify the code?
+
+Apparently the only restrictions ever permitted are the ones the FSF
+thinks of.
+
+> > So what would happen if some company was to make software for a tivo and
+> > released their binaries signed with some specific key, and they released
+> > information on how to check this was signed with their key, and then
+> > some other companies went and made tivo hardware and decided that they
+> > would only allow code signed by the first companies key to run on it,
 > 
-> > -		return NOTIFY_OK;
-> > +		wait_event_timeout(running_helpers_waitq,
-> > +					atomic_read(&running_helpers) == 0,
-> > +					RUNNING_HELPERS_TIMEOUT);
-> > +		if (atomic_read(&running_helpers) == 0) {
-> 
-> Uff, this is suspect. What happens if running_helpers goes to 1 here.?
+> I was pretty sure this had been covered in the section about technical
+> barriers to modification in the third draft's rationale, but I can't
+> find it right now.  http://gplv3.fsf.org/gpl3-dd3-rationale.pdf
 
-Hmm, yes, this is racy.  We can use the value returned by wait_event_timeout()
-to close this race.
+So really what the GPL v3 wants to have is to make sure that the user
+can reproduce from the sources a bit for bit identical copy of the
+binaries?  Too bad compilers that put time stamps and such into the
+binary would make that imposible.  I don't think there is any way that
+can be written into the GPL that can prevent all loop holes for how to
+make signed binaries.
 
-Updated patch follows.
+> Anyhow, the argument I read went like: if there's an agreement between
+> the parties to do this, then the copyright holder can probably enforce
+> the license regardless of the software and hardware distributor being
+> different parties, since the software is being distributed with
+> information whose purpose is to enable the hardware to deny the user
+> the freedom to run modified versions of the software.
 
-Greetings,
-Rafael
+There doesn't have to be an agreement.  The software company could just
+release specs for a hardware design and let others freely go and build
+them from that design.
 
+> However, if there's no such agreement, if the copyright holder has no
+> copyright claims over the hardware or works shipped in it, there's
+> nothing the copyright holder can do about it, and that's probably how
+> it should be, since a copyright license (!= contract) can't possibly
+> prohibit people from creating hardware limited in function, it can
+> only tell people that, in order for them to have permission to modify
+> or distribute the covered work, they must abide by certain conditions.
+> And if they don't want to abide by the conditions, and they don't
+> manage to obtain a license from the copyright holders that doesn't
+> impose conditions they can't accept, they just can't modify or
+> distribute the work.
 
---- 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+But if the hardware ships with only code that simply waits for the user
+to provide some code for it to isntall (which has to be signed in a way
+the hardware likes), then the hardware has nothing to do with the
+license of the software.
 
-At present, if a user mode helper is running while usermodehelper_pm_callback()
-is executed, the helper may be frozen and the completion in
-call_usermodehelper_exec() won't be completed until user space processes are
-thawed.  As a result, the freezing of kernel threads may fail, which is not
-desirable.
+The signed binaries from the service provider/software developer on the
+other hand is GPL and the sources are released with changes.  They just
+happen to sign their binaries in a way that allows them to install on
+the hardware in question.  It could also install on hardware that
+doesn't check the signature as long as it is functionally identical
+otherwise.
 
-Prevent this from happening by introducing a counter of running user mode
-helpers and allowing usermodehelper_pm_callback() to succeed for
-action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
-are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
-RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
-fails if that doesn't happen.]
+I hope no one does this, but I still don't see how the GPLv3 draft deals
+with this case, or even how it could deal with it.
 
-Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-versions of this patch and for very useful comments.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/kmod.c |   70 +++++++++++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 60 insertions(+), 10 deletions(-)
-
-Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
-+++ linux-2.6.22-rc4-mm2/kernel/kmod.c
-@@ -41,14 +41,6 @@ extern int max_threads;
- 
- static struct workqueue_struct *khelper_wq;
- 
--/*
-- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
-- * immediately returning -EBUSY.  Used for preventing user land processes from
-- * being created after the user land has been frozen during a system-wide
-- * hibernation or suspend operation.
-- */
--static int usermodehelper_disabled;
--
- #ifdef CONFIG_KMOD
- 
- /*
-@@ -275,15 +267,48 @@ static void __call_usermodehelper(struct
- 	}
- }
- 
-+#ifdef CONFIG_PM
-+/*
-+ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
-+ * (used for preventing user land processes from being created after the user
-+ * land has been frozen during a system-wide hibernation or suspend operation).
-+ */
-+static int usermodehelper_disabled;
-+
-+/* Number of helpers running */
-+static atomic_t running_helpers = ATOMIC_INIT(0);
-+
-+/*
-+ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
-+ * helpers to finish.
-+ */
-+static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
-+
-+/*
-+ * Time to wait for running_helpers to become zero before the setting of
-+ * usermodehelper_disabled in usermodehelper_pm_callback() fails
-+ */
-+#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
-+
- static int usermodehelper_pm_callback(struct notifier_block *nfb,
- 					unsigned long action,
- 					void *ignored)
- {
-+	long retval;
-+
- 	switch (action) {
- 	case PM_HIBERNATION_PREPARE:
- 	case PM_SUSPEND_PREPARE:
- 		usermodehelper_disabled = 1;
--		return NOTIFY_OK;
-+		retval = wait_event_timeout(running_helpers_waitq,
-+					atomic_read(&running_helpers) == 0,
-+					RUNNING_HELPERS_TIMEOUT);
-+		if (retval) {
-+			return NOTIFY_OK;
-+		} else {
-+			usermodehelper_disabled = 0;
-+			return NOTIFY_BAD;
-+		}
- 	case PM_POST_HIBERNATION:
- 	case PM_POST_SUSPEND:
- 		usermodehelper_disabled = 0;
-@@ -293,6 +318,29 @@ static int usermodehelper_pm_callback(st
- 	return NOTIFY_DONE;
- }
- 
-+static void new_helper(void)
-+{
-+	atomic_inc(&running_helpers);
-+}
-+
-+static void helper_finished(void)
-+{
-+	if (atomic_dec_and_test(&running_helpers))
-+		wake_up(&running_helpers_waitq);
-+}
-+
-+static void register_pm_notifier_callback(void)
-+{
-+	pm_notifier(usermodehelper_pm_callback, 0);
-+}
-+#else /* CONFIG_PM */
-+#define usermodehelper_disabled	0
-+
-+static inline void new_helper(void) {}
-+static inline void helper_finished(void) {}
-+static inline void register_pm_notifier_callback(void) {}
-+#endif /* CONFIG_PM */
-+
- /**
-  * call_usermodehelper_setup - prepare to call a usermode helper
-  * @path - path to usermode executable
-@@ -397,6 +445,7 @@ int call_usermodehelper_exec(struct subp
- 	DECLARE_COMPLETION_ONSTACK(done);
- 	int retval;
- 
-+	new_helper();
- 	if (sub_info->path[0] == '\0') {
- 		retval = 0;
- 		goto out;
-@@ -418,6 +467,7 @@ int call_usermodehelper_exec(struct subp
- 
-   out:
- 	call_usermodehelper_freeinfo(sub_info);
-+	helper_finished();
- 	return retval;
- }
- EXPORT_SYMBOL(call_usermodehelper_exec);
-@@ -459,5 +509,5 @@ void __init usermodehelper_init(void)
- {
- 	khelper_wq = create_singlethread_workqueue("khelper");
- 	BUG_ON(!khelper_wq);
--	pm_notifier(usermodehelper_pm_callback, 0);
-+	register_pm_notifier_callback();
- }
+--
+Len Sorensen
