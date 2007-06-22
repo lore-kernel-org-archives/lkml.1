@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbXFVXtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbXFVXwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757620AbXFVXtk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 19:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXFVXtc
+	id S1758893AbXFVXwY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 19:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbXFVXwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 19:49:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:48205 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752586AbXFVXtb (ORCPT
+	Fri, 22 Jun 2007 19:52:17 -0400
+Received: from sccrmhc13.comcast.net ([204.127.200.83]:53122 "EHLO
+	sccrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbXFVXwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 19:49:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XhZwuzO3Dg43GUkWEjZXmF8SfRxggCx75yE/67IrM5/YKPKfYmcWpbev7tJAwT/Kad0wCVZrMTGVnZQDOrOkyMrJBqqwJ4xOY6XaMbqMX51Md/7U5M05tTSMy6R0JqduMVLfr1UqHm2Ccqto+c4E3ryGUw9jfgKrO9S0mw6khDc=
-Message-ID: <a781481a0706221649j19f9ce2apcf295ddf9530da1e@mail.gmail.com>
-Date: Sat, 23 Jun 2007 05:19:30 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Roman Zippel" <zippel@linux-m68k.org>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re: [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
-Cc: "Trent Piepho" <xyzzy@speakeasy.org>,
-       "Mauro Carvalho Chehab" <mchehab@infradead.org>, toralf.foerster@gmx.de,
-       "Oliver Neukum" <oneukum@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Luca Risolia" <luca.risolia@studio.unibo.it>
-In-Reply-To: <Pine.LNX.4.64.0706230137090.1817@scrub.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 22 Jun 2007 19:52:16 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jun 2007 19:52:16 EDT
+Subject: Re: Fix signalfd interaction with thread-private signals
+From: Nicholas Miell <nmiell@comcast.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1182554371.24740.87.camel@localhost.localdomain>
+References: <20070620111415.GA91@tv-sign.ru>
+	 <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org>
+	 <20070621082509.GA88@tv-sign.ru>
+	 <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org>
+	 <20070621182340.GA92@tv-sign.ru>
+	 <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
+	 <20070621185856.GA153@tv-sign.ru>
+	 <1182468604.24740.22.camel@localhost.localdomain>
+	 <20070622084034.GA134@tv-sign.ru>
+	 <1182512473.24740.54.camel@localhost.localdomain>
+	 <20070622160405.GA189@tv-sign.ru>
+	 <1182551618.24740.79.camel@localhost.localdomain>
+	 <alpine.LFD.0.98.0706221540430.3593@woody.linux-foundation.org>
+	 <1182554190.24740.84.camel@localhost.localdomain>
+	 <1182554371.24740.87.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 16:42:07 -0700
+Message-Id: <1182555727.2735.3.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.0.njm.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706211117.55908.toralf.foerster@gmx.de>
-	 <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net>
-	 <a781481a0706221420u6935e75er1ee5601e013b40d2@mail.gmail.com>
-	 <Pine.LNX.4.64.0706222336210.1817@scrub.home>
-	 <a781481a0706221501s4887f88bh3b8cc549deb6886e@mail.gmail.com>
-	 <Pine.LNX.4.64.0706230017430.1817@scrub.home>
-	 <a781481a0706221533j34c341c5gf7ff92997e2463a6@mail.gmail.com>
-	 <Pine.LNX.4.64.0706230049480.1817@scrub.home>
-	 <a781481a0706221626q17f533ccnac09b2cc7c89126d@mail.gmail.com>
-	 <Pine.LNX.4.64.0706230137090.1817@scrub.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 2007-06-23 at 09:19 +1000, Benjamin Herrenschmidt wrote:
+> On Sat, 2007-06-23 at 09:16 +1000, Benjamin Herrenschmidt wrote:
+> > On Fri, 2007-06-22 at 15:47 -0700, Linus Torvalds wrote:
+> > > Quite frankly, it strikes me that if we want to do this, then we shouldn't 
+> > > save the _process_ information at all, we should save the "sighand" 
+> > > instead.
+> > > 
+> > > So either we save the process info, or we save the sighand, but saving the 
+> > > "group_leader" seems totally bogus. Especially as the group leader can 
+> > > change (by execve()).
+> > > 
+> > > One thing that strikes me as I look at that function is that the whole 
+> > > signalfd thing doesn't seem to do any reference counting. Ie it looks 
+> > > totally buggy wrt passing the resulting fd off to somebody else, and then 
+> > > exiting in the original process.
+> > > 
+> > > What did I miss? 
+> > 
+> > Probably nothing... doesn't look good. What are the lifetime rules of a
+> > struct sighand tho ?
+> 
+> Ah got it, signalfd_detach() in include/linux/signalfd.h from
+> exit_signal plus some rcu bits in signalfd lock/unlock.
 
-On 6/23/07, Roman Zippel <zippel@linux-m68k.org> wrote:
-> Hi,
->
-> On Sat, 23 Jun 2007, Satyam Sharma wrote:
->
-> > Yup, so how / why am I wrong? I was making the point that a
-> > "menuconfig" does not have code associated with it.
->
-> Which is wrong, it's not and will not be limited to this.
+You could just get rid of the process/sighand/whatever reference
+entirely and just make reads on a signalfd always dequeue signals for
+the current thread.
 
-But why? Let it do just one thing, and do it well. Is their
-any requirement anywhere that requires us to give a dual
-meaning to these menuconfig objects -- i.e. to also control
-the inclusion / exclusion of code from the kernel as well as
-also for the presentation + user interface purpose that it
-currently serves?
+You'd lose the ability to pass signalfds around to other processes, but
+I'm not convinced that is even useful. (But I'm sure somebody smarter
+than me has a valid use case and would love to share :-)
 
-Satyam
+-- 
+Nicholas Miell <nmiell@comcast.net>
+
