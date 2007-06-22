@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXFVHs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbXFVHun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbXFVHs1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 03:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbXFVHsT
+	id S1754533AbXFVHun (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 03:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbXFVHug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 03:48:19 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:65305 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbXFVHsT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 03:48:19 -0400
-Message-ID: <467B7EB6.4050207@fr.ibm.com>
-Date: Fri, 22 Jun 2007 09:48:06 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Fri, 22 Jun 2007 03:50:36 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:8741 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750917AbXFVHuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 03:50:35 -0400
+Message-ID: <467B2F4F.2030101@openvz.org>
+Date: Fri, 22 Jun 2007 06:09:19 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Herbert Poetzl <herbert@13thfloor.at>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [PATCH -mm] add a kmem_cache for nsproxy objects
-References: <4676F0B9.3080408@fr.ibm.com> <20070619113501.a88bba50.akpm@linux-foundation.org> <Pine.LNX.4.64.0706191222420.7008@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0706191222420.7008@schroedinger.engr.sgi.com>
+To: Paul Menage <menage@google.com>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch -rss] Make RSS accounting display more user friendly
+References: <20070620154655.13844.42876.sendpatchset@balbir-laptop> <6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com>
+In-Reply-To: <6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 19 Jun 2007, Andrew Morton wrote:
-> 
->> On Mon, 18 Jun 2007 22:53:13 +0200
->> Cedric Le Goater <clg@fr.ibm.com> wrote:
+Paul Menage wrote:
+> On 6/20/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 >>
->>> +static int __init nsproxy_cache_init(void)
->>> +{
->>> +	nsproxy_cachep = kmem_cache_create("nsproxy", sizeof(struct nsproxy),
->>> +					   0, SLAB_PANIC, NULL, NULL);
->>> +	return 0;
->>> +}
->>> +
->> Christoph added this cheesy KMEM_CACHE macro.  But I don't immediately recall
->> the rationale so I'm a bit reluctant to ask people to use-the-cheesy-macro.
 >>
->> Perhaps he can remind us why it is there?
+>> Display the current usage and limit in a more user friendly manner.
+>> Number
+>> of pages can be confusing if the page size is different. Some systems
+>> can choose a page size of 64KB.
 > 
-> Because it simplifies the handling of slabs.
+> I'm not sure that's such a great idea. "Human-friendly"
+> representations would make programmatic parsing harder.
 > 
-> The above will could become:
-> 
-> nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC);
-> 
-> meaning create a cache for the nsproxy struct, the nsproxy name and the 
-> nsproxy size. See include/linux/slab.h.
+> What's wrong with just showing counts in bytes in the control files?
 
-yes, I should probably use that for the nsproxy struct.
+Nothing wrong, but currently they are shown in "natural" points, i.e. in
+those that the controller accounts them in. For RSS controller the natural
+point is "page", but auto-converting them from pages to bytes is wrong, as
+not all the controllers account in pages. I think that the better way is 
+to show the value in the internal units and specify (somehow) what these 
+units are. The userspace then can read them and convert accordingly.
 
-my 2cts :
-  
-the macro sets the align parameter to "__alignof__(struct)" by default. 
-is that something we want to do all the time ? if so, why not change 
-kmem_cache_create() directly ?
+> Paul
 
-Most of the complexity is in flags. I did a grep and picked what i thought 
-was the most aggressive. The macro would probably be more useful if we could 
-identify by it's name in which context it can be used. 
-
-
-C.
-
+Thanks,
+Pavel
