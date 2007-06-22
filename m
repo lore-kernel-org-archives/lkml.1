@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbXFVOcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbXFVOcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbXFVOcH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXFVOb4
+	id S1758592AbXFVOcY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXFVOcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:31:56 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:34870 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752123AbXFVObz (ORCPT
+	Fri, 22 Jun 2007 10:32:14 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:21717 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758337AbXFVOcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:31:55 -0400
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070622131250.GA18729@elte.hu>
-References: <20070622040014.234651401@goodmis.org>
-	 <20070622070948.GA21291@infradead.org>
-	 <1182515542.5493.20.camel@localhost.localdomain>
-	 <20070622123805.GA9770@elte.hu>
-	 <1182517124.5493.38.camel@localhost.localdomain>
-	 <20070622131250.GA18729@elte.hu>
-Content-Type: text/plain
-Date: Fri, 22 Jun 2007 10:27:22 -0400
-Message-Id: <1182522442.5493.63.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Fri, 22 Jun 2007 10:32:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BvPZUWX5r3oT3riCUjYdtbyHK+xJMZfdZ2vKO0h66MTjJu0Nm0jn8sMqwN9cgieVOYVoDEOR03RBuKJRJdr+Ad7pKjWq3WPWVb+T4MowQW+t9P/qgQJ8us3e/Q3ND/6SXTTh6yW5TgXH0Ef/XM5xkSZz6MxNBBJcKCVj4gECOU0=
+Message-ID: <787b0d920706220732hef20f67h6b5d1d57db71ead2@mail.gmail.com>
+Date: Fri, 22 Jun 2007 10:32:11 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: JIT emulator needs
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1182519821.2672.1.camel@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+	 <1182447884.2704.7.camel@laptopd505.fenrus.org>
+	 <787b0d920706212256u7e78ba6n15ef41bcea99aff0@mail.gmail.com>
+	 <1182519821.2672.1.camel@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 15:12 +0200, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
+On 6/22/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Fri, 2007-06-22 at 01:56 -0400, Albert Cahalan wrote:
+> > On 6/21/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> > > On Fri, 2007-06-08 at 02:35 -0400, Albert Cahalan wrote:
+> > > > Right now, Linux isn't all that friendly to JIT emulators.
+> > > > Here are the problems and suggestions to improve the situation.
+> > > >
+> > > > There is an SE Linux execmem restriction that enforces W^X.
+> > > > Assuming you don't wish to just disable SE Linux, there are
+> > > > two ugly ways around the problem. You can mmap a file twice,
+> > > > or you can abuse SysV shared memory. The mmap method requires
+> > > > that you know of a filesystem mounted rw,exec where you can
+> > > > write a very large temporary file. This arbitrary filesystem,
+> > > > rather than swap space, will be the backing store. The SysV
+> > > > shared memory method requires an undocumented flag and is
+> > > > subject to some annoying size limits. Both methods create
+> > > > objects that will fail to be deleted if the program dies
+> > > > before marking the objects for deletion.
+> > >
+> > > and these methods also destroy yourself on any machine with a looser
+> > > cache coherency between I and D-cache....
+> > >
+> > > for all but x86 you pretty much have to do the mprotect() between the
+> > > two states to deal with the cache flushing properly...
+> >
+> > If the instructions to force data write-back and/or to
+> > invalidate the instruction cache are priveleged, yes.
+> > AFAIK, only ARM is that lame.
+>
+> and your program executes this on all the cpus in the system?
 
-> yes, the softirq based tasklet implementation with workqueue based 
-> implementation, but the tasklet API itself should still stay.
+I'll remember that if I ever run a JIT on the SMP ARM box.
+(there's like one, at the manufacturer, right?)
 
-done.
+I don't recall seeing such code in the libgcc tranpoline
+setup for PowerPC. Either it's not required, or this is
+a rather popular bug.
 
-> 
-> ok, enough idle talking, lets see the next round of patches? :)
-
-Still need to run through testing, and I still don't have distcc
-working. So it may take a while ;-)
-
-> 
-> please remove all the pr_debug() lines as well - they are handy for 
-> development but are quite unnecessary for something headed 
-
-done (but I did keep one).
-
-> upstream-wards. And please replace all the BUG_ON()s with WARN_ON_ONCE() 
-
-I had two BUG_ON's and they were both for not having the ktaskletd_wq
-allocated. If we just put a WARN_ON, we will right afterward get a BUG
-from a bad memory reference, and put the system into an unknown state.
-Are you sure you still want me to convert them to WARN_ON?
-
--- Steve
-
-
+Perhaps ARM needs syscalls for this, or emulation for
+the privileged instructions. This may already exist; it
+sure is required. So this would be another need for
+properly supporting JIT emulators.
