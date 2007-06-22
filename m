@@ -1,114 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbXFVQ4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbXFVQ4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbXFVQ4H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXFVQzw
+	id S1753715AbXFVQ4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbXFVQ4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:55:52 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:34380 "EHLO mail.ukfsn.org"
+	Fri, 22 Jun 2007 12:56:03 -0400
+Received: from ns.suse.de ([195.135.220.2]:53983 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbXFVQzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:55:51 -0400
-Message-ID: <467BFF12.60200@dgreaves.com>
-Date: Fri, 22 Jun 2007 17:55:46 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: david@lang.hm, Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <46756BE2.7010401@tmr.com> <467B03C1.50809@tmr.com> <18043.13037.40956.366334@notabene.brown> <467B840F.4080402@dgreaves.com> <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm> <467BC306.9010008@dgreaves.com> <467BF233.7020700@tmr.com>
-In-Reply-To: <467BF233.7020700@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754077AbXFVQ4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 12:56:00 -0400
+Subject: Re: ACPI Regression on Dell E1501
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Tim Gardner <tim.gardner@canonical.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Chuck Ebbert <cebbert@redhat.com>,
+       lenb@kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com
+In-Reply-To: <adair9g2ctk.fsf@cisco.com>
+References: <467AE7E1.4050805@canonical.com> <467AF204.3060805@redhat.com>
+	 <1182462902.3316.105.camel@chaos> <467BC9F8.5000403@canonical.com>
+	 <467BCC3F.4080405@canonical.com> <1182525150.28514.746.camel@queen.suse.de>
+	 <adair9g2ctk.fsf@cisco.com>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Fri, 22 Jun 2007 18:55:54 +0200
+Message-Id: <1182531354.4976.9.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> David Greaves wrote:
->> david@lang.hm wrote:
->>> On Fri, 22 Jun 2007, David Greaves wrote:
->> If you end up 'fiddling' in md because someone specified 
->> --assume-clean on a raid5 [in this case just to save a few minutes 
->> *testing time* on system with a heavily choked bus!] then that adds 
->> *even more* complexity and exception cases into all the stuff you 
->> described.
+On Fri, 2007-06-22 at 09:06 -0700, Roland Dreier wrote:
+>  > pci=nomsi let the machine still boot.
+>  > 
+>  > I tried a bit and I think I got it, for me it's this one:
+>  > 
+>  > commit 78b7611c4a1e3ff008abc4751b566cb533d68f3d
 > 
-> A "few minutes?" Are you reading the times people are seeing with 
-> multi-TB arrays? Let's see, 5TB at a rebuild rate of 20MB... three days. 
-Yes. But we are talking initial creation here.
+> Really??  That's "msi: mask the msix vector before we unmap it" and
+No, I was wrong.
+I added the patches again, which I reverted and it still boots.
+I horribly mixed something up here, I will try to find out tomorrow,
+sorry for the confusion.
 
-> And as soon as you believe that the array is actually "usable" you cut 
-> that rebuild rate, perhaps in half, and get dog-slow performance from 
-> the array. It's usable in the sense that reads and writes work, but for 
-> useful work it's pretty painful. You either fail to understand the 
-> magnitude of the problem or wish to trivialize it for some reason.
-I do understand the problem and I'm not trying to trivialise it :)
-
-I _suggested_ that it's worth thinking about things rather than jumping in to 
-say "oh, we can code up a clever algorithm that keeps track of what stripes have 
-valid parity and which don't and we can optimise the read/copy/write for valid 
-stripes and use the raid6 type read-all/write-all for invalid stripes and then 
-we can write a bit extra on the check code to set the bitmaps......"
-
-Phew - and that lets us run the array at semi-degraded performance (raid6-like) 
-for 3 days rather than either waiting before we put it into production or 
-running it very slowly.
-Now we run this system for 3 years and we saved 3 days - hmmm IS IT WORTH IT?
-
-What happens in those 3 years when we have a disk fail? The solution doesn't 
-apply then - it's 3 days to rebuild - like it or not.
-
-> By delaying parity computation until the first write to a stripe only 
-> the growth of a filesystem is slowed, and all data are protected without 
-> waiting for the lengthly check. The rebuild speed can be set very low, 
-> because on-demand rebuild will do most of the work.
-I am not saying you are wrong.
-I ask merely if the balance of benefit outweighs the balance of complexity.
-
-If the benefit were 24x7 then sure - eg using hardware assist in the raid calcs 
-- very useful indeed.
-
->> I'm very much for the fs layer reading the lower block structure so I 
->> don't have to fiddle with arcane tuning parameters - yes, *please* 
->> help make xfs self-tuning!
->>
->> Keeping life as straightforward as possible low down makes the upwards 
->> interface more manageable and that goal more realistic... 
-> 
-> Those two paragraphs are mutually exclusive. The fs can be simple 
-> because it rests on a simple device, even if the "simple device" is 
-> provided by LVM or md. And LVM and md can stay simple because they rest 
-> on simple devices, even if they are provided by PATA, SATA, nbd, etc. 
-> Independent layers make each layer more robust. If you want to 
-> compromise the layer separation, some approach like ZFS with full 
-> integration would seem to be promising. Note that layers allow 
-> specialized features at each point, trading integration for flexibility.
-
-That's a simplistic summary.
-You *can* loosely couple the layers. But you can enrich the interface and 
-tightly couple them too - XFS is capable (I guess) of understanding md more 
-fully than say ext2.
-XFS would still work on a less 'talkative' block device where performance wasn't 
-as important (USB flash maybe, dunno).
+   Thomas
 
 
-> My feeling is that full integration and independent layers each have 
-> benefits, as you connect the layers to expose operational details you 
-> need to handle changes in those details, which would seem to make layers 
-> more complex.
-Agreed.
-
-> What I'm looking for here is better performance in one 
-> particular layer, the md RAID5 layer. I like to avoid unnecessary 
-> complexity, but I feel that the current performance suggests room for 
-> improvement.
-
-I agree there is room for improvement.
-I suggest that it may be more fruitful to write a tool called "raid5prepare"
-that writes zeroes/ones as appropriate to all component devices and then you can 
-use --assume-clean without concern. That could look to see if the devices are 
-scsi or whatever and take advantage of the hyperfast block writes that can be done.
-
-David
