@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbXFVFX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbXFVFYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752320AbXFVFX2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 01:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbXFVFXT
+	id S1753162AbXFVFYn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 01:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXFVFYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 01:23:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36418 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbXFVFXT (ORCPT
+	Fri, 22 Jun 2007 01:24:35 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:49371 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbXFVFYe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 01:23:19 -0400
-Date: Fri, 22 Jun 2007 06:23:15 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Message-ID: <20070622052315.GU21478@ftp.linux.org.uk>
-References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622013417.GT21478@ftp.linux.org.uk> <or1wg4hawh.fsf@oliva.athome.lsd.ic.unicamp.br>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <or1wg4hawh.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.4.1i
+	Fri, 22 Jun 2007 01:24:34 -0400
+Message-ID: <467B5B8A.2020306@zytor.com>
+Date: Thu, 21 Jun 2007 22:18:02 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>, david@lang.hm,
+       schilling@fokus.fraunhofer.de, linux-kernel@vger.kernel.org
+Subject: Re: Linux Kernel include files
+References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>	 <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>	 <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de> <1182483527.10524.31.camel@shinybook.infradead.org>
+In-Reply-To: <1182483527.10524.31.camel@shinybook.infradead.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 01:26:54AM -0300, Alexandre Oliva wrote:
-> On Jun 21, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
+David Woodhouse wrote:
+>> The main problems are not really hard to fix......
+>>
+>> -	Most problems eem to be related to the fact that Linux does not
+>> 	use C-99 based types in the kernel and the related type definitions 
+>> 	are not written in plain C. This is something that should be fixed
+>> 	with a source consolidation program or by defining aliases to 
+>> 	C-99 types in case the compiler is not GCC.
 > 
-> > On Thu, Jun 21, 2007 at 10:00:22PM -0300, Alexandre Oliva wrote:
-> >> Do you agree that if there's any single contributor who thinks it
-> >> can't be tivoized, and he manages his opinion to prevail in court
-> >> against a copyright holder, then it can't?  That this is the same
-> >> privilege to veto additional permissions that Al Viro has just
-> >> claimed?
 > 
-> > You know, I'm rapidly losing any respect for your integrity.  The only
-> > "privelege" claimed is that of not relicensing one's contributions.
+> The argument has been made that the standard C99 types are _optional_,
+> and anything included from a C library's headers without _explicitly_
+> being included by the user shouldn't define those types.
 > 
-> No, this thread was about additional permissions to combine with other
-> licenses.  I didn't suggest anything about relicensing whatsoever,
-> that's all noise out of not understanding the suggestion.
+> Personally, I think that's a load of bollocks. And it certainly doesn't
+> apply to Linux-specific files like <linux/cdrom.h>, which are perfectly
+> entitled to use a C standard from last millennium, regardless of
+> namespace 'pollution' issues. That's why we continue to use the crappy
+> __u32 types. Can you be more specific about why this is a problem? Don't
+> we mostly define those crappy types using arch-specific knowledge, as
+> 'int', 'long', etc?
+> 
 
-And that constitutes the change of license.  If you *really* do not understand
-that, I'd recommend asking FSF legal folks, especially since you have
-mentioned working on v3.  And that, BTW, is far more serious detail than
-your affiliation (or lack thereof) with FSF.  Don't forget to bring a copy
-of your posting that had started this thread when you talk to them.
+It definitely does hurt when using those types in files that may want to
+be used by the C library (as opposed to the end user.)
 
-And really, stop digging.  Please.  YANAL.  You are definitely not in
-position to offer any specific changes in v3.  Are you seriously expecting
-an ACK on your handwaving, when conditions mentioned in your patch to
-license are not just vague as hell, but are 100% certain to be interpreted
-in conflicting ways as shown by the previous thread?
+However, there is no reason why there should be anything funny about the
+declaration of those types.
 
-What are you expecting, anyway?  "You guys can link to v3 code if you read
-v2 as prohibiting tivoization, otherwise the code is withdrawn" != "some
-people think that v2 prohibits it, some do not".  And somehow I doubt that
-this change of situation will make the latter happy.
-
-Besides, what you are suggesting is logistical nightmare.  Somebody in
-v3 project changes borrowed v2 code.  Result is pulled back into Linux.
-What is the license of that thing?  v3 with additional permission?  v2
-with additional permission?  What happens if code is then rewritten, with
-some pieces remaining from v3 changes?  Oh, you want to deal only with
-entire modules?  And then both sides need to be damn careful not to copy
-pieces across the module boundary?
-
-Suppose ZFS _is_ pulled into the tree via that mechanism.  Just what
-will happen if some code is massaged a bit, found generically useful
-and lifted into a helper function?  Do other filesystems (v2 ones)
-calling it suddenly get into patent violations?
-
-Just what makes you think that anybody would like that kind of "cooperation"?
+	-hpa
