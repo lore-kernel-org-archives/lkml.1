@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbXFVEUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbXFVE1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbXFVEUV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXFVEUJ
+	id S1752296AbXFVE1X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 00:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbXFVE1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:20:09 -0400
-Received: from THUNK.ORG ([69.25.196.29]:50999 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbXFVEUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:20:07 -0400
-Date: Fri, 22 Jun 2007 00:19:49 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Alexandre Oliva <aoliva@redhat.com>, davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Message-ID: <20070622041949.GA15625@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Al Viro <viro@ftp.linux.org.uk>,
-	Alexandre Oliva <aoliva@redhat.com>, davids@webmaster.com,
-	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622013417.GT21478@ftp.linux.org.uk>
+	Fri, 22 Jun 2007 00:27:14 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54123 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbXFVE1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 00:27:13 -0400
+Date: Fri, 22 Jun 2007 05:26:33 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706211759550.11554@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0706220513140.8870@blonde.wat.veritas.com>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706211759550.11554@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070622013417.GT21478@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAACmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAY2xhbWV0ZXJAc2dpLmNvbQBhbmRyZXdAc2FucGVvcGxlLmNvbQBuaWNvbGFzLmZlcnJlQHJmby5hdG1lbC5jb20AbGludXgtYXJtLWtlcm5lbEBsaXN0cy5hcm0ubGludXgub3JnLnVrAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAdG9ydmFsZHNAbGludXgtZm91bmRhdGlvbi5vcmcAbWFyYy5waWduYXRAaGV2cy5jaABkcnpldXNAZHJ6ZXVzLmN4AHJta0Bhcm0ubGludXgub3JnLnVrAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 02:34:17AM +0100, Al Viro wrote:
-> What really gets me is that you know it.  And you know that just about
-> everyone here knows it.  Yet you keep playing with rather pathetic
-> attempts of innuendo and misdirection, when it's bloody obvious that
-> you won't even get a PR win out of the entire mess you've been sustaining
-> for about a week already (seriously, count postings in these threads).
+On Thu, 21 Jun 2007, Christoph Lameter wrote:
+> On Thu, 21 Jun 2007, Hugh Dickins wrote:
+> 
+> > > The oops seems to occur after a page unmapping using dma_unmap_page() followed
+> > > by a flush_dcache_page() (in at91mci_post_dma_read()).
+> 
+> Was the page allocated using slab calls?
 
-I'm not sure Alexandre realizes it, but by his carrying on and on and
-on with his really poorly reasoned arguments (I may disagree with
-Eben's positions, but he's a much more reasonable debator and advocate
-for the FSF's positions), Mr. Oliva, Latin America Board Member and
-Free Software Evangelist, has probably made it made it much more
-*unlikely* that the Linux kernel will ever go GPLv3.
+You've found yes (in the ARM case).
 
-About a week and half ago, Linus was saying he was a pragmatist and if
-there was a good enough reason (such as if Solaris adopting GPLv3 and
-there being aufficiently interesting technology that it would be worth
-the code exchange), there was a chance that he might be for it.  But
-Alexandre has been so annoying and so obtuse, that people's positions
-have hardened to the point where I doubt kernel developers would be
-willing to go for at this point.  Something that went from being
-merely extremely unlikely has become "practically impossible".
+> Well one may be better off allocating pages using the page allocator 
+> instead of the slab allocator. I removed these things from i386 but I did 
+> not check ARM.
 
-> The first law of holes: when you are in one, stop digging...
+They may or may not be: I think that's a matter to discuss with rmk.
 
-Indeed.
+You keep on forcing the outside world to revolve around your needs
+within slub.c: that is a good way to keep slub lean, and may be
+justified; but it's at least questionable to be enforcing such
+restrictions years after people have grown accustomed to more
+freedom from their slabs.
 
-Another law of negotiations --- don't goad people into hardening their
-positions; it helps neither you nor your interests.
-
-					- Ted
+Hugh
