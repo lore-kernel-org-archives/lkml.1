@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbXFVMoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbXFVMqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757091AbXFVMoX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 08:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbXFVMoL
+	id S1756510AbXFVMqz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 08:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbXFVMqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 08:44:11 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:41845 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753551AbXFVMoJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 08:44:09 -0400
-Subject: Re: [RFC PATCH 2/6] Split out tasklets from softirq.c
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070622071151.GC21291@infradead.org>
-References: <20070622040014.234651401@goodmis.org>
-	 <20070622040136.783692883@goodmis.org>
-	 <20070622071151.GC21291@infradead.org>
+	Fri, 22 Jun 2007 08:46:45 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:40779 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753001AbXFVMqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 08:46:43 -0400
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+	pathname matching
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Lars Marowsky-Bree <lmb@suse.de>
+Cc: John Johansen <jjohansen@suse.de>, James Morris <jmorris@namei.org>,
+       Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
+       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20070622124204.GR20105@marowsky-bree.de>
+References: <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz>
+	 <20070621160840.GA20105@marowsky-bree.de>
+	 <20070621183311.GC18990@elf.ucw.cz>
+	 <20070621192407.GF20105@marowsky-bree.de>
+	 <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
+	 <20070621195400.GK20105@marowsky-bree.de>
+	 <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
+	 <20070622080640.GB14593@suse.de>
+	 <1182513228.24664.24.camel@moss-spartans.epoch.ncsc.mil>
+	 <20070622124204.GR20105@marowsky-bree.de>
 Content-Type: text/plain
-Date: Fri, 22 Jun 2007 08:40:38 -0400
-Message-Id: <1182516038.5493.29.camel@localhost.localdomain>
+Organization: National Security Agency
+Date: Fri, 22 Jun 2007 08:46:37 -0400
+Message-Id: <1182516397.24664.74.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 08:11 +0100, Christoph Hellwig wrote:
-> On Fri, Jun 22, 2007 at 12:00:16AM -0400, Steven Rostedt wrote:
-> > Tasklets are really a separate entity from softirqs, so they
-> > deserve their own file. Also this allows us to easily replace
-> > tasklets for something else ;-)
+On Fri, 2007-06-22 at 14:42 +0200, Lars Marowsky-Bree wrote:
+> On 2007-06-22T07:53:47, Stephen Smalley <sds@tycho.nsa.gov> wrote:
 > 
-> It's a bit pointless when softirq.h still always includes it.  A while
-> ago I had a patch that split it out and made all users include it directly.
-> But reviving this patch would be rather pointless if we just want to kill
-> tasklets in the end anyway.
+> > > No the "incomplete" mediation does not flow from the design.  We have
+> > > deliberately focused on doing the necessary modifications for pathname
+> > > based mediation.  The IPC and network mediation are a wip.
+> > The fact that you have to go back to the drawing board for them is that
+> > you didn't get the abstraction right in the first place.
 > 
+> That's an interesting claim, however I don't think it holds. AA was
+> designed to mediate file access in a form which is intuitive to admins.
+> 
+> It's to be expected that it doesn't directly apply to mediating other
+> forms of access.
+> 
+> > I think we must have different understandings of the words "generalize"
+> > and "analyzable".  Look, if I want to be able to state properties about
+> > data flow in the system for confidentiality or integrity goals (my
+> > secret data can never leak to unauthorized entities, my critical data
+> > can never be corrupted/tainted by unauthorized entities - directly or
+> > indirectly),
+> 
+> I seem to think that this is not what AA is trying to do, so evaluating
+> it in that context doesn't seem useful. It's like saying a screw driver
+> isn't a hammer, so it is useless because you have a nail.
 
-Actually, if these patches do make it into -mm, then patches 1-4 should
-make it into Linus's tree. That will make Andrews maintenance of these
-patches much easier, since they would make the -mm changes not so
-intrusive.
+Again, in that case, please remove all uses of the terms "mandatory
+access control", "confinement" and "integrity protection" from AA
+documentation and code.
 
-Since the stripping out of tasklets is more of a cosmetic change and
-does not change functionality of the kernel, I don't see why it can't
-make it up to Linus's tree. Especially if we are planning on removing
-tasklets all together.
-
--- Steve
-
+-- 
+Stephen Smalley
+National Security Agency
 
