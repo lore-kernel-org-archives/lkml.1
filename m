@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758900AbXFVQAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbXFVQDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758900AbXFVQAG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbXFVP7x
+	id S1758829AbXFVQDe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbXFVQD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 11:59:53 -0400
-Received: from mail.tmr.com ([64.65.253.246]:39297 "EHLO gaimboi.tmr.com"
+	Fri, 22 Jun 2007 12:03:27 -0400
+Received: from mail.screens.ru ([213.234.233.54]:46088 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757662AbXFVP7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 11:59:52 -0400
-Message-ID: <467BF233.7020700@tmr.com>
-Date: Fri, 22 Jun 2007 12:00:51 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: David Greaves <david@dgreaves.com>
-CC: david@lang.hm, Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <46756BE2.7010401@tmr.com> <467B03C1.50809@tmr.com> <18043.13037.40956.366334@notabene.brown> <467B840F.4080402@dgreaves.com> <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm> <467BC306.9010008@dgreaves.com>
-In-Reply-To: <467BC306.9010008@dgreaves.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1757004AbXFVQD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 12:03:26 -0400
+Date: Fri, 22 Jun 2007 20:04:06 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix signalfd interaction with thread-private signals
+Message-ID: <20070622160405.GA189@tv-sign.ru>
+References: <20070620111415.GA91@tv-sign.ru> <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org> <20070621082509.GA88@tv-sign.ru> <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org> <20070621182340.GA92@tv-sign.ru> <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org> <20070621185856.GA153@tv-sign.ru> <1182468604.24740.22.camel@localhost.localdomain> <20070622084034.GA134@tv-sign.ru> <1182512473.24740.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182512473.24740.54.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
-> david@lang.hm wrote:
->> On Fri, 22 Jun 2007, David Greaves wrote:
->>
->>> That's not a bad thing - until you look at the complexity it brings 
->>> - and then consider the impact and exceptions when you do, eg 
->>> hardware acceleration? md information fed up to the fs layer for 
->>> xfs? simple long term maintenance?
->>>
->>> Often these problems are well worth the benefits of the feature.
->>>
->>> I _wonder_ if this is one where the right thing is to "just say no" :)
->> so for several reasons I don't see this as something that's deserving 
->> of an atomatic 'no'
->>
->> David Lang
+On 06/22, Benjamin Herrenschmidt wrote:
+> 
+> That is, it -does- make sense to be able to create a signal singalfd in
+> a process and have N threads reading from it and getting either shared
+> signals or their local private signals.
+
+Great.
+
+> I just don't like the actual implementation of it by changing the task
+> pointer on the fly...
 >
-> Err, re-read it, I hope you'll see that I agree with you - I actually 
-> just meant the --assume-clean workaround stuff :)
->
-> If you end up 'fiddling' in md because someone specified 
-> --assume-clean on a raid5 [in this case just to save a few minutes 
-> *testing time* on system with a heavily choked bus!] then that adds 
-> *even more* complexity and exception cases into all the stuff you 
-> described.
+> My main issue is a matter of consistency of the signalfd API as a
+> whole... the whole bloody thing is instanciated & attached to a thread
+> in the first place. Maybe we should change that and say that one
+> instanciates a signalfd on a thread group... that is, it always gets
+> attached to the leader.
 
-A "few minutes?" Are you reading the times people are seeing with 
-multi-TB arrays? Let's see, 5TB at a rebuild rate of 20MB... three days. 
-And as soon as you believe that the array is actually "usable" you cut 
-that rebuild rate, perhaps in half, and get dog-slow performance from 
-the array. It's usable in the sense that reads and writes work, but for 
-useful work it's pretty painful. You either fail to understand the 
-magnitude of the problem or wish to trivialize it for some reason.
+It does exactly so, please note this chunk
 
-By delaying parity computation until the first write to a stripe only 
-the growth of a filesystem is slowed, and all data are protected without 
-waiting for the lengthly check. The rebuild speed can be set very low, 
-because on-demand rebuild will do most of the work.
->
-> I'm very much for the fs layer reading the lower block structure so I 
-> don't have to fiddle with arcane tuning parameters - yes, *please* 
-> help make xfs self-tuning!
->
-> Keeping life as straightforward as possible low down makes the upwards 
-> interface more manageable and that goal more realistic... 
+ @@ -330,7 +339,7 @@ asmlinkage long sys_signalfd(int ufd, si
 
-Those two paragraphs are mutually exclusive. The fs can be simple 
-because it rests on a simple device, even if the "simple device" is 
-provided by LVM or md. And LVM and md can stay simple because they rest 
-on simple devices, even if they are provided by PATA, SATA, nbd, etc. 
-Independent layers make each layer more robust. If you want to 
-compromise the layer separation, some approach like ZFS with full 
-integration would seem to be promising. Note that layers allow 
-specialized features at each point, trading integration for flexibility.
+                 init_waitqueue_head(&ctx->wqh);
+                 ctx->sigmask = sigmask;
+ -               ctx->tsk = current;
+ +               ctx->tsk = current->group_leader;
 
-My feeling is that full integration and independent layers each have 
-benefits, as you connect the layers to expose operational details you 
-need to handle changes in those details, which would seem to make layers 
-more complex. What I'm looking for here is better performance in one 
-particular layer, the md RAID5 layer. I like to avoid unnecessary 
-complexity, but I feel that the current performance suggests room for 
-improvement.
+> It might well be that signalfd's concept of context is wrong in the
+> first place and it should be attached to processes rather than threads
+> and that made more explicit in the first place...
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+Exactly!
+
+Oleg.
 
