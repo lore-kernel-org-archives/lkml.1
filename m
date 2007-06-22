@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbXFVVlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759900AbXFVVmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759546AbXFVVlQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 17:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbXFVVlB
+	id S1759900AbXFVVmA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 17:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbXFVVlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 17:41:01 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59086 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752543AbXFVVlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 17:41:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
-Date: Fri, 22 Jun 2007 23:47:55 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Uli Luckas <u.luckas@road.de>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200706221647.50509.rjw@sisk.pl> <20070622210750.GA4267@ucw.cz>
-In-Reply-To: <20070622210750.GA4267@ucw.cz>
+	Fri, 22 Jun 2007 17:41:53 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43472 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753983AbXFVVlw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 17:41:52 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@suse.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       Yinghai Lu <Yinghai.Lu@sun.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
+References: <200706221219.16243.yinghai.lu@sun.com>
+	<20070622193124.GG5051@rhun.smartcity.com>
+	<20070622213327.69663288@the-village.bc.nu>
+	<200706222328.21259.ak@suse.de>
+Date: Fri, 22 Jun 2007 15:41:24 -0600
+In-Reply-To: <200706222328.21259.ak@suse.de> (Andi Kleen's message of "Fri, 22
+	Jun 2007 23:28:20 +0200")
+Message-ID: <m14pkzbraz.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706222347.55717.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 22 June 2007 23:07, Pavel Machek wrote:
-> Hi!
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > At present, if a user mode helper is running while usermodehelper_pm_callback()
-> > is executed, the helper may be frozen and the completion in
-> > call_usermodehelper_exec() won't be completed until user space processes are
-> > thawed.  As a result, the freezing of kernel threads may fail, which is not
-> > desirable.
-> > 
-> > Prevent this from happening by introducing a counter of running user mode
-> > helpers and allowing usermodehelper_pm_callback() to succeed for
-> > action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
-> > are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
-> > RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
-> > fails if that doesn't happen.]
-> > 
-> > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-> > versions of this patch and for very useful comments.
-> ...
-> > Reviewed-by: Pavel Machek <pavel@ucw.cz>
-> 
-> Eh, not sure this header is worth anything. Sometimes I'm lazy and
-> stop when I see first problem.
-> 
-> >  	switch (action) {
-> >  	case PM_HIBERNATION_PREPARE:
-> >  	case PM_SUSPEND_PREPARE:
-> >  		usermodehelper_disabled = 1;
-> > -		return NOTIFY_OK;
-> > +		retval = wait_event_timeout(running_helpers_waitq,
-> > +					atomic_read(&running_helpers) == 0,
-> 
-> Are you sure here? What happens when atomic variable changes between
-> the atomic_read and the function call?
+Andi Kleen <ak@suse.de> writes:
 
-Er, this is a macro. :-)
+> On Friday 22 June 2007 22:33, Alan Cox wrote:
+>> You've got mapped live gart pages from the previous kernel. Even if you
+>> disable the gart before a memset 
+>
+> It's probably too late then. It could also interfere with other operations.
+> If anything the GART should be disabled during kexec shutdown. Perhaps we just 
+> need a suitable suspend function that does that. Eric, any preferences? 
 
-In fact we rely only on atomic_read(&running_helpers) being still zero after
-helper_finished() has woken us up, but I think that's acceptable.
+Well it would be a shutdown method not a suspend method.  The authors of
+the suspend code thought sharing code with the reboot and the rmmod case
+didn't make sense.
 
-IOW, if the wait_event_timeout() returns with retval different from zero, this
-means that atomic_read(&running_helpers) returned zero at one point after
-we'd set usermodehelper_disabled, which is enough.  OTOH, if it doesn't
-return with retval different from zero, this means that either one or more
-helpers are waited for to finish or they are coming and going very quickly,
-which would be suspicious enough to cancel the suspend, IMHO.
+For a normal kexec into another kernel I think this makes sense.
 
-Greetings,
-Rafael
+>> you may well have the video card using 
+>> gart translations and possibly live IOMMU mappings for devices using it
+>> via bus mastering - and those will cause you MCE exceptions with a
+>> corrupt cpu context flag (ie not nicely recoverable).
+>
+> We disable those machine checks on K8 because they're not fully reliable.
 
+For the kexec on panic not shutting the hardware down if at all possible is
+the ideal.  There I think we need a mode to not touch a chunk of the iommu
+and reserve it for the kexec on panic kernel (or perhaps just use the
+swiotlb code if we need bounce buffers at all).
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Eric
