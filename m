@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbXFVNIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbXFVNMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754587AbXFVNIb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 09:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbXFVNIX
+	id S1754331AbXFVNMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 09:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbXFVNMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 09:08:23 -0400
-Received: from mail.tpi.com ([198.107.51.143]:1168 "EHLO mail.tpi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbXFVNIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 09:08:22 -0400
-Message-ID: <467BC9F8.5000403@canonical.com>
-Date: Fri, 22 Jun 2007 07:09:12 -0600
-From: Tim Gardner <tim.gardner@canonical.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Chuck Ebbert <cebbert@redhat.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: ACPI Regression on Dell E1501
-References: <467AE7E1.4050805@canonical.com>  <467AF204.3060805@redhat.com> <1182462902.3316.105.camel@chaos>
-In-Reply-To: <1182462902.3316.105.camel@chaos>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 Jun 2007 09:12:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38981 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750898AbXFVNMa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 09:12:30 -0400
+Date: Fri, 22 Jun 2007 14:17:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: jeff@garzik.org, akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] HPT374 is UDMA100 not UDMA133
+Message-ID: <20070622141728.34b1b91c@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Thu, 2007-06-21 at 17:47 -0400, Chuck Ebbert wrote:
->> On 06/21/2007 05:04 PM, Tim Gardner wrote:
->>> Hi,
->>>
->>> Commit e9e2cdb412412326c4827fc78ba27f410d837e6e breaks boot on a Dell
->>> E1501 unless 'acpi=off' is specified (also tried nolapic and nohpet but
->>> it made no substantive difference). This laptop is an 'AMD Turion(tm) 64
->>> X2 Mobile Technology TL-50' CPU, but its booting 32 bit SMP (make
->>> defconfig). No kernel built after this commit works for this platform.
->>>
->>> There is no crash output, it just wedges after 'NET: Registered protocol
->>> family 2'.
->>>
->>> How can I debug this problem?
->> That'll be fun.
->>
->> That's:
->>
->> 	[PATCH] clockevents: i386 drivers
->>
->> [Author cc: added]
-> 
-> I'm going nuts on this. 
-> 
-> Tim, 
-> 
-> 1.) are you booting a 32bit or a 64 bit kernel ?
-> 
-> 2.) Can you please try 2.6.22-rc5 + 
-> http://www.tglx.de/projects/hrtimers/2.6.22-rc5/patch-2.6.22-rc5-hrt1.patch
-> 	whether this makes any difference 
-> 
-> Thanks,
-> 
-> 	tglx
-> 
+Propogate change from drivers/ide
 
-Thomas,
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-Your patch (large though it is) did not make any outward difference. As
-usual, adding 'acpi=off' allows it to boot.
-
-rtg
--- 
-Tim Gardner tim.gardner@ubuntu.com
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc4-mm2/drivers/ata/pata_hpt37x.c linux-2.6.22-rc4-mm2/drivers/ata/pata_hpt37x.c
+--- linux.vanilla-2.6.22-rc4-mm2/drivers/ata/pata_hpt37x.c	2007-06-07 14:26:08.000000000 +0100
++++ linux-2.6.22-rc4-mm2/drivers/ata/pata_hpt37x.c	2007-06-14 12:58:22.000000000 +0100
+@@ -931,13 +931,13 @@
+ 		.udma_mask = 0x7f,
+ 		.port_ops = &hpt372_port_ops
+ 	};
+-	/* HPT374 - UDMA133 */
++	/* HPT374 - UDMA100 */
+ 	static const struct ata_port_info info_hpt374 = {
+ 		.sht = &hpt37x_sht,
+ 		.flags = ATA_FLAG_SLAVE_POSS,
+ 		.pio_mask = 0x1f,
+ 		.mwdma_mask = 0x07,
+-		.udma_mask = 0x7f,
++		.udma_mask = 0x3f,
+ 		.port_ops = &hpt374_port_ops
+ 	};
+ 
