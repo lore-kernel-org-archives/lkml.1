@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbXFVNp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbXFVNrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756986AbXFVNp6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 09:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbXFVNpu
+	id S1757254AbXFVNrs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 09:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXFVNrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 09:45:50 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:47156 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbXFVNpt (ORCPT
+	Fri, 22 Jun 2007 09:47:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45421 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbXFVNrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 09:45:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AWyDIzd2A4NMKP05aHEOecI1P+9/9Le23Tn/Rmg4iB9uJE/CuJaxJkBwJFaRFlKOY89+EyrWDUxc2CmsYsRiU6D+hTDImsIBQGL05IuVJDelQEJjyMpkIIi3Jbyv50tWgA1jn6wAep+nATTjHe7cLWg5U0Y+dMyk6vBmztPw/8E=
-Message-ID: <961aa3350706220645i21ca51b6m82a5189c21fdf5c5@mail.gmail.com>
-Date: Fri, 22 Jun 2007 22:45:47 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH 2/6] Split out tasklets from softirq.c
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "john stultz" <johnstul@us.ibm.com>, "Oleg Nesterov" <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Dipankar Sarma" <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070622040136.783692883@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 22 Jun 2007 09:47:40 -0400
+Subject: Re: JIT emulator needs
+From: Arjan van de Ven <arjan@infradead.org>
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <787b0d920706212256u7e78ba6n15ef41bcea99aff0@mail.gmail.com>
+References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+	 <1182447884.2704.7.camel@laptopd505.fenrus.org>
+	 <787b0d920706212256u7e78ba6n15ef41bcea99aff0@mail.gmail.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Fri, 22 Jun 2007 06:43:41 -0700
+Message-Id: <1182519821.2672.1.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070622040014.234651401@goodmis.org>
-	 <20070622040136.783692883@goodmis.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/6/22, Steven Rostedt <rostedt@goodmis.org>:
+On Fri, 2007-06-22 at 01:56 -0400, Albert Cahalan wrote:
+> On 6/21/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> > On Fri, 2007-06-08 at 02:35 -0400, Albert Cahalan wrote:
+> > > Right now, Linux isn't all that friendly to JIT emulators.
+> > > Here are the problems and suggestions to improve the situation.
+> > >
+> > > There is an SE Linux execmem restriction that enforces W^X.
+> > > Assuming you don't wish to just disable SE Linux, there are
+> > > two ugly ways around the problem. You can mmap a file twice,
+> > > or you can abuse SysV shared memory. The mmap method requires
+> > > that you know of a filesystem mounted rw,exec where you can
+> > > write a very large temporary file. This arbitrary filesystem,
+> > > rather than swap space, will be the backing store. The SysV
+> > > shared memory method requires an undocumented flag and is
+> > > subject to some annoying size limits. Both methods create
+> > > objects that will fail to be deleted if the program dies
+> > > before marking the objects for deletion.
+> >
+> > and these methods also destroy yourself on any machine with a looser
+> > cache coherency between I and D-cache....
+> >
+> > for all but x86 you pretty much have to do the mprotect() between the
+> > two states to deal with the cache flushing properly...
+> 
+> If the instructions to force data write-back and/or to
+> invalidate the instruction cache are priveleged, yes.
+> AFAIK, only ARM is that lame.
 
-> +static inline void tasklet_unlock_wait(struct tasklet_struct *t)
-> +{
-> +       while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
-> +}
+and your program executes this on all the cpus in the system?
 
-BTW, can we use cpu_relax() instead of barrier() in this busy-wait loop?
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
