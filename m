@@ -1,263 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbXFVOoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbXFVOpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbXFVOoA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758102AbXFVOnq
+	id S1758731AbXFVOpt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbXFVOpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:43:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57719 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757582AbXFVOnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:43:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RC][PATCH] PM: Remove code duplication between main.c and user.c
-Date: Fri, 22 Jun 2007 16:50:56 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
+	Fri, 22 Jun 2007 10:45:41 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:53978 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756028AbXFVOpk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:45:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J2xoYzBtpX1wy+blfel+tVy/xEWTnwFv2Rlo64Yge/jvOgCEPEC0Ak3L2MoofbNsQMohC/mMQ2riH9ec76YO0ruYExwr8v5DCV9mUgIOuu2Ld2Ul2ePigQVaCjhw/Thx64pvQWZ4nuzgFZCaeJcDT5oYRZfk3z6tdc7O6LF3Txk=
+Message-ID: <787b0d920706220745w75231e2fp2f180e955010320f@mail.gmail.com>
+Date: Fri, 22 Jun 2007 10:45:39 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [TOMOYO 5/9] Memory and pathname management functions.
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       takedakn@nttdata.co.jp, hch@infradead.org
+In-Reply-To: <20070621182205.GB18990@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706221650.56791.rjw@sisk.pl>
+References: <787b0d920706150016n3e941a4fj4fc2e864a7e6f7d7@mail.gmail.com>
+	 <20070615130000.GI9442@ucw.cz>
+	 <787b0d920706160208u62f8a2c5q5f94f5986d755d24@mail.gmail.com>
+	 <20070621182205.GB18990@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On 6/21/07, Pavel Machek <pavel@ucw.cz> wrote:
 
-The SNAPSHOT_S2RAM ioctl code is outdated and it should not duplicate the
-suspend code in kernel/power/main.c.  Fix that.
+> > >> It's really not worth getting bothered by. Truth is, big
+> > >> giant
+> > >> pathnames break lots of stuff already, both kernel and
+> > >> userspace.
+> > >
+> > >> Just look in /proc for some nice juicy kernel breakage:
+> > >> cwd, exe, fd/*, maps, mounts, mountstats, root, smaps
+> > >
+> > >Well, but we should be fixing that, not adding more. And /proc is
+> > >info-only, while this is security related code.
+> >
+> > Security tools read from /proc, so /proc is security-related.
+>
+> If some tool relies on pathnames in /proc, that tool is broken... as
+> is /proc. We should be fixing that.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reviewed-by: Pavel Machek <pavel@ucw.cz>
----
- kernel/power/main.c  |   79 +++++++++++++++++++++++++++++----------------------
- kernel/power/power.h |    3 +
- kernel/power/user.c  |   38 +++---------------------
- 3 files changed, 53 insertions(+), 67 deletions(-)
-
-Index: linux-2.6.22-rc5/kernel/power/main.c
-===================================================================
---- linux-2.6.22-rc5.orig/kernel/power/main.c	2007-06-20 23:17:01.000000000 +0200
-+++ linux-2.6.22-rc5/kernel/power/main.c	2007-06-21 23:09:56.000000000 +0200
-@@ -71,11 +71,9 @@ static inline void pm_finish(suspend_sta
-  *	suspend_prepare - Do prep work before entering low-power state.
-  *	@state:		State we're entering.
-  *
-- *	This is common code that is called for each state that we're 
-- *	entering. Allocate a console, stop all processes, then make sure
-- *	the platform can enter the requested state.
-+ *	This is common code that is called for each state that we're entering.
-+ *	Run suspend notifiers, allocate a console and stop all processes.
-  */
--
- static int suspend_prepare(suspend_state_t state)
- {
- 	int error;
-@@ -95,38 +93,18 @@ static int suspend_prepare(suspend_state
- 		goto Thaw;
- 	}
- 
--	if ((free_pages = global_page_state(NR_FREE_PAGES))
--			< FREE_PAGE_NUMBER) {
-+	free_pages = global_page_state(NR_FREE_PAGES);
-+	if (free_pages < FREE_PAGE_NUMBER) {
- 		pr_debug("PM: free some memory\n");
- 		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
- 		if (nr_free_pages() < FREE_PAGE_NUMBER) {
- 			error = -ENOMEM;
- 			printk(KERN_ERR "PM: No enough memory\n");
--			goto Thaw;
- 		}
- 	}
--
--	suspend_console();
--	error = device_suspend(PMSG_SUSPEND);
--	if (error) {
--		printk(KERN_ERR "Some devices failed to suspend\n");
--		goto Resume_console;
--	}
--	if (pm_ops->prepare) {
--		if ((error = pm_ops->prepare(state)))
--			goto Resume_devices;
--	}
--
--	error = disable_nonboot_cpus();
- 	if (!error)
- 		return 0;
- 
--	enable_nonboot_cpus();
--	pm_finish(state);
-- Resume_devices:
--	device_resume();
-- Resume_console:
--	resume_console();
-  Thaw:
- 	thaw_processes();
- 	pm_restore_console();
-@@ -147,6 +125,12 @@ void __attribute__ ((weak)) arch_suspend
- 	local_irq_enable();
- }
- 
-+/**
-+ *	suspend_enter - enter the desired system sleep state.
-+ *	@state:		state to enter
-+ *
-+ *	This function should be called after devices have been suspended.
-+ */
- int suspend_enter(suspend_state_t state)
- {
- 	int error = 0;
-@@ -166,6 +150,41 @@ int suspend_enter(suspend_state_t state)
- 	return error;
- }
- 
-+/**
-+ *	suspend_devices_and_enter - suspend devices and enter the desired system sleep
-+ *			  state.
-+ *	@state:		  state to enter
-+ */
-+int suspend_devices_and_enter(suspend_state_t state)
-+{
-+	int error;
-+
-+	if (!pm_ops)
-+		return -ENOSYS;
-+
-+	suspend_console();
-+	error = device_suspend(PMSG_SUSPEND);
-+	if (error) {
-+		printk(KERN_ERR "Some devices failed to suspend\n");
-+		goto Resume_console;
-+	}
-+	if (pm_ops->prepare) {
-+		error = pm_ops->prepare(state);
-+		if (error)
-+			goto Resume_devices;
-+	}
-+	error = disable_nonboot_cpus();
-+	if (!error)
-+		suspend_enter(state);
-+
-+	enable_nonboot_cpus();
-+	pm_finish(state);
-+ Resume_devices:
-+	device_resume();
-+ Resume_console:
-+	resume_console();
-+	return error;
-+}
- 
- /**
-  *	suspend_finish - Do final work before exiting suspend sequence.
-@@ -174,13 +193,8 @@ int suspend_enter(suspend_state_t state)
-  *	Call platform code to clean up, restart processes, and free the 
-  *	console that we've allocated. This is not called for suspend-to-disk.
-  */
--
- static void suspend_finish(suspend_state_t state)
- {
--	enable_nonboot_cpus();
--	pm_finish(state);
--	device_resume();
--	resume_console();
- 	thaw_processes();
- 	pm_restore_console();
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
-@@ -215,7 +229,6 @@ static inline int valid_state(suspend_st
-  *	Then, do the setup for suspend, enter the state, and cleaup (after
-  *	we've woken up).
-  */
--
- static int enter_state(suspend_state_t state)
- {
- 	int error;
-@@ -230,7 +243,7 @@ static int enter_state(suspend_state_t s
- 		goto Unlock;
- 
- 	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
--	error = suspend_enter(state);
-+	error = suspend_devices_and_enter(state);
- 
- 	pr_debug("PM: Finishing wakeup.\n");
- 	suspend_finish(state);
-Index: linux-2.6.22-rc5/kernel/power/power.h
-===================================================================
---- linux-2.6.22-rc5.orig/kernel/power/power.h	2007-06-20 23:16:46.000000000 +0200
-+++ linux-2.6.22-rc5/kernel/power/power.h	2007-06-21 23:10:10.000000000 +0200
-@@ -170,7 +170,6 @@ extern int swsusp_resume(void);
- extern int swsusp_read(unsigned int *flags_p);
- extern int swsusp_write(unsigned int flags);
- extern void swsusp_close(void);
--extern int suspend_enter(suspend_state_t state);
- 
- struct timeval;
- /* kernel/power/swsusp.c */
-@@ -178,6 +177,8 @@ extern void swsusp_show_speed(struct tim
- 				unsigned int, char *);
- 
- /* kernel/power/main.c */
-+extern int suspend_enter(suspend_state_t state);
-+extern int suspend_devices_and_enter(suspend_state_t state);
- extern struct blocking_notifier_head pm_chain_head;
- 
- static inline int pm_notifier_call_chain(unsigned long val)
-Index: linux-2.6.22-rc5/kernel/power/user.c
-===================================================================
---- linux-2.6.22-rc5.orig/kernel/power/user.c	2007-06-20 23:16:46.000000000 +0200
-+++ linux-2.6.22-rc5/kernel/power/user.c	2007-06-21 23:29:10.000000000 +0200
-@@ -255,47 +255,19 @@ static int snapshot_ioctl(struct inode *
- 		break;
- 
- 	case SNAPSHOT_S2RAM:
--		if (!pm_ops) {
--			error = -ENOSYS;
--			break;
--		}
--
- 		if (!data->frozen) {
- 			error = -EPERM;
- 			break;
- 		}
--
- 		if (!mutex_trylock(&pm_mutex)) {
- 			error = -EBUSY;
- 			break;
- 		}
--
--		if (pm_ops->prepare) {
--			error = pm_ops->prepare(PM_SUSPEND_MEM);
--			if (error)
--				goto OutS3;
--		}
--
--		/* Put devices to sleep */
--		suspend_console();
--		error = device_suspend(PMSG_SUSPEND);
--		if (error) {
--			printk(KERN_ERR "Failed to suspend some devices.\n");
--		} else {
--			error = disable_nonboot_cpus();
--			if (!error) {
--				/* Enter S3, system is already frozen */
--				suspend_enter(PM_SUSPEND_MEM);
--				enable_nonboot_cpus();
--			}
--			/* Wake up devices */
--			device_resume();
--		}
--		resume_console();
--		if (pm_ops->finish)
--			pm_ops->finish(PM_SUSPEND_MEM);
--
-- OutS3:
-+		/*
-+		 * Tasks are frozen and the notifiers have been called with
-+		 * PM_HIBERNATION_PREPARE
-+		 */
-+		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
- 		mutex_unlock(&pm_mutex);
- 		break;
- 
+Running TOMOYO or AppArmor fixes the bug. :-)
+You can't get long paths that break /proc if you are
+running either. Therefore, one of those is required.
