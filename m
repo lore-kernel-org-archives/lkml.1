@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbXFVEFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbXFVEFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084AbXFVEFI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbXFVEEL
+	id S1752765AbXFVEFd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 00:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbXFVEEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:04:11 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:52511 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbXFVEEJ (ORCPT
+	Fri, 22 Jun 2007 00:04:14 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:62028 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751606AbXFVEEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:04:09 -0400
-Message-Id: <20070622040137.255664480@goodmis.org>
-References: <20070622040014.234651401@goodmis.org>
+	Fri, 22 Jun 2007 00:04:13 -0400
+Message-Id: <20070622040014.234651401@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 22 Jun 2007 00:00:19 -0400
+Date: Fri, 22 Jun 2007 00:00:14 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -25,281 +24,90 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Dipankar Sarma <dipankar@in.ibm.com>,
        "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
        kuznet@ms2.inr.ac.ru
-Subject: [RFC PATCH 5/6] Move tasklet.h to tasklet_softirq.h
-Content-Disposition: inline; filename=move-tasklet_h-to-tasklet_softirq_h.patch
+Subject: [RFC PATCH 0/6] Convert all tasklets to workqueues
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Getting ready for the two versions of tasklet implementations,
-we move tasklet.h to tasklet_softirq.h and just include it in
-tasklet.h.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+There's a very nice paper by Matthew Willcox that describes Softirqs,
+Tasklets, Bottom Halves, Task Queues, Work Queues and Timers[1].
+In the paper it describes the history of these items.  Softirqs and
+tasklets were created to replace bottom halves after a company (Mindcraft)
+showed that Microsoft on a 4x SMP box would out do Linux. It was discovered
+that this was due to a bottle neck caused by the design of Bottom Halves.
+So Alexey Kuznetsov and Dave Miller [1] (and I'm sure others) created
+softirqs and tasklets to multithread the bottom halves.
 
-Index: linux-2.6-test/include/linux/tasklet.h
-===================================================================
---- linux-2.6-test.orig/include/linux/tasklet.h
-+++ linux-2.6-test/include/linux/tasklet.h
-@@ -1,125 +1,6 @@
- #ifndef _LINUX_TASKLET_H
- #define _LINUX_TASKLET_H
- 
--/* Tasklets --- multithreaded analogue of BHs.
-+#include <linux/tasklet_softirq.h>
- 
--   Main feature differing them of generic softirqs: tasklet
--   is running only on one CPU simultaneously.
--
--   Main feature differing them of BHs: different tasklets
--   may be run simultaneously on different CPUs.
--
--   Properties:
--   * If tasklet_schedule() is called, then tasklet is guaranteed
--     to be executed on some cpu at least once after this.
--   * If the tasklet is already scheduled, but its excecution is still not
--     started, it will be executed only once.
--   * If this tasklet is already running on another CPU (or schedule is called
--     from tasklet itself), it is rescheduled for later.
--   * Tasklet is strictly serialized wrt itself, but not
--     wrt another tasklets. If client needs some intertask synchronization,
--     he makes it with spinlocks.
-- */
--
--struct tasklet_struct
--{
--	struct tasklet_struct *next;
--	unsigned long state;
--	atomic_t count;
--	void (*func)(unsigned long);
--	unsigned long data;
--};
--
--#define DECLARE_TASKLET(name, func, data) \
--struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(0), func, data }
--
--#define DECLARE_TASKLET_DISABLED(name, func, data) \
--struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
--
--
--enum
--{
--	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
--	TASKLET_STATE_RUN	/* Tasklet is running (SMP only) */
--};
--
--#ifdef CONFIG_SMP
--static inline int tasklet_trylock(struct tasklet_struct *t)
--{
--	return !test_and_set_bit(TASKLET_STATE_RUN, &(t)->state);
--}
--
--static inline void tasklet_unlock(struct tasklet_struct *t)
--{
--	smp_mb__before_clear_bit(); 
--	clear_bit(TASKLET_STATE_RUN, &(t)->state);
--}
--
--static inline void tasklet_unlock_wait(struct tasklet_struct *t)
--{
--	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
--}
--#else
--#define tasklet_trylock(t) 1
--#define tasklet_unlock_wait(t) do { } while (0)
--#define tasklet_unlock(t) do { } while (0)
- #endif
--
--extern void FASTCALL(__tasklet_schedule(struct tasklet_struct *t));
--
--static inline void tasklet_schedule(struct tasklet_struct *t)
--{
--	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
--		__tasklet_schedule(t);
--}
--
--extern void FASTCALL(__tasklet_hi_schedule(struct tasklet_struct *t));
--
--static inline void tasklet_hi_schedule(struct tasklet_struct *t)
--{
--	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
--		__tasklet_hi_schedule(t);
--}
--
--
--static inline void tasklet_disable_nosync(struct tasklet_struct *t)
--{
--	atomic_inc(&t->count);
--	smp_mb__after_atomic_inc();
--}
--
--static inline void tasklet_disable(struct tasklet_struct *t)
--{
--	tasklet_disable_nosync(t);
--	tasklet_unlock_wait(t);
--	smp_mb();
--}
--
--static inline void tasklet_enable(struct tasklet_struct *t)
--{
--	smp_mb__before_atomic_dec();
--	atomic_dec(&t->count);
--}
--
--static inline void tasklet_hi_enable(struct tasklet_struct *t)
--{
--	smp_mb__before_atomic_dec();
--	atomic_dec(&t->count);
--}
--
--static inline int tasklet_is_scheduled(struct tasklet_struct *t)
--{
--	return test_bit(TASKLET_STATE_SCHED, &t->state);
--}
--
--extern void tasklet_kill(struct tasklet_struct *t);
--extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
--extern void tasklet_init(struct tasklet_struct *t,
--			 void (*func)(unsigned long), unsigned long data);
--
--#ifdef CONFIG_HOTPLUG_CPU
--void takeover_tasklets(unsigned int cpu);
--#endif /* CONFIG_HOTPLUG_CPU */
--
--#endif /* _LINUX_TASKLET_H */
--
-Index: linux-2.6-test/include/linux/tasklet_softirq.h
-===================================================================
---- /dev/null
-+++ linux-2.6-test/include/linux/tasklet_softirq.h
-@@ -0,0 +1,129 @@
-+#ifndef _LINUX_TASKLET_SOFTIRQ_H
-+#define _LINUX_TASKLET_SOFTIRQ_H
-+
-+#ifndef _LINUX_TASKLET_H
-+# error "Do not include this header directly! use linux/tasklet.h"
-+#endif
-+
-+/* Tasklets --- multithreaded analogue of BHs.
-+
-+   Main feature differing them of generic softirqs: tasklet
-+   is running only on one CPU simultaneously.
-+
-+   Main feature differing them of BHs: different tasklets
-+   may be run simultaneously on different CPUs.
-+
-+   Properties:
-+   * If tasklet_schedule() is called, then tasklet is guaranteed
-+     to be executed on some cpu at least once after this.
-+   * If the tasklet is already scheduled, but its excecution is still not
-+     started, it will be executed only once.
-+   * If this tasklet is already running on another CPU (or schedule is called
-+     from tasklet itself), it is rescheduled for later.
-+   * Tasklet is strictly serialized wrt itself, but not
-+     wrt another tasklets. If client needs some intertask synchronization,
-+     he makes it with spinlocks.
-+ */
-+
-+struct tasklet_struct
-+{
-+	struct tasklet_struct *next;
-+	unsigned long state;
-+	atomic_t count;
-+	void (*func)(unsigned long);
-+	unsigned long data;
-+};
-+
-+#define DECLARE_TASKLET(name, func, data) \
-+struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(0), func, data }
-+
-+#define DECLARE_TASKLET_DISABLED(name, func, data) \
-+struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
-+
-+
-+enum
-+{
-+	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
-+	TASKLET_STATE_RUN	/* Tasklet is running (SMP only) */
-+};
-+
-+#ifdef CONFIG_SMP
-+static inline int tasklet_trylock(struct tasklet_struct *t)
-+{
-+	return !test_and_set_bit(TASKLET_STATE_RUN, &(t)->state);
-+}
-+
-+static inline void tasklet_unlock(struct tasklet_struct *t)
-+{
-+	smp_mb__before_clear_bit(); 
-+	clear_bit(TASKLET_STATE_RUN, &(t)->state);
-+}
-+
-+static inline void tasklet_unlock_wait(struct tasklet_struct *t)
-+{
-+	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
-+}
-+#else
-+#define tasklet_trylock(t) 1
-+#define tasklet_unlock_wait(t) do { } while (0)
-+#define tasklet_unlock(t) do { } while (0)
-+#endif
-+
-+extern void FASTCALL(__tasklet_schedule(struct tasklet_struct *t));
-+
-+static inline void tasklet_schedule(struct tasklet_struct *t)
-+{
-+	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
-+		__tasklet_schedule(t);
-+}
-+
-+extern void FASTCALL(__tasklet_hi_schedule(struct tasklet_struct *t));
-+
-+static inline void tasklet_hi_schedule(struct tasklet_struct *t)
-+{
-+	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
-+		__tasklet_hi_schedule(t);
-+}
-+
-+
-+static inline void tasklet_disable_nosync(struct tasklet_struct *t)
-+{
-+	atomic_inc(&t->count);
-+	smp_mb__after_atomic_inc();
-+}
-+
-+static inline void tasklet_disable(struct tasklet_struct *t)
-+{
-+	tasklet_disable_nosync(t);
-+	tasklet_unlock_wait(t);
-+	smp_mb();
-+}
-+
-+static inline void tasklet_enable(struct tasklet_struct *t)
-+{
-+	smp_mb__before_atomic_dec();
-+	atomic_dec(&t->count);
-+}
-+
-+static inline void tasklet_hi_enable(struct tasklet_struct *t)
-+{
-+	smp_mb__before_atomic_dec();
-+	atomic_dec(&t->count);
-+}
-+
-+static inline int tasklet_is_scheduled(struct tasklet_struct *t)
-+{
-+	return test_bit(TASKLET_STATE_SCHED, &t->state);
-+}
-+
-+extern void tasklet_kill(struct tasklet_struct *t);
-+extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
-+extern void tasklet_init(struct tasklet_struct *t,
-+			 void (*func)(unsigned long), unsigned long data);
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+void takeover_tasklets(unsigned int cpu);
-+#endif /* CONFIG_HOTPLUG_CPU */
-+
-+#endif /* _LINUX_TASKLET_H */
-+
+This worked well, and for the time it shut-up Microsoft^WMindcraft from
+saying Linux was slow at networking.
 
--- 
+Time passed, and Linux developed other nifty tools, like kthreads and
+work queues. These run in a process context and are not as menacing to
+latencies as softirqs and tasklets are.  Specifically, a tasklet,
+acts as a task by only being able to run the function on one CPU
+at a time. The same tasklet can not run on multiple CPUS.  So in that
+aspect it is like a task (a task can only exist on one CPU at a time).
+But a tasklet is much harder on the rest of the system because it
+runs in interrupt context.  This means that if a higher priority process
+wants to run, it must wait for the tasklet to finish before doing so.
+
+The most part, tasklets today are not used for time critical functions.
+Running tasklets in thread context is not harmful to performance of
+the overall system. But running them in interrupt context is, since
+they increase the overall latency for high priority tasks.
+
+Even in Matthew's paper, he says that work queues have replaced tasklets.
+But this is not truly the case.  Tasklets are common and plentiful.
+But to go and replace each driver that uses a tasklet with a work queue
+would be very painful.
+
+I've developed this way to replace all tasklets with work queues without
+having to change all the drivers that use them.  I created an API that
+uses the tasklet API as a wrapper to a work queue.  This API doesn't need
+to be permanent. It shows 1) that work queues can replace tasklets, and
+2) we can remove a duplicate functionality from the kernel.  This API
+only needs to be around until we removed all uses of tasklets from
+all drivers.
+
+I just want to state that tasklets served their time well. But it's time
+to give them an honorable discharge.  So lets get rid of tasklets and
+given them a standing salute as they leave :-)
+
+
+This patch series does the following:
+
+1) Changes the RCU tasklet into a softirq. The RCU tasklet *is* a 
+performance critical function, and changing it to a softirq gives it
+even more performance, and removes overhead. This has already been done
+in the RT kernel, and should be applied regardless of the rest of the
+patches in the series.
+
+2) Splits out the tasklets from softirq.c.  This too should be done anyways.
+Tasklets are not softirqs, and they have their own semantics that they
+deserve their own file. Also it makes it a lot cleaner to replace them
+with something else :-)
+
+3/4) Add an API to the tasklets to allow a driver to see if a tasklet
+is scheduled.  The DRM driver does it's own little thing with tasklets
+and reads into the internals of the tasklet. These patches give the
+DRM driver an API to do that a little bit cleaner.
+
+The above patches really should go into the kernel if for any other
+reason as a clean up patch set.
+
+5) Move tasklet.h to tasklet_softirq.h and have tasklet.h include it.
+
+6) This is the magic to make tasklets into work queues. It allows for
+the kernel to be configured either with the normal tasklets, as it is
+today, or with the tasklets-as-work-queues.
+
+I've booted these patches on 5 machines, i386 and x86_64, and when
+I can get my powerbook loaded with Linux, I'll try it there too.
+
+I'd like to give thanks to Ingo Molnar and Oleg Nesterov for reviewing 
+my initial patch series and giving me some pointers.
+
+
+[1] www.wil.cx/matthew/lca2003/paper.pdf
+
+-- Steve
