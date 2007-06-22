@@ -1,74 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbXFVPSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbXFVPW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757852AbXFVPSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 11:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbXFVPS0
+	id S1758200AbXFVPW6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 11:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbXFVPWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 11:18:26 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:15456 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098AbXFVPSZ (ORCPT
+	Fri, 22 Jun 2007 11:22:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58361 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756783AbXFVPWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 11:18:25 -0400
-Date: Fri, 22 Jun 2007 17:18:24 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
+	Fri, 22 Jun 2007 11:22:50 -0400
+Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
+	[linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in
+	zc0301_core.c
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
 To: Roman Zippel <zippel@linux-m68k.org>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
+Cc: Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
        video4linux-list@redhat.com,
        =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       luca.risolia@studio.unibo.it, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
- [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
+       luca.risolia@studio.unibo.it, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <Pine.LNX.4.64.0706221602000.1817@scrub.home>
-Message-ID: <Pine.LNX.4.64.0706221711320.26568@fbirervta.pbzchgretzou.qr>
-References: <200706211117.55908.toralf.foerster@gmx.de> 
- <200706211231.53898.luca.risolia@studio.unibo.it>  <200706211326.45031.toralf.foerster@gmx.de>
-  <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
- <Pine.LNX.4.64.0706221602000.1817@scrub.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <200706211117.55908.toralf.foerster@gmx.de>
+	 <200706211231.53898.luca.risolia@studio.unibo.it>
+	 <200706211326.45031.toralf.foerster@gmx.de>
+	 <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
+	 <Pine.LNX.4.64.0706221602000.1817@scrub.home>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 22 Jun 2007 12:21:37 -0300
+Message-Id: <1182525697.14289.47.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Sex, 2007-06-22 às 16:27 +0200, Roman Zippel escreveu:
+> Hi,
+> 
+> On Fri, 22 Jun 2007, Mauro Carvalho Chehab wrote:
+> 
+> > Hi Roman,
+> > 
+> > Several instabilities on Kconfig started to happen after replacing
+> > Kconfig menus to use menuconfig, as this one, reported by Oliver:
+> > 
+> > Em Qui, 2007-06-21 às 13:50 +0200, Oliver Neukum escreveu:
+> > > Am Donnerstag, 21. Juni 2007 schrieb Toralf Förster:
+> > > > Right, but IMHO this issue is typical for a problem with the Kconfig definitions of this module.
+> > > > 
+> > > > I'll set USB devs as Cc: therefore.
+> 
+> There is too little context here, what was the exact error?
+> I'm assuming it's the module vs. builtin problem?
 
-On Jun 22 2007 16:27, Roman Zippel wrote:
->
->> In this specific case, all V4L USB drivers depends on V4L_USB_DRIVERS,
->> that depends, in turn, on USB. So, if USB is not selected,
->> V4L_USB_DRIVERS should be unselected, unselecting zc0301.
->> 
->> Unfortunately, the Kernel building system is not properly handling it.
->> 
->> This is the (snipped) media/video/Kconfig:
->> 
->> menuconfig V4L_USB_DRIVERS
->>         bool "V4L USB devices"
->>         depends on USB
->>         default y
->> 
->
->The menuconfig patches were a little aggressive here, it created a config 
->symbol where there was none before and in this case it even changed 
->dependencies (it turns USB into a bool).
+I also got copied on this without the full context.
 
-V4L_USB_DRIVERS=y turns USB into =y? That can't be. It should give the "this
-depends on another symbol [USB] that is modular".
+> The menuconfig patches were a little aggressive here, it created a config 
+> symbol where there was none before and in this case it even changed 
+> dependencies (it turns USB into a bool).
+Hmm... Probably the change from tristate to bool caused the regression.
 
->I'm also a little irritated by the "default y", if I enable V4L I'm very 
->tempted to check what other useless stuff has been automatically enabled, 
->which I have to turn off again.
+> I'm also a little irritated by the "default y", if I enable V4L I'm very 
+> tempted to check what other useless stuff has been automatically enabled, 
+> which I have to turn off again.
 
-The default y only applies to the "menu" folders, not actual code.
-There have been discussions to remove the default-ys again, I've sent a patch
-[http://lkml.org/lkml/2007/5/12/216], but nothing happened.
+The added "default y" are the ones bellow:
+
+menuconfig VIDEO_CAPTURE_DRIVERS
+	bool "Video capture adapters"
+	depends on VIDEO_DEV
+	default y
+
+menuconfig V4L_USB_DRIVERS
+	bool "V4L USB devices"
+	depends on USB
+	default y
+
+menuconfig RADIO_ADAPTERS
+	bool "Radio Adapters"
+	depends on VIDEO_DEV
+	default y
+
+menuconfig DVB_CAPTURE_DRIVERS
+	bool "DVB/ATSC adapters"
+	depends on DVB_CORE
+	default y
+
+config DAB
+	boolean "DAB adapters"
+	default y
 
 
-So, should all affected menuconfigs be transformed into tristates, what 
-do you think, Roman? Let me know so I can cook up a patch (hopefully 
-before 2.6.22) should they become tristate.
+All of them are used just to open a submenu.
 
+I'm to keep "default y" for the menuconfig items. 
 
-Thanks,
-	Jan
--- 
+Since those don't generate any code (there's no Makefile items
+associated with the menuconfig vars), this will just improve the
+usability for the final user (and will allow make oldconfig to work).
+There's not much sense on selecting V4L support without selecting a V4L
+driver.
+
+Cheers,
+Mauro
+
