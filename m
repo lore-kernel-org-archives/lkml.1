@@ -1,111 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbXFVGIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbXFVGK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751282AbXFVGIb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 02:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbXFVGIM
+	id S1754665AbXFVGK5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 02:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXFVGKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 02:08:12 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:37739 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbXFVGIJ convert rfc822-to-8bit (ORCPT
+	Fri, 22 Jun 2007 02:10:50 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:54653 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbXFVGKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 02:08:09 -0400
-Content-class: urn:content-classes:message
+	Fri, 22 Jun 2007 02:10:49 -0400
+Date: Fri, 22 Jun 2007 16:10:47 +1000
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Daniel Walker <dwalker@mvista.com>, Andrew Morton <akpm@osdl.org>,
+       john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC] clocksouce implementation for powerpc
+Message-ID: <20070622061047.GW9768@bakeyournoodle.com>
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de> <20070616101637.107940593@inhelltoy.tec.linutronix.de> <1182009083.11539.369.camel@imap.mvista.com> <20070620065710.GR9768@bakeyournoodle.com> <46795B9B.2020401@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH] Chinese translation of Documentation/HOWTO
-Date: Fri, 22 Jun 2007 14:09:58 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890D83032@zch01exm26.fsl.freescale.net>
-In-Reply-To: <200706220133.19496.rob@landley.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Chinese translation of Documentation/HOWTO
-Thread-Index: Ace0jttnrLVzjN2eQz6vKUYl1vvuBgAAUOVQ
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Rob Landley" <rob@landley.net>, "dave young" <hidave.darkstar@gmail.com>
-Cc: <gregkh@suse.de>, <linux-kernel@vger.kernel.org>,
-       <xiyou.wangcong@gmail.com>, <bryan.wu@analog.com>,
-       "TripleX Chung" <xxx.phy@gmail.com>,
-       "Maggie Chen" <chenqi@beyondsoft.com>, <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46795B9B.2020401@ru.mvista.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Rob Landley [mailto:rob@landley.net]
-> Sent: Friday, June 22, 2007 1:33 PM
-> To: dave young
-> Cc: Li Yang-r58472; gregkh@suse.de; linux-kernel@vger.kernel.org;
-> xiyou.wangcong@gmail.com; bryan.wu@analog.com; TripleX Chung; Maggie
-Chen;
-> torvalds@linux-foundation.org
-> Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-> 
-> On Thursday 21 June 2007 23:23:54 dave young wrote:
-> > Hi,
-> >
-> > 2007/6/22, Rob Landley <rob@landley.net>:
-> > > On Thursday 21 June 2007 10:40:17 Li Yang wrote:
-> > > > This is a Chinese translated version of Documentation/HOWTO.
-Currently
-> > > > Chinese involvement in Linux kernel is very low, especially
-comparing
-> > > > to its largest population base.  Language could be the main
-obstacle.
-> > > > Hope this document will help more Chinese to contribute to Linux
-> > > > kernel.
-> > >
-> > > I'm putting together a kernel documentation directory at
-> > > http://kernel.org/doc and I could easily add translations in
-there.  I
-> > > just don't know if this is a good idea.
-> >
-> > I think it's not a good idea to merge translations into kernel.
-> >
-> > > The problem is, the submission of patches happens on the various
-> > > kernel.org mailing lists, which are all in English.  Kernel
-development
-> > > is done in a single common language: English.  (If you'd like to
-argue
-> > > for it to be done in another language, please make the proposal in
-> > > Linus's native Swedish.)
-> >
-> > Yes, I agree with you, and there's so many other languages, It's
-> > better for someone to  create a standalone kdoc translation project
-> > than to merge them into kernel.
-> 
-> I wasn't suggesting merging them into the kernel.
-> 
-> I'm doing a web page to put together html versions of lots of kernel
-> documentation in a place Google can find it.  Peter Anvin was kind
-enough to
-> give me http://kernel.org/doc for this.  It would not be technically
-> difficult for this web page to host translated versions of this
-> documentation.
-> 
-> The question is, do the kernel developers want to encourage people who
-don't
-> speak English to mess with the kernel, any more than they want to
-encourage
-> kernel developers who don't know C?  Is kernel documentation in
-Chinese a
-> better idea than a repository of kernel patches in C++?  (Either way,
-work
-> resulting from this is much less likely than normal to be merged into
-the
-> kernel.)
+On Wed, Jun 20, 2007 at 08:53:47PM +0400, Sergei Shtylyov wrote:
 
-IMHO, the ultimate language for the Linux kernel is C language rather
-than English.  Nothing prevents one with poor English to write good C
-code except for the comment part.  However if the code is really good to
-be understood on its own, the problem is not that important then.
+Hi Sergei,
+	Thanks for taking the time to look over my patch.
 
-Moreover, the case here is not about people who can't read/write in
-English completely.  It is to help and to encourage people who have some
-difficulty to deal with the community but has the basic English skill to
-deal with technical discussion.  That's like why we have disability
-services for special people who can do things actually.
+>    I guess it's been based on the prior work by John Stultz (and me too :-)?
 
-- Leo
+At some level I guess so.  John did send me a patch a while ago.
+ 
+>    If you mean the init. part, this has been already done by me -- I've 
+> implemented read_persistent_clock() and got rid of xtime setting. What's 
+> left is to implemet update_persistent_clock() and get rid of 
+> timer_check_rtc()...
+
+Actually I think that comment is redundant.  and should be removed
+sorry.
+
+>    Perhaps we even need to raise the rating to 300 or 400 -- according to 
+> what <linux/clocksource.h> says?
+
+Sure.
+ 
+> >+	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
+> >+	.mask         = CLOCKSOURCE_MASK(64),
+> >+	.shift        = 22,
+> 
+>    PPC64 has issues with the fixed shift value, see:
+> 
+> http://patchwork.ozlabs.org/linuxppc/patch?id=11125
+
+Thanks!
+ 
+> >+	.mult         = 0,	/* To be filled in */
+> >+	.read         = NULL,   /* To be filled in */
+> >+	.settimeofday = NULL,   /* To be filled in */
+> 
+>    I don't quite understand why not just init them right away?  The values 
+> are fixed anyways.
+
+Well at least mult needs to be calculated at runtime, and I prefer to
+have the structure near the top of the file at which stage the
+read/settimeofday functions aren't defined.
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
