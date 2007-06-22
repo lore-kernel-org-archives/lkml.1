@@ -1,82 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbXFVSp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbXFVSqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760559AbXFVSp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 14:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759173AbXFVSpT
+	id S1761025AbXFVSqB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 14:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759848AbXFVSpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 14:45:19 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:43630
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758944AbXFVSpS (ORCPT
+	Fri, 22 Jun 2007 14:45:52 -0400
+Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:28956 "HELO
+	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753739AbXFVSpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 14:45:18 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "dave young" <hidave.darkstar@gmail.com>
-Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Date: Fri, 22 Jun 2007 14:45:22 -0400
+	Fri, 22 Jun 2007 14:45:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=aFS7oZ0DNq+7gHo1ERIcAkJKs2kqd7Zh8taOdmUFwsh3R4ahYV5RWeKawGjLth31COIAcnwm+vFgOCWbTtcCPJMc7lB9DnC8iqtrZ722rc95tWp2Rnn5imHdo8wQRiaW1EnWL7ZrkrpQVLxTuey3AGYuvj7SVSGgwvFCJR1a3k0=  ;
+X-YMail-OSG: WE9vIHEVM1lFroHPFMxeiwAR48STHTbcitgW.kh5nYpsGjF4z9Njh.DPOqD9szgmBLmLF_vyCQ--
+From: David Brownell <david-b@pacbell.net>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [rtc-linux] Re: rtc_cmos: error after first write to wakealarm
+Date: Fri, 22 Jun 2007 11:45:52 -0700
 User-Agent: KMail/1.9.6
-Cc: "Li Yang" <leoli@freescale.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
-       bryan.wu@analog.com, "TripleX Chung" <xxx.phy@gmail.com>,
-       "Maggie Chen" <chenqi@beyondsoft.com>, torvalds@linux-foundation.org
-References: <1182436817579-git-send-email-leoli@freescale.com> <200706220133.19496.rob@landley.net> <a8e1da0706212307l7bdebbabl72478d1c734b60bd@mail.gmail.com>
-In-Reply-To: <a8e1da0706212307l7bdebbabl72478d1c734b60bd@mail.gmail.com>
+Cc: Tino Keitel <tino.keitel@gmx.de>, rtc-linux@googlegroups.com,
+       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       linux-kernel@vger.kernel.org
+References: <20070615063308.GA18089@dose.home.local> <20070619172429.GA30990@dose.home.local> <20070622193431.71bed8b5@inspiron>
+In-Reply-To: <20070622193431.71bed8b5@inspiron>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706221445.24353.rob@landley.net>
+Message-Id: <200706221145.53157.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 June 2007 02:07:57 dave young wrote:
-> > > Yes, I agree with you, and there's so many other languages, It's
-> > > better for someone to  create a standalone kdoc translation project
-> > > than to merge them into kernel.
-> >
-> > I wasn't suggesting merging them into the kernel.
->
-> I'm misunderstanded.
->
-> I means:
-> Yes, I agree with you.
-> There's so many other languages, It's better for someone to  create a
-> standalone kdoc translation project than to merge them into kernel.
+On Friday 22 June 2007, Alessandro Zummo wrote:
+> On Tue, 19 Jun 2007 19:24:29 +0200
+> Tino Keitel <tino.keitel@gmx.de> wrote:
+> 
+> > > > Where is the documentation that describes that I have to disable it
+> > > > first, and how to do this? A migration document for
+> > > > /proc/acpi/alarm users would be nice, too.
+> > > 
+> > >  Well, I guess there is no documentation. Maybe we could add
+> > >  a dev_warn with an explicit message.
+> > 
+> > Isn't it somewhat ridiculous to plan the removal of a feature for
+> > several months, and then replace it with something that behaves
+> > differently without any documentation?
 
-I agree, but this is just an opinion.  (I see where Greg KH wants to merge it 
-into the kernel.)
+It's got as much documentation in the kernel tree as that
+old /proc/acpi/alarm thing.  More, in fact, since the GIT
+comment for the putback creating /sys/rtc/.../wakealarm
+files has lots of info about how to use it.
 
-> > The question is, do the kernel developers want to encourage people who
-> > don't speak English to mess with the kernel, any more than they want to
-> > encourage kernel developers who don't know C?  Is kernel documentation in
-> > Chinese a better idea than a repository of kernel patches in C++? 
-> > (Either way, work resulting from this is much less likely than normal to
-> > be merged into the kernel.)
->
-> It's another issue.
->
-> Someone don't speak english , but it don't means they haven't
-> programming skilles. As long as one can help to promote the kernel
-> development  he is welcomed.
+But sure, having documentation for the rtc sysfs interface
+would be a Fine Thing.  It should cover the other values
+too, not just that one attribute.
 
-I agree that programming talent can exist without the ability to speak 
-English.  But will the resulting patches get merged if the developer can't 
-communicate with the Linux development community?
 
-I dealt with a programmer on the BusyBox project who only speaks Russian, and 
-uses a babelfish variant to translate everything.  This was incredibly 
-frustrating: he regularly misunderstood what we were saying, we regularly had 
-no idea what he was saying, his attempts at commenting the code were often 
-worse than not commeting it at all, and after three years his ability to 
-communicate hadn't improved in the slightest.
+> > I still wonder how 'cat /sys/class/rtc/rtcX/wakealarm' is expected to
+> > behave. With 2.6.22-rc5, I get this:
+> > 
+> > $ echo 1182351177 > /sys/class/rtc/rtc0/wakealarm 
+> > $ cat /sys/class/rtc/rtc0/wakealarm
+> > 2051644873
+> > 
+> > There seems to be a constant difference of 869984896 seconds. Is this a
+> > bug?
 
-Possibly we'd need some volunteer translators just for the purpose of merging 
-code in languages we'd translated the documentation into?  A "chinese patch 
-maintainer" or some such?
+What RTC driver is that using?
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+One theory:  it's an RTC that doesn't support all the fields,
+so its driver is returning "-1" in fields like "year" or "month".
+
+Right now there's no code forcing rtc_read_alarm() to return
+values for which rtc_valid_tm(&alarm->time), and bogus values
+in wakealarm would be a symptom.  I suspect most of the systems
+I tested the "wakealarm" attribute with have RTC alarms that
+don't have those particular deficiencies.
+
+- Dave
+
+> 
+>  I'll have to check that. Sorry for the delay, i've been a bit busy.
+> 
+> 
+> -- 
+> 
