@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbXFVOmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbXFVOns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbXFVOmZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbXFVOmS
+	id S1758647AbXFVOns (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbXFVOnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:42:18 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:46068 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756516AbXFVOmR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:42:17 -0400
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-In-Reply-To: <1182522309.2672.11.camel@laptopd505.fenrus.org>
-References: <20070622040014.234651401@goodmis.org>
-	 <1182522309.2672.11.camel@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Fri, 22 Jun 2007 10:42:10 -0400
-Message-Id: <1182523330.5493.69.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 10:43:40 -0400
+Received: from thunk.org ([69.25.196.29]:33080 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756655AbXFVOnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:43:39 -0400
+Date: Fri, 22 Jun 2007 10:43:17 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Alexandre Oliva <aoliva@redhat.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>, davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Message-ID: <20070622144317.GA15285@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Alexandre Oliva <aoliva@redhat.com>,
+	Al Viro <viro@ftp.linux.org.uk>, davids@webmaster.com,
+	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622013417.GT21478@ftp.linux.org.uk> <20070622041949.GA15625@thunk.org> <orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 07:25 -0700, Arjan van de Ven wrote:
-> > The most part, tasklets today are not used for time critical functions.
-> > Running tasklets in thread context is not harmful to performance of
-> > the overall system. 
-> 
-> That is a bold statement...
-> 
-> > But running them in interrupt context is, since
-> > they increase the overall latency for high priority tasks.
-> 
-> 
-> .... since by moving this to process context you do add latency between
-> the hardirq and the tasklet, and I can see that having performance
-> impact easily.
+On Fri, Jun 22, 2007 at 03:00:30AM -0300, Alexandre Oliva wrote:
+> I was here to dispell the lies that were being spread about GPLv3, the
+> spirit and the goals of the GPL, as far as I understood them.  I knew
+> from the start that it was an uphill battle, and that I wouldn't be
+> able to convince those who distrusted the FSF so much that they would
+> listen to anything that resembled an FSF discourse with an extremely
+> high rejection level.  This was all expected.
 
-This is stated on the assumption that pretty much all performance
-critical tasklets have been removed (although Christoph just mentioned
-megaraid_sas, but after I made this statement).
+News flash: almost no one except for you cares about the "spirit of
+the GPL", and it was not on that basis that people decided that the
+GPLv3 was an inferior license, FOR THE LINUX KERNEL.
 
-We've been running tasklets as threads in the -rt kernel for some time
-now, and that hasn't bothered us.
+> That I was perceived as pushing it is not surprising at all.  
 
-The problem with tasklets is that they still don't provide guaranteed
-performance. They can still be pushed off to ksoftirqd on a busy system.
-But having *all* tasklets as they are today, keeps them at a higher
-priority then any process in the system.
+So the fact that you keep talk about the general case, when in fact
+the concern was about the specific case of the Linux kernel, certainly
+DID make it seem like that you were pushing it.  THE GENERAL CASE IS
+OUT OF SCOPE FOR THIS MAILING LIST.
 
--- Steve
+And no, it's not a perception of "being forced", it's was a matter of
+consuming huge amounts of bandwidth on a topic which was out-of-scope
+for this mailing list.  And the only topic which was in scope (whether
+or not GPLv3 was appropriat for the Linux kernel development
+community) was one where you would keep slidng away from.
 
+> I feel I have accomplished my goal: I've informed a lot of people
+> about the GPL, about GPLv3, about Free Software and even about the
+> FSFes.  Whether they make a decision for GPLv3, GPLv2, or more liberal
+> Free Software licenses, is up to them.  Now, people who'd only been
+> exposed to the prevailing views in this list can take something
+> different into account, and make more-informed decisions.
 
+Great.   So can we please END this thread?
+
+Thank you.
+
+						- Ted
