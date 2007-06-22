@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbXFVE1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbXFVE2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752296AbXFVE1X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbXFVE1O
+	id S1751458AbXFVE2N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 00:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbXFVE16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:27:14 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54123 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbXFVE1N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:27:13 -0400
-Date: Fri, 22 Jun 2007 05:26:33 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-In-Reply-To: <Pine.LNX.4.64.0706211759550.11554@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0706220513140.8870@blonde.wat.veritas.com>
-References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706211759550.11554@schroedinger.engr.sgi.com>
+	Fri, 22 Jun 2007 00:27:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42284 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750868AbXFVE15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 00:27:57 -0400
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: davids@webmaster.com,
+       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com>
+	<or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070622013417.GT21478@ftp.linux.org.uk>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 22 Jun 2007 01:26:54 -0300
+In-Reply-To: <20070622013417.GT21478@ftp.linux.org.uk> (Al Viro's message of "Fri\, 22 Jun 2007 02\:34\:17 +0100")
+Message-ID: <or1wg4hawh.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAACmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAY2xhbWV0ZXJAc2dpLmNvbQBhbmRyZXdAc2FucGVvcGxlLmNvbQBuaWNvbGFzLmZlcnJlQHJmby5hdG1lbC5jb20AbGludXgtYXJtLWtlcm5lbEBsaXN0cy5hcm0ubGludXgub3JnLnVrAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAdG9ydmFsZHNAbGludXgtZm91bmRhdGlvbi5vcmcAbWFyYy5waWduYXRAaGV2cy5jaABkcnpldXNAZHJ6ZXVzLmN4AHJta0Bhcm0ubGludXgub3JnLnVrAA==
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Christoph Lameter wrote:
-> On Thu, 21 Jun 2007, Hugh Dickins wrote:
-> 
-> > > The oops seems to occur after a page unmapping using dma_unmap_page() followed
-> > > by a flush_dcache_page() (in at91mci_post_dma_read()).
-> 
-> Was the page allocated using slab calls?
+On Jun 21, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
 
-You've found yes (in the ARM case).
+> On Thu, Jun 21, 2007 at 10:00:22PM -0300, Alexandre Oliva wrote:
+>> Do you agree that if there's any single contributor who thinks it
+>> can't be tivoized, and he manages his opinion to prevail in court
+>> against a copyright holder, then it can't?  That this is the same
+>> privilege to veto additional permissions that Al Viro has just
+>> claimed?
 
-> Well one may be better off allocating pages using the page allocator 
-> instead of the slab allocator. I removed these things from i386 but I did 
-> not check ARM.
+> You know, I'm rapidly losing any respect for your integrity.  The only
+> "privelege" claimed is that of not relicensing one's contributions.
 
-They may or may not be: I think that's a matter to discuss with rmk.
+No, this thread was about additional permissions to combine with other
+licenses.  I didn't suggest anything about relicensing whatsoever,
+that's all noise out of not understanding the suggestion.
 
-You keep on forcing the outside world to revolve around your needs
-within slub.c: that is a good way to keep slub lean, and may be
-justified; but it's at least questionable to be enforcing such
-restrictions years after people have grown accustomed to more
-freedom from their slabs.
+You objected to granting additional permissions.  You have that right,
+per copyright law, and the other developers can then decide between
+not granting an additional permission or removing all the code you
+contributed such that they can.  That's veto.
 
-Hugh
+Similarly, if someone proposed an additional unambiguous permission to
+tivoize under GPLv2, any developer who objected to it could veto it
+(the alternative being to remove all of his contributions).
+
+> What really gets me is that you know it.
+
+Yes.  The only disagreement is that I'm talking "additional permission
+to combine" and you seem to keep understanding "relicensing", even
+though these are very different concepts, with significantly different
+consequences.
+
+What they have in common is that you can veto either one with your
+status as copyright holder, and that they would both permit some forms
+of cooperation.
+
+Permission to relicense would provide for one-way cooperation out of
+Linux.  I'm not proposing this.  That would be stupid.  You've already
+decided about it.  I respect that decision.  I even understand why you
+made that decision.
+
+Relicensing would provide for two-way cooperation, but under terms
+that you don't consider acceptable.  You've pretty much already
+decided not to do it.  I respect that decision.  I even understand why
+you made that decision.
+
+Permission to combine in both sides would provide for two-way
+cooperation in ways that enable each author to enforce the terms s/he
+chose for his/her own contributions.  This would address many of the
+concerns raised about relicensing, and would increase the amount of
+contributions in kind you can get.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
