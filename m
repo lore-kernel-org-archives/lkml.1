@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbXFVEES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751491AbXFVEEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751881AbXFVEES (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbXFVEEE
+	id S1751491AbXFVEEc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 00:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXFVEEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:04:04 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:61944 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbXFVEED (ORCPT
+	Fri, 22 Jun 2007 00:04:07 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:42257 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbXFVEEF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:04:03 -0400
-Message-Id: <20070622040136.783692883@goodmis.org>
+	Fri, 22 Jun 2007 00:04:05 -0400
+Message-Id: <20070622040137.414439610@goodmis.org>
 References: <20070622040014.234651401@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 22 Jun 2007 00:00:16 -0400
+Date: Fri, 22 Jun 2007 00:00:20 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -25,699 +25,313 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Dipankar Sarma <dipankar@in.ibm.com>,
        "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
        kuznet@ms2.inr.ac.ru
-Subject: [RFC PATCH 2/6] Split out tasklets from softirq.c
-Content-Disposition: inline; filename=split-out-tasklet.patch
+Subject: [RFC PATCH 6/6] Convert tasklets to work queues
+Content-Disposition: inline; filename=tasklets-to-workqueues.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tasklets are really a separate entity from softirqs, so they
-deserve their own file. Also this allows us to easily replace
-tasklets for something else ;-)
+This patch creates an alternative for drivers from using tasklets.
+It creates a "work_tasklet". When configured to use work_tasklets
+instead of tasklets, instead of creating tasklets, a work queue
+is made in its place.  The API is still the same, and the drivers
+don't know that a work queue is being used.
+
+This is (for now) a proof of concept approach to using work queues
+instead of tasklets.  More can be done. For one thing, we could make
+individual work queues for each tasklet instead of using the global
+ktasklet_wq.  But for now it's just easier to do this.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-Index: linux-2.6-test/include/linux/interrupt.h
+
+Index: linux-2.6-test/kernel/Kconfig.preempt
 ===================================================================
---- linux-2.6-test.orig/include/linux/interrupt.h
-+++ linux-2.6-test/include/linux/interrupt.h
-@@ -13,6 +13,7 @@
- #include <linux/irqflags.h>
- #include <linux/bottom_half.h>
- #include <linux/device.h>
-+#include <linux/tasklet.h>
- #include <asm/atomic.h>
- #include <asm/ptrace.h>
- #include <asm/system.h>
-@@ -268,117 +269,6 @@ extern void FASTCALL(raise_softirq_irqof
- extern void FASTCALL(raise_softirq(unsigned int nr));
+--- linux-2.6-test.orig/kernel/Kconfig.preempt
++++ linux-2.6-test/kernel/Kconfig.preempt
+@@ -63,3 +63,18 @@ config PREEMPT_BKL
+ 	  Say Y here if you are building a kernel for a desktop system.
+ 	  Say N if you are unsure.
  
++config TASKLETS_AS_WORKQUEUES
++	bool "Treat tasklets as workqueues (EXPERIMENTAL)"
++	depends on EXPERIMENTAL
++	help
++	  Tasklets are an old solution to an old problem with respect
++	  to SMP.  But today they are not necessary anymore.
++	  There are better solutions to the problem that tasklets
++	  are trying to solve.
++
++	  This option converts tasklets into workqueues and
++	  removes the tasklet softirq.  This is a clean up until
++	  we get rid of all tasklets that are currently in
++	  the kernel.
++
++	  Say Y if you are unsure and brave (not very well tested code!).
+Index: linux-2.6-test/kernel/Makefile
+===================================================================
+--- linux-2.6-test.orig/kernel/Makefile
++++ linux-2.6-test/kernel/Makefile
+@@ -21,7 +21,11 @@ obj-$(CONFIG_FUTEX) += futex.o
+ ifeq ($(CONFIG_COMPAT),y)
+ obj-$(CONFIG_FUTEX) += futex_compat.o
+ endif
++ifeq ($(CONFIG_TASKLETS_AS_WORKQUEUES), y)
++obj-y += tasklet_work.o
++else
+ obj-y += tasklet.o
++endif
+ obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
+ obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
+ obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
+Index: linux-2.6-test/init/main.c
+===================================================================
+--- linux-2.6-test.orig/init/main.c
++++ linux-2.6-test/init/main.c
+@@ -121,6 +121,11 @@ extern void time_init(void);
+ /* Default late time init is NULL. archs can override this later. */
+ void (*late_time_init)(void);
+ extern void softirq_init(void);
++#ifdef CONFIG_TASKLETS_AS_WORKQUEUES
++  extern void init_tasklets(void);
++#else
++# define init_tasklets() do { } while(0)
++#endif
  
--/* Tasklets --- multithreaded analogue of BHs.
--
--   Main feature differing them of generic softirqs: tasklet
--   is running only on one CPU simultaneously.
--
--   Main feature differing them of BHs: different tasklets
--   may be run simultaneously on different CPUs.
--
--   Properties:
--   * If tasklet_schedule() is called, then tasklet is guaranteed
--     to be executed on some cpu at least once after this.
--   * If the tasklet is already scheduled, but its excecution is still not
--     started, it will be executed only once.
--   * If this tasklet is already running on another CPU (or schedule is called
--     from tasklet itself), it is rescheduled for later.
--   * Tasklet is strictly serialized wrt itself, but not
--     wrt another tasklets. If client needs some intertask synchronization,
--     he makes it with spinlocks.
-- */
--
--struct tasklet_struct
--{
--	struct tasklet_struct *next;
--	unsigned long state;
--	atomic_t count;
--	void (*func)(unsigned long);
--	unsigned long data;
--};
--
--#define DECLARE_TASKLET(name, func, data) \
--struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(0), func, data }
--
--#define DECLARE_TASKLET_DISABLED(name, func, data) \
--struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
--
--
--enum
--{
--	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
--	TASKLET_STATE_RUN	/* Tasklet is running (SMP only) */
--};
--
--#ifdef CONFIG_SMP
--static inline int tasklet_trylock(struct tasklet_struct *t)
--{
--	return !test_and_set_bit(TASKLET_STATE_RUN, &(t)->state);
--}
--
--static inline void tasklet_unlock(struct tasklet_struct *t)
--{
--	smp_mb__before_clear_bit(); 
--	clear_bit(TASKLET_STATE_RUN, &(t)->state);
--}
--
--static inline void tasklet_unlock_wait(struct tasklet_struct *t)
--{
--	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
--}
--#else
--#define tasklet_trylock(t) 1
--#define tasklet_unlock_wait(t) do { } while (0)
--#define tasklet_unlock(t) do { } while (0)
--#endif
--
--extern void FASTCALL(__tasklet_schedule(struct tasklet_struct *t));
--
--static inline void tasklet_schedule(struct tasklet_struct *t)
--{
--	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
--		__tasklet_schedule(t);
--}
--
--extern void FASTCALL(__tasklet_hi_schedule(struct tasklet_struct *t));
--
--static inline void tasklet_hi_schedule(struct tasklet_struct *t)
--{
--	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
--		__tasklet_hi_schedule(t);
--}
--
--
--static inline void tasklet_disable_nosync(struct tasklet_struct *t)
--{
--	atomic_inc(&t->count);
--	smp_mb__after_atomic_inc();
--}
--
--static inline void tasklet_disable(struct tasklet_struct *t)
--{
--	tasklet_disable_nosync(t);
--	tasklet_unlock_wait(t);
--	smp_mb();
--}
--
--static inline void tasklet_enable(struct tasklet_struct *t)
--{
--	smp_mb__before_atomic_dec();
--	atomic_dec(&t->count);
--}
--
--static inline void tasklet_hi_enable(struct tasklet_struct *t)
--{
--	smp_mb__before_atomic_dec();
--	atomic_dec(&t->count);
--}
--
--extern void tasklet_kill(struct tasklet_struct *t);
--extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
--extern void tasklet_init(struct tasklet_struct *t,
--			 void (*func)(unsigned long), unsigned long data);
--
- /*
-  * Autoprobing for irqs:
-  *
+ /* Untouched command line saved by arch-specific code. */
+ char __initdata boot_command_line[COMMAND_LINE_SIZE];
+@@ -706,6 +711,7 @@ static void __init do_basic_setup(void)
+ {
+ 	/* drivers will send hotplug events */
+ 	init_workqueues();
++	init_tasklets();
+ 	usermodehelper_init();
+ 	driver_init();
+ 	init_irq_proc();
 Index: linux-2.6-test/include/linux/tasklet.h
 ===================================================================
---- /dev/null
+--- linux-2.6-test.orig/include/linux/tasklet.h
 +++ linux-2.6-test/include/linux/tasklet.h
-@@ -0,0 +1,120 @@
-+#ifndef _LINUX_TASKLET_H
-+#define _LINUX_TASKLET_H
+@@ -1,6 +1,10 @@
+ #ifndef _LINUX_TASKLET_H
+ #define _LINUX_TASKLET_H
+ 
+-#include <linux/tasklet_softirq.h>
++#ifdef CONFIG_TASKLETS_AS_WORKQUEUES
++# include <linux/tasklet_work.h>
++#else
++# include <linux/tasklet_softirq.h>
++#endif
+ 
+ #endif
+Index: linux-2.6-test/include/linux/tasklet_work.h
+===================================================================
+--- /dev/null
++++ linux-2.6-test/include/linux/tasklet_work.h
+@@ -0,0 +1,62 @@
++#ifndef _LINUX_WORK_TASKLET_H
++#define _LINUX_WORK_TASKLET_H
 +
-+/* Tasklets --- multithreaded analogue of BHs.
++#ifndef _LINUX_INTERRUPT_H
++# error "Do not include this header directly! use linux/interrupt.h"
++#endif
 +
-+   Main feature differing them of generic softirqs: tasklet
-+   is running only on one CPU simultaneously.
++#include <linux/workqueue.h>
 +
-+   Main feature differing them of BHs: different tasklets
-+   may be run simultaneously on different CPUs.
-+
-+   Properties:
-+   * If tasklet_schedule() is called, then tasklet is guaranteed
-+     to be executed on some cpu at least once after this.
-+   * If the tasklet is already scheduled, but its excecution is still not
-+     started, it will be executed only once.
-+   * If this tasklet is already running on another CPU (or schedule is called
-+     from tasklet itself), it is rescheduled for later.
-+   * Tasklet is strictly serialized wrt itself, but not
-+     wrt another tasklets. If client needs some intertask synchronization,
-+     he makes it with spinlocks.
-+ */
++extern void work_tasklet_exec(struct work_struct *work);
 +
 +struct tasklet_struct
 +{
-+	struct tasklet_struct *next;
++	struct work_struct work;
++	struct list_head list;
 +	unsigned long state;
 +	atomic_t count;
 +	void (*func)(unsigned long);
 +	unsigned long data;
++	char *n;
 +};
 +
-+#define DECLARE_TASKLET(name, func, data) \
-+struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(0), func, data }
++#define DECLARE_TASKLET(name, func, data)				\
++	struct tasklet_struct name = {					\
++		__WORK_INITIALIZER((name).work, work_tasklet_exec),	\
++		LIST_HEAD_INIT((name).list),				\
++		0,							\
++		ATOMIC_INIT(0),						\
++		func,							\
++		data,							\
++		#name							\
++	}
 +
-+#define DECLARE_TASKLET_DISABLED(name, func, data) \
-+struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
++#define DECLARE_TASKLET_DISABLED(name, func, data)			\
++	struct tasklet_struct name = {					\
++		__WORK_INITIALIZER((name).work, work_tasklet_exec),	\
++		LIST_HEAD_INIT((name).list),				\
++		0,							\
++		ATOMIC_INIT(1),						\
++		func,							\
++		data,							\
++ 		#name							\
++	}
 +
++void tasklet_schedule(struct tasklet_struct *t);
++#define tasklet_hi_schedule tasklet_schedule
++extern fastcall void tasklet_enable(struct tasklet_struct *t);
++#define tasklet_hi_enable tasklet_enable
 +
-+enum
-+{
-+	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
-+	TASKLET_STATE_RUN	/* Tasklet is running (SMP only) */
-+};
++void tasklet_disable_nosync(struct tasklet_struct *t);
++void tasklet_disable(struct tasklet_struct *t);
 +
-+#ifdef CONFIG_SMP
-+static inline int tasklet_trylock(struct tasklet_struct *t)
-+{
-+	return !test_and_set_bit(TASKLET_STATE_RUN, &(t)->state);
-+}
-+
-+static inline void tasklet_unlock(struct tasklet_struct *t)
-+{
-+	smp_mb__before_clear_bit(); 
-+	clear_bit(TASKLET_STATE_RUN, &(t)->state);
-+}
-+
-+static inline void tasklet_unlock_wait(struct tasklet_struct *t)
-+{
-+	while (test_bit(TASKLET_STATE_RUN, &(t)->state)) { barrier(); }
-+}
-+#else
-+#define tasklet_trylock(t) 1
-+#define tasklet_unlock_wait(t) do { } while (0)
-+#define tasklet_unlock(t) do { } while (0)
-+#endif
-+
-+extern void FASTCALL(__tasklet_schedule(struct tasklet_struct *t));
-+
-+static inline void tasklet_schedule(struct tasklet_struct *t)
-+{
-+	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
-+		__tasklet_schedule(t);
-+}
-+
-+extern void FASTCALL(__tasklet_hi_schedule(struct tasklet_struct *t));
-+
-+static inline void tasklet_hi_schedule(struct tasklet_struct *t)
-+{
-+	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
-+		__tasklet_hi_schedule(t);
-+}
-+
-+
-+static inline void tasklet_disable_nosync(struct tasklet_struct *t)
-+{
-+	atomic_inc(&t->count);
-+	smp_mb__after_atomic_inc();
-+}
-+
-+static inline void tasklet_disable(struct tasklet_struct *t)
-+{
-+	tasklet_disable_nosync(t);
-+	tasklet_unlock_wait(t);
-+	smp_mb();
-+}
-+
-+static inline void tasklet_enable(struct tasklet_struct *t)
-+{
-+	smp_mb__before_atomic_dec();
-+	atomic_dec(&t->count);
-+}
-+
-+static inline void tasklet_hi_enable(struct tasklet_struct *t)
-+{
-+	smp_mb__before_atomic_dec();
-+	atomic_dec(&t->count);
-+}
++extern int tasklet_is_scheduled(struct tasklet_struct *t);
 +
 +extern void tasklet_kill(struct tasklet_struct *t);
 +extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
 +extern void tasklet_init(struct tasklet_struct *t,
 +			 void (*func)(unsigned long), unsigned long data);
-+
-+#ifdef CONFIG_HOTPLUG_CPU
 +void takeover_tasklets(unsigned int cpu);
-+#endif /* CONFIG_HOTPLUG_CPU */
 +
-+#endif /* _LINUX_TASKLET_H */
 +
-Index: linux-2.6-test/kernel/Makefile
-===================================================================
---- linux-2.6-test.orig/kernel/Makefile
-+++ linux-2.6-test/kernel/Makefile
-@@ -21,6 +21,7 @@ obj-$(CONFIG_FUTEX) += futex.o
- ifeq ($(CONFIG_COMPAT),y)
- obj-$(CONFIG_FUTEX) += futex_compat.o
- endif
-+obj-y += tasklet.o
- obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
- obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
- obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
-Index: linux-2.6-test/kernel/softirq.c
-===================================================================
---- linux-2.6-test.orig/kernel/softirq.c
-+++ linux-2.6-test/kernel/softirq.c
-@@ -348,144 +348,6 @@ void open_softirq(int nr, void (*action)
- 	softirq_vec[nr].action = action;
- }
- 
--/* Tasklets */
--struct tasklet_head
--{
--	struct tasklet_struct *list;
--};
--
--/* Some compilers disobey section attribute on statics when not
--   initialized -- RR */
--static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
--static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
--
--void fastcall __tasklet_schedule(struct tasklet_struct *t)
--{
--	unsigned long flags;
--
--	local_irq_save(flags);
--	t->next = __get_cpu_var(tasklet_vec).list;
--	__get_cpu_var(tasklet_vec).list = t;
--	raise_softirq_irqoff(TASKLET_SOFTIRQ);
--	local_irq_restore(flags);
--}
--
--EXPORT_SYMBOL(__tasklet_schedule);
--
--void fastcall __tasklet_hi_schedule(struct tasklet_struct *t)
--{
--	unsigned long flags;
--
--	local_irq_save(flags);
--	t->next = __get_cpu_var(tasklet_hi_vec).list;
--	__get_cpu_var(tasklet_hi_vec).list = t;
--	raise_softirq_irqoff(HI_SOFTIRQ);
--	local_irq_restore(flags);
--}
--
--EXPORT_SYMBOL(__tasklet_hi_schedule);
--
--static void tasklet_action(struct softirq_action *a)
--{
--	struct tasklet_struct *list;
--
--	local_irq_disable();
--	list = __get_cpu_var(tasklet_vec).list;
--	__get_cpu_var(tasklet_vec).list = NULL;
--	local_irq_enable();
--
--	while (list) {
--		struct tasklet_struct *t = list;
--
--		list = list->next;
--
--		if (tasklet_trylock(t)) {
--			if (!atomic_read(&t->count)) {
--				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
--					BUG();
--				t->func(t->data);
--				tasklet_unlock(t);
--				continue;
--			}
--			tasklet_unlock(t);
--		}
--
--		local_irq_disable();
--		t->next = __get_cpu_var(tasklet_vec).list;
--		__get_cpu_var(tasklet_vec).list = t;
--		__raise_softirq_irqoff(TASKLET_SOFTIRQ);
--		local_irq_enable();
--	}
--}
--
--static void tasklet_hi_action(struct softirq_action *a)
--{
--	struct tasklet_struct *list;
--
--	local_irq_disable();
--	list = __get_cpu_var(tasklet_hi_vec).list;
--	__get_cpu_var(tasklet_hi_vec).list = NULL;
--	local_irq_enable();
--
--	while (list) {
--		struct tasklet_struct *t = list;
--
--		list = list->next;
--
--		if (tasklet_trylock(t)) {
--			if (!atomic_read(&t->count)) {
--				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
--					BUG();
--				t->func(t->data);
--				tasklet_unlock(t);
--				continue;
--			}
--			tasklet_unlock(t);
--		}
--
--		local_irq_disable();
--		t->next = __get_cpu_var(tasklet_hi_vec).list;
--		__get_cpu_var(tasklet_hi_vec).list = t;
--		__raise_softirq_irqoff(HI_SOFTIRQ);
--		local_irq_enable();
--	}
--}
--
--
--void tasklet_init(struct tasklet_struct *t,
--		  void (*func)(unsigned long), unsigned long data)
--{
--	t->next = NULL;
--	t->state = 0;
--	atomic_set(&t->count, 0);
--	t->func = func;
--	t->data = data;
--}
--
--EXPORT_SYMBOL(tasklet_init);
--
--void tasklet_kill(struct tasklet_struct *t)
--{
--	if (in_interrupt())
--		printk("Attempt to kill tasklet from interrupt\n");
--
--	while (test_and_set_bit(TASKLET_STATE_SCHED, &t->state)) {
--		do
--			yield();
--		while (test_bit(TASKLET_STATE_SCHED, &t->state));
--	}
--	tasklet_unlock_wait(t);
--	clear_bit(TASKLET_STATE_SCHED, &t->state);
--}
--
--EXPORT_SYMBOL(tasklet_kill);
--
--void __init softirq_init(void)
--{
--	open_softirq(TASKLET_SOFTIRQ, tasklet_action, NULL);
--	open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
--}
--
- static int ksoftirqd(void * __bind_cpu)
- {
- 	set_user_nice(current, 19);
-@@ -532,58 +394,6 @@ wait_to_die:
- 	return 0;
- }
- 
--#ifdef CONFIG_HOTPLUG_CPU
--/*
-- * tasklet_kill_immediate is called to remove a tasklet which can already be
-- * scheduled for execution on @cpu.
-- *
-- * Unlike tasklet_kill, this function removes the tasklet
-- * _immediately_, even if the tasklet is in TASKLET_STATE_SCHED state.
-- *
-- * When this function is called, @cpu must be in the CPU_DEAD state.
-- */
--void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu)
--{
--	struct tasklet_struct **i;
--
--	BUG_ON(cpu_online(cpu));
--	BUG_ON(test_bit(TASKLET_STATE_RUN, &t->state));
--
--	if (!test_bit(TASKLET_STATE_SCHED, &t->state))
--		return;
--
--	/* CPU is dead, so no lock needed. */
--	for (i = &per_cpu(tasklet_vec, cpu).list; *i; i = &(*i)->next) {
--		if (*i == t) {
--			*i = t->next;
--			return;
--		}
--	}
--	BUG();
--}
--
--static void takeover_tasklets(unsigned int cpu)
--{
--	struct tasklet_struct **i;
--
--	/* CPU is dead, so no lock needed. */
--	local_irq_disable();
--
--	/* Find end, append list for that CPU. */
--	for (i = &__get_cpu_var(tasklet_vec).list; *i; i = &(*i)->next);
--	*i = per_cpu(tasklet_vec, cpu).list;
--	per_cpu(tasklet_vec, cpu).list = NULL;
--	raise_softirq_irqoff(TASKLET_SOFTIRQ);
--
--	for (i = &__get_cpu_var(tasklet_hi_vec).list; *i; i = &(*i)->next);
--	*i = per_cpu(tasklet_hi_vec, cpu).list;
--	per_cpu(tasklet_hi_vec, cpu).list = NULL;
--	raise_softirq_irqoff(HI_SOFTIRQ);
--
--	local_irq_enable();
--}
--#endif /* CONFIG_HOTPLUG_CPU */
--
- static int __cpuinit cpu_callback(struct notifier_block *nfb,
- 				  unsigned long action,
- 				  void *hcpu)
-Index: linux-2.6-test/kernel/tasklet.c
++#endif /* _LINUX_WORK_TASKLET_H */
+Index: linux-2.6-test/kernel/tasklet_work.c
 ===================================================================
 --- /dev/null
-+++ linux-2.6-test/kernel/tasklet.c
-@@ -0,0 +1,203 @@
++++ linux-2.6-test/kernel/tasklet_work.c
+@@ -0,0 +1,138 @@
 +/*
-+ *	linux/kernel/softirq.c
++ *	linux/kernel/work_tasklet.c
 + *
-+ *	Copyright (C) 1992 Linus Torvalds
++ *	Copyright (C) 2007 Steven Rostedt, Red Hat
 + *
-+ * Rewritten. Old one was good in 2.2, but in 2.3 it was immoral. --ANK (990903)
-+ *
-+ *      Removed from softirq.c by Steven Rostedt
 + */
-+#include <linux/interrupt.h>
-+#include <linux/cpu.h>
 +
-+/* Tasklets */
-+struct tasklet_head
++#include <linux/interrupt.h>
++
++static struct workqueue_struct *ktaskletd_wq;
++
++enum
 +{
-+	struct tasklet_struct *list;
++	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
++	TASKLET_STATE_RUN,	/* Tasklet is running (SMP only) */
++	TASKLET_STATE_PENDING	/* Tasklet is pending */
 +};
 +
-+/* Some compilers disobey section attribute on statics when not
-+   initialized -- RR */
-+static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
-+static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
++#define TASKLET_STATEF_SCHED	(1 << TASKLET_STATE_SCHED)
++#define TASKLET_STATEF_RUN	(1 << TASKLET_STATE_RUN)
++#define TASKLET_STATEF_PENDING	(1 << TASKLET_STATE_PENDING)
 +
-+void fastcall __tasklet_schedule(struct tasklet_struct *t)
++void tasklet_schedule(struct tasklet_struct *t)
 +{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	t->next = __get_cpu_var(tasklet_vec).list;
-+	__get_cpu_var(tasklet_vec).list = t;
-+	raise_softirq_irqoff(TASKLET_SOFTIRQ);
-+	local_irq_restore(flags);
++	BUG_ON(!ktaskletd_wq);
++	pr_debug("scheduling tasklet %s %p\n", t->n, t);
++	queue_work(ktaskletd_wq, &t->work);
 +}
 +
-+EXPORT_SYMBOL(__tasklet_schedule);
++EXPORT_SYMBOL(tasklet_schedule);
 +
-+void fastcall __tasklet_hi_schedule(struct tasklet_struct *t)
++int tasklet_is_scheduled(struct tasklet_struct *t)
 +{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	t->next = __get_cpu_var(tasklet_hi_vec).list;
-+	__get_cpu_var(tasklet_hi_vec).list = t;
-+	raise_softirq_irqoff(HI_SOFTIRQ);
-+	local_irq_restore(flags);
++	int ret;
++	ret = work_pending(&t->work);
++	pr_debug("sched %s pending=%d\n", t->n, ret);
++	return ret;
 +}
 +
-+EXPORT_SYMBOL(__tasklet_hi_schedule);
++EXPORT_SYMBOL(tasklet_is_scheduled);
 +
-+static void tasklet_action(struct softirq_action *a)
++void tasklet_disable_nosync(struct tasklet_struct *t)
 +{
-+	struct tasklet_struct *list;
++	pr_debug("disable tasklet %s %p\n", t->n, t);
++	atomic_inc(&t->count);
++	smp_mb__after_atomic_inc();
++}
 +
-+	local_irq_disable();
-+	list = __get_cpu_var(tasklet_vec).list;
-+	__get_cpu_var(tasklet_vec).list = NULL;
-+	local_irq_enable();
++EXPORT_SYMBOL(tasklet_disable_nosync);
 +
-+	while (list) {
-+		struct tasklet_struct *t = list;
++void tasklet_disable(struct tasklet_struct *t)
++{
++	tasklet_disable_nosync(t);
++	pr_debug("flush tasklet %s %p\n", t->n, t);
++	flush_workqueue(ktaskletd_wq);
++	smp_mb();
++}
 +
-+		list = list->next;
++EXPORT_SYMBOL(tasklet_disable);
 +
-+		if (tasklet_trylock(t)) {
-+			if (!atomic_read(&t->count)) {
-+				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
-+					BUG();
-+				t->func(t->data);
-+				tasklet_unlock(t);
-+				continue;
-+			}
-+			tasklet_unlock(t);
-+		}
++void work_tasklet_exec(struct work_struct *work)
++{
++	struct tasklet_struct *t =
++		container_of(work, struct tasklet_struct, work);
 +
-+		local_irq_disable();
-+		t->next = __get_cpu_var(tasklet_vec).list;
-+		__get_cpu_var(tasklet_vec).list = t;
-+		__raise_softirq_irqoff(TASKLET_SOFTIRQ);
-+		local_irq_enable();
++	if (unlikely(atomic_read(&t->count))) {
++		pr_debug("tasklet disabled %s %p\n", t->n, t);
++		set_bit(TASKLET_STATE_PENDING, &t->state);
++		smp_mb();
++		/* make sure we were not just enabled */
++		if (likely(atomic_read(&t->count)))
++			goto out;
++		clear_bit(TASKLET_STATE_PENDING, &t->state);
 +	}
++
++	local_bh_disable();
++	pr_debug("run tasklet %s %p\n", t->n, t);
++	t->func(t->data);
++	local_bh_enable();
++
++out:
++	return;
 +}
 +
-+static void tasklet_hi_action(struct softirq_action *a)
-+{
-+	struct tasklet_struct *list;
-+
-+	local_irq_disable();
-+	list = __get_cpu_var(tasklet_hi_vec).list;
-+	__get_cpu_var(tasklet_hi_vec).list = NULL;
-+	local_irq_enable();
-+
-+	while (list) {
-+		struct tasklet_struct *t = list;
-+
-+		list = list->next;
-+
-+		if (tasklet_trylock(t)) {
-+			if (!atomic_read(&t->count)) {
-+				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
-+					BUG();
-+				t->func(t->data);
-+				tasklet_unlock(t);
-+				continue;
-+			}
-+			tasklet_unlock(t);
-+		}
-+
-+		local_irq_disable();
-+		t->next = __get_cpu_var(tasklet_hi_vec).list;
-+		__get_cpu_var(tasklet_hi_vec).list = t;
-+		__raise_softirq_irqoff(HI_SOFTIRQ);
-+		local_irq_enable();
-+	}
-+}
-+
-+
-+void tasklet_init(struct tasklet_struct *t,
-+		  void (*func)(unsigned long), unsigned long data)
-+{
-+	t->next = NULL;
-+	t->state = 0;
-+	atomic_set(&t->count, 0);
-+	t->func = func;
-+	t->data = data;
-+}
-+
-+EXPORT_SYMBOL(tasklet_init);
-+
-+void tasklet_kill(struct tasklet_struct *t)
-+{
-+	if (in_interrupt())
-+		printk("Attempt to kill tasklet from interrupt\n");
-+
-+	while (test_and_set_bit(TASKLET_STATE_SCHED, &t->state)) {
-+		do
-+			yield();
-+		while (test_bit(TASKLET_STATE_SCHED, &t->state));
-+	}
-+	tasklet_unlock_wait(t);
-+	clear_bit(TASKLET_STATE_SCHED, &t->state);
-+}
-+
-+EXPORT_SYMBOL(tasklet_kill);
++EXPORT_SYMBOL(work_tasklet_exec);
 +
 +void __init softirq_init(void)
 +{
-+	open_softirq(TASKLET_SOFTIRQ, tasklet_action, NULL);
-+	open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
 +}
 +
-+#ifdef CONFIG_HOTPLUG_CPU
-+/*
-+ * tasklet_kill_immediate is called to remove a tasklet which can already be
-+ * scheduled for execution on @cpu.
-+ *
-+ * Unlike tasklet_kill, this function removes the tasklet
-+ * _immediately_, even if the tasklet is in TASKLET_STATE_SCHED state.
-+ *
-+ * When this function is called, @cpu must be in the CPU_DEAD state.
-+ */
-+void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu)
++void init_tasklets(void)
 +{
-+	struct tasklet_struct **i;
-+
-+	BUG_ON(cpu_online(cpu));
-+	BUG_ON(test_bit(TASKLET_STATE_RUN, &t->state));
-+
-+	if (!test_bit(TASKLET_STATE_SCHED, &t->state))
-+		return;
-+
-+	/* CPU is dead, so no lock needed. */
-+	for (i = &per_cpu(tasklet_vec, cpu).list; *i; i = &(*i)->next) {
-+		if (*i == t) {
-+			*i = t->next;
-+			return;
-+		}
-+	}
-+	BUG();
++	ktaskletd_wq = create_workqueue("tasklets");
++	BUG_ON(!ktaskletd_wq);
 +}
 +
 +void takeover_tasklets(unsigned int cpu)
 +{
-+	struct tasklet_struct **i;
-+
-+	/* CPU is dead, so no lock needed. */
-+	local_irq_disable();
-+
-+	/* Find end, append list for that CPU. */
-+	for (i = &__get_cpu_var(tasklet_vec).list; *i; i = &(*i)->next);
-+	*i = per_cpu(tasklet_vec, cpu).list;
-+	per_cpu(tasklet_vec, cpu).list = NULL;
-+	raise_softirq_irqoff(TASKLET_SOFTIRQ);
-+
-+	for (i = &__get_cpu_var(tasklet_hi_vec).list; *i; i = &(*i)->next);
-+	*i = per_cpu(tasklet_hi_vec, cpu).list;
-+	per_cpu(tasklet_hi_vec, cpu).list = NULL;
-+	raise_softirq_irqoff(HI_SOFTIRQ);
-+
-+	local_irq_enable();
++	pr_debug("Implement takeover tasklets??\n");
 +}
-+#endif /* CONFIG_HOTPLUG_CPU */
 +
++void tasklet_init(struct tasklet_struct *t,
++		  void (*func)(unsigned long), unsigned long data)
++{
++	INIT_WORK(&t->work, work_tasklet_exec);
++	INIT_LIST_HEAD(&t->list);
++	t->state = 0;
++	atomic_set(&t->count, 0);
++	t->func = func;
++	t->data = data;
++	t->n = "anonymous";
++	pr_debug("anonymous tasklet %p set at %p\n",
++		t, __builtin_return_address(0));
++}
 +
++EXPORT_SYMBOL(tasklet_init);
++
++void fastcall tasklet_enable(struct tasklet_struct *t)
++{
++	pr_debug("enable tasklet %s (count was %d)\n",
++		 t->n, atomic_read(&t->count));
++	if (!atomic_dec_and_test(&t->count))
++		return;
++	if (test_and_clear_bit(TASKLET_STATE_PENDING, &t->state)) {
++		pr_debug("tasklet %s was pending\n", t->n);
++		tasklet_schedule(t);
++	}
++}
++
++EXPORT_SYMBOL(tasklet_enable);
++
++void tasklet_kill(struct tasklet_struct *t)
++{
++	pr_debug("kill tasklet %s\n", t->n);
++	flush_workqueue(ktaskletd_wq);
++}
++
++EXPORT_SYMBOL(tasklet_kill);
 
 -- 
