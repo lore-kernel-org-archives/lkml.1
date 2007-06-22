@@ -1,74 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbXFVOid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbXFVOip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757445AbXFVOid (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbXFVOiY
+	id S1758367AbXFVOip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbXFVOib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:38:24 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:2025 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755525AbXFVOiX (ORCPT
+	Fri, 22 Jun 2007 10:38:31 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:56285 "EHLO
+	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756914AbXFVOi2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:38:23 -0400
-Date: Fri, 22 Jun 2007 08:36:58 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Terrible IO performance when using 4GB of RAM on a 32 bit machine
-In-reply-to: <467B8855.1030007@rabbit.us>
-To: Peter Rabbitson <rabbit@rabbit.us>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <467BDE8A.8040609@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.8+Qu4ZH2B8PP3bRaZ5LNdUcsFIQ@ifi.uio.no>
- <fa.X6rjOVHT6SoOzt6SHEJROeRgf98@ifi.uio.no>
- <fa.qwrQSldd4OzDT6RgWE5P1BD9PJw@ifi.uio.no> <467B1100.4000401@shaw.ca>
- <467B8855.1030007@rabbit.us>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Fri, 22 Jun 2007 10:38:28 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Fri, 22 Jun 2007 16:39:13 +0200
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Ravikiran G Thirumalai" <kiran@scalex86.org>, "Andi Kleen" <ak@suse.de>
+cc: "Len Brown" <lenb@kernel.org>, "Steven Whitehouse" <swhiteho@redhat.com>,
+       "Shai Fultheim" <shai@scalex86.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 7/12] acpi: fix another compile warning
+Message-ID: <20070622143913.GU5193@alberich.amd.com>
+References: <20070619225035.GI5193@alberich.amd.com>
+ <200706192338.02807.lenb@kernel.org>
+ <20070620084911.GO5193@alberich.amd.com>
+ <200706200936.31236.lenb@kernel.org> <20070620182548.GA561@localdomain>
+ <20070621183615.GI5193@alberich.amd.com>
+MIME-Version: 1.0
+In-Reply-To: <20070621183615.GI5193@alberich.amd.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 22 Jun 2007 14:38:04.0870 (UTC)
+ FILETIME=[F15E2E60:01C7B4DA]
+X-WSS-ID: 6A65015A1S41144837-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Rabbitson wrote:
-> Robert Hancock wrote:
->> Peter Rabbitson wrote:
->>> H. Peter Anvin wrote:
->>>>
->>>> What does /proc/mtrr look like in the two cases?
->>>>
->>>
->>> Identical for mem=3900 and without it.
->>>
->>> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
->>> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
->>> reg02: base=0xc0000000 (3072MB), size= 512MB: write-back, count=1
->>> reg03: base=0xe0000000 (3584MB), size= 256MB: write-back, count=1
->>> reg04: base=0xf0000000 (3840MB), size= 128MB: write-back, count=1
->>> reg05: base=0xf8000000 (3968MB), size=  32MB: write-back, count=1
->>
->> Looks like another case of bad MTRRs on an Intel motherboard? The BIOS 
->> is marking only memory up to 4000MB as cacheable, but the actual 
->> memory extends up to about 4031MB. Therefore anything that accesses 
->> the top 31MB of memory will run very slow.
->>
-> 
-> Ah, it all makes sense now. In this case I assume mem=4000 is perfectly 
-> safe and usable for the time being. In the beginning I tried with 
-> mem=4g, which obviously did not work. If anyone is interested in adding 
-> an exception/workaround for this particular motherboard, I'd be happy to 
-> help with testing. I have added more information about the system: 
-> current kernel config [1], output of `lspci -vv`[2], dmesg with 
-> mem=4000[3].
-> 
-> Thank you!
-> 
-> Peter
+On Thu, Jun 21, 2007 at 08:36:15PM +0200, Andreas Herrmann wrote:
+> On Wed, Jun 20, 2007 at 11:25:48AM -0700, Ravikiran G Thirumalai wrote:
+> > On Wed, Jun 20, 2007 at 09:36:30AM -0400, Len Brown wrote:
+> > > 
+      <snip>
 
-There was a patch floating around recently to detect the case where the 
-MTRRs don't map all of RAM as write-back, automatically cap the memory 
-used by the kernel to what is mapped and print some loud warnings..
+> > > The underlying problem is that Kconfig doesn't support using select
+> > > on targets which themselves have dependencies.
+> > > 
+> > > Signed-off-by: Len Brown <len.brown@intel.com>
+> > > 
+> > > 
+> > > diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+> > > index 5ce9443..e9d7767 100644
+> > > --- a/arch/x86_64/Kconfig
+> > > +++ b/arch/x86_64/Kconfig
+> > > @@ -364,9 +364,9 @@ config NODES_SHIFT
+> > >  config X86_64_ACPI_NUMA
+> > >         bool "ACPI NUMA detection"
+> > >         depends on NUMA
+> > > -       select ACPI 
+> > > +       depends on ACPI 
+> > >  	select PCI
+> > > -       select ACPI_NUMA
+> > > +       depends on ACPI_NUMA
+> > >         default y
+> > >         help
+> > >  	 Enable ACPI SRAT based node topology detection.
+> > > -
+> > 
+      <snip>
+> > 
+> > 
+> > Paper over 'select' inadequacies.  
+> > 
+> > Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> > 
+> > Index: linux-2.6.22-rc5/arch/x86_64/Kconfig
+> > ===================================================================
+> > --- linux-2.6.22-rc5.orig/arch/x86_64/Kconfig	2007-06-18 16:02:19.571323415 -0700
+> > +++ linux-2.6.22-rc5/arch/x86_64/Kconfig	2007-06-20 11:34:29.845354250 -0700
+> > @@ -366,6 +366,7 @@ config X86_64_ACPI_NUMA
+> >         depends on NUMA
+> >         select ACPI 
+> >  	select PCI
+> > +  	select PM
+> >         select ACPI_NUMA
+> >         default y
+> >         help
+> 
+> Yep, this one-liner solves all acpi related compile errors/warnings
+> that I've reported.
+> 
+> Additional it resolves anoter problem that results from
+> dependencies between CONFIG_PNP and CONFIG_ACPI.
+> 
+
+
+Andi,
+
+are you going to apply Ravikiran's patch?
+
+
+Regards,
+
+Andreas
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Operating | AMD Saxony Limited Liability Company & Co. KG,
+  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ Research | Register Court Dresden: HRA 4896, General Partner authorized
+  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
+  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
 
