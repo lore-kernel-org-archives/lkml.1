@@ -1,176 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbXFVOlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbXFVOmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758040AbXFVOlH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:41:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbXFVOk4
+	id S1758540AbXFVOmZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbXFVOmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:40:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57695 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756516AbXFVOkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:40:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
-Date: Fri, 22 Jun 2007 16:47:49 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
-       Uli Luckas <u.luckas@road.de>,
-       pm list <linux-pm@lists.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Fri, 22 Jun 2007 10:42:18 -0400
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:46068 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756516AbXFVOmR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:42:17 -0400
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+In-Reply-To: <1182522309.2672.11.camel@laptopd505.fenrus.org>
+References: <20070622040014.234651401@goodmis.org>
+	 <1182522309.2672.11.camel@laptopd505.fenrus.org>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 10:42:10 -0400
+Message-Id: <1182523330.5493.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706221647.50509.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Fri, 2007-06-22 at 07:25 -0700, Arjan van de Ven wrote:
+> > The most part, tasklets today are not used for time critical functions.
+> > Running tasklets in thread context is not harmful to performance of
+> > the overall system. 
+> 
+> That is a bold statement...
+> 
+> > But running them in interrupt context is, since
+> > they increase the overall latency for high priority tasks.
+> 
+> 
+> .... since by moving this to process context you do add latency between
+> the hardirq and the tasklet, and I can see that having performance
+> impact easily.
 
-At present, if a user mode helper is running while usermodehelper_pm_callback()
-is executed, the helper may be frozen and the completion in
-call_usermodehelper_exec() won't be completed until user space processes are
-thawed.  As a result, the freezing of kernel threads may fail, which is not
-desirable.
+This is stated on the assumption that pretty much all performance
+critical tasklets have been removed (although Christoph just mentioned
+megaraid_sas, but after I made this statement).
 
-Prevent this from happening by introducing a counter of running user mode
-helpers and allowing usermodehelper_pm_callback() to succeed for
-action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
-are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
-RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
-fails if that doesn't happen.]
+We've been running tasklets as threads in the -rt kernel for some time
+now, and that hasn't bothered us.
 
-Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
-versions of this patch and for very useful comments.
+The problem with tasklets is that they still don't provide guaranteed
+performance. They can still be pushed off to ksoftirqd on a busy system.
+But having *all* tasklets as they are today, keeps them at a higher
+priority then any process in the system.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
-Acked-by: Uli Luckas <u.luckas@road.de>
-Reviewed-by: Pavel Machek <pavel@ucw.cz>
----
- kernel/kmod.c |   70 +++++++++++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 60 insertions(+), 10 deletions(-)
+-- Steve
 
-Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
-+++ linux-2.6.22-rc4-mm2/kernel/kmod.c
-@@ -41,14 +41,6 @@ extern int max_threads;
- 
- static struct workqueue_struct *khelper_wq;
- 
--/*
-- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
-- * immediately returning -EBUSY.  Used for preventing user land processes from
-- * being created after the user land has been frozen during a system-wide
-- * hibernation or suspend operation.
-- */
--static int usermodehelper_disabled;
--
- #ifdef CONFIG_KMOD
- 
- /*
-@@ -275,15 +267,48 @@ static void __call_usermodehelper(struct
- 	}
- }
- 
-+#ifdef CONFIG_PM
-+/*
-+ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
-+ * (used for preventing user land processes from being created after the user
-+ * land has been frozen during a system-wide hibernation or suspend operation).
-+ */
-+static int usermodehelper_disabled;
-+
-+/* Number of helpers running */
-+static atomic_t running_helpers = ATOMIC_INIT(0);
-+
-+/*
-+ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
-+ * helpers to finish.
-+ */
-+static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
-+
-+/*
-+ * Time to wait for running_helpers to become zero before the setting of
-+ * usermodehelper_disabled in usermodehelper_pm_callback() fails
-+ */
-+#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
-+
- static int usermodehelper_pm_callback(struct notifier_block *nfb,
- 					unsigned long action,
- 					void *ignored)
- {
-+	long retval;
-+
- 	switch (action) {
- 	case PM_HIBERNATION_PREPARE:
- 	case PM_SUSPEND_PREPARE:
- 		usermodehelper_disabled = 1;
--		return NOTIFY_OK;
-+		retval = wait_event_timeout(running_helpers_waitq,
-+					atomic_read(&running_helpers) == 0,
-+					RUNNING_HELPERS_TIMEOUT);
-+		if (retval) {
-+			return NOTIFY_OK;
-+		} else {
-+			usermodehelper_disabled = 0;
-+			return NOTIFY_BAD;
-+		}
- 	case PM_POST_HIBERNATION:
- 	case PM_POST_SUSPEND:
- 		usermodehelper_disabled = 0;
-@@ -293,6 +318,29 @@ static int usermodehelper_pm_callback(st
- 	return NOTIFY_DONE;
- }
- 
-+static void new_helper(void)
-+{
-+	atomic_inc(&running_helpers);
-+}
-+
-+static void helper_finished(void)
-+{
-+	if (atomic_dec_and_test(&running_helpers))
-+		wake_up(&running_helpers_waitq);
-+}
-+
-+static void register_pm_notifier_callback(void)
-+{
-+	pm_notifier(usermodehelper_pm_callback, 0);
-+}
-+#else /* CONFIG_PM */
-+#define usermodehelper_disabled	0
-+
-+static inline void new_helper(void) {}
-+static inline void helper_finished(void) {}
-+static inline void register_pm_notifier_callback(void) {}
-+#endif /* CONFIG_PM */
-+
- /**
-  * call_usermodehelper_setup - prepare to call a usermode helper
-  * @path - path to usermode executable
-@@ -397,6 +445,7 @@ int call_usermodehelper_exec(struct subp
- 	DECLARE_COMPLETION_ONSTACK(done);
- 	int retval;
- 
-+	new_helper();
- 	if (sub_info->path[0] == '\0') {
- 		retval = 0;
- 		goto out;
-@@ -418,6 +467,7 @@ int call_usermodehelper_exec(struct subp
- 
-   out:
- 	call_usermodehelper_freeinfo(sub_info);
-+	helper_finished();
- 	return retval;
- }
- EXPORT_SYMBOL(call_usermodehelper_exec);
-@@ -459,5 +509,5 @@ void __init usermodehelper_init(void)
- {
- 	khelper_wq = create_singlethread_workqueue("khelper");
- 	BUG_ON(!khelper_wq);
--	pm_notifier(usermodehelper_pm_callback, 0);
-+	register_pm_notifier_callback();
- }
+
