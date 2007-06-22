@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751299AbXFVMju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbXFVMkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751299AbXFVMju (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 08:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbXFVMjk
+	id S1756130AbXFVMkZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 08:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbXFVMkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 08:39:40 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:40464 "EHLO mail.ukfsn.org"
+	Fri, 22 Jun 2007 08:40:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59139 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755910AbXFVMjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 08:39:39 -0400
-Message-ID: <467BC306.9010008@dgreaves.com>
-Date: Fri, 22 Jun 2007 13:39:34 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+	id S1753643AbXFVMkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 08:40:09 -0400
+Date: Fri, 22 Jun 2007 14:38:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070622123805.GA9770@elte.hu>
+References: <20070622040014.234651401@goodmis.org> <20070622070948.GA21291@infradead.org> <1182515542.5493.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: david@lang.hm
-Cc: Neil Brown <neilb@suse.de>, Bill Davidsen <davidsen@tmr.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: limits on raid
-References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <46756BE2.7010401@tmr.com> <467B03C1.50809@tmr.com> <18043.13037.40956.366334@notabene.brown> <467B840F.4080402@dgreaves.com> <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182515542.5493.20.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Fri, 22 Jun 2007, David Greaves wrote:
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> > And this is something that might be fine for benchmarking, but not something
+> > we should put in.  Keeping two wildly different implementation of core
+> > functionality with very different behaviour around is quite bad.  Better
+> > kill tasklets once for all.
 > 
->> That's not a bad thing - until you look at the complexity it brings - 
->> and then consider the impact and exceptions when you do, eg hardware 
->> acceleration? md information fed up to the fs layer for xfs? simple 
->> long term maintenance?
->>
->> Often these problems are well worth the benefits of the feature.
->>
->> I _wonder_ if this is one where the right thing is to "just say no" :)
-> so for several reasons I don't see this as something that's deserving of 
-> an atomatic 'no'
-> 
-> David Lang
+> Honestly, I highly doubted that this would make it up to Linus's tree.
 
-Err, re-read it, I hope you'll see that I agree with you - I actually just meant 
-the --assume-clean workaround stuff :)
+that's where it belongs - but it first needs the cleanups suggested by 
+Christoph.
 
-If you end up 'fiddling' in md because someone specified --assume-clean on a 
-raid5 [in this case just to save a few minutes *testing time* on system with a 
-heavily choked bus!] then that adds *even more* complexity and exception cases 
-into all the stuff you described.
+> My aim was to get this into -mm, [...]
 
-I'm very much for the fs layer reading the lower block structure so I don't have 
-to fiddle with arcane tuning parameters - yes, *please* help make xfs self-tuning!
+that would be the first step towards getting it upstream.
 
-Keeping life as straightforward as possible low down makes the upwards interface 
-more manageable and that goal more realistic...
+> and perhaps even turn on the tasklets-as-workqueues as default.
 
-David
+that is a hack that shouldnt be in the patch. People can unapply/apply a 
+patch just as well as they can flip a .config switch.
+
+	Ingo
