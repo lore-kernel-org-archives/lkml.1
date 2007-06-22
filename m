@@ -1,110 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbXFVHgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbXFVHhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbXFVHgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 03:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbXFVHgN
+	id S1753404AbXFVHhz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 03:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbXFVHhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 03:36:13 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:15114 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbXFVHgM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 03:36:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GzYpIgA8mIwqh7TyEiur09v5TNOxQGuXNli1faF2Kue4vIUTT7ONGKn+p8cRGh93i9jtjGae+QQJciSO2wRw5p5aN25Tc3cyM+F8meFsU+LZSbdAIns1Ovb4eBbP0Cc07ieg01r65u57V7TEhzyMgi6UMp7FKoapj4k7dBumeik=
-Message-ID: <7b9198260706220036u627f7538o51fa4f5d2be87e69@mail.gmail.com>
-Date: Fri, 22 Jun 2007 08:36:08 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v17
-Cc: linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>
-In-Reply-To: <20070614224908.GA9412@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 22 Jun 2007 03:37:46 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:42849 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750956AbXFVHhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 03:37:45 -0400
+Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
+	through other means
+From: Ram Pai <linuxram@us.ibm.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+In-Reply-To: <467B7509.8010106@zytor.com>
+References: <467994BD.6000403@zytor.com>
+	 <20070620210343.GQ21478@ftp.linux.org.uk>  <46799A31.10301@zytor.com>
+	 <1182442837.3342.13.camel@ram.us.ibm.com>  <467AB5EE.3030909@zytor.com>
+	 <1182494654.2812.22.camel@ram.us.ibm.com>  <467B7509.8010106@zytor.com>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 00:34:50 -0700
+Message-Id: <1182497690.2812.54.camel@ram.us.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070614224908.GA9412@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14/06/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> i'm pleased to announce release -v17 of the CFS scheduler patchset.
->
-> The rolled-up CFS patch against v2.6.22-rc4, v2.6.22-rc4-mm2, v2.6.21.5
-> or v2.6.20.13 can be downloaded from the usual place:
->
->    http://people.redhat.com/mingo/cfs-scheduler/
->
-> -v17 includes a bigger change: the CFS-core changes in preparation of
-> the group-scheduling feature, written Srivatsa Vaddagiri. Dmitry
-> Adamushko provided cleanups and further generalizations to this code and
-> the modularization of CFS has been further enhanced as a result. To
-> users, these changes are mostly invisible.
->
-> Changes since -v16:
->
->  - lots of core updates to support group scheduling, and related
->    cleanups. (Srivatsa Vaddagiri, Dmitry Adamushko)
->
->  - tuned the runtime-limit up a bit, based on relentless testing done by
->    Tobias Gerschner.
->
->  - the new, precise load-calculation method for SMP balancing has been
->    further enhanced, and is now active by default. (Dmitry Adamushko)
->
->  - fix SCHED_IDLEPRIO support (based on feedback from Thomas Sattler)
->
->  - further updates to /proc/sched_debug and /proc/PID/sched
->
->  - more cleanups
->
-> As usual, any sort of feedback, bugreport, fix and suggestion is more
-> than welcome!
->
->         Ingo
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Fri, 2007-06-22 at 00:06 -0700, H. Peter Anvin wrote:
+> Ram Pai wrote:
+> > 
+> > the second patch made a /proc/propagation interface which had almost the
+> > same fields, but also added fields to show the propagation type of the
+> > mount as well as pointers to its peers and master depending on the type
+> > of the mount. 
+> > 
+> > I think the consensus seems to have a new interface /proc/make-a-name
+> > which extends the interface provided by /proc/mounts but provides the
+> > propagation state of the mounts too as well as disambiguate bind mounts.
+> > Which makes sense.
+> > 
+> 
+> Why?  It seems a lot cleaner to have all the information in the same
+> place.  It is highly unfriendly to userspace to have to gather
+> information in a lot of places, plus it adds race conditions.
+> 
+> It would be another matter if the format that we have now couldn't be
+> extended, but we need those fields (well, except the two zeros, but who
+> cares) *anyway*, so we might as well stick to the existing file, and
+> reduce the total amount of code and clutter.
 
-Hi everyone,
+Ok. so you think /proc/mounts can be extended easily without breaking
+any userspace commands?
 
-I'm just writing to say how impressed I am with the new CFS scheduler.
- I've been following it's development from the first patch, right up
-to now (running on the latest vanilla kernel I could!) and I can
-honestly say I've never had such a responsive experience.
+well lets see..
+1. to disambiguate bind mounts, we have to add a field that displays the
+	 path to the mount's root dentry from the filesystem's root
+	 dentry. Agree?
 
-I'm currently writing a major patch to the ext2 file-system driver, as
-part of a University project - it involves a lot of kernel rebuilds as
-I'm testing the patch in UML.  I've had a couple of kernel compiles
-happening simultaneously (on my moderate single CPU PC), and tried out
-a few make -j12's, and I'm amazed at the difference the new scheduler
-makes.
+2. For filesystems that do not have a backing store, it becomes hard
+	to disambiguate bind mounts in (1). So we need to add a
+	filesystem-id field.
 
-I've got quite a few instances of Firefox (whoops, Iceweasel) open,
-I'm listening to music and theres a few other apps running (like KNode
-the newsreader) and the interactivity response has been excellent.
+3. if we need to add the propagation status of the mount we need a
+	 propagation flag added in the output.
 
-In conclusion, well done to the scheduler people and I look forward to
-seeing this go to mainline.
+4. To be able to construct the propagation tree, we need a way to refer
+	to the other mounts, since some mounts are peers and some other
+	mounts are master. Which means we need a mount-id field.
+	Agree?
 
-(If there's anything I can do to help, I'd love to throw a few patches
-at the mailing list ;)
+If you agree to the above 4 new fields, it becomes challenging to
+extend /proc/mounts to incorporate these new fields without
+breaking any existing applications. 
 
--- 
-Regards,
-Tom Spink
-University of Edinburgh
+
+> > 
+> > BTW: what is the need for overmounted flag?  Do you mean two vfsmounts
+> > mounted on the same dentry on the ***same vfsmount*** ?
+> > 
+> 
+> Maybe I'm not following the uses of your flags well enough to figure out
+>  if that information can already been deduced.
+
+With the addition of the above 4 mentioned fields, I think one should be
+easily able to decipher which mnt-id is mounted on which mnt-id. no?
+maybe not. Well we will have to extend the mountpoint field to indicate
+the mnt-id in which the mountpoint resides.  
+
+RP
+
+> 
+> 	-hpa
+
