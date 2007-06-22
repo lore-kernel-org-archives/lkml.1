@@ -1,167 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760677AbXFVWRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760566AbXFVWTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760677AbXFVWRD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 18:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760459AbXFVWQv
+	id S1760566AbXFVWTm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 18:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbXFVWTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 18:16:51 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:46264 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760386AbXFVWQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 18:16:49 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v18
-Date: Sat, 23 Jun 2007 01:16:28 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org,
+	Fri, 22 Jun 2007 18:19:34 -0400
+Received: from homer.mvista.com ([63.81.120.158]:30901 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752442AbXFVWTd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 18:19:33 -0400
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+From: Daniel Walker <dwalker@mvista.com>
+To: david@lang.hm
+Cc: Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-References: <20070622220202.GA16872@elte.hu> <200706230109.08310.caglar@pardus.org.tr>
-In-Reply-To: <200706230109.08310.caglar@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1591549.gF3B4eDs7l";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+In-Reply-To: <Pine.LNX.4.64.0706221506560.14942@asgard.lang.hm>
+References: <20070622040014.234651401@goodmis.org>
+	 <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
+	 <20070622204058.GA11777@elte.hu>
+	 <1182549202.3228.78.camel@dhcp193.mvista.com>
+	 <Pine.LNX.4.64.0706221506560.14942@asgard.lang.hm>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 15:15:32 -0700
+Message-Id: <1182550533.3228.87.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706230116.29615.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1591549.gF3B4eDs7l
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 2007-06-22 at 15:09 -0700, david@lang.hm wrote:
+> On Fri, 22 Jun 2007, Daniel Walker wrote:
+> 
+> > 
+> > On Fri, 2007-06-22 at 22:40 +0200, Ingo Molnar wrote:
+> >
+> >>
+> >>  - tasklets have certain fairness limitations. (they are executed in
+> >>    softirq context and thus preempt everything, even if there is some
+> >>    potentially more important, high-priority task waiting to be
+> >>    executed.)
+> >
+> > Since -rt has been executing tasklets in process context for a long
+> > time, I'm not sure this change would cause to many regressions. However,
+> > it seems like implicit dependencies on "tasklets preempt everything"
+> > might crop up. The other issue is if they don't "preempt
+> > everything" (most of the time), what default priority do we give them
+> > (all of the time)? It seems like Christoph's suggestion of converting
+> > all the tasklets individually might be a better option, to deal with
+> > specific pitfalls.
+> 
+> that would be the safe way to do it, but it will take a lot of time and a 
+> lot of testing.
+> 
+> it's probably better to try the big-bang change and only if you see 
+> problames go back and break things down.
 
-23 Haz 2007 Cts tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 yazm=
-=C4=B1=C5=9Ft=C4=B1:=20
-> Hi Ingo;
->
-> 23 Haz 2007 Cts tarihinde, Ingo Molnar =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9F=
-t=C4=B1:
-> > As usual, any sort of feedback, bugreport, fix and suggestion is more
-> > than welcome!
->
-> caglar@zangetsu linux-2.6 $ LC_ALL=3DC make
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CALL    scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   CC      kernel/sched.o
-> kernel/sched.c:745:28: sched_idletask.c: No such file or directory
+For testing I'd agree, but not for a kernel that is suppose to be
+stable.
 
-Ahh and this happens with [1], grabbing sched_idletask.c from .18 one solve=
-s=20
-the problem...
+> remember, these changes have been in use in -rt for a while. there's 
+> reason to believe that they aren't going to cause drastic problems.
 
-Index: linux/kernel/sched_idletask.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-=2D-- /dev/null
-+++ linux/kernel/sched_idletask.c
-@@ -0,0 +1,68 @@
-+/*
-+ * idle-task scheduling class.
-+ *
-+ * (NOTE: these are not related to SCHED_IDLE tasks which are
-+ *  handled in sched_fair.c)
-+ */
-+
-+/*
-+ * Idle tasks are unconditionally rescheduled:
-+ */
-+static void check_preempt_curr_idle(struct rq *rq, struct task_struct *p)
-+{
-+	resched_task(rq->idle);
-+}
-+
-+static struct task_struct *pick_next_task_idle(struct rq *rq, u64 now)
-+{
-+	schedstat_inc(rq, sched_goidle);
-+
-+	return rq->idle;
-+}
-+
-+/*
-+ * It is not legal to sleep in the idle task - print a warning
-+ * message if some code attempts to do it:
-+ */
-+static void
-+dequeue_task_idle(struct rq *rq, struct task_struct *p, int sleep, u64 now)
-+{
-+	spin_unlock_irq(&rq->lock);
-+	printk(KERN_ERR "bad: scheduling from the idle thread!\n");
-+	dump_stack();
-+	spin_lock_irq(&rq->lock);
-+}
-+
-+static void put_prev_task_idle(struct rq *rq, struct task_struct *prev, u6=
-4=20
-now)
-+{
-+}
-+
-+static struct task_struct *load_balance_start_idle(struct rq *rq)
-+{
-+	return NULL;
-+}
-+
-+static void task_tick_idle(struct rq *rq, struct task_struct *curr)
-+{
-+}
-+
-+/*
-+ * Simple, special scheduling class for the per-CPU idle tasks:
-+ */
-+struct sched_class idle_sched_class __read_mostly =3D {
-+	/* no enqueue/yield_task for idle tasks */
-+
-+	/* dequeue is not valid, we print a debug message there: */
-+	.dequeue_task		=3D dequeue_task_idle,
-+
-+	.check_preempt_curr	=3D check_preempt_curr_idle,
-+
-+	.pick_next_task		=3D pick_next_task_idle,
-+	.put_prev_task		=3D put_prev_task_idle,
-+
-+	.load_balance_start	=3D load_balance_start_idle,
-+	/* no .load_balance_next for idle tasks */
-+
-+	.task_tick		=3D task_tick_idle,
-+	/* no .task_new for idle tasks */
-+};
+Since I've been working with -rt (~2 years now I think) it's clear that
+the number of testers of the patch isn't all that high compared to the
+stable kernel . There are tons of drivers which get no coverage by -rt
+patch users.
 
+So the fact that something similar is in -rt is good, but it's not a
+silver bullet ..
 
-[1]=20
-http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-v2.6.22-git-v18.patch
+Daniel
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart1591549.gF3B4eDs7l
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGfEo9y7E6i0LKo6YRAtPnAKDK32kIpSv7aKttvVmfW6Dh1kbGXwCgrLeO
-0gIk7hq0Pgp9guObc8iR1hY=
-=rmeL
------END PGP SIGNATURE-----
-
---nextPart1591549.gF3B4eDs7l--
