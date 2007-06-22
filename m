@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbXFVVNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbXFVVR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbXFVVNu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 17:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbXFVVNm
+	id S1755255AbXFVVR7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 17:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbXFVVRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 17:13:42 -0400
-Received: from www.osadl.org ([213.239.205.134]:37846 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751773AbXFVVNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 17:13:42 -0400
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070622210013.GA1353@infradead.org>
-References: <20070622040014.234651401@goodmis.org>
-	 <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
-	 <20070622204058.GA11777@elte.hu>  <20070622210013.GA1353@infradead.org>
-Content-Type: text/plain
-Date: Fri, 22 Jun 2007 23:13:30 +0200
-Message-Id: <1182546810.20203.122.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 17:17:51 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:42707 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751773AbXFVVRv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 17:17:51 -0400
+X-Sasl-enc: VS1GrtYtbUXnbptmNVGAo+mSHJOfgvZIQeS9tK3qa9DK 1182547088
+Date: Fri, 22 Jun 2007 18:17:46 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Carlo Wood <carlo@alinoe.com>, Arjan van de Ven <arjan@infradead.org>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: SATA Harddisk speed drop of 100 MB/s
+Message-ID: <20070622211746.GB21769@khazad-dum.debian.net>
+References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <1182397012.2863.0.camel@laptopd505.fenrus.org> <20070622162142.GA603@alinoe.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622162142.GA603@alinoe.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 22:00 +0100, Christoph Hellwig wrote:
-> Note that we also have a lot of inefficiency in the way we do deferred
-> processing.  Think of a setup where you run a XFS filesystem runs over
-> a megaraid adapter.
-> 
->  (1) we get a real hardirq, which just clears the interrupt and then
->      deferes to a tasklet
->  (2) tasklet walks the producer / consumer queue and then calls scsi_done
->      for each completeted scsi command which ends up doing
->      raise_softirq_irqoff(BLOCK_SOFTIRQ);
->  (3) block softirq does the heavy lifting for command completion and finally
->      calls back into the bio's completion routine
->  (4) xfs wants to avoid irq safe locking and thus deferes the command to a
->      kthread
-> 
-> This is rather inefficient due to all the (semi-)context switches already
-> and not by far the worst setup given that a lot of dm modules can involve
-> another thread in the process.
-> 
-> Now if just plain convert tasklets to a thread based abstraction this
-> existing code becomes really dumb because we go from hardirq to process
-> context to go back to softirq context to go back to process context.
-> 
-> Ouch!
-> 
-> I think we need to put a little more though into how we can optimize our
-> irq path for the full stack.  Using irqthreads in an intelligent way might
-> be one option, but we'll need a lot of heavy benchmarking whatever way
-> we go.
+On Fri, 22 Jun 2007, Carlo Wood wrote:
+> So far I found out that it's RAID only.
 
-Your above scenario screams for a threaded interrupt handler, where you
-actually can unify a lot of this into one single context.
+If you change the IO schedulers, does it help?
 
-	tglx
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
