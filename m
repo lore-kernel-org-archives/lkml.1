@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbXFVJa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbXFVJdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbXFVJa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 05:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbXFVJav
+	id S1756192AbXFVJdT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 05:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbXFVJdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 05:30:51 -0400
-Received: from il.qumranet.com ([82.166.9.18]:56149 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbXFVJau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 05:30:50 -0400
-Message-ID: <467B96C8.1050500@qumranet.com>
-Date: Fri, 22 Jun 2007 12:30:48 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Fri, 22 Jun 2007 05:33:09 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:37252 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbXFVJdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 05:33:08 -0400
+Date: Fri, 22 Jun 2007 11:34:36 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: linux-kernel@vger.kernel.org
+Message-ID: <20070622093436.GA17828@enneenne.com>
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SVM: reliably detect if SVM was disabled by BIOS
-References: <20070621175122.GE25896@amd.com>
-In-Reply-To: <20070621175122.GE25896@amd.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (firebolt.argo.co.il [0.0.0.0]); Fri, 22 Jun 2007 12:30:48 +0300 (IDT)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: PXA270 sleeping problems after update
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> From: Joerg Roedel <joerg.roedel@amd.com>
->
-> This patch adds an implementation to the svm is_disabled function to
-> detect reliably if the BIOS disabled the SVM feature in the CPU. This
-> fixes the issues with kernel panics when loading the kvm-amd module on
-> machines where SVM is available but disabled.
->
->   
+I just updated my linux tree from 2.6.20-rc6 to 2.6.22-rc3 for my
+custom PXA270 based board and I discovered that now sleep/wakeup
+functionality doesn't work anymore! :'(
 
-Applied; thanks.
+After several merges, compiling stages and tests I discovered that the
+problem arises from 2.6.21 to 2.6.22-rc1 and that the _real_ problem
+is that the machine never goes to sleep (I discovered that by looking
+at current consuming since the JTAG doesn't attach...).
 
-Is this msr documented anywhere?  I assume it is implemented on all
-processors with svm?
+Any suggestions?
+
+Thanks a lot,
+
+Rodolfo
+
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
