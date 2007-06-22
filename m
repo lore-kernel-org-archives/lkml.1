@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbXFVSf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760531AbXFVSkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbXFVSf3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 14:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760078AbXFVSfO
+	id S1760531AbXFVSkF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 14:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758860AbXFVSjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 14:35:14 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:34435 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760018AbXFVSfM (ORCPT
+	Fri, 22 Jun 2007 14:39:54 -0400
+Received: from bjm2.server.18mail.cn ([218.241.65.156]:49494 "EHLO
+	bjm1.server.18mail.cn" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757773AbXFVSjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 14:35:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sIn9P7bZQmc01u8Tyy8iZhCd7HT9gIfeo+jf0tFKsV4kdY1K2Ylc7EKMeV/zKVeTI0H2wHS+apd/LuJV2eBnr3qgouo6qIsoQVk5eYXFn2oGmMxfphKzAbTuJBwGhvvE9Y+ahefNa4wzU9UWE6mtSSCaDJsObzOOkbO4rmm4CfA=
-Message-ID: <a781481a0706221135q6972e1f8u649356ab7932715d@mail.gmail.com>
-Date: Sat, 23 Jun 2007 00:05:11 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "David Teigland" <teigland@redhat.com>
-Subject: Re: [patch] DLM: fix kconfig dependency
-Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-In-Reply-To: <20070622180500.GD6381@redhat.com>
+	Fri, 22 Jun 2007 14:39:54 -0400
+Message-ID: <467C1768.1030706@18mail.cn>
+Date: Sat, 23 Jun 2007 02:39:36 +0800
+From: TripleX <zhongyu@18mail.cn>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Li Yang-r58472 <LeoLi@freescale.com>, Rob Landley <rob@landley.net>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
+       Maggie Chen <chenqi@beyondsoft.com>
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescal e.net> <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070622140615.GP5193@alberich.amd.com>
-	 <20070622180500.GD6381@redhat.com>
+X-18mail-spam: W 0.00000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/22/07, David Teigland <teigland@redhat.com> wrote:
-> On Fri, Jun 22, 2007 at 04:06:15PM +0200, Andreas Herrmann wrote:
-> > Avoid kernel build error (as DLM depends on SYSFS)
-> >
-> >   LD      vmlinux
-> >   fs/built-in.o: In function `dlm_lockspace_init':
-> >   : undefined reference to `kernel_subsys'
-> >   fs/built-in.o: In function `configfs_init':
-> >   mount.c:(.init.text+0xef4): undefined reference to `kernel_subsys'
-> >
-> > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> >
-> > diff --git a/fs/dlm/Kconfig b/fs/dlm/Kconfig
-> > index 69a9469..c0e4c59 100644
-> > --- a/fs/dlm/Kconfig
-> > +++ b/fs/dlm/Kconfig
-> > @@ -1,5 +1,5 @@
-> >  menu "Distributed Lock Manager"
-> > -     depends on EXPERIMENTAL && INET
-> > +     depends on EXPERIMENTAL && INET && SYSFS
-> >
-> >  config DLM
-> >       tristate "Distributed Lock Manager (DLM)"
+Linus Torvalds wrote:
+> On Fri, 22 Jun 2007, Li Yang-r58472 wrote:
+>   
+>> So as I argued in a previous email, non-native English speakers tend to 
+>> be more confused by the policies and processes.  I also don't think it's 
+>> necessary to translate the technical documents.  To be a software 
+>> developer, one has to be educated or experienced in technical terms. 
+>> Technical discussion can be done without too much requirement to grammar 
+>> and emotional expressing.  The translated document of policies and 
+>> processes will help these people to understand the process better and go 
+>> smoother in the process.
+>>     
 >
-> There's a been a lot of back and forth on this from a number of different
-> people:
+> I do agree.
 >
-> 1/18/06   depends on SYSFS
-> 4/25/06 - depends on SYSFS
-> 2/05/07 + select SYSFS
-> 2/05/07 - select SYSFS
->         + depends on SYSFS
-> 5/01/07 - depends on SYSFS
+> I think that the policies and processes parts of the documentation are 
+> things that make total sense to encourage translation of, because it's 
+> entirely possible that those are interesting and valid even to the people 
+> who aren't necessarily directly involved in the actual coding, and may 
+> well be relevant to managers etc who may not be _directly_ involed with 
+> the rest of the kernel developers.
 >
-> It looks like the last removal was in error and it should be added back.
+> In fact, I suspect pretty much any documentation (whether technical or 
+> about processes and/or style) makes sense to have translated if the energy 
+> and ability to do that exists. I suspect the "policies and processes" 
+> kinds of docs make _more_ sense to translate initially, simply because 
+> they are approachable on their own - but I certainly would never 
+> discourage anybody from translating anything at all.
+>
+> That said, I don't think that merging the result into the standard kernel 
+> makes sense - like it or not, right now English ends up being required 
+> to be part of actually getting things into the "standard" kernel, and as 
+> such, at _some_ point there has to be a connection point that switches 
+> over to English, and trying to make the translations be an in-kernel thing 
+> is thus kind of pointless.
+>
+> But as part of some "documentation site", it makes 100% sense. 
+>
+> And sometimes maybe the issue isn't even just about straight translations, 
+> but also perhaps about explaining cultural differences that aren't 
+> mentioned at all in the documentation, just because people in the west end 
+> up taking certain things for granted and it doesn't "need" documenting..
+>
+>   
+As I know, there are a lot of standalone kernel developer in China. They 
+write device drivers for their chips or iptables modules for their  
+linux based network devices. They send source files to their customers 
+or publish them on web but seldom do anything to make the codes into 
+kernel source tree. The usual reason  is they do not know how to 
+communicate and work with the Linux kernel development community. People 
+will have more chance to read these documentation  if we merge them to 
+the kernel source tree.
 
-DLM needs to depend on SYSFS for another reason: it directly
-"select"s CONFIGFS_FS when configfs itself "depends on SYSFS".
-I suspect it selects configfs directly to make it easier to pick DLM,
-by not forcing users to first go and pick configfs just to make DLM
-visible in menuconfig, but such usage of select is generally "evil".
+TripleX
 
-There was a thread started by Al Viro some time back which
-started discussions on possible kbuild-solutions to this "select
-of a symbol that itself depends on another" problem, but I'm not
-sure what happened of that ...
-
-Satyam
