@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760607AbXFVXBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbXFVXBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760607AbXFVXBW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 19:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXFVXAx
+	id S1760648AbXFVXBg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 19:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760637AbXFVXBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 19:00:53 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:60535 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbXFVXAw (ORCPT
+	Fri, 22 Jun 2007 19:01:05 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4201 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760605AbXFVXBB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 19:00:52 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: how to tell linux (on x86) to ignore 1M or memory
-To: Rene Herman <rene.herman@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Bart Trojanowski <bart@jukie.net>, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Sat, 23 Jun 2007 01:00:17 +0200
-References: <8bFEz-3B4-39@gated-at.bofh.it> <8c6EE-4Jj-5@gated-at.bofh.it> <8yGrK-4vX-7@gated-at.bofh.it> <8yRnb-4XE-23@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Fri, 22 Jun 2007 19:01:01 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 22 Jun 2007 16:00:53 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix signalfd interaction with thread-private signals
+In-Reply-To: <alpine.LFD.0.98.0706221540430.3593@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706221554420.3880@alien.or.mcafeemobile.com>
+References: <20070620111415.GA91@tv-sign.ru> 
+ <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org> 
+ <20070621082509.GA88@tv-sign.ru>  <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org>
+  <20070621182340.GA92@tv-sign.ru>  <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
+  <20070621185856.GA153@tv-sign.ru>  <1182468604.24740.22.camel@localhost.localdomain>
+  <20070622084034.GA134@tv-sign.ru>  <1182512473.24740.54.camel@localhost.localdomain>
+  <20070622160405.GA189@tv-sign.ru> <1182551618.24740.79.camel@localhost.localdomain>
+ <alpine.LFD.0.98.0706221540430.3593@woody.linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1I1s6z-0000yc-MF@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/4haRKT1IJQRhgmgcywggANzFl+oimeFnEc3W
- Yh43rNBJBZKlGkEFtj20bAVQQizoYzmxcyuWvzSANJHPUtGG6S
- yqpLApVlK8rTtfF5cuI2A==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman <rene.herman@gmail.com> wrote:
+On Fri, 22 Jun 2007, Linus Torvalds wrote:
 
-> The point was that real mode could only access the first 1M, not
-> the first 16... :-)
+> Quite frankly, it strikes me that if we want to do this, then we shouldn't 
+> save the _process_ information at all, we should save the "sighand" 
+> instead.
+> 
+> So either we save the process info, or we save the sighand, but saving the 
+> "group_leader" seems totally bogus. Especially as the group leader can 
+> change (by execve()).
+> 
+> One thing that strikes me as I look at that function is that the whole 
+> signalfd thing doesn't seem to do any reference counting. Ie it looks 
+> totally buggy wrt passing the resulting fd off to somebody else, and then 
+> exiting in the original process.
+> 
+> What did I miss?
 
-The real mode on i386+ can actually access the whole 4GB address range due to
-a former-bug-now-feature in the i386+. This "bug" causes the segment limit
-to not be reset on return to real mode, but only on subsequent assigns to
-the segment registers/selectors. Using a rarely used segment register like
-GS, you could use extended memory in your program.
+We intercept the sighand going out of business, and we do not access it 
+anymore after that (by the mean of signalfd_lock() returning zero).
+I'd be OK with Oleg patch, although I really prefer signalfd being more 
+flexible (that is, with sync signals disabled in signalfd, and with Ben's 
+patch reverted). Unless clear point of breakage are shown with such 
+approach.
 
-Obviously this needs 1) Entering and returning from protected mode, 2) all
-programs to agree not to clobber GS and 3) not using v86 mode (EMM386.exe).
-Therefore and because it was discovered in the late days of DOS it was not
-in widespread use. Some DOS extenders were reported to use it ...
 
-http://www.programmersheaven.com/mb/x86_asm/344953/344953/readmessage.aspx
--- 
-The programmer's National Anthem is 'AAAAAAAAHHHHHHHH' 
 
-Friﬂ, Spammer: vO9EZegbA@hBtpA.7eggert.dyndns.org
- maFsnwE@Fvznj.7eggert.dyndns.org mhF-@PoxRjk.7eggert.dyndns.org
+- Davide
+
+
