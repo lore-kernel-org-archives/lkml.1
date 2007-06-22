@@ -1,136 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbXFVIRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbXFVIS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbXFVIRh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 04:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXFVIRY
+	id S1756036AbXFVIS0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 04:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbXFVISP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 04:17:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44397 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751142AbXFVIRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 04:17:22 -0400
-Date: Fri, 22 Jun 2007 10:17:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Jarek Poplawski <jarkao2@o2.pl>,
-       Miklos Szeredi <miklos@szeredi.hu>, chris@atlee.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070622081702.GA14746@elte.hu>
-References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621201624.GD22303@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070621201624.GD22303@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 22 Jun 2007 04:18:15 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4421 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbXFVISM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 04:18:12 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] update checkpatch.pl to version 0.06
+Message-ID: <e12915ec7c0cfcb5d6a7c4432f458161@pinky>
+Date: Fri, 22 Jun 2007 09:45:04 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Update to checkpatch.pl v0.06.  Of note:
 
-> the freezes that Miklos was seeing were hardirq contexts blocking in 
-> task_rq_lock() - that is done with interrupts disabled. (Miklos i 
-> think also tried !NOHZ kernels and older kernels, with a similar 
-> result.)
-> 
-> plus on the ptrace side, the wait_task_inactive() code had most of its 
-> overhead in the atomic op, so if any timer IRQ hit _that_ core, it was 
-> likely while we were still holding the runqueue lock!
-> 
-> i think the only thing that eventually got Miklos' laptop out of the 
-> wedge were timer irqs hitting the ptrace CPU in exactly those 
-> instructions where it was not holding the runqueue lock. (or perhaps 
-> an asynchronous SMM event delaying it for a long time)
+ - do { and else handled correctly as control structures for { matching
+ - trailing whitespace correctly tripped when line otherwise empty
+ - support for const, including const foo * const bar
+ - multiline macros defining values correctly reported
 
-even considering that the 'LOCK'-ed intruction was the heaviest in the 
-busy-loop, the numbers still just dont add up to 'tens of seconds of 
-lockups', so there must be something else happening too.
+This version of checkpatch.pl can be found at the following URL:
 
-So here's an addition to the existing theories: the Core2Duo is a 
-4-issue CPU architecture. Now, why does this matter? It matters to the 
-timing of the delivery of interrupts. For example, on a 3-issue 
-architecture, the instruction level profile of well-cached workloads 
-often looks like this:
+http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-0.06
 
-c05a3b71:      710      89 d6                   mov    %edx,%esi
-c05a3b73:        0      8b 55 c0                mov    0xffffffc0(%ebp),%edx
-c05a3b76:        0      89 c3                   mov    %eax,%ebx
-c05a3b78:      775      8b 82 e8 00 00 00       mov    0xe8(%edx),%eax
-c05a3b7e:        0      8b 48 18                mov    0x18(%eax),%ecx
-c05a3b81:        0      8b 45 c8                mov    0xffffffc8(%ebp),%eax
-c05a3b84:      792      89 1c 24                mov    %ebx,(%esp)
-c05a3b87:        0      89 74 24 04             mov    %esi,0x4(%esp)
-c05a3b8b:        0      ff d1                   call   *%ecx
-c05a3b8d:        0      8b 4d c8                mov    0xffffffc8(%ebp),%ecx
-c05a3b90:      925      8b 41 6c                mov    0x6c(%ecx),%eax
-c05a3b93:        0      39 41 10                cmp    %eax,0x10(%ecx)
-c05a3b96:        0      0f 85 a8 01 00 00       jne    c05a3d44 <schedule+0x2a4>
-c05a3b9c:      949      89 da                   mov    %ebx,%edx
-c05a3b9e:        0      89 f1                   mov    %esi,%ecx
-c05a3ba0:        0      8b 45 c8                mov    0xffffffc8(%ebp),%eax
+Full Changelog:
 
-the second column is the number of times the profiling interrupt has hit 
-that particular instruction.
+Andy Whitcroft (14):
+      Version: 0.06
+      cleanup the Type regular expression declarations
+      fix up block counting
+      end of line counts as a space for ++ and --
+      do { needs the same checks as if, for et al
+      handle "const foo * const a" as a valid type
+      add spacing checks following ;
+      complete whitespace lines should trip trailing whitespace check
+      else is also a block control structure
+      badly formatted else can trip function declaration
+      detect and report trailing statements after else
+      types need to be terminated by a boundary
+      multiline macros defining values should be surrounded by parentheses
+      soften the wording of the Signed-off-by: warnings
 
-Note the many zero entries - this means that for instructions that are 
-well-cached, the issue order _prevents_ interrupts from _ever_ hitting 
-to within a bundle of micro-ops that the decoder will issue! The above 
-workload was a plain lat_ctx, so nothing special, and interrupts and DMA 
-traffic were coming and going. Still the bundling of instructions was 
-very strong.
-
-There's no guarantee of 'instruction bundling': a cachemiss can still 
-stall the pipeline and allow an interrupt to hit any instruction [where 
-interrupt delivery is valid], but on a well-cached workload like the 
-above, even a 3-issue architecture can effectively 'merge' instructions 
-to each other, and can make them essentially 'atomic' as far as external 
-interrupts go.
-
-[ also note another interesting thing in the profile above: the
-  CALL *%ecx was likely BTB-optimized and hence we have a 'bundling' 
-  effect that is even larger than 3 instructions. ]
-
-i think that is what might have happened on Miklos's laptop too: the 
-'movb' of the spin_unlock() done by the wait_task_inactive() got 
-'bundled' together with the first LOCK instruction that took it again, 
-making it very unlikely for a timer interrupt to ever hit that small 
-window in wait_task_inactive(). The cpu_relax()'s "REP; NOP" was likely 
-a simple NOP, because the Core2Duo is not an SMT platform.
-
-to check this theory, adding 3 NOPs to the critical section should make 
-the lockups a lot less prominent too. (While NOPs are not actually 
-'issued', they do take up decoder bandwidth, so they hopefully are able 
-to break up any 'bundle' of instructions.)
-
-Miklos, if you've got some time to test this - could you revert the 
-fa490cfd15d7 commit and apply the patch below - does it have any impact 
-on the lockups you were experiencing?
-
-	Ingo
-
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 ---
- kernel/sched.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -1131,6 +1131,7 @@ repeat:
- 		preempted = !task_running(rq, p);
- 		task_rq_unlock(rq, &flags);
- 		cpu_relax();
-+		asm volatile ("nop; nop; nop;");
- 		if (preempted)
- 			yield();
- 		goto repeat;
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 56c364c..277c326 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -9,7 +9,7 @@ use strict;
+ my $P = $0;
+ $P =~ s@.*/@@g;
+ 
+-my $V = '0.05';
++my $V = '0.06';
+ 
+ use Getopt::Long qw(:config no_auto_abbrev);
+ 
+@@ -271,24 +271,38 @@ sub process {
+ 	my $in_comment = 0;
+ 	my $first_line = 0;
+ 
+-	my $ident	= '[A-Za-z\d_]+';
+-	my $storage	= '(?:extern|static)';
+-	my $sparse	= '(?:__user|__kernel|__force|__iomem)';
+-	my $type	= '(?:unsigned\s+)?' .
+-			  '(?:void|char|short|int|long|unsigned|float|double|' .
+-			  'long\s+long|' .
+-			  "struct\\s+${ident}|" .
+-			  "union\\s+${ident}|" .
+-			  "${ident}_t)" .
+-			  "(?:\\s+$sparse)*" .
+-			  '(?:\s*\*+)?';
+-	my $attribute	= '(?:__read_mostly|__init|__initdata)';
+-
+-	my $Ident	= $ident;
+-	my $Type	= $type;
+-	my $Storage	= $storage;
+-	my $Declare	= "(?:$storage\\s+)?$type";
+-	my $Attribute	= $attribute;
++	my $Ident	= qr{[A-Za-z\d_]+};
++	my $Storage	= qr{extern|static};
++	my $Sparse	= qr{__user|__kernel|__force|__iomem};
++	my $NonptrType	= qr{
++				\b
++				(?:const\s+)?
++				(?:unsigned\s+)?
++				(?:
++					void|
++					char|
++					short|
++					int|
++					long|
++					unsigned|
++					float|
++					double|
++					long\s+int|
++					long\s+long|
++					long\s+long\s+int|
++					struct\s+$Ident|
++					union\s+$Ident|
++					${Ident}_t
++				)
++				(?:\s+$Sparse)*
++				\b
++			  }x;
++	my $Type	= qr{
++				\b$NonptrType\b
++				(?:\s*\*+\s*const|\s*\*+)?
++			  }x;
++	my $Declare	= qr{(?:$Storage\s+)?$Type};
++	my $Attribute	= qr{__read_mostly|__init|__initdata};
+ 
+ 	foreach my $line (@lines) {
+ 		$linenr++;
+@@ -321,6 +335,7 @@ sub process {
+ # blank context lines so we need to count that too.
+ 		if ($line =~ /^( |\+|$)/) {
+ 			$realline++;
++			$realcnt-- if ($realcnt != 0);
+ 
+ 			# track any sort of multi-line comment.  Obviously if
+ 			# the added text or context do not include the whole
+@@ -345,8 +360,9 @@ sub process {
+ 			# Track the previous line.
+ 			($prevline, $stashline) = ($stashline, $line);
+ 			($previndent, $stashindent) = ($stashindent, $indent);
++		} elsif ($realcnt == 1) {
++			$realcnt--;
+ 		}
+-		$realcnt-- if ($realcnt != 0);
+ 
+ #make up the handle for any error we report on this line
+ 		$here = "#$linenr: ";
+@@ -357,14 +373,11 @@ sub process {
+ 		my $hereprev = "$here\n$prevline\n$line\n\n";
+ 
+ #check the patch for a signoff:
+-		if ($line =~ /^\s*Signed-off-by:\s/) {
+-			$signoff++;
+-
+-		} elsif ($line =~ /^\s*signed-off-by:/i) {
++		if ($line =~ /^\s*signed-off-by:/i) {
+ 			# This is a signoff, if ugly, so do not double report.
+ 			$signoff++;
+ 			if (!($line =~ /^\s*Signed-off-by:/)) {
+-				print "use Signed-off-by:\n";
++				print "Signed-off-by: is the preferred form\n";
+ 				print "$herecurr";
+ 				$clean = 0;
+ 			}
+@@ -389,7 +402,7 @@ sub process {
+ 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
+ 
+ #trailing whitespace
+-		if ($line=~/^\+.*\S\s+$/) {
++		if ($line =~ /^\+.*\S\s+$/ || $line =~ /^\+\s+$/) {
+ 			my $herevet = "$here\n" . cat_vet($line) . "\n\n";
+ 			print "trailing whitespace\n";
+ 			print "$herevet";
+@@ -525,24 +538,23 @@ sub process {
+ 		}
+ 
+ # * goes on variable not on type
+-		if ($line =~ m{[A-Za-z\d_]+(\*+) [A-Za-z\d_]+}) {
+-			print "\"foo$1 bar\" should be \"foo $1bar\"\n";
++		if ($line =~ m{\($NonptrType(\*+)(?:\s+const)?\)}) {
++			print "\"(foo$1)\" should be \"(foo $1)\"\n";
+ 			print "$herecurr";
+ 			$clean = 0;
+-		}
+-		if ($line =~ m{$Type (\*) [A-Za-z\d_]+} ||
+-		    $line =~ m{[A-Za-z\d_]+ (\*\*+) [A-Za-z\d_]+}) {
+-			print "\"foo $1 bar\" should be \"foo $1bar\"\n";
++
++		} elsif ($line =~ m{\($NonptrType\s+(\*+)(?!\s+const)\s+\)}) {
++			print "\"(foo $1 )\" should be \"(foo $1)\"\n";
+ 			print "$herecurr";
+ 			$clean = 0;
+-		}
+-		if ($line =~ m{\([A-Za-z\d_\s]+[A-Za-z\d_](\*+)\)}) {
+-			print "\"(foo$1)\" should be \"(foo $1)\"\n";
++
++		} elsif ($line =~ m{$NonptrType(\*+)(?:\s+const)?\s+[A-Za-z\d_]+}) {
++			print "\"foo$1 bar\" should be \"foo $1bar\"\n";
+ 			print "$herecurr";
+ 			$clean = 0;
+-		}
+-		if ($line =~ m{\([A-Za-z\d_\s]+[A-Za-z\d_]\s+(\*+)\s+\)}) {
+-			print "\"(foo $1 )\" should be \"(foo $1)\"\n";
++
++		} elsif ($line =~ m{$NonptrType\s+(\*+)(?!\s+const)\s+[A-Za-z\d_]+}) {
++			print "\"foo $1 bar\" should be \"foo $1bar\"\n";
+ 			print "$herecurr";
+ 			$clean = 0;
+ 		}
+@@ -581,7 +593,7 @@ sub process {
+ 
+ # function brace can't be on same line, except for #defines of do while,
+ # or if closed on same line
+-		if (($line=~/[A-Za-z\d_]+\**\s+\**[A-Za-z\d_]+\(.*\).* {/) and
++		if (($line=~/$Type\s*[A-Za-z\d_]+\(.*\).* {/) and
+ 		    !($line=~/\#define.*do\s{/) and !($line=~/}/)) {
+ 			print "braces following function declarations go on the next line\n";
+ 			print "$herecurr";
+@@ -624,7 +636,7 @@ sub process {
+ 				my $ca = substr($opline, $off - 1, 1);
+ 				my $cc = '';
+ 				if (length($opline) >= ($off + length($elements[$n + 1]))) {
+-					$cc = substr($opline, $off + length($elements[$n + 1]), 1);
++					$cc = substr($opline, $off + length($elements[$n + 1]));
+ 				}
+ 
+ 				my $ctx = "${a}x${c}";
+@@ -636,8 +648,16 @@ sub process {
+ 
+ 				##print "<$s1:$op:$s2> <$elements[$n]:$elements[$n + 1]:$elements[$n + 2]>\n";
+ 
+-				# We need ; as an operator.  // is a comment.
+-				if ($op eq ';' or $op eq '//') {
++				# ; should have either the end of line or a space or \ after it
++				if ($op eq ';') {
++					if ($ctx !~ /.x[WE]/ && $cc !~ /^\\/) {
++						print "need space after that '$op' $at\n";
++						print "$hereptr";
++						$clean = 0;
++					}
++
++				# // is a comment
++				} elsif ($op eq '//') {
+ 
+ 				# -> should have no spaces
+ 				} elsif ($op eq '->') {
+@@ -649,7 +669,7 @@ sub process {
+ 
+ 				# , must have a space on the right.
+ 				} elsif ($op eq ',') {
+-					if ($ctx !~ /.xW|.xE/ && $cc ne '}') {
++					if ($ctx !~ /.xW|.xE/ && $cc !~ /^}/) {
+ 						print "need space after that '$op' $at\n";
+ 						print "$hereptr";
+ 						$clean = 0;
+@@ -670,12 +690,12 @@ sub process {
+ 
+ 				# unary ++ and unary -- are allowed no space on one side.
+ 				} elsif ($op eq '++' or $op eq '--') {
+-					if ($ctx !~ /[WOB]x[^W]/ && $ctx !~ /[^W]x[WOB]/) {
++					if ($ctx !~ /[WOB]x[^W]/ && $ctx !~ /[^W]x[WOBE]/) {
+ 						print "need space one side of that '$op' $at\n";
+ 						print "$hereptr";
+ 						$clean = 0;
+ 					}
+-					if ($ctx =~ /Wx./ && $cc eq ';') {
++					if ($ctx =~ /Wx./ && $cc =~ /^;/) {
+ 						print "no space before that '$op' $at\n";
+ 						print "$hereptr";
+ 						$clean = 0;
+@@ -707,7 +727,7 @@ sub process {
+ 				#
+ 				} elsif ($op eq '*') {
+ 					if ($ca eq '*') {
+-						if ($cc =~ /\s/) {
++						if ($cc =~ /^\s(?!\s*const)/) {
+ 							print "no space after that '$op' $at\n";
+ 							print "$hereptr";
+ 							$clean = 0;
+@@ -803,7 +823,7 @@ sub process {
+ 
+ # if/while/etc brace do not go on next line, unless defining a do while loop,
+ # or if that brace on the next line is for something else
+-		if ($prevline=~/\b(if|while|for|switch)\s*\(/) {
++		if ($prevline=~/\b(?:(if|while|for|switch)\s*\(|do\b|else\b)/) {
+ 			my @opened = $prevline=~/\(/g;
+ 			my @closed = $prevline=~/\)/g;
+ 			my $nr_line = $linenr;
+@@ -823,14 +843,22 @@ sub process {
+ 				@closed = $prevline=~/\)/g;
+ 			}
+ 
+-			if (($prevline=~/\b(if|while|for|switch)\s*\(.*\)\s*$/) and ($next_line=~/{/) and
+-			   !($next_line=~/\b(if|while|for|switch)/) and !($next_line=~/\#define.*do.*while/)) {
++			if (($prevline=~/\b(?:(if|while|for|switch)\s*\(.*\)|do|else)\s*$/) and ($next_line=~/{/) and
++			   !($next_line=~/\b(?:if|while|for|switch|do|else)\b/) and !($next_line=~/\#define.*do.*while/)) {
+ 				print "That { should be on the previous line\n";
+ 				print "$here\n$display_segment\n$next_line\n\n";
+ 				$clean = 0;
+ 			}
+ 		}
+ 
++# if and else should not have general statements after it
++		if ($line =~ /^.\s*(?:}\s*)?else\b(.*)/ &&
++		    $1 !~ /^\s*(?:\sif|{|$)/) {
++			print "trailing statements should be on next line\n";
++			print "$herecurr";
++			$clean = 0;
++		}
++
+ # multi-statement macros should be enclosed in a do while loop, grab the
+ # first statement and ensure its the whole macro if its not enclosed
+ # in a known goot container
+@@ -841,11 +869,22 @@ sub process {
+ 			# Grab the first statement, if that is the entire macro
+ 			# its ok.  This may start either on the #define line
+ 			# or the one below.
+-			my $ctx1 = join('', ctx_statement($linenr - 1, $realcnt + 1));
+-			my $ctx2 = join('', ctx_statement($linenr, $realcnt));
++			my $ln = $linenr;
++			my $cnt = $realcnt;
+ 
+-			if ($ctx1 =~ /\\$/ && $ctx2 =~ /\\$/) {
+-				print "Macros with multiple statements should be enclosed in a do - while loop\n";
++			# If the macro starts on the define line start there.
++			if ($prevline !~ m{^.#\s*define\s*$Ident(?:\([^\)]*\))?\s*\\\s*$}) {
++				$ln--;
++				$cnt++;
++			}
++			my $ctx = join('', ctx_statement($ln, $cnt));
++
++			if ($ctx =~ /\\$/) {
++				if ($ctx =~ /;/) {
++					print "Macros with multiple statements should be enclosed in a do - while loop\n";
++				} else {
++					print "Macros with complex values should be enclosed in parenthesis\n";
++				}
+ 				print "$hereprev";
+ 				$clean = 0;
+ 			}
