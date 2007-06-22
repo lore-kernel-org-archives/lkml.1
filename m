@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbXFVMgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbXFVMjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754850AbXFVMgB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 08:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXFVMfx
+	id S1755335AbXFVMjf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 08:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbXFVMj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 08:35:53 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:55603 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbXFVMfw (ORCPT
+	Fri, 22 Jun 2007 08:39:27 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:37869 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753404AbXFVMj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 08:35:52 -0400
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+	Fri, 22 Jun 2007 08:39:26 -0400
+Subject: Re: [RFC PATCH 1/6] Convert the RCU tasklet into a softirq
 From: Steven Rostedt <rostedt@goodmis.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
        Oleg Nesterov <oleg@tv-sign.ru>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070622070948.GA21291@infradead.org>
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+In-Reply-To: <20070622074344.GA9472@elte.hu>
 References: <20070622040014.234651401@goodmis.org>
-	 <20070622070948.GA21291@infradead.org>
+	 <20070622040136.621853953@goodmis.org>
+	 <20070622071039.GB21291@infradead.org>  <20070622074344.GA9472@elte.hu>
 Content-Type: text/plain
-Date: Fri, 22 Jun 2007 08:32:22 -0400
-Message-Id: <1182515542.5493.20.camel@localhost.localdomain>
+Date: Fri, 22 Jun 2007 08:35:47 -0400
+Message-Id: <1182515747.5493.23.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph,
-
-Thanks for taking the time to look at my patches!
-
-
-On Fri, 2007-06-22 at 08:09 +0100, Christoph Hellwig wrote:
-> > I've developed this way to replace all tasklets with work queues without
-> > having to change all the drivers that use them.  I created an API that
-> > uses the tasklet API as a wrapper to a work queue.  This API doesn't need
-> > to be permanent. It shows 1) that work queues can replace tasklets, and
-> > 2) we can remove a duplicate functionality from the kernel.  This API
-> > only needs to be around until we removed all uses of tasklets from
-> > all drivers.
+On Fri, 2007-06-22 at 09:43 +0200, Ingo Molnar wrote:
+> * Christoph Hellwig <hch@infradead.org> wrote:
 > 
-> I don't like this wrapping at all.  What you're doing is a tradeoff to
-> do less work today in exchange for more maintaince overhead and more crufty
-> code in the future.  So while I sympathize a lot with trying to get rid
-> of tasklets I'd rather prefer to convert individual drivers over until
-> all users are gone.  It's not exactly a very complicated conversion either.
+> > On Fri, Jun 22, 2007 at 12:00:15AM -0400, Steven Rostedt wrote:
+> > > I believe this was originally done by Dipankar Sarma. I pulled these
+> > > changes from the -rt kernel.
+> > > 
+> > > For better preformance, RCU should use a softirq instead of a
+> > > tasklet.
+> > 
+> > I was under the imporession we had merged this a while ago due to 
+> > tasklet bottlenecks on big machines.  Any reason why it has been 
+> > delayed so long?
 > 
-> > 6) This is the magic to make tasklets into work queues. It allows for
-> > the kernel to be configured either with the normal tasklets, as it is
-> > today, or with the tasklets-as-work-queues.
+> i thought so too, up until a few weeks ago. I think i might have mixed 
+> it up mentally with the scheduler rebalancing tasklet: that was 
+> converted to softirqs on my request and made me forget about the RCU 
+> tasklet thing.
 > 
-> And this is something that might be fine for benchmarking, but not something
-> we should put in.  Keeping two wildly different implementation of core
-> functionality with very different behaviour around is quite bad.  Better
-> kill tasklets once for all.
 
-Honestly, I highly doubted that this would make it up to Linus's tree.
-My aim was to get this into -mm, and perhaps even turn on the
-tasklets-as-workqueues as default.
+I think the reason it was dropped was because it was part of a large
+patch series that didn't make it into the kernel. And unfortunately,
+this was dropped in that regard.
 
-The objective of these patches was more of a proof-of-concept, showing
-that the tasklets are indeed obsolete today.  By putting this patch set
-into -mm, we can get a good idea of the regressions that this conversion
-would cause, hopefully before we did the real change of converting a
-driver's tasklet into a work queue.
 
-I only have a limited amount of hardware to test on. I believe this is a
-good candidate as a permanent resident into -mm and can display the
-effects of using work queues instead of tasklets in a wider arena.
-
-This patch is too much of a kludge to put into Linus's tree, and if it
-were in that tree, it would probably cause laziness and make it even
-less likely that driver authors would get rid of their tasklets.  But I
-argue it is perfect for the -mm tree, because it allows users to easily
-(with a config option) turn it on and off and run benchmarks to see its
-effect.
-
+If you do pull this patch in, I would like to get a sign-off-by from
+Dipankar and give him credit, since I think he was the original author.
+I just pulled it out of the -rt branch.
 
 -- Steve
+
 
