@@ -1,77 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbXFVQZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbXFVQ0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbXFVQZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758181AbXFVQZS
+	id S1759585AbXFVQ0S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757904AbXFVQ0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:25:18 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:55094 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286AbXFVQZQ convert rfc822-to-8bit (ORCPT
+	Fri, 22 Jun 2007 12:26:09 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:12662 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757852AbXFVQ0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:25:16 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH 4/6] Make DRM use the tasklet is-sched API
-Date: Fri, 22 Jun 2007 18:10:55 +0200
-User-Agent: KMail/1.9.6
-Cc: Daniel Walker <dwalker@mvista.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-References: <20070622040014.234651401@goodmis.org> <1182494169.3228.11.camel@dhcp193.mvista.com> <1182494960.20203.34.camel@chaos>
-In-Reply-To: <1182494960.20203.34.camel@chaos>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Fri, 22 Jun 2007 12:26:07 -0400
+X-IronPort-AV: i="4.16,452,1175497200"; 
+   d="scan'208"; a="4460124:sNHT24866922"
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 22 Jun 2007 09:26:05 -0700
+Message-ID: <ada1wg42bxe.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200706221810.56298.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/HhStcGzf43027w11Fz99UoN2sZGNGON+4eqN
- aDeChmALcTjFNRgyCeHkaQVkVz1mv/adfxa9X76EgOTNc5O/Zm
- Y2UMcsmXHrlgHU+Uaoe7Q==
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 22 Jun 2007 16:26:05.0846 (UTC) FILETIME=[0854A360:01C7B4EA]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 June 2007, Thomas Gleixner wrote:
-> > > Index: linux-2.6.21-rt9/drivers/char/drm/drm_irq.c
-> > > ===================================================================
-> > > --- linux-2.6.21-rt9.orig/drivers/char/drm/drm_irq.c
-> > > +++ linux-2.6.21-rt9/drivers/char/drm/drm_irq.c
-> > > @@ -461,7 +461,7 @@ void drm_locked_tasklet(drm_device_t *de
-> > >     static DECLARE_TASKLET(drm_tasklet, drm_locked_tasklet_func, 0);
-> > >  
-> > >     if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ) ||
-> > > -       test_bit(TASKLET_STATE_SCHED, &drm_tasklet.state))
-> > > +       tasklet_is_scheduled(&drm_tasklet))
-> > >             return;
-> > >  
-> > >     spin_lock_irqsave(&dev->tasklet_lock, irqflags);
-> > > 
-> > 
-> > 
-> > No sense in having a patch just for this, may as well merge this with
-> > patch 3 ..
-> 
-> Wrong. patch 3 adds the API and this one makes use of it. Stevens split
-> makes perfectly sense.
+Linus, please pull from
 
-Wouldn't the easy solution be to get rid of drm_locked_tasklet
-entirely and convert i915_vblank_tasklet(), the only user, to use
-a work queue right away?
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-The drm_locked_tasklet() function seems to have multiple bugs anyway,
-so getting rid of it can only help, and it avoids exporting a new
-tasklet_is_scheduled() interface.
+This tree is also available from kernel.org mirrors at:
 
-	Arnd <><
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+
+This will get a few fixes for crashes/deadlocks as a well as a few
+other small, safe fixes:
+
+Jack Morgenstein (1):
+      IB/mlx4: Correct max_srq_wr returned from mlx4_ib_query_device()
+
+Michael S. Tsirkin (2):
+      IPoIB/cm: Initialize RX before moving QP to RTR
+      IPoIB/cm: Fix interoperability when MTU doesn't match
+
+Roland Dreier (2):
+      IB/umem: Fix possible hang on process exit
+      IPoIB/cm: Remove dead definition of struct ipoib_cm_id
+
+ drivers/infiniband/core/umem.c          |   16 ++++++-----
+ drivers/infiniband/hw/mlx4/main.c       |    2 +-
+ drivers/infiniband/ulp/ipoib/ipoib_cm.c |   42 ++++++++++++++----------------
+ 3 files changed, 30 insertions(+), 30 deletions(-)
+
+
+diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
+index b4aec51..d40652a 100644
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -225,13 +225,15 @@ void ib_umem_release(struct ib_umem *umem)
+ 	 * up here and not be able to take the mmap_sem.  In that case
+ 	 * we defer the vm_locked accounting to the system workqueue.
+ 	 */
+-	if (context->closing && !down_write_trylock(&mm->mmap_sem)) {
+-		INIT_WORK(&umem->work, ib_umem_account);
+-		umem->mm   = mm;
+-		umem->diff = diff;
+-
+-		schedule_work(&umem->work);
+-		return;
++	if (context->closing) {
++		if (!down_write_trylock(&mm->mmap_sem)) {
++			INIT_WORK(&umem->work, ib_umem_account);
++			umem->mm   = mm;
++			umem->diff = diff;
++
++			schedule_work(&umem->work);
++			return;
++		}
+ 	} else
+ 		down_write(&mm->mmap_sem);
+ 
+diff --git a/drivers/infiniband/hw/mlx4/main.c b/drivers/infiniband/hw/mlx4/main.c
+index 1095c82..c591616 100644
+--- a/drivers/infiniband/hw/mlx4/main.c
++++ b/drivers/infiniband/hw/mlx4/main.c
+@@ -120,7 +120,7 @@ static int mlx4_ib_query_device(struct ib_device *ibdev,
+ 	props->max_qp_init_rd_atom = dev->dev->caps.max_qp_init_rdma;
+ 	props->max_res_rd_atom	   = props->max_qp_rd_atom * props->max_qp;
+ 	props->max_srq		   = dev->dev->caps.num_srqs - dev->dev->caps.reserved_srqs;
+-	props->max_srq_wr	   = dev->dev->caps.max_srq_wqes;
++	props->max_srq_wr	   = dev->dev->caps.max_srq_wqes - 1;
+ 	props->max_srq_sge	   = dev->dev->caps.max_srq_sge;
+ 	props->local_ca_ack_delay  = dev->dev->caps.local_ca_ack_delay;
+ 	props->atomic_cap	   = dev->dev->caps.flags & MLX4_DEV_CAP_FLAG_ATOMIC ?
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_cm.c b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
+index 076a0bb..5ffc464 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_cm.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
+@@ -56,13 +56,6 @@ MODULE_PARM_DESC(cm_data_debug_level,
+ #define IPOIB_CM_RX_DELAY       (3 * 256 * HZ)
+ #define IPOIB_CM_RX_UPDATE_MASK (0x3)
+ 
+-struct ipoib_cm_id {
+-	struct ib_cm_id *id;
+-	int flags;
+-	u32 remote_qpn;
+-	u32 remote_mtu;
+-};
+-
+ static struct ib_qp_attr ipoib_cm_err_attr = {
+ 	.qp_state = IB_QPS_ERR
+ };
+@@ -309,6 +302,11 @@ static int ipoib_cm_req_handler(struct ib_cm_id *cm_id, struct ib_cm_event *even
+ 		return -ENOMEM;
+ 	p->dev = dev;
+ 	p->id = cm_id;
++	cm_id->context = p;
++	p->state = IPOIB_CM_RX_LIVE;
++	p->jiffies = jiffies;
++	INIT_LIST_HEAD(&p->list);
++
+ 	p->qp = ipoib_cm_create_rx_qp(dev, p);
+ 	if (IS_ERR(p->qp)) {
+ 		ret = PTR_ERR(p->qp);
+@@ -320,24 +318,24 @@ static int ipoib_cm_req_handler(struct ib_cm_id *cm_id, struct ib_cm_event *even
+ 	if (ret)
+ 		goto err_modify;
+ 
++	spin_lock_irq(&priv->lock);
++	queue_delayed_work(ipoib_workqueue,
++			   &priv->cm.stale_task, IPOIB_CM_RX_DELAY);
++	/* Add this entry to passive ids list head, but do not re-add it
++	 * if IB_EVENT_QP_LAST_WQE_REACHED has moved it to flush list. */
++	p->jiffies = jiffies;
++	if (p->state == IPOIB_CM_RX_LIVE)
++		list_move(&p->list, &priv->cm.passive_ids);
++	spin_unlock_irq(&priv->lock);
++
+ 	ret = ipoib_cm_send_rep(dev, cm_id, p->qp, &event->param.req_rcvd, psn);
+ 	if (ret) {
+ 		ipoib_warn(priv, "failed to send REP: %d\n", ret);
+-		goto err_rep;
++		if (ib_modify_qp(p->qp, &ipoib_cm_err_attr, IB_QP_STATE))
++			ipoib_warn(priv, "unable to move qp to error state\n");
+ 	}
+-
+-	cm_id->context = p;
+-	p->jiffies = jiffies;
+-	p->state = IPOIB_CM_RX_LIVE;
+-	spin_lock_irq(&priv->lock);
+-	if (list_empty(&priv->cm.passive_ids))
+-		queue_delayed_work(ipoib_workqueue,
+-				   &priv->cm.stale_task, IPOIB_CM_RX_DELAY);
+-	list_add(&p->list, &priv->cm.passive_ids);
+-	spin_unlock_irq(&priv->lock);
+ 	return 0;
+ 
+-err_rep:
+ err_modify:
+ 	ib_destroy_qp(p->qp);
+ err_qp:
+@@ -754,9 +752,9 @@ static int ipoib_cm_rep_handler(struct ib_cm_id *cm_id, struct ib_cm_event *even
+ 
+ 	p->mtu = be32_to_cpu(data->mtu);
+ 
+-	if (p->mtu < priv->dev->mtu + IPOIB_ENCAP_LEN) {
+-		ipoib_warn(priv, "Rejecting connection: mtu %d < device mtu %d + 4\n",
+-			   p->mtu, priv->dev->mtu);
++	if (p->mtu <= IPOIB_ENCAP_LEN) {
++		ipoib_warn(priv, "Rejecting connection: mtu %d <= %d\n",
++			   p->mtu, IPOIB_ENCAP_LEN);
+ 		return -EINVAL;
+ 	}
+ 
