@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbXFVIdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbXFVIfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbXFVIdo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 04:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbXFVIdg
+	id S1755904AbXFVIfV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 04:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbXFVIfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 04:33:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60740 "EHLO mx3.mail.elte.hu"
+	Fri, 22 Jun 2007 04:35:10 -0400
+Received: from ns.firmix.at ([62.141.48.66]:36325 "EHLO ns.firmix.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbXFVIdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 04:33:35 -0400
-Date: Fri, 22 Jun 2007 10:33:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH -rt] CONFIG_PARAVIRT and CONFIG_MCOUNT don't play well
-	together
-Message-ID: <20070622083330.GB19382@elte.hu>
-References: <20070622080634.GP3723@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752435AbXFVIfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 04:35:07 -0400
+Subject: Re: Please release a stable kernel Linux 3.0
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: =?ISO-8859-1?Q?Zolt=E1n?= HUBERT <zoltan.hubert@zzaero.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200706220057.33984.zoltan.hubert@zzaero.com>
+References: <200706212349.54983.zoltan.hubert@zzaero.com>
+	 <9a8748490706211529yca0588dgd1f7e0b86f7e4a62@mail.gmail.com>
+	 <200706220057.33984.zoltan.hubert@zzaero.com>
+Content-Type: text/plain; charset=utf-8
+Organization: Firmix Software GmbH
+Date: Fri, 22 Jun 2007 10:34:56 +0200
+Message-Id: <1182501296.27891.7.camel@tara.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 8bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -1.095 () AWL
+X-Firmix-Spam-Status: No, hits=-1.095 required=5
+X-Spam-Score: -1.095 () AWL
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20070622080634.GP3723@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-06-22 at 00:57 +0200, Zoltán HUBERT wrote:
+[...]
+> Well, I'm using SuSE Pro 9.3 (excellent choice by the way), 
 
-* Chris Wright <chrisw@sous-sol.org> wrote:
+Perhaps in April 2005. And if I read
+http://www.pro-linux.de/security/7043 correctly it is unsupported
+anyways (sorry, I can't find a date on that page).
+ATM there are probably newer releases and I doubt that there are no
+updates for the kernel (even Debian/Stable has them).
 
-> Current -rt is broken when compiling with CONFIG_PARAVIRT and 
-> CONFIG_MCOUNT both enabled.  Because CONFIG_MCOUNT disables 
-> CONFIG_REGPARM, the calling convention must once again be explicit 
-> with fastcall.  However, this was only half-way addressed in the -rt 
-> patch (adding fastcall back to paravirt_ops function ptr declaration 
-> but not the actual function definitions) so the compiled kernel has 
-> caller putting stuff in registers and callee pulling things from the 
-> stack. Impressive how far into boot it can get despite that ;-) Thanks 
-> to Steven Rostedt for prodding me and starting the initial debugging.
+> coming with kernel 2.6.10-SuSE, on a ATI laptop, and the 
+> drivers privided wouldn't compile (suspend & freinds). The 
+> SATA disks were only supported from 2.6.15 (which just came 
+> out), so I had to edit the "source code" of a closed source 
+> driver to make it all work well. If that's "easy" for you I 
+> doubt it is for 99.999% of earth's population. "World 
+> domination" is far away.
 
-thanks! I ran into this before and asked for the fastcalls to not be 
-removed from upstream paravirt.c but to no avail it seems. It does no 
-harm to anyone to keep the 'fastcall' declarations and definitions for 
-places where _actual assembly code_ depends on the calling convention. 
-Could someone please send this upstream-wards too?
+That's an unsolvable problem: You want a "stable" distribution from year
+X to support hardware designed and built in the future.
 
-	Ingo
+And BTW perhaps it is enough to take the kernel RPM (+ plus a few of the
+kernel-near ones - dependencies will probably tell you) from the most
+recent SuSE and try that if you for whatever reason want to stay with
+the above release.
+
+[...]
+
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
+
