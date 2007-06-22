@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbXFVFuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbXFVF4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752813AbXFVFuU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 01:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbXFVFuJ
+	id S1753421AbXFVF4j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 01:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbXFVF4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 01:50:09 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:26180 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbXFVFuI (ORCPT
+	Fri, 22 Jun 2007 01:56:30 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:35037 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751398AbXFVF43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 01:50:08 -0400
-Date: Thu, 21 Jun 2007 22:51:08 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, ak@suse.de
-Subject: [PATCH] doc/oops-tracing: add Code: decode info
-Message-Id: <20070621225108.bb69a93d.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Jun 2007 01:56:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZXsQGKaeRguiXkU4dHawcUpj8MyKQwfQPqJECOHvIeH8MCMHHNkJo1Pylvjy6rA+tit0TCzKfQ+cQQA1vgpxzXUXukGWDLJd2sDKQ4vklAaLGHxhgImtvMzdBMEcCOw3/KtAzevw8aHD8zEOEg2qwcVV6Rpf3LUiq2GvMA6ULkU=
+Message-ID: <787b0d920706212256u7e78ba6n15ef41bcea99aff0@mail.gmail.com>
+Date: Fri, 22 Jun 2007 01:56:28 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: JIT emulator needs
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1182447884.2704.7.camel@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com>
+	 <1182447884.2704.7.camel@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On 6/21/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Fri, 2007-06-08 at 02:35 -0400, Albert Cahalan wrote:
+> > Right now, Linux isn't all that friendly to JIT emulators.
+> > Here are the problems and suggestions to improve the situation.
+> >
+> > There is an SE Linux execmem restriction that enforces W^X.
+> > Assuming you don't wish to just disable SE Linux, there are
+> > two ugly ways around the problem. You can mmap a file twice,
+> > or you can abuse SysV shared memory. The mmap method requires
+> > that you know of a filesystem mounted rw,exec where you can
+> > write a very large temporary file. This arbitrary filesystem,
+> > rather than swap space, will be the backing store. The SysV
+> > shared memory method requires an undocumented flag and is
+> > subject to some annoying size limits. Both methods create
+> > objects that will fail to be deleted if the program dies
+> > before marking the objects for deletion.
+>
+> and these methods also destroy yourself on any machine with a looser
+> cache coherency between I and D-cache....
+>
+> for all but x86 you pretty much have to do the mprotect() between the
+> two states to deal with the cache flushing properly...
 
-Add info that the Code: bytes line contains <xy> or (wxyz) in some
-architecture oops reports and what that means.
+If the instructions to force data write-back and/or to
+invalidate the instruction cache are priveleged, yes.
+AFAIK, only ARM is that lame.
 
-Add URL for a script by Andi Kleen that reads the Code: line from an Oops
-report file and generates assembly code from the hex bytes.
-(This script does not handle Code: lines that contain <xy> or (wxyz)
-markings.)
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/oops-tracing.txt |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
---- linux-2.6.22-rc5.orig/Documentation/oops-tracing.txt
-+++ linux-2.6.22-rc5/Documentation/oops-tracing.txt
-@@ -86,6 +86,21 @@ stuff are the values reported by the Oop
- and do a replace of spaces to "\x" - that's what I do, as I'm too lazy 
- to write a program to automate this all).
- 
-+Alternatively, you can use the shell script from
-+<ftp://ftp.firstfloor.org/pub/ak/shell/decodecode>.  Usage is:
-+decodecode <oops.txt
-+
-+The hex bytes that follow "Code:" may (in some architectures) have a series
-+of bytes that precede the current instruction pointer as well as bytes at and
-+following the current instruction pointer.  In some cases, one instruction
-+byte or word is surrounded by <> or (), as in "<86>" or "(f00d)".  These
-+<> or () markings indicate the current instruction pointer.  Example from
-+i386, split into multiple lines for readability:
-+
-+Code: f9 0f 8d f9 00 00 00 8d 42 0c e8 dd 26 11 c7 a1 60 ea 2b f9 8b 50 08 a1
-+64 ea 2b f9 8d 34 82 8b 1e 85 db 74 6d 8b 15 60 ea 2b f9 <8b> 43 04 39 42 54
-+7e 04 40 89 42 54 8b 43 04 3b 05 00 f6 52 c0
-+
- Finally, if you want to see where the code comes from, you can do
- 
- 	cd /usr/src/linux
+For example, PowerPC lets unprivileged code run
+the required instructions.
