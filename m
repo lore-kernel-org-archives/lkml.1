@@ -1,43 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbXFVO0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbXFVO2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757666AbXFVO0z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbXFVO0s
+	id S1758014AbXFVO2X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbXFVO2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:26:48 -0400
-Received: from ns2.suse.de ([195.135.220.15]:45373 "EHLO mx2.suse.de"
+	Fri, 22 Jun 2007 10:28:16 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1757 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754123AbXFVO0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:26:47 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] doc/oops-tracing: add Code: decode info
-Date: Fri, 22 Jun 2007 16:26:39 +0200
-User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-References: <20070621225108.bb69a93d.randy.dunlap@oracle.com>
-In-Reply-To: <20070621225108.bb69a93d.randy.dunlap@oracle.com>
+	id S1755476AbXFVO2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:28:15 -0400
+Date: Fri, 22 Jun 2007 16:27:53 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
+       video4linux-list@redhat.com,
+       =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
+       luca.risolia@studio.unibo.it, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
+ [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
+In-Reply-To: <1182518566.14289.20.camel@gaivota>
+Message-ID: <Pine.LNX.4.64.0706221602000.1817@scrub.home>
+References: <200706211117.55908.toralf.foerster@gmx.de> 
+ <200706211231.53898.luca.risolia@studio.unibo.it>  <200706211326.45031.toralf.foerster@gmx.de>
+  <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706221626.39969.ak@suse.de>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811837-1671747748-1182522473=:1817"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 June 2007 07:51:08 Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Add info that the Code: bytes line contains <xy> or (wxyz) in some
-> architecture oops reports and what that means.
-> 
-> Add URL for a script by Andi Kleen that reads the Code: line from an Oops
-> report file and generates assembly code from the hex bytes.
-> (This script does not handle Code: lines that contain <xy> or (wxyz)
-> markings.)
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Should probably fix that and put it into scripts/ then
+---1463811837-1671747748-1182522473=:1817
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
--Andi
+Hi,
+
+On Fri, 22 Jun 2007, Mauro Carvalho Chehab wrote:
+
+> Hi Roman,
+>=20
+> Several instabilities on Kconfig started to happen after replacing
+> Kconfig menus to use menuconfig, as this one, reported by Oliver:
+>=20
+> Em Qui, 2007-06-21 =C3=A0s 13:50 +0200, Oliver Neukum escreveu:
+> > Am Donnerstag, 21. Juni 2007 schrieb Toralf F=C3=B6rster:
+> > > Right, but IMHO this issue is typical for a problem with the Kconfig =
+definitions of this module.
+> > >=20
+> > > I'll set USB devs as Cc: therefore.
+
+There is too little context here, what was the exact error?
+I'm assuming it's the module vs. builtin problem?
+
+> In this specific case, all V4L USB drivers depends on V4L_USB_DRIVERS,
+> that depends, in turn, on USB. So, if USB is not selected,
+> V4L_USB_DRIVERS should be unselected, unselecting zc0301.
+>=20
+> Unfortunately, the Kernel building system is not properly handling it.
+>=20
+> This is the (snipped) media/video/Kconfig:
+>=20
+> menuconfig V4L_USB_DRIVERS
+>         bool "V4L USB devices"
+>         depends on USB
+>         default y
+>=20
+
+The menuconfig patches were a little aggressive here, it created a config=
+=20
+symbol where there was none before and in this case it even changed=20
+dependencies (it turns USB into a bool).
+I'm also a little irritated by the "default y", if I enable V4L I'm very=20
+tempted to check what other useless stuff has been automatically enabled,=
+=20
+which I have to turn off again.
+
+bye, Roman
+---1463811837-1671747748-1182522473=:1817--
