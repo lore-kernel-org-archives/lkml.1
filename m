@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbXFVOsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbXFVOsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756729AbXFVOsK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757540AbXFVOr5
+	id S1759362AbXFVOsb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759259AbXFVOsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:47:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36300 "EHLO mx1.redhat.com"
+	Fri, 22 Jun 2007 10:48:10 -0400
+Received: from thunk.org ([69.25.196.29]:54739 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757502AbXFVOr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:47:56 -0400
-Message-ID: <467BE118.4090308@redhat.com>
-Date: Fri, 22 Jun 2007 10:47:52 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	id S1757838AbXFVOsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:48:08 -0400
+Date: Fri, 22 Jun 2007 10:47:48 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Alexandre Oliva <aoliva@redhat.com>,
+       davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Message-ID: <20070622144748.GB15285@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Al Viro <viro@ftp.linux.org.uk>,
+	Alexandre Oliva <aoliva@redhat.com>, davids@webmaster.com,
+	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622013417.GT21478@ftp.linux.org.uk> <20070622041949.GA15625@thunk.org> <20070622101423.145b0279@the-village.bc.nu>
 MIME-Version: 1.0
-To: "Jay L. T. Cornwall" <jay@esuna.co.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc5: pdflush oops under heavy disk load
-References: <467B12CA.5060405@esuna.co.uk>
-In-Reply-To: <467B12CA.5060405@esuna.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622101423.145b0279@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/21/2007 08:07 PM, Jay L. T. Cornwall wrote:
-> Hi,
+On Fri, Jun 22, 2007 at 10:14:23AM +0100, Alan Cox wrote:
+> > Another law of negotiations --- don't goad people into hardening their
+> > positions; it helps neither you nor your interests.
 > 
-> Kernel version: 2.6.22-rc5 (confirmed also on 2.6.20)
-> Kernel config : Ubuntu 7.04 default (SMP)
-> 
-> Relevant hardware:
->   Asus P5K (Intel P35 chipset)
->   Core 2 Duo E6600 2.4GHz
->   Western Digital 10KRPM 150GB HDD on JMicron 20360/20363 AHCI
-> 
-> Netconsoled dump:
-> 
-> [  724.350222] general protection fault: 0000 [1] SMP
-> [  724.350413] CPU 1
-> [  724.350520] Modules linked in: usb_storage libusual netconsole
-> binfmt_misc rfcomm l2cap bluetooth ppdev capability commoncap
-> acpi_cpufreq cpufreq_stats cpufreq_userspace cpufreq_ondemand
-> cpufreq_conservative cpufreq_powersave freq_table video container
-> battery dock asus_acpi ac sbs button af_packet nls_utf8 ntfs w83627ehf
-> i2c_isa parport_pc lp parport fuse mt2060 snd_hda_intel snd_pcm_oss
-> snd_mixer_oss snd_pcm cx22702 snd_seq_dummy snd_seq_oss dvb_usb_dib0700
-> dib7000m dib7000p dvb_usb cx88_dvb cx88_vp3054_i2c snd_seq_midi
-> snd_rawmidi video_buf_dvb dvb_core ipv6 snd_seq_midi_event snd_seq
-> snd_timer dvb_pll cx8800 cx8802 cx88xx sr_mod ir_common snd_seq_device
-> cdrom i2c_algo_bit dib3000mc dibx000_common tveeprom atl1 usbhid psmouse
-> videodev compat_ioctl32 hid mii i2c_core v4l2_common v4l1_compat
-> btcx_risc video_buf serio_raw snd soundcore pcspkr shpchp pci_hotplug
-> snd_page_alloc intel_agp tsdev evdev ext3 jbd mbcache sg sd_mod
-> pata_jmicron ata_generic ata_piix ahci libata scsi_mod ehci_hcd generic
-> uhci_hcd usbcore thermal processor fan
-> [  724.355028] Pid: 199, comm: pdflush Not tainted 2.6.22-rc5-edge #1
-> [  724.355125] RIP: 0010:[<ffffffff880f1b44>]  [<ffffffff880f1b44>]
-> :ext3:walk_page_buffers+0x34/0x90
+> That always depends which side you really support, whether you want to
+> force someone to wedge themselves in an undefendable corner and so on..
 
-Step 1: run fsck on the filesystem.
+Well yes, I'm assuming that the goal is successfully concluded
+negotiations.  If in fact the idea is to force people to wedge
+themselves into an undefensible corner so that you can blame the
+failed negotiations on *them*, when it was really *you* who had no
+interest in reaching a mutually agreeable compromise, then of course
+that could be a valid tactic.  That's a bit of an advanced technique,
+though; and some might call it a tad slimeball thing to do.  Happens
+all the time in political and labor discussions, though!
 
+I hope that wasn't want Alexandre was trying to do, although at times
+where one could wonder if he was really sent by Tivo to make sure the
+kernel would stay GPLv2.  :-)
+
+						- Ted
