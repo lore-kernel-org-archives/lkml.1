@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbXFVHxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbXFVH4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbXFVHxa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 03:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbXFVHxO
+	id S1755300AbXFVH4d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 03:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbXFVH4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 03:53:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40276 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752264AbXFVHxN (ORCPT
+	Fri, 22 Jun 2007 03:56:25 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:56811 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbXFVH4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 03:53:13 -0400
-Date: Fri, 22 Jun 2007 08:53:04 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070622075304.GA22682@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Dipankar Sarma <dipankar@in.ibm.com>,
-	"David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-	kuznet@ms2.inr.ac.ru
-References: <20070622040014.234651401@goodmis.org> <20070622070948.GA21291@infradead.org> <20070622075135.GA11695@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070622075135.GA11695@elte.hu>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 22 Jun 2007 03:56:23 -0400
+Message-ID: <467B7F6F.4030007@zytor.com>
+Date: Fri, 22 Jun 2007 00:51:11 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Ram Pai <linuxram@us.ibm.com>
+CC: Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
+Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
+ through other means
+References: <467994BD.6000403@zytor.com>	 <20070620210343.GQ21478@ftp.linux.org.uk>  <46799A31.10301@zytor.com>	 <1182442837.3342.13.camel@ram.us.ibm.com>  <467AB5EE.3030909@zytor.com>	 <1182494654.2812.22.camel@ram.us.ibm.com>  <467B7509.8010106@zytor.com> <1182497690.2812.54.camel@ram.us.ibm.com>
+In-Reply-To: <1182497690.2812.54.camel@ram.us.ibm.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 09:51:35AM +0200, Ingo Molnar wrote:
+Ram Pai wrote:
 > 
-> * Christoph Hellwig <hch@infradead.org> wrote:
+> Ok. so you think /proc/mounts can be extended easily without breaking
+> any userspace commands?
 > 
-> > I think we probably want some numbers, at least for tasklets used in 
-> > potentially performance critical code.
+> well lets see..
+> 1. to disambiguate bind mounts, we have to add a field that displays the
+> 	 path to the mount's root dentry from the filesystem's root
+> 	 dentry. Agree?
 > 
-> which actual in-kernel tasklets do you have in mind? I'm not aware of 
-> any in performance critical code. (now that both the RCU and the sched 
-> tasklet has been fixed.)
+> 2. For filesystems that do not have a backing store, it becomes hard
+> 	to disambiguate bind mounts in (1). So we need to add a
+> 	filesystem-id field.
+> 
+> 3. if we need to add the propagation status of the mount we need a
+> 	 propagation flag added in the output.
+> 
+> 4. To be able to construct the propagation tree, we need a way to refer
+> 	to the other mounts, since some mounts are peers and some other
+> 	mounts are master. Which means we need a mount-id field.
+> 	Agree?
+> 
+> If you agree to the above 4 new fields, it becomes challenging to
+> extend /proc/mounts to incorporate these new fields without
+> breaking any existing applications. 
+> 
 
-the one in megaraid_sas for example is in a performance-critical path
-and was put in quite recently.
+No, I don't think so.  I suspect, in fact, that as long as we add the
+new fields to the right (obviously) we should be fine.  There aren't all
+that many users of /proc/mounts, and even fewer that don't use the
+library functions (getmntent et al.)
+
+	-hpa
