@@ -1,106 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbXFVUmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbXFVUnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbXFVUmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 16:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbXFVUmp
+	id S1755789AbXFVUnf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 16:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXFVUn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 16:42:45 -0400
-Received: from mga02.intel.com ([134.134.136.20]:29320 "EHLO mga02.intel.com"
+	Fri, 22 Jun 2007 16:43:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45090 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751175AbXFVUmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 16:42:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,452,1175497200"; 
-   d="scan'208";a="257799028"
-Date: Fri, 22 Jun 2007 13:38:22 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 1/7] ICH Force HPET: Make generic time capable of switching broadcast timer
-Message-ID: <20070622203822.GA22807@linux-os.sc.intel.com>
-Mime-Version: 1.0
+	id S1751440AbXFVUn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 16:43:26 -0400
+Date: Fri, 22 Jun 2007 22:40:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070622204058.GA11777@elte.hu>
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Auto-detect the presence of HPET on ICH5 or newer platforms and enable
-HPET for broadcast timer. This gives a bigger upperlimit for tickless time
-tick and improves the power consumption in comparison to PIT as broadcast timer.
+> Whether we actually then want to do 6 is another matter. I think we'd 
+> need some measuring and discussion about that.
 
-This patch:
+basically tasklets have a number of limitations:
 
-Change the broadcast timer, if a timer with higher rating becomes available.
+ - tasklets have certain latency limitations over real tasks. (for
+   example they are not guaranteed to be re-executed when they are
+   triggered while they are running, so artificial latencies can be
+   introduced into the kernel workflow)
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+ - tasklets have certain execution limitations. (only atomic functions
+   can be executed in them)
 
----
+ - tasklets have certain fairness limitations. (they are executed in
+   softirq context and thus preempt everything, even if there is some
+   potentially more important, high-priority task waiting to be
+   executed.)
 
-Applies over linux-2.6.22-rc4-mm2 +
-tglx's  patch-2.6.22-rc4-mm2-hrt4 patch
+ - the 'priority levels' approach of softirqs is not really 
+   self-documenting - unlike real locks. As a result we've got some 
+   vague coupling between network softirq processing and timer softirq 
+   processing, which spilled over into tasklets as well. The 'hi' and
+   'low' concept of tasklets isnt really used either. We should reduce 
+   the amount of such opaque 'coupling' between workflows - it should be 
+   spelled out explicitly via some synchronization construct.
 
-The patchset had been baking for a while along with patch-2.6.22-rc*-hrt* for
-a while without breaking anything and redusing the number of
-timer interrupts with tickless on various platforms.
+ - tasklets are duplicated infrastructure (over existing workqueues) 
+   that, if it's possible to do it compatibly, would be a good idea to 
+   eliminate.
 
- kernel/time/tick-broadcast.c |   13 ++++++-------
- kernel/time/tick-common.c    |    4 ++--
- 2 files changed, 8 insertions(+), 9 deletions(-)
+when it comes to 'deferred processing', we've basically got two 'prime' 
+choices for deferred processing:
 
-Index: linux-2.6.22-rc5/kernel/time/tick-common.c
-===================================================================
---- linux-2.6.22-rc5.orig/kernel/time/tick-common.c	2007-06-17 08:52:07.000000000 +0200
-+++ linux-2.6.22-rc5/kernel/time/tick-common.c	2007-06-17 08:52:10.000000000 +0200
-@@ -200,7 +200,7 @@ static int tick_check_new_device(struct 
- 
- 	cpu = smp_processor_id();
- 	if (!cpu_isset(cpu, newdev->cpumask))
--		goto out;
-+		goto out_bc;
- 
- 	td = &per_cpu(tick_cpu_device, cpu);
- 	curdev = td->evtdev;
-@@ -265,7 +265,7 @@ out_bc:
- 	 */
- 	if (tick_check_broadcast_device(newdev))
- 		ret = NOTIFY_STOP;
--out:
-+
- 	spin_unlock_irqrestore(&tick_device_lock, flags);
- 
- 	return ret;
-Index: linux-2.6.22-rc5/kernel/time/tick-broadcast.c
-===================================================================
---- linux-2.6.22-rc5.orig/kernel/time/tick-broadcast.c	2007-06-17 08:52:07.000000000 +0200
-+++ linux-2.6.22-rc5/kernel/time/tick-broadcast.c	2007-06-17 08:52:10.000000000 +0200
-@@ -64,8 +64,9 @@ static void tick_broadcast_start_periodi
-  */
- int tick_check_broadcast_device(struct clock_event_device *dev)
- {
--	if (tick_broadcast_device.evtdev ||
--	    (dev->features & CLOCK_EVT_FEAT_C3STOP))
-+	if ((tick_broadcast_device.evtdev &&
-+	     tick_broadcast_device.evtdev->rating >= dev->rating) ||
-+	     (dev->features & CLOCK_EVT_FEAT_C3STOP))
- 		return 0;
- 
- 	clockevents_exchange_device(NULL, dev);
-@@ -519,11 +520,9 @@ static void tick_broadcast_clear_oneshot
-  */
- void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
- {
--	if (bc->mode != CLOCK_EVT_MODE_ONESHOT) {
--		bc->event_handler = tick_handle_oneshot_broadcast;
--		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
--		bc->next_event.tv64 = KTIME_MAX;
--	}
-+	bc->event_handler = tick_handle_oneshot_broadcast;
-+	clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
-+	bc->next_event.tv64 = KTIME_MAX;
- }
- 
- /*
+ - if it's high-performance then it goes into a softirq.
+
+ - if performance is not important, or robustness and flexibility is 
+   more important than performance, then workqueues are used.
+
+basically tasklets do _neither_ really well. They are too 'global' to 
+scale really well on SMP (even the RCU tasklet wasnt a real tasklet: it 
+was a _per CPU tasklet_, which almost by definition is equivalent to a 
+softirq, some some extra glue overhead ...), and tasklets are also too 
+much tied to softirqs to be used as a generic processing context.
+
+that's why i'd like them to be gently but firmly phased out =B-)
+
+	Ingo
