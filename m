@@ -1,109 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbXFVPW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbXFVP3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758200AbXFVPW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 11:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbXFVPWu
+	id S1757932AbXFVP3e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 11:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbXFVP30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 11:22:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58361 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756783AbXFVPWu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 11:22:50 -0400
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
-	[linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in
-	zc0301_core.c
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       video4linux-list@redhat.com,
-       =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       luca.risolia@studio.unibo.it, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706221602000.1817@scrub.home>
-References: <200706211117.55908.toralf.foerster@gmx.de>
-	 <200706211231.53898.luca.risolia@studio.unibo.it>
-	 <200706211326.45031.toralf.foerster@gmx.de>
-	 <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
-	 <Pine.LNX.4.64.0706221602000.1817@scrub.home>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 22 Jun 2007 12:21:37 -0300
-Message-Id: <1182525697.14289.47.camel@gaivota>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 22 Jun 2007 11:29:26 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33370 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756735AbXFVP3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 11:29:25 -0400
+Date: Fri, 22 Jun 2007 08:29:15 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Chris Wright <chrisw@sous-sol.org>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH -rt] CONFIG_PARAVIRT and CONFIG_MCOUNT don't play well
+	together
+Message-ID: <20070622152915.GQ3723@sequoia.sous-sol.org>
+References: <20070622080634.GP3723@sequoia.sous-sol.org> <20070622083330.GB19382@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622083330.GB19382@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sex, 2007-06-22 às 16:27 +0200, Roman Zippel escreveu:
-> Hi,
+* Ingo Molnar (mingo@elte.hu) wrote:
+> * Chris Wright <chrisw@sous-sol.org> wrote:
+> > Current -rt is broken when compiling with CONFIG_PARAVIRT and 
+> > CONFIG_MCOUNT both enabled.  Because CONFIG_MCOUNT disables 
+> > CONFIG_REGPARM, the calling convention must once again be explicit 
+> > with fastcall.  However, this was only half-way addressed in the -rt 
+> > patch (adding fastcall back to paravirt_ops function ptr declaration 
+> > but not the actual function definitions) so the compiled kernel has 
+> > caller putting stuff in registers and callee pulling things from the 
+> > stack. Impressive how far into boot it can get despite that ;-) Thanks 
+> > to Steven Rostedt for prodding me and starting the initial debugging.
 > 
-> On Fri, 22 Jun 2007, Mauro Carvalho Chehab wrote:
-> 
-> > Hi Roman,
-> > 
-> > Several instabilities on Kconfig started to happen after replacing
-> > Kconfig menus to use menuconfig, as this one, reported by Oliver:
-> > 
-> > Em Qui, 2007-06-21 às 13:50 +0200, Oliver Neukum escreveu:
-> > > Am Donnerstag, 21. Juni 2007 schrieb Toralf Förster:
-> > > > Right, but IMHO this issue is typical for a problem with the Kconfig definitions of this module.
-> > > > 
-> > > > I'll set USB devs as Cc: therefore.
-> 
-> There is too little context here, what was the exact error?
-> I'm assuming it's the module vs. builtin problem?
+> thanks! I ran into this before and asked for the fastcalls to not be 
+> removed from upstream paravirt.c but to no avail it seems. It does no 
+> harm to anyone to keep the 'fastcall' declarations and definitions for 
+> places where _actual assembly code_ depends on the calling convention. 
+> Could someone please send this upstream-wards too?
 
-I also got copied on this without the full context.
+Yes, I agree, it's actually documenting the subtlety of the calling
+convention, not just noise in the source.  The upstream patch is
+different, I'll sort one out.
 
-> The menuconfig patches were a little aggressive here, it created a config 
-> symbol where there was none before and in this case it even changed 
-> dependencies (it turns USB into a bool).
-Hmm... Probably the change from tristate to bool caused the regression.
-
-> I'm also a little irritated by the "default y", if I enable V4L I'm very 
-> tempted to check what other useless stuff has been automatically enabled, 
-> which I have to turn off again.
-
-The added "default y" are the ones bellow:
-
-menuconfig VIDEO_CAPTURE_DRIVERS
-	bool "Video capture adapters"
-	depends on VIDEO_DEV
-	default y
-
-menuconfig V4L_USB_DRIVERS
-	bool "V4L USB devices"
-	depends on USB
-	default y
-
-menuconfig RADIO_ADAPTERS
-	bool "Radio Adapters"
-	depends on VIDEO_DEV
-	default y
-
-menuconfig DVB_CAPTURE_DRIVERS
-	bool "DVB/ATSC adapters"
-	depends on DVB_CORE
-	default y
-
-config DAB
-	boolean "DAB adapters"
-	default y
-
-
-All of them are used just to open a submenu.
-
-I'm to keep "default y" for the menuconfig items. 
-
-Since those don't generate any code (there's no Makefile items
-associated with the menuconfig vars), this will just improve the
-usability for the final user (and will allow make oldconfig to work).
-There's not much sense on selecting V4L support without selecting a V4L
-driver.
-
-Cheers,
-Mauro
-
+thanks,
+-chris
