@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbXFVHun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbXFVHxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbXFVHun (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 03:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbXFVHug
+	id S1755194AbXFVHxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 03:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXFVHxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 03:50:36 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:8741 "EHLO relay.sw.ru"
+	Fri, 22 Jun 2007 03:53:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44184 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750917AbXFVHuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 03:50:35 -0400
-Message-ID: <467B2F4F.2030101@openvz.org>
-Date: Fri, 22 Jun 2007 06:09:19 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	id S1751811AbXFVHxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 03:53:06 -0400
+Date: Fri, 22 Jun 2007 09:51:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070622075135.GA11695@elte.hu>
+References: <20070622040014.234651401@goodmis.org> <20070622070948.GA21291@infradead.org>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch -rss] Make RSS accounting display more user friendly
-References: <20070620154655.13844.42876.sendpatchset@balbir-laptop> <6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com>
-In-Reply-To: <6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622070948.GA21291@infradead.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On 6/20/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>
->>
->> Display the current usage and limit in a more user friendly manner.
->> Number
->> of pages can be confusing if the page size is different. Some systems
->> can choose a page size of 64KB.
-> 
-> I'm not sure that's such a great idea. "Human-friendly"
-> representations would make programmatic parsing harder.
-> 
-> What's wrong with just showing counts in bytes in the control files?
 
-Nothing wrong, but currently they are shown in "natural" points, i.e. in
-those that the controller accounts them in. For RSS controller the natural
-point is "page", but auto-converting them from pages to bytes is wrong, as
-not all the controllers account in pages. I think that the better way is 
-to show the value in the internal units and specify (somehow) what these 
-units are. The userspace then can read them and convert accordingly.
+* Christoph Hellwig <hch@infradead.org> wrote:
 
-> Paul
+> I think we probably want some numbers, at least for tasklets used in 
+> potentially performance critical code.
 
-Thanks,
-Pavel
+which actual in-kernel tasklets do you have in mind? I'm not aware of 
+any in performance critical code. (now that both the RCU and the sched 
+tasklet has been fixed.)
+
+	Ingo
