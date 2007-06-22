@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbXFVMkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbXFVMkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbXFVMkZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 08:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbXFVMkK
+	id S1755032AbXFVMkl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 08:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbXFVMkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 08:40:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59139 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753643AbXFVMkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 08:40:09 -0400
-Date: Fri, 22 Jun 2007 14:38:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070622123805.GA9770@elte.hu>
-References: <20070622040014.234651401@goodmis.org> <20070622070948.GA21291@infradead.org> <1182515542.5493.20.camel@localhost.localdomain>
+	Fri, 22 Jun 2007 08:40:22 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:7888 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756085AbXFVMkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 08:40:20 -0400
+Message-ID: <467BC398.1000506@ru.mvista.com>
+Date: Fri, 22 Jun 2007 16:42:00 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1182515542.5493.20.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Daniel Walker <dwalker@mvista.com>, Andrew Morton <akpm@osdl.org>,
+       john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC] clocksouce implementation for powerpc
+References: <20070616101126.296384219@inhelltoy.tec.linutronix.de> <20070616101637.107940593@inhelltoy.tec.linutronix.de> <1182009083.11539.369.camel@imap.mvista.com> <20070620065710.GR9768@bakeyournoodle.com> <46795B9B.2020401@ru.mvista.com> <20070622061047.GW9768@bakeyournoodle.com>
+In-Reply-To: <20070622061047.GW9768@bakeyournoodle.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tony Breeds wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> 	Thanks for taking the time to look over my patch.
 
-> > And this is something that might be fine for benchmarking, but not something
-> > we should put in.  Keeping two wildly different implementation of core
-> > functionality with very different behaviour around is quite bad.  Better
-> > kill tasklets once for all.
-> 
-> Honestly, I highly doubted that this would make it up to Linus's tree.
+>>   I guess it's been based on the prior work by John Stultz (and me too :-)?
 
-that's where it belongs - but it first needs the cleanups suggested by 
-Christoph.
+> At some level I guess so.  John did send me a patch a while ago.
 
-> My aim was to get this into -mm, [...]
+>>   If you mean the init. part, this has been already done by me -- I've 
+>>implemented read_persistent_clock() and got rid of xtime setting. What's 
+>>left is to implemet update_persistent_clock() and get rid of 
+>>timer_check_rtc()...
 
-that would be the first step towards getting it upstream.
+> Actually I think that comment is redundant.  and should be removed
+> sorry.
 
-> and perhaps even turn on the tasklets-as-workqueues as default.
+    I guess you haven't looked thru the -rt patch? There's much more than 
+John's initial patch there now, including the clockevents driver.
 
-that is a hack that shouldnt be in the patch. People can unapply/apply a 
-patch just as well as they can flip a .config switch.
+>>>+	.mult         = 0,	/* To be filled in */
+>>>+	.read         = NULL,   /* To be filled in */
+>>>+	.settimeofday = NULL,   /* To be filled in */
+>>
+>>   I don't quite understand why not just init them right away?  The values 
+>>are fixed anyways.
 
-	Ingo
+> Well at least mult needs to be calculated at runtime, and I prefer to
+
+    I was talking about the method intializers specifically.
+
+> have the structure near the top of the file at which stage the
+> read/settimeofday functions aren't defined.
+
+    I don't think it's justified anyway.
+
+> Yours Tony
+
+WBR, Sergei
