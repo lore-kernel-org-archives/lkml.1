@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbXFVPh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbXFVPjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758719AbXFVPh7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 11:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbXFVPhv
+	id S1758851AbXFVPjv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 11:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbXFVPjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 11:37:51 -0400
-Received: from homer.mvista.com ([63.81.120.155]:9141 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756726AbXFVPhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 11:37:50 -0400
-Message-ID: <467BED34.4080004@ru.mvista.com>
-Date: Fri, 22 Jun 2007 19:39:32 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 22 Jun 2007 11:39:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51408 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756735AbXFVPjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 11:39:42 -0400
+Date: Fri, 22 Jun 2007 17:39:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH -rt] CONFIG_PARAVIRT and CONFIG_MCOUNT don't play well
+	together
+Message-ID: <20070622153928.GA2030@elte.hu>
+References: <20070622080634.GP3723@sequoia.sous-sol.org> <1182516222.5493.33.camel@localhost.localdomain> <20070622153021.GR3723@sequoia.sous-sol.org>
 MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] ide dma_timer_expiry, then hard lockup
-References: <20070618175713.GD5836@austin.ibm.com>
-In-Reply-To: <20070618175713.GD5836@austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622153021.GR3723@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linas Vepstas wrote:
 
-> I've got a hard lockup in the ide subsystem, probably
-> due to some irq spew or something like that.
+* Chris Wright <chrisw@sous-sol.org> wrote:
 
-> I've just bought a brand new Maxtor 320GB disk driver 
-> for the insane price of $70 US to replace another 
-> failing drive. It works well under light load;
-> I was able to copy about 60GB to it. However, 
-> under heavy load, such as reconstruction of an MD 
-> RAID-1 array, it'll lock up the kernel.  Which means
-> that my system won't boot :-(
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > Chris, thanks a hell of a lot for looking into this!!!
+> > 
+> > -rt doesn't do much with paravirt, but since both -rt and lguest are two
+> > things I love to play with, it was really bothering me that they were
+> > not getting along.
+> 
+> It was bugging me too, now if only I had noticed the compiler warnings 
+> ;-)
 
-> I'm running 2.6.21.1, although the problem seems to occur 
-> in 2.6.19 and 2.6.18 too; its been there a while; I vageuly
-> remember similar problems in 2.6.5 or 2.6.10.
+if only those compiler warnings werent drowning in 1000 other compiler 
+warnings? :-/
 
-    Ah... so you're saying that the old disk works OK, yet you've already 
-observed alike behavior on other disks... That speaks against blacklisting the 
-drive.
-
-> I can get the system to boot by sneaking in an 
-> "hdparm -d0 /dev/hdc" early in the boot process, to turn off 
-
-    Could probably do the same trick and specify the lower DMA speed by using 
--X n option (where n ranges from 64 to 70 for UltraDMA modes 0 to 6) and see 
-if it changes anything...
-
-> the use of DMA, but it seems that PIO is so slow, that it takes 
-> forever to get NFS started.
-
-    You can use 'ide=nodma' kernel option for this.
-
-MBR, Sergei
+	Ingo
