@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbXFVJTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbXFVJU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbXFVJTw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 05:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbXFVJTp
+	id S1756540AbXFVJU3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 05:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbXFVJUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 05:19:45 -0400
-Received: from smtp23.orange.fr ([193.252.22.30]:17777 "EHLO smtp23.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbXFVJTo convert rfc822-to-8bit (ORCPT
+	Fri, 22 Jun 2007 05:20:21 -0400
+Received: from lazybastard.de ([212.112.238.170]:48668 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941AbXFVJUU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 05:19:44 -0400
-X-ME-UUID: 20070622091942451.6E3D5700008A@mwinf2328.orange.fr
-Subject: Re: Please release a stable kernel Linux 3.0
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: =?ISO-8859-1?Q?Zolt=E1n?= HUBERT <zoltan.hubert@zzaero.com>
+	Fri, 22 Jun 2007 05:20:20 -0400
+Date: Fri, 22 Jun 2007 11:15:20 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: James Bruce <bruce@andrew.cmu.edu>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200706212349.54983.zoltan.hubert@zzaero.com>
-References: <200706212349.54983.zoltan.hubert@zzaero.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Fri, 22 Jun 2007 11:19:38 +0200
-Message-Id: <1182503978.23588.7.camel@frg-rhel40-em64t-04>
+Subject: Re: TUX2 filesystem
+Message-ID: <20070622091520.GB17988@lazybastard.org>
+References: <200706210705.34702.philipp.marek@bmlv.gv.at> <467ABBFB.5080108@andrew.cmu.edu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <467ABBFB.5080108@andrew.cmu.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 23:49 +0200, Zoltán HUBERT wrote:
-> While some of you dislike 
-> closed source drivers, the choices "we users" face are:
-> - closed source drivers with closed source OS
-> - closed source drivers with open source OS
-> Please consider that we are living in a REAL world, and not 
-> Disney-Land.
+On Thu, 21 June 2007 13:57:15 -0400, James Bruce wrote:
+> 
+> efficient atomic snapshots on a filesystem.  There are still some issues 
+> with unexpected disk space usage (it requires _additional_ disk space to 
+> _delete_ a file), and it tends to use more memory (you want to delay 
+> client writes as much as possible, so you can allocate later and copy 
+> the least amount necessary)
 
-Strange, I'm currently using this option:
-- open source drivers with open source OS
-and I'm sure I'm not living in Disney-Land.
+The delete issue really surprised me.  It is so obvious and simple to
+solve that it hardly deserves mentioning.  And yet ZFS allegedly hasn't
+solved it yet - scary.
 
-	Xav
+Additional memory isn't strictly required either.  It just helps to
+delay writes as long as possible to fight fragmentation.
 
+JÃ¶rn
 
+-- 
+Joern's library part 9:
+http://www.scl.ameslab.gov/Publications/Gus/TwelveWays.html
