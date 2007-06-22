@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbXFVJJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbXFVJKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbXFVJJT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 05:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbXFVJJJ
+	id S1756130AbXFVJKP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 05:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbXFVJKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 05:09:09 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36754 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752280AbXFVJJI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 05:09:08 -0400
-Date: Fri, 22 Jun 2007 10:14:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Alexandre Oliva <aoliva@redhat.com>,
-       davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Message-ID: <20070622101423.145b0279@the-village.bc.nu>
-In-Reply-To: <20070622041949.GA15625@thunk.org>
-References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com>
-	<or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070622013417.GT21478@ftp.linux.org.uk>
-	<20070622041949.GA15625@thunk.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Jun 2007 05:10:03 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:50291 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752280AbXFVJKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 05:10:00 -0400
+Message-ID: <467B91B7.6020902@rfo.atmel.com>
+Date: Fri, 22 Jun 2007 11:09:11 +0200
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+CC: Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+References: <467A4532.40301@rfo.atmel.com>	<200706211657.49427.marc.pignat@hevs.ch> <467A9F43.1050007@rfo.atmel.com>
+In-Reply-To: <467A9F43.1050007@rfo.atmel.com>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
 Content-Transfer-Encoding: 7bit
+X-ESAFE-STATUS: Mail clean
+X-ESAFE-DETAILS: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Another law of negotiations --- don't goad people into hardening their
-> positions; it helps neither you nor your interests.
+Nicolas Ferre :
+> Marc Pignat :
+>> please use this patch, sorry for the later
+> 
+> My eyes are too tired or this patch is the same as the previous one :-\
 
-That always depends which side you really support, whether you want to
-force someone to wedge themselves in an undefendable corner and so on..
+Indeed, my eyes where too tired ;-) Sorry for the trouble.
 
-Alan
+-- 
+Nicolas Ferre
+
+
