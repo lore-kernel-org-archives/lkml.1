@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbXFVW6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbXFVW7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760151AbXFVW6W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 18:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbXFVW6O
+	id S1753705AbXFVW7N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 18:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXFVW67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 18:58:14 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:45078 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbXFVW6N (ORCPT
+	Fri, 22 Jun 2007 18:58:59 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46546 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751459AbXFVW66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 18:58:13 -0400
-Date: Fri, 22 Jun 2007 16:56:57 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Broadcom (bnx2) on PE1950/2950 failure
-In-reply-to: <F1D642E5A91BC94D9504EC83AE19E6B0128A40@ecqcmtlmail3.quebec.int.ec.gc.ca>
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <467C53B9.3030102@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.GUDTRJ+yqLKq4z8Xd89auM7cYdk@ifi.uio.no>
- <467B0F75.5020900@shaw.ca>
- <F1D642E5A91BC94D9504EC83AE19E6B0128A40@ecqcmtlmail3.quebec.int.ec.gc.ca>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Fri, 22 Jun 2007 18:58:58 -0400
+Date: Sat, 23 Jun 2007 00:04:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Yinghai.Lu@Sun.COM
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
+Message-ID: <20070623000405.15eb66f1@the-village.bc.nu>
+In-Reply-To: <467C53C4.4060004@sun.com>
+References: <200706221219.16243.yinghai.lu@sun.com>
+	<20070622193124.GG5051@rhun.smartcity.com>
+	<20070622213327.69663288@the-village.bc.nu>
+	<m18xabbrp6.fsf@ebiederm.dsl.xmission.com>
+	<20070622231951.4d516215@the-village.bc.nu>
+	<m1tzszaadm.fsf@ebiederm.dsl.xmission.com>
+	<467C5074.6050103@sun.com>
+	<20070622235456.08999aa7@the-village.bc.nu>
+	<467C53C4.4060004@sun.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fortier,Vincent [Montreal] wrote:
-> Here is the output of the dmesg with now the appropriate order:
-> [root@urpdev1 /etc]# dmesg | grep -i eth
-> [  120.685696] Broadcom NetXtreme II Gigabit Ethernet Driver bnx2
-> v1.5.8.1 (May 7, 2007)
-> [  120.703846] eth0: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X
-> 64-bit 133MHz found at mem f8000000, IRQ 17, node addr 0019b9c8eedc
-> [  120.735350] eth1: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X
-> 64-bit 133MHz found at mem f4000000, IRQ 16, node addr 0019b9c8eede
-> [  120.921403] e1000: eth2: e1000_probe: Intel(R) PRO/1000 Network
-> Connection
-> [  121.069025] e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network
-> Connection
-> [  267.720475] bnx2: eth0: using MSI
-> [  270.832235] bnx2: eth0 NIC Link is Up, 1000 Mbps full duplex, receive
-> & transmit flow control ON
-> 
-> 
-> But still, there is a problem with the second Broadcom port (eth1):
-> [root@urpdev1 /etc]# mii-tool
-> eth0: negotiated 100baseTx-FD flow-control, link ok
-> SIOCGMIIPHY on 'eth1' failed: Resource temporarily unavailable
-> eth2: negotiated 100baseTx-FD flow-control, link ok
-> eth3: negotiated 100baseTx-FD flow-control, link ok
-> 
-> I don't get it?
-> 
-> Help appreciated.
+On Fri, 22 Jun 2007 15:57:08 -0700
+Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-Is that interface down? mii-tool probably doesn't work in that case..
+> Alan Cox wrote:
+> 
+> > Don't disable it, just don't touch it or any of its mappings. Leave it
+> > *alone*, and use swiotlb. That'll maximise the ability to recover stuff
+> > from the kexec kernel (since for one you may want to dump the gart when a
+> > 3d app goes kerblam)
+> 
+> How about LinuxBIOS + Kernel ===> Final kernel path?
+> someday EFI(PEI) + Kernel ===> Final kernel path need that too.
+> 
+> or the normal kexec path still could have clean shutdown.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+The kexec path for kdump should be swiotlb and leave the GART alone as
+you are dumping as much state as you can and leaving stuff as is when
+possible. The new-kernel case you shut everything down so you can shut
+down the GART in the old kernel and re-initialise it in the new one
 
+Alan
