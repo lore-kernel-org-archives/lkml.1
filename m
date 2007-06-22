@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbXFVR1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759899AbXFVR25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759824AbXFVR1D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 13:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbXFVR0y
+	id S1759899AbXFVR25 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 13:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXFVR2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 13:26:54 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36288 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751065AbXFVR0y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 13:26:54 -0400
-Date: Fri, 22 Jun 2007 10:26:52 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-In-Reply-To: <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706221021540.16991@schroedinger.engr.sgi.com>
-References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
- <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
+	Fri, 22 Jun 2007 13:28:50 -0400
+Received: from smtp5-g19.free.fr ([212.27.42.35]:39246 "EHLO smtp5-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751946AbXFVR2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 13:28:49 -0400
+Message-ID: <1182536923.467c14db4fe3b@imp.free.fr>
+Date: Fri, 22 Jun 2007 20:28:43 +0200
+From: "Mrs Teressa Stevens." <sealed@kaixo.com>
+Reply-to: teressa_stevensfamily@terra.com
+Subject: The transfer has been effected please  contact Rev. Duke Harrison.
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 195.175.37.70
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jun 2007, Linus Torvalds wrote:
+The transfer has been effected please  contact Rev. Duke Harrison.
 
-> > Looks like it would indeed address the immediate issue on ARM -
-> > IF they've no particular reason to be using kmalloc there.
-> 
-> I think the right thing to do is do both of these things. I already 
-> applied Hugh's patch - it seemed like a total nobrainer to do at this 
-> stage in the 2.6.22 -rc series. But that doesn't mean that we should not 
-> _also_ look at "flush_dcache_page()" users.
+Atten:My Dear,
 
-Hugh's patch not address the complete issue. It only works right now 
-because the size of the allocation is page size and fits right into a slab 
-page. If debugging is enabled then the slab size will increase and the 
-"pages" will be misaligned which will lead to other sorts of funky 
-behavior. kmalloc allocations are only guaranteed to be aligned to 
-ARCH_KMALLOC_MINALIGN which is 4 to 8 bytes. If one must have a 
-page aligned entity out of a slab allocator then a custom slab needs to be 
-created.
+I am happy to inform you about my success in getting those funds transferred
+under the cooperation of a new partner from Japan. Presently I'm in Japan going
+through more medical treatment while my new partner is investment the total
+amount the way I instructed him. Meanwhile, I didn't forget your past efforts
+and attempts to assist me in transferring those funds despite that it failed us
+some how.
+
+Now contact the Man of God who assisted me and stand by his word, his name is
+Rev. Duke Harrison Email: rev_dukeharrison@yahoo.fr ask him to send you the
+total sum of US$800.000.00 which I kept for your compensation for all the past
+efforts and attempt to assist me in this matter. I appreciated your collective
+efforts at that time so feel free and get in touch with the man of God Rev. Duke
+Harrison. For the delivery of the draft to you.
+
+Please do let me know immediately you receive it so that we can share the joy
+after all the suffer ness at that time. at the moment, I am still going through
+medical treatment here in Japan while the investment projects is still going on
+with my new partner without confrontations, finally, remember that I had
+forwarded instruction to the Man of God on your behalf to receive the Draft, so
+feel free to get in touch with Rev. Duke Harrison he will send the amount to you
+without more delay.
+
+Even my current partner is not happy that i have to allocate such amount to you
+bearing in mind your nonchalant attitude to the transaction at its crucial
+stage.
+
+Thanks.
+
+Your regards.
+Mrs. Teressa Stevens.
+
