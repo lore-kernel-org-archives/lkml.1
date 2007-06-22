@@ -1,80 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbXFVGBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbXFVGHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbXFVGBR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 02:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXFVGBE
+	id S1752782AbXFVGHp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 02:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbXFVGHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 02:01:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58152 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbXFVGBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 02:01:03 -0400
-To: Theodore Tso <tytso@mit.edu>
-Cc: Al Viro <viro@ftp.linux.org.uk>, davids@webmaster.com,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com>
-	<or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070622013417.GT21478@ftp.linux.org.uk>
-	<20070622041949.GA15625@thunk.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 22 Jun 2007 03:00:30 -0300
-In-Reply-To: <20070622041949.GA15625@thunk.org> (Theodore Tso's message of "Fri\, 22 Jun 2007 00\:19\:49 -0400")
-Message-ID: <orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Fri, 22 Jun 2007 02:07:37 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:57236 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751111AbXFVGHg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 02:07:36 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Failure to properly reinit i8042 post suspend-to-ram
+Date: Fri, 22 Jun 2007 16:07:33 +1000
+User-Agent: KMail/1.9.6
+Cc: dmitry.torokhov@gmail.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart1589555.YTJeM2GKqB";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706221607.33274.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 22, 2007, Theodore Tso <tytso@mit.edu> wrote:
+--nextPart1589555.YTJeM2GKqB
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> has probably made it made it much more *unlikely* that the Linux
-> kernel will ever go GPLv3.
+Hi.
 
-That was a given from the start.  The spin that there was any chance
-whatsoever it could possibly happen was just that.  Even if Linus
-could possibly consider this, others have made it pretty clear that
-this was never an option for them, and Linus' explosion at my first
-one-liner intervention on GPLv3 isn't exactly a sign of being
-considering something reasonably.
+I have recently begun to try and use suspend to ram more, and have an=20
+intermittent problem. Actually, it's a couple of (possibly related) problem=
+s,=20
+but I'll start with the one that's easiest.
 
-So, no, as I've repeatedly stated, I wasn't here to convince anyone to
-adopt GPLv3.  I know you won't believe me.  I don't care.
+Sometimes, when I resume, the keyboard stops responding. I then need to hol=
+d=20
+down the power button for 4 seconds. At the next boot, things are still not=
+=20
+right. The i8042 controller seems to be confused about it's mode, because I=
+=20
+get the following differences in dmesg to a 'normal' boot:
 
-I was here to dispell the lies that were being spread about GPLv3, the
-spirit and the goals of the GPL, as far as I understood them.  I knew
-from the start that it was an uphill battle, and that I wouldn't be
-able to convince those who distrusted the FSF so much that they would
-listen to anything that resembled an FSF discourse with an extremely
-high rejection level.  This was all expected.
+=2D-- good-boot-dmesg-no-timestamp.txt	2007-06-22 15:54:03.000000000 +1000
++++ problem-boot-dmesg-no-timestamp.txt	2007-06-22 15:54:18.000000000 +1000
+@@ -203,14 +203,11 @@
+ pnp: the driver 'i8042 aux' has been registered
+ pnp: match found with the PnP device '00:01' and the driver 'i8042 aux'
+ at 0x60,0x64 irq 1,12
+=2Di8042.c: Detected active multiplexing controller, rev 1.1.
+ serio: i8042 KBD port at 0x60,0x64 irq 1
+=2Dserio: i8042 AUX0 port at 0x60,0x64 irq 12
+=2Dserio: i8042 AUX1 port at 0x60,0x64 irq 12
+=2Dserio: i8042 AUX2 port at 0x60,0x64 irq 12
+=2Dserio: i8042 AUX3 port at 0x60,0x64 irq 12
++serio: i8042 AUX port at 0x60,0x64 irq 12
+ mice: PS/2 mouse device common for all mice
+ input: PC Speaker as /class/input/input0
++input: AT Translated Set 2 keyboard as /class/input/input1
+ pnp: the driver 'rtc_cmos' has been registered
+ pnp: match found with the PnP device '00:03' and the driver 'rtc_cmos'
+ rtc_cmos: dev (254:0)
 
-I wasn't here to convince them.  I knew I wouldn't.  I was here to set
-the record straight on the spirit of the GPL, not towards the most
-vocal opponents, but for others who hadn't formed an opinion,
-prejudiced or not.  I was here to inform about GPLv3, not to push it.
+I've been able to log in remotely after suspending to ram, and see the "fai=
+led=20
+to resume active multiplexor" message in dmesg at that stage. Dmitry (or=20
+others), is this a known issue? I'm more than happy to probe further if not.
 
-That I was perceived as pushing it is not surprising at all.  The
-perception of "being forced" whenever something resembling the FSF
-ideology comes up is so strong here that some people just stop
-listening, stop thinking rationally (limbic system take-over?), or
-even get into outright name calling.  No surprise here.  I knew this
-was hostile territory, and I came prepared for this.
+In case it's relevant, the other issue is that sometimes the hard drive sta=
+ys=20
+on constantly and the system becomes unresponsive. The controller is an=20
+ALI15X3. I'm using the old drivers.
 
-I feel I have accomplished my goal: I've informed a lot of people
-about the GPL, about GPLv3, about Free Software and even about the
-FSFes.  Whether they make a decision for GPLv3, GPLv2, or more liberal
-Free Software licenses, is up to them.  Now, people who'd only been
-exposed to the prevailing views in this list can take something
-different into account, and make more-informed decisions.
+Nigel
 
-Thanks for listening.
+--nextPart1589555.YTJeM2GKqB
+Content-Type: application/pgp-signature
 
-o-o
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+iD8DBQBGe2clN0y+n1M3mo0RAmJvAJwJFHdiA+9XbVMcPNXw3a8hGrTJxgCgmjN3
+ztBxRctuEGXiTJAMDZdprKI=
+=bQCc
+-----END PGP SIGNATURE-----
+
+--nextPart1589555.YTJeM2GKqB--
