@@ -1,96 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbXFVJpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbXFVJvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbXFVJpw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 05:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbXFVJpp
+	id S1752773AbXFVJvT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 05:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbXFVJvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 05:45:45 -0400
-Received: from ns.firmix.at ([62.141.48.66]:36367 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbXFVJpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 05:45:44 -0400
-Subject: Re: Please release a stable kernel Linux 3.0
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: =?ISO-8859-1?Q?Zolt=E1n?= HUBERT <zoltan.hubert@zzaero.com>
-Cc: Xavier Bestel <xavier.bestel@free.fr>, linux-kernel@vger.kernel.org
-In-Reply-To: <1182503978.23588.7.camel@frg-rhel40-em64t-04>
-References: <200706212349.54983.zoltan.hubert@zzaero.com>
-	 <1182503978.23588.7.camel@frg-rhel40-em64t-04>
-Content-Type: text/plain; charset=UTF-8
-Organization: Firmix Software GmbH
-Date: Fri, 22 Jun 2007 11:45:29 +0200
-Message-Id: <1182505529.27891.31.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 8bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -1.094 () AWL
-X-Firmix-Spam-Status: No, hits=-1.094 required=5
-X-Spam-Score: -1.094 () AWL
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
+	Fri, 22 Jun 2007 05:51:09 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:55566
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbXFVJvI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 05:51:08 -0400
+Date: Fri, 22 Jun 2007 02:51:15 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Greaves <david@dgreaves.com>
+cc: Neil Brown <neilb@suse.de>, Bill Davidsen <davidsen@tmr.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: <467B840F.4080402@dgreaves.com>
+Message-ID: <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+ <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+ <18034.3676.477575.490448@notabene.brown> <46756BE2.7010401@tmr.com>
+ <467B03C1.50809@tmr.com> <18043.13037.40956.366334@notabene.brown>
+ <467B840F.4080402@dgreaves.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 11:19 +0200, Xavier Bestel wrote:
-> On Thu, 2007-06-21 at 23:49 +0200, Zoltán HUBERT wrote:
-> > While some of you dislike 
-> > closed source drivers, the choices "we users" face are:
-> > - closed source drivers with closed source OS
-> > - closed source drivers with open source OS
+On Fri, 22 Jun 2007, David Greaves wrote:
 
-You forgot the third, correct, way to do to it: buy hardware where
-open-source drivers exist if you don't want to live the above (and yes,
-there are even open source graphic cards and WLAN drivers out there).
+> That's not a bad thing - until you look at the complexity it brings - and 
+> then consider the impact and exceptions when you do, eg hardware 
+> acceleration? md information fed up to the fs layer for xfs? simple long term 
+> maintenance?
+>
+> Often these problems are well worth the benefits of the feature.
+>
+> I _wonder_ if this is one where the right thing is to "just say no" :)
 
-You didn't, tough luck. You could actually help driver developers if
-only with testing new drivers versions.
+In this case I think the advantages of a higher level system knowing what 
+efficiant blocks to do writes/reads in can potentially be a HUGE 
+advantage.
 
-> > Please consider that we are living in a REAL world, and not 
-> > Disney-Land.
+if the uppper levels know that you ahve a 6 disk raid 6 array with a 64K 
+chunk size then reads and writes in 256k chunks (aligned) should be able 
+to be done at basicly the speed of a 4 disk raid 0 array.
 
-Yes, please also consider this and get rid of the "I'm an end user,
-everything I do is right, I can demand what I want, everyone else must
-follow for free and I need not do anything" attitude.
+what's even more impressive is that this could be done even if the array 
+is degraded (if you know the drives have failed you don't even try to read 
+from them and you only have to reconstruct the missing info once per 
+stripe)
 
-The usual alternatives include (but are not limited to):
-- find someone else to fix *your* problems (it is up to you, how to
-   motivate that being. "Money" is not the only motivation in the world
-   but it sometimes works).
-   Just demanding, whining and ranting on public mailing list doesn't
-   motivate - at least not me.
-- pay someone indirectly by buying a plug-n-play OS
-- buy hardware with "Linux" pre-installed with the promise that
-   everything works (and if something doesn't work, you should be able to
-   give the hardware back or get a replacement or ...).
-   Even if the pre-installed "Linux" doesn't fit you can install another
-   one.
-   If you really dislike closed source drivers, you better check that that
-   hardware doesn't need ndiswrapper though. God knows what sales people
-   tell you to sell a thing.
-   Several shops hereover (in .at) actually offer to boot from a Live-CD
-   (especially with laptops) so that one can see if and what is working
-   or not.
-- as mentioned above, buy hardware with parts where open source drivers
-   exist
-Probably the last two parts imply that it is not as cheap as the next
-"special price" hardware (but think about "why should  a store sell
-hardware cheaper than others and/or before?").
+the current approach doesn't give the upper levels any chance to operate 
+in this mode, they just don't have enough information to do so.
 
-> Strange, I'm currently using this option:
-> - open source drivers with open source OS
-> and I'm sure I'm not living in Disney-Land.
+the part about wanting to know raid 0 chunk size so that the upper layers 
+can be sure that data that's supposed to be redundant is on seperate 
+drives is also possible
 
-Yes, but then you have to think before buying the next cheap hardware
-and wonder afterwards that there are not 20 kernel developers eagerly
-waiting to write a driver for a brand-new piece of hardware without any
-documentation (except the products name).
+storage technology is headed in the direction of having the system do more 
+and more of the layout decisions, and re-stripe the array as conditions 
+change (similar to what md can already do with enlarging raid5/6 arrays) 
+but unless you want to eventually put all that decision logic into the md 
+layer you should make it possible for other layers to make queries to find 
+out what's what and then they can give directions for what they want to 
+have happen.
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+so for several reasons I don't see this as something that's deserving of 
+an atomatic 'no'
 
-
+David Lang
