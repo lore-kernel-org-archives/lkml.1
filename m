@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbXFVWJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbXFVWK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbXFVWJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 18:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbXFVWJb
+	id S1758852AbXFVWK0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 18:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbXFVWKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 18:09:31 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:43944 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753741AbXFVWJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 18:09:30 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v18
-Date: Sat, 23 Jun 2007 01:09:07 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Fri, 22 Jun 2007 18:10:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58019 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754482AbXFVWKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 18:10:11 -0400
+Date: Sat, 23 Jun 2007 00:09:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-References: <20070622220202.GA16872@elte.hu>
-In-Reply-To: <20070622220202.GA16872@elte.hu>
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070622220901.GA26207@elte.hu>
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu> <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org> <20070622215953.GA22917@elte.hu>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6573956.cjJ2v2p0vI";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706230109.08310.caglar@pardus.org.tr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622215953.GA22917@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6573956.cjJ2v2p0vI
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi Ingo;
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-23 Haz 2007 Cts tarihinde, Ingo Molnar =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
-=C4=B1:=20
-> As usual, any sort of feedback, bugreport, fix and suggestion is more
-> than welcome!
+> [ and on a similar notion, i still havent given up on seeing all BKL 
+>   use gone from the kernel. I expect it to happen any decade now ;-) ]
 
-caglar@zangetsu linux-2.6 $ LC_ALL=3DC make
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  CC      kernel/sched.o
-kernel/sched.c:745:28: sched_idletask.c: No such file or directory
-kernel/sched.c: In function `init_idle_bootup_task':
-kernel/sched.c:4659: error: `idle_sched_class' undeclared (first use in thi=
-s=20
-function)
-kernel/sched.c:4659: error: (Each undeclared identifier is reported only on=
-ce
-kernel/sched.c:4659: error: for each function it appears in.)
-kernel/sched.c: In function `init_idle':
-kernel/sched.c:4698: error: `idle_sched_class' undeclared (first use in thi=
-s=20
-function)
-kernel/sched.c: In function `sched_init':
-kernel/sched.c:6196: error: `idle_sched_class' undeclared (first use in thi=
-s=20
-function)
-make[1]: *** [kernel/sched.o] Error 1
-make: *** [kernel] Error 2
+2.6.21 had 476 lock_kernel() calls. 2.6.22-git has 473 lock_kernel() 
+calls currently. With that kind of flux we'll see the BKL gone in about 
+40 years =B-)
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+'struct semaphore' use on the other hand has gone down by 10% in this 
+release, which is a good rate. I guess the lack of lockdep coverage for 
+semaphores might be one of the driving forces? ;-)
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart6573956.cjJ2v2p0vI
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGfEiEy7E6i0LKo6YRAsiRAJ9N2k01A2I1UijGjZCrGVZIsIKBEACfdu16
-La5WS67Dw7pMwiTQsIGqYT0=
-=GAFn
------END PGP SIGNATURE-----
-
---nextPart6573956.cjJ2v2p0vI--
+	Ingo
