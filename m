@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbXFVVAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbXFVVAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbXFVVAS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 17:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXFVVAH
+	id S1753741AbXFVVAk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 17:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbXFVVAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 17:00:07 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:43552
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbXFVVAG (ORCPT
+	Fri, 22 Jun 2007 17:00:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60625 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756654AbXFVVAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 17:00:06 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: TripleX <zhongyu@18mail.cn>
-Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Date: Fri, 22 Jun 2007 17:00:09 -0400
-User-Agent: KMail/1.9.6
+	Fri, 22 Jun 2007 17:00:22 -0400
+Date: Fri, 22 Jun 2007 22:00:13 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Li Yang-r58472 <LeoLi@freescale.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
-       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
-       Maggie Chen <chenqi@beyondsoft.com>
-References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescal e.net> <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org> <467C1768.1030706@18mail.cn>
-In-Reply-To: <467C1768.1030706@18mail.cn>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070622210013.GA1353@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Dipankar Sarma <dipankar@in.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+	kuznet@ms2.inr.ac.ru
+References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org> <20070622204058.GA11777@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706221700.13793.rob@landley.net>
+In-Reply-To: <20070622204058.GA11777@elte.hu>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 June 2007 14:39:36 TripleX wrote:
-> As I know, there are a lot of standalone kernel developer in China. They
-> write device drivers for their chips or iptables modules for their
-> linux based network devices. They send source files to their customers
-> or publish them on web but seldom do anything to make the codes into
-> kernel source tree. The usual reason  is they do not know how to
-> communicate and work with the Linux kernel development community. People
-> will have more chance to read these documentation  if we merge them to
-> the kernel source tree.
+On Fri, Jun 22, 2007 at 10:40:58PM +0200, Ingo Molnar wrote:
+> when it comes to 'deferred processing', we've basically got two 'prime' 
+> choices for deferred processing:
+> 
+>  - if it's high-performance then it goes into a softirq.
+> 
+>  - if performance is not important, or robustness and flexibility is 
+>    more important than performance, then workqueues are used.
+> 
+> basically tasklets do _neither_ really well. They are too 'global' to 
+> scale really well on SMP (even the RCU tasklet wasnt a real tasklet: it 
+> was a _per CPU tasklet_, which almost by definition is equivalent to a 
+> softirq, some some extra glue overhead ...), and tasklets are also too 
+> much tied to softirqs to be used as a generic processing context.
+> 
+> that's why i'd like them to be gently but firmly phased out =B-)
 
-There are two distinct problems here:
+Note that we also have a lot of inefficiency in the way we do deferred
+processing.  Think of a setup where you run a XFS filesystem runs over
+a megaraid adapter.
 
-1) Documentation so developers who know C but not English have an easier time 
-working with the kernel.  (Again, if you translate it, send it to me and I'll 
-put it on the web.  After OLS, though. :)
+ (1) we get a real hardirq, which just clears the interrupt and then
+     deferes to a tasklet
+ (2) tasklet walks the producer / consumer queue and then calls scsi_done
+     for each completeted scsi command which ends up doing
+     raise_softirq_irqoff(BLOCK_SOFTIRQ);
+ (3) block softirq does the heavy lifting for command completion and finally
+     calls back into the bio's completion routine
+ (4) xfs wants to avoid irq safe locking and thus deferes the command to a
+     kthread
 
-2) Some kind of "language X patch maintainer", a bilingual person who can 
-accept patches from people who don't speak English, submit them to the 
-mailing list, and pass comments back and forth until issues with the patch 
-are resolved.  So there could be a chinese patch maintainer, a spanish patch 
-maintainer, etc.
+This is rather inefficient due to all the (semi-)context switches already
+and not by far the worst setup given that a lot of dm modules can involve
+another thread in the process.
 
-> TripleX
+Now if just plain convert tasklets to a thread based abstraction this
+existing code becomes really dumb because we go from hardirq to process
+context to go back to softirq context to go back to process context.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Ouch!
+
+I think we need to put a little more though into how we can optimize our
+irq path for the full stack.  Using irqthreads in an intelligent way might
+be one option, but we'll need a lot of heavy benchmarking whatever way
+we go.
