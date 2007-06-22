@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbXFVG3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbXFVG3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbXFVG3f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 02:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXFVG3Z
+	id S1755105AbXFVG3t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 02:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbXFVG3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 02:29:25 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:54707 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbXFVG3Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 02:29:24 -0400
-Date: Fri, 22 Jun 2007 16:28:42 +1000
-To: john stultz <johnstul@us.ibm.com>
-Cc: Daniel Walker <dwalker@mvista.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [RFC] clocksouce implementation for powerpc
-Message-ID: <20070622062842.GY9768@bakeyournoodle.com>
-References: <20070616101126.296384219@inhelltoy.tec.linutronix.de> <20070616101637.107940593@inhelltoy.tec.linutronix.de> <1182009083.11539.369.camel@imap.mvista.com> <20070620065710.GR9768@bakeyournoodle.com> <1182373561.6559.39.camel@localhost.localdomain>
+	Fri, 22 Jun 2007 02:29:39 -0400
+Received: from mail02.vsnet.ch ([153.109.10.41]:41407 "EHLO mail02.vsnet.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753198AbXFVG3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 02:29:34 -0400
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Subject: [PATCH] mmc-atmel : fix kunmap wrong usage
+Date: Fri, 22 Jun 2007 08:28:18 +0200
+User-Agent: KMail/1.9.5
+Cc: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <andrew@sanpeople.com>, Pierre Ossman <drzeus@drzeus.cx>
+References: <467A4532.40301@rfo.atmel.com> <200706211657.49427.marc.pignat@hevs.ch> <467A9F43.1050007@rfo.atmel.com>
+In-Reply-To: <467A9F43.1050007@rfo.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1182373561.6559.39.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+Message-Id: <200706220828.18750.marc.pignat@hevs.ch>
+X-VSnet-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 02:06:01PM -0700, john stultz wrote:
+from: Marc Pignat <marc.pignat@hevs.ch>
 
-Hi John.
+kunmap must be called on the pointer returned by kmap.
 
-> Hey Tony,
-> 	Thanks for sending this out! I really appreciate this work, as its been
-> on my todo forever, and I've just not been able to focus on it.
-> Currently it seems a bit minimal of a conversion (ideally there should
-> be very little time code left), but It looks like a great start!
+Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
 
-Thanks.
+---
 
-> I might be missing a subtlety in the ppc code, but I'm still not sure if
-> I see the need for the clocksource settimeofday hook.
-> 
-> update_vsyscall() is intended to provide a hook that allows the generic
-> time code to provide all the needed timekeeping state to the arch
-> specific vsyscall implementation. It is called any time the base
-> timekeeping variables are changed.
+N.B: This is the same patch as yesterday, with proper Signed-off-by and more 
+comments.
 
-Well as I just said the Daniel, I was under the impression I needed a
-hook that was only called from settimeofday().  The comments I've
-recieved from everyone has given me good cause to re-evaluate.
+The buffer variable is used this way:
+		buffer = kmap_atomic(sg->page, KM_BIO_SRC_IRQ) + sg->offset;
+So we can't do
+		kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
+we must do
+		kunmap_atomic(buffer - sg->offset, KM_BIO_SRC_IRQ);
+		
+Strangely this misuse showed no problem using CONFIG_SLAB, but oops using
+CONFIG_SLUB, (lkml ''Oops in a driver while using SLUB as a SLAB allocator").
 
-I think I can make it work without the hook, that started this
-discussion.  Thomas, I think it's probably best to axe it now.  If I
-/really/ need it then I'll start the discussion again :)  Thanks.
- 
-> I think it would be enlightening to flatten this out a bit. Putting both
-> the timer_recalc_offset and clocksource_settime code in the same
-> function. It might illustrate where some optimizations could be done and
-> where it might make more sense to split things up.
-> 
-> Also I'd leave timer_check_rtc() in the timer_interrupt for now (later
-> moving it to tglx's generic rtc update).
+Regards
 
-Yes you're rigth I don't need to move the timer_check_rtc() call.
+Marc
 
-Yours Tony
+--- drivers/mmc/host/at91_mci.c-2.6.22-rc5.orig	2007-06-21 16:27:31.000000000 +0200
++++ drivers/mmc/host/at91_mci.c-2.6.22-rc5	2007-06-21 16:42:48.000000000 +0200
+@@ -164,7 +164,7 @@ static inline void at91mci_sg_to_dma(str
+ 		else
+ 			memcpy(dmabuf, sgbuffer, amount);
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+-		kunmap_atomic(sgbuffer, KM_BIO_SRC_IRQ);
++		kunmap_atomic(sgbuffer - sg->offset, KM_BIO_SRC_IRQ);
+
+ 		if (size == 0)
+ 			break;
+@@ -293,7 +293,7 @@ static void at91mci_post_dma_read(struct
+ 				buffer[index] = swab32(buffer[index]);
+ 		}
+
+-		kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
++		kunmap_atomic(buffer - sg->offset, KM_BIO_SRC_IRQ);
+ 		flush_dcache_page(sg->page);
+ 	}
 
