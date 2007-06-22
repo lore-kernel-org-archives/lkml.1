@@ -1,62 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbXFVPqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbXFVPwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758928AbXFVPqZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 11:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbXFVPqS
+	id S1758779AbXFVPwT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 11:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757666AbXFVPwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 11:46:18 -0400
-Received: from ns1.suse.de ([195.135.220.2]:49291 "EHLO mx1.suse.de"
+	Fri, 22 Jun 2007 11:52:11 -0400
+Received: from mail.screens.ru ([213.234.233.54]:51667 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757500AbXFVPqR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 11:46:17 -0400
-From: Oliver Neukum <oneukum@suse.de>
-Organization: Novell
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re: [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
-Date: Fri, 22 Jun 2007 17:45:51 +0200
-User-Agent: KMail/1.9.7
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       linux-usb-devel@lists.sourceforge.net, video4linux-list@redhat.com,
-       Toralf =?utf-8?q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       luca.risolia@studio.unibo.it, LKML <linux-kernel@vger.kernel.org>
-References: <200706211117.55908.toralf.foerster@gmx.de> <Pine.LNX.4.64.0706221549280.26568@fbirervta.pbzchgretzou.qr> <1182524599.14289.31.camel@gaivota>
-In-Reply-To: <1182524599.14289.31.camel@gaivota>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	id S1757620AbXFVPwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 11:52:10 -0400
+Date: Fri, 22 Jun 2007 19:52:47 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Daniel Walker <dwalker@mvista.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 6/6] Convert tasklets to work queues
+Message-ID: <20070622155247.GA133@tv-sign.ru>
+References: <20070622040014.234651401@goodmis.org> <20070622040137.414439610@goodmis.org> <1182496008.3228.25.camel@dhcp193.mvista.com> <1182518958.5493.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706221745.52083.oneukum@suse.de>
+In-Reply-To: <1182518958.5493.45.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 22. Juni 2007 schrieb Mauro Carvalho Chehab:
-> Em Sex, 2007-06-22 às 15:51 +0200, Jan Engelhardt escreveu:
-> > On Jun 22 2007 15:46, Andreas Herrmann wrote:
-> > >Hi,
-> > >
-> > >I am not sure whether it is related or not
-> > >But if you select USB as module but build your v4l_usb driver
-> > >into the kernel you also get compile errors.
-> > >Attached is a patch which will prevent this by changing the menuconfig
-> > >from bool to tristate.
-> 
-> 
-> > A config option that is not referenced in the Makefile...
-> > should it really be a tristate? In my opinion, changing it
-> > to tristate is just a workaround, but I don't know kconfig
-> > well enough to make bool Do The Right Thing in these situations myself :(
-> 
-> If USB is built as a module, the V4L USB modules should also be built as
-> a module. Otherwise, you will have compile errors, since some required
-> symbols on the drivers won't be linked into the kernel.
+On 06/22, Steven Rostedt wrote:
+>
+> > truct tasklet_struct, work);
+> > > +
+> > > +	if (unlikely(atomic_read(&t->count))) {
+> > > +		pr_debug("tasklet disabled %s %p\n", t->n, t);
+> > > +		set_bit(TASKLET_STATE_PENDING, &t->state);
+> > > +		smp_mb();
+> > > +		/* make sure we were not just enabled */
+> > > +		if (likely(atomic_read(&t->count)))
+> > > +			goto out;
+> > > +		clear_bit(TASKLET_STATE_PENDING, &t->state);
 
-Yes, and if you build USB statically, you can build the video drivers
-statically or as modules. The config language must reflect that. I
-don't it is possible to represent that with a bool.
+Looking closer, I think this is not right, and the smp_mb__before_clear_bit()
+can't help.
 
-	Regards
-		Oliver
+
+				/* t->count == 1 */
+
+work_tasklet_exec()					tasklet_enable()
+
+...
+
+set_bit(TASKLET_STATE_PENDING);				atomic_dec_and_test(&t->count);
+
+
+				/* t->count == 0 */
+
+
+// False
+if (atomic_read(&t->count))
+	goto out;
+
+							// True
+							if (test_and_clear_bit(_PENDING))
+								tasklet_schedule();
+
+
+clear_bit(TASKLET_STATE_PENDING);
+
+execute t->func();
+
+
+So, t->func() will be executed twice because tasklet_enable() does
+tasklet_schedule().
+
+
+So I think we need a fix for work_tasklet_exec,
+
+-		clear_bit(TASKLET_STATE_PENDING);
++		if (!test_and_clear_bit(TASKLET_STATE_PENDING))
+			goto out;
+
+
+
+Steven, a very stupid suggestion, could you move the code for tasklet_enable()
+up, closer to tasklet_disable() ?
+
+Oleg.
+
