@@ -1,127 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbXFVJNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbXFVJRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbXFVJNj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 05:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbXFVJNb
+	id S1755905AbXFVJRM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 05:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbXFVJQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 05:13:31 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:58250 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbXFVJNb (ORCPT
+	Fri, 22 Jun 2007 05:16:58 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53540 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751493AbXFVJQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 05:13:31 -0400
-Subject: [PATCH] sysfs_buffer: use mutex
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Greg KH <greg@kroah.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 22 Jun 2007 11:14:44 +0200
-Message-Id: <1182503684.21939.76.camel@johannes.berg>
+	Fri, 22 Jun 2007 05:16:57 -0400
+Date: Fri, 22 Jun 2007 10:21:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rob Landley <rob@landley.net>
+Cc: "dave young" <hidave.darkstar@gmail.com>, "Li Yang" <leoli@freescale.com>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       bryan.wu@analog.com, "TripleX Chung" <xxx.phy@gmail.com>,
+       "Maggie Chen" <chenqi@beyondsoft.com>, torvalds@linux-foundation.org
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+Message-ID: <20070622102123.49182855@the-village.bc.nu>
+In-Reply-To: <200706220133.19496.rob@landley.net>
+References: <1182436817579-git-send-email-leoli@freescale.com>
+	<200706212248.34128.rob@landley.net>
+	<a8e1da0706212023k5acfbf83g2a11c36720d775cf@mail.gmail.com>
+	<200706220133.19496.rob@landley.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't see any reason why this is a semaphore, convert.
+> The question is, do the kernel developers want to encourage people who don't 
+> speak English to mess with the kernel, any more than they want to encourage 
+> kernel developers who don't know C?  Is kernel documentation in Chinese a 
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+The majority of the world population do not speak English. There are
+existing contributors do not speak English (and I'm not being funny about
+the USSA here) - you don't notice because they have a team member who
+speaks passable English.
 
----
- fs/sysfs/file.c  |   13 +++++++------
- fs/sysfs/inode.c |    4 ++--
- fs/sysfs/sysfs.h |    2 +-
- 3 files changed, 10 insertions(+), 9 deletions(-)
+There are also entire non-English sites around things like Linux that
+monoglot English speakers generally don't notice exist.
 
---- wireless-dev.orig/fs/sysfs/file.c	2007-06-13 23:33:29.878817885 +0200
-+++ wireless-dev/fs/sysfs/file.c	2007-06-13 23:34:22.908817885 +0200
-@@ -8,8 +8,8 @@
- #include <linux/namei.h>
- #include <linux/poll.h>
- #include <linux/list.h>
-+#include <linux/mutex.h>
- #include <asm/uaccess.h>
--#include <asm/semaphore.h>
- 
- #include "sysfs.h"
- 
-@@ -136,7 +136,7 @@ sysfs_read_file(struct file *file, char 
- 	struct sysfs_buffer * buffer = file->private_data;
- 	ssize_t retval = 0;
- 
--	down(&buffer->sem);
-+	mutex_lock(&buffer->mutex);
- 	if (buffer->needs_read_fill) {
- 		if (buffer->orphaned)
- 			retval = -ENODEV;
-@@ -150,7 +150,7 @@ sysfs_read_file(struct file *file, char 
- 	retval = simple_read_from_buffer(buf, count, ppos, buffer->page,
- 					 buffer->count);
- out:
--	up(&buffer->sem);
-+	mutex_unlock(&buffer->mutex);
- 	return retval;
- }
- 
-@@ -230,7 +230,7 @@ sysfs_write_file(struct file *file, cons
- 	struct sysfs_buffer * buffer = file->private_data;
- 	ssize_t len;
- 
--	down(&buffer->sem);
-+	mutex_lock(&buffer->mutex);
- 	if (buffer->orphaned) {
- 		len = -ENODEV;
- 		goto out;
-@@ -241,7 +241,7 @@ sysfs_write_file(struct file *file, cons
- 	if (len > 0)
- 		*ppos += len;
- out:
--	up(&buffer->sem);
-+	mutex_unlock(&buffer->mutex);
- 	return len;
- }
- 
-@@ -317,7 +317,7 @@ static int sysfs_open_file(struct inode 
- 	buffer = kzalloc(sizeof(struct sysfs_buffer), GFP_KERNEL);
- 	if (buffer) {
- 		INIT_LIST_HEAD(&buffer->associates);
--		init_MUTEX(&buffer->sem);
-+		mutex_init(&buffer->mutex);
- 		buffer->needs_read_fill = 1;
- 		buffer->ops = ops;
- 		add_to_collection(buffer, inode);
-@@ -354,6 +354,7 @@ static int sysfs_release(struct inode * 
- 	if (buffer) {
- 		if (buffer->page)
- 			free_page((unsigned long)buffer->page);
-+		mutex_destroy(&buffer->mutex);
- 		kfree(buffer);
- 	}
- 	return 0;
---- wireless-dev.orig/fs/sysfs/sysfs.h	2007-06-13 23:34:32.868817885 +0200
-+++ wireless-dev/fs/sysfs/sysfs.h	2007-06-13 23:34:58.338817885 +0200
-@@ -51,7 +51,7 @@ struct sysfs_buffer {
- 	loff_t				pos;
- 	char				* page;
- 	struct sysfs_ops		* ops;
--	struct semaphore		sem;
-+	struct mutex			mutex;
- 	int				orphaned;
- 	int				needs_read_fill;
- 	int				event;
---- wireless-dev.orig/fs/sysfs/inode.c	2007-06-13 23:35:14.248817885 +0200
-+++ wireless-dev/fs/sysfs/inode.c	2007-06-13 23:35:25.788817885 +0200
-@@ -230,9 +230,9 @@ static inline void orphan_all_buffers(st
- 	set = node->i_private;
- 	if (set) {
- 		list_for_each_entry(buf, &set->associates, associates) {
--			down(&buf->sem);
-+			mutex_lock(&buf->mutex);
- 			buf->orphaned = 1;
--			up(&buf->sem);
-+			mutex_unlock(&buf->mutex);
- 		}
- 	}
- 	mutex_unlock(&node->i_mutex);
+> P.S.  The hardest part of putting together a kernel documentation web page is 
+> actually indexing it coherently.  It's not very useful to just dump together 
 
+For the kernel I would follow the kernel tree so that its always
 
+	/[languagecode]/Documentation/...
+
+that works fairly well although their are political fights you can get
+into over China/Taiwan and over Burmese.
+
+Alan
