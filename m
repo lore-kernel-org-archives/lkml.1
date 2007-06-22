@@ -1,89 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbXFVQp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbXFVQ4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758736AbXFVQp1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbXFVQpQ
+	id S1754579AbXFVQ4H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXFVQzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:45:16 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:51286 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750771AbXFVQpN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:45:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BUlxCzWcE3LFlfWV3ojp7NHNq8dj/uNLciikd5EqithsgCPDZHoiudgCGVpyI5seXYet2lkn+8fDZEBnavw1u21gzc/WwzThS1z1eNGRuyJLnNg4L5xBOYcUrIc9MG2qYXtNpevJnujloCpMFkCSj1aUbsd4eK/1AkWwi4xUEug=
-Message-ID: <2e6659dd0706220945g3592c558h2fe3d56c4b5015ff@mail.gmail.com>
-Date: Fri, 22 Jun 2007 13:45:11 -0300
-From: "Tomas Neme" <lacrymology@gmail.com>
-To: "Alexandre Oliva" <aoliva@redhat.com>
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Cc: "Andrew McKay" <amckay@iders.ca>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Al Viro" <viro@ftp.linux.org.uk>,
-       "Bernd Schmidt" <bernds_cb1@t-online.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Daniel Hazelton" <dhazelton@enter.net>, "Greg KH" <greg@kroah.com>,
-       "debian developer" <debiandev@gmail.com>, david@lang.hm,
-       "Tarkan Erimer" <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <ormyysj1yt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Fri, 22 Jun 2007 12:55:52 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:34380 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752892AbXFVQzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 12:55:51 -0400
+Message-ID: <467BFF12.60200@dgreaves.com>
+Date: Fri, 22 Jun 2007 17:55:46 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: david@lang.hm, Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <46756BE2.7010401@tmr.com> <467B03C1.50809@tmr.com> <18043.13037.40956.366334@notabene.brown> <467B840F.4080402@dgreaves.com> <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm> <467BC306.9010008@dgreaves.com> <467BF233.7020700@tmr.com>
+In-Reply-To: <467BF233.7020700@tmr.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
-	 <orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <4679557C.5080907@iders.ca>
-	 <20070620175627.319a6c55@the-village.bc.nu>
-	 <46797C52.4020907@iders.ca> <467A99D6.6000605@iders.ca>
-	 <ory7idjdhn.fsf@oliva.athome.lsd.ic.unicamp.br>
-	 <467ADC8A.5080401@iders.ca>
-	 <ormyysj1yt.fsf@oliva.athome.lsd.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> powerful.  It is pretty obvious that when Linus adopted GPLv2 he
-> didn't realize it reached that point.  That when Tivo invented
-> Tivoization, he decided he wanted to permit this, and thus grants an
-> implicit additional permission for anyone to do it with his code,
-> doesn't mean other participants in the Linux community feel the same
-> way, or read the GPLv2 the same way, and could be somehow stopped from
-> enforcing the license the way they meant it.
+Bill Davidsen wrote:
+> David Greaves wrote:
+>> david@lang.hm wrote:
+>>> On Fri, 22 Jun 2007, David Greaves wrote:
+>> If you end up 'fiddling' in md because someone specified 
+>> --assume-clean on a raid5 [in this case just to save a few minutes 
+>> *testing time* on system with a heavily choked bus!] then that adds 
+>> *even more* complexity and exception cases into all the stuff you 
+>> described.
+> 
+> A "few minutes?" Are you reading the times people are seeing with 
+> multi-TB arrays? Let's see, 5TB at a rebuild rate of 20MB... three days. 
+Yes. But we are talking initial creation here.
 
-The thing is, what matters in copyright and licencing matters is what
-the author of the code understands, no the licence's author, if
-ambiguous. And the kernel's rights holder is Linus. The authors of the
-particular bits of code can complain about what tivo's doing, but
-since TiVo's using the linux kernel, and GPLv2 says
+> And as soon as you believe that the array is actually "usable" you cut 
+> that rebuild rate, perhaps in half, and get dog-slow performance from 
+> the array. It's usable in the sense that reads and writes work, but for 
+> useful work it's pretty painful. You either fail to understand the 
+> magnitude of the problem or wish to trivialize it for some reason.
+I do understand the problem and I'm not trying to trivialise it :)
 
-"These requirements apply to the modified work as a whole.  If
-identifiable sections of that work are not derived from the Program,
-and can be reasonably considered independent and separate works in
-themselves, then this License, and its terms, do not apply to those
-sections when you distribute them as separate works.  But when you
-distribute the same sections as part of a whole which is a work based
-on the Program, the distribution of the whole must be on the terms of
-this License, whose permissions for other licensees extend to the
-entire whole, and thus to each and every part regardless of who wrote it."
+I _suggested_ that it's worth thinking about things rather than jumping in to 
+say "oh, we can code up a clever algorithm that keeps track of what stripes have 
+valid parity and which don't and we can optimise the read/copy/write for valid 
+stripes and use the raid6 type read-all/write-all for invalid stripes and then 
+we can write a bit extra on the check code to set the bitmaps......"
 
-Linus has the last word on it. IANAL, but as far as I can tell this
-reads as "this licence applies to the whole, not to the parts by
-themselves", and so does who the "holder" is, I'd believe.
+Phew - and that lets us run the array at semi-degraded performance (raid6-like) 
+for 3 days rather than either waiting before we put it into production or 
+running it very slowly.
+Now we run this system for 3 years and we saved 3 days - hmmm IS IT WORTH IT?
 
-So if you own a part of the kernel, then you can pursuit TiVo on your
-own, if they did direct use of that part especifically and break (in
-your opinion) what you feel GPLv2 means. You can form the CATV2
-(CodersAgainstTiVo v2) and try to get TiVo to stop using the Linux
-Kernel for their product (because, believe me, they WON'T release the
-keys). Yeay, we lost Tivo's improvements on the kernel, and the
-posibility of having a working kernel if anyone feels like
-back-ingeneering TiVo for their own amusement.
+What happens in those 3 years when we have a disk fail? The solution doesn't 
+apply then - it's 3 days to rebuild - like it or not.
 
-T
+> By delaying parity computation until the first write to a stripe only 
+> the growth of a filesystem is slowed, and all data are protected without 
+> waiting for the lengthly check. The rebuild speed can be set very low, 
+> because on-demand rebuild will do most of the work.
+I am not saying you are wrong.
+I ask merely if the balance of benefit outweighs the balance of complexity.
 
--- 
-|_|0|_|
-|_|_|0|
-|0|0|0|
+If the benefit were 24x7 then sure - eg using hardware assist in the raid calcs 
+- very useful indeed.
+
+>> I'm very much for the fs layer reading the lower block structure so I 
+>> don't have to fiddle with arcane tuning parameters - yes, *please* 
+>> help make xfs self-tuning!
+>>
+>> Keeping life as straightforward as possible low down makes the upwards 
+>> interface more manageable and that goal more realistic... 
+> 
+> Those two paragraphs are mutually exclusive. The fs can be simple 
+> because it rests on a simple device, even if the "simple device" is 
+> provided by LVM or md. And LVM and md can stay simple because they rest 
+> on simple devices, even if they are provided by PATA, SATA, nbd, etc. 
+> Independent layers make each layer more robust. If you want to 
+> compromise the layer separation, some approach like ZFS with full 
+> integration would seem to be promising. Note that layers allow 
+> specialized features at each point, trading integration for flexibility.
+
+That's a simplistic summary.
+You *can* loosely couple the layers. But you can enrich the interface and 
+tightly couple them too - XFS is capable (I guess) of understanding md more 
+fully than say ext2.
+XFS would still work on a less 'talkative' block device where performance wasn't 
+as important (USB flash maybe, dunno).
+
+
+> My feeling is that full integration and independent layers each have 
+> benefits, as you connect the layers to expose operational details you 
+> need to handle changes in those details, which would seem to make layers 
+> more complex.
+Agreed.
+
+> What I'm looking for here is better performance in one 
+> particular layer, the md RAID5 layer. I like to avoid unnecessary 
+> complexity, but I feel that the current performance suggests room for 
+> improvement.
+
+I agree there is room for improvement.
+I suggest that it may be more fruitful to write a tool called "raid5prepare"
+that writes zeroes/ones as appropriate to all component devices and then you can 
+use --assume-clean without concern. That could look to see if the devices are 
+scsi or whatever and take advantage of the hyperfast block writes that can be done.
+
+David
