@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759144AbXFVQ4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbXFVRDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759144AbXFVQ4j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbXFVQ4P
+	id S1755670AbXFVRDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 13:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbXFVRDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:56:15 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:53136 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753709AbXFVQ4M (ORCPT
+	Fri, 22 Jun 2007 13:03:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44840 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753656AbXFVRDF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:56:12 -0400
-Subject: Re: [RFC PATCH 4/6] Make DRM use the tasklet is-sched API
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Daniel Walker <dwalker@mvista.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-In-Reply-To: <200706221810.56298.arnd@arndb.de>
-References: <20070622040014.234651401@goodmis.org>
-	 <1182494169.3228.11.camel@dhcp193.mvista.com>
-	 <1182494960.20203.34.camel@chaos>  <200706221810.56298.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 22 Jun 2007 12:56:06 -0400
-Message-Id: <1182531366.5493.83.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 13:03:05 -0400
+Date: Fri, 22 Jun 2007 10:02:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+cc: Rob Landley <rob@landley.net>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
+       Maggie Chen <chenqi@beyondsoft.com>
+Subject: RE: [PATCH] Chinese translation of Documentation/HOWTO
+In-Reply-To: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net>
+Message-ID: <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org>
+References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescal
+ e.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 18:10 +0200, Arnd Bergmann wrote:
 
-> Wouldn't the easy solution be to get rid of drm_locked_tasklet
-> entirely and convert i915_vblank_tasklet(), the only user, to use
-> a work queue right away?
 
-You recommend making the i915 use a workqueue to do this instead, and
-remove the drm_lock_tasklet code from the drm_irq.c completely?
-
-Unfortunately, I don't have any boxes with a i915, so I would not feel
-comfortable with doing this myself.
-
+On Fri, 22 Jun 2007, Li Yang-r58472 wrote:
 > 
-> The drm_locked_tasklet() function seems to have multiple bugs anyway,
-> so getting rid of it can only help, and it avoids exporting a new
-> tasklet_is_scheduled() interface.
+> So as I argued in a previous email, non-native English speakers tend to 
+> be more confused by the policies and processes.  I also don't think it's 
+> necessary to translate the technical documents.  To be a software 
+> developer, one has to be educated or experienced in technical terms. 
+> Technical discussion can be done without too much requirement to grammar 
+> and emotional expressing.  The translated document of policies and 
+> processes will help these people to understand the process better and go 
+> smoother in the process.
 
-To be able to at least continue my work, I'll just keep these as
-separate patches.
+I do agree.
 
-Thanks,
+I think that the policies and processes parts of the documentation are 
+things that make total sense to encourage translation of, because it's 
+entirely possible that those are interesting and valid even to the people 
+who aren't necessarily directly involved in the actual coding, and may 
+well be relevant to managers etc who may not be _directly_ involed with 
+the rest of the kernel developers.
 
--- Steve
+In fact, I suspect pretty much any documentation (whether technical or 
+about processes and/or style) makes sense to have translated if the energy 
+and ability to do that exists. I suspect the "policies and processes" 
+kinds of docs make _more_ sense to translate initially, simply because 
+they are approachable on their own - but I certainly would never 
+discourage anybody from translating anything at all.
 
+That said, I don't think that merging the result into the standard kernel 
+makes sense - like it or not, right now English ends up being required 
+to be part of actually getting things into the "standard" kernel, and as 
+such, at _some_ point there has to be a connection point that switches 
+over to English, and trying to make the translations be an in-kernel thing 
+is thus kind of pointless.
 
+But as part of some "documentation site", it makes 100% sense. 
+
+And sometimes maybe the issue isn't even just about straight translations, 
+but also perhaps about explaining cultural differences that aren't 
+mentioned at all in the documentation, just because people in the west end 
+up taking certain things for granted and it doesn't "need" documenting..
+
+			Linus
