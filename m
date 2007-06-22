@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752620AbXFVBea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbXFVBgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752620AbXFVBea (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 21:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbXFVBeV
+	id S1753300AbXFVBgb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 21:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXFVBgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 21:34:21 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35578 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbXFVBeU (ORCPT
+	Thu, 21 Jun 2007 21:36:24 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52108 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751278AbXFVBgX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 21:34:20 -0400
-Date: Fri, 22 Jun 2007 02:34:17 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Message-ID: <20070622013417.GT21478@ftp.linux.org.uk>
-References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.4.1i
+	Thu, 21 Jun 2007 21:36:23 -0400
+Date: Thu, 21 Jun 2007 18:36:21 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 10:00:22PM -0300, Alexandre Oliva wrote:
+Maybe this will address the issue on ARM?
 
-> Do you agree that if there's any single contributor who thinks it
-> can't be tivoized, and he manages his opinion to prevail in court
-> against a copyright holder, then it can't?  That this is the same
-> privilege to veto additional permissions that Al Viro has just
-> claimed?
 
-You know, I'm rapidly losing any respect for your integrity.  The only
-"privelege" claimed is that of not relicensing one's contributions.
-_You_ are perfectly welcome to allow distribution of your code under
-whatever license you happen to like.  So is anybody else (provided that
-they separate their code from that of other contributors).  I cannot
-do that to your code.  Neither can Linus.
+ARM: Allocate dma pages via the page allocator and not via the slab allocator
 
-If Alan sues some company for doing things violating in his opinion his
-copyright on some of his code *and* wins it, then it's likely to simplify
-later cases of that kind, provided that situation is similar enough to
-make the legal arguments used in the first case apply in the later one.
+Slab allocations are not guaranteed to be page aligned and slab allocators
+may use the page structs for their own purposes. Using the page allocator
+yields a properly aligned page and also makes the page flushing logic work right.
 
-If Joe Random Wanker takes your code (in gcc, kernel, whatever) and starts
-distributing it in violation of conditions set in your copyright *and*
-you sue him *and* win (which is bloody likely), then further cases of that
-kind get somewhat easier to win.  Not much, actually, since there's already
-a whole lot of precedents already.
+Passing a kmalloced "page" to a flushing function will not work reliably.
 
-What really gets me is that you know it.  And you know that just about
-everyone here knows it.  Yet you keep playing with rather pathetic
-attempts of innuendo and misdirection, when it's bloody obvious that
-you won't even get a PR win out of the entire mess you've been sustaining
-for about a week already (seriously, count postings in these threads).
+This will hopefully address the issue with SLUB on ARM. SLUB uses the
+page->mapping field which is also checked by the flushing logic. The
+flushing logic expects a normal page and not a slab page.
 
-The first law of holes: when you are in one, stop digging...
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ arch/arm/mm/consistent.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/arch/arm/mm/consistent.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mm/consistent.c	2007-06-21 18:18:15.000000000 -0700
++++ linux-2.6/arch/arm/mm/consistent.c	2007-06-21 18:29:16.000000000 -0700
+@@ -277,7 +277,7 @@ dma_alloc_coherent(struct device *dev, s
+ 	if (arch_is_coherent()) {
+ 		void *virt;
+ 
+-		virt = kmalloc(size, gfp);
++		virt = get_free_pages(gfp, get_order(size));
+ 		if (!virt)
+ 			return NULL;
+ 		*handle =  virt_to_dma(dev, virt);
+@@ -364,7 +364,7 @@ void dma_free_coherent(struct device *de
+ 	WARN_ON(irqs_disabled());
+ 
+ 	if (arch_is_coherent()) {
+-		kfree(cpu_addr);
++		free_pages((unsigned long)cpu_addr, get_order(size));
+ 		return;
+ 	}
+ 
