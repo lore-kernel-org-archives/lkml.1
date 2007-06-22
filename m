@@ -1,61 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbXFVMVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbXFVM2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753682AbXFVMVM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 08:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbXFVMUy
+	id S1755209AbXFVM2z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 08:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXFVM2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 08:20:54 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:30633 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755291AbXFVMUw (ORCPT
+	Fri, 22 Jun 2007 08:28:47 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33902 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbXFVM2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 08:20:52 -0400
-Date: Fri, 22 Jun 2007 08:17:42 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: James Morris <jmorris@namei.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Lars Marowsky-Bree <lmb@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
-       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070622121742.GC6222@think.oraclecorp.com>
-References: <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz> <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz> <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain> <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil> <20070622003436.GB6222@think.oraclecorp.com> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
+	Fri, 22 Jun 2007 08:28:47 -0400
+Date: Fri, 22 Jun 2007 13:00:23 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Marc Pignat <marc.pignat@hevs.ch>
+cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <andrew@sanpeople.com>, Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [PATCH] mmc-atmel : fix kunmap wrong usage
+In-Reply-To: <200706220828.18750.marc.pignat@hevs.ch>
+Message-ID: <Pine.LNX.4.64.0706221237330.26363@blonde.wat.veritas.com>
+References: <467A4532.40301@rfo.atmel.com> <200706211657.49427.marc.pignat@hevs.ch>
+ <467A9F43.1050007@rfo.atmel.com> <200706220828.18750.marc.pignat@hevs.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYW5kcmV3QHNhbnBlb3BsZS5jb20Abmljb2xhcy5mZXJyZUByZm8uYXRtZWwuY29tAGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuYXJtLmxpbnV4Lm9yZy51awBtYXJjLnBpZ25hdEBoZXZzLmNoAGRyemV1c0BkcnpldXMuY3gA
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 09:06:40PM -0400, James Morris wrote:
-> On Thu, 21 Jun 2007, Chris Mason wrote:
+On Fri, 22 Jun 2007, Marc Pignat wrote:
+> from: Marc Pignat <marc.pignat@hevs.ch>
 > 
-> > > The incomplete mediation flows from the design, since the pathname-based
-> > > mediation doesn't generalize to cover all objects unlike label- or
-> > > attribute-based mediation.  And the "use the natural abstraction for
-> > > each object type" approach likewise doesn't yield any general model or
-> > > anything that you can analyze systematically for data flow.
-> > 
-> > This feels quite a lot like a repeat of the discussion at the kernel
-> > summit.  There are valid uses for path based security, and if they don't
-> > fit your needs, please don't use them.  But, path based semantics alone
-> > are not a valid reason to shut out AA.
+> kunmap must be called on the pointer returned by kmap.
+
+Not necessarily: an offset within the same page is acceptable.
+
 > 
-> The validity or otherwise of pathname access control is not being 
-> discussed here.
+> Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
 > 
-> The point is that the pathname model does not generalize, and that 
-> AppArmor's inability to provide adequate coverage of the system is a 
-> design issue arising from this.
+> ---
+> 
+> N.B: This is the same patch as yesterday, with proper Signed-off-by and more 
+> comments.
+> 
+> The buffer variable is used this way:
+> 		buffer = kmap_atomic(sg->page, KM_BIO_SRC_IRQ) + sg->offset;
+> So we can't do
+> 		kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
+> we must do
+> 		kunmap_atomic(buffer - sg->offset, KM_BIO_SRC_IRQ);
+> 		
+> Strangely this misuse showed no problem using CONFIG_SLAB, but oops using
+> CONFIG_SLUB, (lkml ''Oops in a driver while using SLUB as a SLAB allocator").
 
-I'm sorry, but I don't see where in the paragraphs above you aren't
-making a general argument against the pathname model.
+Aren't you just guessing there?  Those kunmap_atomics in at91_mci.c
+may look wrong to you, but they're not incorrect (so long as sg->offset
+falls within the page, as it must do here to make sense of the page).
+Especially not on ARM, where kunmap_atomic actually has no interest
+in the argument passed.  And the oops was in the flush_dcache_page.
 
--chris
+If you actually reproduced Nicolas' problem on ARM, and verified
+that your patch then fixes it, please let us know: that will be
+remarkably interesting.
 
+I believe I posted the correct fix last night (or at least a safe fix
+for now: Christoph Lameter may prefer to undo it and change ARM's
+dma_mapping at leisure later), checking PageSlab in page_mapping;
+and Linus has already put that one into his git tree.
+
+But it would be good to hear from Nicolas whether that indeed fixes
+his oops: I couldn't actually try my patch on ARM either.
+
+Hugh
+
+> 
+> Regards
+> 
+> Marc
+> 
+> --- drivers/mmc/host/at91_mci.c-2.6.22-rc5.orig	2007-06-21 16:27:31.000000000 +0200
+> +++ drivers/mmc/host/at91_mci.c-2.6.22-rc5	2007-06-21 16:42:48.000000000 +0200
+> @@ -164,7 +164,7 @@ static inline void at91mci_sg_to_dma(str
+>  		else
+>  			memcpy(dmabuf, sgbuffer, amount);
+> 
+> -		kunmap_atomic(sgbuffer, KM_BIO_SRC_IRQ);
+> +		kunmap_atomic(sgbuffer - sg->offset, KM_BIO_SRC_IRQ);
+> 
+>  		if (size == 0)
+>  			break;
+> @@ -293,7 +293,7 @@ static void at91mci_post_dma_read(struct
+>  				buffer[index] = swab32(buffer[index]);
+>  		}
+> 
+> -		kunmap_atomic(buffer, KM_BIO_SRC_IRQ);
+> +		kunmap_atomic(buffer - sg->offset, KM_BIO_SRC_IRQ);
+>  		flush_dcache_page(sg->page);
