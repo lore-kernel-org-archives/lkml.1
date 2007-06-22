@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbXFVBAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbXFVBBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbXFVBAg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 21:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXFVBA3
+	id S1753493AbXFVBBo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 21:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXFVBBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 21:00:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33168 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031AbXFVBA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 21:00:28 -0400
-To: davids@webmaster.com
-Cc: "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Thu, 21 Jun 2007 22:00:22 -0300
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> (David Schwartz's message of "Thu\, 21 Jun 2007 17\:31\:15 -0700")
-Message-ID: <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Thu, 21 Jun 2007 21:01:37 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60305 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751031AbXFVBBg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 21:01:36 -0400
+Date: Thu, 21 Jun 2007 18:01:32 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706211759550.11554@schroedinger.engr.sgi.com>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, "David Schwartz" <davids@webmaster.com> wrote:
+On Thu, 21 Jun 2007, Hugh Dickins wrote:
 
-> It's this simple, those who chose the GPLv2 for Linux and their
-> contributions to it don't want people to create derivative works of their
-> works that can't be Tivoized.
+> > The oops seems to occur after a page unmapping using dma_unmap_page() followed
+> > by a flush_dcache_page() (in at91mci_post_dma_read()).
 
-Do you agree that if there's any single contributor who thinks it
-can't be tivoized, and he manages his opinion to prevail in court
-against a copyright holder, then it can't?  That this is the same
-privilege to veto additional permissions that Al Viro has just
-claimed?
+Was the page allocated using slab calls?
 
-http://lkml.org/lkml/2007/6/13/293
-http://lkml.org/lkml/2007/6/13/354
-http://lkml.org/lkml/2007/6/14/117
-http://lkml.org/lkml/2007/6/14/432
+> Seems a little odd that it's gone throughout 2.6.22-rc unnoticed
+> until now - nobody else trying SLUB on ARM or PA-RISC yet perhaps.
+> As I understand it, you're not doing anything wrong (disclaimer:
+> I'm no expert on dma_mapping things), but SLUB's reuse of struct
+> page fields has collided with what flush_dcache_page is expecting.
+> 
+> Here's a patch: I'm not convinced it's necessarily the best one
+> (most uses of page_mapping will never see a slab page, it's a pity
+> to be cluttering up that inline even further); but in case nobody
+> else can provide a better...
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Well one may be better off allocating pages using the page allocator 
+instead of the slab allocator. I removed these things from i386 but I did 
+not check ARM.
+
