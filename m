@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759788AbXFVVjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbXFVVlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759788AbXFVVjI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 17:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbXFVViy
+	id S1759546AbXFVVlQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 17:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbXFVVlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 17:38:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49910 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752751AbXFVVix (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 17:38:53 -0400
-Date: Fri, 22 Jun 2007 14:37:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-In-Reply-To: <20070622204058.GA11777@elte.hu>
-Message-ID: <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
-References: <20070622040014.234651401@goodmis.org>
- <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
- <20070622204058.GA11777@elte.hu>
+	Fri, 22 Jun 2007 17:41:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59086 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752543AbXFVVlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 17:41:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
+Date: Fri, 22 Jun 2007 23:47:55 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200706221647.50509.rjw@sisk.pl> <20070622210750.GA4267@ucw.cz>
+In-Reply-To: <20070622210750.GA4267@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706222347.55717.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 22 Jun 2007, Ingo Molnar wrote:
+On Friday, 22 June 2007 23:07, Pavel Machek wrote:
+> Hi!
 > 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > At present, if a user mode helper is running while usermodehelper_pm_callback()
+> > is executed, the helper may be frozen and the completion in
+> > call_usermodehelper_exec() won't be completed until user space processes are
+> > thawed.  As a result, the freezing of kernel threads may fail, which is not
+> > desirable.
+> > 
+> > Prevent this from happening by introducing a counter of running user mode
+> > helpers and allowing usermodehelper_pm_callback() to succeed for
+> > action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+> > are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+> > RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+> > fails if that doesn't happen.]
+> > 
+> > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+> > versions of this patch and for very useful comments.
+> ...
+> > Reviewed-by: Pavel Machek <pavel@ucw.cz>
 > 
-> > Whether we actually then want to do 6 is another matter. I think we'd 
-> > need some measuring and discussion about that.
+> Eh, not sure this header is worth anything. Sometimes I'm lazy and
+> stop when I see first problem.
 > 
-> basically tasklets have a number of limitations:
+> >  	switch (action) {
+> >  	case PM_HIBERNATION_PREPARE:
+> >  	case PM_SUSPEND_PREPARE:
+> >  		usermodehelper_disabled = 1;
+> > -		return NOTIFY_OK;
+> > +		retval = wait_event_timeout(running_helpers_waitq,
+> > +					atomic_read(&running_helpers) == 0,
+> 
+> Are you sure here? What happens when atomic variable changes between
+> the atomic_read and the function call?
 
-I'm not disputing that they aren't pretty.
+Er, this is a macro. :-)
 
-But none of your arguments really touch on the deeper issue:
+In fact we rely only on atomic_read(&running_helpers) being still zero after
+helper_finished() has woken us up, but I think that's acceptable.
 
- - Is the new code *technically*better*?
+IOW, if the wait_event_timeout() returns with retval different from zero, this
+means that atomic_read(&running_helpers) returned zero at one point after
+we'd set usermodehelper_disabled, which is enough.  OTOH, if it doesn't
+return with retval different from zero, this means that either one or more
+helpers are waited for to finish or they are coming and going very quickly,
+which would be suspicious enough to cancel the suspend, IMHO.
 
-Don't get me wrong. I like cleanups as much as the next guy. I have no 
-problem at all with the first four patches in the series, because those 
-are cleanups that have no technical impact apart from that "cleanup-ness".
+Greetings,
+Rafael
 
-The reason I ask about patch #6 is simply that in the end "clean code" 
-matters less than "good results".
 
-I'm a _huge_ believer in "clean code", but the fact is, I'm an even bigger 
-believer in "reality bites". I'd really like to see some numbers.
-
-If the numbers say that there is no performance difference (or even 
-better: that the new code performs better or fixes some latency issue or 
-whatever), I'll be very happy. But if the numbers say that it's worse, no 
-amount of cleanliness really changes that. 
-
-		Linus
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
