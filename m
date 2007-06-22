@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbXFVCNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbXFVCZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558AbXFVCNh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 22:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXFVCN3
+	id S1753323AbXFVCZQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 22:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbXFVCZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 22:13:29 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2319 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbXFVCN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 22:13:28 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Thu, 21 Jun 2007 19:13:20 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEKHEMAC.davids@webmaster.com>
+	Thu, 21 Jun 2007 22:25:05 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35303 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751869AbXFVCZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 22:25:03 -0400
+From: Neil Brown <neilb@suse.de>
+To: Bill Davidsen <davidsen@tmr.com>
+Date: Fri, 22 Jun 2007 12:24:45 +1000
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <orir9ghjgh.fsf@oliva.athome.lsd.ic.unicamp.br>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 21 Jun 2007 19:13:40 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 21 Jun 2007 19:13:42 -0700
+Message-ID: <18043.13037.40956.366334@notabene.brown>
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+In-Reply-To: message from Bill Davidsen on Thursday June 21
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm>
+	<18034.479.256870.600360@notabene.brown>
+	<Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm>
+	<18034.3676.477575.490448@notabene.brown>
+	<46756BE2.7010401@tmr.com>
+	<467B03C1.50809@tmr.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday June 21, davidsen@tmr.com wrote:
+> I didn't get a comment on my suggestion for a quick and dirty fix for 
+> -assume-clean issues...
+> 
+> Bill Davidsen wrote:
+> > How about a simple solution which would get an array on line and still 
+> > be safe? All it would take is a flag which forced reconstruct writes 
+> > for RAID-5. You could set it with an option, or automatically if 
+> > someone puts --assume-clean with --create, leave it in the superblock 
+> > until the first "repair" runs to completion. And for repair you could 
+> > make some assumptions about bad parity not being caused by error but 
+> > just unwritten.
 
-On Jun 21, 2007, aoliva@redhat.com wrote:
+It is certainly possible, and probably not a lot of effort.  I'm not
+really excited about it though.
 
-> On Jun 21, 2007, david@lang.hm wrote:
-
-> >> For the record, GPLv2 is already meant to accomplish this.  I don't
-> >> understand why people who disagree with this stance chose GPLv2.
-> >> Isn't "no further restrictions" clear enough?
-
-> > everyone else is reading this as 'no further license restrictions'
-
-> I didn't see anyone else add "license" where you did.  "No further
-> restrictions on the rights granted herein" is very powerful and
-> extensive, and that's how it was meant to be.
-
-I agree. For example, a patent might impose a further restriction. The GPL
-was clearly meant to foreclose that. There are any number of other ways of
-nasty, subtle ways to impose further restrictions, and the GPLv2 meant to
-foreclose all of them.
-
-> > not no hardware restrictions' becouse GPLv2 explicitly says that it
-> > has nothing to do with running the software, only with distributing
-> > it.
-
-> It also says that running the software is not restricted, and since
-> copyright law in the US doesn't regulate execution, receiving the
-> software does grant the recipient the right to run the software.  So
-> the distributor can't impose restrictions on it.
-
-Right.
-
-The response to this argument is that it is mind-bogglingly obvious that the
-GPL doesn't mean that no *authorization* decisions can stand in your way. It
-didn't mean that I couldn't keep the root password to my server secret even
-though that denies you the "right" to modify the Linux kernel running on it.
-
-Some entity has to decide what software runs on any particular piece of
-hardware, and it was never the intent of the GPL to specify or limit who
-that person was. This has been discussed many times over many years, longer
-before Tivoization was even thought of, and it was agreed that the GPL
-didn't foreclose authorization obstacles to software modification.
-
-Why doesn't Linux allow a non-root user to install a module or change which
-kernel the system runs? Doesn't that limit the GPL rights of all non-root
-users to modify the GPL'd kernel software on that machine? OF COURSE NOT.
-
-DS
+So if someone to submit a patch that did the right stuff,  I would
+probably accept it, but I am unlikely to do it myself.
 
 
+> >
+> > Thought 2: I think the unwritten bit is easier than you think, you 
+> > only need it on parity blocks for RAID5, not on data blocks. When a 
+> > write is done, if the bit is set do a reconstruct, write the parity 
+> > block, and clear the bit. Keeping a bit per data block is madness, and 
+> > appears to be unnecessary as well.
+
+Where do you propose storing those bits?  And how many would you cache
+in memory?  And what performance hit would you suffer for accessing
+them?  And would it be worth it?
+
+NeilBrown
