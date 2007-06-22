@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbXFVEmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbXFVE5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654AbXFVEmE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXFVElz
+	id S1751965AbXFVE5g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 00:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbXFVE51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:41:55 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:8959 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbXFVEly (ORCPT
+	Fri, 22 Jun 2007 00:57:27 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:12750 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751074AbXFVE50 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:41:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=NmmBMbVtGneG6HbwYXEO44/n0hoB/OLqOLRYXFsLCQlgMXzWsJqLFAWnRbhs2WJjlkacaT92xo6I9HN8z26llJjgtjeCZuR9NeZkWErddq/nrldP+qbA9BpBaEd+pzss3+1DOMsvjoiJC9kV5tYGF6vBwKdjSCg3Aapbm9ZOhFk=
-Date: Fri, 22 Jun 2007 12:43:37 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: TripleX <zhongyu@18mail.cn>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       Li Yang <leoli@freescale.com>, bryan.wu@analog.com
-Subject: Re: [PATCH] Chinese translation of Documentation/stable_api_nonsense.txt
-Message-ID: <20070622044337.GB2758@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <467AB364.6040205@18mail.cn>
+	Fri, 22 Jun 2007 00:57:26 -0400
+Date: Thu, 21 Jun 2007 21:57:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Joshua Wise <jwise@google.com>
+Cc: linux-kernel@vger.kernel.org, ak@suse.de, thockin@google.com,
+       akpm@google.com
+Subject: Re: [PATCH] x86_64: Fix misplaced `continue' in mce.c
+Message-Id: <20070621215758.a6ce4002.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0706211706270.30728@internets.corp.google.com>
+References: <Pine.LNX.4.64.0706211706270.30728@internets.corp.google.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <467AB364.6040205@18mail.cn>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 01:20:36AM +0800, TripleX wrote:
->This is a Chinese translated version of 
->Documentation/stable_api_nonsense.txt. Hope this document will be hepful.
->
->---
->Documentation/zh_CN/stable_api_nonsense.txt |  157 
->+++++++++++++++++++++++++++
->1 files changed, 157 insertions(+), 0 deletions(-)
->create mode 100644 Documentation/zh_CN/stable_api_nonsense.txt
->
->diff --git a/Documentation/zh_CN/stable_api_nonsense.txt 
->b/Documentation/zh_CN/stable_api_nonsense.txt
->new file mode 100644
->index 0000000..b03c750
->--- /dev/null
->+++ b/Documentation/zh_CN/stable_api_nonsense.txt
+On Thu, 21 Jun 2007 17:13:49 -0700 (PDT) Joshua Wise wrote:
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> Testing:
+>   On my system, I could replicate the bug with the following command:
+>     # for i in `seq 15000`; do ./inject_sbe.sh; done
+>   where inject_sbe.sh contains commands to inject a single-bit error into the
+>   next memory write transaction.
 
+Hi,
 
-Thanks! Looks nice this time.
+Does inject_sbe.sh require special hardware?  If so, what hardware
+is it?
 
-Er, you forgot your signed-off-by?
-
+Thanks,
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
