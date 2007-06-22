@@ -1,109 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbXFVO5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758171AbXFVO7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757932AbXFVO5K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbXFVO46
+	id S1758171AbXFVO7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbXFVO7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:56:58 -0400
-Received: from waste.org ([66.93.16.53]:51766 "EHLO waste.org"
+	Fri, 22 Jun 2007 10:59:06 -0400
+Received: from mail02.vsnet.ch ([153.109.10.41]:48445 "EHLO mail02.vsnet.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753647AbXFVO45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:56:57 -0400
-Date: Fri, 22 Jun 2007 09:56:35 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SLOB allocator imcompatible SLAB
-Message-ID: <20070622145635.GX11115@waste.org>
-References: <m2tzt01kew.wl%ysato@users.sourceforge.jp>
+	id S1755938AbXFVO7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:59:05 -0400
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Subject: Re: [PATCH] mmc-atmel : fix kunmap wrong usage
+Date: Fri, 22 Jun 2007 16:58:09 +0200
+User-Agent: KMail/1.9.5
+Cc: Hugh Dickins <hugh@veritas.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <andrew@sanpeople.com>, Pierre Ossman <drzeus@drzeus.cx>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706221237330.26363@blonde.wat.veritas.com> <467BCFCF.6020509@rfo.atmel.com>
+In-Reply-To: <467BCFCF.6020509@rfo.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m2tzt01kew.wl%ysato@users.sourceforge.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706221658.10431.marc.pignat@hevs.ch>
+X-VSnet-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 05:08:07PM +0900, Yoshinori Sato wrote:
-> Because the page which SLOB allocator got does not have PG_slab,
-
-This is for a NOMMU system?
-
-You're using an old kernel with an old version of SLOB. SLOB in newer
-kernels actually sets per-page flags. Nick, can you see any reason not
-to s/PG_active/PG_slab/ in the current code?
-
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+On Friday 22 June 2007 15:34, Nicolas Ferre wrote:
+> Hugh Dickins :
+> Here:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b9bae3402572dc50a1e084c5b1ae5117918ef0f0
 > 
-> diff --git a/mm/slob.c b/mm/slob.c
-> index 71976c5..d10bcda 100644
-> --- a/mm/slob.c
-> +++ b/mm/slob.c
-> @@ -73,6 +73,21 @@ static DEFINE_SPINLOCK(block_lock);
->  static void slob_free(void *b, int size);
->  static void slob_timer_cbk(void);
->  
-> +static inline void set_slabflags(const void *ptr, int order)
-> +{
-> +	int i;
-> +	struct page *page = virt_to_page(ptr);
-> +	for (i = 0; i < (1 << order); i++)
-> +		__SetPageSlab(page++);
-> +}
-> +
-> +static inline void clear_slabflags(const void *ptr, int order)
-> +{
-> +	int i;
-> +	struct page *page = virt_to_page(ptr);
-> +	for (i = 0; i < (1 << order); i++)
-> +		__ClearPageSlab(page++);
-> +}
->  
->  static void *slob_alloc(size_t size, gfp_t gfp, int align)
->  {
-> @@ -180,6 +195,7 @@ void *__kmalloc(size_t size, gfp_t gfp)
->  	bb->pages = (void *)__get_free_pages(gfp, bb->order);
->  
->  	if (bb->pages) {
-> +		set_slabflags(bb->pages, bb->order);
->  		spin_lock_irqsave(&block_lock, flags);
->  		bb->next = bigblocks;
->  		bigblocks = bb;
-> @@ -240,6 +256,7 @@ void kfree(const void *block)
->  			if (bb->pages == block) {
->  				*last = bb->next;
->  				spin_unlock_irqrestore(&block_lock, flags);
-> +				clear_slabflags(block, bb->order);
->  				free_pages((unsigned long)block, bb->order);
->  				slob_free(bb, sizeof(bigblock_t));
->  				return;
-> @@ -323,9 +340,11 @@ void *kmem_cache_alloc(struct kmem_cache *c, gfp_t flags)
->  
->  	if (c->size < PAGE_SIZE)
->  		b = slob_alloc(c->size, flags, c->align);
-> -	else
-> +	else {
->  		b = (void *)__get_free_pages(flags, get_order(c->size));
-> -
-> +		if (b)
-> +			set_slabflags(b, get_order(c->size));
-> +	}
->  	if (c->ctor)
->  		c->ctor(b, c, 0);
->  
-> @@ -347,8 +366,10 @@ static void __kmem_cache_free(void *b, int size)
->  {
->  	if (size < PAGE_SIZE)
->  		slob_free(b, size);
-> -	else
-> +	else {
-> +		clear_slabflags(b, get_order(size));
->  		free_pages((unsigned long)b, get_order(size));
-> +	}
->  }
->  
->  static void kmem_rcu_free(struct rcu_head *head)
+> > But it would be good to hear from Nicolas whether that indeed fixes
+> > his oops: I couldn't actually try my patch on ARM either.
+> 
+> Ok tested on Atmel ARM AT91 (at91sam9263), this fixes this oops.
+> 
+Just tested and working on my atmel at91rm9200.
+(at91sam9263 core is ARM926EJ-S and at91rm9200 core is ARM920T).
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Thanks!
+
+Regards
+
+Marc
+
