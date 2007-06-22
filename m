@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbXFVQn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759839AbXFVQnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbXFVQn3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbXFVQm6
+	id S1759839AbXFVQnp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXFVQnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:42:58 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:5011 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758892AbXFVQm4 (ORCPT
+	Fri, 22 Jun 2007 12:43:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54416 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758541AbXFVQnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:42:56 -0400
-Date: Fri, 22 Jun 2007 18:42:55 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       video4linux-list@redhat.com,
-       =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       luca.risolia@studio.unibo.it, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
- [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
-In-Reply-To: <Pine.LNX.4.64.0706221735270.1817@scrub.home>
-Message-ID: <Pine.LNX.4.64.0706221842220.26568@fbirervta.pbzchgretzou.qr>
-References: <200706211117.55908.toralf.foerster@gmx.de> 
- <200706211231.53898.luca.risolia@studio.unibo.it>  <200706211326.45031.toralf.foerster@gmx.de>
-  <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
- <Pine.LNX.4.64.0706221602000.1817@scrub.home>
- <Pine.LNX.4.64.0706221711320.26568@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0706221735270.1817@scrub.home>
+	Fri, 22 Jun 2007 12:43:13 -0400
+Date: Fri, 22 Jun 2007 09:40:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+cc: Christoph Lameter <clameter@sgi.com>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
+Message-ID: <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 22 2007 18:24, Roman Zippel wrote:
+
+On Fri, 22 Jun 2007, Hugh Dickins wrote:
 >
->> There have been discussions to remove the default-ys again, I've sent a patch
->> [http://lkml.org/lkml/2007/5/12/216], but nothing happened.
->> 
->> So, should all affected menuconfigs be transformed into tristates, what 
->> do you think, Roman? Let me know so I can cook up a patch (hopefully 
->> before 2.6.22) should they become tristate.
->
->Using bool is clearly a bug and I'd prefer if it removed the defaults as 
->well.
+> On Thu, 21 Jun 2007, Christoph Lameter wrote:
+> 
+> > Maybe this will address the issue on ARM?
+> 
+> Looks like it would indeed address the immediate issue on ARM -
+> IF they've no particular reason to be using kmalloc there.
 
-What I don't quite understand is, that CONFIG_CRYPTO is also a bool,
-its subparts are tristates however, and there is no problem involved
-with these.
+I think the right thing to do is do both of these things. I already 
+applied Hugh's patch - it seemed like a total nobrainer to do at this 
+stage in the 2.6.22 -rc series. But that doesn't mean that we should not 
+_also_ look at "flush_dcache_page()" users.
 
+I do think that even just the name (the ".._page()" part) makes it obvious 
+that it was designed for page-level allocations, not kmalloc(). So I think 
+Christoph's patch makes sense in that context.
 
-	Jan
--- 
+At the same time, I do think that the whole notion of flushing the D$ is 
+certainly something that makes sense for kmalloc() allocations also, and 
+maybe people do actually do small DMA allocations and Christophs patch 
+would break that.
+
+End result: for 2.6.22, I think the patch from Hugh that I already applied 
+is the right thing. 
+
+But as to 2.6.23 and onward.. I dunno.
+
+		Linus
