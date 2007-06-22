@@ -1,82 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752173AbXFVEOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbXFVERv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752173AbXFVEOo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbXFVEOg
+	id S1752709AbXFVERv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 00:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXFVERn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:14:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39553 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750831AbXFVEOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:14:35 -0400
-To: davids@webmaster.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-References: <MDEHLPKNGKAHNMBLJOLKEEINEMAC.davids@webmaster.com>
-	<orvedgj3hu.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070622005834.GD602@delft.aura.cs.cmu.edu>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Fri, 22 Jun 2007 01:14:27 -0300
-In-Reply-To: <20070622005834.GD602@delft.aura.cs.cmu.edu> (Jan Harkes's message of "Thu\, 21 Jun 2007 20\:58\:34 -0400")
-Message-ID: <or645ghbh8.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Jun 2007 00:17:43 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:42218 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbXFVERm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 00:17:42 -0400
+X-IronPort-AV: i="4.16,449,1175486400"; 
+   d="scan'208"; a="33059324:sNHT27692679"
+Subject: RE: [PATCH] Chinese translation of Documentation/HOWTO
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: Rob Landley <rob@landley.net>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
+       Maggie Chen <chenqi@beyondsoft.com>, torvalds@linux-foundation.org
+In-Reply-To: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net>
+References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Fri, 22 Jun 2007 12:22:08 +0800
+Message-Id: <1182486128.3185.9.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+X-OriginalArrivalTime: 22 Jun 2007 04:17:41.0376 (UTC) FILETIME=[466FC000:01C7B484]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 21, 2007, Jan Harkes <jaharkes@cs.cmu.edu> wrote:
+On Fri, 2007-06-22 at 11:58 +0800, Li Yang-r58472 wrote:
+> > -----Original Message-----
+> > From: Rob Landley [mailto:rob@landley.net]
+> > Sent: Friday, June 22, 2007 10:49 AM
+> > 
+> > On Thursday 21 June 2007 10:40:17 Li Yang wrote:
+> > > This is a Chinese translated version of Documentation/HOWTO.
+> Currently
+> > > Chinese involvement in Linux kernel is very low, especially
+> comparing to
+> > > its largest population base.  Language could be the main obstacle.
+> Hope
+> > > this document will help more Chinese to contribute to Linux kernel.
+> > 
+> > I'm putting together a kernel documentation directory at
+> http://kernel.org/doc
+> > and I could easily add translations in there.  I just don't know if
+> this is a
+> > good idea.
+> > 
+> > The problem is, the submission of patches happens on the various
+> kernel.org
+> > mailing lists, which are all in English.  Kernel development is done
+> in a
+> > single common language: English.  (If you'd like to argue for it to be
+> done
+> > in another language, please make the proposal in Linus's native
+> Swedish.)
+> > 
+> > Setting aside for the moment version skew and coverage issues when
+> translating
+> > Documentation, which aren't really serious blocking issues, my
+> question is
+> > this:  If developers aren't fluent enough with English to follow the
+> > documentation, how can they follow any of the technical discussions
+> necessary
+> > to merge their patches back into the mainstream kernel?  Doesn't this
+> > encourage the creation of patches that can't easily be merged back
+> into the
+> > kernel?
+> 
+> So as I argued in a previous email, non-native English speakers tend to
+> be more confused by the policies and processes.  I also don't think it's
+> necessary to translate the technical documents.  To be a software
+> developer, one has to be educated or experienced in technical terms.
+> Technical discussion can be done without too much requirement to grammar
+> and emotional expressing.  The translated document of policies and
+> processes will help these people to understand the process better and go
+> smoother in the process.
+> 
+> - Leo
 
-> On Thu, Jun 21, 2007 at 08:23:57PM -0300, Alexandre Oliva wrote:
->> It's not like anyone can safely tivoize devices with GPLv2 already, 
+Leo is right. Policies and processes should be clear for all developer
+including non-native English speakers, while other technical documents
+do not need to be translated.
 
-> So you really didn't pay any attention to anything people told you?
+After I read the translations, I also found something I missed before.
 
-Yes.  Particularly to what Alan Cox and his legal counsel told me.  A
-single copyright holder able and willing to enforce the license
-against tivoization is enough.  What part of this don't you
-understand?
-
-> The license does not grant the right that you will be able to run the
-> software on any particular platform or whether it will even work at all.
-
-It doesn't grant TiVo the right to distribute the program without
-corresponding source code.
-
-They fail to distribute the source code to the functional signature
-derived from the kernel binary.
-
-Kaboom!
-
-
-As for the right to run the program, I've also explained why in
-Brazilian copyright law this is a right granted by the license,
-because the license says that right is unrestricted.
-
-Kaboom!
-
-> There is no need to take out contributions because the GPLv2 does
-> not prevent tivoization.
-
-Says you (or perhaps you're just repeating what you heard and want to
-believe).
-
-But what did your lawyer say about it?  In reference to which
-jurisdiction?
-
-> A mutual compatibility agreement (sublicense) would effectively
-> terminate any rights granted by the GPLv2,
-
-Additional permissions to combine are not permission to relicense.
-Look at section 13 of GPLv3dd4 and of Affero GPLv3dd1.  That's the
-sort of additional permission I'm talking about here.
-
-The same kind of additional permission that GPLed projects that use
-openssl adopt.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Thanks for the work
+- Bryan Wu
