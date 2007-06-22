@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbXFVReD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbXFVRew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759494AbXFVReD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 13:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbXFVRdv
+	id S1759979AbXFVRew (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 13:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbXFVRep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 13:33:51 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63975 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753697AbXFVRdu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 13:33:50 -0400
-Date: Fri, 22 Jun 2007 13:30:56 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: James Morris <jmorris@namei.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Lars Marowsky-Bree <lmb@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
-       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070622173056.GA873@think.oraclecorp.com>
-References: <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain> <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil> <20070622003436.GB6222@think.oraclecorp.com> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain> <20070622121742.GC6222@think.oraclecorp.com> <Line.LNX.4.64.0706220858170.5751@localhost.localdomain> <20070622140240.GM6222@think.oraclecorp.com> <Line.LNX.4.64.0706221012340.6190@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Line.LNX.4.64.0706221012340.6190@localhost.localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 22 Jun 2007 13:34:45 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:52802 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753325AbXFVReo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 13:34:44 -0400
+Date: Fri, 22 Jun 2007 19:34:31 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Tino Keitel <tino.keitel@gmx.de>
+Cc: rtc-linux@googlegroups.com, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+Subject: Re: [rtc-linux] Re: rtc_cmos: error after first write to wakealarm
+Message-ID: <20070622193431.71bed8b5@inspiron>
+In-Reply-To: <20070619172429.GA30990@dose.home.local>
+References: <20070615063308.GA18089@dose.home.local>
+	<20070615155904.1d1da892.yoichi_yuasa@tripeaks.co.jp>
+	<20070615070319.GA19455@dose.home.local>
+	<20070619142404.42dcdc3c@inspiron>
+	<20070619172429.GA30990@dose.home.local>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 10:23:03AM -0400, James Morris wrote:
-> On Fri, 22 Jun 2007, Chris Mason wrote:
+On Tue, 19 Jun 2007 19:24:29 +0200
+Tino Keitel <tino.keitel@gmx.de> wrote:
+
+> > > Where is the documentation that describes that I have to disable it
+> > > first, and how to do this? A migration document for
+> > > /proc/acpi/alarm users would be nice, too.
+> > 
+> >  Well, I guess there is no documentation. Maybe we could add
+> >  a dev_warn with an explicit message.
 > 
-> > But, this is a completely different discussion than if AA is
-> > solving problems in the wild for its intended audience, or if the code
-> > is somehow flawed and breaking other parts of the kernel.
+> Isn't it somewhat ridiculous to plan the removal of a feature for
+> several months, and then replace it with something that behaves
+> differently without any documentation?
 > 
-> Is its intended audience aware of its limitiations?  Lars has just 
-> acknowledged that it does not implement mandatory access control, for one.
+> I still wonder how 'cat /sys/class/rtc/rtcX/wakealarm' is expected to
+> behave. With 2.6.22-rc5, I get this:
 > 
-> Until people understand these issues, they certainly need to be addressed 
-> in the context of upstream merge.
-
-It is definitely useful to clearly understand the intended AA use cases
-during the merge.
-
+> $ echo 1182351177 > /sys/class/rtc/rtc0/wakealarm 
+> $ cat /sys/class/rtc/rtc0/wakealarm
+> 2051644873
 > 
-> > We've been over the "AA is different" discussion in threads about a
-> > billion times, and at the last kernel summit.
-> 
-> I don't believe that people at the summit were adequately informed on the 
-> issue, and from several accounts I've heard, Stephen Smalley was 
-> effectively cut off before he could even get to his second slide.
+> There seems to be a constant difference of 869984896 seconds. Is this a
+> bug?
 
-I'm sure people there will have a different versions of events.  The
-one part that was discussed was if pathname based security was
-useful, and a number of the people in the room (outside of 
-novell) said it was.  Now, it could be that nobody wanted to argue
-anymore, since most opinions had come out on one list or another by
-then.  
+ I'll have to check that. Sorry for the delay, i've been a bit busy.
 
-But as someone who doesn't use either SElinux or AA, I really hope
-we can get past the part of the debate where:
 
-while(1)
-    AA) we think we're making users happy with pathname security
-    SELINUX) pathname security sucks
+-- 
 
-So, yes Greg got it started and Lars is a well known trouble maker, and
-I completely understand if you want to say no thank you to an selinux
-based AA ;)  The models are different and it shouldn't be a requirement
-that they try to use the same underlying mechanisms.
+ Best regards,
 
--chris
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
