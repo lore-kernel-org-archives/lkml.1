@@ -1,124 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbXFVRSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbXFVRTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759764AbXFVRSu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 13:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbXFVRSl
+	id S1759941AbXFVRTw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 13:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbXFVRTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 13:18:41 -0400
-Received: from mga01.intel.com ([192.55.52.88]:27095 "EHLO mga01.intel.com"
+	Fri, 22 Jun 2007 13:19:45 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:38151 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753316AbXFVRSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 13:18:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,452,1175497200"; 
-   d="scan'208";a="260046900"
-Date: Fri, 22 Jun 2007 10:15:09 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com, arjan@linux.intel.com
-Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI 
- controllers.
-Message-Id: <20070622101509.16d0e93d.kristen.c.accardi@intel.com>
-In-Reply-To: <20070621130831.GN18863@kernel.dk>
-References: <20070611184146.448266229@intel.com>
-	<20070620142342.404856fe.kristen.c.accardi@intel.com>
-	<20070621130831.GN18863@kernel.dk>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	id S1751065AbXFVRTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 13:19:44 -0400
+Date: Fri, 22 Jun 2007 19:20:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problematic __attribute__((section(" "))) and gcc alignment
+Message-ID: <20070622172048.GA30761@uranus.ravnborg.org>
+References: <20070621203236.GA6463@Krystal>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070621203236.GA6463@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007 15:08:32 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Thu, Jun 21, 2007 at 04:32:36PM -0400, Mathieu Desnoyers wrote:
+> Hi,
+> 
+> I just realized, working on my marker infrastructure, that a lot of 
+> __attribute__((section(" "))) should probably come along with an
+> aligned() attribute. Since there are no data structures of size greater
+> or equal to 32 bytes put in these sections later referred to by
+> __sectionname_start[] and __sectionname_end[], the problem is never
+> encountered (AFAIK). But as soon as these structures will reach 32 bytes
+> in size, things will go ill:
+> 
+> Let's take arch/i386/boot/video.h as an example:
+> 
+> it defines 
+> 
+> struct card_info {
+>         const char *card_name;
+>         int (*set_mode)(struct mode_info *mode);
+>         int (*probe)(void);
+>         struct mode_info *modes;
+>         int nmodes;             /* Number of probed modes so far */
+>         int unsafe;             /* Probing is unsafe, only do after "scan" */
+>         u16 xmode_first;        /* Unprobed modes to try to call anyway */
+>         u16 xmode_n;            /* Size of unprobed mode range */
+> };
+> 
+> Which is 28 bytes in size (so it is ok for now). If one single field is
+> added, gcc will start aligning this structure on 32 bytes boundaries.
+> (see http://gcc.gnu.org/ml/gcc-bugs/1999-11/msg00914.html)
+> 
+> We then have
+> #define __videocard struct card_info __attribute__((section(".videocards")))
+> extern struct card_info video_cards[], video_cards_end[];
+> 
+> Which instructs gcc to put these structures in the .videocards section.
+> The linker scripts arch/i386/boot/setup.ld will assign video_cards and
+> video_cards_end as pointers to the beginning and the end of this
+> section. video_cards[0] is therefore expected to give the first
+> structure in the section.
 
-> On Wed, Jun 20 2007, Kristen Carlson Accardi wrote:
-> > Enable Aggressive Link Power management for AHCI controllers.
-> > 
-> > This patch will set the correct bits to turn on Aggressive
-> > Link Power Management (ALPM) for the ahci driver.  This
-> > will cause the controller and disk to negotiate a lower
-> > power state for the link when there is no activity (see
-> > the AHCI 1.x spec for details).  This feature is mutually
-> > exclusive with Hot Plug, so when ALPM is enabled, Hot Plug
-> > is disabled.  ALPM will be enabled by default, but it is
-> > settable via the scsi host syfs interface.  Possible 
-> > settings for this feature are:
-> > 
-> > Setting		Effect
-> > ----------------------------------------------------------
-> > min_power	ALPM is enabled, and link set to enter 
-> > 		lowest power state (SLUMBER) when idle
-> > 		Hot plug not allowed.
-> > 
-> > max_performance	ALPM is disabled, Hot Plug is allowed
-> > 
-> > medium_power	ALPM is enabled, and link set to enter
-> > 		second lowest power state (PARTIAL) when
-> > 		idle.  Hot plug not allowed.
-> > 
-> > Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> 
-> A suggestion (it comes with a patch!) - default to max_power/almp off,
-> not min_power. For two reasons:
-> 
-> - There's such a big performance difference between the two, you really
->   want max_power when booting.
-> 
-> - It's a lot better to default to no change, than default to enabling
->   something new.
+The linker will align the start of the section to the biggest alignment
+required by any member in the section. So gcc should tell the linker
+that video_cards needs 32 bytes alignemnt and we are not facing trobles.
 
-Sounds reasonable to me.  Distros/users can decide if they want to have
-scripts that enable this after boot to run at min_power. 
+BUT this requires that the labels in the linker script file are
+correct assigned like this:
 
-Acked-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+ .tracedata : AT(ADDR(.tracedata) - LOAD_OFFSET) {
+        __tracedata_start = .;
+        *(.tracedata)
+        __tracedata_end = .;
+  }
 
+If the assignment of __tracedata_start was doen just before the .tracedata
+we would not use the alignment imposed by linker and would see the error you describe.
 
-> 
-> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-> index 841cf0a..e7a2072 100644
-> --- a/drivers/ata/ahci.c
-> +++ b/drivers/ata/ahci.c
-> @@ -786,8 +786,7 @@ static int ahci_disable_alpm(struct ata_port *ap)
->  	return 0;
->  }
->  
-> -static int ahci_enable_alpm(struct ata_port *ap,
-> -	enum scsi_host_link_pm policy)
-> +static int ahci_enable_alpm(struct ata_port *ap, enum scsi_host_link_pm policy)
->  {
->  	struct ahci_host_priv *hpriv = ap->host->private_data;
->  	void __iomem *port_mmio = ahci_port_base(ap);
-> @@ -808,19 +807,19 @@ static int ahci_enable_alpm(struct ata_port *ap,
->  		return -EINVAL;
->  	}
->  
-> -	switch(policy) {
-> +	switch (policy) {
->  	case SHOST_MAX_PERFORMANCE:
-> -		ahci_disable_alpm(ap);
-> -		ap->pm_policy = policy;
-> -		return 0;
->  	case SHOST_NOT_AVAILABLE:
-> -	case SHOST_MIN_POWER:
->  		/*
->   		 * if we came here with SHOST_NOT_AVAILABLE,
->   		 * it just means this is the first time we
-> - 		 * have tried to enable - so try to do
-> - 		 * min_power
-> + 		 * have tried to enable - default to max performance,
-> +		 * and let the user go to lower power modes on request.
->   		 */
-> +		ahci_disable_alpm(ap);
-> +		ap->pm_policy = SHOST_MAX_PERFORMANCE;
-> +		return 0;
-> +	case SHOST_MIN_POWER:
->  		ap->pm_policy = SHOST_MIN_POWER;
->  
->  		/* configure HBA to enter SLUMBER */
-> 
-> -- 
-> Jens Axboe
-> 
+	Sam
