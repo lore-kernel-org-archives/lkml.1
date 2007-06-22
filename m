@@ -1,92 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbXFVUnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbXFVUnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbXFVUnf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 16:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXFVUn1
+	id S1756597AbXFVUnv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 16:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbXFVUnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 16:43:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45090 "EHLO mx3.mail.elte.hu"
+	Fri, 22 Jun 2007 16:43:42 -0400
+Received: from mga02.intel.com ([134.134.136.20]:45709 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440AbXFVUn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 16:43:26 -0400
-Date: Fri, 22 Jun 2007 22:40:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070622204058.GA11777@elte.hu>
-References: <20070622040014.234651401@goodmis.org> <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
-MIME-Version: 1.0
+	id S1751597AbXFVUnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 16:43:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,452,1175497200"; 
+   d="scan'208";a="257799287"
+Date: Fri, 22 Jun 2007 13:39:18 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 2/7] ICH Force HPET: Restructure hpet generic clock code
+Message-ID: <20070622203918.GB22807@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Restructure and rename legacy replacement mode HPET timer support.
+Just the code structural changes and should be zero functionality change.
 
-> Whether we actually then want to do 6 is another matter. I think we'd 
-> need some measuring and discussion about that.
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-basically tasklets have a number of limitations:
+---
 
- - tasklets have certain latency limitations over real tasks. (for
-   example they are not guaranteed to be re-executed when they are
-   triggered while they are running, so artificial latencies can be
-   introduced into the kernel workflow)
-
- - tasklets have certain execution limitations. (only atomic functions
-   can be executed in them)
-
- - tasklets have certain fairness limitations. (they are executed in
-   softirq context and thus preempt everything, even if there is some
-   potentially more important, high-priority task waiting to be
-   executed.)
-
- - the 'priority levels' approach of softirqs is not really 
-   self-documenting - unlike real locks. As a result we've got some 
-   vague coupling between network softirq processing and timer softirq 
-   processing, which spilled over into tasklets as well. The 'hi' and
-   'low' concept of tasklets isnt really used either. We should reduce 
-   the amount of such opaque 'coupling' between workflows - it should be 
-   spelled out explicitly via some synchronization construct.
-
- - tasklets are duplicated infrastructure (over existing workqueues) 
-   that, if it's possible to do it compatibly, would be a good idea to 
-   eliminate.
-
-when it comes to 'deferred processing', we've basically got two 'prime' 
-choices for deferred processing:
-
- - if it's high-performance then it goes into a softirq.
-
- - if performance is not important, or robustness and flexibility is 
-   more important than performance, then workqueues are used.
-
-basically tasklets do _neither_ really well. They are too 'global' to 
-scale really well on SMP (even the RCU tasklet wasnt a real tasklet: it 
-was a _per CPU tasklet_, which almost by definition is equivalent to a 
-softirq, some some extra glue overhead ...), and tasklets are also too 
-much tied to softirqs to be used as a generic processing context.
-
-that's why i'd like them to be gently but firmly phased out =B-)
-
-	Ingo
+Index: linux-2.6.22-rc5/arch/i386/kernel/hpet.c
+===================================================================
+--- linux-2.6.22-rc5.orig/arch/i386/kernel/hpet.c	2007-06-17 08:52:09.000000000 +0200
++++ linux-2.6.22-rc5/arch/i386/kernel/hpet.c	2007-06-17 08:52:10.000000000 +0200
+@@ -158,9 +158,9 @@ static void hpet_reserve_platform_timers
+  */
+ static unsigned long hpet_period;
+ 
+-static void hpet_set_mode(enum clock_event_mode mode,
++static void hpet_legacy_set_mode(enum clock_event_mode mode,
+ 			  struct clock_event_device *evt);
+-static int hpet_next_event(unsigned long delta,
++static int hpet_legacy_next_event(unsigned long delta,
+ 			   struct clock_event_device *evt);
+ 
+ /*
+@@ -169,8 +169,8 @@ static int hpet_next_event(unsigned long
+ static struct clock_event_device hpet_clockevent = {
+ 	.name		= "hpet",
+ 	.features	= CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
+-	.set_mode	= hpet_set_mode,
+-	.set_next_event = hpet_next_event,
++	.set_mode	= hpet_legacy_set_mode,
++	.set_next_event = hpet_legacy_next_event,
+ 	.shift		= 32,
+ 	.irq		= 0,
+ };
+@@ -187,7 +187,7 @@ static void hpet_start_counter(void)
+ 	hpet_writel(cfg, HPET_CFG);
+ }
+ 
+-static void hpet_enable_int(void)
++static void hpet_enable_legacy_int(void)
+ {
+ 	unsigned long cfg = hpet_readl(HPET_CFG);
+ 
+@@ -196,7 +196,39 @@ static void hpet_enable_int(void)
+ 	hpet_legacy_int_enabled = 1;
+ }
+ 
+-static void hpet_set_mode(enum clock_event_mode mode,
++static void hpet_legacy_clockevent_register(void)
++{
++	uint64_t hpet_freq;
++
++	/* Start HPET legacy interrupts */
++	hpet_enable_legacy_int();
++
++	/*
++	 * The period is a femto seconds value. We need to calculate the
++	 * scaled math multiplication factor for nanosecond to hpet tick
++	 * conversion.
++	 */
++	hpet_freq = 1000000000000000ULL;
++	do_div(hpet_freq, hpet_period);
++	hpet_clockevent.mult = div_sc((unsigned long) hpet_freq,
++				      NSEC_PER_SEC, 32);
++	/* Calculate the min / max delta */
++	hpet_clockevent.max_delta_ns = clockevent_delta2ns(0x7FFFFFFF,
++							   &hpet_clockevent);
++	hpet_clockevent.min_delta_ns = clockevent_delta2ns(0x30,
++							   &hpet_clockevent);
++
++	/*
++	 * Start hpet with the boot cpu mask and make it
++	 * global after the IO_APIC has been initialized.
++	 */
++	hpet_clockevent.cpumask = cpumask_of_cpu(smp_processor_id());
++	clockevents_register_device(&hpet_clockevent);
++	global_clock_event = &hpet_clockevent;
++	printk(KERN_DEBUG "hpet clockevent registered\n");
++}
++
++static void hpet_legacy_set_mode(enum clock_event_mode mode,
+ 			  struct clock_event_device *evt)
+ {
+ 	unsigned long cfg, cmp, now;
+@@ -237,12 +269,12 @@ static void hpet_set_mode(enum clock_eve
+ 		break;
+ 
+ 	case CLOCK_EVT_MODE_RESUME:
+-		hpet_enable_int();
++		hpet_enable_legacy_int();
+ 		break;
+ 	}
+ }
+ 
+-static int hpet_next_event(unsigned long delta,
++static int hpet_legacy_next_event(unsigned long delta,
+ 			   struct clock_event_device *evt)
+ {
+ 	unsigned long cnt;
+@@ -282,58 +314,11 @@ static struct clocksource clocksource_hp
+ #endif
+ };
+ 
+-/*
+- * Try to setup the HPET timer
+- */
+-int __init hpet_enable(void)
++static int hpet_clocksource_register(void)
+ {
+-	unsigned long id;
+-	uint64_t hpet_freq;
+ 	u64 tmp, start, now;
+ 	cycle_t t1;
+ 
+-	if (!is_hpet_capable())
+-		return 0;
+-
+-	hpet_set_mapping();
+-
+-	/*
+-	 * Read the period and check for a sane value:
+-	 */
+-	hpet_period = hpet_readl(HPET_PERIOD);
+-	if (hpet_period < HPET_MIN_PERIOD || hpet_period > HPET_MAX_PERIOD)
+-		goto out_nohpet;
+-
+-	/*
+-	 * The period is a femto seconds value. We need to calculate the
+-	 * scaled math multiplication factor for nanosecond to hpet tick
+-	 * conversion.
+-	 */
+-	hpet_freq = 1000000000000000ULL;
+-	do_div(hpet_freq, hpet_period);
+-	hpet_clockevent.mult = div_sc((unsigned long) hpet_freq,
+-				      NSEC_PER_SEC, 32);
+-	/* Calculate the min / max delta */
+-	hpet_clockevent.max_delta_ns = clockevent_delta2ns(0x7FFFFFFF,
+-							   &hpet_clockevent);
+-	hpet_clockevent.min_delta_ns = clockevent_delta2ns(0x30,
+-							   &hpet_clockevent);
+-
+-	/*
+-	 * Read the HPET ID register to retrieve the IRQ routing
+-	 * information and the number of channels
+-	 */
+-	id = hpet_readl(HPET_ID);
+-
+-#ifdef CONFIG_HPET_EMULATE_RTC
+-	/*
+-	 * The legacy routing mode needs at least two channels, tick timer
+-	 * and the rtc emulation channel.
+-	 */
+-	if (!(id & HPET_ID_NUMBER))
+-		goto out_nohpet;
+-#endif
+-
+ 	/* Start the counter */
+ 	hpet_start_counter();
+ 
+@@ -356,7 +341,7 @@ int __init hpet_enable(void)
+ 	if (t1 == read_hpet()) {
+ 		printk(KERN_WARNING
+ 		       "HPET counter not counting. HPET disabled\n");
+-		goto out_nohpet;
++		return -ENODEV;
+ 	}
+ 
+ 	/* Initialize and register HPET clocksource
+@@ -377,16 +362,49 @@ int __init hpet_enable(void)
+ 
+ 	clocksource_register(&clocksource_hpet);
+ 
++	return 0;
++}
++
++/*
++ * Try to setup the HPET timer
++ */
++int __init hpet_enable(void)
++{
++	unsigned long id;
++
++	if (!is_hpet_capable())
++		return 0;
++
++	hpet_set_mapping();
++
++	/*
++	 * Read the period and check for a sane value:
++	 */
++	hpet_period = hpet_readl(HPET_PERIOD);
++	if (hpet_period < HPET_MIN_PERIOD || hpet_period > HPET_MAX_PERIOD)
++		goto out_nohpet;
++
++	/*
++	 * Read the HPET ID register to retrieve the IRQ routing
++	 * information and the number of channels
++	 */
++	id = hpet_readl(HPET_ID);
++
++#ifdef CONFIG_HPET_EMULATE_RTC
++	/*
++	 * The legacy routing mode needs at least two channels, tick timer
++	 * and the rtc emulation channel.
++	 */
++	if (!(id & HPET_ID_NUMBER))
++		goto out_nohpet;
++#endif
++
++	if (hpet_clocksource_register())
++		goto out_nohpet;
++
+ 	if (id & HPET_ID_LEGSUP) {
+-		hpet_enable_int();
++		hpet_legacy_clockevent_register();
+ 		hpet_reserve_platform_timers(id);
+-		/*
+-		 * Start hpet with the boot cpu mask and make it
+-		 * global after the IO_APIC has been initialized.
+-		 */
+-		hpet_clockevent.cpumask = cpumask_of_cpu(smp_processor_id());
+-		clockevents_register_device(&hpet_clockevent);
+-		global_clock_event = &hpet_clockevent;
+ 		return 1;
+ 	}
+ 	return 0;
