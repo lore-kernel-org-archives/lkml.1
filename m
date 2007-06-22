@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbXFVSyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760708AbXFVS6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760600AbXFVSyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 14:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbXFVSyE
+	id S1760708AbXFVS6a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 14:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759293AbXFVS6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 14:54:04 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54758
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757943AbXFVSyD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 14:54:03 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Fri, 22 Jun 2007 14:58:22 -0400
+Received: from mga03.intel.com ([143.182.124.21]:29065 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759226AbXFVS6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 14:58:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,452,1175497200"; 
+   d="scan'208";a="242246480"
 Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Date: Fri, 22 Jun 2007 14:53:59 -0400
-User-Agent: KMail/1.9.6
-Cc: "dave young" <hidave.darkstar@gmail.com>, "Li Yang" <leoli@freescale.com>,
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: TripleX <zhongyu@18mail.cn>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Li Yang-r58472 <LeoLi@freescale.com>, Rob Landley <rob@landley.net>,
        gregkh@suse.de, linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
-       bryan.wu@analog.com, "TripleX Chung" <xxx.phy@gmail.com>,
-       "Maggie Chen" <chenqi@beyondsoft.com>, torvalds@linux-foundation.org
-References: <1182436817579-git-send-email-leoli@freescale.com> <200706220133.19496.rob@landley.net> <20070622102123.49182855@the-village.bc.nu>
-In-Reply-To: <20070622102123.49182855@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
+       Maggie Chen <chenqi@beyondsoft.com>
+In-Reply-To: <467C1768.1030706@18mail.cn>
+References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescal e.net>
+	 <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org>
+	 <467C1768.1030706@18mail.cn>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706221454.03926.rob@landley.net>
+Date: Fri, 22 Jun 2007 11:58:19 -0700
+Message-Id: <1182538699.3600.6.camel@tongli.jf.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 22 Jun 2007 18:58:19.0778 (UTC) FILETIME=[4C940E20:01C7B4FF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 June 2007 05:21:23 Alan Cox wrote:
-> > The question is, do the kernel developers want to encourage people who
-> > don't speak English to mess with the kernel, any more than they want to
-> > encourage kernel developers who don't know C?  Is kernel documentation in
-> > Chinese a
->
-> The majority of the world population do not speak English. There are
-> existing contributors do not speak English (and I'm not being funny about
-> the USSA here) - you don't notice because they have a team member who
-> speaks passable English.
+> As I know, there are a lot of standalone kernel developer in China. They 
+> write device drivers for their chips or iptables modules for their  
+> linux based network devices. They send source files to their customers 
+> or publish them on web but seldom do anything to make the codes into 
+> kernel source tree. The usual reason  is they do not know how to 
+> communicate and work with the Linux kernel development community. People 
+> will have more chance to read these documentation  if we merge them to 
+> the kernel source tree.
+> 
+> TripleX
+> 
 
-Ok.  Cool.  If this is not a problem, that's good to know.
+Well, not necessarily they'll need to go to the source tree. Having a
+website or something like that would just be fine IMO.
 
-> There are also entire non-English sites around things like Linux that
-> monoglot English speakers generally don't notice exist.
-
-I'm aware of this.
-
-> > P.S.  The hardest part of putting together a kernel documentation web
-> > page is actually indexing it coherently.  It's not very useful to just
-> > dump together
->
-> For the kernel I would follow the kernel tree so that its always
->
-> 	/[languagecode]/Documentation/...
-
-That PS was about putting up a kernel doc web page, not about the existing 
-kernel Documentation tree.
-
-The existing Documentation tree has, at the top level, coding style 
-guidelines, files documenting the kernel community, a file documenting the 
-Amiga "zorro" bus, a half-dozen files about old multiport serial cards, 
-documentation about several different types of locking, a penguin graphic 
-from 1996, your documentation on the tty layer, a document on how to 
-configure BINFMT_MISC to autorun .NET files with mono, and zillions of other 
-random unrelated topics that are sorted based on where random passerby put 
-things down last.
-
-I sent a couple patches to shuffle stuff around in there but it got lost on 
-the noise.  More to the point, an HTML index can hotlink but text files have 
-a harder time doing that, so if I'm making an HTML index it's probably best 
-to link to the text files but not attempt to navigate with them.
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+  tong
