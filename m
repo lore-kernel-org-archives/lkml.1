@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXFVGNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbXFVGP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbXFVGNj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 02:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbXFVGNc
+	id S1754787AbXFVGP7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 02:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbXFVGPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 02:13:32 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:58898 "EHLO
-	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750769AbXFVGNb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 02:13:31 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-Organization: AMD
-To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-Subject: Re: Machine Check Exception: 0...04
-Date: Sun, 17 Jun 2007 14:08:28 +0200
-User-Agent: KMail/1.9.7
-cc: "Linux Kernel Maillist" <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0706160948510.29686@filesrv1.baby-dragons.com>
-In-Reply-To: <Pine.LNX.4.64.0706160948510.29686@filesrv1.baby-dragons.com>
+	Fri, 22 Jun 2007 02:15:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33019 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbXFVGPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 02:15:52 -0400
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: davids@webmaster.com,
+       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com>
+	<or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070622013417.GT21478@ftp.linux.org.uk>
+	<or1wg4hawh.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070622052315.GU21478@ftp.linux.org.uk>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 22 Jun 2007 03:15:23 -0300
+In-Reply-To: <20070622052315.GU21478@ftp.linux.org.uk> (Al Viro's message of "Fri\, 22 Jun 2007 06\:23\:15 +0100")
+Message-ID: <orzm2scy6c.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Message-ID: <200706171408.29521.joachim.deguara@amd.com>
-X-OriginalArrivalTime: 22 Jun 2007 06:13:03.0075 (UTC)
- FILETIME=[64173330:01C7B494]
-X-WSS-ID: 6A65B7FD1S41109967-03-01
-Content-Type: text/plain;
- charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 June 2007 22:40:53 Mr. James W. Laferriere wrote:
->  	Hello All ,  Does anoyone know howto identify a cause for these(*) ?
->  	Or of any tools to help in the identification of the cause ?
->  	So far the Machine checks only happen when I am running bonnie++ against
->  	my software raid6 array .
+On Jun 22, 2007, Al Viro <viro@ftp.linux.org.uk> wrote:
 
-You should run mcelog to decode what the machine checks mean.  These do point 
-to a hardware problem.   Just briefly judging from you description of when 
-the MCEs happen I wonder if the power supply is getting maxed out driving all 
-of those disks.  Either way, use mcelog to find out what the MCEs are first.
+> On Fri, Jun 22, 2007 at 01:26:54AM -0300, Alexandre Oliva wrote:
+>> No, this thread was about additional permissions to combine with other
+>> licenses.  I didn't suggest anything about relicensing whatsoever,
+>> that's all noise out of not understanding the suggestion.
 
--Joachim
+> And that constitutes the change of license.
 
+I stand corrected.  I misread what you wrote as "relicensing under
+GPLv3, or GPLv2+".  Sorry.
 
+> Suppose ZFS _is_ pulled into the tree via that mechanism.
+
+Or even kept outside, such that third parties can create a combined
+work and distribute that.
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
