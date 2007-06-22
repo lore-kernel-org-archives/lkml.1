@@ -1,117 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbXFVOip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbXFVOlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758367AbXFVOip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbXFVOib
+	id S1758040AbXFVOlH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbXFVOk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:38:31 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:56285 "EHLO
-	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756914AbXFVOi2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:38:28 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Fri, 22 Jun 2007 16:39:13 +0200
-From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-To: "Ravikiran G Thirumalai" <kiran@scalex86.org>, "Andi Kleen" <ak@suse.de>
-cc: "Len Brown" <lenb@kernel.org>, "Steven Whitehouse" <swhiteho@redhat.com>,
-       "Shai Fultheim" <shai@scalex86.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 7/12] acpi: fix another compile warning
-Message-ID: <20070622143913.GU5193@alberich.amd.com>
-References: <20070619225035.GI5193@alberich.amd.com>
- <200706192338.02807.lenb@kernel.org>
- <20070620084911.GO5193@alberich.amd.com>
- <200706200936.31236.lenb@kernel.org> <20070620182548.GA561@localdomain>
- <20070621183615.GI5193@alberich.amd.com>
+	Fri, 22 Jun 2007 10:40:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57695 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756516AbXFVOkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:40:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
+Date: Fri, 22 Jun 2007 16:47:49 +0200
+User-Agent: KMail/1.9.5
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
+       Uli Luckas <u.luckas@road.de>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <20070621183615.GI5193@alberich.amd.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 22 Jun 2007 14:38:04.0870 (UTC)
- FILETIME=[F15E2E60:01C7B4DA]
-X-WSS-ID: 6A65015A1S41144837-01-01
 Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706221647.50509.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 08:36:15PM +0200, Andreas Herrmann wrote:
-> On Wed, Jun 20, 2007 at 11:25:48AM -0700, Ravikiran G Thirumalai wrote:
-> > On Wed, Jun 20, 2007 at 09:36:30AM -0400, Len Brown wrote:
-> > > 
-      <snip>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> > > The underlying problem is that Kconfig doesn't support using select
-> > > on targets which themselves have dependencies.
-> > > 
-> > > Signed-off-by: Len Brown <len.brown@intel.com>
-> > > 
-> > > 
-> > > diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-> > > index 5ce9443..e9d7767 100644
-> > > --- a/arch/x86_64/Kconfig
-> > > +++ b/arch/x86_64/Kconfig
-> > > @@ -364,9 +364,9 @@ config NODES_SHIFT
-> > >  config X86_64_ACPI_NUMA
-> > >         bool "ACPI NUMA detection"
-> > >         depends on NUMA
-> > > -       select ACPI 
-> > > +       depends on ACPI 
-> > >  	select PCI
-> > > -       select ACPI_NUMA
-> > > +       depends on ACPI_NUMA
-> > >         default y
-> > >         help
-> > >  	 Enable ACPI SRAT based node topology detection.
-> > > -
-> > 
-      <snip>
-> > 
-> > 
-> > Paper over 'select' inadequacies.  
-> > 
-> > Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-> > 
-> > Index: linux-2.6.22-rc5/arch/x86_64/Kconfig
-> > ===================================================================
-> > --- linux-2.6.22-rc5.orig/arch/x86_64/Kconfig	2007-06-18 16:02:19.571323415 -0700
-> > +++ linux-2.6.22-rc5/arch/x86_64/Kconfig	2007-06-20 11:34:29.845354250 -0700
-> > @@ -366,6 +366,7 @@ config X86_64_ACPI_NUMA
-> >         depends on NUMA
-> >         select ACPI 
-> >  	select PCI
-> > +  	select PM
-> >         select ACPI_NUMA
-> >         default y
-> >         help
-> 
-> Yep, this one-liner solves all acpi related compile errors/warnings
-> that I've reported.
-> 
-> Additional it resolves anoter problem that results from
-> dependencies between CONFIG_PNP and CONFIG_ACPI.
-> 
+At present, if a user mode helper is running while usermodehelper_pm_callback()
+is executed, the helper may be frozen and the completion in
+call_usermodehelper_exec() won't be completed until user space processes are
+thawed.  As a result, the freezing of kernel threads may fail, which is not
+desirable.
 
+Prevent this from happening by introducing a counter of running user mode
+helpers and allowing usermodehelper_pm_callback() to succeed for
+action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+fails if that doesn't happen.]
 
-Andi,
+Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+versions of this patch and for very useful comments.
 
-are you going to apply Ravikiran's patch?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+Acked-by: Uli Luckas <u.luckas@road.de>
+Reviewed-by: Pavel Machek <pavel@ucw.cz>
+---
+ kernel/kmod.c |   70 +++++++++++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 60 insertions(+), 10 deletions(-)
 
-
-Regards,
-
-Andreas
-
--- 
-Operating | AMD Saxony Limited Liability Company & Co. KG,
-  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- Research | Register Court Dresden: HRA 4896, General Partner authorized
-  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
-  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
-
-
+Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
++++ linux-2.6.22-rc4-mm2/kernel/kmod.c
+@@ -41,14 +41,6 @@ extern int max_threads;
+ 
+ static struct workqueue_struct *khelper_wq;
+ 
+-/*
+- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
+- * immediately returning -EBUSY.  Used for preventing user land processes from
+- * being created after the user land has been frozen during a system-wide
+- * hibernation or suspend operation.
+- */
+-static int usermodehelper_disabled;
+-
+ #ifdef CONFIG_KMOD
+ 
+ /*
+@@ -275,15 +267,48 @@ static void __call_usermodehelper(struct
+ 	}
+ }
+ 
++#ifdef CONFIG_PM
++/*
++ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
++ * (used for preventing user land processes from being created after the user
++ * land has been frozen during a system-wide hibernation or suspend operation).
++ */
++static int usermodehelper_disabled;
++
++/* Number of helpers running */
++static atomic_t running_helpers = ATOMIC_INIT(0);
++
++/*
++ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
++ * helpers to finish.
++ */
++static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
++
++/*
++ * Time to wait for running_helpers to become zero before the setting of
++ * usermodehelper_disabled in usermodehelper_pm_callback() fails
++ */
++#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
++
+ static int usermodehelper_pm_callback(struct notifier_block *nfb,
+ 					unsigned long action,
+ 					void *ignored)
+ {
++	long retval;
++
+ 	switch (action) {
+ 	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
+ 		usermodehelper_disabled = 1;
+-		return NOTIFY_OK;
++		retval = wait_event_timeout(running_helpers_waitq,
++					atomic_read(&running_helpers) == 0,
++					RUNNING_HELPERS_TIMEOUT);
++		if (retval) {
++			return NOTIFY_OK;
++		} else {
++			usermodehelper_disabled = 0;
++			return NOTIFY_BAD;
++		}
+ 	case PM_POST_HIBERNATION:
+ 	case PM_POST_SUSPEND:
+ 		usermodehelper_disabled = 0;
+@@ -293,6 +318,29 @@ static int usermodehelper_pm_callback(st
+ 	return NOTIFY_DONE;
+ }
+ 
++static void new_helper(void)
++{
++	atomic_inc(&running_helpers);
++}
++
++static void helper_finished(void)
++{
++	if (atomic_dec_and_test(&running_helpers))
++		wake_up(&running_helpers_waitq);
++}
++
++static void register_pm_notifier_callback(void)
++{
++	pm_notifier(usermodehelper_pm_callback, 0);
++}
++#else /* CONFIG_PM */
++#define usermodehelper_disabled	0
++
++static inline void new_helper(void) {}
++static inline void helper_finished(void) {}
++static inline void register_pm_notifier_callback(void) {}
++#endif /* CONFIG_PM */
++
+ /**
+  * call_usermodehelper_setup - prepare to call a usermode helper
+  * @path - path to usermode executable
+@@ -397,6 +445,7 @@ int call_usermodehelper_exec(struct subp
+ 	DECLARE_COMPLETION_ONSTACK(done);
+ 	int retval;
+ 
++	new_helper();
+ 	if (sub_info->path[0] == '\0') {
+ 		retval = 0;
+ 		goto out;
+@@ -418,6 +467,7 @@ int call_usermodehelper_exec(struct subp
+ 
+   out:
+ 	call_usermodehelper_freeinfo(sub_info);
++	helper_finished();
+ 	return retval;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_exec);
+@@ -459,5 +509,5 @@ void __init usermodehelper_init(void)
+ {
+ 	khelper_wq = create_singlethread_workqueue("khelper");
+ 	BUG_ON(!khelper_wq);
+-	pm_notifier(usermodehelper_pm_callback, 0);
++	register_pm_notifier_callback();
+ }
