@@ -1,76 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbXFVXGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759703AbXFVXIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759097AbXFVXGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 19:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXFVXGJ
+	id S1759703AbXFVXIn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 19:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbXFVXIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 19:06:09 -0400
-Received: from server145.whmcpanel.net ([69.72.254.178]:60761 "EHLO
-	server459.whmcpanel.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbXFVXGI (ORCPT
+	Fri, 22 Jun 2007 19:08:36 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:57602 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751385AbXFVXIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 19:06:08 -0400
-X-Greylist: delayed 3516 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Jun 2007 19:06:08 EDT
-From: Alberto Gonzalez <info@gnebu.es>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Question about fair schedulers
-Date: Sat, 23 Jun 2007 00:07:15 +0200
-User-Agent: KMail/1.9.7
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706230007.15622.info@gnebu.es>
-X-PopBeforeSMTPSenders: info@gnebu.es
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server459.whmcpanel.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - gnebu.es
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Fri, 22 Jun 2007 19:08:35 -0400
+Date: Fri, 22 Jun 2007 19:08:04 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v18
+In-reply-to: <20070622220202.GA16872@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Message-id: <200706221908.05460.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070622220202.GA16872@elte.hu>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday 22 June 2007, Ingo Molnar wrote:
+>i'm pleased to announce release -v18 of the CFS scheduler patchset.
+>
+>The rolled-up CFS patch against today's -git kernel, v2.6.22-rc5,
+>v2.6.22-rc4-mm2, v2.6.21.5 or v2.6.20.14 can be downloaded from the
+>usual place:
+>
+>   http://people.redhat.com/mingo/cfs-scheduler/
+>
+>The biggest change in -v18 are various performance related improvements.
+>Thomas Gleixner has eliminated expensive 64-bit divisions by converting
+>the arithmetics to scaled math (without impacting the quality of
+>calculations). Srivatsa Vaddagiri and Dmitry Adamushko have continued
+>the abstraction and cleanup work. Srivatsa Vaddagiri and Christoph
+>Lameter fixed the NUMA balancing bug reported by Paul McKenney. There
+>were also a good number of other refinements to the CFS code. (No
+>reproducible behavioral regressions were reported against -v17 so far,
+>so the 'behavioral' bits are mostly unchanged.)
+>
+>Changes since -v17:
+>
+> - implement scaled math speedups for CFS. (Thomas Gleixner)
+>
+> - lots of core code updates, cleanups and streamlining.
+>   (Srivatsa Vaddagiri, Dmitry Adamushko, me.)
+>
+> - bugfix: fix NUMA balancing. (Srivatsa Vaddagiri, Christoph Lameter,
+>   Paul E. McKenney)
+>
+> - feature: SCHED_IDLE now also implies block-scheduler (CFQ)
+>   idle-IO-priority. (suggested by Thomas Sattler, picked up from -ck)
+>
+> - build fix for ppc32. (reported, tested and confirmed fixed by
+>   Art Haas)
+>
+> - ARM fix. (reported and debugged by Thomas Gleixner)
+>
+> - cleanup: implemented idle_sched_class in kernel/sched_idletask.c as a
+>   way to separate out rq->idle handling out of the core scheduler. This
+>   made a good deal of idle-task related special-cases go away.
+>
+> - debug: make the sysctls safer by introducing high and low limits.
+>
+> - cleanup: move some of the debug counters to under CONFIG_SCHEDSTATS.
+>
+> - speedup: various micro-optimizations
+>
+> - various other small updates.
+>
+>As usual, any sort of feedback, bugreport, fix and suggestion is more
+>than welcome!
+>
+Humm, problem methinks.  Applying the patch, with 2.6.22-rc5 applied to 2.6.21 
+completed, from my script:
 
-First I'd like to say I'm not a programmer or even a geek, just a normal user, 
-so my question might be very basic or even stupid. If so, please excuse me.
+now applying patch sched-cfs-v2.6.22-rc5-v18.patch
 
-I've been reading about CFS and SD schedulers here on the list and my basic 
-understanding is that they try to improve interactivity by being completely 
-fair, i.e., giving the same amount of CPU time to each task running at a 
-given time. There is something I don't get about this, so today I tried a 
-little test with the -ck kernel comparing it to mainline.
+patching file Documentation/kernel-parameters.txt
+patching file Documentation/sched-design-CFS.txt
+patching file Makefile
+patching file arch/i386/kernel/smpboot.c
+patching file arch/i386/kernel/tsc.c
+patching file arch/ia64/kernel/setup.c
+patching file arch/mips/kernel/smp.c
+patching file arch/sparc/kernel/smp.c
+patching file arch/sparc64/kernel/smp.c
+patching file block/cfq-iosched.c
+patching file fs/proc/array.c
+patching file fs/proc/base.c
+patching file include/asm-generic/bitops/sched.h
+patching file include/linux/hardirq.h
+patching file include/linux/sched.h
+patching file include/linux/topology.h
+patching file init/main.c
+patching file kernel/delayacct.c
+patching file kernel/exit.c
+patching file kernel/fork.c
+patching file kernel/posix-cpu-timers.c
+patching file kernel/sched.c
+patching file kernel/sched_debug.c
+patching file kernel/sched_fair.c
+patching file kernel/sched_idletask.c
+patching file kernel/sched_rt.c
+patching file kernel/sched_stats.h
+patching file kernel/softirq.c
+patching file kernel/sysctl.c
+The next patch would delete the file l/kernel/sched.c,
+which does not exist!  Assume -R? [n]
 
-Let's say I have a HD video that uses ~70% CPU. Let's say I want to watch it 
-while I encode my music to vorbis (or rip a DVD). This is the only reasonable 
-scenario I can imagine on a normal desktop, since most desktops have the CPU 
-idle or under 10% usage during 95% of the time and a CPU scheduler makes no 
-difference (maybe people on this list compile a few kernels every day, but 
-that's not what most normal users like me do).
+How to proceed?
 
-Ok, so what will a fair scheduler do in this case? It is my understanding that 
-it would give 50% CPU to each task, resulting in the video dropping frames. 
-Is this correct?
-
-Now, the _ideal_ solution for this situation would be to give ~70% to the 
-video and the rest (~30%) to the encoder. But this goes against fairness, 
-doesn't it? Yet most reports I've read about these two fair schedulers say 
-that videos play smoother under load. What am I missing?
-
-If I ask this question is because today I tested it and found that using 
-the -ck kernel (with SD scheduler) the video would drop frames, while with 
-the mainline kernel it played fine.
-
-My conclusion is that SD behaves as expected: it's more fair. But for a 
-desktop, shouldn't an "intelligently unfair" scheduler be better?
-
-Thanks for any insights.
-
-P.S: As a second thought, a fair scheduler could behave really good in other 
-scenarios, like a server running a busy forum on apache+mysql+php. Besides, 
-this is a more real world scenario (and easier to benchmark). Why aren't 
-people testing these schedulers under this kind of load?
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Even more amazing was the realization that God has Internet access.  I
+wonder if He has a full newsfeed?
+	-- Matt Welsh
