@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbXFVVqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760543AbXFVVqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbXFVVqM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 17:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760032AbXFVVpx
+	id S1760543AbXFVVqb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 17:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760278AbXFVVpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 17:45:53 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:46705
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760227AbXFVVpw (ORCPT
+	Fri, 22 Jun 2007 17:45:55 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:50426 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760236AbXFVVpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 17:45:52 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Greg KH <greg@kroah.com>
-Subject: Re: Rules on how to use sysfs in userspace programs
-Date: Fri, 22 Jun 2007 17:46:02 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-References: <20070608203637.GA9259@kroah.com>
-In-Reply-To: <20070608203637.GA9259@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 17:45:53 -0400
+Date: Fri, 22 Jun 2007 14:45:39 -0700
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Yinghai Lu <Yinghai.Lu@Sun.COM>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
+Message-ID: <20070622214539.GA8795@rhun.ibm.com>
+References: <200706221219.16243.yinghai.lu@sun.com> <20070622193124.GG5051@rhun.smartcity.com> <20070622213327.69663288@the-village.bc.nu> <m18xabbrp6.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706221746.03298.rob@landley.net>
+In-Reply-To: <m18xabbrp6.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 June 2007 16:36:37 Greg KH wrote:
-> Over time there have been a number of problems when sysfs has changed in
-> "unexpected" ways.  Here's a document that Kay wrote a while ago that
-> I'd like to add to the kernel Documentation directory to help userspace
-> programmers out.
->
-> Any comments or critique of this is greatly appreciated.
+On Fri, Jun 22, 2007 at 03:32:53PM -0600, Eric W. Biederman wrote:
+> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+> 
+> > You've got mapped live gart pages from the previous kernel. Even
+> > if you disable the gart before a memset you may well have the
+> > video card using gart translations and possibly live IOMMU
+> > mappings for devices using it via bus mastering - and those will
+> > cause you MCE exceptions with a corrupt cpu context flag (ie not
+> > nicely recoverable).
+> 
+> The original plan (which we have not followed up on).  Was to
+> reserve a chunk of any iommu for the kexec on panic kernel.  Then to
+> just have the second kernel use that unused chunk.  This is how we
+> treat the normal memory space and it seems a nice and simple
+> approach to this kind of problem.
+> 
+> For a normal kexec we should shut everything down before the kernel
+> transition so it should not be an issue.
+> 
+> YH do you think you can look at simply reserving a portion of the
+> iommu?  And having the kexec on panic kernel use the reserved
+> portion?
 
-Still catching up from my laptop dying.
+How would this work with an isolation capable IOMMU which has
+different address spaces for different devices? (e.g., Calgary which
+is in mainline, Intel's VT-d which is coming soon, etc).
 
-I find the explanation of /sys/subsystem almost unintelligible.  What will the 
-new one actually look like?
-
-If I want to find all block devices in the system, it looks like I should now 
-look at /sys/subsystem/block.  (And "subsystem" is not a variable here but 
-the actual directory name?  I presume it moved for Feng Shui reasons.)  
-
-If I want to find char devices, where do I look?  /sys/subsystem...  char?  
-class?  Is a char device now anything under /sys/subsystem that is _not_ 
-in /sys/subsystem/block?  (Minus bus devices?)  Is there a specific directory 
-for these?
-
-This document is highly polluted with what NOT to do.  I'm looking for a 
-clear "what SHOULD I do", and it takes some wading to find it.  (Historical 
-cruft about what not to do is potentially a separate document, it's not 
-useful for people learning this stuff now who weren't playing with the legacy 
-mechanisms.)  The description of /sys/subsystem spends so much time talking 
-about old legacy issues it never gives a clear description of the new way of 
-doing things, which is theoretically what this document is about...
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Cheers,
+Muli
