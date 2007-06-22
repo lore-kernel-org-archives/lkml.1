@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760543AbXFVVqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760686AbXFVVqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760543AbXFVVqb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 17:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760278AbXFVVpz
+	id S1760686AbXFVVqr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 17:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760572AbXFVVqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 17:45:55 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:50426 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760236AbXFVVpx (ORCPT
+	Fri, 22 Jun 2007 17:46:33 -0400
+Received: from mga01.intel.com ([192.55.52.88]:60589 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760561AbXFVVqb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 17:45:53 -0400
-Date: Fri, 22 Jun 2007 14:45:39 -0700
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Yinghai Lu <Yinghai.Lu@Sun.COM>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
-Message-ID: <20070622214539.GA8795@rhun.ibm.com>
-References: <200706221219.16243.yinghai.lu@sun.com> <20070622193124.GG5051@rhun.smartcity.com> <20070622213327.69663288@the-village.bc.nu> <m18xabbrp6.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m18xabbrp6.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	Fri, 22 Jun 2007 17:46:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,452,1175497200"; 
+   d="scan'208";a="260132424"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Cpuidle task list
+Date: Fri, 22 Jun 2007 14:46:30 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F5010CC9AB@scsmsx415.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Cpuidle task list
+Thread-Index: Acex5DOFuleKuffiQZOpac5HLAac+gAEMYgQABOfesAAtL2icAAAEQlw
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 22 Jun 2007 21:46:30.0910 (UTC) FILETIME=[CB5C99E0:01C7B516]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 03:32:53PM -0600, Eric W. Biederman wrote:
-> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-> 
-> > You've got mapped live gart pages from the previous kernel. Even
-> > if you disable the gart before a memset you may well have the
-> > video card using gart translations and possibly live IOMMU
-> > mappings for devices using it via bus mastering - and those will
-> > cause you MCE exceptions with a corrupt cpu context flag (ie not
-> > nicely recoverable).
-> 
-> The original plan (which we have not followed up on).  Was to
-> reserve a chunk of any iommu for the kexec on panic kernel.  Then to
-> just have the second kernel use that unused chunk.  This is how we
-> treat the normal memory space and it seems a nice and simple
-> approach to this kind of problem.
-> 
-> For a normal kexec we should shut everything down before the kernel
-> transition so it should not be an issue.
-> 
-> YH do you think you can look at simply reserving a portion of the
-> iommu?  And having the kexec on panic kernel use the reserved
-> portion?
 
-How would this work with an isolation capable IOMMU which has
-different address spaces for different devices? (e.g., Calgary which
-is in mainline, Intel's VT-d which is coming soon, etc).
+Sorry about the noise. Below mail came here by mistake.. 
 
-Cheers,
-Muli
+Thanks,
+Venki
+
+>-----Original Message-----
+>From: Pallipadi, Venkatesh 
+>Sent: Friday, June 22, 2007 2:45 PM
+>To: LKML
+>Subject: RE: Cpuidle task list
+>
+> 
+>I sent a mail to Adam to look at these...
+>Max_cstate is what I observed once. I don't have more data.
+>Sysfs output issue has below details. About the third wraparound issue
+>Adam knows the bug and can probably fix it faster.
+>
+>Thanks,
+>Venki
+>
