@@ -1,87 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbXFVAOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbXFVAQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbXFVAOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 20:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbXFVAOF
+	id S1753267AbXFVAQZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 20:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXFVAQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 20:14:05 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:54884 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752946AbXFVAN7 (ORCPT
+	Thu, 21 Jun 2007 20:16:17 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35927 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750711AbXFVAQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 20:13:59 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:message-id:
-	mime-version:content-type;
-	b=CGcvkN0wWASVirFGGCmyFtDD0NZjPFbe4Uee/YkW1cWOwrWrzxzXhe1jTLcrEBpXN
-	o35tsMBKTCgr1XzdPvA/g==
-Date: Thu, 21 Jun 2007 17:13:49 -0700 (PDT)
-From: Joshua Wise <jwise@google.com>
-X-X-Sender: jwise@internets.corp.google.com
-To: linux-kernel@vger.kernel.org
-cc: ak@suse.de, thockin@google.com, akpm@google.com
-Subject: [PATCH] x86_64: Fix misplaced `continue' in mce.c
-Message-ID: <Pine.LNX.4.64.0706211706270.30728@internets.corp.google.com>
+	Thu, 21 Jun 2007 20:16:17 -0400
+Date: Fri, 22 Jun 2007 02:16:35 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Oleg Verych <olecom@flower.upol.cz>, Martin Bligh <mbligh@mbligh.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
+Message-ID: <20070622001635.GJ23017@stusta.de>
+References: <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com> <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org> <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de> <alpine.LFD.0.98.0706190732150.3593@woody.linux-foundation.org> <20070619165300.GD19904@flower.upol.cz> <alpine.LFD.0.98.0706190949440.3593@woody.linux-foundation.org> <20070621235117.GD23017@stusta.de> <alpine.LFD.0.98.0706211658270.3593@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706211658270.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joshua Wise <jwise@google.com>
+On Thu, Jun 21, 2007 at 04:59:39PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 22 Jun 2007, Adrian Bunk wrote:
+> > On Tue, Jun 19, 2007 at 10:04:58AM -0700, Linus Torvalds wrote:
+> > >...
+> > > This is why I've been advocating bugzilla "forget" stuff, for example. I 
+> > > tend to see bugzilla as a place where noise accumulates, rather than a 
+> > > place where noise is made into a signal. 
+> > > 
+> > > Which gets my to the real issue I have: the notion of having a process for 
+> > > _tracking_ all the information is actually totally counter-productive, if 
+> > > a big part of the process isn't also about throwing noise away.
+> > > 
+> > > We don't want to "save" all the crud. I don't want "smart tracking" to 
+> > > keep track of everything. I want "smart forgetting", so that we are only 
+> > > left with the major signal - the stuff that matters. 
+> > 
+> > Even generating the perfect signal is a complete waste of time if 
+> > there's no recipient for the signal...
+> 
+> My argument is that *if* we had "more signal, less noise", we'd probably 
+> get more people looking at it.
+> 
+> In fact, I guarantee that's the case. You may  not be 100% happy with the 
+> regression list, but every single maintainer/developer I've talked to has 
+> said they appreciated it and it made it easier (and thus more likely) for 
+> them to actually look at what the outstanding issues were.
 
-Background:
-  When a userspace application wants to know about machine check events, it
-  opens /dev/mcelog and does a read(). Usually, we found that this interface
-  works well, but in some cases, when the system was taking large numbers of
-  machine check exceptions, the read() would hang. The system would output a
-  soft-lockup warning, and the daemon reading from /dev/mcelog would suck up
-  as much of a single CPU as it could spinning in system space.
 
-Description:
-  This patch fixes this bug. In particular, there was a "continue" inside a
-  timeout loop that presumably was intended to break out of the outer loop,
-  but instead caused the inner loop to continue. This patch also makes the
-  condition for the break-out a little more evident by changing a
-  !time_before to a time_after_eq.
+The problems are the parts of the kernel without maintainer or with a 
+maintainer who is for whatever reason not able to look after bug 
+reports.
 
-Result:
-  The read() no longer hangs in this test case.
+And you often need someone with a good knowledge of a specific area of 
+the kernel for getting a bug fixed.
 
-Testing:
-  On my system, I could replicate the bug with the following command:
-    # for i in `seq 15000`; do ./inject_sbe.sh; done
-  where inject_sbe.sh contains commands to inject a single-bit error into the
-  next memory write transaction.
 
-Patch:
-  This patch is against git f1518a088bde6aea49e7c472ed6ab96178fcba3e.
+Let me make an example:
 
-Signed-off-by: Joshua Wise <jwise@google.com>
-Signed-off-by: Tim Hockin <thockin@google.com>
+During 2.6.16-rc, I reported a bug (not a regression) in CIFS where I 
+had reproducible during big writes to a Samba server after some 100 MBs 
+(not a fixed amount of data, but 100% reproducible when transferring 1 GB)
+a complete freeze of my computer (no SysRq possible). And there is
+nothing more I (or any other submitter) could have given as information -
+in fact it even took me several days to isolate CIFS as the source of 
+these freezes.
 
---
+Steve French and Dave Kleikamp told me to try some mount option.
 
-diff --git a/arch/x86_64/kernel/mce.c b/arch/x86_64/kernel/mce.c
-index a14375d..aa83023 100644
---- a/arch/x86_64/kernel/mce.c
-+++ b/arch/x86_64/kernel/mce.c
-@@ -497,15 +497,17 @@ static ssize_t mce_read(struct file *fil
-  	for (i = 0; i < next; i++) {
-  		unsigned long start = jiffies;
-  		while (!mcelog.entry[i].finished) {
--			if (!time_before(jiffies, start + 2)) {
-+			if (time_after_eq(jiffies, start + 2)) {
-  				memset(mcelog.entry + i,0, sizeof(struct mce));
--				continue;
-+				goto timeout;
-  			}
-  			cpu_relax();
-  		}
-  		smp_rmb();
-  		err |= copy_to_user(buf, mcelog.entry + i, sizeof(struct mce));
-  		buf += sizeof(struct mce); 
-+	 timeout:
-+	 	;
-  	}
+With this option, I got an Oops instead of a freeze.
 
-  	memset(mcelog.entry, 0, next * sizeof(struct mce));
+After they fixed the Oops, it turned out the patch also fixed the 
+freeze. The patch went into 2.6.16, and it was therefore fixed
+in 2.6.16.
+
+That's one important value of maintainers.
+
+In many other parts of the kernel, my bug report wouldn't have had any 
+effect.
+
+
+We need more maintaners who look after bugs - but where to find them, 
+they don't seem to grow on trees?
+
+
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
