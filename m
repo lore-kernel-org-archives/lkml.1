@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759899AbXFVR25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbXFVR3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759899AbXFVR25 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 13:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXFVR2u
+	id S1758928AbXFVR3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 13:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbXFVR2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 22 Jun 2007 13:28:51 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46981 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753325AbXFVR2u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jun 2007 13:28:50 -0400
-Received: from smtp5-g19.free.fr ([212.27.42.35]:39246 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751946AbXFVR2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 13:28:49 -0400
-Message-ID: <1182536923.467c14db4fe3b@imp.free.fr>
-Date: Fri, 22 Jun 2007 20:28:43 +0200
-From: "Mrs Teressa Stevens." <sealed@kaixo.com>
-Reply-to: teressa_stevensfamily@terra.com
-Subject: The transfer has been effected please  contact Rev. Duke Harrison.
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       asit.k.mallick@intel.com
+Subject: Re: [PATCH] x86: Document the hotplug code is incompatible with x86 irq handling
+References: <m1tztt3yqy.fsf@ebiederm.dsl.xmission.com>
+	<200706130016.09490.rjw@sisk.pl>
+	<20070612222432.GC17143@linux-os.sc.intel.com>
+	<200706130058.43227.rjw@sisk.pl>
+Date: Fri, 22 Jun 2007 11:27:20 -0600
+In-Reply-To: <200706130058.43227.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 13 Jun 2007 00:58:42 +0200")
+Message-ID: <m18xabdhmv.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 195.175.37.70
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The transfer has been effected please  contact Rev. Duke Harrison.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>
+> OK, thanks.
+>
+> Eric, would you agree to follow this plan without making the entire CPU hotplug
+> (on x86) depend on BROKEN?
 
-Atten:My Dear,
 
-I am happy to inform you about my success in getting those funds transferred
-under the cooperation of a new partner from Japan. Presently I'm in Japan going
-through more medical treatment while my new partner is investment the total
-amount the way I instructed him. Meanwhile, I didn't forget your past efforts
-and attempts to assist me in transferring those funds despite that it failed us
-some how.
+Sorry for the delay, I missed this email.  If we can actually move irq
+migration into process context on x86.  I would be happy to.
 
-Now contact the Man of God who assisted me and stand by his word, his name is
-Rev. Duke Harrison Email: rev_dukeharrison@yahoo.fr ask him to send you the
-total sum of US$800.000.00 which I kept for your compensation for all the past
-efforts and attempt to assist me in this matter. I appreciated your collective
-efforts at that time so feel free and get in touch with the man of God Rev. Duke
-Harrison. For the delivery of the draft to you.
+Currently I am dubious if this can be done reliably.  But I think
+the benefits of doing irq migration outside of the irq handler
+are sufficient to give another go at making it work.
 
-Please do let me know immediately you receive it so that we can share the joy
-after all the suffer ness at that time. at the moment, I am still going through
-medical treatment here in Japan while the investment projects is still going on
-with my new partner without confrontations, finally, remember that I had
-forwarded instruction to the Man of God on your behalf to receive the Draft, so
-feel free to get in touch with Rev. Duke Harrison he will send the amount to you
-without more delay.
+However this isn't just Intel's ioapics we have to worry about,
+but Intel's were the worst so that is a reasonable starting point.
 
-Even my current partner is not happy that i have to allocate such amount to you
-bearing in mind your nonchalant attitude to the transaction at its crucial
-stage.
-
-Thanks.
-
-Your regards.
-Mrs. Teressa Stevens.
-
+Eric
