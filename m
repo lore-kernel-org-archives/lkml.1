@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbXFVABh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbXFVACV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbXFVABh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 20:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXFVABa
+	id S1755759AbXFVACV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 20:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbXFVACG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 20:01:30 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50518 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751407AbXFVAB3 (ORCPT
+	Thu, 21 Jun 2007 20:02:06 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:41425 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751666AbXFVACE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 20:01:29 -0400
-Date: Thu, 21 Jun 2007 16:59:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Oleg Verych <olecom@flower.upol.cz>, Martin Bligh <mbligh@mbligh.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       "Fortier,Vincent [Montreal]" <Vincent.Fortier1@ec.gc.ca>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: This is [Re:] How to improve the quality of the kernel[?].
-In-Reply-To: <20070621235117.GD23017@stusta.de>
-Message-ID: <alpine.LFD.0.98.0706211658270.3593@woody.linux-foundation.org>
-References: <32209efe0706181531x5322533dr31dc90e6dd8c7973@mail.gmail.com>
- <46770A22.4020007@mbligh.org> <32209efe0706181556l2ed378f4sf520c3852f398fa4@mail.gmail.com>
- <46771C5D.10809@mbligh.org> <alpine.LFD.0.98.0706181706470.3593@woody.linux-foundation.org>
- <E1I0UzP-0004AY-Hy@flower> <20070619124855.GB12950@stusta.de>
- <alpine.LFD.0.98.0706190732150.3593@woody.linux-foundation.org>
- <20070619165300.GD19904@flower.upol.cz> <alpine.LFD.0.98.0706190949440.3593@woody.linux-foundation.org>
- <20070621235117.GD23017@stusta.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 21 Jun 2007 20:02:04 -0400
+Date: Thu, 21 Jun 2007 18:00:00 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Terrible IO performance when using 4GB of RAM on a 32 bit machine
+In-reply-to: <fa.qwrQSldd4OzDT6RgWE5P1BD9PJw@ifi.uio.no>
+To: Peter Rabbitson <rabbit@rabbit.us>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Message-id: <467B1100.4000401@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.8+Qu4ZH2B8PP3bRaZ5LNdUcsFIQ@ifi.uio.no>
+ <fa.X6rjOVHT6SoOzt6SHEJROeRgf98@ifi.uio.no>
+ <fa.qwrQSldd4OzDT6RgWE5P1BD9PJw@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 22 Jun 2007, Adrian Bunk wrote:
-> On Tue, Jun 19, 2007 at 10:04:58AM -0700, Linus Torvalds wrote:
-> >...
-> > This is why I've been advocating bugzilla "forget" stuff, for example. I 
-> > tend to see bugzilla as a place where noise accumulates, rather than a 
-> > place where noise is made into a signal. 
-> > 
-> > Which gets my to the real issue I have: the notion of having a process for 
-> > _tracking_ all the information is actually totally counter-productive, if 
-> > a big part of the process isn't also about throwing noise away.
-> > 
-> > We don't want to "save" all the crud. I don't want "smart tracking" to 
-> > keep track of everything. I want "smart forgetting", so that we are only 
-> > left with the major signal - the stuff that matters. 
+Peter Rabbitson wrote:
+> H. Peter Anvin wrote:
+>> Peter Rabbitson wrote:
+>>> I have captured dmesg output without mem[5], with mem=3900M[6] and
+>>> mem=2048M[7].
+>>>
+>>
+>> What does /proc/mtrr look like in the two cases?
+>>
 > 
-> Even generating the perfect signal is a complete waste of time if 
-> there's no recipient for the signal...
+> Identical for mem=3900 and without it.
+> 
+> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+> reg02: base=0xc0000000 (3072MB), size= 512MB: write-back, count=1
+> reg03: base=0xe0000000 (3584MB), size= 256MB: write-back, count=1
+> reg04: base=0xf0000000 (3840MB), size= 128MB: write-back, count=1
+> reg05: base=0xf8000000 (3968MB), size=  32MB: write-back, count=1
 
-My argument is that *if* we had "more signal, less noise", we'd probably 
-get more people looking at it.
+Looks like another case of bad MTRRs on an Intel motherboard? The BIOS 
+is marking only memory up to 4000MB as cacheable, but the actual memory 
+extends up to about 4031MB. Therefore anything that accesses the top 
+31MB of memory will run very slow.
 
-In fact, I guarantee that's the case. You may  not be 100% happy with the 
-regression list, but every single maintainer/developer I've talked to has 
-said they appreciated it and it made it easier (and thus more likely) for 
-them to actually look at what the outstanding issues were.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-		Linus
