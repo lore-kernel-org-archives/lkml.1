@@ -1,80 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760812AbXFVTAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761030AbXFVTBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760812AbXFVTAz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 15:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759934AbXFVTAq
+	id S1761030AbXFVTBQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 15:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760553AbXFVTBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 15:00:46 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:28320 "EHLO kernel.dk"
+	Fri, 22 Jun 2007 15:01:00 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:28327 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760089AbXFVTAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 15:00:45 -0400
-Date: Fri, 22 Jun 2007 21:00:00 +0200
+	id S1755997AbXFVTA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 15:00:59 -0400
+Date: Fri, 22 Jun 2007 21:00:15 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com, arjan@linux.intel.com
-Subject: Re: [patch 3/3] Enable Aggressive Link Power management for AHCI
-	controllers.
-Message-ID: <20070622190000.GK30033@kernel.dk>
-References: <20070611184146.448266229@intel.com> <20070620142342.404856fe.kristen.c.accardi@intel.com> <20070621130831.GN18863@kernel.dk> <20070622101509.16d0e93d.kristen.c.accardi@intel.com>
+To: Marc Pignat <marc.pignat@hevs.ch>
+Cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <andrew@sanpeople.com>, Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [PATCH] mmc-atmel : fix kunmap wrong usage
+Message-ID: <20070622190015.GM30033@kernel.dk>
+References: <467A4532.40301@rfo.atmel.com> <200706211657.49427.marc.pignat@hevs.ch> <467A9F43.1050007@rfo.atmel.com> <200706220828.18750.marc.pignat@hevs.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070622101509.16d0e93d.kristen.c.accardi@intel.com>
+In-Reply-To: <200706220828.18750.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22 2007, Kristen Carlson Accardi wrote:
-> On Thu, 21 Jun 2007 15:08:32 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+On Fri, Jun 22 2007, Marc Pignat wrote:
+> from: Marc Pignat <marc.pignat@hevs.ch>
 > 
-> > On Wed, Jun 20 2007, Kristen Carlson Accardi wrote:
-> > > Enable Aggressive Link Power management for AHCI controllers.
-> > > 
-> > > This patch will set the correct bits to turn on Aggressive
-> > > Link Power Management (ALPM) for the ahci driver.  This
-> > > will cause the controller and disk to negotiate a lower
-> > > power state for the link when there is no activity (see
-> > > the AHCI 1.x spec for details).  This feature is mutually
-> > > exclusive with Hot Plug, so when ALPM is enabled, Hot Plug
-> > > is disabled.  ALPM will be enabled by default, but it is
-> > > settable via the scsi host syfs interface.  Possible 
-> > > settings for this feature are:
-> > > 
-> > > Setting		Effect
-> > > ----------------------------------------------------------
-> > > min_power	ALPM is enabled, and link set to enter 
-> > > 		lowest power state (SLUMBER) when idle
-> > > 		Hot plug not allowed.
-> > > 
-> > > max_performance	ALPM is disabled, Hot Plug is allowed
-> > > 
-> > > medium_power	ALPM is enabled, and link set to enter
-> > > 		second lowest power state (PARTIAL) when
-> > > 		idle.  Hot plug not allowed.
-> > > 
-> > > Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > 
-> > A suggestion (it comes with a patch!) - default to max_power/almp off,
-> > not min_power. For two reasons:
-> > 
-> > - There's such a big performance difference between the two, you really
-> >   want max_power when booting.
-> > 
-> > - It's a lot better to default to no change, than default to enabling
-> >   something new.
-> 
-> Sounds reasonable to me.  Distros/users can decide if they want to have
-> scripts that enable this after boot to run at min_power. 
+> kunmap must be called on the pointer returned by kmap.
 
-Exactly, it needs to be handled by some power management daemon anyway
-and be integrated with power savings in general. You could use io load
-to determine when to enable/disable alpm, for instance.
-
-> Acked-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-
-Will you integrate it into the next posting?
+kunmap_atomic() should align the given buffer to the start of the page
+anyway, so your patch wont change behaviour.
 
 -- 
 Jens Axboe
