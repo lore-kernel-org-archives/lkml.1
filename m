@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbXFVFad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbXFVFb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269AbXFVFad (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 01:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXFVFa0
+	id S1754479AbXFVFb5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 01:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXFVFbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 01:30:26 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41398
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbXFVFaZ (ORCPT
+	Fri, 22 Jun 2007 01:31:49 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41453 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750881AbXFVFbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 01:30:25 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Date: Fri, 22 Jun 2007 01:29:51 -0400
-User-Agent: KMail/1.9.6
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
-       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
-       Maggie Chen <chenqi@beyondsoft.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <1182436817579-git-send-email-leoli@freescale.com> <200706212248.34128.rob@landley.net>
-In-Reply-To: <200706212248.34128.rob@landley.net>
+	Fri, 22 Jun 2007 01:31:49 -0400
+Date: Thu, 21 Jun 2007 22:31:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706220540150.11131@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706212226350.12396@schroedinger.engr.sgi.com>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706211839440.11717@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706220540150.11131@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706220129.53351.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Linus: you aren't at Transmeta anymore.  Here's a second attempt to cc: 
-you on this because I need your opinion on a documentation issue:
+On Fri, 22 Jun 2007, Hugh Dickins wrote:
 
-On Thursday 21 June 2007 22:48:32 Rob Landley wrote:
-> On Thursday 21 June 2007 10:40:17 Li Yang wrote:
-> > This is a Chinese translated version of Documentation/HOWTO.  Currently
-> > Chinese involvement in Linux kernel is very low, especially comparing to
-> > its largest population base.  Language could be the main obstacle.  Hope
-> > this document will help more Chinese to contribute to Linux kernel.
->
-> I'm putting together a kernel documentation directory at
-> http://kernel.org/doc and I could easily add translations in there.  I just
-> don't know if this is a good idea.
->
-> The problem is, the submission of patches happens on the various kernel.org
-> mailing lists, which are all in English.  Kernel development is done in a
-> single common language: English.  (If you'd like to argue for it to be done
-> in another language, please make the proposal in Linus's native Swedish.)
->
-> Setting aside for the moment version skew and coverage issues when
-> translating Documentation, which aren't really serious blocking issues, my
-> question is this:  If developers aren't fluent enough with English to
-> follow the documentation, how can they follow any of the technical
-> discussions necessary to merge their patches back into the mainstream
-> kernel?  Doesn't this encourage the creation of patches that can't easily
-> be merged back into the kernel?
->
-> It could be that the answer is "no, it's fine".  I don't feel qualified to
-> make this decision.  It's very easy for me to accept contributed
-> translations and put them up, but I'd like some kind of consensus from the
-> kernel developers that I SHOULD do this.  How much use is a Chinese version
-> of a HOWTO that tells people how to interact with an English community?
->
-> Could somebody more qualified than me speak up on this one so I know what
-> to do?
->
-> Rob
->
-> P.S.  I meant to comment when this topic first came up last week
-> [http://kerneltrap.org/node/8365] but my laptop's hard drive died and I
-> lost the link.  (Along with any chance of this being a particularly
-> productive month for me...)
+> But PA-RISC also has a function called flush_dcache_page, which uses
+> page_mapping and expects a struct address_space * from it.  If that
+> can ever be get applied to a SLOB page (which is not so clear as in
+> the ARM case, but cannot easily be ruled out completely), we're
+> in trouble without a PageSlab test within page_mapping.
 
+A page comes from the page allocator. Access to a slab allocators "page" 
+is an access to subsystem internals. Those internals vary 
+(including the representation of objects in the "page") and depend on the 
+slab allocator selected, the debug options in effect and parameters 
+with which the slab was created etc etc.
 
-
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+If flush_dcache_page is applied to a slab object then we need to do a 
+similar change to PA-RISC as for ARM.
