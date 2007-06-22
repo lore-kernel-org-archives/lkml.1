@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbXFVF6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbXFVGBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754440AbXFVF6A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 01:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbXFVF5v
+	id S1754500AbXFVGBR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 02:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXFVGBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 01:57:51 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34839 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751651AbXFVF5t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 01:57:49 -0400
-Message-ID: <467B4D61.3020509@novell.com>
-Date: Thu, 21 Jun 2007 22:17:37 -0600
-From: Crispin Cowan <crispin@novell.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Fri, 22 Jun 2007 02:01:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58152 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750769AbXFVGBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 02:01:03 -0400
+To: Theodore Tso <tytso@mit.edu>
+Cc: Al Viro <viro@ftp.linux.org.uk>, davids@webmaster.com,
+       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com>
+	<or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070622013417.GT21478@ftp.linux.org.uk>
+	<20070622041949.GA15625@thunk.org>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Fri, 22 Jun 2007 03:00:30 -0300
+In-Reply-To: <20070622041949.GA15625@thunk.org> (Theodore Tso's message of "Fri\, 22 Jun 2007 00\:19\:49 -0400")
+Message-ID: <orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-To: James Morris <jmorris@namei.org>
-CC: Chris Mason <chris.mason@oracle.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Lars Marowsky-Bree <lmb@suse.de>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-References: <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz> <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz> <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain> <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil> <20070622003436.GB6222@think.oraclecorp.com> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
-In-Reply-To: <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris wrote:
-> On Thu, 21 Jun 2007, Chris Mason wrote:  
->>> The incomplete mediation flows from the design, since the pathname-based
->>> mediation doesn't generalize to cover all objects unlike label- or
->>> attribute-based mediation.  And the "use the natural abstraction for
->>> each object type" approach likewise doesn't yield any general model or
->>> anything that you can analyze systematically for data flow.
->>>       
->> This feels quite a lot like a repeat of the discussion at the kernel
->> summit.  There are valid uses for path based security, and if they don't
->> fit your needs, please don't use them.  But, path based semantics alone
->> are not a valid reason to shut out AA.
->>     
-> The validity or otherwise of pathname access control is not being 
-> discussed here.
->
-> The point is that the pathname model does not generalize, and that 
-> AppArmor's inability to provide adequate coverage of the system is a 
-> design issue arising from this.
->   
-The above two paragraphs appear to contradict each other.
+On Jun 22, 2007, Theodore Tso <tytso@mit.edu> wrote:
 
-> Recall that the question asked by Lars was whether there were any 
-> outstanding technical issues relating to AppArmor.
->
-> AppArmor does not and can not provide the level of confinement claimed by 
-> the documentation, and its policy does not reflect its actual confinement 
-> properties.  That's kind of a technical issue, right?
->   
-So if the document said "confinement with respect to direct file access
-and POSIX.1e capabilities" and that list got extended as AA got new
-confinement features, would that address your issue?
+> has probably made it made it much more *unlikely* that the Linux
+> kernel will ever go GPLv3.
 
-Crispin
+That was a given from the start.  The spin that there was any chance
+whatsoever it could possibly happen was just that.  Even if Linus
+could possibly consider this, others have made it pretty clear that
+this was never an option for them, and Linus' explosion at my first
+one-liner intervention on GPLv3 isn't exactly a sign of being
+considering something reasonably.
+
+So, no, as I've repeatedly stated, I wasn't here to convince anyone to
+adopt GPLv3.  I know you won't believe me.  I don't care.
+
+I was here to dispell the lies that were being spread about GPLv3, the
+spirit and the goals of the GPL, as far as I understood them.  I knew
+from the start that it was an uphill battle, and that I wouldn't be
+able to convince those who distrusted the FSF so much that they would
+listen to anything that resembled an FSF discourse with an extremely
+high rejection level.  This was all expected.
+
+I wasn't here to convince them.  I knew I wouldn't.  I was here to set
+the record straight on the spirit of the GPL, not towards the most
+vocal opponents, but for others who hadn't formed an opinion,
+prejudiced or not.  I was here to inform about GPLv3, not to push it.
+
+That I was perceived as pushing it is not surprising at all.  The
+perception of "being forced" whenever something resembling the FSF
+ideology comes up is so strong here that some people just stop
+listening, stop thinking rationally (limbic system take-over?), or
+even get into outright name calling.  No surprise here.  I knew this
+was hostile territory, and I came prepared for this.
+
+I feel I have accomplished my goal: I've informed a lot of people
+about the GPL, about GPLv3, about Free Software and even about the
+FSFes.  Whether they make a decision for GPLv3, GPLv2, or more liberal
+Free Software licenses, is up to them.  Now, people who'd only been
+exposed to the prevailing views in this list can take something
+different into account, and make more-informed decisions.
+
+Thanks for listening.
+
+o-o
 
 -- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
-Director of Software Engineering   http://novell.com
-	AppArmor Chat: irc.oftc.net/#apparmor
-
-
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
