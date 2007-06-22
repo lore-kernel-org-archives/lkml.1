@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXFVQh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbXFVQmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759526AbXFVQh0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbXFVQhP
+	id S1758673AbXFVQmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbXFVQmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:37:15 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:36800 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758163AbXFVQhO (ORCPT
+	Fri, 22 Jun 2007 12:42:44 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:34568 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbXFVQmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:37:14 -0400
-Subject: Re: [RFC PATCH 6/6] Convert tasklets to work queues
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Daniel Walker <dwalker@mvista.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070622155247.GA133@tv-sign.ru>
-References: <20070622040014.234651401@goodmis.org>
-	 <20070622040137.414439610@goodmis.org>
-	 <1182496008.3228.25.camel@dhcp193.mvista.com>
-	 <1182518958.5493.45.camel@localhost.localdomain>
-	 <20070622155247.GA133@tv-sign.ru>
+	Fri, 22 Jun 2007 12:42:43 -0400
+X-IronPort-AV: i="4.16,452,1175486400"; 
+   d="scan'208"; a="43065329:sNHT30857897"
+Subject: [GIT PULL] please pull blackfin-2.6.git
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain
-Date: Fri, 22 Jun 2007 12:35:25 -0400
-Message-Id: <1182530125.5493.77.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Sat, 23 Jun 2007 00:41:50 +0800
+Message-Id: <1182530510.6408.3.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 22 Jun 2007 16:42:42.0155 (UTC) FILETIME=[5A2D53B0:01C7B4EC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 19:52 +0400, Oleg Nesterov wrote:
-> On 06/22, Steven Rostedt wrote:
-> >
-> > > truct tasklet_struct, work);
-> > > > +
-> > > > +	if (unlikely(atomic_read(&t->count))) {
-> > > > +		pr_debug("tasklet disabled %s %p\n", t->n, t);
-> > > > +		set_bit(TASKLET_STATE_PENDING, &t->state);
-> > > > +		smp_mb();
-> > > > +		/* make sure we were not just enabled */
-> > > > +		if (likely(atomic_read(&t->count)))
-> > > > +			goto out;
-> > > > +		clear_bit(TASKLET_STATE_PENDING, &t->state);
+Hi Linus, 
 
-Yeah, I knew of the race but didn't think that running a tasklet
-function twice would cause much harm here.  But not running it when it
-needs to run, can have quite a negative impact.
+Please pull from 
 
-> 
-> So, t->func() will be executed twice because tasklet_enable() does
-> tasklet_schedule().
-> 
-> 
-> So I think we need a fix for work_tasklet_exec,
-> 
-> -		clear_bit(TASKLET_STATE_PENDING);
-> +		if (!test_and_clear_bit(TASKLET_STATE_PENDING))
-> 			goto out;
-> 
+  master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git/ master
 
-OK, I like this. I'll add it in the next round.
+Some Blackfin bug fixing and update.
 
+Mike Frysinger (3):
+      Blackfin arch: add missing braces around array bfin serial init
+      Blackfin arch: move cond_syscall() behind __KERNEL__ like all other architectures
+      Blackfin arch: add proper const volatile to addr argument to the read functions
 
-> 
-> 
-> Steven, a very stupid suggestion, could you move the code for tasklet_enable()
-> up, closer to tasklet_disable() ?
+Robin Getz (3):
+      Blackfin arch: update ANOMALY handling
+      Blackfin arch: update printk to use KERN_EMERG and reformat crash output
+      Blackfin arch: match kernel startup messaage with new linker script
 
-Not a stupid suggestion. I'll accommodate it.
+Sonic Zhang (1):
+      Blackfin arch: Add definition of dma_mapping_error
 
-Thanks,
-
--- Steve
-
-
+ arch/blackfin/kernel/setup.c                       |    8 +-
+ arch/blackfin/kernel/traps.c                       |  141 ++++++++++++--------
+ arch/blackfin/lib/memcmp.S                         |    5 +
+ arch/blackfin/lib/memcpy.S                         |   13 ++-
+ arch/blackfin/lib/memmove.S                        |   17 ++-
+ arch/blackfin/mach-common/cache.S                  |   20 ++--
+ arch/blackfin/mach-common/interrupt.S              |    2 +-
+ include/asm-blackfin/blackfin.h                    |   33 +++++-
+ include/asm-blackfin/dma-mapping.h                 |    2 +
+ include/asm-blackfin/io.h                          |    6 +-
+ include/asm-blackfin/mach-bf533/anomaly.h          |   84 +++++++++++-
+ include/asm-blackfin/mach-bf533/bfin_serial_5xx.h  |    2 +
+ include/asm-blackfin/mach-bf537/anomaly.h          |   21 +++-
+ include/asm-blackfin/mach-bf561/bfin_serial_5xx.h  |    2 +
+ include/asm-blackfin/mach-common/cdef_LPBlackfin.h |   27 ++++
+ include/asm-blackfin/unistd.h                      |    3 +-
+ 16 files changed, 299 insertions(+), 87 deletions(-)
