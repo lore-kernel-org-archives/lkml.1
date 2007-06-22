@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbXFVWlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbXFVWn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbXFVWlf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 18:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXFVWl2
+	id S1757271AbXFVWn3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 18:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbXFVWnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 18:41:28 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:41485 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbXFVWl1 (ORCPT
+	Fri, 22 Jun 2007 18:43:21 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:29874 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbXFVWnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 18:41:27 -0400
-Date: Fri, 22 Jun 2007 15:43:00 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
-In-reply-to: <m1tzszaadm.fsf@ebiederm.dsl.xmission.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <467C5074.6050103@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <200706221219.16243.yinghai.lu@sun.com>
- <20070622193124.GG5051@rhun.smartcity.com>
- <20070622213327.69663288@the-village.bc.nu>
- <m18xabbrp6.fsf@ebiederm.dsl.xmission.com>
- <20070622231951.4d516215@the-village.bc.nu>
- <m1tzszaadm.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Fri, 22 Jun 2007 18:43:20 -0400
+X-IronPort-AV: i="4.16,453,1175497200"; 
+   d="scan'208"; a="170564164:sNHT48526353"
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+X-Message-Flag: Warning: May contain useful information
+References: <20070622040014.234651401@goodmis.org>
+	<alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
+	<20070622204058.GA11777@elte.hu>
+	<alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
+	<20070622215953.GA22917@elte.hu> <20070622220901.GA26207@elte.hu>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 22 Jun 2007 15:43:16 -0700
+In-Reply-To: <20070622220901.GA26207@elte.hu> (Ingo Molnar's message of "Sat, 23 Jun 2007 00:09:01 +0200")
+Message-ID: <aday7ibzk3f.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 22 Jun 2007 22:43:16.0912 (UTC) FILETIME=[B97F4300:01C7B51E]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> The original design came from thinking about systems where using the iommu
-> was mandatory.  I think we almost always reserve memory below 1G for the kexec
-> on panic kernel so it really shouldn't be an issue in that case.  Except
-> we need to pass an option to force not using the iommu.  I don't think
-> noiommu or swiotlb is going to make any real difference.
-> 
-> So I'm totally in favor of turning off features if we don't need them and we
-> don't take a tremendous performance hit.  (People get grumpy when writing
-> all of memory to disk takes completely unreasonable amounts of time).
+ > > [ and on a similar notion, i still havent given up on seeing all BKL 
+ > >   use gone from the kernel. I expect it to happen any decade now ;-) ]
 
+ > 2.6.21 had 476 lock_kernel() calls. 2.6.22-git has 473 lock_kernel() 
+ > calls currently. With that kind of flux we'll see the BKL gone in about 
+ > 40 years =B-)
 
-So you prefer to
-add diable_gart in shutdown or suspend func and let kexec to use swiotlb comand line?
+ > 'struct semaphore' use on the other hand has gone down by 10% in this 
+ > release, which is a good rate. I guess the lack of lockdep coverage for 
+ > semaphores might be one of the driving forces? ;-)
 
-YH
+The problem with removing uses of the BKL is that a "lock_kernel()"
+gives no clue about what it is protecting against, and so it requires
+a lot of very difficult auditing to replace with appropriate locking.
+
+To take a couple of examples at random: fs/ext4/ioctl.c takes the BKL
+in ext4_compat_ioctl() around the call to ext4_ioctl().  Kind of sad
+that a "next-generation" FS still uses the BKL, but who understands
+things well enough to say how all the cases in ext4_ioctl() are
+relying on being called with the BKL held?
+
+As a second example, msr_seek() in arch/i386/kernel/msr.c... is the
+inode semaphore enough or not?  Who understands the implications well
+enough to say?
+
+Most semaphores on the other hand can be replaced by mutexes or
+completions in a fairly straightforward way.
+
+ - R.
