@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbXFVLj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbXFVLmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755647AbXFVLj7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 07:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbXFVLjw
+	id S1755777AbXFVLmH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 07:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbXFVLl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 07:39:52 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:56409 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbXFVLjv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 07:39:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ImtdEAHZkZ8ewsOkv3XaPFPwdd6sjjX4ErNCsra1LdSP2w28DSPPaN3Rt1/uzsh7ah0t2yOAczs6tLq5nUOP7boAwHgwDtxE7GFLpafhbMcRQnMIykCSx+1T/nXOt2uFrXl6J72KOZVESRv9mbxo35BsbuqnWyxRh46cdsIq5ls=
-Message-ID: <a9e22dff0706220439m4bc70a30i8cc83fe92cff8bc9@mail.gmail.com>
-Date: Fri, 22 Jun 2007 14:39:50 +0300
-From: "Ni@m" <niam.niam@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [1/2] 2.6.22-rc5: known regressions with patches v2
-In-Reply-To: <6bffcb0e0706220427p203de10epeaa6e97d3f63886d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 22 Jun 2007 07:41:56 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55386 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752334AbXFVLlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 07:41:55 -0400
+Subject: Re: Fix signalfd interaction with thread-private signals
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070622084034.GA134@tv-sign.ru>
+References: <20070619140646.GB27343@tv-sign.ru>
+	 <1182295473.26853.386.camel@localhost.localdomain>
+	 <20070620111415.GA91@tv-sign.ru>
+	 <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org>
+	 <20070621082509.GA88@tv-sign.ru>
+	 <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org>
+	 <20070621182340.GA92@tv-sign.ru>
+	 <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
+	 <20070621185856.GA153@tv-sign.ru>
+	 <1182468604.24740.22.camel@localhost.localdomain>
+	 <20070622084034.GA134@tv-sign.ru>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 21:41:13 +1000
+Message-Id: <1182512473.24740.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <467AA8CA.2020206@googlemail.com>
-	 <a9e22dff0706220259y6b2cec29s8f5e059ba8c42b77@mail.gmail.com>
-	 <6bffcb0e0706220427p203de10epeaa6e97d3f63886d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We have patches for "very high non-preempt latency in
-> context_struct_compute_av()" and "list_add corruption. prev->next
-> should be next (f7d28794), but was f0df8ed4 (prev=f0df8ed4) Kernel Bug
-> at lib/list_debug.c:33", but both are too intrusive.
->
-> Anyway, those bugs are not regressions.
->
 
-Are you going to release 2.6.22 with this bugs?? But question wasn't
-on this subject ...
-The question was "why linux kernel release should have some bugs that
-would be fixed fixed in future?"
-Let's wait and publish kernel w/o known bugs. Let's wait for some
-time, let's publish 2.6.22-rc_last, test it for some time(2 weeks for
-example), fix bugs if any and after _test_period_of_whole_kernel_ but
-not _separate_patches/parts_ of kernel release stable one!
+> OK. But in that case I think we should go further, and make signalfd
+> "per process", not "per thread", see
+> 
+> 	http://marc.info/?l=linux-kernel&m=118241815219430
+> 
+> Every thread gets its own local signals plus shared ones.
+> 
+> (I promise, this is the last piece of spam from me on this topic, but
+>  please-please-please nack this patch explicitly if you don't like it :)
+
+No, I think your patch do make sense.
+
+That is, it -does- make sense to be able to create a signal singalfd in
+a process and have N threads reading from it and getting either shared
+signals or their local private signals.
+
+I just don't like the actual implementation of it by changing the task
+pointer on the fly...
+
+My main issue is a matter of consistency of the signalfd API as a
+whole... the whole bloody thing is instanciated & attached to a thread
+in the first place. Maybe we should change that and say that one
+instanciates a signalfd on a thread group... that is, it always gets
+attached to the leader.
+
+It might well be that signalfd's concept of context is wrong in the
+first place and it should be attached to processes rather than threads
+and that made more explicit in the first place... but that leaves the
+door open to what a write() API should be ...
+
+Ben.
+
+
