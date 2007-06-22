@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbXFVQYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbXFVQZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759470AbXFVQYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758266AbXFVQYJ
+	id S1759521AbXFVQZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758181AbXFVQZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:24:09 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4032 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757961AbXFVQYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:24:08 -0400
-Date: Fri, 22 Jun 2007 18:24:16 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       video4linux-list@redhat.com,
-       =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       luca.risolia@studio.unibo.it, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
- [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
-In-Reply-To: <Pine.LNX.4.64.0706221711320.26568@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0706221735270.1817@scrub.home>
-References: <200706211117.55908.toralf.foerster@gmx.de> 
- <200706211231.53898.luca.risolia@studio.unibo.it>  <200706211326.45031.toralf.foerster@gmx.de>
-  <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
- <Pine.LNX.4.64.0706221602000.1817@scrub.home>
- <Pine.LNX.4.64.0706221711320.26568@fbirervta.pbzchgretzou.qr>
+	Fri, 22 Jun 2007 12:25:18 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:55094 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753286AbXFVQZQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 12:25:16 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC PATCH 4/6] Make DRM use the tasklet is-sched API
+Date: Fri, 22 Jun 2007 18:10:55 +0200
+User-Agent: KMail/1.9.6
+Cc: Daniel Walker <dwalker@mvista.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+References: <20070622040014.234651401@goodmis.org> <1182494169.3228.11.camel@dhcp193.mvista.com> <1182494960.20203.34.camel@chaos>
+In-Reply-To: <1182494960.20203.34.camel@chaos>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200706221810.56298.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/HhStcGzf43027w11Fz99UoN2sZGNGON+4eqN
+ aDeChmALcTjFNRgyCeHkaQVkVz1mv/adfxa9X76EgOTNc5O/Zm
+ Y2UMcsmXHrlgHU+Uaoe7Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Fri, 22 Jun 2007, Jan Engelhardt wrote:
-
-> V4L_USB_DRIVERS=y turns USB into =y? That can't be. It should give the "this
-> depends on another symbol [USB] that is modular".
-
-That's not how it works, the enclosed symbols depend now on 
-V4L_USB_DRIVERS, which is a boolean and it can only have two states.
-It doesn't matter on what V4L_USB_DRIVERS depends only the final value 
-matters.
-(BTW if check the dependency debug output in menuconfig/xconfig, you'll 
-see which values are relevant in the calculation of a symbol value.)
-
-> >I'm also a little irritated by the "default y", if I enable V4L I'm very 
-> >tempted to check what other useless stuff has been automatically enabled, 
-> >which I have to turn off again.
+On Friday 22 June 2007, Thomas Gleixner wrote:
+> > > Index: linux-2.6.21-rt9/drivers/char/drm/drm_irq.c
+> > > ===================================================================
+> > > --- linux-2.6.21-rt9.orig/drivers/char/drm/drm_irq.c
+> > > +++ linux-2.6.21-rt9/drivers/char/drm/drm_irq.c
+> > > @@ -461,7 +461,7 @@ void drm_locked_tasklet(drm_device_t *de
+> > >     static DECLARE_TASKLET(drm_tasklet, drm_locked_tasklet_func, 0);
+> > >  
+> > >     if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ) ||
+> > > -       test_bit(TASKLET_STATE_SCHED, &drm_tasklet.state))
+> > > +       tasklet_is_scheduled(&drm_tasklet))
+> > >             return;
+> > >  
+> > >     spin_lock_irqsave(&dev->tasklet_lock, irqflags);
+> > > 
+> > 
+> > 
+> > No sense in having a patch just for this, may as well merge this with
+> > patch 3 ..
 > 
-> The default y only applies to the "menu" folders, not actual code.
+> Wrong. patch 3 adds the API and this one makes use of it. Stevens split
+> makes perfectly sense.
 
-I don't know that without checking the Makefile.
+Wouldn't the easy solution be to get rid of drm_locked_tasklet
+entirely and convert i915_vblank_tasklet(), the only user, to use
+a work queue right away?
 
-> There have been discussions to remove the default-ys again, I've sent a patch
-> [http://lkml.org/lkml/2007/5/12/216], but nothing happened.
-> 
-> So, should all affected menuconfigs be transformed into tristates, what 
-> do you think, Roman? Let me know so I can cook up a patch (hopefully 
-> before 2.6.22) should they become tristate.
+The drm_locked_tasklet() function seems to have multiple bugs anyway,
+so getting rid of it can only help, and it avoids exporting a new
+tasklet_is_scheduled() interface.
 
-Using bool is clearly a bug and I'd prefer if it removed the defaults as 
-well.
-
-bye, Roman
+	Arnd <><
