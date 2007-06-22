@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbXFVQbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbXFVQfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbXFVQbq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757568AbXFVQbi
+	id S1759312AbXFVQfo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbXFVQfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:31:38 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4551 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753661AbXFVQbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:31:37 -0400
-Date: Fri, 22 Jun 2007 18:31:43 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       video4linux-list@redhat.com,
-       =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       luca.risolia@studio.unibo.it, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
- [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
-In-Reply-To: <1182525697.14289.47.camel@gaivota>
-Message-ID: <Pine.LNX.4.64.0706221825030.1817@scrub.home>
-References: <200706211117.55908.toralf.foerster@gmx.de> 
- <200706211231.53898.luca.risolia@studio.unibo.it>  <200706211326.45031.toralf.foerster@gmx.de>
-  <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota> 
- <Pine.LNX.4.64.0706221602000.1817@scrub.home> <1182525697.14289.47.camel@gaivota>
+	Fri, 22 Jun 2007 12:35:37 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:62162 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757416AbXFVQfg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 12:35:36 -0400
+Message-ID: <467BFA47.4050802@linux.vnet.ibm.com>
+Date: Fri, 22 Jun 2007 22:05:19 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <peterz@infradead.org>
+CC: balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-mm <linux-mm@kvack.org>, Balbir Singh <balbir@in.ibm.com>,
+       Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
+       Kirill Korotaev <dev@sw.ru>, devel@openvz.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
+       Aubrey Li <aubreylee@gmail.com>
+Subject: Re: [RFC] mm-controller
+References: <1182418364.21117.134.camel@twins> <467A5B1F.5080204@linux.vnet.ibm.com> <1182433855.21117.160.camel@twins>
+In-Reply-To: <1182433855.21117.160.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Fri, 22 Jun 2007, Mauro Carvalho Chehab wrote:
 
-> I'm to keep "default y" for the menuconfig items. 
+Peter Zijlstra wrote:
+> On Thu, 2007-06-21 at 16:33 +0530, Balbir Singh wrote:
+>> Peter Zijlstra wrote:
+[snip]
+
+> Not quite sure on 2, from reading the pagecache controller, I got the
+> impression that enforcing both limits got you into trouble. Merging the
+> limits would rid us of that issue, no?
 > 
-> Since those don't generate any code (there's no Makefile items
-> associated with the menuconfig vars),
 
-I don't know that without checking Makefiles/sources, so I have to assume 
-it may produce some infrastructure code I don't need.
+Hi Peter,
 
-> this will just improve the
-> usability for the final user (and will allow make oldconfig to work).
+Setting both limits in pagecache controller (v4) will work correct in
+principle.  What I intended in the comment is performance issues and
+wrong type of page being reclaimed.  We are working on the issues and
+will fix them in future versions.  You can set any combination of
+limits and the reclaim will work to keep the page utilization below
+limits.
 
-I'd rather change that.
+When RSS limit is hit, ANON pages are pushed to swapcache.  We would
+need to limit swapcache (using pagecache_limit) to force a write out
+to disk.
 
-> There's not much sense on selecting V4L support without selecting a V4L
-> driver.
+Merging both limits will eliminate the issue, however we would need
+individual limits for pagecache and RSS for better control.  There are
+use cases for pagecache_limit alone without RSS_limit like the case of
+database application using direct IO, backup applications and
+streaming applications that does not make good use of pagecache.
 
-But if only want to enable a video driver, I likely don't want a radio 
-driver...
+Thank you for the review and new design proposal.
 
-bye, Roman
+--Vaidy
+
+[snip]
 
 
-
-Reset generates values only if Kconfig and .config agree.
-
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-
----
- scripts/kconfig/confdata.c |   37 ++++++++++++++++++++++++++-----------
- 1 file changed, 26 insertions(+), 11 deletions(-)
-
-Index: linux-2.6/scripts/kconfig/confdata.c
-===================================================================
---- linux-2.6.orig/scripts/kconfig/confdata.c
-+++ linux-2.6/scripts/kconfig/confdata.c
-@@ -341,27 +341,42 @@ int conf_read(const char *name)
- 		conf_unsaved++;
- 		/* maybe print value in verbose mode... */
- 	sym_ok:
-+		if (!sym_is_choice(sym))
-+			continue;
-+		/* The choice symbol only has a set value (and thus is not new)
-+		 * if all its visible childs have values.
-+		 */
-+		prop = sym_get_choice_prop(sym);
-+		flags = sym->flags;
-+		for (e = prop->expr; e; e = e->left.expr)
-+			if (e->right.sym->visible != no)
-+				flags &= e->right.sym->flags;
-+		sym->flags &= flags | ~SYMBOL_DEF_USER;
-+	}
-+
-+	for_all_symbols(i, sym) {
- 		if (sym_has_value(sym) && !sym_is_choice_value(sym)) {
--			if (sym->visible == no)
-+			/* Reset values of generates values, so they'll appear
-+			 * as new, if they should become visible, but that
-+			 * doesn't quite work if the Kconfig and the saved
-+			 * configuration disagrees.
-+			 */
-+			if (sym->visible == no && !conf_unsaved)
- 				sym->flags &= ~SYMBOL_DEF_USER;
- 			switch (sym->type) {
- 			case S_STRING:
- 			case S_INT:
- 			case S_HEX:
--				if (!sym_string_within_range(sym, sym->def[S_DEF_USER].val))
--					sym->flags &= ~(SYMBOL_VALID|SYMBOL_DEF_USER);
-+				/* Reset a string value if it's out of range */
-+				if (sym_string_within_range(sym, sym->def[S_DEF_USER].val))
-+					break;
-+				sym->flags &= ~(SYMBOL_VALID|SYMBOL_DEF_USER);
-+				conf_unsaved++;
-+				break;
- 			default:
- 				break;
- 			}
- 		}
--		if (!sym_is_choice(sym))
--			continue;
--		prop = sym_get_choice_prop(sym);
--		flags = sym->flags;
--		for (e = prop->expr; e; e = e->left.expr)
--			if (e->right.sym->visible != no)
--				flags &= e->right.sym->flags;
--		sym->flags &= flags | ~SYMBOL_DEF_USER;
- 	}
- 
- 	sym_add_change_count(conf_warnings || conf_unsaved);
