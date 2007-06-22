@@ -1,103 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbXFVSvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbXFVSyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760580AbXFVSvQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 14:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759956AbXFVSvF
+	id S1760600AbXFVSyT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 14:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbXFVSyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 14:51:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54151 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759908AbXFVSvE (ORCPT
+	Fri, 22 Jun 2007 14:54:04 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54758
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757943AbXFVSyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 14:51:04 -0400
-Date: Fri, 22 Jun 2007 11:51:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-In-Reply-To: <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0706221143190.17958@schroedinger.engr.sgi.com>
-References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
- <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706221040310.17139@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
+	Fri, 22 Jun 2007 14:54:03 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+Date: Fri, 22 Jun 2007 14:53:59 -0400
+User-Agent: KMail/1.9.6
+Cc: "dave young" <hidave.darkstar@gmail.com>, "Li Yang" <leoli@freescale.com>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       bryan.wu@analog.com, "TripleX Chung" <xxx.phy@gmail.com>,
+       "Maggie Chen" <chenqi@beyondsoft.com>, torvalds@linux-foundation.org
+References: <1182436817579-git-send-email-leoli@freescale.com> <200706220133.19496.rob@landley.net> <20070622102123.49182855@the-village.bc.nu>
+In-Reply-To: <20070622102123.49182855@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706221454.03926.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jun 2007, Hugh Dickins wrote:
+On Friday 22 June 2007 05:21:23 Alan Cox wrote:
+> > The question is, do the kernel developers want to encourage people who
+> > don't speak English to mess with the kernel, any more than they want to
+> > encourage kernel developers who don't know C?  Is kernel documentation in
+> > Chinese a
+>
+> The majority of the world population do not speak English. There are
+> existing contributors do not speak English (and I'm not being funny about
+> the USSA here) - you don't notice because they have a team member who
+> speaks passable English.
 
-> I'm quite happy with this approach for 2.6.23-rc, along with your ARM
-> dma_map patch which (if I understood aright) rmk approved.  Except,
-> haven't you misplaced that VM_BUG_ON between an if and its else?
+Ok.  Cool.  If this is not a problem, that's good to know.
 
-Right.
+> There are also entire non-English sites around things like Linux that
+> monoglot English speakers generally don't notice exist.
 
-> And I'd much prefer you to make it an outright BUG_ON, because
-> many testers have those VM_BUG_ONs configured out.
+I'm aware of this.
 
-Thought about it but doing so would create quite a load of BUG_ONs in the 
-VM given the frequent use of that particular inline function. And AFAIK
-we are only aware of one other potential call site that could cause 
-trouble. Many arches have run SLUB now for awhile and would certainly have 
-shown issues if they would do strange things with slab allocs. Even with 
-SLAB they would have to be very careful in order to make this work. So I 
-think its rather unlikely that this is going to be triggered. Its 
-primarily useful for debugging if strange things start to happen.
-The VM_BUG_ON could stay there for good to make sure development does not
-result in similar issues in the future.
+> > P.S.  The hardest part of putting together a kernel documentation web
+> > page is actually indexing it coherently.  It's not very useful to just
+> > dump together
+>
+> For the kernel I would follow the kernel tree so that its always
+>
+> 	/[languagecode]/Documentation/...
 
-Fixed up patch:
+That PS was about putting up a kernel doc web page, not about the existing 
+kernel Documentation tree.
 
+The existing Documentation tree has, at the top level, coding style 
+guidelines, files documenting the kernel community, a file documenting the 
+Amiga "zorro" bus, a half-dozen files about old multiport serial cards, 
+documentation about several different types of locking, a penguin graphic 
+from 1996, your documentation on the tty layer, a document on how to 
+configure BINFMT_MISC to autorun .NET files with mono, and zillions of other 
+random unrelated topics that are sorted based on where random passerby put 
+things down last.
 
+I sent a couple patches to shuffle stuff around in there but it got lost on 
+the noise.  More to the point, an HTML index can hotlink but text files have 
+a harder time doing that, so if I'm making an HTML index it's probably best 
+to link to the text files but not attempt to navigate with them.
 
-
-Add VM_BUG_ON in case someone uses page_mapping on a slab page
-
-Detect slab objects being passed to the page oriented functions of the VM.
-
-It is not sufficient to simply return NULL because the functions calling
-page_mapping may depend on other items of the page_struct also to be setup
-properly. Moreover slab object may not be properly aligned. The page oriented
-functions of the VM expect to operate on page aligned, page sized objects.
-Operations on object straddling page boundaries may only affect the objects
-partially which may lead to surprising results.
-
-It is better to detect eventually remaining uses and eliminate them.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- include/linux/mm.h |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h	2007-06-22 10:33:27.000000000 -0700
-+++ linux-2.6/include/linux/mm.h	2007-06-22 11:44:10.000000000 -0700
-@@ -601,12 +601,9 @@ static inline struct address_space *page
- {
- 	struct address_space *mapping = page->mapping;
- 
-+	VM_BUG_ON(PageSlab(page));
- 	if (unlikely(PageSwapCache(page)))
- 		mapping = &swapper_space;
--#ifdef CONFIG_SLUB
--	else if (unlikely(PageSlab(page)))
--		mapping = NULL;
--#endif
- 	else if (unlikely((unsigned long)mapping & PAGE_MAPPING_ANON))
- 		mapping = NULL;
- 	return mapping;
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
