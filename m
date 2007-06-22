@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbXFVOrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbXFVOsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759097AbXFVOrr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbXFVOrj
+	id S1756729AbXFVOsK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757540AbXFVOr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:47:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39221 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757183AbXFVOri (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:47:38 -0400
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-From: Arjan van de Ven <arjan@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-In-Reply-To: <1182523330.5493.69.camel@localhost.localdomain>
-References: <20070622040014.234651401@goodmis.org>
-	 <1182522309.2672.11.camel@laptopd505.fenrus.org>
-	 <1182523330.5493.69.camel@localhost.localdomain>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 22 Jun 2007 07:43:34 -0700
-Message-Id: <1182523414.2672.16.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+	Fri, 22 Jun 2007 10:47:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36300 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757502AbXFVOr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:47:56 -0400
+Message-ID: <467BE118.4090308@redhat.com>
+Date: Fri, 22 Jun 2007 10:47:52 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: "Jay L. T. Cornwall" <jay@esuna.co.uk>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc5: pdflush oops under heavy disk load
+References: <467B12CA.5060405@esuna.co.uk>
+In-Reply-To: <467B12CA.5060405@esuna.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
+On 06/21/2007 08:07 PM, Jay L. T. Cornwall wrote:
+> Hi,
 > 
-> This is stated on the assumption that pretty much all performance
-> critical tasklets have been removed (although Christoph just mentioned
-> megaraid_sas, but after I made this statement).
+> Kernel version: 2.6.22-rc5 (confirmed also on 2.6.20)
+> Kernel config : Ubuntu 7.04 default (SMP)
 > 
-> We've been running tasklets as threads in the -rt kernel for some time
-> now, and that hasn't bothered us.
+> Relevant hardware:
+>   Asus P5K (Intel P35 chipset)
+>   Core 2 Duo E6600 2.4GHz
+>   Western Digital 10KRPM 150GB HDD on JMicron 20360/20363 AHCI
 > 
-> The problem with tasklets is that they still don't provide guaranteed
-> performance. They can still be pushed off to ksoftirqd on a busy system.
-> But having *all* tasklets as they are today, keeps them at a higher
-> priority then any process in the system.
+> Netconsoled dump:
+> 
+> [  724.350222] general protection fault: 0000 [1] SMP
+> [  724.350413] CPU 1
+> [  724.350520] Modules linked in: usb_storage libusual netconsole
+> binfmt_misc rfcomm l2cap bluetooth ppdev capability commoncap
+> acpi_cpufreq cpufreq_stats cpufreq_userspace cpufreq_ondemand
+> cpufreq_conservative cpufreq_powersave freq_table video container
+> battery dock asus_acpi ac sbs button af_packet nls_utf8 ntfs w83627ehf
+> i2c_isa parport_pc lp parport fuse mt2060 snd_hda_intel snd_pcm_oss
+> snd_mixer_oss snd_pcm cx22702 snd_seq_dummy snd_seq_oss dvb_usb_dib0700
+> dib7000m dib7000p dvb_usb cx88_dvb cx88_vp3054_i2c snd_seq_midi
+> snd_rawmidi video_buf_dvb dvb_core ipv6 snd_seq_midi_event snd_seq
+> snd_timer dvb_pll cx8800 cx8802 cx88xx sr_mod ir_common snd_seq_device
+> cdrom i2c_algo_bit dib3000mc dibx000_common tveeprom atl1 usbhid psmouse
+> videodev compat_ioctl32 hid mii i2c_core v4l2_common v4l1_compat
+> btcx_risc video_buf serio_raw snd soundcore pcspkr shpchp pci_hotplug
+> snd_page_alloc intel_agp tsdev evdev ext3 jbd mbcache sg sd_mod
+> pata_jmicron ata_generic ata_piix ahci libata scsi_mod ehci_hcd generic
+> uhci_hcd usbcore thermal processor fan
+> [  724.355028] Pid: 199, comm: pdflush Not tainted 2.6.22-rc5-edge #1
+> [  724.355125] RIP: 0010:[<ffffffff880f1b44>]  [<ffffffff880f1b44>]
+> :ext3:walk_page_buffers+0x34/0x90
 
-
-don't get me wrong, I'm not against this conversion, just it needs to be
-measured in detail... or preferably done step by step so that the
-performance guys can undo one piece at a time until they find a guilty
-party ;)
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+Step 1: run fsck on the filesystem.
 
