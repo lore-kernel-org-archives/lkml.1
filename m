@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbXFVBBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbXFVBGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbXFVBBo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 21:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbXFVBBh
+	id S1753480AbXFVBGz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 21:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbXFVBGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 21:01:37 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60305 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751031AbXFVBBg (ORCPT
+	Thu, 21 Jun 2007 21:06:46 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:56932 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088AbXFVBGo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 21:01:36 -0400
-Date: Thu, 21 Jun 2007 18:01:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-In-Reply-To: <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0706211759550.11554@schroedinger.engr.sgi.com>
-References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+	Thu, 21 Jun 2007 21:06:44 -0400
+Date: Thu, 21 Jun 2007 21:06:40 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: Chris Mason <chris.mason@oracle.com>
+cc: Stephen Smalley <sds@tycho.nsa.gov>, Lars Marowsky-Bree <lmb@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
+       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
+       jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+In-Reply-To: <20070622003436.GB6222@think.oraclecorp.com>
+Message-ID: <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
+References: <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com>
+ <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz>
+ <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz>
+ <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
+ <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
+ <20070622003436.GB6222@think.oraclecorp.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Hugh Dickins wrote:
+On Thu, 21 Jun 2007, Chris Mason wrote:
 
-> > The oops seems to occur after a page unmapping using dma_unmap_page() followed
-> > by a flush_dcache_page() (in at91mci_post_dma_read()).
-
-Was the page allocated using slab calls?
-
-> Seems a little odd that it's gone throughout 2.6.22-rc unnoticed
-> until now - nobody else trying SLUB on ARM or PA-RISC yet perhaps.
-> As I understand it, you're not doing anything wrong (disclaimer:
-> I'm no expert on dma_mapping things), but SLUB's reuse of struct
-> page fields has collided with what flush_dcache_page is expecting.
+> > The incomplete mediation flows from the design, since the pathname-based
+> > mediation doesn't generalize to cover all objects unlike label- or
+> > attribute-based mediation.  And the "use the natural abstraction for
+> > each object type" approach likewise doesn't yield any general model or
+> > anything that you can analyze systematically for data flow.
 > 
-> Here's a patch: I'm not convinced it's necessarily the best one
-> (most uses of page_mapping will never see a slab page, it's a pity
-> to be cluttering up that inline even further); but in case nobody
-> else can provide a better...
+> This feels quite a lot like a repeat of the discussion at the kernel
+> summit.  There are valid uses for path based security, and if they don't
+> fit your needs, please don't use them.  But, path based semantics alone
+> are not a valid reason to shut out AA.
 
-Well one may be better off allocating pages using the page allocator 
-instead of the slab allocator. I removed these things from i386 but I did 
-not check ARM.
+The validity or otherwise of pathname access control is not being 
+discussed here.
 
+The point is that the pathname model does not generalize, and that 
+AppArmor's inability to provide adequate coverage of the system is a 
+design issue arising from this.
+
+Recall that the question asked by Lars was whether there were any 
+outstanding technical issues relating to AppArmor.
+
+AppArmor does not and can not provide the level of confinement claimed by 
+the documentation, and its policy does not reflect its actual confinement 
+properties.  That's kind of a technical issue, right?
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
