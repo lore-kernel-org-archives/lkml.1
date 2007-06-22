@@ -1,44 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbXFVKVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbXFVKa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbXFVKVn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 06:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbXFVKVg
+	id S1753317AbXFVKa2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 06:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbXFVKaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 06:21:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:37866 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbXFVKVf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 06:21:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CwHNTlQNwWgzYWwbdBdKc+Psu4fFgikb6ImjLVmm9PM1j/Cik+i7BNPwby+3L+y5Cj+Vwk/oNj7WBGnMoQNthc+gZuzuj+nEqo7Neavtx+Eh2Xfr78ESMr1qjW25yZvLD9cuRXNaCbjqHlRzEHc+sNKoC/d/Wnob7jVZrjdcC6M=
-Message-ID: <a9e22dff0706220321y7d2741adu5c845ca06ef71297@mail.gmail.com>
-Date: Fri, 22 Jun 2007 13:21:33 +0300
-From: "Ni@m" <niam.niam@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [1/2] 2.6.22-rc5: known regressions with patches v2
-In-Reply-To: <a9e22dff0706220259y6b2cec29s8f5e059ba8c42b77@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 06:30:19 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:58460 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751232AbXFVKaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 06:30:18 -0400
+Date: Fri, 22 Jun 2007 12:38:17 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Miklos Szeredi <miklos@szeredi.hu>,
+       cebbert@redhat.com, chris@atlee.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070622103817.GC1778@ff.dom.local>
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073800.GA1685@ff.dom.local> <alpine.LFD.0.98.0706210851570.3593@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <467AA8CA.2020206@googlemail.com>
-	 <a9e22dff0706220259y6b2cec29s8f5e059ba8c42b77@mail.gmail.com>
+In-Reply-To: <alpine.LFD.0.98.0706210851570.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello! I'm a newbuy in kernel development.
-Now I'm just trying to find out what is going in it =).
+On Thu, Jun 21, 2007 at 09:01:28AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 21 Jun 2007, Jarek Poplawski wrote:
+...
+> So I don't see how you could possibly having two different CPU's getting 
+> into some lock-step in that loop: changing "task_rq()" is a really quite 
+> heavy operation (it's about migrating between CPU's), and generally 
+> happens at a fairly low frequency (ie "a couple of times a second" kind of 
+> thing, not "tight CPU loop").
 
-I noticed this:
->>(BTW. There is a new category called "Will be fixed in 2.6.23")
+Yes, I've agreed with Ingo it was only one of my illusions...
 
-Is it really important to release 2.6.22 as soon as possible? I think
-kernel should be 99% stable. Why not to wait for patches on known
-regressions and release more or less stable 2.6.22?
+> But bugs happen..
+> 
+> > Another possible problem could be a result of some wrong optimization
+> > or wrong propagation of change of this task_rq(p) value.
+> 
+> I agree, but that kind of bug would likely not cause temporary hangs, but 
+> actual "the machine is dead" operations. If you get the totally *wrong* 
+> value due to some systematic bug, you'd be waiting forever for it to 
+> match, not get into a loop for a half second and then it clearing up..
+> 
+> But I don't think we can throw the "it's another bug" theory _entirely_ 
+> out the window.
 
-Thanks!
+Alas, I'm the last here who should talk with you or Ingo about
+hardware, but my point is that until it's not 100% proven this
+is spinlocks vs. cpu case any nearby possibilities should be
+considered. One of them is this loop, which can ... loop. Of
+course we can't see any reason for this, but if something is
+theoretically allowed it can happen. Here it's enough the
+task_rq(p) is for some very unprobable reason (maybe buggy
+hardware, code or compiling) cached or read too late, and
+maybe it's only on this one only notebook in the world? If
+you're sure this is not the case, let's forget about this.
+Of course, I don't mean it's a direct optimization. I think
+about something that could be triggered by something like this
+tested smp_mb() in entirely another place. IMHO, it would be
+very interesting to assure if this barrier fixed the spinlock
+or maybe some variable.
 
-Best wishes, Niam.
+There is also another interesting question: if it was only about
+spinlocks (which may be) why on those watchdog traces there
+are mainly two "fighters": wait_task_inactive() and
+try_to_wake_up(). It seems there should be seen more clients
+of task_rq_lock(). So, my another unlikely idea is: maybe
+for some other strange, unprobable but only theoretically
+possibility there could be something wrong around this
+yield() in wait_task_inactive(). The comment above this
+function reads about the task that *will* unschedule.
+So, maybe it would be not nice if e.g. during this yield()
+something wakes it up?
+
+...
+> But it only happens with badly coded software: the rule simply is that you 
+> MUST NOT release and immediately re-acquire the same spinlock on the same 
+> core, because as far as other cores are concerned, that's basically the 
+> same as never releasing it in the first place.
+
+I totally agree! Let's only get certainty there is nothing
+more here. BTW, is there any reason not to add some test with
+a warning under spinlock debugging against such badly behaving
+places?
+
+Regards,
+Jarek P.
