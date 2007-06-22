@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXFVGkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbXFVGp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbXFVGkN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 02:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbXFVGkB
+	id S1753761AbXFVGp0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 02:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbXFVGpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 02:40:01 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:28833 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751738AbXFVGkA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 02:40:00 -0400
-Subject: Re: [RFC PATCH 4/6] Make DRM use the tasklet is-sched API
-From: Daniel Walker <dwalker@mvista.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070622040137.104281523@goodmis.org>
-References: <20070622040014.234651401@goodmis.org>
-	 <20070622040137.104281523@goodmis.org>
-Content-Type: text/plain
-Date: Thu, 21 Jun 2007 23:36:09 -0700
-Message-Id: <1182494169.3228.11.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+	Fri, 22 Jun 2007 02:45:16 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43473 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751806AbXFVGpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 02:45:15 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH for 2.6.22] [6/10] x86: Only make Macintosh drivers default on Macs
+Date: Fri, 22 Jun 2007 08:45:07 +0200
+User-Agent: KMail/1.9.6
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
+References: <200706201223.443613000@suse.de> <20070621173628.GA21243@aepfle.de> <20070621175200.GA22507@aepfle.de>
+In-Reply-To: <20070621175200.GA22507@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706220845.07573.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 00:00 -0400, Steven Rostedt wrote:
-> plain text document attachment (tasklet-driver-hacks.patch)
-> Update the DRM driver to use the new tasklet API, which does not rely
-> on the tasklet implementation details.
-> 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> 
-> Index: linux-2.6.21-rt9/drivers/char/drm/drm_irq.c
-> ===================================================================
-> --- linux-2.6.21-rt9.orig/drivers/char/drm/drm_irq.c
-> +++ linux-2.6.21-rt9/drivers/char/drm/drm_irq.c
-> @@ -461,7 +461,7 @@ void drm_locked_tasklet(drm_device_t *de
->  	static DECLARE_TASKLET(drm_tasklet, drm_locked_tasklet_func, 0);
->  
->  	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ) ||
-> -	    test_bit(TASKLET_STATE_SCHED, &drm_tasklet.state))
-> +	    tasklet_is_scheduled(&drm_tasklet))
->  		return;
->  
->  	spin_lock_irqsave(&dev->tasklet_lock, irqflags);
-> 
 
+> diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+> index 0852d33..dbe9626 100644
+> --- a/drivers/macintosh/Kconfig
+> +++ b/drivers/macintosh/Kconfig
+> @@ -2,7 +2,7 @@
+>  menuconfig MACINTOSH_DRIVERS
+>  	bool "Macintosh device drivers"
+>  	depends on PPC || MAC || X86
+> -	default y if MAC
+> +	default y if (PPC_PMAC || MAC)
 
-No sense in having a patch just for this, may as well merge this with
-patch 3 ..
+Ah yes it needs to be PPC_MAC. Sigh. MAC apparently is only the m68k macs.
+Patch is good, although I guess it would be better to change this death trap
+and always define MAC on PPC MACs too.
 
-Daniel
-
+-Andi
