@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbXFVO2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbXFVO30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758014AbXFVO2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 10:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbXFVO2Q
+	id S1758209AbXFVO30 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 10:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbXFVO3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 10:28:16 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1757 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755476AbXFVO2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 10:28:15 -0400
-Date: Fri, 22 Jun 2007 16:27:53 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Oliver Neukum <oneukum@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       video4linux-list@redhat.com,
-       =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       luca.risolia@studio.unibo.it, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
- [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
-In-Reply-To: <1182518566.14289.20.camel@gaivota>
-Message-ID: <Pine.LNX.4.64.0706221602000.1817@scrub.home>
-References: <200706211117.55908.toralf.foerster@gmx.de> 
- <200706211231.53898.luca.risolia@studio.unibo.it>  <200706211326.45031.toralf.foerster@gmx.de>
-  <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811837-1671747748-1182522473=:1817"
+	Fri, 22 Jun 2007 10:29:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54639 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755525AbXFVO3R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 10:29:17 -0400
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+From: Arjan van de Ven <arjan@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+In-Reply-To: <20070622040014.234651401@goodmis.org>
+References: <20070622040014.234651401@goodmis.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Fri, 22 Jun 2007 07:25:09 -0700
+Message-Id: <1182522309.2672.11.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1463811837-1671747748-1182522473=:1817
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+> The most part, tasklets today are not used for time critical functions.
+> Running tasklets in thread context is not harmful to performance of
+> the overall system. 
 
-Hi,
+That is a bold statement...
 
-On Fri, 22 Jun 2007, Mauro Carvalho Chehab wrote:
+> But running them in interrupt context is, since
+> they increase the overall latency for high priority tasks.
 
-> Hi Roman,
->=20
-> Several instabilities on Kconfig started to happen after replacing
-> Kconfig menus to use menuconfig, as this one, reported by Oliver:
->=20
-> Em Qui, 2007-06-21 =C3=A0s 13:50 +0200, Oliver Neukum escreveu:
-> > Am Donnerstag, 21. Juni 2007 schrieb Toralf F=C3=B6rster:
-> > > Right, but IMHO this issue is typical for a problem with the Kconfig =
-definitions of this module.
-> > >=20
-> > > I'll set USB devs as Cc: therefore.
 
-There is too little context here, what was the exact error?
-I'm assuming it's the module vs. builtin problem?
+.... since by moving this to process context you do add latency between
+the hardirq and the tasklet, and I can see that having performance
+impact easily.
 
-> In this specific case, all V4L USB drivers depends on V4L_USB_DRIVERS,
-> that depends, in turn, on USB. So, if USB is not selected,
-> V4L_USB_DRIVERS should be unselected, unselecting zc0301.
->=20
-> Unfortunately, the Kernel building system is not properly handling it.
->=20
-> This is the (snipped) media/video/Kconfig:
->=20
-> menuconfig V4L_USB_DRIVERS
->         bool "V4L USB devices"
->         depends on USB
->         default y
->=20
 
-The menuconfig patches were a little aggressive here, it created a config=
-=20
-symbol where there was none before and in this case it even changed=20
-dependencies (it turns USB into a bool).
-I'm also a little irritated by the "default y", if I enable V4L I'm very=20
-tempted to check what other useless stuff has been automatically enabled,=
-=20
-which I have to turn off again.
-
-bye, Roman
----1463811837-1671747748-1182522473=:1817--
