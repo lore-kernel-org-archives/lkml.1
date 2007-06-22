@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbXFVFLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbXFVFNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbXFVFLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 01:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXFVFLZ
+	id S1753166AbXFVFNQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 01:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXFVFNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 01:11:25 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:19181 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbXFVFLY (ORCPT
+	Fri, 22 Jun 2007 01:13:05 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58068 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751279AbXFVFNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 01:11:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Tkoc70WqS9JRYkHBdkyO/Hxfbzss8OaTEovVsqatmNkhAkGaHtAm7j2i+fmzfmplThocPNDB6MGLU3WacduCyrPop/S7TUU9QjqZBm07K/KfHcgn27RXYlz7KbqAd05EVvpS3wyQsyjKFfvTYeqExEBxQ1S2+FNjh1xxVSUxPiA=
-Date: Fri, 22 Jun 2007 13:12:59 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: Rob Landley <rob@landley.net>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, bryan.wu@analog.com,
-       TripleX Chung <xxx.phy@gmail.com>, Maggie Chen <chenqi@beyondsoft.com>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Message-ID: <20070622051259.GB2911@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <200706212248.34128.rob@landley.net> <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 22 Jun 2007 01:13:04 -0400
+Date: Thu, 21 Jun 2007 22:13:03 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706220513140.8870@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706212211010.12278@schroedinger.engr.sgi.com>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706211759550.11554@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706220513140.8870@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 11:58:58AM +0800, Li Yang-r58472 wrote:
->> -----Original Message-----
->> From: Rob Landley [mailto:rob@landley.net]
->> Sent: Friday, June 22, 2007 10:49 AM
->> 
->> On Thursday 21 June 2007 10:40:17 Li Yang wrote:
->> > This is a Chinese translated version of Documentation/HOWTO.
->Currently
->> > Chinese involvement in Linux kernel is very low, especially
->comparing to
->> > its largest population base.  Language could be the main obstacle.
->Hope
->> > this document will help more Chinese to contribute to Linux kernel.
->> 
->> I'm putting together a kernel documentation directory at
->http://kernel.org/doc
->> and I could easily add translations in there.  I just don't know if
->this is a
->> good idea.
->> 
->> The problem is, the submission of patches happens on the various
->kernel.org
->> mailing lists, which are all in English.  Kernel development is done
->in a
->> single common language: English.  (If you'd like to argue for it to be
->done
->> in another language, please make the proposal in Linus's native
->Swedish.)
->> 
->> Setting aside for the moment version skew and coverage issues when
->translating
->> Documentation, which aren't really serious blocking issues, my
->question is
->> this:  If developers aren't fluent enough with English to follow the
->> documentation, how can they follow any of the technical discussions
->necessary
->> to merge their patches back into the mainstream kernel?  Doesn't this
->> encourage the creation of patches that can't easily be merged back
->into the
->> kernel?
->
->So as I argued in a previous email, non-native English speakers tend to
->be more confused by the policies and processes.  I also don't think it's
->necessary to translate the technical documents.  To be a software
->developer, one has to be educated or experienced in technical terms.
->Technical discussion can be done without too much requirement to grammar
->and emotional expressing.  The translated document of policies and
->processes will help these people to understand the process better and go
->smoother in the process.
->
+On Fri, 22 Jun 2007, Hugh Dickins wrote:
 
-Yes, I agree.
+> You keep on forcing the outside world to revolve around your needs
+> within slub.c: that is a good way to keep slub lean, and may be
+> justified; but it's at least questionable to be enforcing such
+> restrictions years after people have grown accustomed to more
+> freedom from their slabs.
 
-Many people from China are trying to contribute to Linux kernel (like me),
-a Chinese document which describes and explains the non-technical things
-needed by Linux kernel will help them _much_ to join the development soon.
-Also, IMO, a translation shows Linux kernel is friendly and open to
-people from all over the world.
+This work is a cleanup of the VM code and part of the slab cleanup that 
+was done. Having slab objects on the LRU and other components of the VM 
+that are supposed to work on page sized objects is plainly wrong and can 
+lead to surprising results.
 
-Regards!
-
-
-WANG Cong
 
