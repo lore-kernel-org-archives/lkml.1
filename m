@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbXFVHKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXFVHKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752286AbXFVHKr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 03:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbXFVHKf
+	id S1753376AbXFVHKW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 03:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbXFVHKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 03:10:35 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:44255 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754640AbXFVHKc (ORCPT
+	Fri, 22 Jun 2007 03:10:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40305 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751219AbXFVHKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 03:10:32 -0400
-Message-ID: <467B7509.8010106@zytor.com>
-Date: Fri, 22 Jun 2007 00:06:49 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Ram Pai <linuxram@us.ibm.com>
-CC: Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: Adding subroot information to /proc/mounts, or obtaining that
- through other means
-References: <467994BD.6000403@zytor.com>	 <20070620210343.GQ21478@ftp.linux.org.uk>  <46799A31.10301@zytor.com>	 <1182442837.3342.13.camel@ram.us.ibm.com>  <467AB5EE.3030909@zytor.com> <1182494654.2812.22.camel@ram.us.ibm.com>
-In-Reply-To: <1182494654.2812.22.camel@ram.us.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 03:10:09 -0400
+Date: Fri, 22 Jun 2007 08:09:48 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070622070948.GA21291@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	Dipankar Sarma <dipankar@in.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+	kuznet@ms2.inr.ac.ru
+References: <20070622040014.234651401@goodmis.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622040014.234651401@goodmis.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ram Pai wrote:
-> 
-> the second patch made a /proc/propagation interface which had almost the
-> same fields, but also added fields to show the propagation type of the
-> mount as well as pointers to its peers and master depending on the type
-> of the mount. 
-> 
-> I think the consensus seems to have a new interface /proc/make-a-name
-> which extends the interface provided by /proc/mounts but provides the
-> propagation state of the mounts too as well as disambiguate bind mounts.
-> Which makes sense.
-> 
+On Fri, Jun 22, 2007 at 12:00:14AM -0400, Steven Rostedt wrote:
+> The most part, tasklets today are not used for time critical functions.
+> Running tasklets in thread context is not harmful to performance of
+> the overall system. But running them in interrupt context is, since
+> they increase the overall latency for high priority tasks.
 
-Why?  It seems a lot cleaner to have all the information in the same
-place.  It is highly unfriendly to userspace to have to gather
-information in a lot of places, plus it adds race conditions.
+I think we probably want some numbers, at least for tasklets used in
+potentially performance critical code.
 
-It would be another matter if the format that we have now couldn't be
-extended, but we need those fields (well, except the two zeros, but who
-cares) *anyway*, so we might as well stick to the existing file, and
-reduce the total amount of code and clutter.
-
+> Even in Matthew's paper, he says that work queues have replaced tasklets.
+> But this is not truly the case.  Tasklets are common and plentiful.
+> But to go and replace each driver that uses a tasklet with a work queue
+> would be very painful.
 > 
-> BTW: what is the need for overmounted flag?  Do you mean two vfsmounts
-> mounted on the same dentry on the ***same vfsmount*** ?
-> 
+> I've developed this way to replace all tasklets with work queues without
+> having to change all the drivers that use them.  I created an API that
+> uses the tasklet API as a wrapper to a work queue.  This API doesn't need
+> to be permanent. It shows 1) that work queues can replace tasklets, and
+> 2) we can remove a duplicate functionality from the kernel.  This API
+> only needs to be around until we removed all uses of tasklets from
+> all drivers.
 
-Maybe I'm not following the uses of your flags well enough to figure out
- if that information can already been deduced.
+I don't like this wrapping at all.  What you're doing is a tradeoff to
+do less work today in exchange for more maintaince overhead and more crufty
+code in the future.  So while I sympathize a lot with trying to get rid
+of tasklets I'd rather prefer to convert individual drivers over until
+all users are gone.  It's not exactly a very complicated conversion either.
 
-	-hpa
+> 6) This is the magic to make tasklets into work queues. It allows for
+> the kernel to be configured either with the normal tasklets, as it is
+> today, or with the tasklets-as-work-queues.
+
+And this is something that might be fine for benchmarking, but not something
+we should put in.  Keeping two wildly different implementation of core
+functionality with very different behaviour around is quite bad.  Better
+kill tasklets once for all.
+
