@@ -1,69 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbXFVMjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751299AbXFVMju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbXFVMjf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 08:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbXFVMj1
+	id S1751299AbXFVMju (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 08:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbXFVMjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 08:39:27 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:37869 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753404AbXFVMj0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 08:39:26 -0400
-Subject: Re: [RFC PATCH 1/6] Convert the RCU tasklet into a softirq
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070622074344.GA9472@elte.hu>
-References: <20070622040014.234651401@goodmis.org>
-	 <20070622040136.621853953@goodmis.org>
-	 <20070622071039.GB21291@infradead.org>  <20070622074344.GA9472@elte.hu>
-Content-Type: text/plain
-Date: Fri, 22 Jun 2007 08:35:47 -0400
-Message-Id: <1182515747.5493.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Fri, 22 Jun 2007 08:39:40 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:40464 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755910AbXFVMjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 08:39:39 -0400
+Message-ID: <467BC306.9010008@dgreaves.com>
+Date: Fri, 22 Jun 2007 13:39:34 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+MIME-Version: 1.0
+To: david@lang.hm
+Cc: Neil Brown <neilb@suse.de>, Bill Davidsen <davidsen@tmr.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <46756BE2.7010401@tmr.com> <467B03C1.50809@tmr.com> <18043.13037.40956.366334@notabene.brown> <467B840F.4080402@dgreaves.com> <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 09:43 +0200, Ingo Molnar wrote:
-> * Christoph Hellwig <hch@infradead.org> wrote:
+david@lang.hm wrote:
+> On Fri, 22 Jun 2007, David Greaves wrote:
 > 
-> > On Fri, Jun 22, 2007 at 12:00:15AM -0400, Steven Rostedt wrote:
-> > > I believe this was originally done by Dipankar Sarma. I pulled these
-> > > changes from the -rt kernel.
-> > > 
-> > > For better preformance, RCU should use a softirq instead of a
-> > > tasklet.
-> > 
-> > I was under the imporession we had merged this a while ago due to 
-> > tasklet bottlenecks on big machines.  Any reason why it has been 
-> > delayed so long?
+>> That's not a bad thing - until you look at the complexity it brings - 
+>> and then consider the impact and exceptions when you do, eg hardware 
+>> acceleration? md information fed up to the fs layer for xfs? simple 
+>> long term maintenance?
+>>
+>> Often these problems are well worth the benefits of the feature.
+>>
+>> I _wonder_ if this is one where the right thing is to "just say no" :)
+> so for several reasons I don't see this as something that's deserving of 
+> an atomatic 'no'
 > 
-> i thought so too, up until a few weeks ago. I think i might have mixed 
-> it up mentally with the scheduler rebalancing tasklet: that was 
-> converted to softirqs on my request and made me forget about the RCU 
-> tasklet thing.
-> 
+> David Lang
 
-I think the reason it was dropped was because it was part of a large
-patch series that didn't make it into the kernel. And unfortunately,
-this was dropped in that regard.
+Err, re-read it, I hope you'll see that I agree with you - I actually just meant 
+the --assume-clean workaround stuff :)
 
+If you end up 'fiddling' in md because someone specified --assume-clean on a 
+raid5 [in this case just to save a few minutes *testing time* on system with a 
+heavily choked bus!] then that adds *even more* complexity and exception cases 
+into all the stuff you described.
 
-If you do pull this patch in, I would like to get a sign-off-by from
-Dipankar and give him credit, since I think he was the original author.
-I just pulled it out of the -rt branch.
+I'm very much for the fs layer reading the lower block structure so I don't have 
+to fiddle with arcane tuning parameters - yes, *please* help make xfs self-tuning!
 
--- Steve
+Keeping life as straightforward as possible low down makes the upwards interface 
+more manageable and that goal more realistic...
 
-
+David
