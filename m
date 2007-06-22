@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXFVIWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbXFVI3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbXFVIWT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 04:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbXFVIWI
+	id S1754965AbXFVI3V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 04:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbXFVI3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 04:22:08 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:55810 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751142AbXFVIWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 04:22:07 -0400
-Date: Fri, 22 Jun 2007 10:30:04 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J\. Wysocki" <rjw@sisk.pl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [ANNOUNCE] Linux Kernel Tester???s Guide v0.3-rc1
-Message-ID: <20070622083004.GB1778@ff.dom.local>
-References: <4676E707.8020109@googlemail.com> <Pine.LNX.4.64.0706210829040.20010@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706210829040.20010@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 22 Jun 2007 04:29:13 -0400
+Received: from arx.rabbit.us ([68.251.127.6]:4559 "EHLO arx.rabbit.us"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751810AbXFVI3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 04:29:12 -0400
+Message-ID: <467B8855.1030007@rabbit.us>
+Date: Fri, 22 Jun 2007 10:29:09 +0200
+From: Peter Rabbitson <rabbit@rabbit.us>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Terrible IO performance when using 4GB of RAM on a 32 bit machine
+References: <fa.8+Qu4ZH2B8PP3bRaZ5LNdUcsFIQ@ifi.uio.no> <fa.X6rjOVHT6SoOzt6SHEJROeRgf98@ifi.uio.no> <fa.qwrQSldd4OzDT6RgWE5P1BD9PJw@ifi.uio.no> <467B1100.4000401@shaw.ca>
+In-Reply-To: <467B1100.4000401@shaw.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 08:50:54AM +0200, Jan Engelhardt wrote:
+Robert Hancock wrote:
+> Peter Rabbitson wrote:
+>> H. Peter Anvin wrote:
+>>>
+>>> What does /proc/mtrr look like in the two cases?
+>>>
+>>
+>> Identical for mem=3900 and without it.
+>>
+>> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
+>> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
+>> reg02: base=0xc0000000 (3072MB), size= 512MB: write-back, count=1
+>> reg03: base=0xe0000000 (3584MB), size= 256MB: write-back, count=1
+>> reg04: base=0xf0000000 (3840MB), size= 128MB: write-back, count=1
+>> reg05: base=0xf8000000 (3968MB), size=  32MB: write-back, count=1
 > 
-> <On Jun 18 2007 22:11, Michal Piotrowski wrote:
-...
-> > PDF version
-> > http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf
+> Looks like another case of bad MTRRs on an Intel motherboard? The BIOS 
+> is marking only memory up to 4000MB as cacheable, but the actual memory 
+> extends up to about 4031MB. Therefore anything that accesses the top 
+> 31MB of memory will run very slow.
 > 
-> No HTML version?
 
-I see I'm not the last of a kind... Or? So:
-No txt version?
+Ah, it all makes sense now. In this case I assume mem=4000 is perfectly 
+safe and usable for the time being. In the beginning I tried with 
+mem=4g, which obviously did not work. If anyone is interested in adding 
+an exception/workaround for this particular motherboard, I'd be happy to 
+help with testing. I have added more information about the system: 
+current kernel config [1], output of `lspci -vv`[2], dmesg with mem=4000[3].
 
-> > Any comments, suggestions and patches are welcome.
-> >
-> > Huge thanks goes to Rafael J. Wysocki who translated the entire guide into
-> > English.
+Thank you!
 
-I join you in this thanking! (Sorry for delay.)
+Peter
 
-> > This is one of those rare cases when translation is better than original
-> > version :).
-
-It's probably mainly because my contribution (i.e. some comas)
-is untranslatable!
-
-Cheers,
-Jarek P.
+[1] http://rabbit.us/pool/4g/config-2.6.21.5.arzamas.6.txt
+[2] http://rabbit.us/pool/4g/lspci_4000.txt
+[3] http://rabbit.us/pool/4g/dmesg_4000.txt
