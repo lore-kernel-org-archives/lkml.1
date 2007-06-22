@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbXFVKu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbXFVLT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754415AbXFVKu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 06:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbXFVKuM
+	id S1753829AbXFVLT7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 07:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbXFVLTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 06:50:12 -0400
-Received: from gate.in-addr.de ([212.8.193.158]:52044 "EHLO mx.in-addr.de"
+	Fri, 22 Jun 2007 07:19:50 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:50047 "EHLO jazzdrum.ncsc.mil"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752160AbXFVKuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 06:50:10 -0400
-Date: Fri, 22 Jun 2007 12:49:31 +0200
-From: Lars Marowsky-Bree <lmb@suse.de>
-To: Joshua Brindle <method@manicmethod.com>, david@lang.hm
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
-       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070622104931.GG20105@marowsky-bree.de>
-References: <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz> <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain> <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil> <20070621211743.GN20105@marowsky-bree.de> <467B14D9.8050000@manicmethod.com> <Pine.LNX.4.64.0706211722440.31603@asgard.lang.hm> <467B45E0.3040207@manicmethod.com>
+	id S1751554AbXFVLTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 07:19:48 -0400
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+	pathname matching
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Lars Marowsky-Bree <lmb@suse.de>
+Cc: James Morris <jmorris@namei.org>, Pavel Machek <pavel@ucw.cz>,
+       Crispin Cowan <crispin@novell.com>, Greg KH <greg@kroah.com>,
+       Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20070621211743.GN20105@marowsky-bree.de>
+References: <20070615200623.GA2616@elf.ucw.cz>
+	 <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com>
+	 <20070616000251.GG2616@elf.ucw.cz>
+	 <20070621160840.GA20105@marowsky-bree.de>
+	 <20070621183311.GC18990@elf.ucw.cz>
+	 <20070621192407.GF20105@marowsky-bree.de>
+	 <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
+	 <20070621195400.GK20105@marowsky-bree.de>
+	 <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
+	 <20070621211743.GN20105@marowsky-bree.de>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Fri, 22 Jun 2007 07:19:39 -0400
+Message-Id: <1182511179.24664.1.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <467B45E0.3040207@manicmethod.com>
-X-Ctuhulu: HASTUR
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007-06-21T23:45:36, Joshua Brindle <method@manicmethod.com> wrote:
-
-> >remember, the policies define a white-list
+On Thu, 2007-06-21 at 23:17 +0200, Lars Marowsky-Bree wrote:
+> On 2007-06-21T16:59:54, Stephen Smalley <sds@tycho.nsa.gov> wrote:
 > 
-> Except for unconfined processes.
+> > Or can access the data under a different path to which their profile
+> > does give them access, whether in its final destination or in some
+> > temporary file processed along the way.
+> 
+> Well, yes. That is intentional.
+> 
+> Your point is?
 
-The argument that AA doesn't mediate what it is not configured to
-mediate is correct, yes, but I don't think that's a valid _design_ issue
-with AA.
+It may very well be unintentional access, especially when taking into
+account wildcards in profiles and user-writable directories.
 
-> Or through IPC or the network, that is the point, filesystem only 
-> coverage doesn't cut it; there is no way to say the browser can't access 
-> the users mail in AA, and there never will be.
+> > The emphasis on never modifying applications for security in AA likewise
+> > has an adverse impact here, as you will ultimately have to deal with
+> > application mediation of access to their own objects and operations not
+> > directly visible to the kernel (as we have already done in SELinux for
+> > D-BUS and others and are doing for X).  Otherwise, your "protection" of
+> > desktop applications is easily subverted.
+> 
+> That is an interesting argument, but not what we're discussing here.
+> We're arguing filesystem access mediation.
 
-We have a variety of filtering mechanisms which are specific to a
-domain. iptables filters networking only; file permissions filter file
-access only. This argument is not really strong.
+IOW, anything that AA cannot protect against is "out of scope".  An easy
+escape from any criticism.
 
-<tangent>
-If you're now arguing the "spirit of Unix", I can turn your argument
-around too: the Unix spirit is to have smallish dedicated tools. If AA
-is dedicated to mediating file access, isn't that nice!
+> > Um, no.  It might not be able to directly open files via that path, but
+> > showing that it can never read or write your mail is a rather different
+> > matter.
+> 
+> Yes. Your use case is different than mine.
 
-AA _could_ be extended to mediate network access and IPC (and this is
-WIP). If we had tcpfs and ipcfs - you know, everything is a filesystem,
-the Linux spirit! ;-) - AA could mediate them as well.
-</tangent>
-
-However, we're discussing the way it mediates file accesses here,
-for which it appears useful and capable of functionality which SELinux's
-approach cannot provide.
-
-
-Regards,
-    Lars
+My use case is being able to protect data reliably.  Yours?
 
 -- 
-Teamlead Kernel, SuSE Labs, Research and Development
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+Stephen Smalley
+National Security Agency
 
