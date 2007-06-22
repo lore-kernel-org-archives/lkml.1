@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbXFVLT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbXFVLY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbXFVLT7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 07:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbXFVLTu
+	id S1754246AbXFVLY0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 07:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXFVLYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 07:19:50 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:50047 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751554AbXFVLTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 07:19:48 -0400
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
-	pathname matching
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Lars Marowsky-Bree <lmb@suse.de>
-Cc: James Morris <jmorris@namei.org>, Pavel Machek <pavel@ucw.cz>,
-       Crispin Cowan <crispin@novell.com>, Greg KH <greg@kroah.com>,
-       Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070621211743.GN20105@marowsky-bree.de>
-References: <20070615200623.GA2616@elf.ucw.cz>
-	 <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com>
-	 <20070616000251.GG2616@elf.ucw.cz>
-	 <20070621160840.GA20105@marowsky-bree.de>
-	 <20070621183311.GC18990@elf.ucw.cz>
-	 <20070621192407.GF20105@marowsky-bree.de>
-	 <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
-	 <20070621195400.GK20105@marowsky-bree.de>
-	 <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
-	 <20070621211743.GN20105@marowsky-bree.de>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 22 Jun 2007 07:19:39 -0400
-Message-Id: <1182511179.24664.1.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 07:24:19 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36239 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751909AbXFVLYT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 07:24:19 -0400
+Date: Fri, 22 Jun 2007 13:24:37 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: How to improve the quality of the kernel?
+Message-ID: <20070622112437.GK23017@stusta.de>
+References: <200706180141.41101.a1426z@gawab.com> <200706211641.28504.a1426z@gawab.com> <20070621135744.GO12950@stusta.de> <200706220033.13932.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200706220033.13932.a1426z@gawab.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 23:17 +0200, Lars Marowsky-Bree wrote:
-> On 2007-06-21T16:59:54, Stephen Smalley <sds@tycho.nsa.gov> wrote:
+On Fri, Jun 22, 2007 at 12:33:13AM +0300, Al Boldi wrote:
+> Adrian Bunk wrote:
+> > On Thu, Jun 21, 2007 at 04:41:28PM +0300, Al Boldi wrote:
+> > > Adrian Bunk wrote:
+> > > > Talk is cheap, but unless YOU will do it your emails will only be a
+> > > > waste of bandwidth.
+> > >
+> > > Thanks, and good luck with involving people with this kind of response!
+> >
+> > It's simply how kernel development works - not by talking but by doing
+> > the work.
 > 
-> > Or can access the data under a different path to which their profile
-> > does give them access, whether in its final destination or in some
-> > temporary file processed along the way.
+> This sounds like a brute-force approach, akin to hacking.
 > 
-> Well, yes. That is intentional.
+> I think it's much more productive to analyze the problem and then design a 
+> solution accordingly.
+
+Sure, that's part of creating your solution.
+
+But when you've analyzed the problem and designed a solution, YOU have 
+to implement it.
+
+> > Many people thought long-term maintainance for 2.6.16 wouldn't make sense.
+> > And I didn't start long discussions whether we need regression tracking -
+> > I simply did it.
 > 
-> Your point is?
+> Maybe because you are a PRO.
+>...
 
-It may very well be unintentional access, especially when taking into
-account wildcards in profiles and user-writable directories.
+No, simply because I got my ass up.
 
-> > The emphasis on never modifying applications for security in AA likewise
-> > has an adverse impact here, as you will ultimately have to deal with
-> > application mediation of access to their own objects and operations not
-> > directly visible to the kernel (as we have already done in SELinux for
-> > D-BUS and others and are doing for X).  Otherwise, your "protection" of
-> > desktop applications is easily subverted.
-> 
-> That is an interesting argument, but not what we're discussing here.
-> We're arguing filesystem access mediation.
+> Thanks!
+> Al
 
-IOW, anything that AA cannot protect against is "out of scope".  An easy
-escape from any criticism.
-
-> > Um, no.  It might not be able to directly open files via that path, but
-> > showing that it can never read or write your mail is a rather different
-> > matter.
-> 
-> Yes. Your use case is different than mine.
-
-My use case is being able to protect data reliably.  Yours?
+cu
+Adrian
 
 -- 
-Stephen Smalley
-National Security Agency
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
