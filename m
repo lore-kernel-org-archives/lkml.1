@@ -1,63 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761172AbXFVTSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXFVTUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761172AbXFVTSP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 15:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759899AbXFVTSA
+	id S1760766AbXFVTUh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 15:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXFVTU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 15:18:00 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:63871 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbXFVTR7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 15:17:59 -0400
-Date: Fri, 22 Jun 2007 12:19:15 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86-64: disable the GART before allocate aperture
-To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200706221219.16243.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.8.2
+	Fri, 22 Jun 2007 15:20:29 -0400
+Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:57872 "EHLO
+	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750815AbXFVTU3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 15:20:29 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Broadcom (bnx2) on PE1950/2950 failure
+Date: Fri, 22 Jun 2007 15:20:07 -0400
+Message-ID: <F1D642E5A91BC94D9504EC83AE19E6B0128A40@ecqcmtlmail3.quebec.int.ec.gc.ca>
+In-Reply-To: <467B0F75.5020900@shaw.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Broadcom (bnx2) on PE1950/2950 failure
+Thread-Index: Ace0X4xuPSibOnquQhKd+IJFLYCqLgAoUZyg
+References: <fa.GUDTRJ+yqLKq4z8Xd89auM7cYdk@ifi.uio.no> <467B0F75.5020900@shaw.ca>
+From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
+To: "Robert Hancock" <hancockr@shaw.ca>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 22 Jun 2007 19:20:07.0576 (UTC) FILETIME=[58163180:01C7B502]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86-64: disable the GART before allocate aperture
+> Huh? eth0 and eth1 are the e1000 adapters, eth3 (and 
+> presumably eth2) are the bnx2 adapters..
 
-For K8 system: 4G RAM with memory hole remapping enabled, or more than 4G RAM
-installed. when mem is allocated for GART, it will do the memset for clear.
-and for kexec case, the first kernel already enable that, the memset in second
-kernel will cause the system restart. So disable that at first before we try to
-allocate mem for it.
+Got it... Almost...
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+There was a confusion between
+/etc/udev/rules.d/z25_persistent-net.rules, the fact that bnx2 was in
+the initrd image but not e1000.
 
-diff --git a/arch/x86_64/kernel/aperture.c b/arch/x86_64/kernel/aperture.c
-index a3d450d..7a1b072 100644
---- a/arch/x86_64/kernel/aperture.c
-+++ b/arch/x86_64/kernel/aperture.c
-@@ -270,6 +270,19 @@ void __init iommu_hole_init(void)
- 		printk("This costs you %d MB of RAM\n",
- 		       32 << fallback_aper_order);
- 
-+		/*
-+		 * disable it in case it is enabled before, esp for kexec/kdump,
-+		 * previous kernel already enable that. otherwise memset called
-+		 * by allocate_aperture/__alloc_bootmem_nopanic cause restart.
-+		 */
-+		for (num = 24; num < 32; num++) {
-+			if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
-+				continue;
-+
-+			write_pci_config(0, num, 3, 0x90, 0);
-+			write_pci_config(0, num, 3, 0x94, 0);
-+		}
-+
- 		aper_order = fallback_aper_order;
- 		aper_alloc = allocate_aperture();
- 		if (!aper_alloc) { 
+So I edited /etc/udev/rules.d/z25_persistent-net.rules to set the order
+I wanted using directly the PCI ID as provided by the lspci -vvv:
+[root@urpdev1 /etc]# lspci -vvv | grep Ethernet
+05:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708
+Gigabit Ethernet (rev 12)
+09:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708
+Gigabit Ethernet (rev 12)
+0e:00.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet
+Controller (rev 06)
+0e:00.1 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet
+Controller (rev 06)
+
+
+[root@urpdev1 rules.d]# cat /etc/udev/rules.d/z25_persistent-net.rules
+# This file was automatically generated by the /lib/udev/write_net_rules
+# program, probably run by the persistent-net-generator.rules rules
+file.
+#
+# You can modify it, as long as you keep each rule on a single line.
+# MAC addresses must be written in lowercase.
+
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:05:00.0", NAME="eth0"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:09:00.0", NAME="eth1"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:0e:00.0", NAME="eth2"
+SUBSYSTEM=="net", DRIVERS=="?*", KERNELS=="0000:0e:00.1", NAME="eth3"
+
+
+And recreated the initrd image after having set which module not to
+forget... And it's order:
+[root@urpdev1 /etc]# cat /etc/initramfs-tools/modules
+# List of modules that you want to include in your initramfs.
+#
+# Syntax:  module_name [args ...]
+#
+# You must run update-initramfs(8) to effect this change.
+#
+# Examples:
+#
+# raid1
+# sd_mod
+bnx2
+e1000
+
+
+Here is the output of the dmesg with now the appropriate order:
+[root@urpdev1 /etc]# dmesg | grep -i eth
+[  120.685696] Broadcom NetXtreme II Gigabit Ethernet Driver bnx2
+v1.5.8.1 (May 7, 2007)
+[  120.703846] eth0: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X
+64-bit 133MHz found at mem f8000000, IRQ 17, node addr 0019b9c8eedc
+[  120.735350] eth1: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X
+64-bit 133MHz found at mem f4000000, IRQ 16, node addr 0019b9c8eede
+[  120.921403] e1000: eth2: e1000_probe: Intel(R) PRO/1000 Network
+Connection
+[  121.069025] e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network
+Connection
+[  267.720475] bnx2: eth0: using MSI
+[  270.832235] bnx2: eth0 NIC Link is Up, 1000 Mbps full duplex, receive
+& transmit flow control ON
+
+
+But still, there is a problem with the second Broadcom port (eth1):
+[root@urpdev1 /etc]# mii-tool
+eth0: negotiated 100baseTx-FD flow-control, link ok
+SIOCGMIIPHY on 'eth1' failed: Resource temporarily unavailable
+eth2: negotiated 100baseTx-FD flow-control, link ok
+eth3: negotiated 100baseTx-FD flow-control, link ok
+
+I don't get it?
+
+Help appreciated.
+
+- vin
