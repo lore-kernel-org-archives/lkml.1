@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbXFVS0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbXFVS0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760673AbXFVS0b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 14:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759411AbXFVSZe
+	id S1760737AbXFVS0r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 14:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759054AbXFVS0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 14:25:34 -0400
-Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:61080 "EHLO
-	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759247AbXFVSZb (ORCPT
+	Fri, 22 Jun 2007 14:26:18 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:35790 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760469AbXFVS0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 14:25:31 -0400
-From: Alexander Wuerstlein <arw@arw.name>
-To: linux-kernel@vger.kernel.org
-Cc: Alexander Wuerstlein <arw@arw.name>,
-       Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
-Subject: [PATCH] sns: add syscall to check signed state of a process [4/4]
-Date: Fri, 22 Jun 2007 20:25:29 +0200
-Message-Id: <11825367293600-git-send-email-arw@arw.name>
-X-Mailer: git-send-email 1.5.2.1
-In-Reply-To: <20070621155516.GA6838@faui01.informatik.uni-erlangen.de>
-References: <20070621155516.GA6838@faui01.informatik.uni-erlangen.de>
+	Fri, 22 Jun 2007 14:26:15 -0400
+Message-ID: <467C1233.5030609@austin.ibm.com>
+Date: Fri, 22 Jun 2007 13:17:23 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Dave Hansen <hansendc@us.ibm.com>
+CC: Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] update checkpatch.pl to version 0.06
+References: <e12915ec7c0cfcb5d6a7c4432f458161@pinky>	 <1182532151.26162.45.camel@localhost>  <467C0CE9.5010502@austin.ibm.com> <1182535330.26162.50.camel@localhost>
+In-Reply-To: <1182535330.26162.50.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Makes it possible for a userspace process to ask for the trustworthiness of
-another process.
+> Several of our on-disk filesystems have an ioctl function that already
+> has indented goto labels.  I don't think it's quite worth churning all
+> of these (working) filesystems to make a style checker happy.
+> 
+> I think it's worse style to be mixing label indentation in a file as it
+> is to create new "correct" indentation labels.  That's why I suggested
+> using context in the file to determine it rather than absolute rules.
 
-Signed-off-by: Johannes Schlumberger <spjsschl@cip.informatik.uni-erlangen.de>
----
- arch/i386/kernel/syscall_table.S |    1 +
- include/asm-i386/unistd.h        |    3 ++-
- security/sns.c                   |   15 +++++++++++++++
- 3 files changed, 18 insertions(+), 1 deletions(-)
+If it is bad coding style that is justified because there is already other bad coding 
+style to match -- that is not a judgment call for a script to make, but for a real 
+person to make.
 
-diff --git a/arch/i386/kernel/syscall_table.S b/arch/i386/kernel/syscall_table.S
-index bf6adce..e8ba35a 100644
---- a/arch/i386/kernel/syscall_table.S
-+++ b/arch/i386/kernel/syscall_table.S
-@@ -323,3 +323,4 @@ ENTRY(sys_call_table)
- 	.long sys_signalfd
- 	.long sys_timerfd
- 	.long sys_eventfd
-+	.long sys_sns_is_trusted	/* 320 */
-diff --git a/include/asm-i386/unistd.h b/include/asm-i386/unistd.h
-index e84ace1..3f8df3e 100644
---- a/include/asm-i386/unistd.h
-+++ b/include/asm-i386/unistd.h
-@@ -329,10 +329,11 @@
- #define __NR_signalfd		321
- #define __NR_timerfd		322
- #define __NR_eventfd		323
-+#define __NR_sns_is_trusted	324
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 324
-+#define NR_syscalls 325
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/security/sns.c b/security/sns.c
-index 3192a90..1978f7c 100644
---- a/security/sns.c
-+++ b/security/sns.c
-@@ -112,3 +112,18 @@ int sns_signature_valid(struct file *file)
- 	crypto_free_hash(tfm);
- 	return ret;
- }
-+
-+asmlinkage int sys_sns_is_trusted(pid_t p)
-+{
-+	struct task_struct *t;
-+	rcu_read_lock();
-+	t = find_task_by_pid(p);
-+	if (IS_ERR(t)) {
-+		rcu_read_unlock();
-+		return -EINVAL;
-+	}
-+	p = t->sns_valid_sig; /*locking needed*/
-+	rcu_read_unlock();
-+	return p;
-+}
-+EXPORT_SYMBOL_GPL(sys_sns_is_trusted);
--- 
-1.5.2.1
+There is no law that says you have to fix 100% of the warnings the script generates, 
+even if they are valid warnings.  You'd just better be ready to justify them is all. 
+  Your justification seems reasonable in this case -- it is worse to mix right and 
+wrong label indentation vs indenting wrongly but consistently.
+
+Indent consistently wrong and feel happy about it, just don't expect the style 
+checker to give you a free pass when you perpetuate somebody else's wrong.  If we 
+start down the path of bad coding style always being OK if there is already bad 
+coding style around it I think that is a slippery slope.  There should be some 
+friction when we perpetuate bad style so there is some incentive to fix the style for 
+future generations to be able to read our code better.
 
