@@ -1,109 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759153AbXFVQVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbXFVQXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759153AbXFVQVx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 12:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758131AbXFVQVq
+	id S1759327AbXFVQXO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758105AbXFVQXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 12:21:46 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:31257 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758105AbXFVQVq (ORCPT
+	Fri, 22 Jun 2007 12:23:00 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60945 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758043AbXFVQW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 12:21:46 -0400
-Date: Fri, 22 Jun 2007 18:21:42 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Re: SATA Harddisk speed drop of 100 MB/s
-Message-ID: <20070622162142.GA603@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <1182397012.2863.0.camel@laptopd505.fenrus.org>
+	Fri, 22 Jun 2007 12:22:59 -0400
+Date: Fri, 22 Jun 2007 09:22:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Cedric Le Goater <clg@fr.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Herbert Poetzl <herbert@13thfloor.at>,
+       Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [PATCH -mm] add a kmem_cache for nsproxy objects
+In-Reply-To: <467B7EB6.4050207@fr.ibm.com>
+Message-ID: <Pine.LNX.4.64.0706220920190.16635@schroedinger.engr.sgi.com>
+References: <4676F0B9.3080408@fr.ibm.com> <20070619113501.a88bba50.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0706191222420.7008@schroedinger.engr.sgi.com>
+ <467B7EB6.4050207@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1182397012.2863.0.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 08:36:52PM -0700, Arjan van de Ven wrote:
-> also do a 
-> 
-> echo 60 > /proc/sys/vm/dirty_ratio
-> 
-> first to see if that helps
+On Fri, 22 Jun 2007, Cedric Le Goater wrote:
 
-That makes no difference.
+> the macro sets the align parameter to "__alignof__(struct)" by default. 
+> is that something we want to do all the time ? if so, why not change 
+> kmem_cache_create() directly ?
 
-It took a while before I replied - because I first want to do a bisect
-to find a version closer to the problem.
+Its a safety net. If there is some reason that the structure needs a 
+larger alignment than ARCH_KMALLOC_MINALIGN then that alignment will be 
+applied.
+ 
+> Most of the complexity is in flags. I did a grep and picked what i thought 
+> was the most aggressive. The macro would probably be more useful if we could 
+> identify by it's name in which context it can be used. 
 
-So far I found out that it's RAID only.
+What context are you thinking about and how would it influence 
+the macro?
 
-I have four disks:
-
-Three times a western digital Raptor 10k rpm:
-
-ATA device, with non-removable media
-        Model Number:       WDC WD740ADFD-00NLR1
-        Firmware Revision:  20.07P20
-
-And one Seagate Barracuda 7200 rpm:
-
-ATA device, with non-removable media
-        Model Number:       ST3320620AS
-        Firmware Revision:  3.AAE
-
-The Raptors are in RAID5.
-
-hdparm -tT gives me always > 4 GB/s cached reads, for example:
-
- Timing cached reads:   8166 MB in  2.00 seconds = 4086.82 MB/sec
-
-and the buffered disk reads do not significantly vary when
-reading the devices directly (/dev/sda, /dev/sdb, /dev/sdc for
-the Raptors and /dev/sdd for the Barracuda):
-
-/dev/sda etc: Around 67 MB/sec
-/dev/sdd    : Around 75 MB/sec   (so much for 10k rpm ...)
-
-These numbers are weird in itself (the 67 should have been 75,
-and the 75 should have been 54) - but at least they are constant.
-
-What DOES *signficantly* change as function of kernel revision
-is the buffered disk read with hdparm -tT /dev/md2
-
-The normal speed I get is > 160, often 165 MB/sec. But with
-kernel revisions over a certain version that drops to around
-67 MB/sec - and at one point I even observed a drop in speed
-every time I repeated the measurement until the speed was
-around 30 MB/s !
-
-At the moment I am (still) doing the bisect; I had some problems
-compiling a pristine 2.6.18 and some problems with the config
-(that differs significantly between 2.6.18 and 2.6.22) as well
-as the problem that the kernel simply didn't compile for a large
-range of revisions needed for the bisect (I needed to export
-current_is_keventd with this patch:
-
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index c525731..012e11b 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -654,6 +654,7 @@ int current_is_keventd(void)
-        return ret;
-
- }
-+EXPORT_SYMBOL_GPL(current_is_keventd);
-
- /* Take the work from this (downed) CPU. */
- static void take_over_work(struct workqueue_struct *wq, unsigned int cpu)
-
-)
-
-I'll report back when I'm done with the bisect :)
-
--- 
-Carlo Wood <carlo@alinoe.com>
