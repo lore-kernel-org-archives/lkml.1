@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbXFVLZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXFVL0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbXFVLZQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 07:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbXFVLZE
+	id S1755221AbXFVL0W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 07:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXFVL0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 07:25:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59166 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbXFVLZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 07:25:03 -0400
-Date: Fri, 22 Jun 2007 13:23:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070622112335.GC23139@elte.hu>
-References: <20070622040014.234651401@goodmis.org> <20070622070948.GA21291@infradead.org> <20070622075135.GA11695@elte.hu> <20070622075304.GA22682@infradead.org>
-MIME-Version: 1.0
+	Fri, 22 Jun 2007 07:26:13 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:2549 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbXFVL0M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 07:26:12 -0400
+Date: Fri, 22 Jun 2007 15:26:26 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: rth@twiddle.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Dustin Marquess <jailbird@alcatraz.fdf.net>
+Subject: Re: [patch] alpha: fix alignment problem in csum_ipv6_magic()
+Message-ID: <20070622152626.A9096@jurassic.park.msu.ru>
+References: <20070617012020.A7626@jurassic.park.msu.ru> <20070621163501.00903134.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070622075304.GA22682@infradead.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.2.5i
+In-Reply-To: <20070621163501.00903134.akpm@linux-foundation.org>; from akpm@linux-foundation.org on Thu, Jun 21, 2007 at 04:35:01PM -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 21, 2007 at 04:35:01PM -0700, Andrew Morton wrote:
+> In http://bugzilla.kernel.org/show_bug.cgi?id=8659, Dustin is reporting
+> that this patch broke tcp-on-ipv6.
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+Oops. Two instructions operating on the 'len' arg ($18) got swapped...
+This should fix ev6 version, ev5 one seems to be ok.
 
-> > which actual in-kernel tasklets do you have in mind? I'm not aware 
-> > of any in performance critical code. (now that both the RCU and the 
-> > sched tasklet has been fixed.)
-> 
-> the one in megaraid_sas for example is in a performance-critical path 
-> and was put in quite recently.
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
-ah, i thought core kernel. I took a look, and i doubt that doing the 
-megaraid SAS thing over a kernel thread would show up on the radar. If 
-it does then it should probably be done in its separate per-CPU 
-workqueue anyway, not in a globally scheduled thing like a tasklet. 
-Tasklets just dont scale.
+Ivan.
 
-	Ingo
+--- 2.6.22-rc4-mm2/arch/alpha/lib/ev6-csum_ipv6_magic.S	Fri Jun 22 15:02:23 2007
++++ linux/arch/alpha/lib/ev6-csum_ipv6_magic.S	Fri Jun 22 15:05:38 2007
+@@ -76,18 +76,18 @@ csum_ipv6_magic:
+ 
+ 	cmoveq	$6,$31,$22	# E : src aligned?
+ 	ldq_u	$23,15($17)	# L : Latency: 3
+-	or	$18,$4,$18	# E : 000000CCDDAABBCC
+-	extql	$1,$6,$1	# U : U L L U :
++	inswl	$18,3,$18	# U : 000000CCDD000000
++	addl	$19,$7,$19	# E : U L U L : <sign bits>bbaabb00
+ 
+ 	or	$0,$22,$0	# E : 1st src word complete
+-	extqh	$5,$6,$5	# U :
+-	addl	$19,$7,$19	# E : <sign bits>bbaabb00
+-	and	$17,7,$6	# E : L U L U : dst misalignment
++	extql	$1,$6,$1	# U :
++	or	$18,$4,$18	# E : 000000CCDDAABBCC
++	extqh	$5,$6,$5	# U : L U L U
+ 
+-	inswl	$18,3,$18	# U : 000000CCDD000000
+-	or	$1,$5,$1	# E : 2nd src word complete
++	and	$17,7,$6	# E : dst misalignment
+ 	extql	$2,$6,$2	# U :
+-	extqh	$3,$6,$22	# U : U L U U :
++	or	$1,$5,$1	# E : 2nd src word complete
++	extqh	$3,$6,$22	# U : L U L U :
+ 
+ 	cmoveq	$6,$31,$22	# E : dst aligned?
+ 	extql	$3,$6,$3	# U :
