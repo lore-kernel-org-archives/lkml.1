@@ -1,80 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbXFVP4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758900AbXFVQAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758577AbXFVP4R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 11:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757312AbXFVP4D
+	id S1758900AbXFVQAG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 12:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbXFVP7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 11:56:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:52334 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757348AbXFVP4B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 11:56:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=CwsgMOl96bIbWd50/44NBgNZEzv3hwAX6VbxtxJeoFXyQsygoLw8u2UDeSF2h1IOmfiQCqxf7YFf2W5GKKvXJMRq1BKej5WundvZDS3syHgzHIPZSYZRMTeTMWRzU1XmV9JGsom6y6w5131jWU3F3eREE4ope94R4FpOrzAq4L8=
-Date: Fri, 22 Jun 2007 19:54:09 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] bracing the loop in kernel/softirq.c
-Message-ID: <20070622155409.GA8283@cvg>
-References: <20070620175737.GA6523@cvg> <9a8748490706201401m36b1e917g5a600951d48e4cf8@mail.gmail.com> <467AC8E9.1000605@goop.org>
+	Fri, 22 Jun 2007 11:59:53 -0400
+Received: from mail.tmr.com ([64.65.253.246]:39297 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757662AbXFVP7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 11:59:52 -0400
+Message-ID: <467BF233.7020700@tmr.com>
+Date: Fri, 22 Jun 2007 12:00:51 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <467AC8E9.1000605@goop.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: David Greaves <david@dgreaves.com>
+CC: david@lang.hm, Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: limits on raid
+References: <Pine.LNX.4.64.0706141957020.29630@asgard.lang.hm> <18034.479.256870.600360@notabene.brown> <Pine.LNX.4.64.0706142034400.29630@asgard.lang.hm> <18034.3676.477575.490448@notabene.brown> <46756BE2.7010401@tmr.com> <467B03C1.50809@tmr.com> <18043.13037.40956.366334@notabene.brown> <467B840F.4080402@dgreaves.com> <Pine.LNX.4.64.0706220235590.9657@asgard.lang.hm> <467BC306.9010008@dgreaves.com>
+In-Reply-To: <467BC306.9010008@dgreaves.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jeremy Fitzhardinge - Thu, Jun 21, 2007 at 11:52:25AM -0700]
-> Jesper Juhl wrote:
->> On 20/06/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
->>> This trivial patch adds braces over a one-line
->>> loop. That makes code...well... little bit
->>> convenient for (possible) further modifications.
+David Greaves wrote:
+> david@lang.hm wrote:
+>> On Fri, 22 Jun 2007, David Greaves wrote:
+>>
+>>> That's not a bad thing - until you look at the complexity it brings 
+>>> - and then consider the impact and exceptions when you do, eg 
+>>> hardware acceleration? md information fed up to the fs layer for 
+>>> xfs? simple long term maintenance?
 >>>
->> That's generally not done.
+>>> Often these problems are well worth the benefits of the feature.
+>>>
+>>> I _wonder_ if this is one where the right thing is to "just say no" :)
+>> so for several reasons I don't see this as something that's deserving 
+>> of an atomatic 'no'
 >>
->> It's even in Documentation/CodingStyle :
->>
->> "
->> Do not unnecessarily use braces where a single statement will do.
->>
->> if (condition)
->>        action();
->> "
+>> David Lang
 >
-> I tend to see "do {} while()" as an exception to this.  I find the 
-> construct is sufficiently rare that it helps to emphasize it a bit.  For 
-> example if I'm scanning code and I see:
+> Err, re-read it, I hope you'll see that I agree with you - I actually 
+> just meant the --assume-clean workaround stuff :)
 >
-> 	while (foo != NULL);
->
-> in the corner of my eye, I'm going to think "huh?".  But:
->
-> 	} while (foo != NULL);
->
-> visually "parses" properly, regardless of how near or far the corresponding 
-> "do  {" is.
->
-> (And of course, its consistent with the super extra special while-while 
-> loop:
->
-> 	while (foo != NULL) {
-> 		foo = bar();
-> 		piffle();
-> 	} while (foo != NULL);	// make sure we loop properly
->
-> ;)
->
->    J
->
+> If you end up 'fiddling' in md because someone specified 
+> --assume-clean on a raid5 [in this case just to save a few minutes 
+> *testing time* on system with a heavily choked bus!] then that adds 
+> *even more* complexity and exception cases into all the stuff you 
+> described.
 
-Btw, Jeremy, could you please Ack it then and I'll resend the patch to Andrew ;)
+A "few minutes?" Are you reading the times people are seeing with 
+multi-TB arrays? Let's see, 5TB at a rebuild rate of 20MB... three days. 
+And as soon as you believe that the array is actually "usable" you cut 
+that rebuild rate, perhaps in half, and get dog-slow performance from 
+the array. It's usable in the sense that reads and writes work, but for 
+useful work it's pretty painful. You either fail to understand the 
+magnitude of the problem or wish to trivialize it for some reason.
 
-		Cyrill
+By delaying parity computation until the first write to a stripe only 
+the growth of a filesystem is slowed, and all data are protected without 
+waiting for the lengthly check. The rebuild speed can be set very low, 
+because on-demand rebuild will do most of the work.
+>
+> I'm very much for the fs layer reading the lower block structure so I 
+> don't have to fiddle with arcane tuning parameters - yes, *please* 
+> help make xfs self-tuning!
+>
+> Keeping life as straightforward as possible low down makes the upwards 
+> interface more manageable and that goal more realistic... 
+
+Those two paragraphs are mutually exclusive. The fs can be simple 
+because it rests on a simple device, even if the "simple device" is 
+provided by LVM or md. And LVM and md can stay simple because they rest 
+on simple devices, even if they are provided by PATA, SATA, nbd, etc. 
+Independent layers make each layer more robust. If you want to 
+compromise the layer separation, some approach like ZFS with full 
+integration would seem to be promising. Note that layers allow 
+specialized features at each point, trading integration for flexibility.
+
+My feeling is that full integration and independent layers each have 
+benefits, as you connect the layers to expose operational details you 
+need to handle changes in those details, which would seem to make layers 
+more complex. What I'm looking for here is better performance in one 
+particular layer, the md RAID5 layer. I like to avoid unnecessary 
+complexity, but I feel that the current performance suggests room for 
+improvement.
+
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
