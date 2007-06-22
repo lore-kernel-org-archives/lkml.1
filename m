@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbXFVERv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbXFVEUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbXFVERv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXFVERn
+	id S1752709AbXFVEUV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 00:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXFVEUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:17:43 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:42218 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbXFVERm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:17:42 -0400
-X-IronPort-AV: i="4.16,449,1175486400"; 
-   d="scan'208"; a="33059324:sNHT27692679"
-Subject: RE: [PATCH] Chinese translation of Documentation/HOWTO
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: Rob Landley <rob@landley.net>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
-       bryan.wu@analog.com, TripleX Chung <xxx.phy@gmail.com>,
-       Maggie Chen <chenqi@beyondsoft.com>, torvalds@linux-foundation.org
-In-Reply-To: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net>
-References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Fri, 22 Jun 2007 12:22:08 +0800
-Message-Id: <1182486128.3185.9.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-X-OriginalArrivalTime: 22 Jun 2007 04:17:41.0376 (UTC) FILETIME=[466FC000:01C7B484]
+	Fri, 22 Jun 2007 00:20:09 -0400
+Received: from THUNK.ORG ([69.25.196.29]:50999 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750881AbXFVEUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 00:20:07 -0400
+Date: Fri, 22 Jun 2007 00:19:49 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Alexandre Oliva <aoliva@redhat.com>, davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Message-ID: <20070622041949.GA15625@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Al Viro <viro@ftp.linux.org.uk>,
+	Alexandre Oliva <aoliva@redhat.com>, davids@webmaster.com,
+	"Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622013417.GT21478@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622013417.GT21478@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 11:58 +0800, Li Yang-r58472 wrote:
-> > -----Original Message-----
-> > From: Rob Landley [mailto:rob@landley.net]
-> > Sent: Friday, June 22, 2007 10:49 AM
-> > 
-> > On Thursday 21 June 2007 10:40:17 Li Yang wrote:
-> > > This is a Chinese translated version of Documentation/HOWTO.
-> Currently
-> > > Chinese involvement in Linux kernel is very low, especially
-> comparing to
-> > > its largest population base.  Language could be the main obstacle.
-> Hope
-> > > this document will help more Chinese to contribute to Linux kernel.
-> > 
-> > I'm putting together a kernel documentation directory at
-> http://kernel.org/doc
-> > and I could easily add translations in there.  I just don't know if
-> this is a
-> > good idea.
-> > 
-> > The problem is, the submission of patches happens on the various
-> kernel.org
-> > mailing lists, which are all in English.  Kernel development is done
-> in a
-> > single common language: English.  (If you'd like to argue for it to be
-> done
-> > in another language, please make the proposal in Linus's native
-> Swedish.)
-> > 
-> > Setting aside for the moment version skew and coverage issues when
-> translating
-> > Documentation, which aren't really serious blocking issues, my
-> question is
-> > this:  If developers aren't fluent enough with English to follow the
-> > documentation, how can they follow any of the technical discussions
-> necessary
-> > to merge their patches back into the mainstream kernel?  Doesn't this
-> > encourage the creation of patches that can't easily be merged back
-> into the
-> > kernel?
-> 
-> So as I argued in a previous email, non-native English speakers tend to
-> be more confused by the policies and processes.  I also don't think it's
-> necessary to translate the technical documents.  To be a software
-> developer, one has to be educated or experienced in technical terms.
-> Technical discussion can be done without too much requirement to grammar
-> and emotional expressing.  The translated document of policies and
-> processes will help these people to understand the process better and go
-> smoother in the process.
-> 
-> - Leo
+On Fri, Jun 22, 2007 at 02:34:17AM +0100, Al Viro wrote:
+> What really gets me is that you know it.  And you know that just about
+> everyone here knows it.  Yet you keep playing with rather pathetic
+> attempts of innuendo and misdirection, when it's bloody obvious that
+> you won't even get a PR win out of the entire mess you've been sustaining
+> for about a week already (seriously, count postings in these threads).
 
-Leo is right. Policies and processes should be clear for all developer
-including non-native English speakers, while other technical documents
-do not need to be translated.
+I'm not sure Alexandre realizes it, but by his carrying on and on and
+on with his really poorly reasoned arguments (I may disagree with
+Eben's positions, but he's a much more reasonable debator and advocate
+for the FSF's positions), Mr. Oliva, Latin America Board Member and
+Free Software Evangelist, has probably made it made it much more
+*unlikely* that the Linux kernel will ever go GPLv3.
 
-After I read the translations, I also found something I missed before.
+About a week and half ago, Linus was saying he was a pragmatist and if
+there was a good enough reason (such as if Solaris adopting GPLv3 and
+there being aufficiently interesting technology that it would be worth
+the code exchange), there was a chance that he might be for it.  But
+Alexandre has been so annoying and so obtuse, that people's positions
+have hardened to the point where I doubt kernel developers would be
+willing to go for at this point.  Something that went from being
+merely extremely unlikely has become "practically impossible".
 
-Thanks for the work
-- Bryan Wu
+> The first law of holes: when you are in one, stop digging...
+
+Indeed.
+
+Another law of negotiations --- don't goad people into hardening their
+positions; it helps neither you nor your interests.
+
+					- Ted
