@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbXFVRPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbXFVRRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758506AbXFVRPn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 13:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbXFVRPX
+	id S1759819AbXFVRRH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 13:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbXFVRQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 13:15:23 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:47012 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753784AbXFVRPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 13:15:22 -0400
-Date: Fri, 22 Jun 2007 19:14:30 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: anemo@mba.ocn.ne.jp, linux-kernel@vger.kernel.org, ab@mycable.de,
-       mgreer@mvista.com, khali@linux-fr.org, david-b@pacbell.net,
-       akpm@linux-foundation.org
-Subject: Re: [rtc-linux] [PATCH 1/2] rtc: add rtc-m41t80 driver (take 2)
-Message-ID: <20070622191430.7283ed57@inspiron>
-In-Reply-To: <20070622.221320.25914626.anemo@mba.ocn.ne.jp>
-References: <20070622.221320.25914626.anemo@mba.ocn.ne.jp>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 13:16:56 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:19389 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbXFVRQz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 13:16:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BO3lOxO+B072nBHsJv39mDV7Gmcz7pH4LWp8azfg+/YoTe/nIC/coI7XlHprWwcoS6YMQPy0ic4VjK3XBsEXcNn6L+i95oLXE2zYhx6km+SWsIpJ8tk1DEVSmQeWAcK2ZXtUyC3mkjdOoKik3IRCYc9HyStRxo3AAwz2eMJZgv4=
+Message-ID: <2e6659dd0706221016m1b9cc7efl501641940a39c3a9@mail.gmail.com>
+Date: Fri, 22 Jun 2007 14:16:55 -0300
+From: "Tomas Neme" <lacrymology@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+Cc: "Li Yang-r58472" <LeoLi@freescale.com>, "Rob Landley" <rob@landley.net>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       bryan.wu@analog.com, "TripleX Chung" <xxx.phy@gmail.com>,
+       "Maggie Chen" <chenqi@beyondsoft.com>
+In-Reply-To: <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net>
+	 <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jun 2007 22:13:20 +0900 (JST)
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+A little issue about "when is translation good"
 
-> This is a new-style i2c driver for ST M41T80 series RTC chip, derived
-> from works by Alexander Bigga <ab@mycable.de> who wrote the original
-> rtc-m41txx.c based on drivers/i2c/chips/m41t00.c driver.
-> 
-> This driver supports M41T8[0-4] and M41ST8[457].  The old m41t00
-> driver supports M41T00, M41T81 and M41T85(M41ST85).  While the M41T00
-> chip is now supported by rtc-ds1307 driver, this driver does not
-> include support for the chip.
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> Signed-off-by: Alexander Bigga <ab@mycable.de>
-> Acked-by: Mark A. Greer <mgreer@mvista.com>
+I usually tell people to use vimtutor's example to set up syntax
+highlighting in vim. I usually only install OSs in english because
+translations tend to be poor and hard to comprehend.
 
- Acked-by: Alessandro Zummo <a.zummo@towertech.it>
+Now, I'm from argentina, and I live with a lingüist. He doesn't handle
+english very well, and he wanted to get rid of Windows, so we
+installed ubuntu, Locale:SP_ARG.
+
+vim is in spanish, and so is vimtutor. vimtutor's spanish translation
+doesn't have anything on syntax highlighting: the translation is poor.
+
+my point: IMHO it's better to have no translation than a poor one
+
+T
 
 -- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+|_|0|_|
+|_|_|0|
+|0|0|0|
