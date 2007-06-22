@@ -1,90 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbXFVSqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbXFVSvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761025AbXFVSqB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 14:46:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759848AbXFVSpw
+	id S1760580AbXFVSvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 14:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759956AbXFVSvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 14:45:52 -0400
-Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:28956 "HELO
-	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753739AbXFVSpw (ORCPT
+	Fri, 22 Jun 2007 14:51:05 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54151 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759908AbXFVSvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 14:45:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=aFS7oZ0DNq+7gHo1ERIcAkJKs2kqd7Zh8taOdmUFwsh3R4ahYV5RWeKawGjLth31COIAcnwm+vFgOCWbTtcCPJMc7lB9DnC8iqtrZ722rc95tWp2Rnn5imHdo8wQRiaW1EnWL7ZrkrpQVLxTuey3AGYuvj7SVSGgwvFCJR1a3k0=  ;
-X-YMail-OSG: WE9vIHEVM1lFroHPFMxeiwAR48STHTbcitgW.kh5nYpsGjF4z9Njh.DPOqD9szgmBLmLF_vyCQ--
-From: David Brownell <david-b@pacbell.net>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [rtc-linux] Re: rtc_cmos: error after first write to wakealarm
-Date: Fri, 22 Jun 2007 11:45:52 -0700
-User-Agent: KMail/1.9.6
-Cc: Tino Keitel <tino.keitel@gmx.de>, rtc-linux@googlegroups.com,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       linux-kernel@vger.kernel.org
-References: <20070615063308.GA18089@dose.home.local> <20070619172429.GA30990@dose.home.local> <20070622193431.71bed8b5@inspiron>
-In-Reply-To: <20070622193431.71bed8b5@inspiron>
+	Fri, 22 Jun 2007 14:51:04 -0400
+Date: Fri, 22 Jun 2007 11:51:02 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706221143190.17958@schroedinger.engr.sgi.com>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
+ <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706221040310.17139@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706221145.53157.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 June 2007, Alessandro Zummo wrote:
-> On Tue, 19 Jun 2007 19:24:29 +0200
-> Tino Keitel <tino.keitel@gmx.de> wrote:
-> 
-> > > > Where is the documentation that describes that I have to disable it
-> > > > first, and how to do this? A migration document for
-> > > > /proc/acpi/alarm users would be nice, too.
-> > > 
-> > >  Well, I guess there is no documentation. Maybe we could add
-> > >  a dev_warn with an explicit message.
-> > 
-> > Isn't it somewhat ridiculous to plan the removal of a feature for
-> > several months, and then replace it with something that behaves
-> > differently without any documentation?
+On Fri, 22 Jun 2007, Hugh Dickins wrote:
 
-It's got as much documentation in the kernel tree as that
-old /proc/acpi/alarm thing.  More, in fact, since the GIT
-comment for the putback creating /sys/rtc/.../wakealarm
-files has lots of info about how to use it.
+> I'm quite happy with this approach for 2.6.23-rc, along with your ARM
+> dma_map patch which (if I understood aright) rmk approved.  Except,
+> haven't you misplaced that VM_BUG_ON between an if and its else?
 
-But sure, having documentation for the rtc sysfs interface
-would be a Fine Thing.  It should cover the other values
-too, not just that one attribute.
+Right.
+
+> And I'd much prefer you to make it an outright BUG_ON, because
+> many testers have those VM_BUG_ONs configured out.
+
+Thought about it but doing so would create quite a load of BUG_ONs in the 
+VM given the frequent use of that particular inline function. And AFAIK
+we are only aware of one other potential call site that could cause 
+trouble. Many arches have run SLUB now for awhile and would certainly have 
+shown issues if they would do strange things with slab allocs. Even with 
+SLAB they would have to be very careful in order to make this work. So I 
+think its rather unlikely that this is going to be triggered. Its 
+primarily useful for debugging if strange things start to happen.
+The VM_BUG_ON could stay there for good to make sure development does not
+result in similar issues in the future.
+
+Fixed up patch:
 
 
-> > I still wonder how 'cat /sys/class/rtc/rtcX/wakealarm' is expected to
-> > behave. With 2.6.22-rc5, I get this:
-> > 
-> > $ echo 1182351177 > /sys/class/rtc/rtc0/wakealarm 
-> > $ cat /sys/class/rtc/rtc0/wakealarm
-> > 2051644873
-> > 
-> > There seems to be a constant difference of 869984896 seconds. Is this a
-> > bug?
 
-What RTC driver is that using?
 
-One theory:  it's an RTC that doesn't support all the fields,
-so its driver is returning "-1" in fields like "year" or "month".
+Add VM_BUG_ON in case someone uses page_mapping on a slab page
 
-Right now there's no code forcing rtc_read_alarm() to return
-values for which rtc_valid_tm(&alarm->time), and bogus values
-in wakealarm would be a symptom.  I suspect most of the systems
-I tested the "wakealarm" attribute with have RTC alarms that
-don't have those particular deficiencies.
+Detect slab objects being passed to the page oriented functions of the VM.
 
-- Dave
+It is not sufficient to simply return NULL because the functions calling
+page_mapping may depend on other items of the page_struct also to be setup
+properly. Moreover slab object may not be properly aligned. The page oriented
+functions of the VM expect to operate on page aligned, page sized objects.
+Operations on object straddling page boundaries may only affect the objects
+partially which may lead to surprising results.
 
-> 
->  I'll have to check that. Sorry for the delay, i've been a bit busy.
-> 
-> 
-> -- 
-> 
+It is better to detect eventually remaining uses and eliminate them.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ include/linux/mm.h |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h	2007-06-22 10:33:27.000000000 -0700
++++ linux-2.6/include/linux/mm.h	2007-06-22 11:44:10.000000000 -0700
+@@ -601,12 +601,9 @@ static inline struct address_space *page
+ {
+ 	struct address_space *mapping = page->mapping;
+ 
++	VM_BUG_ON(PageSlab(page));
+ 	if (unlikely(PageSwapCache(page)))
+ 		mapping = &swapper_space;
+-#ifdef CONFIG_SLUB
+-	else if (unlikely(PageSlab(page)))
+-		mapping = NULL;
+-#endif
+ 	else if (unlikely((unsigned long)mapping & PAGE_MAPPING_ANON))
+ 		mapping = NULL;
+ 	return mapping;
