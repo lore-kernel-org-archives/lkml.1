@@ -1,92 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754941AbXFVUUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbXFVUVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754941AbXFVUUu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 16:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXFVUUn
+	id S1755476AbXFVUVx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 16:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXFVUVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 16:20:43 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:52925 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751459AbXFVUUm (ORCPT
+	Fri, 22 Jun 2007 16:21:45 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:6633 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbXFVUVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 16:20:42 -0400
-Date: Fri, 22 Jun 2007 13:20:41 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Roman Zippel <zippel@linux-m68k.org>,
-       Linux and Kernel Video <video4linux-list@redhat.com>,
-       linux-usb-devel@lists.sourceforge.net,
-       =?X-UNKNOWN?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       Oliver Neukum <oneukum@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Luca Risolia <luca.risolia@studio.unibo.it>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
- [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in	zc0301_core.c
-In-Reply-To: <1182518566.14289.20.camel@gaivota>
-Message-ID: <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net>
-References: <200706211117.55908.toralf.foerster@gmx.de>
- <200706211231.53898.luca.risolia@studio.unibo.it> <200706211326.45031.toralf.foerster@gmx.de>
- <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
+	Fri, 22 Jun 2007 16:21:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WahsHRQ2ey1JuVP58LqbOZuuhdH2mZvnGiwcdLCf8172725hK5aQP7JLW0MljjqHH9LHF3RvxnoLawf4I3jTbMCwwSR6mPcr1lAaHnfUzXjQixCkuH1TiwC6cnoouOcdnA3zoBqzbl8E7n9QD5CCwUeMUuq0Z2ima1IKMan4y5k=
+Message-ID: <2e6659dd0706221321x536058c4g343c3b43dbf2e29e@mail.gmail.com>
+Date: Fri, 22 Jun 2007 17:21:44 -0300
+From: "Tomas Neme" <lacrymology@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+In-Reply-To: <orps3nbwkl.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <4679557C.5080907@iders.ca>
+	 <20070620175627.319a6c55@the-village.bc.nu>
+	 <46797C52.4020907@iders.ca> <467A99D6.6000605@iders.ca>
+	 <ory7idjdhn.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <467ADC8A.5080401@iders.ca>
+	 <ormyysj1yt.fsf@oliva.athome.lsd.ic.unicamp.br>
+	 <2e6659dd0706220945g3592c558h2fe3d56c4b5015ff@mail.gmail.com>
+	 <orps3nbwkl.fsf@oliva.athome.lsd.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jun 2007, Mauro Carvalho Chehab wrote:
-> Hi Roman,
->
-> Several instabilities on Kconfig started to happen after replacing
-> Kconfig menus to use menuconfig, as this one, reported by Oliver:
+> In the sense that he can decide to remove all contributions from
+> dissenting authors, yes, he does.  But he can't impose his more lax
+> interpretation upon other authors.  Under copyright, it's the more
 
-This is the same problem I explained before:
-http://www.linuxtv.org/pipermail/v4l-dvb-maintainer/2007-May/004121.html
+yes, I saw my argument going weak as I wrote it, but what I said later:
 
-What you have is tristate depends on bool depends on tristate.  The bool
-between the two tristates "promotes" the first tristate from m to y.
+> So if you own a part of the kernel, then you can pursuit TiVo on your
+> own, if they did direct use of that part especifically and break (in
+> your opinion) what you feel GPLv2 means. You can form the CATV2
+> (CodersAgainstTiVo v2) and try to get TiVo to stop using the Linux
+> Kernel for their product (because, believe me, they WON'T release the
+> keys). Yeay, we lost Tivo's improvements on the kernel, and the
+> posibility of having a working kernel if anyone feels like
+> back-ingeneering TiVo for their own amusement.
 
-> In this specific case, all V4L USB drivers depends on V4L_USB_DRIVERS,
-> that depends, in turn, on USB. So, if USB is not selected,
-> V4L_USB_DRIVERS should be unselected, unselecting zc0301.
+is still right. What I meant, at least by the end of that email, was
+that he has the last word on trying to stop TiVo from using The Linux
+Kernel. Each author can still go and stop them from using his part,
+and the derivative work that is The Linux Kernel.
 
-If you set USB=n, then you can not turn on V4L_USB_DRIVERS and in turn
-USB_ZC0301 can't be turned on.  That does work correctly.
+But that brings another question: what if TiVo decided to remove all
+code from the complaining parts and rewrite them? that wouldn't be The
+Linux Kernel anymore, but it would be a derivative work of all the
+parts that don't disagree with Tivoization, but is that legal?
 
-The problem is that if USB=m, then because V4L_USB_DRIVERS is a bool, it is
-possible to set V4L_USB_DRIVERS=y.  Now you can set USB_ZC0301=y, because
-USB_ZC0301 only depends on V4L_USB_DRIVERS and that is 'y'.  So you end up
-with USB=m and USB_ZC0301=y, which shouldn't be allowed.
-
-There are two easy solutions to this that I can think of.  First,
-just make the menuconfig a tristate:
-diff -r dfbe7cc4e21e drivers/media/video/Kconfig
---- a/drivers/media/video/Kconfig       Thu Jun 21 16:02:50 2007 -0700
-+++ b/drivers/media/video/Kconfig       Fri Jun 22 13:14:29 2007 -0700
-@@ -687,7 +687,7 @@ config VIDEO_CAFE_CCIC
- #
-
- menuconfig V4L_USB_DRIVERS
--       bool "V4L USB devices"
-+       tristate "V4L USB devices"
-        depends on USB
-        default y
-
-Now the menuconfig entry will be a tristate, which seems kind of odd.  If
-USB=m, then you won't be able to set V4L_USB_DRIVERS to 'y', only to 'n' or
-'m', and in turn none of the USB devices can be set to 'y'.
-
-Or another way, add the dependencies of the menuconfig to the if statement:
-diff -r dfbe7cc4e21e drivers/media/video/Kconfig
---- a/drivers/media/video/Kconfig       Thu Jun 21 16:02:50 2007 -0700
-+++ b/drivers/media/video/Kconfig       Fri Jun 22 13:10:43 2007 -0700
-@@ -691,7 +691,7 @@ menuconfig V4L_USB_DRIVERS
-        depends on USB
-        default y
-
--if V4L_USB_DRIVERS
-+if V4L_USB_DRIVERS && USB
-
- source "drivers/media/video/pvrusb2/Kconfig"
-
-Now all the usb drivers will gain USB as a dependency directly and can't be
-set to something higher than USB.
+-- 
+|_|0|_|
+|_|_|0|
+|0|0|0|
