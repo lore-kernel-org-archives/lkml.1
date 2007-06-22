@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbXFVNSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750936AbXFVNT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756917AbXFVNSh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 09:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbXFVNS2
+	id S1750936AbXFVNT5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 09:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbXFVNTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 09:18:28 -0400
-Received: from mail.tpi.com ([198.107.51.143]:2396 "EHLO mail.tpi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbXFVNS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 09:18:27 -0400
-Message-ID: <467BCC3F.4080405@canonical.com>
-Date: Fri, 22 Jun 2007 07:18:55 -0600
-From: Tim Gardner <tim.gardner@canonical.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 22 Jun 2007 09:19:50 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:51824 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbXFVNTt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 09:19:49 -0400
+Message-ID: <467BCB99.8030003@gmail.com>
+Date: Fri, 22 Jun 2007 15:16:09 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Chuck Ebbert <cebbert@redhat.com>, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: ACPI Regression on Dell E1501
-References: <467AE7E1.4050805@canonical.com>  <467AF204.3060805@redhat.com> <1182462902.3316.105.camel@chaos> <467BC9F8.5000403@canonical.com>
-In-Reply-To: <467BC9F8.5000403@canonical.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Bart Trojanowski <bart@jukie.net>, linux-kernel@vger.kernel.org
+Subject: Re: how to tell linux (on x86) to ignore 1M or memory
+References: <20070419141804.GO32620@jukie.net> <46290DED.80500@gmail.com> <467B29DA.9040309@zytor.com>
+In-Reply-To: <467B29DA.9040309@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Gardner wrote:
-> Thomas Gleixner wrote:
->> On Thu, 2007-06-21 at 17:47 -0400, Chuck Ebbert wrote:
->>> On 06/21/2007 05:04 PM, Tim Gardner wrote:
->>>> Hi,
->>>>
->>>> Commit e9e2cdb412412326c4827fc78ba27f410d837e6e breaks boot on a Dell
->>>> E1501 unless 'acpi=off' is specified (also tried nolapic and nohpet but
->>>> it made no substantive difference). This laptop is an 'AMD Turion(tm) 64
->>>> X2 Mobile Technology TL-50' CPU, but its booting 32 bit SMP (make
->>>> defconfig). No kernel built after this commit works for this platform.
->>>>
->>>> There is no crash output, it just wedges after 'NET: Registered protocol
->>>> family 2'.
->>>>
->>>> How can I debug this problem?
->>> That'll be fun.
->>>
->>> That's:
->>>
->>> 	[PATCH] clockevents: i386 drivers
->>>
->>> [Author cc: added]
->> I'm going nuts on this. 
->>
->> Tim, 
->>
->> 1.) are you booting a 32bit or a 64 bit kernel ?
->>
->> 2.) Can you please try 2.6.22-rc5 + 
->> http://www.tglx.de/projects/hrtimers/2.6.22-rc5/patch-2.6.22-rc5-hrt1.patch
->> 	whether this makes any difference 
->>
->> Thanks,
->>
->> 	tglx
->>
-> 
-> Thomas,
-> 
-> Your patch (large though it is) did not make any outward difference. As
-> usual, adding 'acpi=off' allows it to boot.
-> 
-> rtg
+On 06/22/2007 03:46 AM, H. Peter Anvin wrote:
 
-Perhaps I was too hasty. Adding 'acpi=off' did not allow it to boot. The
-IDE drive was detected, but I did not see any partitions detected.
-Eventually it dropped to the initrd shell when it could not find a root
-filesystem. Anyways, this is likely a side issue.
+> Rene Herman wrote:
+>> On 04/19/2007 04:18 PM, Bart Trojanowski wrote:
+>>
+>>> I need to preserve some state from the bios before entering protected
+>>> mode.  For now I want to copy it into some ram accessible by
+>>> real-mode, say the last megabyte visible in real-mode.
+>>>
+>>> What's the easiest way to have linux ignore the megabyte starting at 15M?
+>> Note that real-mode can only access the first megabyte (*) and not the
+>> first 16. 16MB is the 16-bit protected mode (286) limit.
+>>
+> 
+> No, 16-bit protected mode (on 386+) is not limited to 16 MB.
 
-rtg
--- 
-Tim Gardner tim.gardner@ubuntu.com
+That all depends on one's definition of 16-bit protected mode. The "(286)" 
+after mine meant I was talking about the definition in which descriptors 
+have a 24-bit base (and 16-bit limit) field -- ie, real 286 and arguably, 
+"real 16-bit protected mode".
+
+Yes, I guess another valid definition is "code with a 16-bit address and 
+operand size default" on a 386+ and sure, that's just flipping a bit away.
+In the context of Linux I agree it's also a sensible definition, so, well, 
+whatever. The point was that real mode could only access the first 1M, not 
+the first 16... :-)
+
+Rene.
+
