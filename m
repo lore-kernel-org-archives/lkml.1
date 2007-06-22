@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbXFVWeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbXFVWjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbXFVWeG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 18:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXFVWdx
+	id S1751385AbXFVWjL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 18:39:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbXFVWi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 18:33:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41808 "EHLO gate.crashing.org"
+	Fri, 22 Jun 2007 18:38:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58164 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbXFVWdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 18:33:52 -0400
-Subject: Re: Fix signalfd interaction with thread-private signals
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Nicholas Miell <nmiell@comcast.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070622160405.GA189@tv-sign.ru>
-References: <20070620111415.GA91@tv-sign.ru>
-	 <alpine.LFD.0.98.0706201035030.3593@woody.linux-foundation.org>
-	 <20070621082509.GA88@tv-sign.ru>
-	 <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org>
-	 <20070621182340.GA92@tv-sign.ru>
-	 <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org>
-	 <20070621185856.GA153@tv-sign.ru>
-	 <1182468604.24740.22.camel@localhost.localdomain>
-	 <20070622084034.GA134@tv-sign.ru>
-	 <1182512473.24740.54.camel@localhost.localdomain>
-	 <20070622160405.GA189@tv-sign.ru>
-Content-Type: text/plain
-Date: Sat, 23 Jun 2007 08:33:38 +1000
-Message-Id: <1182551618.24740.79.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1751106AbXFVWiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 18:38:55 -0400
+Date: Sat, 23 Jun 2007 00:38:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 4/6] Make DRM use the tasklet is-sched API
+Message-ID: <20070622223805.GA31938@elte.hu>
+References: <20070622040014.234651401@goodmis.org> <20070622040137.104281523@goodmis.org> <1182494169.3228.11.camel@dhcp193.mvista.com> <1182494960.20203.34.camel@chaos> <1182496085.3228.26.camel@dhcp193.mvista.com> <1182514525.5493.4.camel@localhost.localdomain> <1182526602.3228.43.camel@dhcp193.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182526602.3228.43.camel@dhcp193.mvista.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> 
-> It does exactly so, please note this chunk
-> 
->  @@ -330,7 +339,7 @@ asmlinkage long sys_signalfd(int ufd, si
-> 
->                  init_waitqueue_head(&ctx->wqh);
->                  ctx->sigmask = sigmask;
->  -               ctx->tsk = current;
->  +               ctx->tsk = current->group_leader;
-> 
-> > It might well be that signalfd's concept of context is wrong in the
-> > first place and it should be attached to processes rather than threads
-> > and that made more explicit in the first place...
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-Yup, looks like I was looking at a wrong patch... I think it's the right
-thing to do indeed.
+> > The two patches have two different objectives, even though they are 
+> > related and currently on a 1 to 1 basis. The patches regardless, 
+> > should stay separate.
+> 
+> I'm not convinced yet .. One more stab?
 
-Ben.
+uhm, i dont think Steve needs to 'convince' you. You have been (once 
+again ...) given extensive explanations about a really trivial topic, 
+but you keep pushing and demanding very agressively without apparently 
+reading the answers. If you dont want to or cannot understand it's 
+really your problem to solve, not Steve's ...
 
-
+	Ingo
