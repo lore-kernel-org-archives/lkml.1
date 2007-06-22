@@ -1,94 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbXFVPwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbXFVP4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758779AbXFVPwT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 11:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757666AbXFVPwL
+	id S1758577AbXFVP4R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 11:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757312AbXFVP4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 11:52:11 -0400
-Received: from mail.screens.ru ([213.234.233.54]:51667 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757620AbXFVPwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 11:52:10 -0400
-Date: Fri, 22 Jun 2007 19:52:47 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Daniel Walker <dwalker@mvista.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 6/6] Convert tasklets to work queues
-Message-ID: <20070622155247.GA133@tv-sign.ru>
-References: <20070622040014.234651401@goodmis.org> <20070622040137.414439610@goodmis.org> <1182496008.3228.25.camel@dhcp193.mvista.com> <1182518958.5493.45.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Fri, 22 Jun 2007 11:56:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:52334 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757348AbXFVP4B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 11:56:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=CwsgMOl96bIbWd50/44NBgNZEzv3hwAX6VbxtxJeoFXyQsygoLw8u2UDeSF2h1IOmfiQCqxf7YFf2W5GKKvXJMRq1BKej5WundvZDS3syHgzHIPZSYZRMTeTMWRzU1XmV9JGsom6y6w5131jWU3F3eREE4ope94R4FpOrzAq4L8=
+Date: Fri, 22 Jun 2007 19:54:09 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] bracing the loop in kernel/softirq.c
+Message-ID: <20070622155409.GA8283@cvg>
+References: <20070620175737.GA6523@cvg> <9a8748490706201401m36b1e917g5a600951d48e4cf8@mail.gmail.com> <467AC8E9.1000605@goop.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1182518958.5493.45.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <467AC8E9.1000605@goop.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/22, Steven Rostedt wrote:
+[Jeremy Fitzhardinge - Thu, Jun 21, 2007 at 11:52:25AM -0700]
+> Jesper Juhl wrote:
+>> On 20/06/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>>> This trivial patch adds braces over a one-line
+>>> loop. That makes code...well... little bit
+>>> convenient for (possible) further modifications.
+>>>
+>> That's generally not done.
+>>
+>> It's even in Documentation/CodingStyle :
+>>
+>> "
+>> Do not unnecessarily use braces where a single statement will do.
+>>
+>> if (condition)
+>>        action();
+>> "
 >
-> > truct tasklet_struct, work);
-> > > +
-> > > +	if (unlikely(atomic_read(&t->count))) {
-> > > +		pr_debug("tasklet disabled %s %p\n", t->n, t);
-> > > +		set_bit(TASKLET_STATE_PENDING, &t->state);
-> > > +		smp_mb();
-> > > +		/* make sure we were not just enabled */
-> > > +		if (likely(atomic_read(&t->count)))
-> > > +			goto out;
-> > > +		clear_bit(TASKLET_STATE_PENDING, &t->state);
+> I tend to see "do {} while()" as an exception to this.  I find the 
+> construct is sufficiently rare that it helps to emphasize it a bit.  For 
+> example if I'm scanning code and I see:
+>
+> 	while (foo != NULL);
+>
+> in the corner of my eye, I'm going to think "huh?".  But:
+>
+> 	} while (foo != NULL);
+>
+> visually "parses" properly, regardless of how near or far the corresponding 
+> "do  {" is.
+>
+> (And of course, its consistent with the super extra special while-while 
+> loop:
+>
+> 	while (foo != NULL) {
+> 		foo = bar();
+> 		piffle();
+> 	} while (foo != NULL);	// make sure we loop properly
+>
+> ;)
+>
+>    J
+>
 
-Looking closer, I think this is not right, and the smp_mb__before_clear_bit()
-can't help.
+Btw, Jeremy, could you please Ack it then and I'll resend the patch to Andrew ;)
 
-
-				/* t->count == 1 */
-
-work_tasklet_exec()					tasklet_enable()
-
-...
-
-set_bit(TASKLET_STATE_PENDING);				atomic_dec_and_test(&t->count);
-
-
-				/* t->count == 0 */
-
-
-// False
-if (atomic_read(&t->count))
-	goto out;
-
-							// True
-							if (test_and_clear_bit(_PENDING))
-								tasklet_schedule();
-
-
-clear_bit(TASKLET_STATE_PENDING);
-
-execute t->func();
-
-
-So, t->func() will be executed twice because tasklet_enable() does
-tasklet_schedule().
-
-
-So I think we need a fix for work_tasklet_exec,
-
--		clear_bit(TASKLET_STATE_PENDING);
-+		if (!test_and_clear_bit(TASKLET_STATE_PENDING))
-			goto out;
-
-
-
-Steven, a very stupid suggestion, could you move the code for tasklet_enable()
-up, closer to tasklet_disable() ?
-
-Oleg.
+		Cyrill
 
