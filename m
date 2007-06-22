@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbXFVBGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbXFVBXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbXFVBGz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Jun 2007 21:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbXFVBGq
+	id S1752597AbXFVBXV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Jun 2007 21:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbXFVBXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Jun 2007 21:06:46 -0400
-Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:56932 "EHLO
-	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbXFVBGo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Jun 2007 21:06:44 -0400
-Date: Thu, 21 Jun 2007 21:06:40 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@localhost.localdomain
-To: Chris Mason <chris.mason@oracle.com>
-cc: Stephen Smalley <sds@tycho.nsa.gov>, Lars Marowsky-Bree <lmb@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
-       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-In-Reply-To: <20070622003436.GB6222@think.oraclecorp.com>
-Message-ID: <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
-References: <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com>
- <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz>
- <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz>
- <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
- <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
- <20070622003436.GB6222@think.oraclecorp.com>
+	Thu, 21 Jun 2007 21:23:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36872 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751088AbXFVBXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Jun 2007 21:23:11 -0400
+To: david@lang.hm
+Cc: Andrew McKay <amckay@iders.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Bernd Schmidt <bernds_cb1@t-online.de>,
+       Ingo Molnar <mingo@elte.hu>, Daniel Hazelton <dhazelton@enter.net>,
+       Greg KH <greg@kroah.com>, debian developer <debiandev@gmail.com>,
+       Tarkan Erimer <tarkan@netone.net.tr>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <or645qfn99.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<or3b0qgy8r.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<alpine.LFD.0.98.0706171630150.14121@woody.linux-foundation.org>
+	<orlkeidryp.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<4679557C.5080907@iders.ca>
+	<20070620175627.319a6c55@the-village.bc.nu>
+	<46797C52.4020907@iders.ca>
+	<orodjatk8x.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706201412340.30395@asgard.lang.hm>
+	<ord4zqrl0l.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706202227160.31603@asgard.lang.hm>
+	<orejk5rg76.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706202334420.31603@asgard.lang.hm>
+	<ory7idpykk.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706210031280.31603@asgard.lang.hm>
+	<ork5txksp0.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706211300200.31603@asgard.lang.hm>
+	<or8xadjbma.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706211344500.31603@asgard.lang.hm>
+	<orir9gj1ux.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706211719280.31603@asgard.lang.hm>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Thu, 21 Jun 2007 22:22:06 -0300
+In-Reply-To: <Pine.LNX.4.64.0706211719280.31603@asgard.lang.hm> (david@lang.hm's message of "Thu\, 21 Jun 2007 17\:20\:42 -0700 \(PDT\)")
+Message-ID: <orir9ghjgh.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007, Chris Mason wrote:
+On Jun 21, 2007, david@lang.hm wrote:
 
-> > The incomplete mediation flows from the design, since the pathname-based
-> > mediation doesn't generalize to cover all objects unlike label- or
-> > attribute-based mediation.  And the "use the natural abstraction for
-> > each object type" approach likewise doesn't yield any general model or
-> > anything that you can analyze systematically for data flow.
-> 
-> This feels quite a lot like a repeat of the discussion at the kernel
-> summit.  There are valid uses for path based security, and if they don't
-> fit your needs, please don't use them.  But, path based semantics alone
-> are not a valid reason to shut out AA.
+> On Thu, 21 Jun 2007, Alexandre Oliva wrote:
+>> On Jun 21, 2007, david@lang.hm wrote:
+>> 
+>>> this is your right with your code. please stop browbeating people who
+>>> disagree with you.
+>> 
+>> For the record, GPLv2 is already meant to accomplish this.  I don't
+>> understand why people who disagree with this stance chose GPLv2.
+>> Isn't "no further restrictions" clear enough?
 
-The validity or otherwise of pathname access control is not being 
-discussed here.
+> everyone else is reading this as 'no further license restrictions'
 
-The point is that the pathname model does not generalize, and that 
-AppArmor's inability to provide adequate coverage of the system is a 
-design issue arising from this.
+I didn't see anyone else add "license" where you did.  "No further
+restrictions on the rights granted herein" is very powerful and
+extensive, and that's how it was meant to be.
 
-Recall that the question asked by Lars was whether there were any 
-outstanding technical issues relating to AppArmor.
+> not no hardware restrictions' becouse GPLv2 explicitly says that it
+> has nothing to do with running the software, only with distributing
+> it.
 
-AppArmor does not and can not provide the level of confinement claimed by 
-the documentation, and its policy does not reflect its actual confinement 
-properties.  That's kind of a technical issue, right?
+It also says that running the software is not restricted, and since
+copyright law in the US doesn't regulate execution, receiving the
+software does grant the recipient the right to run the software.  So
+the distributor can't impose restrictions on it.
 
-
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
