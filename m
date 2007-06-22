@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbXFVTtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbXFVUPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbXFVTtp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 15:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXFVTth
+	id S1752126AbXFVUPd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 16:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbXFVUPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 15:49:37 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:49513 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbXFVTtg (ORCPT
+	Fri, 22 Jun 2007 16:15:25 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48311 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751199AbXFVUPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 15:49:36 -0400
-Date: Fri, 22 Jun 2007 21:44:17 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-Subject: Re: [rtc-linux] Re: rtc_cmos: error after first write to wakealarm
-Message-ID: <20070622194417.GA19609@thinkpad.home.local>
-Mail-Followup-To: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
-References: <20070615063308.GA18089@dose.home.local> <20070619172429.GA30990@dose.home.local> <20070622193431.71bed8b5@inspiron> <200706221145.53157.david-b@pacbell.net>
+	Fri, 22 Jun 2007 16:15:25 -0400
+Date: Fri, 22 Jun 2007 13:15:19 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706221955360.9081@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706221312520.18841@schroedinger.engr.sgi.com>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
+ <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706221040310.17139@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706221143190.17958@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706221955360.9081@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706221145.53157.david-b@pacbell.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 11:45:52 -0700, David Brownell wrote:
-> On Friday 22 June 2007, Alessandro Zummo wrote:
-> > On Tue, 19 Jun 2007 19:24:29 +0200
-> > Tino Keitel <tino.keitel@gmx.de> wrote:
-> > 
-> > > > > Where is the documentation that describes that I have to disable it
-> > > > > first, and how to do this? A migration document for
-> > > > > /proc/acpi/alarm users would be nice, too.
-> > > > 
-> > > >  Well, I guess there is no documentation. Maybe we could add
-> > > >  a dev_warn with an explicit message.
-> > > 
-> > > Isn't it somewhat ridiculous to plan the removal of a feature for
-> > > several months, and then replace it with something that behaves
-> > > differently without any documentation?
-> 
-> It's got as much documentation in the kernel tree as that
-> old /proc/acpi/alarm thing.  More, in fact, since the GIT
-> comment for the putback creating /sys/rtc/.../wakealarm
-> files has lots of info about how to use it.
+Here is the corresponding PA-RISC piece. Its as straightforward as 
+the other one since the only way to make this work properly in the past 
+was if the sizes passed to the dma alloc functions are page size based.
 
-What GIT comment are you referring to?
 
-> 
-> But sure, having documentation for the rtc sysfs interface
-> would be a Fine Thing.  It should cover the other values
-> too, not just that one attribute.
-> 
-> 
-> > > I still wonder how 'cat /sys/class/rtc/rtcX/wakealarm' is expected to
-> > > behave. With 2.6.22-rc5, I get this:
-> > > 
-> > > $ echo 1182351177 > /sys/class/rtc/rtc0/wakealarm 
-> > > $ cat /sys/class/rtc/rtc0/wakealarm
-> > > 2051644873
-> > > 
-> > > There seems to be a constant difference of 869984896 seconds. Is this a
-> > > bug?
-> 
-> What RTC driver is that using?
 
-rtc_cmos
+PA-RISC: Use page allocator instead of slab allocator.
 
-> 
-> One theory:  it's an RTC that doesn't support all the fields,
-> so its driver is returning "-1" in fields like "year" or "month".
+Slab pages obtained via kmalloc are not cachline aligned. Nor is it advisable
+to perform VM operations designed for page allocator pages on
+memory obtained via kmalloc.
 
-With the old /proc/acpi/alarm, the year 2007 became 0007. Maybe this is
-the culprit?
+So replace the page sized allocations in kernel/pci-dma.c with page allocator
+pages.
 
-Regards,
-Tino
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ arch/parisc/kernel/pci-dma.c |    4 ++--
+ include/linux/mm.h           |    5 +----
+ 2 files changed, 3 insertions(+), 6 deletions(-)
+
+Index: linux-2.6/arch/parisc/kernel/pci-dma.c
+===================================================================
+--- linux-2.6.orig/arch/parisc/kernel/pci-dma.c	2007-06-22 13:02:32.000000000 -0700
++++ linux-2.6/arch/parisc/kernel/pci-dma.c	2007-06-22 13:06:39.000000000 -0700
+@@ -572,7 +572,7 @@ static void *pa11_dma_alloc_noncoherent(
+ 	void *addr = NULL;
+ 
+ 	/* rely on kmalloc to be cacheline aligned */
+-	addr = kmalloc(size, flag);
++	addr = (void *)__get_free_pages(flag, get_order(size));
+ 	if(addr)
+ 		*dma_handle = (dma_addr_t)virt_to_phys(addr);
+ 
+@@ -582,7 +582,7 @@ static void *pa11_dma_alloc_noncoherent(
+ static void pa11_dma_free_noncoherent(struct device *dev, size_t size,
+ 					void *vaddr, dma_addr_t iova)
+ {
+-	kfree(vaddr);
++	free_pages((unsigned long)vaddr, get_order(size));
+ 	return;
+ }
+ 
+
