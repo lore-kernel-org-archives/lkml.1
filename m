@@ -1,116 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbXFVE7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbXFVFHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753001AbXFVE7v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXFVE7o
+	id S1752280AbXFVFHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 01:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbXFVFHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:59:44 -0400
-Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:35562 "EHLO
-	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbXFVE7n (ORCPT
+	Fri, 22 Jun 2007 01:07:30 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50673
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbXFVFH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:59:43 -0400
-Date: Fri, 22 Jun 2007 00:59:40 -0400
-To: Alexandre Oliva <aoliva@redhat.com>
-Cc: davids@webmaster.com, linux-kernel@vger.kernel.org
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Message-ID: <20070622045940.GJ602@delft.aura.cs.cmu.edu>
-Mail-Followup-To: Alexandre Oliva <aoliva@redhat.com>, davids@webmaster.com,
-	linux-kernel@vger.kernel.org
-References: <MDEHLPKNGKAHNMBLJOLKEEINEMAC.davids@webmaster.com> <orvedgj3hu.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622005834.GD602@delft.aura.cs.cmu.edu> <or645ghbh8.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Fri, 22 Jun 2007 01:07:29 -0400
+Date: Thu, 21 Jun 2007 22:07:27 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Joshua Brindle <method@manicmethod.com>
+cc: Lars Marowsky-Bree <lmb@suse.de>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, Pavel Machek <pavel@ucw.cz>,
+       Crispin Cowan <crispin@novell.com>, Greg KH <greg@kroah.com>,
+       Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+In-Reply-To: <467B45E0.3040207@manicmethod.com>
+Message-ID: <Pine.LNX.4.64.0706212158060.9657@asgard.lang.hm>
+References: <20070615200623.GA2616@elf.ucw.cz> <20070615211157.GB7337@kroah.com>
+ <46732124.80509@novell.com> <20070616000251.GG2616@elf.ucw.cz>
+ <20070621160840.GA20105@marowsky-bree.de> <20070621183311.GC18990@elf.ucw.cz>
+ <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
+ <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
+ <20070621211743.GN20105@marowsky-bree.de> <467B14D9.8050000@manicmethod.com>
+ <Pine.LNX.4.64.0706211722440.31603@asgard.lang.hm> <467B45E0.3040207@manicmethod.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <or645ghbh8.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Jan Harkes <jaharkes@cs.cmu.edu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 01:14:27AM -0300, Alexandre Oliva wrote:
-> On Jun 21, 2007, Jan Harkes <jaharkes@cs.cmu.edu> wrote:
-> > On Thu, Jun 21, 2007 at 08:23:57PM -0300, Alexandre Oliva wrote:
-> >> It's not like anyone can safely tivoize devices with GPLv2 already, 
-> 
-> > So you really didn't pay any attention to anything people told you?
-> 
-> Yes.  Particularly to what Alan Cox and his legal counsel told me.  A
-> single copyright holder able and willing to enforce the license
-> against tivoization is enough.  What part of this don't you
-> understand?
-> 
-> > The license does not grant the right that you will be able to run the
-> > software on any particular platform or whether it will even work at all.
-> 
-> It doesn't grant TiVo the right to distribute the program without
-> corresponding source code.
-> 
-> They fail to distribute the source code to the functional signature
-> derived from the kernel binary.
-> 
-> Kaboom!
+On Thu, 21 Jun 2007, Joshua Brindle wrote:
 
-A signature is not a creative work and as such not covered by copyright.
-
-At the moment the only protection that the signature/key has is that of
-a trade secret, the GPLv2 does not cover that type of intellectual
-propery and does not grant the licensee access to trade secrets.
-
-Show me any case law that indicates otherwise. Maybe the content
-producers will at some point manage to establish that encryption keys
-and signatures are somehow copyrightable, but until a court of law
-makes that determination there is no kaboom here.
-
-> As for the right to run the program, I've also explained why in
-> Brazilian copyright law this is a right granted by the license,
-> because the license says that right is unrestricted.
+> david@lang.hm wrote:
+>>  On Thu, 21 Jun 2007, Joshua Brindle wrote:
+>> 
+>> >  Lars Marowsky-Bree wrote:
+>> > >   On 2007-06-21T16:59:54, Stephen Smalley <sds@tycho.nsa.gov> wrote:
+>> > >   <snip>
+>> > > 
+>> > > 
+>> > > >   Um, no.  It might not be able to directly open files via that 
+>> > >  path, but
+>> > > >   showing that it can never read or write your mail is a rather 
+>> > >  different
+>> > > >   matter.
+>> > > > 
+>> > >   Yes. Your use case is different than mine.
+>> > > 
+>> > 
+>> >  So.. your use case is what? If an AA user asked you to protect his mail 
+>> >  from his browser I'm sure you'd truthfully answer "no, we can't do that 
+>> >  but we can protect the path to your mail from your browser".. I think 
+>> >  not. One need only look at the wonderful marketing literature for AA to 
+>> >  see what you are telling people it can do, and your above statement 
+>> >  isn't consistent with that, sorry.
+>>
+>>  remember, the policies define a white-list
+>> 
 >
-> Kaboom!
+> Except for unconfined processes.
 
-No, the license says that it does not address the right to run a
-program, and states that the license does not impose restrictions.
-That is quite different from saying that the right is unrestricted.
+correct, but we are talking about what a confined process can get to 
+without assistance from an unconfined process.
 
-So again, not much of a kaboom here either.
+>>  so if a hacker wants to have mozilla access the mail files he needs to get
+>>  some other process on the sysstem to create a link or move a file to a
+>>  path that mozilla does have access to. until that is done there is no way
+>>  for mozilla to access the mail through the filesystem.
+>>
+>>  other programs could be run that would give mozilla access to the mail
+>>  contents, but it would be through some other path that the policy
+>>  permitted mozilla accessing in the first place.
+>> 
+> Or through IPC or the network, that is the point, filesystem only coverage 
+> doesn't cut it; there is no way to say the browser can't access the users 
+> mail in AA, and there never will be.
 
-> > A mutual compatibility agreement (sublicense) would effectively
-> > terminate any rights granted by the GPLv2,
-> 
-> Additional permissions to combine are not permission to relicense.
-> Look at section 13 of GPLv3dd4 and of Affero GPLv3dd1.  That's the
-> sort of additional permission I'm talking about here.
+AA can be extended to cover these things in the future.
 
-I'm talking about the GPLv2, so it doesn't matter what the GPLv3 says
-wrt. additional permissions. Even if GPLv2 and GPLv3 grant the same
-freedoms (permissions), the collective work would have additional
-restrictions because of the GPLv3 code and as such the combined work
-would result in a sublicensing of the GPLv2 licensed code, which is
-explicitly not permitted.
+remember 'release early release often'?
+how about 'perfect is the enemy of good enoug'?
 
-> The same kind of additional permission that GPLed projects that use
-> openssl adopt.
+at this point they're trying to get the initial implementation in so that 
+people can start takeing advantage of it. As a side effect the cost of 
+maintaining it will decrease, and they can put effort into planning future 
+enhancements.
 
-If they are the original author they can make that decision, just like
-authors can dual-license, or decide to license their code as GPLv2+. It
-is kind of funny how they phrase the exception as granting permission to
-link against OpenSSL, where in reality they accept the added restriction
-that results from the advertising clause of the BSD license. (i.e.
-instead of granting you an additional freedom, they chose to remove the
-freedom to modify the part of the code that advertises).
+besides, as far as the network communication goes, doesn't netfilter now 
+have a way to make rules for specific processes? if they don't then it 
+could be added, but the details of the implementation would probably be 
+very different from the current AA file controls.
 
-However with the openssl case there is no tight coupling because openssl
-is a separate library. Some people have argued that the LGPL was never
-really necessary because (unlike static libraries) shared libraries are
-still separable from the GPL'd program.
+how does delaying the acceptance of the current implementation encourage 
+the additional features being added?
 
-Furthermore, those projects are not pulling individual source files from
-into their project. There are also alternative crypto libraries (gnutls,
-nessie) which can in many cases easily replace the openssl dependency.
+but to answer your two comments.
 
-Finally the original author accepts the additional restriction that
-comes from the BSD + advertising clause, while the GPLv2 authors do not
-accept the additional restrictions they would inherit from the GPLv3
-otherwise they would re-license their code to GPLv2+.
+how does mozilla access your mail over the network without first capturing 
+your password from somewhere?
 
-Jan
+as far as IPC goes, unix sockets are unavailable (AA as-is will control 
+them), so you must be talking about signals or shared memory as the IPC 
+mechanisms that mozilla would use to access your mail.
 
+please explain to me what mail client you are useing that exposes your 
+mail via these mechinsms.
+
+David Lang
