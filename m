@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbXFVUqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbXFVUrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbXFVUqo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 16:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXFVUqh
+	id S1757967AbXFVUrX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 16:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbXFVUrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 16:46:37 -0400
-Received: from mga03.intel.com ([143.182.124.21]:54128 "EHLO mga03.intel.com"
+	Fri, 22 Jun 2007 16:47:16 -0400
+Received: from mga03.intel.com ([143.182.124.21]:46013 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751606AbXFVUqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 16:46:36 -0400
+	id S1751511AbXFVUrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 16:47:14 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,452,1175497200"; 
-   d="scan'208";a="242277522"
-Date: Fri, 22 Jun 2007 13:42:13 -0700
+   d="scan'208";a="242277699"
+Date: Fri, 22 Jun 2007 13:42:52 -0700
 From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 5/7] ICH Force HPET: ICH5 quirk to force detect enable
-Message-ID: <20070622204213.GE22807@linux-os.sc.intel.com>
+Subject: [PATCH 6/7] ICH Force HPET: ICH5 fix a bug with suspend/resume
+Message-ID: <20070622204252.GF22807@linux-os.sc.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,178 +28,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-force_enable hpet for ICH5.
+A bugfix in ich5 hpet force detect which caused resumes to fail.
+Thanks to Udo A Steinberg for reporting the problem.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
 ---
- arch/i386/kernel/hpet.c   |    2 
- arch/i386/kernel/quirks.c |  101 +++++++++++++++++++++++++++++++++++++++++++++-
- include/asm-i386/hpet.h   |    2 
- include/linux/pci_ids.h   |    1 
- 4 files changed, 103 insertions(+), 3 deletions(-)
+ arch/i386/kernel/quirks.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 Index: linux-2.6.22-rc5/arch/i386/kernel/quirks.c
 ===================================================================
 --- linux-2.6.22-rc5.orig/arch/i386/kernel/quirks.c	2007-06-17 08:52:10.000000000 +0200
 +++ linux-2.6.22-rc5/arch/i386/kernel/quirks.c	2007-06-17 08:52:10.000000000 +0200
-@@ -54,9 +54,15 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_IN
- #if defined(CONFIG_HPET_TIMER)
- unsigned long force_hpet_address;
+@@ -199,7 +199,6 @@ static void old_ich_force_enable_hpet(st
+ 		force_hpet_address = 0xFED00000 | (val << 12);
+ 		printk(KERN_DEBUG "HPET at base address 0x%lx\n",
+ 			       force_hpet_address);
+-		cached_dev = dev;
+ 		return;
+ 	}
  
-+static enum {
-+	NONE_FORCE_HPET_RESUME,
-+	OLD_ICH_FORCE_HPET_RESUME,
-+	ICH_FORCE_HPET_RESUME
-+} force_hpet_resume_type;
-+
- static void __iomem *rcba_base;
- 
--void ich_force_hpet_resume(void)
-+static void ich_force_hpet_resume(void)
- {
- 	u32 val;
- 
-@@ -133,6 +139,7 @@ static void ich_force_enable_hpet(struct
- 		iounmap(rcba_base);
- 		printk(KERN_DEBUG "Failed to force enable HPET\n");
- 	} else {
-+		force_hpet_resume_type = ICH_FORCE_HPET_RESUME;
+@@ -221,6 +220,7 @@ static void old_ich_force_enable_hpet(st
+ 		force_hpet_address = 0xFED00000 | (val << 12);
  		printk(KERN_DEBUG "Force enabled HPET at base address 0x%lx\n",
  			       force_hpet_address);
- 	}
-@@ -148,4 +155,96 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_I
-                          ich_force_enable_hpet);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH8_1,
-                          ich_force_enable_hpet);
-+
-+
-+static struct pci_dev *cached_dev;
-+
-+static void old_ich_force_hpet_resume(void)
-+{
-+	u32 val, gen_cntl;
-+
-+	if (!force_hpet_address || !cached_dev)
-+		return;
-+
-+	pci_read_config_dword(cached_dev, 0xD0, &gen_cntl);
-+	gen_cntl &= (~(0x7 << 15));
-+	gen_cntl |= (0x4 << 15);
-+
-+	pci_write_config_dword(cached_dev, 0xD0, gen_cntl);
-+	pci_read_config_dword(cached_dev, 0xD0, &gen_cntl);
-+	val = gen_cntl >> 15;
-+	val &= 0x7;
-+	if (val == 0x4)
-+		printk(KERN_DEBUG "Force enabled HPET at resume\n");
-+	else
-+		BUG();
-+}
-+
-+static void old_ich_force_enable_hpet(struct pci_dev *dev)
-+{
-+	u32 val, gen_cntl;
-+
-+	if (hpet_address || force_hpet_address)
-+		return;
-+
-+	pci_read_config_dword(dev, 0xD0, &gen_cntl);
-+	/*
-+	 * Bit 17 is HPET enable bit.
-+	 * Bit 16:15 control the HPET base address.
-+	 */
-+	val = gen_cntl >> 15;
-+	val &= 0x7;
-+	if (val & 0x4) {
-+		val &= 0x3;
-+		force_hpet_address = 0xFED00000 | (val << 12);
-+		printk(KERN_DEBUG "HPET at base address 0x%lx\n",
-+			       force_hpet_address);
 +		cached_dev = dev;
-+		return;
-+	}
-+
-+	/*
-+	 * HPET is disabled. Trying enabling at FED00000 and check
-+	 * whether it sticks
-+	 */
-+	gen_cntl &= (~(0x7 << 15));
-+	gen_cntl |= (0x4 << 15);
-+	pci_write_config_dword(dev, 0xD0, gen_cntl);
-+
-+	pci_read_config_dword(dev, 0xD0, &gen_cntl);
-+
-+	val = gen_cntl >> 15;
-+	val &= 0x7;
-+	if (val & 0x4) {
-+		/* HPET is enabled in HPTC. Just not reported by BIOS */
-+		val &= 0x3;
-+		force_hpet_address = 0xFED00000 | (val << 12);
-+		printk(KERN_DEBUG "Force enabled HPET at base address 0x%lx\n",
-+			       force_hpet_address);
-+		force_hpet_resume_type = OLD_ICH_FORCE_HPET_RESUME;
-+		return;
-+	}
-+
-+	printk(KERN_DEBUG "Failed to force enable HPET\n");
-+}
-+
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82801EB_0,
-+                         old_ich_force_enable_hpet);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82801EB_12,
-+                         old_ich_force_enable_hpet);
-+
-+void force_hpet_resume(void)
-+{
-+	switch (force_hpet_resume_type) {
-+	    case ICH_FORCE_HPET_RESUME:
-+		return ich_force_hpet_resume();
-+
-+	    case OLD_ICH_FORCE_HPET_RESUME:
-+		return old_ich_force_hpet_resume();
-+
-+	    default:
-+		break;
-+	}
-+}
-+
- #endif
-Index: linux-2.6.22-rc5/arch/i386/kernel/hpet.c
-===================================================================
---- linux-2.6.22-rc5.orig/arch/i386/kernel/hpet.c	2007-06-17 08:52:10.000000000 +0200
-+++ linux-2.6.22-rc5/arch/i386/kernel/hpet.c	2007-06-17 08:52:10.000000000 +0200
-@@ -195,7 +195,7 @@ static void hpet_start_counter(void)
- 
- static void hpet_resume_device(void)
- {
--	ich_force_hpet_resume();
-+	force_hpet_resume();
- }
- 
- static void hpet_restart_counter(void)
-Index: linux-2.6.22-rc5/include/asm-i386/hpet.h
-===================================================================
---- linux-2.6.22-rc5.orig/include/asm-i386/hpet.h	2007-06-17 08:52:10.000000000 +0200
-+++ linux-2.6.22-rc5/include/asm-i386/hpet.h	2007-06-17 08:52:10.000000000 +0200
-@@ -73,7 +73,7 @@ extern int hpet_enable(void);
- #include <asm/vsyscall.h>
- #endif
- 
--void ich_force_hpet_resume(void);
-+void force_hpet_resume(void);
- 
- #ifdef CONFIG_HPET_EMULATE_RTC
- 
-Index: linux-2.6.22-rc5/include/linux/pci_ids.h
-===================================================================
---- linux-2.6.22-rc5.orig/include/linux/pci_ids.h	2007-06-17 08:51:58.000000000 +0200
-+++ linux-2.6.22-rc5/include/linux/pci_ids.h	2007-06-17 08:52:10.000000000 +0200
-@@ -2220,6 +2220,7 @@
- #define PCI_DEVICE_ID_INTEL_82801EB_5	0x24d5
- #define PCI_DEVICE_ID_INTEL_82801EB_6	0x24d6
- #define PCI_DEVICE_ID_INTEL_82801EB_11	0x24db
-+#define PCI_DEVICE_ID_INTEL_82801EB_12	0x24dc
- #define PCI_DEVICE_ID_INTEL_82801EB_13	0x24dd
- #define PCI_DEVICE_ID_INTEL_ESB_1	0x25a1
- #define PCI_DEVICE_ID_INTEL_ESB_2	0x25a2
+ 		force_hpet_resume_type = OLD_ICH_FORCE_HPET_RESUME;
+ 		return;
+ 	}
