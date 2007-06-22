@@ -1,127 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759899AbXFVWxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759628AbXFVWyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759899AbXFVWxi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 18:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbXFVWxa
+	id S1759628AbXFVWyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 18:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbXFVWyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 18:53:30 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:34254 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751377AbXFVWx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 18:53:29 -0400
-Date: Fri, 22 Jun 2007 15:53:23 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+	Fri, 22 Jun 2007 18:54:44 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46538 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751258AbXFVWyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 18:54:43 -0400
+Date: Fri, 22 Jun 2007 23:57:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Christoph Hellwig <hch@infradead.org>,
        john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 1/5 v2] Convert the RCU tasklet into a softirq
-Message-ID: <20070622225323.GJ29957@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070622182051.859570787@goodmis.org> <20070622182314.922886036@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070622182314.922886036@goodmis.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070622235703.28ded4b2@the-village.bc.nu>
+In-Reply-To: <aday7ibzk3f.fsf@cisco.com>
+References: <20070622040014.234651401@goodmis.org>
+	<alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
+	<20070622204058.GA11777@elte.hu>
+	<alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
+	<20070622215953.GA22917@elte.hu>
+	<20070622220901.GA26207@elte.hu>
+	<aday7ibzk3f.fsf@cisco.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 02:20:52PM -0400, Steven Rostedt wrote:
-> I believe this was originally done by Dipankar Sarma. I pulled these
-> changes from the -rt kernel.
-> 
-> For better preformance, RCU should use a softirq instead of a
-> tasklet.
-> 
-> From: Dipankar Sarma <dipankar@in.ibm.com>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> As a second example, msr_seek() in arch/i386/kernel/msr.c... is the
+> inode semaphore enough or not?  Who understands the implications well
+> enough to say?
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+lseek is one of the nasty remaining cases. tty is another real horror
+that needs further work but we slowly get closer - drivers/char is almost
+but not entirely lock_kernel free now and several users look quite easy
+to swat (everyone but tty_io.c)
 
-> Index: linux-2.6-test/include/linux/interrupt.h
-> ===================================================================
-> --- linux-2.6-test.orig/include/linux/interrupt.h
-> +++ linux-2.6-test/include/linux/interrupt.h
-> @@ -245,6 +245,9 @@ enum
->  #ifdef CONFIG_HIGH_RES_TIMERS
->  	HRTIMER_SOFTIRQ,
->  #endif
-> +	RCU_SOFTIRQ,	/* Preferable RCU should always be the last softirq */
-> +	/* Entries after this are ignored in split softirq mode */
-> +	MAX_SOFTIRQ,
->  };
-> 
->  /* softirq mask and active fields moved to irq_cpustat_t in
-> Index: linux-2.6-test/kernel/rcupdate.c
-> ===================================================================
-> --- linux-2.6-test.orig/kernel/rcupdate.c
-> +++ linux-2.6-test/kernel/rcupdate.c
-> @@ -67,7 +67,6 @@ DEFINE_PER_CPU(struct rcu_data, rcu_data
->  DEFINE_PER_CPU(struct rcu_data, rcu_bh_data) = { 0L };
-> 
->  /* Fake initialization required by compiler */
-> -static DEFINE_PER_CPU(struct tasklet_struct, rcu_tasklet) = {NULL};
->  static int blimit = 10;
->  static int qhimark = 10000;
->  static int qlowmark = 100;
-> @@ -253,7 +252,7 @@ static void rcu_do_batch(struct rcu_data
->  	if (!rdp->donelist)
->  		rdp->donetail = &rdp->donelist;
->  	else
-> -		tasklet_schedule(&per_cpu(rcu_tasklet, rdp->cpu));
-> +		raise_softirq(RCU_SOFTIRQ);
->  }
-> 
->  /*
-> @@ -405,7 +404,6 @@ static void rcu_offline_cpu(int cpu)
->  					&per_cpu(rcu_bh_data, cpu));
->  	put_cpu_var(rcu_data);
->  	put_cpu_var(rcu_bh_data);
-> -	tasklet_kill_immediate(&per_cpu(rcu_tasklet, cpu), cpu);
->  }
-> 
->  #else
-> @@ -417,7 +415,7 @@ static void rcu_offline_cpu(int cpu)
->  #endif
-> 
->  /*
-> - * This does the RCU processing work from tasklet context. 
-> + * This does the RCU processing work from softirq context.
->   */
->  static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
->  					struct rcu_data *rdp)
-> @@ -462,7 +460,7 @@ static void __rcu_process_callbacks(stru
->  		rcu_do_batch(rdp);
->  }
-> 
-> -static void rcu_process_callbacks(unsigned long unused)
-> +static void rcu_process_callbacks(struct softirq_action *unused)
->  {
->  	__rcu_process_callbacks(&rcu_ctrlblk, &__get_cpu_var(rcu_data));
->  	__rcu_process_callbacks(&rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
-> @@ -526,7 +524,7 @@ void rcu_check_callbacks(int cpu, int us
->  		rcu_bh_qsctr_inc(cpu);
->  	} else if (!in_softirq())
->  		rcu_bh_qsctr_inc(cpu);
-> -	tasklet_schedule(&per_cpu(rcu_tasklet, cpu));
-> +	raise_softirq(RCU_SOFTIRQ);
->  }
-> 
->  static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
-> @@ -549,7 +547,7 @@ static void __devinit rcu_online_cpu(int
-> 
->  	rcu_init_percpu_data(cpu, &rcu_ctrlblk, rdp);
->  	rcu_init_percpu_data(cpu, &rcu_bh_ctrlblk, bh_rdp);
-> -	tasklet_init(&per_cpu(rcu_tasklet, cpu), rcu_process_callbacks, 0UL);
-> +	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
->  }
-> 
->  static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
-> 
-> -- 
+Alan
