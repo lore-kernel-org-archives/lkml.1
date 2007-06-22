@@ -1,92 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbXFVLyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbXFVL7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbXFVLyu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 07:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbXFVLyl
+	id S1755562AbXFVL7O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 07:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbXFVL67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 07:54:41 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:54168 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752600AbXFVLyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 07:54:39 -0400
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
-	pathname matching
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: John Johansen <jjohansen@suse.de>
-Cc: Lars Marowsky-Bree <lmb@suse.de>, James Morris <jmorris@namei.org>,
-       Pavel Machek <pavel@ucw.cz>, Crispin Cowan <crispin@novell.com>,
-       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070622080640.GB14593@suse.de>
-References: <20070615200623.GA2616@elf.ucw.cz>
-	 <20070615211157.GB7337@kroah.com> <46732124.80509@novell.com>
-	 <20070616000251.GG2616@elf.ucw.cz>
-	 <20070621160840.GA20105@marowsky-bree.de>
-	 <20070621183311.GC18990@elf.ucw.cz>
-	 <20070621192407.GF20105@marowsky-bree.de>
-	 <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
-	 <20070621195400.GK20105@marowsky-bree.de>
-	 <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
-	 <20070622080640.GB14593@suse.de>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Fri, 22 Jun 2007 07:53:47 -0400
-Message-Id: <1182513228.24664.24.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 22 Jun 2007 07:58:59 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4743 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753120AbXFVL67 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 07:58:59 -0400
+Message-ID: <467BB979.2000907@shadowen.org>
+Date: Fri, 22 Jun 2007 12:58:49 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, Alex Chiang <achiang@hp.com>,
+       akpm@linux-foundation.org, ak@suse.de,
+       Gerd Hoffmann <kraxel@redhat.com>, rmk@arm.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] serial : convert early_uart to earlycon for 8250 fix
+ 3 alias
+References: <200706010002.l5102LN5031209@shell0.pdx.osdl.net> <466EC86C.6000601@sun.com> <200706120955.44097.yinghai.lu@sun.com> <200706211042.54917.yinghai.lu@sun.com>
+In-Reply-To: <200706211042.54917.yinghai.lu@sun.com>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 01:06 -0700, John Johansen wrote:
-> On Thu, Jun 21, 2007 at 04:59:54PM -0400, Stephen Smalley wrote:
-> > On Thu, 2007-06-21 at 21:54 +0200, Lars Marowsky-Bree wrote:
-> > > On 2007-06-21T15:42:28, James Morris <jmorris@namei.org> wrote:
-> > > 
-> > 
-> > > And now, yes, I know AA doesn't mediate IPC or networking (yet), but
-> > > that's a missing feature, not broken by design.
-> > 
-> > The incomplete mediation flows from the design, since the pathname-based
-> > mediation doesn't generalize to cover all objects unlike label- or
-> > attribute-based mediation.  And the "use the natural abstraction for
-> > each object type" approach likewise doesn't yield any general model or
-> > anything that you can analyze systematically for data flow.
-> > 
-> No the "incomplete" mediation does not flow from the design.  We have
-> deliberately focused on doing the necessary modifications for pathname
-> based mediation.  The IPC and network mediation are a wip.
+Yinghai Lu wrote:
+> [PATCH] serial : convert early_uart to earlycon for 8250 fix 3 alias
+> 
+> make the console=uart,io,0x3f8,9600n8 like console=uart8250,io,0x3f8,9600
+> suggested by Andy Whitcroft.
+>  
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> 
+> --- a/Documentation/kernel-parameters.txt	2007-06-21 10:12:48.000000000 -0700
+> +++ b/Documentation/kernel-parameters.txt	2007-06-21 10:13:43.000000000 -0700
+> @@ -467,16 +467,16 @@
+>  			Documentation/networking/netconsole.txt for an
+>  			alternative.
+>  
+> -		uart8250,io,<addr>[,options]
+> -		uart8250,mmio,<addr>[,options]
+> +		uart[8250],io,<addr>[,options]
+> +		uart[8250],mmio,<addr>[,options]
+>  			Start an early, polled-mode console on the 8250/16550
+>  			UART at the specified I/O port or MMIO address,
+>  			switching to the matching ttyS device later.  The
+>  			options are the same as for ttyS, above.
+>  
+>  	earlycon=	[KNL] Output early console device and options.
+> -		uart8250,io,<addr>[,options]
+> -		uart8250,mmio,<addr>[,options]
+> +		uart[8250],io,<addr>[,options]
+> +		uart[8250],mmio,<addr>[,options]
+>  			Start an early, polled-mode console on the 8250/16550
+>  			UART at the specified I/O port or MMIO address.
+>  			The options are the same as for ttyS, above.
+> --- a/drivers/serial/8250_early.c	2007-06-21 10:04:25.000000000 -0700
+> +++ b/drivers/serial/8250_early.c	2007-06-21 10:12:08.000000000 -0700
+> @@ -210,8 +210,11 @@
+>  	int err;
+>  
+>  	options = strstr(cmdline, "uart8250,");
+> -	if (!options)
+> -		return 0;
+> +	if (!options) {
+> +		options = strstr(cmdline, "uart,");
+> +		if (!options)
+> +			return 0;
+> +	}
 
-The fact that you have to go back to the drawing board for them is that
-you didn't get the abstraction right in the first place.
+This could probabally be written as below and be a little clearer:
 
-> We have never claimed to be using pathname-based mediation IPC or networking.
-> The "natural abstraction" approach does generize well enough and will
-> be analyzable.
+options = strstr(cmdline, "uart8250,");
+if (!options)
+	options = strstr(cmdline, "uart,");
+if (!options)
+	return 0;
 
-I think we must have different understandings of the words "generalize"
-and "analyzable".  Look, if I want to be able to state properties about
-data flow in the system for confidentiality or integrity goals (my
-secret data can never leak to unauthorized entities, my critical data
-can never be corrupted/tainted by unauthorized entities - directly or
-indirectly), then I need to be able to have a common reference point for
-my policy.  When my policy is based on different abstractions
-(pathnames, IP addresses, window ids, whatever) for different objects,
-then I can no longer identify how data can flow throughout the system in
-a system-wide way. 
 
-> > Um, no.  It might not be able to directly open files via that path, but
-> > showing that it can never read or write your mail is a rather different
-> > matter.
-> > 
-> Actually it can be analyzed and shown.  It is ugly to do and we
-> currently don't have a tool capable of doing it, but it is possible.
 
-No, it isn't possible when using ambiguous and unstable identifiers for
-the subjects and objects, nor when mediation is incomplete.
+>  
+>  	options = strchr(cmdline, ',') + 1;
+>  	if ((err = early_serial8250_setup(options)) < 0)
+> @@ -227,6 +230,7 @@
+>  	struct early_serial8250_device *device = &early_device;
+>  	struct uart_port *port = &device->port;
+>  	int line;
+> +	int ret;
+>  
+>  	if (!device->port.membase && !device->port.iobase)
+>  		return -ENODEV;
+> @@ -235,8 +239,13 @@
+>  	if (line < 0)
+>  		return -ENODEV;
+>  
+> -	return update_console_cmdline("uart", 8250,
+> +	ret = update_console_cmdline("uart", 8250,
+> +			     "ttyS", line, device->options);
+> +	if (ret < 0)
+> +		ret = update_console_cmdline("uart", 0,
+>  				     "ttyS", line, device->options);
+> +
+> +	return ret;
+>  }
+>  
+>  early_param("earlycon", setup_early_serial8250_console);
 
--- 
-Stephen Smalley
-National Security Agency
+Other than the little nit above I have tested this on the machine which
+was all upset over the change and it works like a charm.
 
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+-apw
