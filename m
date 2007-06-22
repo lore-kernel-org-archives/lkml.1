@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbXFVJdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbXFVJmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbXFVJdT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 05:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbXFVJdJ
+	id S1754200AbXFVJmX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 05:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbXFVJmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 05:33:09 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:37252 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbXFVJdI (ORCPT
+	Fri, 22 Jun 2007 05:42:13 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:29294 "EHLO
+	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751276AbXFVJmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 05:33:08 -0400
-Date: Fri, 22 Jun 2007 11:34:36 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20070622093436.GA17828@enneenne.com>
+	Fri, 22 Jun 2007 05:42:12 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
+Date: Fri, 22 Jun 2007 11:35:59 +0200
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Avi Kivity" <avi@qumranet.com>
+cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SVM: reliably detect if SVM was disabled by BIOS
+Message-ID: <20070622093559.GA18450@amd.com>
+References: <20070621175122.GE25896@amd.com>
+ <467B96C8.1050500@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <467B96C8.1050500@qumranet.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 22 Jun 2007 09:36:11.0397 (UTC)
+ FILETIME=[C4E58B50:01C7B4B0]
+X-WSS-ID: 6A654784R0G949431-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: PXA270 sleeping problems after update
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just updated my linux tree from 2.6.20-rc6 to 2.6.22-rc3 for my
-custom PXA270 based board and I discovered that now sleep/wakeup
-functionality doesn't work anymore! :'(
+On Fri, Jun 22, 2007 at 12:30:48PM +0300, Avi Kivity wrote:
+> Joerg Roedel wrote:
+> > From: Joerg Roedel <joerg.roedel@amd.com>
+> >
+> > This patch adds an implementation to the svm is_disabled function to
+> > detect reliably if the BIOS disabled the SVM feature in the CPU. This
+> > fixes the issues with kernel panics when loading the kvm-amd module on
+> > machines where SVM is available but disabled.
+> >
+> >   
+> 
+> Applied; thanks.
+> 
+> Is this msr documented anywhere?  I assume it is implemented on all
+> processors with svm?
 
-After several merges, compiling stages and tests I discovered that the
-problem arises from 2.6.21 to 2.6.22-rc1 and that the _real_ problem
-is that the machine never goes to sleep (I discovered that by looking
-at current consuming since the JTAG doesn't attach...).
+Not in the public documentation yet. But it will be documented with one of
+the next documentation updates. This MSR is implemented in all SVM
+capable processors.
 
-Any suggestions?
+Regards,
 
-Thanks a lot,
-
-Rodolfo
-
+Joerg
 
 -- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+
