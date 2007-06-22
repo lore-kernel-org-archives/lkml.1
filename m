@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbXFVW7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760425AbXFVXBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbXFVW7N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 18:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXFVW67
+	id S1760425AbXFVXBA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 19:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXFVXAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 18:58:59 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46546 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751459AbXFVW66 (ORCPT
+	Fri, 22 Jun 2007 19:00:52 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:40416 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbXFVXAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 18:58:58 -0400
-Date: Sat, 23 Jun 2007 00:04:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Yinghai.Lu@Sun.COM
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Andi Kleen <ak@suse.de>,
+	Fri, 22 Jun 2007 19:00:51 -0400
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
-Message-ID: <20070623000405.15eb66f1@the-village.bc.nu>
-In-Reply-To: <467C53C4.4060004@sun.com>
-References: <200706221219.16243.yinghai.lu@sun.com>
-	<20070622193124.GG5051@rhun.smartcity.com>
-	<20070622213327.69663288@the-village.bc.nu>
-	<m18xabbrp6.fsf@ebiederm.dsl.xmission.com>
-	<20070622231951.4d516215@the-village.bc.nu>
-	<m1tzszaadm.fsf@ebiederm.dsl.xmission.com>
-	<467C5074.6050103@sun.com>
-	<20070622235456.08999aa7@the-village.bc.nu>
-	<467C53C4.4060004@sun.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+In-Reply-To: <20070622215953.GA22917@elte.hu>
+References: <20070622040014.234651401@goodmis.org>
+	 <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
+	 <20070622204058.GA11777@elte.hu>
+	 <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
+	 <20070622215953.GA22917@elte.hu>
+Content-Type: text/plain
+Date: Fri, 22 Jun 2007 18:58:50 -0400
+Message-Id: <1182553130.5493.105.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jun 2007 15:57:08 -0700
-Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-
-> Alan Cox wrote:
+On Fri, 2007-06-22 at 23:59 +0200, Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> > Don't disable it, just don't touch it or any of its mappings. Leave it
-> > *alone*, and use swiotlb. That'll maximise the ability to recover stuff
-> > from the kexec kernel (since for one you may want to dump the gart when a
-> > 3d app goes kerblam)
+> > If the numbers say that there is no performance difference (or even 
+> > better: that the new code performs better or fixes some latency issue 
+> > or whatever), I'll be very happy. But if the numbers say that it's 
+> > worse, no amount of cleanliness really changes that.
 > 
-> How about LinuxBIOS + Kernel ===> Final kernel path?
-> someday EFI(PEI) + Kernel ===> Final kernel path need that too.
-> 
-> or the normal kexec path still could have clean shutdown.
+> Most of the tasklet uses are in rarely used or arcane drivers - in fact 
+> none of my 10 test-boxes utilizes _any_ tasklet in any way that could 
+> even get close to mattering to performance. In other words: i just 
+> cannot test this, nor do i think that others will really test this. 
 
-The kexec path for kdump should be swiotlb and leave the GART alone as
-you are dumping as much state as you can and leaving stuff as is when
-possible. The new-kernel case you shut everything down so you can shut
-down the GART in the old kernel and re-initialise it in the new one
+This is exactly why I included that CONFIG option in the first series.
+Because, I only have a handful of hardware that actually uses tasklets.
+And all those pr_debugs I had where turned on on most of my boxes.  I
+was not flooded with prints either (every function including
+tasklet_schedule had a print).
 
-Alan
+So, basically, I can't do benchmarks. I was hoping to get this into -mm
+with a easy way for people, who have hardware that uses tasklets
+extensively, to run it with tasklets on and off to see if there is a
+difference.  My fear of not having a config option to switch between the
+two (for -mm only) is that we may lose benchmarking from those that are
+not comfortable at removing this patch from -mm.  There are people out
+there that download and test the -mm tree straight from kernel.org.
+Just because someone compiles their own kernel doesn't mean they can (or
+will) patch it.
+
+-- Steve
+
+
+
