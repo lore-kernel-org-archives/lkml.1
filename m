@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbXFVEGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbXFVEGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753822AbXFVEGO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 00:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbXFVEEY
+	id S1754402AbXFVEGi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 00:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbXFVEEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 00:04:24 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36219
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751420AbXFVEEX (ORCPT
+	Fri, 22 Jun 2007 00:04:31 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:42453 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbXFVEE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 00:04:23 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: [DOCS] make headers_install
-Date: Fri, 22 Jun 2007 00:04:26 -0400
-User-Agent: KMail/1.9.6
-Cc: David Woodhouse <dwmw2@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706220004.27754.rob@landley.net>
+	Fri, 22 Jun 2007 00:04:29 -0400
+Message-Id: <20070622040136.621853953@goodmis.org>
+References: <20070622040014.234651401@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 22 Jun 2007 00:00:15 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru
+Subject: [RFC PATCH 1/6] Convert the RCU tasklet into a softirq
+Content-Disposition: inline; filename=convert-rcu-tasklet-to-softirq.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a really quick stab at documentation for make headers_install.
+I believe this was originally done by Dipankar Sarma. I pulled these
+changes from the -rt kernel.
 
-Comments?
+For better preformance, RCU should use a softirq instead of a
+tasklet.
 
---------------------
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-Exporting kernel headers for use by userspace (/usr/include/linux)
-
-The "make headers_install" command exports the kernel's header files in a
-form suitable for use by userspace programs. 
-
-The linux kernel's exported header files describe the API for user space
-programs attempting to use kernel services.  These kernel header files are
-used by the system's C library (such as glibc or uClibc) to define available
-system calls, as well as constants and structures to be used with these
-system calls.  The C library's header files include the kernel header files
-from the "linux" subdirectory.  The system's libc headers are usually
-installed at the default location /usr/include and the kernel headers at
-/usr/include/linux.
-
-Kernel headers are backwards compatible, but not forwards compatible.  This
-means that a program built against a C library using older kernel headers
-should run on a newer kernel (although it may not have access to new
-features), but a program built against newer kernel headers may not work on an
-older kernel.
-
-The "make headers_install" command can be run in the top level directory of 
-the
-kernel source code (or using a standard out-of-tree build).  It takes two
-optional arguments:
-
-  make headers_install ARCH=i386 INSTALL_HDR_PATH=/usr/include
-
-ARCH indicates which architecture to produce headers for, and defaults to the
-current architecture.  The linux/asm directory of the exported kernel headers
-is platform-specific, to see a complete list of supported architectures use
-the command:
-
-  ls -d include/asm-* | sed 's/.*-//'
-
-INSTALL_HDR_PATH indicates where to install the headers.  It defaults to
-"./usr/include".
-
-The command "make headers_install_all" exports headers for all architectures
-simultaneously.  (This is mostly of interest to distribution maintainers,
-who create an architecture-independent tarball from the resulting include
-directory.)  Remember to provide the appropriate linux/asm directory via "mv"
-or "ln -s" before building a C library with headers exported this way.
-
-The kernel header export infrastructure is maintained by David Woodhouse
-<dwmw2@infradead.org>.
+Index: linux-2.6-test/include/linux/interrupt.h
+===================================================================
+--- linux-2.6-test.orig/include/linux/interrupt.h
++++ linux-2.6-test/include/linux/interrupt.h
+@@ -245,6 +245,9 @@ enum
+ #ifdef CONFIG_HIGH_RES_TIMERS
+ 	HRTIMER_SOFTIRQ,
+ #endif
++	RCU_SOFTIRQ,	/* Preferable RCU should always be the last softirq */
++	/* Entries after this are ignored in split softirq mode */
++	MAX_SOFTIRQ,
+ };
+ 
+ /* softirq mask and active fields moved to irq_cpustat_t in
+Index: linux-2.6-test/kernel/rcupdate.c
+===================================================================
+--- linux-2.6-test.orig/kernel/rcupdate.c
++++ linux-2.6-test/kernel/rcupdate.c
+@@ -67,7 +67,6 @@ DEFINE_PER_CPU(struct rcu_data, rcu_data
+ DEFINE_PER_CPU(struct rcu_data, rcu_bh_data) = { 0L };
+ 
+ /* Fake initialization required by compiler */
+-static DEFINE_PER_CPU(struct tasklet_struct, rcu_tasklet) = {NULL};
+ static int blimit = 10;
+ static int qhimark = 10000;
+ static int qlowmark = 100;
+@@ -253,7 +252,7 @@ static void rcu_do_batch(struct rcu_data
+ 	if (!rdp->donelist)
+ 		rdp->donetail = &rdp->donelist;
+ 	else
+-		tasklet_schedule(&per_cpu(rcu_tasklet, rdp->cpu));
++		raise_softirq(RCU_SOFTIRQ);
+ }
+ 
+ /*
+@@ -405,7 +404,6 @@ static void rcu_offline_cpu(int cpu)
+ 					&per_cpu(rcu_bh_data, cpu));
+ 	put_cpu_var(rcu_data);
+ 	put_cpu_var(rcu_bh_data);
+-	tasklet_kill_immediate(&per_cpu(rcu_tasklet, cpu), cpu);
+ }
+ 
+ #else
+@@ -417,7 +415,7 @@ static void rcu_offline_cpu(int cpu)
+ #endif
+ 
+ /*
+- * This does the RCU processing work from tasklet context. 
++ * This does the RCU processing work from softirq context.
+  */
+ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
+ 					struct rcu_data *rdp)
+@@ -462,7 +460,7 @@ static void __rcu_process_callbacks(stru
+ 		rcu_do_batch(rdp);
+ }
+ 
+-static void rcu_process_callbacks(unsigned long unused)
++static void rcu_process_callbacks(struct softirq_action *unused)
+ {
+ 	__rcu_process_callbacks(&rcu_ctrlblk, &__get_cpu_var(rcu_data));
+ 	__rcu_process_callbacks(&rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
+@@ -526,7 +524,7 @@ void rcu_check_callbacks(int cpu, int us
+ 		rcu_bh_qsctr_inc(cpu);
+ 	} else if (!in_softirq())
+ 		rcu_bh_qsctr_inc(cpu);
+-	tasklet_schedule(&per_cpu(rcu_tasklet, cpu));
++	raise_softirq(RCU_SOFTIRQ);
+ }
+ 
+ static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
+@@ -549,7 +547,7 @@ static void __devinit rcu_online_cpu(int
+ 
+ 	rcu_init_percpu_data(cpu, &rcu_ctrlblk, rdp);
+ 	rcu_init_percpu_data(cpu, &rcu_bh_ctrlblk, bh_rdp);
+-	tasklet_init(&per_cpu(rcu_tasklet, cpu), rcu_process_callbacks, 0UL);
++	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
+ }
+ 
+ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
 
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
