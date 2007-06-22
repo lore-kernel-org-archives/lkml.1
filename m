@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbXFVRfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbXFVRir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760107AbXFVRfl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 13:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbXFVRfe
+	id S1759602AbXFVRir (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 13:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbXFVRik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 13:35:34 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:57327 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751065AbXFVRfd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 13:35:33 -0400
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-In-Reply-To: <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
-References: <20070622040014.234651401@goodmis.org>
-	 <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 22 Jun 2007 13:31:42 -0400
-Message-Id: <1182533502.5493.88.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Jun 2007 13:38:40 -0400
+Received: from iucha.net ([209.98.146.184]:39263 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbXFVRik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 13:38:40 -0400
+Date: Fri, 22 Jun 2007 12:38:39 -0500
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: "upping" a semaphore from interrupt context?
+Message-ID: <20070622173839.GB8398@iucha.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Fba/0zbH8Xs+Fj9o"
+Content-Disposition: inline
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-06-22 at 10:16 -0700, Linus Torvalds wrote:
-> 
 
-> So patches 1-4 all look fine to me. In fact, 5 looks ok too.
+--Fba/0zbH8Xs+Fj9o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Great!
+Hello,
 
-> Leaving patch 6 as a "only makes sense after we actually have some numbers 
-> about it", and patch 5 is a "could go either way" as far as I'm concerned 
-> (ie I could merge it together with the 1-4 series, but I think it's 
-> equally valid to just see it as a companion to 6).
+I am writing a USB driver for some custom hardware, and I need to
+synchronize between the user-space and the USB subsystem.  Can I
+create a semaphore and "down" it in the reader then "up" it in the
+completion handler?
 
-Actually, in my next series, I removed patch 5 and just simply replace
-the tasklets with the workqueue implementation, leaving no config
-option. It will be out shortly, after I finish my testing.
+I know the completion handler runs in interrupt context so you are not
+allowed to acquire any semaphores: but can you release them?  Will the
+waiting tasks wake up after the handler and its caller returned - IOW
+will the waking up task run in interrupt context as well?
 
-I also keep the file name tasklet_work.c instead of overwriting
-tasklet.c, just because it's easier to review the patch that way.
+This is with Linux 2.4 (if it makes a difference).
 
--- Steve
+Thanks,
+florin
 
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
 
+--Fba/0zbH8Xs+Fj9o
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFGfAkQND0rFCN2b1sRAkirAKCGBvXAECuF+YDjdR/qYy8xGG7r5gCeLF5P
+hdRJZzFVMot62SxE2qKiLtw=
+=gqqX
+-----END PGP SIGNATURE-----
+
+--Fba/0zbH8Xs+Fj9o--
