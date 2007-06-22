@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXFVL0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbXFVLe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbXFVL0W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 07:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXFVL0N
+	id S1754543AbXFVLe2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 07:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXFVLeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 07:26:13 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:2549 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752185AbXFVL0M (ORCPT
+	Fri, 22 Jun 2007 07:34:19 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36247 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751969AbXFVLeS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 07:26:12 -0400
-Date: Fri, 22 Jun 2007 15:26:26 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: rth@twiddle.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Dustin Marquess <jailbird@alcatraz.fdf.net>
-Subject: Re: [patch] alpha: fix alignment problem in csum_ipv6_magic()
-Message-ID: <20070622152626.A9096@jurassic.park.msu.ru>
-References: <20070617012020.A7626@jurassic.park.msu.ru> <20070621163501.00903134.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Jun 2007 07:34:18 -0400
+Date: Fri, 22 Jun 2007 13:34:37 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 6/12] acpi: fix compile warnings
+Message-ID: <20070622113437.GM23017@stusta.de>
+References: <20070619225011.GH5193@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-In-Reply-To: <20070621163501.00903134.akpm@linux-foundation.org>; from akpm@linux-foundation.org on Thu, Jun 21, 2007 at 04:35:01PM -0700
+In-Reply-To: <20070619225011.GH5193@alberich.amd.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 21, 2007 at 04:35:01PM -0700, Andrew Morton wrote:
-> In http://bugzilla.kernel.org/show_bug.cgi?id=8659, Dustin is reporting
-> that this patch broke tcp-on-ipv6.
+On Wed, Jun 20, 2007 at 12:50:11AM +0200, Andreas Herrmann wrote:
+> Fix compile warnings:
+> 
+>  drivers/acpi/bus.c: In function 'acpi_bus_get_power':
+>  drivers/acpi/bus.c:162: warning: implicit declaration of function 'acpi_power_get_inferred_state'
+>  drivers/acpi/bus.c: In function 'acpi_bus_set_power':
+>  drivers/acpi/bus.c:232: warning: implicit declaration of function 'acpi_power_transition'
+> 
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+> diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+> index b4a9ea5..e01dca1 100644
+> --- a/drivers/acpi/bus.c
+> +++ b/drivers/acpi/bus.c
+> @@ -43,6 +43,8 @@ ACPI_MODULE_NAME("bus");
+>  #ifdef	CONFIG_X86
+>  extern void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger);
+>  #endif
+> +extern int acpi_power_get_inferred_state(struct acpi_device *);
+> +extern int acpi_power_transition(struct acpi_device *, int);
+>...
 
-Oops. Two instructions operating on the 'len' arg ($18) got swapped...
-This should fix ev6 version, ev5 one seems to be ok.
+NAK, they belong into a header file.
 
-Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+cu
+Adrian
 
-Ivan.
+-- 
 
---- 2.6.22-rc4-mm2/arch/alpha/lib/ev6-csum_ipv6_magic.S	Fri Jun 22 15:02:23 2007
-+++ linux/arch/alpha/lib/ev6-csum_ipv6_magic.S	Fri Jun 22 15:05:38 2007
-@@ -76,18 +76,18 @@ csum_ipv6_magic:
- 
- 	cmoveq	$6,$31,$22	# E : src aligned?
- 	ldq_u	$23,15($17)	# L : Latency: 3
--	or	$18,$4,$18	# E : 000000CCDDAABBCC
--	extql	$1,$6,$1	# U : U L L U :
-+	inswl	$18,3,$18	# U : 000000CCDD000000
-+	addl	$19,$7,$19	# E : U L U L : <sign bits>bbaabb00
- 
- 	or	$0,$22,$0	# E : 1st src word complete
--	extqh	$5,$6,$5	# U :
--	addl	$19,$7,$19	# E : <sign bits>bbaabb00
--	and	$17,7,$6	# E : L U L U : dst misalignment
-+	extql	$1,$6,$1	# U :
-+	or	$18,$4,$18	# E : 000000CCDDAABBCC
-+	extqh	$5,$6,$5	# U : L U L U
- 
--	inswl	$18,3,$18	# U : 000000CCDD000000
--	or	$1,$5,$1	# E : 2nd src word complete
-+	and	$17,7,$6	# E : dst misalignment
- 	extql	$2,$6,$2	# U :
--	extqh	$3,$6,$22	# U : U L U U :
-+	or	$1,$5,$1	# E : 2nd src word complete
-+	extqh	$3,$6,$22	# U : L U L U :
- 
- 	cmoveq	$6,$31,$22	# E : dst aligned?
- 	extql	$3,$6,$3	# U :
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
