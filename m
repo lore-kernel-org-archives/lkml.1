@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbXFWEGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXFWEVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752570AbXFWEGr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 00:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbXFWEGk
+	id S1752083AbXFWEVW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 00:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbXFWEVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 00:06:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58623 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750833AbXFWEGj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 00:06:39 -0400
-Date: Fri, 22 Jun 2007 21:05:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Cc: rdreier@cisco.com, apw@shadowen.org, linux-kernel@vger.kernel.org
-Subject: Re: scripts/checkpatch.pl refers to non-existent
- Documentation/Documentation/volatile-considered-harmful.txt
-Message-Id: <20070622210559.6b9f7c30.akpm@linux-foundation.org>
-In-Reply-To: <9a8748490706201403v1cee4467m78d143db86be02fc@mail.gmail.com>
-References: <ada3b0m8hr0.fsf@cisco.com>
-	<9a8748490706201403v1cee4467m78d143db86be02fc@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 23 Jun 2007 00:21:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35536 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751015AbXFWEVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 00:21:11 -0400
+Message-ID: <467C9F8D.8020000@garzik.org>
+Date: Sat, 23 Jun 2007 00:20:29 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Woodhouse <dwmw2@infradead.org>,
+       Adrian Bunk <bunk@stusta.de>, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] schedule BLK_DEV_IDE_SATA for removal
+References: <20070621235211.GH23017@stusta.de>	<1182483586.10524.33.camel@shinybook.infradead.org>	<20070622101019.0f3b0d3d@the-village.bc.nu> <18044.39404.380472.887065@cargo.ozlabs.ibm.com>
+In-Reply-To: <18044.39404.380472.887065@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 20 Jun 2007 23:03:44 +0200 "Jesper Juhl" <jesper.juhl@gmail.com> wrote:
-> On 20/06/07, Roland Dreier <rdreier@cisco.com> wrote:
-> > Commit 4a0df2ef added the following to scripts/checkpatch.pl:
-> >
-> >     print "Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt\n";
-> >
-> > but Linus's tree has no such file.  not sure what the right thing to
-> > do here is, since I assume we do ultimately want something of the sort
-> > in Documentation...
-> >
+Paul Mackerras wrote:
+> Alan Cox writes:
 > 
-> That document is in the -mm kernel currently. As soon as it hits
-> mainline from there checkpatch.pl will be right :-)
+>> On Fri, 22 Jun 2007 11:39:45 +0800
+>> David Woodhouse <dwmw2@infradead.org> wrote:
+>>
+>>> On Fri, 2007-06-22 at 01:52 +0200, Adrian Bunk wrote:
+>>>> Users should use the libata based drivers for SATA drives.
+>>> NAK. Not all IDE drivers are converted yet. Not even all the relatively
+>>> common ones.
+>> All the common SATA ones are. Just the PowerPC people are falling behind.
+>> Really we should obsolete powerpc instead ;)
 > 
+> What SATA drive uses a non-libata driver on PowerPC?  In fact the
+> sata_svw driver used for SATA drives on G5s was one of the early
+> libata drivers.  Or are you talking about PATA?
 
-oops.  I queued volatile-considered-harmful-take-3.patch for 2.6.22, thanks.
+This entire thread is confused :)
+
+Going back to $subject, it is relevant only to the scant few old-IDE 
+drivers that do indeed successfully probe and talk to SATA drives, from 
+SATA controllers.
+
+The vast majority have always used libata for SATA, but another option 
+did indeed exist before libata appeared, for a few controllers.
+
+Alan was just having a bit of fun at dwmw2's expense, since we do indeed 
+want to see libata drivers for PowerPC PATA as well :)
+
+	Jeff
+
+
