@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761209AbXFWQyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbXFWQ7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761209AbXFWQyb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 12:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761342AbXFWQyK
+	id S1760922AbXFWQ7J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 12:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbXFWQ66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 12:54:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:64607 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760987AbXFWQyI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 12:54:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sD5SpH9CcA4ugS1gKXi95c3C01akg4O65oMk9dhwt2zf3cCJshOIehrZBRY2urlhaVPr++7L1gRpzpvrk7JWQ9Ds/qgAeMACxGgg+pIc7B1AH9fKYiEuWcsbJB3feX2Dn9moK9/0+7VPLEf1ef5oHHbYYfvF5ghjGg9s8niKUjw=
-Message-ID: <7579f7fb0706230954n20430e8bq4c229f72e1c32bcf@mail.gmail.com>
-Date: Sat, 23 Jun 2007 09:54:08 -0700
-From: "Matthew Jacob" <lydianconcepts@gmail.com>
-To: "Torsten Duwe" <duwe@lst.de>
-Subject: Re: How innovative is Linux?
-Cc: "Grozdan Nikolov" <microchip@chello.be>, linux-kernel@vger.kernel.org
-In-Reply-To: <200706231842.00798.duwe@lst.de>
+	Sat, 23 Jun 2007 12:58:58 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:57997 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755252AbXFWQ65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 12:58:57 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/1] audit: fix oops removing watch if audit disabled
+Date: Sat, 23 Jun 2007 19:58:32 +0300
+User-Agent: KMail/1.9.7
+Cc: Tony Jones <tonyj@suse.de>, linux-audit@redhat.com,
+       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+References: <20070620223820.GA16416@suse.de> <20070623095153.279c1194.akpm@linux-foundation.org>
+In-Reply-To: <20070623095153.279c1194.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart24139546.4GOUkIM0Jj";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706231417.16086.microchip@chello.be>
-	 <200706231812.02317.duwe@lst.de>
-	 <200706231819.43556.microchip@chello.be>
-	 <200706231842.00798.duwe@lst.de>
+Message-Id: <200706231958.32313.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> > hmm, wasn't loadable kernel modules first implemented in SunOS 4.x [...]
-> Yes, but that was pretty cumbersome. You had to resolve the symbols in user
-> space, using a hopefully matching /vmunix. Linux was first to feature an
-> in-kernel linker and symbol table, IIRC.
->
->
+--nextPart24139546.4GOUkIM0Jj
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Err, uh, no- I believe that Solaris development for this at the very
-least predates even 0.59 linux- I think it was Joe Provino at Sun ECD
-near Boston who gave us a working prototype in early 1989.
+23 Haz 2007 Cts tarihinde, Andrew Morton =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9F=
+t=C4=B1:=20
+> This looks like 2.6.22 material to me.
+>
+> Question is: is it also 2.6.21.x material?
+
+I even can reproduce same oops with 2.6.18 :)
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart24139546.4GOUkIM0Jj
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGfVE4y7E6i0LKo6YRAo/QAKDWeiIS3djIZcU2ex6XvCZM33fjGgCeJ7/m
+UsjIP1agdO9hR5gbVgjYyjg=
+=oQL1
+-----END PGP SIGNATURE-----
+
+--nextPart24139546.4GOUkIM0Jj--
