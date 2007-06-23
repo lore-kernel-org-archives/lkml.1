@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761214AbXFWRFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761342AbXFWRGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761214AbXFWRFO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 13:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759969AbXFWRFB
+	id S1761342AbXFWRGA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 13:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760387AbXFWRFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 13:05:01 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46277 "EHLO
+	Sat, 23 Jun 2007 13:05:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58403 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759151AbXFWRFA (ORCPT
+	by vger.kernel.org with ESMTP id S1760282AbXFWRFw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 13:05:00 -0400
-Date: Sat, 23 Jun 2007 09:54:26 -0700
+	Sat, 23 Jun 2007 13:05:52 -0400
+Date: Sat, 23 Jun 2007 09:53:59 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: linux-kernel@vger.kernel.org, kraxel@bytesex.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>, stable@kernel.org
-Subject: Re: [PATCH] saa7134: fix thread shutdown handling
-Message-Id: <20070623095426.6049f883.akpm@linux-foundation.org>
-In-Reply-To: <467AC742.7070007@suse.com>
-References: <467AC742.7070007@suse.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de, hch@infradead.org, johnstul@us.ibm.com,
+       oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com, dipankar@in.ibm.com,
+       davem@davemloft.net, kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 5/5 v2] Convert tasklets to work queues
+Message-Id: <20070623095359.4667514e.akpm@linux-foundation.org>
+In-Reply-To: <20070622182315.571740041@goodmis.org>
+References: <20070622182051.859570787@goodmis.org>
+	<20070622182315.571740041@goodmis.org>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,44 +29,19 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 21 Jun 2007 14:45:22 -0400 Jeff Mahoney <jeffm@suse.com> wrote:
->  This patch changes the test for the thread pid from >= 0 to > 0.
-> 
->  When the saa8134 driver initialization fails after a certain point,
->  it goes through the complete shutdown process for the driver. Part
->  of shutting it down includes tearing down the thread for tv audio.
-> 
->  The test for tearing down the thread tests for >= 0. Since the dev
->  structure is kzalloc'd, the test will always be true if we haven't
->  tried to start the thread yet. We end up waiting on pid 0 to complete,
->  which will never happen, so we lock up.
-> 
->  This bug was observed in Novell Bugzilla 284718, when request_irq()
->  failed.
-> 
-> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-> 
-> ---
-> 
->  drivers/media/video/saa7134/saa7134-tvaudio.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/drivers/media/video/saa7134/saa7134-tvaudio.c	2007-06-12 15:45:16.000000000 -0400
-> +++ b/drivers/media/video/saa7134/saa7134-tvaudio.c	2007-06-15 14:16:14.000000000 -0400
-> @@ -1005,7 +1005,7 @@
->  int saa7134_tvaudio_fini(struct saa7134_dev *dev)
->  {
->  	/* shutdown tvaudio thread */
-> -	if (dev->thread.pid >= 0) {
-> +	if (dev->thread.pid > 0) {
->  		dev->thread.shutdown = 1;
->  		wake_up_interruptible(&dev->thread.wq);
->  		wait_for_completion(&dev->thread.exit);
-> 
+> On Fri, 22 Jun 2007 14:20:56 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
+> This patch replaces the tasklet implementation with a work
+> queue implementation while keeping the tasklet API.
+> The API is still the same, and the drivers don't know that a
+> work queue is being used.
 
-This is no longer applicable to the dvb devel tree, because this code has
-been converted to the kthread API.
+I still think this sucks: we end up with a fairly pointless-looking wrapper
+API which we wouldn't have put in the kernel except for messy legacy
+editing-is-too-hard reasons.  In an ideal world, it'd be better just to get
+in and do the hard work.
 
-However I guess we do want this in 2.6.22 and in 2.6.21.x.  Mauro, if
-that's OK, do you want me to do the merges?
+Anyway.  Please fix the many correct warnings which checkpatch.pl
+generates, reissue the patches with a decent overall changelog (this series
+had no rationale for the changes at all) and we'll see what happens.
 
+Thanks.
