@@ -1,99 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbXFWSEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbXFWSF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758502AbXFWSEu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 14:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbXFWSEn
+	id S1757956AbXFWSF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 14:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbXFWSFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 14:04:43 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:62793 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753577AbXFWSEn (ORCPT
+	Sat, 23 Jun 2007 14:05:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39803 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754902AbXFWSFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 14:04:43 -0400
-Subject: Re: [RFC PATCH 5/5 v2] Convert tasklets to work queues
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, hch@infradead.org, johnstul@us.ibm.com,
-       oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com, dipankar@in.ibm.com,
-       davem@davemloft.net, kuznet@ms2.inr.ac.ru
-In-Reply-To: <20070623095359.4667514e.akpm@linux-foundation.org>
-References: <20070622182051.859570787@goodmis.org>
-	 <20070622182315.571740041@goodmis.org>
-	 <20070623095359.4667514e.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 23 Jun 2007 14:00:17 -0400
-Message-Id: <1182621617.5493.136.camel@localhost.localdomain>
+	Sat, 23 Jun 2007 14:05:07 -0400
+Date: Sat, 23 Jun 2007 11:04:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: spock@gentoo.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] fbdev: make fb_find_mode look for a mode with the
+ highest refresh rate
+Message-Id: <20070623110424.9a68d82d.akpm@linux-foundation.org>
+In-Reply-To: <20070623105046.GB12623@spock.one.pl>
+References: <20070623105046.GB12623@spock.one.pl>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-06-23 at 09:53 -0700, Andrew Morton wrote:
-> > On Fri, 22 Jun 2007 14:20:56 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
-> > This patch replaces the tasklet implementation with a work
-> > queue implementation while keeping the tasklet API.
-> > The API is still the same, and the drivers don't know that a
-> > work queue is being used.
+On Sat, 23 Jun 2007 12:50:46 +0200 Michal Januszewski <spock@gentoo.org> wrote:
+
+> If the refresh rate hasn't been explicitly specified, fd_find_mode
+> currently returns the first mode with the requested resolution. Change
+> it so that it returns a mode with the requested resolution and the
+> highest refresh rate.
 > 
-> I still think this sucks: we end up with a fairly pointless-looking wrapper
-> API which we wouldn't have put in the kernel except for messy legacy
-> editing-is-too-hard reasons.  In an ideal world, it'd be better just to get
-> in and do the hard work.
-
-If I had all the hardware that tasklets touch, I'd start doing it. (look
-for more patches from me that do this for the hardware I do have :-)
-
+> Also export fb_destroy_modelist, which is used in uvesafb.
 > 
-> Anyway.  Please fix the many correct warnings which checkpatch.pl
+> Signed-off-by: Michal Januszewski <spock@gentoo.org>
+> ---
+> drivers/video/modedb.c |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+> index 3741ad7..98ee77b 100644
+> --- a/drivers/video/modedb.c
+> +++ b/drivers/video/modedb.c
+> @@ -606,16 +606,18 @@ done:
+>  	DPRINTK("Trying specified video mode%s %ix%i\n",
+>  	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
+>  
+> +	if (!refresh_specified)
+> +		refresh = 200;
+>  	diff = refresh;
+>  	best = -1;
+>  	for (i = 0; i < dbsize; i++) {
+>  		if (name_matches(db[i], name, namelen) ||
+>  		    (res_specified && res_matches(db[i], xres, yres))) {
+>  			if(!fb_try_mode(var, info, &db[i], bpp)) {
+> -				if(!refresh_specified || db[i].refresh == refresh)
+> +				if (refresh_specified && db[i].refresh == refresh)
+>  					return 1;
+>  				else {
+> -					if(diff > abs(db[i].refresh - refresh)) {
+> +					if (diff > abs(db[i].refresh - refresh)) {
+>  						diff = abs(db[i].refresh - refresh);
+>  						best = i;
+>  					}
+> @@ -938,6 +940,7 @@ void fb_destroy_modelist(struct list_head *head)
+>  		kfree(pos);
+>  	}
+>  }
+> +EXPORT_SYMBOL_GPL(fb_destroy_modelist);
+>  
 
-I'll have to add a clean up patch. A lot of the output from that came
-from me moving existing code.  So I'll have to clean up the existing
-code first so that checkpatch.pl doesn't complain about it.  I prefer a
-patch that moves code to do nothing but that, move code and not even add
-clean ups to it.  So the simple solution is, add patch to clean up (will
-do).
+fbdev ignoramus asks: isn't this pretty risky?  People who were previously
+relying upon (or at least using) the kernel's default resolution will find
+their displays coming up in a quite different resolution.
 
-Also this:
-
-   void tasklet_schedule(struct tasklet_struct *t)
-   {
-           WARN_ON_ONCE(!ktaskletd_wq);
-           queue_work(ktaskletd_wq, &t->work);
-   }
-
-   EXPORT_SYMBOL(tasklet_schedule);
-
-
-produces
-
-   PATCH: tasklets-to-workqueues.patch:259:
-   FILE: linux-2.6-test/kernel/tasklet_work.c:30:
-   +EXPORT_SYMBOL(tasklet_schedule);
-
-
-So I guess that blank line is not acceptable?
-and should be:
-
-   void tasklet_schedule(struct tasklet_struct *t)
-   {
-           WARN_ON_ONCE(!ktaskletd_wq);
-           queue_work(ktaskletd_wq, &t->work);
-   }
-   EXPORT_SYMBOL(tasklet_schedule);
-
-I'll fix that up.
-
-> generates, reissue the patches with a decent overall changelog (this series
-> had no rationale for the changes at all) and we'll see what happens.
-
-Should I just put in the prologue from the first series, or slim it down
-a bit so people don't need to read the whole thing every time? I can
-just put in the stuff that's relevant and leave out the "history".
-
-Thanks,
-
--- Steve
-
+This change seems to be quite unrelated to the uvesafb stuff and should be
+in a separate patch from the export, which _is_ uvesafb-related.  I think. 
+If that's wrong then the changelog could do with some attention.
 
