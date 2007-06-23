@@ -1,104 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbXFWIt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbXFWJDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbXFWIt3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 04:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbXFWItS
+	id S1754305AbXFWJDa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 05:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbXFWJDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 04:49:18 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:51487 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752570AbXFWItQ (ORCPT
+	Sat, 23 Jun 2007 05:03:22 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39061 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752748AbXFWJDV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 04:49:16 -0400
-To: ebiederm@xmission.com
-CC: davem@davemloft.net, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <m17ipxfi9d.fsf@ebiederm.dsl.xmission.com>
-Subject: Re: [PATCH] fix race in AF_UNIX
-References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
-	<20070605.224128.104032917.davem@davemloft.net>
-	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
-	<20070607.184731.10907840.davem@davemloft.net>
-	<E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu> <m17ipxfi9d.fsf@ebiederm.dsl.xmission.com>
-Message-Id: <E1I21IL-0004LH-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 23 Jun 2007 10:48:37 +0200
+	Sat, 23 Jun 2007 05:03:21 -0400
+Date: Sat, 23 Jun 2007 10:08:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <ak@suse.de>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, Yinghai Lu <Yinghai.Lu@sun.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
+Message-ID: <20070623100824.3d96186e@the-village.bc.nu>
+In-Reply-To: <200706230214.02535.ak@suse.de>
+References: <200706221219.16243.yinghai.lu@sun.com>
+	<m18xabbrp6.fsf@ebiederm.dsl.xmission.com>
+	<20070622231951.4d516215@the-village.bc.nu>
+	<200706230214.02535.ak@suse.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric, thanks for looking at this.
+> But I doubt this was YH's problem - the panic kernel memory
+> is always reserved and there shouldn't be any ongoing DMAs in this
+> area anyways. And what happens outside the kdump kernel shouldn't matter.
 
-> >> > There are races involving the garbage collector, that can throw away
-> >> > perfectly good packets with AF_UNIX sockets in them.
-> >> > 
-> >> > The problems arise when a socket goes from installed to in-flight or
-> >> > vice versa during garbage collection.  Since gc is done with a
-> >> > spinlock held, this only shows up on SMP.
-> >> > 
-> >> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> >> 
-> >> I'm going to hold off on this one for now.
-> >> 
-> >> Holding all of the read locks kind of defeats the purpose of using
-> >> the per-socket lock.
-> >> 
-> >> Can't you just lock purely around the receive queue operation?
-> >
-> > That's already protected by the receive queue spinlock.  The race
-> > however happens _between_ pushing the root set and marking of the
-> > in-flight but reachable sockets.
-> >
-> > If in that space any of the AF_UNIX sockets goes from in-flight to
-> > installed into a file descriptor, the garbage collector can miss it.
-> > If we want to protect against this using unix_sk(s)->readlock, then we
-> > have to hold all of them for the duration of the marking.
-> >
-> > Al, Alan, you have more experience with this piece of code.  Do you
-> > have better ideas about how to fix this?
-> 
-> I haven't looked at the code closely enough to be confident of
-> changing something in this area.  However the classic solution to this
-> kind of gc problem is to mark things that are manipulated during
-> garbage collection as dirty (not orphaned).
-> 
-> It should be possible to fix this problem by simply changing gc_tree
-> when we perform a problematic manipulation of a passed socket, such
-> as installing a passed socket into the file descriptors of a process.
-> 
-> Essentially the idea is moving the current code in the direction of
-> an incremental gc algorithm.
-> 
-> 
-> If I understand the race properly.  What happens is that we dequeue
-> a socket (which has packets in it passing sockets) before the
-> garbage collector gets to it.  Therefore the garbage collector
-> never processes that socket.  So it sounds like we just
-> need to call maybe_unmark_and_push or possibly just wait for
-> the garbage collector to complete when we do that and the packet
-> we have pulled out 
-
-Right.  But the devil is in the details, and (as you correctly point
-out later) to implement this, the whole locking scheme needs to be
-overhauled.  Problems:
-
- - Using the queue lock to make the dequeue and the fd detach atomic
-   wrt the GC is difficult, if not impossible: they are are far from
-   each other with various magic in between.  It would need thorough
-   understanding of these functions and _big_ changes to implement.
-
- - Sleeping on u->readlock in GC is currently not possible, since that
-   could deadlock with unix_dgram_recvmsg().  That function could
-   probably be modified to release u->readlock, while waiting for
-   data, similarly to unix_stream_recvmsg() at the cost of some added
-   complexity.
-
- - Sleeping on u->readlock is also impossible, because GC is holding
-   unix_table_lock for the whole operation.  We could release
-   unix_table_lock, but then would have to cope with sockets coming
-   and going, making the current socket iterator unworkable.
-
-So theoretically it's quite simple, but it needs big changes.  And
-this wouldn't even solve all the problems with the GC, like being a
-possible DoS vector.
-
-Miklos
+In the kdump case it looks like there is still DMA going on through the
+GART on some systems when kdump zaps it.
