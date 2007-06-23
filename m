@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbXFWWLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbXFWWNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009AbXFWWLA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 18:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbXFWWKx
+	id S1753516AbXFWWNG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 18:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXFWWM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 18:10:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55082 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751926AbXFWWKx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 18:10:53 -0400
-Date: Sat, 23 Jun 2007 15:09:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, hch@infradead.org,
-       johnstul@us.ibm.com, oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com,
-       dipankar@in.ibm.com, davem@davemloft.net, kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 5/5 v2] Convert tasklets to work queues
-In-Reply-To: <1182626869.5493.143.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.0.98.0706231508420.3593@woody.linux-foundation.org>
-References: <20070622182051.859570787@goodmis.org>  <20070622182315.571740041@goodmis.org>
-  <20070623095359.4667514e.akpm@linux-foundation.org> 
- <alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org>
- <1182626869.5493.143.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 23 Jun 2007 18:12:56 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46903 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752551AbXFWWMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 18:12:55 -0400
+Date: Sun, 24 Jun 2007 00:13:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: jimmy bahuleyan <knight.camelot@gmail.com>
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org
+Subject: Re: make xconfig failure on 2.6.21.5
+Message-ID: <20070623221359.GA9364@uranus.ravnborg.org>
+References: <467D6A21.8020507@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <467D6A21.8020507@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 23 Jun 2007, Steven Rostedt wrote:
-> > 
-> > On Sat, 23 Jun 2007, Andrew Morton wrote:
-> > > 
-> > > Anyway.  Please fix the many correct warnings which checkpatch.pl
-> > > generates
-> > 
-> > Actually, please don't.
+On Sun, Jun 24, 2007 at 12:14:49AM +0530, jimmy bahuleyan wrote:
 > 
-> You sure?  If I were to do this recommended fix, I would simply add
-> another patch. One to do the fixes, the other to move the code.
+> Hi,
+> 
+> I have a Kubuntu 7.04 distro with Qt4 development packages installed.
+> Trying to do a 'make xconfig' fails with:
+> 
+>   HOSTCC  scripts/basic/fixdep
+>   HOSTCC  scripts/basic/docproc
+>   CHECK   qt
+> *
+> * Unable to find the QT installation. Please make sure that
+> * the QT development package is correctly installed and
+> * either install pkg-config or set the QTDIR environment
+> * variable to the correct location.
+> *
+>   HOSTCC  scripts/kconfig/conf.o
+> sed < scripts/kconfig/lkc_proto.h > scripts/kconfig/lkc_defs.h
+> 's/P(\([^,]*\),.*/#define \1 (\*\1_p)/'
+>   HOSTCC  scripts/kconfig/kconfig_load.o
+>   HOSTCC  scripts/kconfig/kxgettext.o
+>   SHIPPED scripts/kconfig/zconf.tab.c
+>   SHIPPED scripts/kconfig/lex.zconf.c
+>   SHIPPED scripts/kconfig/zconf.hash.c
+>   HOSTCC  scripts/kconfig/zconf.tab.o
+> make[1]: *** No rule to make target `scripts/kconfig/.tmp_qtcheck',
+> needed by `scripts/kconfig/qconf.o'.  Stop.
+> make: *** [xconfig] Error 2
+> 
+> 
+> Is this a problem with my setup or that kbuild/kconfig can't handle Qt4?
 
-Sure, that sounds fine.
+xconfig does not yet support qt4 (IIRC).
+So you will need qt3 packages to build xconfig.
+Patches to introduce qt4 config without breaking qt3 config
+are appreciated...
 
-		Linus
+	Sam
