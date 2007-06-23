@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbXFWRQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbXFWRXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760984AbXFWRQb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 13:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760706AbXFWRQW
+	id S1759082AbXFWRXi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 13:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbXFWRX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 13:16:22 -0400
-Received: from mail.screens.ru ([213.234.233.54]:53744 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760608AbXFWRQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 13:16:20 -0400
-Date: Sat, 23 Jun 2007 21:17:00 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 5/5 v2] Convert tasklets to work queues
-Message-ID: <20070623171700.GB2346@tv-sign.ru>
-References: <20070622182051.859570787@goodmis.org> <20070622182315.571740041@goodmis.org>
+	Sat, 23 Jun 2007 13:23:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41983 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751191AbXFWRX3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 13:23:29 -0400
+Date: Sat, 23 Jun 2007 10:23:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Jay L. T. Cornwall" <jay@esuna.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc5: pdflush oops under heavy disk load
+Message-Id: <20070623102318.1b4f3d24.akpm@linux-foundation.org>
+In-Reply-To: <467D0EB0.9030100@esuna.co.uk>
+References: <467B12CA.5060405@esuna.co.uk>
+	<467BE118.4090308@redhat.com>
+	<467BE4F1.7040308@esuna.co.uk>
+	<467D0EB0.9030100@esuna.co.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070622182315.571740041@goodmis.org>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-minor nitpick,
+On Sat, 23 Jun 2007 13:14:40 +0100 "Jay L.  T.  Cornwall" <jay@esuna.co.uk>
+wrote:
 
-On 06/22, Steven Rostedt wrote:
->
-> +void takeover_tasklets(unsigned int cpu)
-> +{
-> +}
+> Jay L. T. Cornwall wrote:
+> 
+> > Already done. The filesystem came back as clean after the first oops,
+> > but I forced a recheck with fsck to be safe - it found no problems.
+> > 
+> > This is reproducible on a clean filesystem.
+> 
+> Following up on this, I've now extracted another oops (at the bottom of
+> this mail).
+> 
+> The common factor here seems to be the buffer_head circular list leading
+> to invalid pointers in bh->b_this_page.
+> 
+> I'm beginning to suspect the Attansic L1 Gigabit Etherner driver (marked
+> as EXPERIMENTAL in 2.6.22-rc5). I can't reproduce these panics on
+> disk-to-disk copies or SCP across the localhost interface. However, SCP
+> from a server onto either of two different HDDs hits these oopses fairly
+> quickly.
 
-Since you don't use config option any longer, I think it is better
-to just kill this function and fix it's only caller.
+That sounds like a good theory: you're getting easily-hit oopses in one of
+the kernel's most-used codepaths which hasn't chanbged much in a long
+time.  So Something Odd Has Happened.
 
-You can also kill the declaration of tasklet_kill_immediate() in
-tasklet.h.
+> Is it even possible for the Ethernet driver to corrupt ext3 data
+> structures, short of trashing memory?
 
-Oleg.
+I suppose so.
+
+I'd suggest that you enable every kernel debugging feature you can get your
+hands on (in the Kernel Hacking menu) and see if that turns anything up.
+
+Failing that, if you can whack a different network card in that machine it
+would help to firm or deny your suspicion.
 
