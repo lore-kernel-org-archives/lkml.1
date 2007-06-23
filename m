@@ -1,141 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbXFWKbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbXFWKh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbXFWKbA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 06:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbXFWKax
+	id S1755631AbXFWKh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 06:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbXFWKhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 06:30:53 -0400
-Received: from 1wt.eu ([62.212.114.60]:3105 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbXFWKaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 06:30:52 -0400
-Date: Sat, 23 Jun 2007 12:30:12 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Alberto Gonzalez <info@gnebu.es>
-Cc: Paolo Ornati <ornati@fastwebnet.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question about fair schedulers
-Message-ID: <20070623103012.GC7070@1wt.eu>
-References: <200706230007.15622.info@gnebu.es> <200706231001.02497.info@gnebu.es> <20070623082320.GX943@1wt.eu> <200706231118.43408.info@gnebu.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706231118.43408.info@gnebu.es>
-User-Agent: Mutt/1.5.11
+	Sat, 23 Jun 2007 06:37:16 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:40583 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752421AbXFWKhO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 06:37:14 -0400
+To: mingo@elte.hu
+CC: torvalds@linux-foundation.org, cebbert@redhat.com, jarkao2@o2.pl,
+       miklos@szeredi.hu, chris@atlee.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, akpm@linux-foundation.org
+In-reply-to: <20070622081702.GA14746@elte.hu> (message from Ingo Molnar on
+	Fri, 22 Jun 2007 10:17:02 +0200)
+Subject: Re: [BUG] long freezes on thinkpad t60
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621201624.GD22303@elte.hu> <20070622081702.GA14746@elte.hu>
+Message-Id: <E1I22yO-0004TX-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 23 Jun 2007 12:36:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 11:18:43AM +0200, Alberto Gonzalez wrote:
-> On Saturday 23 June 2007, Willy Tarreau wrote:
-> > On Sat, Jun 23, 2007 at 10:01:02AM +0200, Alberto Gonzalez wrote:
-> > > I see. So you mean that in 90% of the cases the mainline scheduler
-> > > behaves better than fair schedulers, but when its "logic" fails it
-> > > behaves much worse (the other 10% cases)? In my very simple test scenario
-> > > the mainline scheduler did behave much better. Maybe the problem comes
-> > > with very complex scenarios like the ones I've seen when testing these 2
-> > > fair schedulers (something like compiling a kernel while you open 5
-> > > instances of glxgears, write an email, play music in Amarok and watch 2
-> > > HD videos all at the same time). The question would then be if these kind
-> > > of situations are likely to happen in real world, or even if it doesn't
-> > > make more sense to try to improve the logic of the mainline scheduler so
-> > > that those 10% cases are handled better instead of writing a new one that
-> > > would behave worse in 90% of the cases and better in the other 10%.
-> >
-> > No, in fact, the mainline scheduler is good only for the very particular
-> > cases you propose here. But on some fairly trivial situations (such as two
-> > processes consuming very close to 50% CPU), it can be a disaster. I've had
-> > proxies under medium load slow down sshd so much that it was impossible to
-> > log in. Most of the worst situations have been fixed since the early 2.6
-> > versions (2.6.11 was still horrible), but it's the general design which
-> > makes such cases hard to find and to fix.
+> > the freezes that Miklos was seeing were hardirq contexts blocking in 
+> > task_rq_lock() - that is done with interrupts disabled. (Miklos i 
+> > think also tried !NOHZ kernels and older kernels, with a similar 
+> > result.)
+> > 
+> > plus on the ptrace side, the wait_task_inactive() code had most of its 
+> > overhead in the atomic op, so if any timer IRQ hit _that_ core, it was 
+> > likely while we were still holding the runqueue lock!
+> > 
+> > i think the only thing that eventually got Miklos' laptop out of the 
+> > wedge were timer irqs hitting the ptrace CPU in exactly those 
+> > instructions where it was not holding the runqueue lock. (or perhaps 
+> > an asynchronous SMM event delaying it for a long time)
 > 
-> I see. I was sure I was missing something, since everyone around here are 
-> praising these new schedulers. However, the example you provide is not so 
-> much about fair/unfair, but about good/bad scheduler. I mean, if a process 
-> consumes 48% CPU and the other one also consumes 48% (if each were running 
-> alone), when you run them at the same time a fair scheduler would give them 
-> 48% to each, but an unfair one should also give them 48% to each. I still 
-> fail to see the advantages of the "fair scheduler" design (even if I accept 
-> that CFS is technically much better than mainline and thus work better in 
-> your example).
+> even considering that the 'LOCK'-ed intruction was the heaviest in the 
+> busy-loop, the numbers still just dont add up to 'tens of seconds of 
+> lockups', so there must be something else happening too.
 > 
-> > Your situation is clearly something standard where only the user can decide
-> > which application should get more CPU. You start two CPU hogs, and your
-> > mind tells you that you would prefer the video not to skip and the encoding
-> > to finish later. For other people, it might be the reverse because the
-> > video will be there just for monitoring purposes. The nice command was
-> > invented exactly for that, and people have been happily using it for the
-> > last 30 years. I don't see why it should become hard to use ! Many
-> > CPU-sensitive applications already provide the ability to change their nice
-> > value themselves using a command line parameter.
-> >
-> > And if it is still too hard to assign nice values from within your
-> > environment, then perhaps it's the environment which does not suit your
-> > needs. Even Windows users can choose to assign more priorities to
-> > foreground/background tasks, so it is something universally accepted,
-> > and I would be really surprized that you would not have the ability
-> > to proceed the same way.
+> So here's an addition to the existing theories: the Core2Duo is a 
+> 4-issue CPU architecture. Now, why does this matter? It matters to the 
+> timing of the delivery of interrupts. For example, on a 3-issue 
+> architecture, the instruction level profile of well-cached workloads 
+> often looks like this:
 > 
-> I think you're not considering normal users here.
+> c05a3b71:      710      89 d6                   mov    %edx,%esi
+> c05a3b73:        0      8b 55 c0                mov    0xffffffc0(%ebp),%edx
+> c05a3b76:        0      89 c3                   mov    %eax,%ebx
+> c05a3b78:      775      8b 82 e8 00 00 00       mov    0xe8(%edx),%eax
+> c05a3b7e:        0      8b 48 18                mov    0x18(%eax),%ecx
+> c05a3b81:        0      8b 45 c8                mov    0xffffffc8(%ebp),%eax
+> c05a3b84:      792      89 1c 24                mov    %ebx,(%esp)
+> c05a3b87:        0      89 74 24 04             mov    %esi,0x4(%esp)
+> c05a3b8b:        0      ff d1                   call   *%ecx
+> c05a3b8d:        0      8b 4d c8                mov    0xffffffc8(%ebp),%ecx
+> c05a3b90:      925      8b 41 6c                mov    0x6c(%ecx),%eax
+> c05a3b93:        0      39 41 10                cmp    %eax,0x10(%ecx)
+> c05a3b96:        0      0f 85 a8 01 00 00       jne    c05a3d44 <schedule+0x2a4>
+> c05a3b9c:      949      89 da                   mov    %ebx,%edx
+> c05a3b9e:        0      89 f1                   mov    %esi,%ecx
+> c05a3ba0:        0      8b 45 c8                mov    0xffffffc8(%ebp),%eax
+> 
+> the second column is the number of times the profiling interrupt has hit 
+> that particular instruction.
+> 
+> Note the many zero entries - this means that for instructions that are 
+> well-cached, the issue order _prevents_ interrupts from _ever_ hitting 
+> to within a bundle of micro-ops that the decoder will issue! The above 
+> workload was a plain lat_ctx, so nothing special, and interrupts and DMA 
+> traffic were coming and going. Still the bundling of instructions was 
+> very strong.
+> 
+> There's no guarantee of 'instruction bundling': a cachemiss can still 
+> stall the pipeline and allow an interrupt to hit any instruction [where 
+> interrupt delivery is valid], but on a well-cached workload like the 
+> above, even a 3-issue architecture can effectively 'merge' instructions 
+> to each other, and can make them essentially 'atomic' as far as external 
+> interrupts go.
+> 
+> [ also note another interesting thing in the profile above: the
+>   CALL *%ecx was likely BTB-optimized and hence we have a 'bundling' 
+>   effect that is even larger than 3 instructions. ]
+> 
+> i think that is what might have happened on Miklos's laptop too: the 
+> 'movb' of the spin_unlock() done by the wait_task_inactive() got 
+> 'bundled' together with the first LOCK instruction that took it again, 
+> making it very unlikely for a timer interrupt to ever hit that small 
+> window in wait_task_inactive(). The cpu_relax()'s "REP; NOP" was likely 
+> a simple NOP, because the Core2Duo is not an SMT platform.
+> 
+> to check this theory, adding 3 NOPs to the critical section should make 
+> the lockups a lot less prominent too. (While NOPs are not actually 
+> 'issued', they do take up decoder bandwidth, so they hopefully are able 
+> to break up any 'bundle' of instructions.)
+> 
+> Miklos, if you've got some time to test this - could you revert the 
+> fa490cfd15d7 commit and apply the patch below - does it have any impact 
+> on the lockups you were experiencing?
 
-Yes I am.
+No.  If anything it made the freezes somwhat more frequent.
 
-> Believe it or not, 99% of 
-> desktop users in the world just click on a icon to watch a video. And they DO 
-> want watch them, not use them for monitoring purposes (whatever that means).
+And it's not a NO_HZ kernel.
 
-Of course, I was just trying to give you an example.
+What I notice is that the interrupt distribution between the CPUs is
+very asymmetric like this:
 
-> I acknowledge it's impossible to be inside a user's mind to decide what it's 
-> more important to him/her, but let's agree that clearly a audio/video player 
-> should have by default a higher priority than an audio/video encoder, for the 
-> simple reason that one task requires a certain amount of CPU to do the job 
-> correctly, while the other one can do the job correctly regardless of how 
-> much CPU time you give it. They are different in nature.
+           CPU0       CPU1
+  0:     220496         42   IO-APIC-edge      timer
+  1:       3841          0   IO-APIC-edge      i8042
+  8:          1          0   IO-APIC-edge      rtc
+  9:       2756          0   IO-APIC-fasteoi   acpi
+ 12:       2638          0   IO-APIC-edge      i8042
+ 14:       7776          0   IO-APIC-edge      ide0
+ 16:       6083          0   IO-APIC-fasteoi   uhci_hcd:usb2
+ 17:      34414          3   IO-APIC-fasteoi   uhci_hcd:usb3, HDA Intel
+ 18:          0          0   IO-APIC-fasteoi   uhci_hcd:usb4
+ 19:         32          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb5
+313:      11405          1   PCI-MSI-edge      eth0
+314:      29417         10   PCI-MSI-edge      ahci
+NMI:        164        118
+LOC:     220499     220463
+ERR:          0
 
-Yes, one of them works in real time, the other one does not.
+and the freezes don't really change that.  And the NMI traces show,
+that it's always CPU1 which is spinning in wait_task_inactive().
 
-> What I don't know is 
-> if knowing this should belong to the CPU scheduler or to the application 
-> itself.
-
-In your opinion ? Who between a few hundred lines function designed to fit
-all needs, and a specific MPEG player is the most aware that the MPEG player
-is very likely to require real time scheduling by nature ? At least, the old
-version of mplayer I have on my machine (1.0pre7) has a "-priority" option.
-Also, I remember that cdrecord automatically tries to go realtime in order
-to avoid underrunning the buffer.
-
-> But the bottom line is that on a desktop, tasks should receive 
-> different -unfair- amounts of CPU time to work correctly. The "fair" concept 
-> still looks wrong to me.
-
-"fair" means what it means : stop starving some tasks for no apparent reasons.
-If one task adjusts its priority, it can get more CPU than others, but the
-distribution will still be fair according to the priorities.
-
-> Nicing tasks might not be hard at all, but expecting normal users to do so is 
-> not realistic. Either the scheduler or the applications should make these 
-> decisions for them (us).
-
-No, I cannot agree with you. The users have to solutions to start their player:
-  - typing "mplayer xxx.mpeg" on the command line ; then they can prepend
-    "nice" in front of it
-
-  - clicking on an icon in their windows-like window managers, which makes
-    executes the command for them.
-
-If they decide to use the second solution, it means that the default settings
-assigned to the icon should fit the application (that applies to the nice
-value too). And if their distro ships with those pre-defined icons with stupid
-priorities, they should complain to the distro vendor or switch to another one.
-And if the window manager by itself does not make it easy to adjust priorities
-when starting processes, it's poorly designed because it is it and only it
-which forces the user to open a command line and manually set "nice".
-
-So there are plenty of really transparent solutions for the user, but maybe
-there are a lot of wrong tools and configurations...
-
-Regards,
-Willy
-
+Miklos
