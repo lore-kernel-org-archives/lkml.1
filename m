@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760442AbXFWQsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760670AbXFWQwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760442AbXFWQsT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 12:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbXFWQsI
+	id S1760670AbXFWQwT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 12:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759856AbXFWQwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 12:48:08 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43442 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757588AbXFWQsG (ORCPT
+	Sat, 23 Jun 2007 12:52:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52761 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759699AbXFWQwF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 12:48:06 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: davem@davemloft.net, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix race in AF_UNIX
-References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
-	<20070605.224128.104032917.davem@davemloft.net>
-	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
-	<20070607.184731.10907840.davem@davemloft.net>
-	<E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
-	<m17ipxfi9d.fsf@ebiederm.dsl.xmission.com>
-	<E1I21IL-0004LH-00@dorka.pomaz.szeredi.hu>
-Date: Sat, 23 Jun 2007 10:42:05 -0600
-In-Reply-To: <E1I21IL-0004LH-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's
-	message of "Sat, 23 Jun 2007 10:48:37 +0200")
-Message-ID: <m1ir9eaahu.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 23 Jun 2007 12:52:05 -0400
+Date: Sat, 23 Jun 2007 09:51:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: linux-kernel@vger.kernel.org, jaylubo@motorola.com
+Subject: Re: [PATCH] serial: Clear proper MPSC interrupt cause bits
+Message-Id: <20070623095144.0ec7e8c6.akpm@linux-foundation.org>
+In-Reply-To: <20070622023208.GA20651@mag.az.mvista.com>
+References: <20070622023208.GA20651@mag.az.mvista.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> writes:
+> On Thu, 21 Jun 2007 19:32:08 -0700 "Mark A. Greer" <mgreer@mvista.com> wrote:
+> From: Jay Lubomirski <jaylubo@motorola.com>
+> 
+> Don't clobber the interrupt cause bits for both MPSC controllers when
+> clearing the interrupt for one of them.  Just clear the one that is
+> supposed to be cleared.
+> 
+> Signed-off-by: Jay Lubomirski <jaylubo@motorola.com>
+> Acked-by: Mark A. Greer <mgreer@mvista.com>
+> ---
+>  drivers/serial/mpsc.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/serial/mpsc.c b/drivers/serial/mpsc.c
+> index d09f209..00924fe 100644
+> --- a/drivers/serial/mpsc.c
+> +++ b/drivers/serial/mpsc.c
+> @@ -503,7 +503,8 @@ mpsc_sdma_intr_ack(struct mpsc_port_info *pi)
+>  
+>  	if (pi->mirror_regs)
+>  		pi->shared_regs->SDMA_INTR_CAUSE_m = 0;
+> -	writel(0, pi->shared_regs->sdma_intr_base + SDMA_INTR_CAUSE);
+> +	writeb(0x00, pi->shared_regs->sdma_intr_base + SDMA_INTR_CAUSE +
+> +	       pi->port.line);
+>  	return;
+>  }
 
-> Right.  But the devil is in the details, and (as you correctly point
-> out later) to implement this, the whole locking scheme needs to be
-> overhauled.  Problems:
->
->  - Using the queue lock to make the dequeue and the fd detach atomic
->    wrt the GC is difficult, if not impossible: they are are far from
->    each other with various magic in between.  It would need thorough
->    understanding of these functions and _big_ changes to implement.
->
->  - Sleeping on u->readlock in GC is currently not possible, since that
->    could deadlock with unix_dgram_recvmsg().  That function could
->    probably be modified to release u->readlock, while waiting for
->    data, similarly to unix_stream_recvmsg() at the cost of some added
->    complexity.
->
->  - Sleeping on u->readlock is also impossible, because GC is holding
->    unix_table_lock for the whole operation.  We could release
->    unix_table_lock, but then would have to cope with sockets coming
->    and going, making the current socket iterator unworkable.
->
-> So theoretically it's quite simple, but it needs big changes.  And
-> this wouldn't even solve all the problems with the GC, like being a
-> possible DoS vector.
+In my naive little mpscless bubbleworld, I am believing that this is a
+pretty important fix, and that people in an mpscful world might want it in
+2.6.22.  And even in 2.6.21.x.
 
-Making the GC fully incremental will solve the DoS vector problem as
-well.  Basically you do a fixed amount of reclaim in the new socket
-allocation code.
+But alas, that's just a guess, which was forced upon me by the lack of
+suitable information in your changelog.
 
-It appears clear that since we can't stop the world and garbage
-collect we need an incremental collector.
-
-Eric
+So please, tell us what are the real-world consequences of your patch (or
+the lack of it), thanks.
