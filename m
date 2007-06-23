@@ -1,67 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbXFWIB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbXFWIFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbXFWIB1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 04:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbXFWIBT
+	id S1753132AbXFWIFO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 04:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbXFWIEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 04:01:19 -0400
-Received: from server145.whmcpanel.net ([69.72.254.178]:41986 "EHLO
-	server459.whmcpanel.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085AbXFWIBS (ORCPT
+	Sat, 23 Jun 2007 04:04:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47192 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbXFWIEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 04:01:18 -0400
-From: Alberto Gonzalez <info@gnebu.es>
-To: Paolo Ornati <ornati@fastwebnet.it>
-Subject: Re: Question about fair schedulers
-Date: Sat, 23 Jun 2007 10:01:02 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200706230007.15622.info@gnebu.es> <20070623090655.36d1794c@localhost>
-In-Reply-To: <20070623090655.36d1794c@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Jun 2007 04:04:50 -0400
+Date: Sat, 23 Jun 2007 09:04:32 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org, patches@x86-64.org
+Subject: Re: [PATCH] x86: simplify notify_page_fault()
+Message-ID: <20070623080432.GA28898@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jan Beulich <jbeulich@novell.com>, Andi Kleen <ak@suse.de>,
+	linux-kernel@vger.kernel.org, patches@x86-64.org
+References: <45A255AF.76E4.0078.0@novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706231001.02497.info@gnebu.es>
-X-PopBeforeSMTPSenders: info@gnebu.es
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server459.whmcpanel.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - gnebu.es
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+In-Reply-To: <45A255AF.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your thoughts.
+On Mon, Jan 08, 2007 at 01:31:11PM +0000, Jan Beulich wrote:
+> Remove all parameters from this function that aren't really variable.
+> 
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> 
+> --- linux-2.6.20-rc4/arch/i386/mm/fault.c	2007-01-08 09:57:20.000000000 +0100
+> +++ 2.6.20-rc4-x86-simplify-notify_page_fault/arch/i386/mm/fault.c	2007-01-08 10:32:45.000000000 +0100
+> @@ -46,17 +46,17 @@ int unregister_page_fault_notifier(struc
+>  }
+>  EXPORT_SYMBOL_GPL(unregister_page_fault_notifier);
+>  
+> -static inline int notify_page_fault(enum die_val val, const char *str,
+> -			struct pt_regs *regs, long err, int trap, int sig)
+> +static inline int notify_page_fault(struct pt_regs *regs, long err)
+>  {
+>  	struct die_args args = {
+>  		.regs = regs,
+> -		.str = str,
+> +		.str = "page fault",
+>  		.err = err,
+> -		.trapnr = trap,
+> -		.signr = sig
+> +		.trapnr = 14,
+> +		.signr = SIGSEGV
+>  	};
+> -	return atomic_notifier_call_chain(&notify_page_fault_chain, val, &args);
+> +	return atomic_notifier_call_chain(&notify_page_fault_chain,
+> +	                                  DIE_PAGE_FAULT, &args);
+>  }
 
-On Saturday 23 June 2007, Paolo Ornati wrote:
-> On Sat, 23 Jun 2007 00:07:15 +0200
->
-> Alberto Gonzalez wrote:
-> > My conclusion is that SD behaves as expected: it's more fair. But for a
-> > desktop, shouldn't an "intelligently unfair" scheduler be better?
->
-> "intelligently unfair" is what the current scheduler is (because of
-> interactivity estimator).
->
-> When it works (say 90% of the time) the desktop feels really good...
-> but when it doesn't it can be a disaster.
+Btw, WTF
 
-I see. So you mean that in 90% of the cases the mainline scheduler behaves 
-better than fair schedulers, but when its "logic" fails it behaves much worse 
-(the other 10% cases)? In my very simple test scenario the mainline scheduler 
-did behave much better. Maybe the problem comes with very complex scenarios 
-like the ones I've seen when testing these 2 fair schedulers (something like 
-compiling a kernel while you open 5 instances of glxgears, write an email, 
-play music in Amarok and watch 2 HD videos all at the same time). The 
-question would then be if these kind of situations are likely to happen in 
-real world, or even if it doesn't make more sense to try to improve the logic 
-of the mainline scheduler so that those 10% cases are handled better instead 
-of writing a new one that would behave worse in 90% of the cases and better 
-in the other 10%.
-
-	Alberto.
+>  
+>  /*
+> @@ -353,8 +353,7 @@ fastcall void __kprobes do_page_fault(st
+>  	if (unlikely(address >= TASK_SIZE)) {
+>  		if (!(error_code & 0x0000000d) && vmalloc_fault(address) >= 0)
+>  			return;
+> -		if (notify_page_fault(DIE_PAGE_FAULT, "page fault", regs, error_code, 14,
+> -						SIGSEGV) == NOTIFY_STOP)
+> +		if (notify_page_fault(regs, error_code) == NOTIFY_STOP)
+>  			return;
+>  		/*
+>  		 * Don't take the mm semaphore here. If we fixup a prefetch
+> @@ -363,8 +362,7 @@ fastcall void __kprobes do_page_fault(st
+>  		goto bad_area_nosemaphore;
+>  	}
+>  
+> -	if (notify_page_fault(DIE_PAGE_FAULT, "page fault", regs, error_code, 14,
+> -					SIGSEGV) == NOTIFY_STOP)
+> +	if (notify_page_fault(regs, error_code) == NOTIFY_STOP)
+>  		return;
+>  
+>  	/* It's safe to allow irq's after cr2 has been saved and the vmalloc
+> --- linux-2.6.20-rc4/arch/x86_64/mm/fault.c	2007-01-08 09:57:27.000000000 +0100
+> +++ 2.6.20-rc4-x86-simplify-notify_page_fault/arch/x86_64/mm/fault.c	2007-01-08 10:33:11.000000000 +0100
+> @@ -56,17 +56,17 @@ int unregister_page_fault_notifier(struc
+>  }
+>  EXPORT_SYMBOL_GPL(unregister_page_fault_notifier);
+>  
+> -static inline int notify_page_fault(enum die_val val, const char *str,
+> -			struct pt_regs *regs, long err, int trap, int sig)
+> +static inline int notify_page_fault(struct pt_regs *regs, long err)
+>  {
+>  	struct die_args args = {
+>  		.regs = regs,
+> -		.str = str,
+> +		.str = "page fault",
+>  		.err = err,
+> -		.trapnr = trap,
+> -		.signr = sig
+> +		.trapnr = 14,
+> +		.signr = SIGSEGV
+>  	};
+> -	return atomic_notifier_call_chain(&notify_page_fault_chain, val, &args);
+> +	return atomic_notifier_call_chain(&notify_page_fault_chain,
+> +	                                  DIE_PAGE_FAULT, &args);
+>  }
+>  
+>  void bust_spinlocks(int yes)
+> @@ -376,8 +376,7 @@ asmlinkage void __kprobes do_page_fault(
+>  			if (vmalloc_fault(address) >= 0)
+>  				return;
+>  		}
+> -		if (notify_page_fault(DIE_PAGE_FAULT, "page fault", regs, error_code, 14,
+> -						SIGSEGV) == NOTIFY_STOP)
+> +		if (notify_page_fault(regs, error_code) == NOTIFY_STOP)
+>  			return;
+>  		/*
+>  		 * Don't take the mm semaphore here. If we fixup a prefetch
+> @@ -386,8 +385,7 @@ asmlinkage void __kprobes do_page_fault(
+>  		goto bad_area_nosemaphore;
+>  	}
+>  
+> -	if (notify_page_fault(DIE_PAGE_FAULT, "page fault", regs, error_code, 14,
+> -					SIGSEGV) == NOTIFY_STOP)
+> +	if (notify_page_fault(regs, error_code) == NOTIFY_STOP)
+>  		return;
+>  
+>  	if (likely(regs->eflags & X86_EFLAGS_IF))
+> 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+---end quoted text---
