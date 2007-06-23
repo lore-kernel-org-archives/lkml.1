@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757115AbXFWNac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbXFWNas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757115AbXFWNac (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 09:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbXFWNWd
+	id S1761544AbXFWNas (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 09:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbXFWNWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 09:22:33 -0400
-Received: from www.osadl.org ([213.239.205.134]:59324 "EHLO mail.tglx.de"
+	Sat, 23 Jun 2007 09:22:34 -0400
+Received: from www.osadl.org ([213.239.205.134]:59342 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758233AbXFWNWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 09:22:18 -0400
-Message-Id: <20070623124031.260485116@inhelltoy.tec.linutronix.de>
+	id S1755421AbXFWNWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 09:22:20 -0400
+Message-Id: <20070623124031.347138380@inhelltoy.tec.linutronix.de>
 References: <20070623124005.931747831@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 23 Jun 2007 13:32:50 -0000
+Date: Sat, 23 Jun 2007 13:32:52 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
@@ -20,43 +20,54 @@ Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        John Stultz <johnstul@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [patch -mm 25/28] x86_64: restore restore nohpet cmdline
-Content-Disposition: inline; filename=x86_64-restore-nohpet-cmdline.patch
+Subject: [patch -mm 27/28] x86_64: prep idle loop for dynticks
+Content-Disposition: inline; filename=x86-64-prepare-idle-for-dyntick.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Wright <chrisw@sous-sol.org>
+From:	Chris Wright <chrisw@sous-sol.org>
 
-Lost when merged with i386.  Happy to drop, but I suspect Andi would
-rather not break existing users (I noticed because it was part of my
-testing).  If dropped, Documentation needs updating.
+Add tick_nohz_{stop,restart}_sched_tick to idle
+loop in prepartion for turning on dynticks.  These
+are just noops until NO_HZ is enabled in next patch.
 
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/kernel/hpet.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/x86_64/kernel/process.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux-2.6.22-rc4-mm/arch/i386/kernel/hpet.c
+Index: linux-2.6.22-rc4-mm/arch/x86_64/kernel/process.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/arch/i386/kernel/hpet.c	2007-06-23 14:39:00.000000000 +0200
-+++ linux-2.6.22-rc4-mm/arch/i386/kernel/hpet.c	2007-06-23 14:39:00.000000000 +0200
-@@ -89,6 +89,13 @@ static int __init hpet_setup(char* str)
- }
- __setup("hpet=", hpet_setup);
+--- linux-2.6.22-rc4-mm.orig/arch/x86_64/kernel/process.c	2007-06-23 14:38:54.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/x86_64/kernel/process.c	2007-06-23 14:39:00.000000000 +0200
+@@ -37,6 +37,7 @@
+ #include <linux/notifier.h>
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
++#include <linux/tick.h>
  
-+static int __init disable_hpet(char *str)
-+{
-+	boot_hpet_disable = 1;
-+	return 1;
-+}
-+__setup("nohpet", disable_hpet);
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+@@ -207,6 +208,8 @@ void cpu_idle (void)
+ 			if (__get_cpu_var(cpu_idle_state))
+ 				__get_cpu_var(cpu_idle_state) = 0;
+ 
++			tick_nohz_stop_sched_tick();
 +
- static inline int is_hpet_capable(void)
- {
- 	return (!boot_hpet_disable && hpet_address);
+ 			check_pgt_cache();
+ 			rmb();
+ 			idle = pm_idle;
+@@ -228,6 +231,7 @@ void cpu_idle (void)
+ 			__exit_idle();
+ 		}
+ 
++		tick_nohz_restart_sched_tick();
+ 		preempt_enable_no_resched();
+ 		schedule();
+ 		preempt_disable();
 
 -- 
 
