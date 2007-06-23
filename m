@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbXFWWVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbXFWWWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754378AbXFWWVc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 18:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbXFWWVZ
+	id S1754680AbXFWWWH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 18:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbXFWWV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 18:21:25 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40667 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752593AbXFWWVZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 18:21:25 -0400
-Date: Sat, 23 Jun 2007 23:27:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "David Kane" <dakpenguin@gmail.com>
-Cc: "Carlo Wood" <carlo@alinoe.com>, linux-kernel@vger.kernel.org
-Subject: Re: How innovative is Linux?
-Message-ID: <20070623232712.77c1ed39@the-village.bc.nu>
-In-Reply-To: <345c044f0706231513u46d870es6539bdf5797b305b@mail.gmail.com>
-References: <200706231417.16086.microchip@chello.be>
-	<20070623154328.222a2f92@the-village.bc.nu>
-	<200706231722.26931.microchip@chello.be>
-	<20070623164608.05dc5c30@the-village.bc.nu>
-	<20070623220222.GB13907@alinoe.com>
-	<345c044f0706231513u46d870es6539bdf5797b305b@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 23 Jun 2007 18:21:56 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40796 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752640AbXFWWVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 18:21:55 -0400
+Message-ID: <467D9CFD.7020603@garzik.org>
+Date: Sat, 23 Jun 2007 18:21:49 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Carlo Wood <carlo@alinoe.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: SATA Harddisk speed drop of 100 MB/s
+References: <20070620224847.GA5488@alinoe.com>	<4679B2DE.9090903@garzik.org>	<1182397012.2863.0.camel@laptopd505.fenrus.org>	<20070622162142.GA603@alinoe.com>	<20070622211746.GB21769@khazad-dum.debian.net>	<20070622212758.GA6970@alinoe.com>	<20070623013132.GA1702@khazad-dum.debian.net>	<20070623025906.GA24336@alinoe.com> <20070623102949.09e36fb9.akpm@linux-foundation.org>
+In-Reply-To: <20070623102949.09e36fb9.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jun 2007 16:13:55 -0600
-"David Kane" <dakpenguin@gmail.com> wrote:
+Andrew Morton wrote:
+> Please see http://bugzilla.kernel.org/show_bug.cgi?id=8636
+> 
+> In that report a pretty large slowdown with CFQ has been identified.
+> Jens has plunked a patch in there (Comment #50) and then ran away on
+> vacation.
+> 
+> If someone can test that patch and demonstrate its goodness, I'll
+> queue it up, thanks.
 
-> The real innotation in Linux is that it is open source and yet popular
-> enough that there are versions that even a windoze user could easily pick
-> up.
+This has unfortunately split up into two threads.  I identified the root 
+cause of the slowdown as NCQ in the thread "Re: SATA RAID5 speed drop of 
+100 MB/s" on LKML.
 
-I think that is more a product of its time than the software. It isn't
-the first openly available Unix-like OS. The others such as UZI and OMU
-died because there wasn't the internet in its modern form to keep them
-going, share them and build communities.
+	Jeff
+
+
