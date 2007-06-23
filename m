@@ -1,82 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761928AbXFWNcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbXFWNcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761928AbXFWNcZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 09:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760885AbXFWN1k
+	id S1759283AbXFWNcj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 09:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760948AbXFWN15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 09:27:40 -0400
-Received: from aa011msr.fastwebnet.it ([85.18.95.71]:50651 "EHLO
-	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759329AbXFWN1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 09:27:39 -0400
-Date: Sat, 23 Jun 2007 15:26:53 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Alberto Gonzalez <info@gnebu.es>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question about fair schedulers
-Message-ID: <20070623152653.05ebac64@localhost>
-In-Reply-To: <200706231001.02497.info@gnebu.es>
-References: <200706230007.15622.info@gnebu.es>
- <20070623090655.36d1794c@localhost>
- <200706231001.02497.info@gnebu.es>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+	Sat, 23 Jun 2007 09:27:57 -0400
+Received: from 1wt.eu ([62.212.114.60]:3129 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760940AbXFWN14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 09:27:56 -0400
+Date: Sat, 23 Jun 2007 15:26:26 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Andi Kleen <ak@suse.de>
+Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, Oleg Verych <olecom@flower.upol.cz>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3] doc/oops-tracing: add Code: decode info
+Message-ID: <20070623132626.GB32449@1wt.eu>
+References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706231300.22197.ak@suse.de> <200706231309.49701.arekm@maven.pl> <200706231517.28085.ak@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706231517.28085.ak@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jun 2007 10:01:02 +0200
-Alberto Gonzalez <info@gnebu.es> wrote:
+On Sat, Jun 23, 2007 at 03:17:27PM +0200, Andi Kleen wrote:
+> On Saturday 23 June 2007 13:09, Arkadiusz Miskiewicz wrote:
+> > On Saturday 23 of June 2007, Andi Kleen wrote:
+> > > Here's a nickel. Get yourself a real shell.
+> >
+> > POSIX compilant shell isn't real shell?
+> 
+> In this case it's not good enough. We're not writing POSIX portable software 
+> here, but Linux software where /bin/sh is /bin/bash. Similar to the Linux 
+> kernel which is not written in portable ISO C.
 
-> I see. So you mean that in 90% of the cases the mainline scheduler behaves 
-> better than fair schedulers, but when its "logic" fails it behaves much worse 
-> (the other 10% cases)?
+Well, it can also be zsh or pdksh, but I suspect that the code is valid on
+them too.
 
-Yes and no... the "logic" is supposed to identify what processes are
-somehow interactive and give them more priority / CPU time.
+Willy
 
-This makes the system behaves better when there are CPU hog processes
-(like encoders etc...) because the interactive ones doesn't suffer too
-much.
-
-The big problem is that it can identify an almost CPU hog process as
-interactive.... and giving him an insane amount of CPU starve the
-others.
-
-In my case it was "trancode", and I assure you... it wasn't funny.
-Sometimes it happened that running it (at standard nice 0) made
-the machine totally unusable!  (something like 30s to switch from X to
-a virtual terminal... and I don't tell you how hard was doing login and
-killing/renicing it).
-
-So far I've seen these pathological behaviour only with trancode and
-wine (only with particular programs I don't remember now).
-
-But the fact is, the "interactivity estimator" is too fragile, and when
-it fails it can do much damage.
-
-
-Fair scheduler instead:
-	- are robust
-	- provide consistent behaviour
-	- provide good interactivity within the bounds of fairness
-
-
-> In my very simple test scenario the mainline scheduler 
-> did behave much better.
-
-Of course... because of the two competing processes the
-"interactive" (for you) one needs 60%, that is more than it's 50% fair
-share.
-
-The real solution is to use nice levels so the scheduler doesn't have
-to guess what process is more important.
-
-And yes, programs/distributions should set good defaults for you... and
-if they don't, just complain to them  :)
-
--- 
-	Paolo Ornati
-	Linux 2.6.22-rc5-g0864a4e2 on x86_64
