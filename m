@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbXFWWNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbXFWWQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbXFWWNG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 18:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXFWWM4
+	id S1754180AbXFWWQS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 18:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbXFWWQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 18:12:56 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46903 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752551AbXFWWMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 18:12:55 -0400
-Date: Sun, 24 Jun 2007 00:13:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: jimmy bahuleyan <knight.camelot@gmail.com>
-Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org
-Subject: Re: make xconfig failure on 2.6.21.5
-Message-ID: <20070623221359.GA9364@uranus.ravnborg.org>
-References: <467D6A21.8020507@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 23 Jun 2007 18:16:04 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:64532 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbXFWWQD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 18:16:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ICoL1CyDTV8/UxdpD4PALPipF6SGTj/PkfPbRIngtiCrjyN4z1GSGNUbfhl1TrtKiKe/6nkTvprNg21JgEEQMbhm05PKR18rwcdP0HNCJBDQ3nZx5y8HicTvMAHgz4jk6AZYVL4c8JF3lm6JyZibkQvrJw5LOQMfljlFnc5+DnM=
+Message-ID: <345c044f0706231516y2c04acfbt342574ba7af0b968@mail.gmail.com>
+Date: Sat, 23 Jun 2007 16:16:02 -0600
+From: "David Kane" <dakpenguin@gmail.com>
+To: "Carlo Wood" <carlo@alinoe.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Grozdan Nikolov" <microchip@chello.be>, linux-kernel@vger.kernel.org
+Subject: Re: How innovative is Linux?
+In-Reply-To: <20070623220222.GB13907@alinoe.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <467D6A21.8020507@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+References: <200706231417.16086.microchip@chello.be>
+	 <20070623154328.222a2f92@the-village.bc.nu>
+	 <200706231722.26931.microchip@chello.be>
+	 <20070623164608.05dc5c30@the-village.bc.nu>
+	 <20070623220222.GB13907@alinoe.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 12:14:49AM +0530, jimmy bahuleyan wrote:
-> 
-> Hi,
-> 
-> I have a Kubuntu 7.04 distro with Qt4 development packages installed.
-> Trying to do a 'make xconfig' fails with:
-> 
->   HOSTCC  scripts/basic/fixdep
->   HOSTCC  scripts/basic/docproc
->   CHECK   qt
-> *
-> * Unable to find the QT installation. Please make sure that
-> * the QT development package is correctly installed and
-> * either install pkg-config or set the QTDIR environment
-> * variable to the correct location.
-> *
->   HOSTCC  scripts/kconfig/conf.o
-> sed < scripts/kconfig/lkc_proto.h > scripts/kconfig/lkc_defs.h
-> 's/P(\([^,]*\),.*/#define \1 (\*\1_p)/'
->   HOSTCC  scripts/kconfig/kconfig_load.o
->   HOSTCC  scripts/kconfig/kxgettext.o
->   SHIPPED scripts/kconfig/zconf.tab.c
->   SHIPPED scripts/kconfig/lex.zconf.c
->   SHIPPED scripts/kconfig/zconf.hash.c
->   HOSTCC  scripts/kconfig/zconf.tab.o
-> make[1]: *** No rule to make target `scripts/kconfig/.tmp_qtcheck',
-> needed by `scripts/kconfig/qconf.o'.  Stop.
-> make: *** [xconfig] Error 2
-> 
-> 
-> Is this a problem with my setup or that kbuild/kconfig can't handle Qt4?
+The real innotation in Linux is that it is open source and yet popular
+enough that there are versions that even a windoze user could easily pick
+up.
 
-xconfig does not yet support qt4 (IIRC).
-So you will need qt3 packages to build xconfig.
-Patches to introduce qt4 config without breaking qt3 config
-are appreciated...
+David Kane
 
-	Sam
+On 6/23/07, Carlo Wood <carlo@alinoe.com> wrote:
+> On Sat, Jun 23, 2007 at 04:46:08PM +0100, Alan Cox wrote:
+> > Now if you want really innovative OS work go look in the lab or at
+> > projects most people have never heard of and don't run.
+>
+> Hey, I heard of one. I got a few friends that are sitting
+> in an IRC channel and have been working on a complete new
+> OS from scratch for like 10 years now (kernel, filesystem,
+> graphics drivers, libraries - everything). I consider them
+> to be totally nuts of course.  When I ask them why are you
+> still doing this? Can't you use linux? Then the answer is
+> that there are still companies interested in operating
+> systems like that, precisely because they are not well-
+> known. It would be pretty hard to exploit vulnerabilities
+> in such a system (or that is their explanation anyway).
+>
+> --
+> Carlo Wood <carlo@alinoe.com>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
