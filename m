@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbXFWDzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbXFWD4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752155AbXFWDzB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 23:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXFWDyy
+	id S1752476AbXFWD4S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 23:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXFWD4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 23:54:54 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:52247 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750925AbXFWDyx (ORCPT
+	Fri, 22 Jun 2007 23:56:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49358 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750925AbXFWD4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 23:54:53 -0400
-Date: Sat, 23 Jun 2007 05:54:51 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       Manoj Kasichainula <manoj@io.com>, linux-kernel@vger.kernel.org
-Subject: Re: SATA RAID5 speed drop of 100 MB/s
-Message-ID: <20070623035451.GA5522@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-	Manoj Kasichainula <manoj@io.com>, linux-kernel@vger.kernel.org
-References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <20070622214410.GB6970@alinoe.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070622214410.GB6970@alinoe.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 22 Jun 2007 23:56:04 -0400
+Date: Fri, 22 Jun 2007 20:55:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: lenb@kernel.org, andreas.herrmann3@amd.com, swhiteho@redhat.com,
+       ak@suse.de, shai@scalex86.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 7/12] acpi: fix another compile warning
+Message-Id: <20070622205530.964ebef9.akpm@linux-foundation.org>
+In-Reply-To: <20070620182548.GA561@localdomain>
+References: <20070619225035.GI5193@alberich.amd.com>
+	<200706192338.02807.lenb@kernel.org>
+	<20070620084911.GO5193@alberich.amd.com>
+	<200706200936.31236.lenb@kernel.org>
+	<20070620182548.GA561@localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For what it's worth... I tried applying
+> On Wed, 20 Jun 2007 11:25:48 -0700 Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+> Paper over 'select' inadequacies.  
+> 
+> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> 
+> Index: linux-2.6.22-rc5/arch/x86_64/Kconfig
+> ===================================================================
+> --- linux-2.6.22-rc5.orig/arch/x86_64/Kconfig	2007-06-18 16:02:19.571323415 -0700
+> +++ linux-2.6.22-rc5/arch/x86_64/Kconfig	2007-06-20 11:34:29.845354250 -0700
+> @@ -366,6 +366,7 @@ config X86_64_ACPI_NUMA
+>         depends on NUMA
+>         select ACPI 
+>  	select PCI
+> +  	select PM
+>         select ACPI_NUMA
+>         default y
+>         help
 
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -516,6 +516,8 @@ static void ahci_save_initial_config(struct pci_dev *pdev,
-         * reset.  Values without are used for driver operation.
-         */
-        hpriv->saved_cap = cap = readl(mmio + HOST_CAP);
-+       hpriv->saved_cap &= ( (1<<28) | (1<<17) );
-+       hpriv->saved_cap |= (1 << 27);
-        hpriv->saved_port_map = port_map = readl(mmio + HOST_PORTS_IMPL);
+argh.  (and not just argh-at-your-email-client).
 
-        /* some chips lie about 64bit support */
+I went through some hair-tearing a few months ago working out why it is so
+damn hard to make CONFIG_PM go away and then I fixed it.  And now you're
+proposing a change which would reinstate the obnoxious old behaviour.
 
-to 2.6.22-rc5, but it had no effect :*)
-
-I'll await any comments from a kernel developer for now.
-Please let me know if you want me to test something.
-
--- 
-Carlo Wood <carlo@alinoe.com>
+Is the "bug" which you're "fixing" here caused by the randconfig
+inadequacies?  Because randconfig is just busted and simply should auto-run
+oldconfig.
