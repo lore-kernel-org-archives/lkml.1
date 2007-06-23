@@ -1,91 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbXFWHrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbXFWHrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783AbXFWHrD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 03:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbXFWHqy
+	id S1752698AbXFWHrZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 03:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXFWHrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 03:46:54 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:52268 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbXFWHqy (ORCPT
+	Sat, 23 Jun 2007 03:47:06 -0400
+Received: from server145.whmcpanel.net ([69.72.254.178]:59582 "EHLO
+	server459.whmcpanel.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753770AbXFWHrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 03:46:54 -0400
-To: Denis Cheng <crquan@gmail.com>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trivial: the memset operation on a automatic array variable should be optimized out by data initialization
-In-Reply-To: <467cac85.081b600a.5b88.457f@mx.google.com>
-References: <467cac85.081b600a.5b88.457f@mx.google.com>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: jed (x86_64-pc-linux-glibc-debian)
-X-Mailer: slrn
-Date: Sat, 23 Jun 2007 09:59:33 +0200
-Message-Id: <E1I20Wr-00064i-T0@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	Sat, 23 Jun 2007 03:47:03 -0400
+From: Alberto Gonzalez <info@gnebu.es>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Question about fair schedulers
+Date: Sat, 23 Jun 2007 09:46:43 +0200
+User-Agent: KMail/1.9.7
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200706230007.15622.info@gnebu.es> <B6065113-E9C7-42CE-A43D-55E6BF1EE2C0@mac.com>
+In-Reply-To: <B6065113-E9C7-42CE-A43D-55E6BF1EE2C0@mac.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706230946.44023.info@gnebu.es>
+X-PopBeforeSMTPSenders: info@gnebu.es
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server459.whmcpanel.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - gnebu.es
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* From: Denis Cheng
-* Newsgroups: linux.kernel
-* Date: Fri, 22 Jun 2007 22:15:49 -0700 (PDT)
- 
-> From: Denis Cheng <crquan@gmail.com>
+On Saturday 23 June 2007, Kyle Moffett wrote:
+> On Jun 22, 2007, at 18:07:15, Alberto Gonzalez wrote:
+> > Ok, so what will a fair scheduler do in this case? It is my
+> > understanding that it would give 50% CPU to each task, resulting in
+> > the video dropping frames. Is this correct?
 >
-> the explicit memset call could be optimized out by data initialization,
-> thus all the fill working can be done by the compiler implicitly.
-
-Can be optimized and can be done by compiler are just words;
-
-> and C standard guaranteed all the unspecified data field initialized to zero.
-
-standards and implementation are on opposite poles of magnet
-
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> Yes, that's correct.
 >
-> ---
-> After comments in the former threads:
-> http://lkml.org/lkml/2007/6/18/119
+> What this *actually* means is that you want the media player to have
+> higher priority than the DVD ripping program.  Ergo you should run
+> "nice +20 my_dvd_burner" or "nice +20 my_vorbis_encoder" under CFS or
+> other fair schedulers.
 
-i see a patch
+Ok, that makes sense. The problem is that desktop users don't know about such 
+things, so the ideal situation would be that the scheduler knows about it and 
+does it for you.
 
-> http://lkml.org/lkml/2007/6/18/48
+> Well, typically your video player *doesn't* chew up all of the CPU,
+> so the fairness helps.  Here's another scenario for you:  You are
+> running un-niced HD video player and recoding processes side-by-side,
+> so that the HD video player only gets 50% of the CPU.  Under older
+> schedulers the video player would not get uniformly allocated CPU, it
+> would get it in fits and spurts, causing more _visibly_dropped_
+> frames (IE: render 30 frames, drop 8, render 15, drop 2, etc).  Under
+> the new CFS scheduler it will get evenly allocated CPU and so while
+> you *will* get dropped frames, they will be less visible (IE: Render
+> 7 frames, drop 1, render 7 frames, drop 1, render 7 frames, drop 1).
 
-same patch.
+Yes, I see your point. In a scenario of dropping frames it seems that CFS does 
+a better job. It's just that an ideal scheduler shouldn't drop frames in this 
+case (it should give 70% to the video even without nicing the encoder).
 
-> @@ -406,8 +406,8 @@ void __cpuinit zap_low_mappings(int cpu)
->  #ifndef CONFIG_NUMA
->  void __init paging_init(void)
->  {
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES];
-> -	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-> +	unsigned long max_zone_pfns[MAX_NR_ZONES] = {};
-> +
->  	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
->  	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
->  	max_zone_pfns[ZONE_NORMAL] = end_pfn;
+> > If I ask this question is because today I tested it and found that
+> > using the -ck kernel (with SD scheduler) the video would drop
+> > frames, while with the mainline kernel it played fine.
+>
+> Basically you are telling the kernel that your video player is no
+> more important than your re-encoder process which, judging by your
+> email, is completely untrue.  If you really want it to treat the
+> video player as specially important (or alternatively treat the
+> reencoder process and specially unimportant) then you must tell it so
+> with "nice" or "renice".
 
-Why not just show actual objdump output on code (maybe with different
-oxygen atoms used in gcc), rather than *talking* about optimization and
-standards, hm?
+That's my whole point. On a desktop, some tasks have by nature a higher 
+priority than others. A fair scheduler treats them all the same (hence, fair) 
+way. So a user must nice/renice processes for them to get the correct CPU 
+time (something you can't expect normal desktop users to do).
 
-I bet, that will be a key for success. And if you are interested in such
-optimizations, why not to grep whole source tree for this kind of
-things? I'm not sure one function in arch/x86_64 is only such ``unoptimized''.
-And after doing that maybe you will see, that "{}" initializer can be
-applied not only to integer values (you did init with of *long int*,
-with *int*, btw), but to structs and others.
+> > My conclusion is that SD behaves as expected: it's more fair. But
+> > for a desktop, shouldn't an "intelligently unfair" scheduler be
+> > better?
+>
+> Well, it is "intelligently unfair", but you the user have to tell it
+> what is more important for *YOU*.  If I _really_ have to get some
+> music recoded quickly then I may be willing to deal with some dropped
+> frames in order to let that happen appropriately.
 
-Ahh, one more thing about _optimizing_ your time, i.e. not wasting one.
+Well, my point is that encoding music or video can use 100% CPU if available, 
+but if you give it just 10% the job will also be completed successfully 
+(though slower). OTOH, playing audio or video won't use 100% CPU (in most 
+cases), but whatever CPU they need, they _really_ need it. It makes no sense 
+to watch a video or listen to music with constant skips. So in 99.9% of the 
+cases a user would want to watch a video smoothly, not dropping frames so 
+that the encoding finishes faster (if he wants the encoding to be as fast as 
+possible he shouldn't watch a video at the same time, I guess).
 
-Add to CC list people, who already did reply on you patch. Otherwise
-you are showing your disrespect for them and hiding from further
-discussion.
+> Cheers,
+> Kyle Moffett
 
-I think you do not, but Linux development not have an automatic system
-for patch tracking, so you are on your own with your text editor and
-e-mail client on this. Please take care for your time.
+Thanks for your answers,
+Alberto.
 
---
-  frenzy
--o--=O`C
- #oo'L O
-<___=E M
