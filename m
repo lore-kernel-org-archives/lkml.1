@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbXFWSC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbXFWSDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbXFWSC4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 14:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbXFWSCs
+	id S1759106AbXFWSDY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 14:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbXFWSDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 14:02:48 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:12636 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbXFWSCq (ORCPT
+	Sat, 23 Jun 2007 14:03:04 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:2007 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755307AbXFWSDB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 14:02:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=n0mm4upj0yL9eh8F9Uak2cmXC+I4ITPCxR+CI55w5BkDdtDAJt8CP6g1rM7KeldgqwAjQ4g0XLL5m5NkiMZ03TgyBx5wp+on8KuFJz0RUmwSvESrjw+whiVpB2fasSYxOiqqisNIObyc1wchz6fQ5Awdxbq1qg3/WS6wzRglFhs=
-Message-ID: <a781481a0706231102i5f59d0d9k7140f96576ef453a@mail.gmail.com>
-Date: Sat, 23 Jun 2007 23:32:46 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Grozdan Nikolov" <microchip@chello.be>
-Subject: Re: How innovative is Linux?
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <200706231722.26931.microchip@chello.be>
+	Sat, 23 Jun 2007 14:03:01 -0400
+Date: Sat, 23 Jun 2007 20:03:00 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
+cc: Akinobu Mita <akinobu.mita@gmail.com>, Alexander Wuerstlein <arw@arw.name>,
+       linux-kernel@vger.kernel.org,
+       Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
+Subject: Re: [PATCH] sns: add syscall to check signed state of a process
+ [4/4]
+In-Reply-To: <20070621164912.GD9741@cip.informatik.uni-erlangen.de>
+Message-ID: <Pine.LNX.4.64.0706232002110.11964@fbirervta.pbzchgretzou.qr>
+References: <11824417553291-git-send-email-arw@arw.name>
+ <961aa3350706210934m11e7f0cq96f384056878cb43@mail.gmail.com>
+ <20070621164912.GD9741@cip.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706231417.16086.microchip@chello.be>
-	 <20070623154328.222a2f92@the-village.bc.nu>
-	 <200706231722.26931.microchip@chello.be>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> > Grozdan Nikolov <microchip@chello.be> wrote:
-> > > Hello gentlemen and ladies.
-> > >
-> > > As a Linux user for many years now (regulars user, not a programmer), I
-> > > want
-> >
-> > Please do not feed the trolls, thank you
 
-Absolutely. We had almost 900+ not-so-productive mails on
-another thread recently ...
+On Jun 21 2007 18:49, Alexander Wuerstlein wrote:
+>
+>You seem to be right, the rest of the kernel just does 'if (!t)'. We just used
+>IS_ERR() as the 'check for evil pointers' function.
 
-On 6/23/07, Grozdan Nikolov <microchip@chello.be> wrote:
-> heh, I'm not a troll,
+But NULL is not covered by IS_ERR.
 
-Ok, Grozdan, but ...
 
-> but it seems you all go hiding
-> instead of explaining and making a clear stand
-
-then what is this? Provocation is _standard_ troll tactics.
-
-Why don't you try being innovative yourself?
+	Jan
+-- 
