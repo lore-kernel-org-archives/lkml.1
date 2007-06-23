@@ -1,34 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbXFWQxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761123AbXFWQxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760984AbXFWQxH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 12:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbXFWQwz
+	id S1761123AbXFWQxa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 12:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760977AbXFWQxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 12:52:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56406 "EHLO
+	Sat, 23 Jun 2007 12:53:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59335 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760184AbXFWQwy (ORCPT
+	by vger.kernel.org with ESMTP id S1760761AbXFWQxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 12:52:54 -0400
-Date: Sat, 23 Jun 2007 09:52:03 -0700
+	Sat, 23 Jun 2007 12:53:05 -0400
+Date: Sat, 23 Jun 2007 09:52:09 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Wang Zhenyu <zhenyu.z.wang@intel.com>
-Cc: davej@redhat.com, carlo@alinoe.com, linux-kernel@vger.kernel.org,
-       eric@anholt.net
-Subject: Re: [PATCH][AGPGART] intel_agp: don't load if no IGD and AGP port
-Message-Id: <20070623095203.66bb8572.akpm@linux-foundation.org>
-In-Reply-To: <20070621054318.GA31381@zhen-devel.sh.intel.com>
-References: <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org>
-	<20070618195415.GA7481@alinoe.com>
-	<alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org>
-	<20070618225009.GE13538@alinoe.com>
-	<alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org>
-	<20070619233716.GA5779@alinoe.com>
-	<20070620011521.GB2856@zhen-devel.sh.intel.com>
-	<20070620014227.GA4090@zhen-devel.sh.intel.com>
-	<20070620140237.GB5524@alinoe.com>
-	<20070620154610.GA2802@localhost.localdomain>
-	<20070621054318.GA31381@zhen-devel.sh.intel.com>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: ak@suse.de, alan@lxorguk.ukuu.org.uk, ebiederm@xmission.com,
+       muli@il.ibm.com, vgoyal@in.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86-64: disable the GART in shutdown
+Message-Id: <20070623095209.248684e7.akpm@linux-foundation.org>
+In-Reply-To: <200706221934.59966.yinghai.lu@sun.com>
+References: <200706221219.16243.yinghai.lu@sun.com>
+	<200706230214.02535.ak@suse.de>
+	<467C6906.6020105@sun.com>
+	<200706221934.59966.yinghai.lu@sun.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -36,25 +29,132 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 21 Jun 2007 13:43:18 +0800 Wang Zhenyu <zhenyu.z.wang@intel.com> wrote:
-> Thanks Carlo to report this problem. The following patch should fix
-> his and potential issue.
+> On Fri, 22 Jun 2007 19:34:59 -0700 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> [PATCH] x86-64: disable the GART in shutdown
 > 
-> [AGPGART] intel_agp: don't load if no IGD detected and no AGP port
+> For K8 system: 4G RAM with memory hole remapping enabled, or more than 4G RAM
+> installed. when mem is allocated for GART, it will do the memset for clear.
+> and for kexec case, the first kernel already enable that, the memset in second
+> kernel will cause the system restart. solution will be:
+> in second kernel: disable that at first before we try to allocate mem for it.
+> or in the first kernel: do disable that before shutdown.
 > 
-> After i915 chip, GMCH has no AGP port. Origin bridge driver in device
-> table will try to access illegal regs like APBASE, APSIZE, etc. This
-> may cause problem.
+
+The patch seems to do some slightly inappropriate things.
+
 > 
-> So mark them as NULL in the table, we won't load if no IGD got detect
-> and bridge has no AGP port.
+>  arch/x86_64/kernel/pci-dma.c  |    7 +++++++
+>  arch/x86_64/kernel/pci-gart.c |   20 ++++++++++++++++++++
+>  arch/x86_64/kernel/reboot.c   |    4 ++++
+>  include/asm-x86_64/proto.h    |    2 ++
+>  4 files changed, 33 insertions(+)
+> diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
+> index ae091cd..4904d5f 100644
+> --- a/arch/x86_64/kernel/pci-gart.c
+> +++ b/arch/x86_64/kernel/pci-gart.c
+> @@ -571,6 +571,26 @@ static const struct dma_mapping_ops gart_dma_ops = {
+>  	.unmap_sg = gart_unmap_sg,
+>  };
+>  
+> +void gart_iommu_shutdown(void)
+> +{
+> +	struct pci_dev *dev;
+> +	int i;
+> +
+> +	if (dma_ops != &gart_dma_ops)
+> +		return;
+> +
+> +	for (i = 0; i < num_k8_northbridges; i++) {
+> +		u32 ctl;
+> +
+> +		dev = k8_northbridges[i];
+> +		pci_read_config_dword(dev, 0x90, &ctl);
+> +
+> +		ctl &= ~1;
+> +
+> +		pci_write_config_dword(dev, 0x90, ctl);
+> +	}
+> +}
 
-Looking at the above, I have no way of telling what the actual bug is, nor
-have I any way of telling what the consequences would be of not having this
-patch in 2.6.22.  Nor can I tell whether we want it in 2.6.21.x.
+OK.
 
-I probably _could_ work this out, and kinda did with a bit of list-trolling
-(verdict: needed in 2.6.22) but please, take care to describe the
-importance of a patch in the changelog?
+>  void __init gart_iommu_init(void)
+>  { 
+>  	struct agp_kern_info info;
+> diff --git a/arch/x86_64/kernel/pci-dma.c b/arch/x86_64/kernel/pci-dma.c
+> index 9f80aad..64f2ab3 100644
+> --- a/arch/x86_64/kernel/pci-dma.c
+> +++ b/arch/x86_64/kernel/pci-dma.c
+> @@ -322,6 +322,13 @@ static int __init pci_iommu_init(void)
+>  	return 0;
+>  }
+>  
+> +void pci_iommu_shutdown(void)
+> +{
+> +#ifdef CONFIG_IOMMU
+> +	gart_iommu_shutdown();
+> +#endif
+> +}
 
-Thanks.
+It'd be better to avoid the ifdef-in-C by providing a stub function in a
+header file if !CONFIG_IOMMU.  That's quite standard kernel practice and
+might help avoid some other problems...
+
+>  #ifdef CONFIG_PCI
+>  /* Many VIA bridges seem to corrupt data for DAC. Disable it here */
+>  
+> diff --git a/arch/x86_64/kernel/reboot.c b/arch/x86_64/kernel/reboot.c
+> index 7503068..e6e65c2 100644
+> --- a/arch/x86_64/kernel/reboot.c
+> +++ b/arch/x86_64/kernel/reboot.c
+> @@ -16,6 +16,7 @@
+>  #include <asm/pgtable.h>
+>  #include <asm/tlbflush.h>
+>  #include <asm/apic.h>
+> +#include <asm/proto.h>
+>  
+>  /*
+>   * Power off function, if any
+> @@ -81,6 +82,7 @@ static inline void kb_wait(void)
+>  void machine_shutdown(void)
+>  {
+>  	unsigned long flags;
+> +
+>  	/* Stop the cpus and apics */
+>  #ifdef CONFIG_SMP
+>  	int reboot_cpu_id;
+> @@ -111,6 +113,8 @@ void machine_shutdown(void)
+>  	disable_IO_APIC();
+>  
+>  	local_irq_restore(flags);
+> +
+> +	pci_iommu_shutdown();
+>  }
+
+And does the kernel work OK if CONFIG_PCI=n?  I think so from inspection,
+by luck.
+
+>  void machine_emergency_restart(void)
+> diff --git a/include/asm-x86_64/proto.h b/include/asm-x86_64/proto.h
+> index 85255db..fb9f73e 100644
+> --- a/include/asm-x86_64/proto.h
+> +++ b/include/asm-x86_64/proto.h
+> @@ -85,11 +85,13 @@ extern int exception_trace;
+>  extern unsigned cpu_khz;
+>  extern unsigned tsc_khz;
+>  
+> +extern void pci_iommu_shutdown(void);
+
+This is the only pci-related function which is declared in proto.h.  I
+suspect you chose the wrong header file for this declaration.
+
+
+>  extern void no_iommu_init(void);
+>  extern int force_iommu, no_iommu;
+>  extern int iommu_detected;
+>  #ifdef CONFIG_IOMMU
+>  extern void gart_iommu_init(void);
+> +extern void gart_iommu_shutdown(void);
+>  extern void __init gart_parse_options(char *);
+>  extern void iommu_hole_init(void);
+>  extern int fallback_aper_order;
