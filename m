@@ -1,123 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbXFWHUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbXFWHX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbXFWHUW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 03:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbXFWHUN
+	id S1753973AbXFWHX4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 03:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXFWHXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 03:20:13 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:16244 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbXFWHUM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 03:20:12 -0400
-Date: Sat, 23 Jun 2007 09:20:10 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Linux and Kernel Video <video4linux-list@redhat.com>,
-       =?UTF-8?Q?Toralf_F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       Luca Risolia <luca.risolia@studio.unibo.it>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Oliver Neukum <oneukum@suse.de>, Trent Piepho <xyzzy@speakeasy.org>
-Subject: [patch] 2.6.22-rc Kconfig troubles when using menuconfig
-In-Reply-To: <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net>
-Message-ID: <Pine.LNX.4.64.0706230915540.26568@fbirervta.pbzchgretzou.qr>
-References: <200706211117.55908.toralf.foerster@gmx.de>
- <200706211231.53898.luca.risolia@studio.unibo.it> <200706211326.45031.toralf.foerster@gmx.de>
- <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
- <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 23 Jun 2007 03:23:49 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33654 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751628AbXFWHXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 03:23:49 -0400
+X-Authenticated: #815327
+X-Provags-ID: V01U2FsdGVkX1/uD49Sforug071EyrX5HIMCHbiW7aFF8BcFJTat5
+	hv/MiasFn7F/Zh
+Date: Sat, 23 Jun 2007 09:23:44 +0200
+From: Malte =?UTF-8?B?U2NocsO2ZGVy?= <maltesch@gmx.de>
+To: Stuart Anderson <anderson@ligo.caltech.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: OOPS in 2.6.19.1, connected to nfs4 and autofs4
+Message-ID: <20070623092344.31686480@highlander.home.lan>
+In-Reply-To: <20070623004236.GA2194@ligo.caltech.edu>
+References: <20070623004236.GA2194@ligo.caltech.edu>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_lVKv_n75OEem8K.gLZpL9AK;
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Sig_lVKv_n75OEem8K.gLZpL9AK
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Anyone with strong objections to this patch? (Hopefully) fixes the 
-kconfig issue for now.
+On Fri, 22 Jun 2007 17:42:36 -0700
+Stuart Anderson <anderson@ligo.caltech.edu> wrote:
+
+(I CC: this to the lkml)
+
+> Did you find a resolution to your posting regarding,
+>=20
+> "OOPS in 2.6.19.1, connected to nfs4 and autofs4"
+>=20
+> We just had a 2.6.20.11 kernel crash with a similar stack trace.
+
+No, it still happens (2.6.21.5) once in a while (once in a week or so).
+I don't know a way to clearly reproduce this.
+
+>=20
+>=20
+> Thanks.
+>=20
 
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+--=20
+---------------------------------------
+Malte Schr=C3=B6der
+MalteSch@gmx.de
+ICQ# 68121508
+---------------------------------------
 
-diff --git a/drivers/atm/Kconfig b/drivers/atm/Kconfig
-index f5a47a4..d340ebb 100644
---- a/drivers/atm/Kconfig
-+++ b/drivers/atm/Kconfig
-@@ -3,9 +3,8 @@
- #
- 
- menuconfig ATM_DRIVERS
--	bool "ATM drivers"
-+	tristate "ATM drivers"
- 	depends on NETDEVICES && ATM
--	default y
- 
- if ATM_DRIVERS
- 
-diff --git a/drivers/media/dvb/Kconfig b/drivers/media/dvb/Kconfig
-index efd2b74..19ea410 100644
---- a/drivers/media/dvb/Kconfig
-+++ b/drivers/media/dvb/Kconfig
-@@ -5,7 +5,7 @@
- source "drivers/media/dvb/dvb-core/Kconfig"
- 
- menuconfig DVB_CAPTURE_DRIVERS
--	bool "DVB/ATSC adapters"
-+	tristate "DVB/ATSC adapters"
- 	depends on DVB_CORE
- 	default y
- 	---help---
-diff --git a/drivers/media/radio/Kconfig b/drivers/media/radio/Kconfig
-index a6ac82a..cd8c891 100644
---- a/drivers/media/radio/Kconfig
-+++ b/drivers/media/radio/Kconfig
-@@ -3,7 +3,7 @@
- #
- 
- menuconfig RADIO_ADAPTERS
--	bool "Radio Adapters"
-+	tristate "Radio Adapters"
- 	depends on VIDEO_DEV
- 	default y
- 	---help---
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 7d57f4a..d888cfb 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -1899,9 +1899,8 @@ endmenu
- #
- 
- menuconfig NETDEV_1000
--	bool "Ethernet (1000 Mbit)"
-+	tristate "Ethernet (1000 Mbit)"
- 	depends on !UML
--	default y
- 
- if NETDEV_1000
- 
-@@ -2337,9 +2336,8 @@ endif # NETDEV_1000
- #
- 
- menuconfig NETDEV_10000
--	bool "Ethernet (10000 Mbit)"
-+	tristate "Ethernet (10000 Mbit)"
- 	depends on !UML
--	default y
- 
- if NETDEV_10000
- 
-diff --git a/drivers/net/pcmcia/Kconfig b/drivers/net/pcmcia/Kconfig
-index 5d658bc..37369ec 100644
---- a/drivers/net/pcmcia/Kconfig
-+++ b/drivers/net/pcmcia/Kconfig
-@@ -3,7 +3,7 @@
- #
- 
- menuconfig NET_PCMCIA
--	bool "PCMCIA network device support"
-+	tristate "PCMCIA network device support"
- 	depends on PCMCIA
- 	---help---
- 	  Say Y if you would like to include support for any PCMCIA or CardBus
+
+--Sig_lVKv_n75OEem8K.gLZpL9AK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGfMqA4q3E2oMjYtURAvG5AKCuB6x3j62FWmPaTLQHD+DO2ATMfwCgqsEl
+1VTmfr83SXAIebKHHGbtK4o=
+=N4Cw
+-----END PGP SIGNATURE-----
+
+--Sig_lVKv_n75OEem8K.gLZpL9AK--
