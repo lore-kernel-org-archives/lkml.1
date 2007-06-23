@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbXFWG4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbXFWG56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752962AbXFWG4x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 02:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbXFWG4p
+	id S1753389AbXFWG56 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 02:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbXFWG5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 02:56:45 -0400
-Received: from arx.rabbit.us ([68.251.127.6]:2080 "EHLO arx.rabbit.us"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751413AbXFWG4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 02:56:44 -0400
-Message-ID: <467CC429.3030505@rabbit.us>
-Date: Sat, 23 Jun 2007 08:56:41 +0200
-From: Peter Rabbitson <rabbit@rabbit.us>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
+	Sat, 23 Jun 2007 02:57:50 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:21492 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbXFWG5u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 02:57:50 -0400
+Date: Sat, 23 Jun 2007 08:57:48 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Roman Zippel <zippel@linux-m68k.org>
+cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Trent Piepho <xyzzy@speakeasy.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>, toralf.foerster@gmx.de,
+       Oliver Neukum <oneukum@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Luca Risolia <luca.risolia@studio.unibo.it>
+Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
+ [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
+In-Reply-To: <Pine.LNX.4.64.0706230216140.1817@scrub.home>
+Message-ID: <Pine.LNX.4.64.0706230855180.26568@fbirervta.pbzchgretzou.qr>
+References: <200706211117.55908.toralf.foerster@gmx.de> 
+ <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net> 
+ <a781481a0706221420u6935e75er1ee5601e013b40d2@mail.gmail.com> 
+ <Pine.LNX.4.64.0706222336210.1817@scrub.home> 
+ <a781481a0706221501s4887f88bh3b8cc549deb6886e@mail.gmail.com> 
+ <Pine.LNX.4.64.0706230017430.1817@scrub.home> 
+ <a781481a0706221533j34c341c5gf7ff92997e2463a6@mail.gmail.com> 
+ <Pine.LNX.4.64.0706230049480.1817@scrub.home> 
+ <a781481a0706221626q17f533ccnac09b2cc7c89126d@mail.gmail.com> 
+ <Pine.LNX.4.64.0706230137090.1817@scrub.home>
+ <a781481a0706221649j19f9ce2apcf295ddf9530da1e@mail.gmail.com>
+ <Pine.LNX.4.64.0706230216140.1817@scrub.home>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       surenkarapetyan@gmail.com
-Subject: Re: Terrible IO performance when using 4GB of RAM on a 32 bit machine
- [solved]
-References: <fa.8+Qu4ZH2B8PP3bRaZ5LNdUcsFIQ@ifi.uio.no> <fa.X6rjOVHT6SoOzt6SHEJROeRgf98@ifi.uio.no> <fa.qwrQSldd4OzDT6RgWE5P1BD9PJw@ifi.uio.no> <467B1100.4000401@shaw.ca>
-In-Reply-To: <467B1100.4000401@shaw.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Peter Rabbitson wrote:
->>
->> reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
->> reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
->> reg02: base=0xc0000000 (3072MB), size= 512MB: write-back, count=1
->> reg03: base=0xe0000000 (3584MB), size= 256MB: write-back, count=1
->> reg04: base=0xf0000000 (3840MB), size= 128MB: write-back, count=1
->> reg05: base=0xf8000000 (3968MB), size=  32MB: write-back, count=1
-> 
-> Looks like another case of bad MTRRs on an Intel motherboard? The BIOS 
-> is marking only memory up to 4000MB as cacheable, but the actual memory 
-> extends up to about 4031MB. Therefore anything that accesses the top 
-> 31MB of memory will run very slow.
 
-I sincerely apologize for not paying enough attention. Intel has fixed 
-this issue 2 BIOS revisions ago[1], kudos to Suren Karapetyan for 
-pointing this out. I just upgraded the BIOS and it indeed solves the 
-problem. The mtrr still seems not to be going over 4000MB, but 
-everything works without any visible slowdowns at all. Here is how the 
-mtrr and the relevant dmesg line look like now:
+On Jun 23 2007 02:26, Roman Zippel wrote:
+>On Sat, 23 Jun 2007, Satyam Sharma wrote:
+>
+>> But why? Let it do just one thing, and do it well. Is their
+>> any requirement anywhere that requires us to give a dual
+>> meaning to these menuconfig objects -- i.e. to also control
+>> the inclusion / exclusion of code from the kernel as well as
+>> also for the presentation + user interface purpose that it
+>> currently serves?
+>
+>This getting ridiculous. :-(
+>You're the one who is attaching a new meaning to it.
+>Any config symbol has multiple meanings depending on the context, the menu 
+>property only changes _one_ of them, you want to drastically redefine it 
+>and that's not going to happen.
 
-reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-reg01: base=0x80000000 (2048MB), size=1024MB: write-back, count=1
-reg02: base=0xc0000000 (3072MB), size= 512MB: write-back, count=1
-reg03: base=0xe0000000 (3584MB), size= 256MB: write-back, count=1
-reg04: base=0xf0000000 (3840MB), size= 128MB: write-back, count=1
-(there is no reg05)
-...
-Memory: 4024568k/4063168k available (2894k kernel code, 37456k reserved, 
-930k data, 252k init, 3145664k highmem)
-...
+Would it make sense to define a new entity called "configmenu" (or something
+else) that is equivalent to menuconfig with the following changes?
 
-Thank you for the help!
+ * it creates a CM_ variable instead of a CONFIG_ one
+ * the CM_ symbols are not available to Makefiles or C files
+   (so in fact, just to menuconfig and that they are listed in .config)
 
-Peter
 
-[1] 
-http://downloadcenter.intel.com/Detail_Desc.aspx?agr=N&Inst=Yes&ProductID=1640&DwnldID=11261&strOSs=All&OSFullName=All%20Operating%20Systems&lang=eng
+	Jan
+-- 
