@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbXFWLwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbXFWL5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbXFWLwh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 07:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbXFWLw2
+	id S1753685AbXFWL5X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 07:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbXFWL5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 07:52:28 -0400
-Received: from 1wt.eu ([62.212.114.60]:3111 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753907AbXFWLw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 07:52:28 -0400
-Date: Sat, 23 Jun 2007 13:51:46 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Alberto Gonzalez <info@gnebu.es>
-Cc: Tom Spink <tspink@gmail.com>,
+	Sat, 23 Jun 2007 07:57:16 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:33939 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbXFWL5P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 07:57:15 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 23 Jun 2007 07:52:51 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Florin Iucha <florin@iucha.net>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question about fair schedulers
-Message-ID: <20070623115144.GY943@1wt.eu>
-References: <200706230007.15622.info@gnebu.es> <200706231300.18840.info@gnebu.es> <7b9198260706230405y5c4a173dx82a18fcc14a10272@mail.gmail.com> <200706231326.34918.info@gnebu.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706231326.34918.info@gnebu.es>
-User-Agent: Mutt/1.5.11
+Subject: Re: "upping" a semaphore from interrupt context?
+In-Reply-To: <200706221934.18436.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0706230751230.4164@localhost.localdomain>
+References: <20070622173839.GB8398@iucha.net> <200706221934.18436.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-343429529-1182599571=:4164"
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 01:26:34PM +0200, Alberto Gonzalez wrote:
-> On Saturday 23 June 2007, Tom Spink wrote:
-> > Alberto,
-> >
-> > If you're feeling adventurous, grab the latest kernel and patch it
-> > with Ingo's scheduler: CFS.
-> >
-> > You may be pleasantly surprised.
-> 
-> Thanks, I might if I have to courage to patch and compile my own kernel :)
-> 
-> However, I'd also need to change all my applications to set them with the 
-> right priority to see the good results, so I think I might just wait until it 
-> lands in mainline.
-> 
-> Just to check if I understood everything correctly:
-> 
-> The mainline scheduler tries to be smart and guess the priority of each task, 
-> and while it mostly hits the nail right in the head, sometimes it hits you 
-> right in the thumb.
-> 
-> Fair schedulers, on the contrary, forget about trying to be smart and just 
-> care about being fair, leaving the priority settings to where they belong: 
-> applications.
-> 
-> Is this more or less correct?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-It is somewhat correct, except that nothing prevents them from trying to
-be even smarter. For instance, your video player consumes some CPU, but
-also calls X which itself consumes some CPU. There are tricks to track
-what process makes X work so that both share the same slices, generally
-resulting in improved smoothness without playing with applications priorities
-yet.
+--8323328-343429529-1182599571=:4164
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-It might be worth trying anyway.
+On Fri, 22 Jun 2007, Arnd Bergmann wrote:
 
-Regards,
-Willy
+> On Friday 22 June 2007, Florin Iucha wrote:
+> > I am writing a USB driver for some custom hardware, and I need to
+> > synchronize between the user-space and the USB subsystem.  Can I
+> > create a semaphore and "down" it in the reader then "up" it in the
+> > completion handler?
+>
+> yes, but you should not. The use of semaphores is not recommended
+> for new code, it should be replaced with either a mutex or a
+> completion.
 
+can you clarify this?  it sounds like you're saying that the current
+implementation of semaphores is entirely superfluous.  but surely it
+isn't possible to replace all semaphores with either mutexes or
+completions, is it?
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
+--8323328-343429529-1182599571=:4164--
