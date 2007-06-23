@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbXFWE3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbXFWEvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752440AbXFWE3H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 00:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXFWE2z
+	id S1752344AbXFWEvh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 00:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXFWEv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 00:28:55 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:51705 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbXFWE2y (ORCPT
+	Sat, 23 Jun 2007 00:51:28 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:30564 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbXFWEv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 00:28:54 -0400
-Date: Fri, 22 Jun 2007 21:28:34 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>, zippel@linux-m68k.org
-Cc: Ravikiran G Thirumalai <kiran@scalex86.org>, lenb@kernel.org,
-       andreas.herrmann3@amd.com, swhiteho@redhat.com, ak@suse.de,
-       shai@scalex86.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 7/12] acpi: fix another compile warning
-Message-Id: <20070622212834.cfa69fd0.randy.dunlap@oracle.com>
-In-Reply-To: <20070622205530.964ebef9.akpm@linux-foundation.org>
-References: <20070619225035.GI5193@alberich.amd.com>
-	<200706192338.02807.lenb@kernel.org>
-	<20070620084911.GO5193@alberich.amd.com>
-	<200706200936.31236.lenb@kernel.org>
-	<20070620182548.GA561@localdomain>
-	<20070622205530.964ebef9.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sat, 23 Jun 2007 00:51:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ptPeeLPhd193B9DFJKBQhxaAynlPG7BHxDjN9o7C5jZY3y76kFor0SgpX6b0FZ2nFQHe3LMIA8ZEBvrjrY70zvXMex0PsvMrMVAZN/RpPjLh2rn4ALKnDewR5cxTHt1mDlKCLq+6sNSqhY3fbEQL8nGO3aR+nTSstYT6tasH7Ks=
+Date: Sat, 23 Jun 2007 12:53:09 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Rob Landley <rob@landley.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Li Yang-r58472 <LeoLi@freescale.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, bryan.wu@analog.com,
+       TripleX Chung <xxx.phy@gmail.com>, Maggie Chen <chenqi@beyondsoft.com>
+Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
+Message-ID: <20070623045309.GA2555@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net> <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org> <200706221511.46775.rob@landley.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706221511.46775.rob@landley.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jun 2007 20:55:30 -0700 Andrew Morton wrote:
+On Fri, Jun 22, 2007 at 03:11:45PM -0400, Rob Landley wrote:
+>On Friday 22 June 2007 13:02:26 Linus Torvalds wrote:
+>> In fact, I suspect pretty much any documentation (whether technical or
+>> about processes and/or style) makes sense to have translated if the energy
+>> and ability to do that exists. I suspect the "policies and processes"
+>> kinds of docs make _more_ sense to translate initially, simply because
+>> they are approachable on their own - but I certainly would never
+>> discourage anybody from translating anything at all.
+>>
+>> That said, I don't think that merging the result into the standard kernel
+>> makes sense - like it or not, right now English ends up being required
+>> to be part of actually getting things into the "standard" kernel, and as
+>> such, at _some_ point there has to be a connection point that switches
+>> over to English, and trying to make the translations be an in-kernel thing
+>> is thus kind of pointless.
+>>
+>> But as part of some "documentation site", it makes 100% sense.
+>
+>Ok, I've got some documentation site, specifically http://kernel.org/doc (and 
+>I'll be completely redoing it as soon as I've recovered from my recent laptop 
+>crash and OLS).
+>
+>Send me translations (preferably in HTML format), and I'll put 'em up.   (I've 
+>already got the one that started this thread.)
+>
+>Thanks,
+>
 
-> > On Wed, 20 Jun 2007 11:25:48 -0700 Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
-> > Paper over 'select' inadequacies.  
-> > 
-> > Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-> > 
-> > Index: linux-2.6.22-rc5/arch/x86_64/Kconfig
-> > ===================================================================
-> > --- linux-2.6.22-rc5.orig/arch/x86_64/Kconfig	2007-06-18 16:02:19.571323415 -0700
-> > +++ linux-2.6.22-rc5/arch/x86_64/Kconfig	2007-06-20 11:34:29.845354250 -0700
-> > @@ -366,6 +366,7 @@ config X86_64_ACPI_NUMA
-> >         depends on NUMA
-> >         select ACPI 
-> >  	select PCI
-> > +  	select PM
-> >         select ACPI_NUMA
-> >         default y
-> >         help
-> 
-> argh.  (and not just argh-at-your-email-client).
-> 
-> I went through some hair-tearing a few months ago working out why it is so
-> damn hard to make CONFIG_PM go away and then I fixed it.  And now you're
-> proposing a change which would reinstate the obnoxious old behaviour.
-> 
-> Is the "bug" which you're "fixing" here caused by the randconfig
-> inadequacies?  Because randconfig is just busted and simply should auto-run
-> oldconfig.
+Please also send a copy of HTML format to me, I will put them to
+http://www.kerneltravel.net (A Chinese website about Linux kernel).
 
-Running oldconfig won't fix randconfigs that have busted "select"
-chains (i.e., select does not follow chains like "depends on" does).
-
-However, lots of this bustage isn't due to randconfig at all.
-It's due to Jan E.'s menuconfig changes (yes, which I supported).
-It seems that Jan didn't realize that a transition of a tristate symbol
-to a boolean converts y or m to y (and n to n) and all (?) of the new
-menuconfig symbols that control whether a menu is displayed or not
-are boolean.  One simple "fix" (or workaround) is to make them
-tristate.  Now that seems a little odd for a symbol that just controls
-whether a menu is displayed or not, so Satyam Sharma has made some
-other suggestions, and of course Andreas Herrmann has produced lots
-of patches to fix various issues that he has run into.
-
-I can't tell you the final answer (I proposed the tristate fix).
-I don't particularly like some of the patches that change
-	depends on XYZ
-to
-	depends on XYZ && ksymbol
-in many lines of kconfig entries.
+Thanks!
 
 
-Not that it answers your question, but we should have hit this
-in -mm, not in mainline, but it appears that our testing was a bit
-insufficient.
-
-And of course, if someone would fix kconfig to follow "select" chains,
-we should bestow an award on them.  :)
-(however, I don't know if Roman would merge that patch)
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+WANG Cong
