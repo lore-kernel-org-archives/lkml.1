@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbXFWXPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbXFWXRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753744AbXFWXPn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 19:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbXFWXPg
+	id S1754159AbXFWXRv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 19:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXFWXRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 19:15:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:57503 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbXFWXPf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 19:15:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cScvYPDmB5Ntj/6Ar/I5O6Q9/ZKqn0nyAV6QazJyOXi8hoHUyFE51g1it+gUkJVHtZgXlAQEBK6U4qr/UTFiXouPmhelMFyzPEZab1G22ruFsQ+hsg0mkONI8rEGz3i4CSkOVh2ABQ4flCQFClHOOUkM7/BWewHUHGWvAgnHHZg=
-Message-ID: <9a8748490706231615t7ccd9467wa79fe98d5f783ec3@mail.gmail.com>
-Date: Sun, 24 Jun 2007 01:15:34 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Grozdan Nikolov" <microchip@chello.be>
-Subject: Re: How innovative is Linux?
-Cc: "jimmy bahuleyan" <knight.camelot@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200706232106.11656.microchip@chello.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 23 Jun 2007 19:17:44 -0400
+Received: from www.osadl.org ([213.239.205.134]:58688 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752110AbXFWXRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 19:17:44 -0400
+Subject: Re: [PATCH 1/7] ICH Force HPET: Make generic time capable of
+	switching broadcast timer
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070623095215.f882f1cb.akpm@linux-foundation.org>
+References: <20070622203822.GA22807@linux-os.sc.intel.com>
+	 <20070623095215.f882f1cb.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 24 Jun 2007 01:17:40 +0200
+Message-Id: <1182640660.20203.213.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706231417.16086.microchip@chello.be>
-	 <200706232015.33527.microchip@chello.be> <467D6C78.3050101@gmail.com>
-	 <200706232106.11656.microchip@chello.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23/06/07, Grozdan Nikolov <microchip@chello.be> wrote:
-> On Saturday 23 June 2007 20:54, jimmy bahuleyan wrote:
-[snip]
-> > I'm not a kernel developer myself, but i think there are lots of
-> > resources on the internet where you can read watered down versions of
-> > discussions happening on this list.
->
-> If there are I'm unaware of those, thanks for the hint though
->
+On Sat, 2007-06-23 at 09:52 -0700, Andrew Morton wrote:
+> I _think_ what's going on here is that your code will go and poke the
+> hardware to enable the hpet even f the BIOS decided to hide its presence. 
+> Is that correct?  If so, perhaps the changelog should mention this
+> explicitly.
+> 
+> > Applies over linux-2.6.22-rc4-mm2 +
+> > tglx's  patch-2.6.22-rc4-mm2-hrt4 patch
+> 
+> Oh.  Well that tears that then.
+> 
+> Thomas, can I assume that you'll send all this stuff back at me?
 
-A few places:
+I sent out a V3 queue today, but the aggregate of my queue and Venki's
+HPET stuff + HPET force enable for non Intel chip sets is available as a
+full queue here:
 
-The LinuxChanges page at kernelnewbies: http://kernelnewbies.org/LinuxChanges
-The kernel section of LWN: http://lwn.net/Kernel/
-Kerneltrap: http://kerneltrap.org/
-Kernel Traffic (unfortunately no longer updated): http://kerneltraffic.org/
+http://www.tglx.de/projects/hrtimers/2.6.22-rc4-mm2/patch-2.6.22-rc4-mm2-hrt6.patches.tar.bz2
 
-And then you have list archives like :
+I can resend the 40 patches if you want, but they are out on LKML
+already (-hrt and the hpet ones), so there is little value to spam
+everyones inbox with the same stuff again.
 
-http://lkml.org/
-http://marc.info/?l=linux-kernel
-http://www.uwsg.iu.edu/hypermail/linux/kernel/index.html
+	tglx
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
