@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759886AbXFWNYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbXFWNYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759886AbXFWNYQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 09:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbXFWNWE
+	id S1758684AbXFWNYe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 09:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758034AbXFWNWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 09:22:04 -0400
-Received: from www.osadl.org ([213.239.205.134]:59219 "EHLO mail.tglx.de"
+	Sat, 23 Jun 2007 09:22:06 -0400
+Received: from www.osadl.org ([213.239.205.134]:59215 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757143AbXFWNWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 09:22:01 -0400
-Message-Id: <20070623124030.487431696@inhelltoy.tec.linutronix.de>
+	id S1756898AbXFWNWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 09:22:00 -0400
+Message-Id: <20070623124030.443749644@inhelltoy.tec.linutronix.de>
 References: <20070623124005.931747831@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 23 Jun 2007 13:32:33 -0000
+Date: Sat, 23 Jun 2007 13:32:32 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
@@ -20,77 +20,401 @@ Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        John Stultz <johnstul@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [patch -mm 08/28] clockevents: Fix device replacement
-Content-Disposition: inline;
-	filename=clockevents-broadcast-fix-device-replacement.patch
+Subject: [patch -mm 07/28] clockevents: Fix resume logic
+Content-Disposition: inline; filename=clockevents-fix-resume-logic.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a device is replaced by a better rated device, then the broadcast
-mode needs to be evaluated again. When the new device has no requirement
-for broadcasting, then the broadcast bits for the CPU must be cleared.
+We need to make sure, that the clockevent devices are resumed, before
+the tick is resumed. The current resume logic does not guarantee this.
+
+Add CLOCK_EVT_MODE_RESUME and call the set mode functions of the clock
+event devices before resuming the tick / oneshot functionality.
+
+Fixup the existing users.
+
+Thanks to Nigel Cunningham for tracking down a long standing thinko,
+which affected the jinxed VAIO.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- kernel/time/tick-broadcast.c |   29 ++++++++++++++++++++++++++++-
- 1 file changed, 28 insertions(+), 1 deletion(-)
+ arch/arm/mach-davinci/time.c      |    2 +
+ arch/arm/mach-imx/time.c          |    1 
+ arch/arm/mach-ixp4xx/common.c     |    2 +
+ arch/arm/mach-omap1/time.c        |    1 
+ arch/arm/plat-omap/timer32k.c     |    2 +
+ arch/i386/kernel/apic.c           |    3 +
+ arch/i386/kernel/hpet.c           |   71 ++------------------------------------
+ arch/i386/kernel/i8253.c          |   26 ++++++-------
+ arch/i386/kernel/vmiclock.c       |    1 
+ arch/i386/xen/time.c              |    1 
+ arch/sh/kernel/timers/timer-tmu.c |    1 
+ arch/sparc64/kernel/time.c        |    1 
+ include/linux/clockchips.h        |    1 
+ kernel/time/tick-broadcast.c      |    6 ++-
+ kernel/time/tick-common.c         |   16 +++++---
+ 15 files changed, 47 insertions(+), 88 deletions(-)
 
+Index: linux-2.6.22-rc4-mm/arch/i386/kernel/apic.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/i386/kernel/apic.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/i386/kernel/apic.c	2007-06-23 14:38:58.000000000 +0200
+@@ -263,6 +263,9 @@ static void lapic_timer_setup(enum clock
+ 		v |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
+ 		apic_write_around(APIC_LVTT, v);
+ 		break;
++	case CLOCK_EVT_MODE_RESUME:
++		/* Nothing to do here */
++		break;
+ 	}
+ 
+ 	local_irq_restore(flags);
+Index: linux-2.6.22-rc4-mm/arch/i386/kernel/hpet.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/i386/kernel/hpet.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/i386/kernel/hpet.c	2007-06-23 14:38:58.000000000 +0200
+@@ -187,6 +187,10 @@ static void hpet_set_mode(enum clock_eve
+ 		cfg &= ~HPET_TN_ENABLE;
+ 		hpet_writel(cfg, HPET_T0_CFG);
+ 		break;
++
++	case CLOCK_EVT_MODE_RESUME:
++		hpet_enable_int();
++		break;
+ 	}
+ }
+ 
+@@ -217,6 +221,7 @@ static struct clocksource clocksource_hp
+ 	.mask		= HPET_MASK,
+ 	.shift		= HPET_SHIFT,
+ 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
++	.resume		= hpet_start_counter,
+ };
+ 
+ /*
+@@ -313,7 +318,6 @@ int __init hpet_enable(void)
+ 
+ 	clocksource_register(&clocksource_hpet);
+ 
+-
+ 	if (id & HPET_ID_LEGSUP) {
+ 		hpet_enable_int();
+ 		hpet_reserve_platform_timers(id);
+@@ -546,68 +550,3 @@ irqreturn_t hpet_rtc_interrupt(int irq, 
+ 	return IRQ_HANDLED;
+ }
+ #endif
+-
+-
+-/*
+- * Suspend/resume part
+- */
+-
+-#ifdef CONFIG_PM
+-
+-static int hpet_suspend(struct sys_device *sys_device, pm_message_t state)
+-{
+-	unsigned long cfg = hpet_readl(HPET_CFG);
+-
+-	cfg &= ~(HPET_CFG_ENABLE|HPET_CFG_LEGACY);
+-	hpet_writel(cfg, HPET_CFG);
+-
+-	return 0;
+-}
+-
+-static int hpet_resume(struct sys_device *sys_device)
+-{
+-	unsigned int id;
+-
+-	hpet_start_counter();
+-
+-	id = hpet_readl(HPET_ID);
+-
+-	if (id & HPET_ID_LEGSUP)
+-		hpet_enable_int();
+-
+-	return 0;
+-}
+-
+-static struct sysdev_class hpet_class = {
+-	set_kset_name("hpet"),
+-	.suspend	= hpet_suspend,
+-	.resume		= hpet_resume,
+-};
+-
+-static struct sys_device hpet_device = {
+-	.id		= 0,
+-	.cls		= &hpet_class,
+-};
+-
+-
+-static __init int hpet_register_sysfs(void)
+-{
+-	int err;
+-
+-	if (!is_hpet_capable())
+-		return 0;
+-
+-	err = sysdev_class_register(&hpet_class);
+-
+-	if (!err) {
+-		err = sysdev_register(&hpet_device);
+-		if (err)
+-			sysdev_class_unregister(&hpet_class);
+-	}
+-
+-	return err;
+-}
+-
+-device_initcall(hpet_register_sysfs);
+-
+-#endif
+Index: linux-2.6.22-rc4-mm/arch/i386/kernel/i8253.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/i386/kernel/i8253.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/i386/kernel/i8253.c	2007-06-23 14:38:58.000000000 +0200
+@@ -3,11 +3,11 @@
+  *
+  */
+ #include <linux/clockchips.h>
+-#include <linux/spinlock.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
+ #include <linux/jiffies.h>
+-#include <linux/sysdev.h>
+ #include <linux/module.h>
+-#include <linux/init.h>
++#include <linux/spinlock.h>
+ 
+ #include <asm/smp.h>
+ #include <asm/delay.h>
+@@ -42,26 +42,24 @@ static void init_pit_timer(enum clock_ev
+ 	case CLOCK_EVT_MODE_PERIODIC:
+ 		/* binary, mode 2, LSB/MSB, ch 0 */
+ 		outb_p(0x34, PIT_MODE);
+-		udelay(10);
+ 		outb_p(LATCH & 0xff , PIT_CH0);	/* LSB */
+-		udelay(10);
+ 		outb(LATCH >> 8 , PIT_CH0);	/* MSB */
+ 		break;
+ 
+-	/*
+-	 * Avoid unnecessary state transitions, as it confuses
+-	 * Geode / Cyrix based boxen.
+-	 */
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
+-		if (evt->mode == CLOCK_EVT_MODE_UNUSED)
+-			break;
+ 	case CLOCK_EVT_MODE_UNUSED:
+-		if (evt->mode == CLOCK_EVT_MODE_SHUTDOWN)
+-			break;
++		outb_p(0x30, PIT_MODE);
++		outb_p(0, PIT_CH0);	/* LSB */
++		outb_p(0, PIT_CH0);	/* MSB */
++		break;
++
+ 	case CLOCK_EVT_MODE_ONESHOT:
+ 		/* One shot setup */
+ 		outb_p(0x38, PIT_MODE);
+-		udelay(10);
++		break;
++
++	case CLOCK_EVT_MODE_RESUME:
++		/* Nothing to do here */
+ 		break;
+ 	}
+ 	spin_unlock_irqrestore(&i8253_lock, flags);
+Index: linux-2.6.22-rc4-mm/include/linux/clockchips.h
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/include/linux/clockchips.h	2007-06-23 14:38:58.000000000 +0200
++++ linux-2.6.22-rc4-mm/include/linux/clockchips.h	2007-06-23 14:38:58.000000000 +0200
+@@ -23,6 +23,7 @@ enum clock_event_mode {
+ 	CLOCK_EVT_MODE_SHUTDOWN,
+ 	CLOCK_EVT_MODE_PERIODIC,
+ 	CLOCK_EVT_MODE_ONESHOT,
++	CLOCK_EVT_MODE_RESUME,
+ };
+ 
+ /* Clock event notification values */
 Index: linux-2.6.22-rc4-mm/kernel/time/tick-broadcast.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/time/tick-broadcast.c	2007-06-23 14:38:58.000000000 +0200
+--- linux-2.6.22-rc4-mm.orig/kernel/time/tick-broadcast.c	2007-06-23 14:38:56.000000000 +0200
 +++ linux-2.6.22-rc4-mm/kernel/time/tick-broadcast.c	2007-06-23 14:38:58.000000000 +0200
-@@ -31,6 +31,12 @@ struct tick_device tick_broadcast_device
- static cpumask_t tick_broadcast_mask;
- static DEFINE_SPINLOCK(tick_broadcast_lock);
- 
-+#ifdef CONFIG_TICK_ONESHOT
-+static void tick_broadcast_clear_oneshot(int cpu);
-+#else
-+static inline void tick_broadcast_clear_oneshot(int cpu) { }
-+#endif
-+
- /*
-  * Debugging: see timer_list.c
+@@ -49,7 +49,7 @@ cpumask_t *tick_get_broadcast_mask(void)
   */
-@@ -99,8 +105,19 @@ int tick_device_uses_broadcast(struct cl
- 		cpu_set(cpu, tick_broadcast_mask);
- 		tick_broadcast_start_periodic(tick_broadcast_device.evtdev);
- 		ret = 1;
--	}
-+	} else {
-+		/*
-+		 * When the new device is not affected by the stop
-+		 * feature and the cpu is marked in the broadcast mask
-+		 * then clear the broadcast bit.
-+		 */
-+		if (!(dev->features & CLOCK_EVT_FEAT_C3STOP)) {
-+			int cpu = smp_processor_id();
+ static void tick_broadcast_start_periodic(struct clock_event_device *bc)
+ {
+-	if (bc && bc->mode == CLOCK_EVT_MODE_SHUTDOWN)
++	if (bc)
+ 		tick_setup_periodic(bc, 1);
+ }
  
-+			cpu_clear(cpu, tick_broadcast_mask);
-+			tick_broadcast_clear_oneshot(cpu);
-+		}
+@@ -299,7 +299,7 @@ void tick_suspend_broadcast(void)
+ 	spin_lock_irqsave(&tick_broadcast_lock, flags);
+ 
+ 	bc = tick_broadcast_device.evtdev;
+-	if (bc && tick_broadcast_device.mode == TICKDEV_MODE_PERIODIC)
++	if (bc)
+ 		clockevents_set_mode(bc, CLOCK_EVT_MODE_SHUTDOWN);
+ 
+ 	spin_unlock_irqrestore(&tick_broadcast_lock, flags);
+@@ -316,6 +316,8 @@ int tick_resume_broadcast(void)
+ 	bc = tick_broadcast_device.evtdev;
+ 
+ 	if (bc) {
++		clockevents_set_mode(bc, CLOCK_EVT_MODE_RESUME);
++
+ 		switch (tick_broadcast_device.mode) {
+ 		case TICKDEV_MODE_PERIODIC:
+ 			if(!cpus_empty(tick_broadcast_mask))
+Index: linux-2.6.22-rc4-mm/kernel/time/tick-common.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/kernel/time/tick-common.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/kernel/time/tick-common.c	2007-06-23 14:38:58.000000000 +0200
+@@ -318,12 +318,17 @@ static void tick_resume(void)
+ {
+ 	struct tick_device *td = &__get_cpu_var(tick_cpu_device);
+ 	unsigned long flags;
++	int broadcast = tick_resume_broadcast();
+ 
+ 	spin_lock_irqsave(&tick_device_lock, flags);
+-	if (td->mode == TICKDEV_MODE_PERIODIC)
+-		tick_setup_periodic(td->evtdev, 0);
+-	else
+-		tick_resume_oneshot();
++	clockevents_set_mode(td->evtdev, CLOCK_EVT_MODE_RESUME);
++
++	if (!broadcast) {
++		if (td->mode == TICKDEV_MODE_PERIODIC)
++			tick_setup_periodic(td->evtdev, 0);
++		else
++			tick_resume_oneshot();
 +	}
- 	spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- 	return ret;
- }
-@@ -487,6 +504,16 @@ out:
- 	spin_unlock_irqrestore(&tick_broadcast_lock, flags);
+ 	spin_unlock_irqrestore(&tick_device_lock, flags);
  }
  
-+/*
-+ * Reset the one shot broadcast for a cpu
-+ *
-+ * Called with tick_broadcast_lock held
-+ */
-+static void tick_broadcast_clear_oneshot(int cpu)
-+{
-+	cpu_clear(cpu, tick_broadcast_oneshot_mask);
-+}
-+
- /**
-  * tick_broadcast_setup_highres - setup the broadcast device for highres
-  */
+@@ -360,8 +365,7 @@ static int tick_notify(struct notifier_b
+ 		break;
+ 
+ 	case CLOCK_EVT_NOTIFY_RESUME:
+-		if (!tick_resume_broadcast())
+-			tick_resume();
++		tick_resume();
+ 		break;
+ 
+ 	default:
+Index: linux-2.6.22-rc4-mm/arch/arm/mach-davinci/time.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/arm/mach-davinci/time.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/arm/mach-davinci/time.c	2007-06-23 14:38:58.000000000 +0200
+@@ -285,6 +285,8 @@ static void davinci_set_mode(enum clock_
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
+ 		t->opts = TIMER_OPTS_DISABLED;
+ 		break;
++	case CLOCK_EVT_MODE_RESUME:
++		break;
+ 	}
+ }
+ 
+Index: linux-2.6.22-rc4-mm/arch/arm/mach-imx/time.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/arm/mach-imx/time.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/arm/mach-imx/time.c	2007-06-23 14:38:58.000000000 +0200
+@@ -159,6 +159,7 @@ static void imx_set_mode(enum clock_even
+ 		break;
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
+ 	case CLOCK_EVT_MODE_UNUSED:
++	case CLOCK_EVT_MODE_RESUME:
+ 		/* Left event sources disabled, no more interrupts appears */
+ 		break;
+ 	}
+Index: linux-2.6.22-rc4-mm/arch/arm/mach-ixp4xx/common.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/arm/mach-ixp4xx/common.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/arm/mach-ixp4xx/common.c	2007-06-23 14:38:58.000000000 +0200
+@@ -459,6 +459,8 @@ static void ixp4xx_set_mode(enum clock_e
+ 	default:
+ 		osrt = opts = 0;
+ 		break;
++	case CLOCK_EVT_MODE_RESUME:
++		break;
+ 	}
+ 
+ 	*IXP4XX_OSRT1 = osrt | opts;
+Index: linux-2.6.22-rc4-mm/arch/arm/mach-omap1/time.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/arm/mach-omap1/time.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/arm/mach-omap1/time.c	2007-06-23 14:38:58.000000000 +0200
+@@ -156,6 +156,7 @@ static void omap_mpu_set_mode(enum clock
+ 		break;
+ 	case CLOCK_EVT_MODE_UNUSED:
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
++	case CLOCK_EVT_MODE_RESUME:
+ 		break;
+ 	}
+ }
+Index: linux-2.6.22-rc4-mm/arch/arm/plat-omap/timer32k.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/arm/plat-omap/timer32k.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/arm/plat-omap/timer32k.c	2007-06-23 14:38:58.000000000 +0200
+@@ -156,6 +156,8 @@ static void omap_32k_timer_set_mode(enum
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
+ 		omap_32k_timer_stop();
+ 		break;
++	case CLOCK_EVT_MODE_RESUME:
++		break;
+ 	}
+ }
+ 
+Index: linux-2.6.22-rc4-mm/arch/i386/kernel/vmiclock.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/i386/kernel/vmiclock.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/i386/kernel/vmiclock.c	2007-06-23 14:38:58.000000000 +0200
+@@ -142,6 +142,7 @@ static void vmi_timer_set_mode(enum cloc
+ 
+ 	switch (mode) {
+ 	case CLOCK_EVT_MODE_ONESHOT:
++	case CLOCK_EVT_MODE_RESUME:
+ 		break;
+ 	case CLOCK_EVT_MODE_PERIODIC:
+ 		cycles_per_hz = vmi_timer_ops.get_cycle_frequency();
+Index: linux-2.6.22-rc4-mm/arch/i386/xen/time.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/i386/xen/time.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/i386/xen/time.c	2007-06-23 14:38:58.000000000 +0200
+@@ -407,6 +407,7 @@ static void xen_timerop_set_mode(enum cl
+ 		break;
+ 
+ 	case CLOCK_EVT_MODE_ONESHOT:
++	case CLOCK_EVT_MODE_RESUME:
+ 		break;
+ 
+ 	case CLOCK_EVT_MODE_UNUSED:
+Index: linux-2.6.22-rc4-mm/arch/sh/kernel/timers/timer-tmu.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/sh/kernel/timers/timer-tmu.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/sh/kernel/timers/timer-tmu.c	2007-06-23 14:38:58.000000000 +0200
+@@ -80,6 +80,7 @@ static void tmu_set_mode(enum clock_even
+ 		break;
+ 	case CLOCK_EVT_MODE_UNUSED:
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
++	case CLOCK_EVT_MODE_RESUME:
+ 		break;
+ 	}
+ }
+Index: linux-2.6.22-rc4-mm/arch/sparc64/kernel/time.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/sparc64/kernel/time.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/sparc64/kernel/time.c	2007-06-23 14:38:58.000000000 +0200
+@@ -938,6 +938,7 @@ static void sparc64_timer_setup(enum clo
+ {
+ 	switch (mode) {
+ 	case CLOCK_EVT_MODE_ONESHOT:
++	case CLOCK_EVT_MODE_RESUME:
+ 		break;
+ 
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
 
 -- 
 
