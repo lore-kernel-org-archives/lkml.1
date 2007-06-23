@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751844AbXFWDwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbXFWDzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751844AbXFWDwi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 23:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXFWDwa
+	id S1752155AbXFWDzB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 23:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXFWDyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 23:52:30 -0400
-Received: from smtpout.mac.com ([17.250.248.175]:56626 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750925AbXFWDw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 23:52:29 -0400
-In-Reply-To: <20070619150824.GH11781@holomorphy.com>
-References: <787b0d920706072335v10d6025cwe1437194b6c60d84@mail.gmail.com> <20070619150824.GH11781@holomorphy.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8E4F75AB-FA08-46ED-B29F-9251ACB1A6EE@mac.com>
-Cc: Albert Cahalan <acahalan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: JIT emulator needs
-Date: Fri, 22 Jun 2007 23:52:12 -0400
-To: William Lee Irwin III <wli@holomorphy.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Fri, 22 Jun 2007 23:54:54 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:52247 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750925AbXFWDyx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 23:54:53 -0400
+Date: Sat, 23 Jun 2007 05:54:51 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Manoj Kasichainula <manoj@io.com>, linux-kernel@vger.kernel.org
+Subject: Re: SATA RAID5 speed drop of 100 MB/s
+Message-ID: <20070623035451.GA5522@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+	Manoj Kasichainula <manoj@io.com>, linux-kernel@vger.kernel.org
+References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <20070622214410.GB6970@alinoe.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622214410.GB6970@alinoe.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 19, 2007, at 11:08:24, William Lee Irwin III wrote:
-> On Fri, Jun 08, 2007 at 02:35:22AM -0400, Albert Cahalan wrote:
->> c. open() flag to unlink a file before returning the fd
->
-> You probably want a tmpfile(3) -like affair which never has a  
-> pathname to begin with. It could be useful for security purposes  
-> more generally.
+For what it's worth... I tried applying
 
-maybe this: open("/some/dir", O_TMPFILE);
-and this? open("/some/dir", O_TMPFILE|O_DIRECTORY);
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -516,6 +516,8 @@ static void ahci_save_initial_config(struct pci_dev *pdev,
+         * reset.  Values without are used for driver operation.
+         */
+        hpriv->saved_cap = cap = readl(mmio + HOST_CAP);
++       hpriv->saved_cap &= ( (1<<28) | (1<<17) );
++       hpriv->saved_cap |= (1 << 27);
+        hpriv->saved_port_map = port_map = readl(mmio + HOST_PORTS_IMPL);
 
-The former would return a filehandle to a new anonymous file  
-somewhere on whatever filesystem backs the specified path.  The  
-latter would do the same, except create an anonymous directory where  
-you could use "openat()" or something.  Presumably "lsof" and "/proc"  
-should show either type of handle as referring to either "/some/ 
-filesystem/" or "/some/filesystem/ (anonymous temp file)" or something.
+        /* some chips lie about 64bit support */
 
-Cheers,
-Kyle Moffett
+to 2.6.22-rc5, but it had no effect :*)
 
+I'll await any comments from a kernel developer for now.
+Please let me know if you want me to test something.
 
+-- 
+Carlo Wood <carlo@alinoe.com>
