@@ -1,53 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbXFWHMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbXFWHUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbXFWHMa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 03:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXFWHMX
+	id S1753911AbXFWHUW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 03:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbXFWHUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 03:12:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58291 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751628AbXFWHMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 03:12:22 -0400
-Date: Sat, 23 Jun 2007 09:11:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v18
-Message-ID: <20070623071153.GB6845@elte.hu>
-References: <20070622220202.GA16872@elte.hu> <200706221908.05460.gene.heskett@gmail.com>
+	Sat, 23 Jun 2007 03:20:13 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:16244 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbXFWHUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 03:20:12 -0400
+Date: Sat, 23 Jun 2007 09:20:10 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Linux and Kernel Video <video4linux-list@redhat.com>,
+       =?UTF-8?Q?Toralf_F=C3=B6rster?= <toralf.foerster@gmx.de>,
+       Luca Risolia <luca.risolia@studio.unibo.it>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Oliver Neukum <oneukum@suse.de>, Trent Piepho <xyzzy@speakeasy.org>
+Subject: [patch] 2.6.22-rc Kconfig troubles when using menuconfig
+In-Reply-To: <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net>
+Message-ID: <Pine.LNX.4.64.0706230915540.26568@fbirervta.pbzchgretzou.qr>
+References: <200706211117.55908.toralf.foerster@gmx.de>
+ <200706211231.53898.luca.risolia@studio.unibo.it> <200706211326.45031.toralf.foerster@gmx.de>
+ <200706211350.14526.oneukum@suse.de> <1182518566.14289.20.camel@gaivota>
+ <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706221908.05460.gene.heskett@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gene Heskett <gene.heskett@gmail.com> wrote:
+Anyone with strong objections to this patch? (Hopefully) fixes the 
+kconfig issue for now.
 
-> patching file kernel/softirq.c
-> patching file kernel/sysctl.c
-> The next patch would delete the file l/kernel/sched.c,
-> which does not exist!  Assume -R? [n]
-> 
-> How to proceed?
 
-oops - just ignore it, or re-download the patch (i fixed it).
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
-	Ingo
+diff --git a/drivers/atm/Kconfig b/drivers/atm/Kconfig
+index f5a47a4..d340ebb 100644
+--- a/drivers/atm/Kconfig
++++ b/drivers/atm/Kconfig
+@@ -3,9 +3,8 @@
+ #
+ 
+ menuconfig ATM_DRIVERS
+-	bool "ATM drivers"
++	tristate "ATM drivers"
+ 	depends on NETDEVICES && ATM
+-	default y
+ 
+ if ATM_DRIVERS
+ 
+diff --git a/drivers/media/dvb/Kconfig b/drivers/media/dvb/Kconfig
+index efd2b74..19ea410 100644
+--- a/drivers/media/dvb/Kconfig
++++ b/drivers/media/dvb/Kconfig
+@@ -5,7 +5,7 @@
+ source "drivers/media/dvb/dvb-core/Kconfig"
+ 
+ menuconfig DVB_CAPTURE_DRIVERS
+-	bool "DVB/ATSC adapters"
++	tristate "DVB/ATSC adapters"
+ 	depends on DVB_CORE
+ 	default y
+ 	---help---
+diff --git a/drivers/media/radio/Kconfig b/drivers/media/radio/Kconfig
+index a6ac82a..cd8c891 100644
+--- a/drivers/media/radio/Kconfig
++++ b/drivers/media/radio/Kconfig
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig RADIO_ADAPTERS
+-	bool "Radio Adapters"
++	tristate "Radio Adapters"
+ 	depends on VIDEO_DEV
+ 	default y
+ 	---help---
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 7d57f4a..d888cfb 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -1899,9 +1899,8 @@ endmenu
+ #
+ 
+ menuconfig NETDEV_1000
+-	bool "Ethernet (1000 Mbit)"
++	tristate "Ethernet (1000 Mbit)"
+ 	depends on !UML
+-	default y
+ 
+ if NETDEV_1000
+ 
+@@ -2337,9 +2336,8 @@ endif # NETDEV_1000
+ #
+ 
+ menuconfig NETDEV_10000
+-	bool "Ethernet (10000 Mbit)"
++	tristate "Ethernet (10000 Mbit)"
+ 	depends on !UML
+-	default y
+ 
+ if NETDEV_10000
+ 
+diff --git a/drivers/net/pcmcia/Kconfig b/drivers/net/pcmcia/Kconfig
+index 5d658bc..37369ec 100644
+--- a/drivers/net/pcmcia/Kconfig
++++ b/drivers/net/pcmcia/Kconfig
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig NET_PCMCIA
+-	bool "PCMCIA network device support"
++	tristate "PCMCIA network device support"
+ 	depends on PCMCIA
+ 	---help---
+ 	  Say Y if you would like to include support for any PCMCIA or CardBus
