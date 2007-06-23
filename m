@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbXFWSF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbXFWSJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757956AbXFWSF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 14:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbXFWSFJ
+	id S1756082AbXFWSJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 14:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbXFWSJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 14:05:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39803 "EHLO
+	Sat, 23 Jun 2007 14:09:22 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34409 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754902AbXFWSFH (ORCPT
+	by vger.kernel.org with ESMTP id S1752951AbXFWSJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 14:05:07 -0400
-Date: Sat, 23 Jun 2007 11:04:24 -0700
+	Sat, 23 Jun 2007 14:09:22 -0400
+Date: Sat, 23 Jun 2007 11:06:27 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: spock@gentoo.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] fbdev: make fb_find_mode look for a mode with the
- highest refresh rate
-Message-Id: <20070623110424.9a68d82d.akpm@linux-foundation.org>
-In-Reply-To: <20070623105046.GB12623@spock.one.pl>
-References: <20070623105046.GB12623@spock.one.pl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH 2/4] fbdev: add connector entries for uvesafb
+Message-Id: <20070623110627.c911373c.akpm@linux-foundation.org>
+In-Reply-To: <20070623105146.GC12623@spock.one.pl>
+References: <20070623105146.GC12623@spock.one.pl>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,57 +26,45 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jun 2007 12:50:46 +0200 Michal Januszewski <spock@gentoo.org> wrote:
+On Sat, 23 Jun 2007 12:51:46 +0200 Michal Januszewski <spock@gentoo.org> wrote:
 
-> If the refresh rate hasn't been explicitly specified, fd_find_mode
-> currently returns the first mode with the requested resolution. Change
-> it so that it returns a mode with the requested resolution and the
-> highest refresh rate.
+> Add connector's idx and val constants for v86d and uvesafb.
 > 
-> Also export fb_destroy_modelist, which is used in uvesafb.
+> Also change the maximum message size to 4k to allow transfers of VBE
+> data blocks from userspace.
 > 
 > Signed-off-by: Michal Januszewski <spock@gentoo.org>
 > ---
-> drivers/video/modedb.c |    7 +++++--
->  1 files changed, 5 insertions(+), 2 deletions(-)
+> include/linux/connector.h |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-> index 3741ad7..98ee77b 100644
-> --- a/drivers/video/modedb.c
-> +++ b/drivers/video/modedb.c
-> @@ -606,16 +606,18 @@ done:
->  	DPRINTK("Trying specified video mode%s %ix%i\n",
->  	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
+> diff --git a/include/linux/connector.h b/include/linux/connector.h
+> index 10eb56b..46b2aba 100644
+> --- a/include/linux/connector.h
+> +++ b/include/linux/connector.h
+> @@ -36,14 +36,15 @@
+>  #define CN_VAL_CIFS                     0x1
+>  #define CN_W1_IDX			0x3	/* w1 communication */
+>  #define CN_W1_VAL			0x1
+> +#define CN_IDX_V86D			0x4
+> +#define CN_VAL_V86D_UVESAFB		0x1
 >  
-> +	if (!refresh_specified)
-> +		refresh = 200;
->  	diff = refresh;
->  	best = -1;
->  	for (i = 0; i < dbsize; i++) {
->  		if (name_matches(db[i], name, namelen) ||
->  		    (res_specified && res_matches(db[i], xres, yres))) {
->  			if(!fb_try_mode(var, info, &db[i], bpp)) {
-> -				if(!refresh_specified || db[i].refresh == refresh)
-> +				if (refresh_specified && db[i].refresh == refresh)
->  					return 1;
->  				else {
-> -					if(diff > abs(db[i].refresh - refresh)) {
-> +					if (diff > abs(db[i].refresh - refresh)) {
->  						diff = abs(db[i].refresh - refresh);
->  						best = i;
->  					}
-> @@ -938,6 +940,7 @@ void fb_destroy_modelist(struct list_head *head)
->  		kfree(pos);
->  	}
->  }
-> +EXPORT_SYMBOL_GPL(fb_destroy_modelist);
+> -
+> -#define CN_NETLINK_USERS		4
+> +#define CN_NETLINK_USERS		5
 >  
+>  /*
+>   * Maximum connector's message size.
+>   */
+> -#define CONNECTOR_MAX_MSG_SIZE 	1024
+> +#define CONNECTOR_MAX_MSG_SIZE 	4096
+>  
+>  /*
+>   * idx and val are unique identifiers which 
+> 
+> 
 
-fbdev ignoramus asks: isn't this pretty risky?  People who were previously
-relying upon (or at least using) the kernel's default resolution will find
-their displays coming up in a quite different resolution.
+Evgeniy, could you please review this?
 
-This change seems to be quite unrelated to the uvesafb stuff and should be
-in a separate patch from the export, which _is_ uvesafb-related.  I think. 
-If that's wrong then the changelog could do with some attention.
-
+The need to add these enumerations for unrelated subsystems to connector.h
+may get a bit ugly as time passes, but I guess it's OK for now.
