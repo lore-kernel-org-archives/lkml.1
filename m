@@ -1,44 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbXFWSBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbXFWSCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbXFWSBh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 14:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbXFWSBb
+	id S1756601AbXFWSCf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 14:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbXFWSC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 14:01:31 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:2001 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbXFWSBa (ORCPT
+	Sat, 23 Jun 2007 14:02:28 -0400
+Received: from rwcrmhc11.comcast.net ([204.127.192.81]:41087 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528AbXFWSC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 14:01:30 -0400
-Date: Sat, 23 Jun 2007 20:01:29 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
-cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       arw@arw.name
-Subject: Re: [PATCH] Check files' signatures before doing suid/sgid [2/4]
-In-Reply-To: <20070621174612.GG9741@cip.informatik.uni-erlangen.de>
-Message-ID: <Pine.LNX.4.64.0706232001070.11964@fbirervta.pbzchgretzou.qr>
-References: <11824417551424-git-send-email-arw@arw.name>
- <1182446251.2704.0.camel@laptopd505.fenrus.org>
- <20070621172557.GE9741@cip.informatik.uni-erlangen.de>
- <1182446983.2704.4.camel@laptopd505.fenrus.org>
- <20070621174612.GG9741@cip.informatik.uni-erlangen.de>
+	Sat, 23 Jun 2007 14:02:27 -0400
+Message-ID: <467D71FD.3030803@wolfmountaingroup.com>
+Date: Sat, 23 Jun 2007 13:18:21 -0600
+From: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Fedora/1.7.8-2
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Grozdan Nikolov <microchip@chello.be>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: How innovative is Linux?
+References: <200706231417.16086.microchip@chello.be>	<20070623154328.222a2f92@the-village.bc.nu>	<200706231722.26931.microchip@chello.be> <20070623164608.05dc5c30@the-village.bc.nu>
+In-Reply-To: <20070623164608.05dc5c30@the-village.bc.nu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 21 2007 19:46, Alexander Wuerstlein wrote:
->
->If a process uses read() it needs some executable and writable memory. We do
->check for this in mprotect(). There is a problem with the i386-architecture,
->because it allows execution of any readable page (except with newer
->processors). But beyond that ugliness of i386, it should not be possible to
->execute anything without us noticing it (hopefully).
+There's a lot in Linux that was true innnovation:
 
-r and x together is not a problem IMHO.
+Alan Cox's Networking Architecture.
+VFS Architecture (best one out there -- even better than M$'s)
+Scheduler Design.
+
+Jeff
 
 
-	Jan
--- 
+
