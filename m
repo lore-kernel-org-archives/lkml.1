@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbXFWWWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbXFWWXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbXFWWWH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 18:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbXFWWV4
+	id S1754741AbXFWWXw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 18:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXFWWXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 18:21:56 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40796 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752640AbXFWWVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 18:21:55 -0400
-Message-ID: <467D9CFD.7020603@garzik.org>
-Date: Sat, 23 Jun 2007 18:21:49 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Carlo Wood <carlo@alinoe.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: SATA Harddisk speed drop of 100 MB/s
-References: <20070620224847.GA5488@alinoe.com>	<4679B2DE.9090903@garzik.org>	<1182397012.2863.0.camel@laptopd505.fenrus.org>	<20070622162142.GA603@alinoe.com>	<20070622211746.GB21769@khazad-dum.debian.net>	<20070622212758.GA6970@alinoe.com>	<20070623013132.GA1702@khazad-dum.debian.net>	<20070623025906.GA24336@alinoe.com> <20070623102949.09e36fb9.akpm@linux-foundation.org>
-In-Reply-To: <20070623102949.09e36fb9.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	Sat, 23 Jun 2007 18:23:46 -0400
+Received: from acrux.ligo.caltech.edu ([131.215.115.14]:43033 "EHLO
+	acrux.ligo.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752526AbXFWWXp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 18:23:45 -0400
+X-Greylist: delayed 944 seconds by postgrey-1.27 at vger.kernel.org; Sat, 23 Jun 2007 18:23:45 EDT
+Date: Sat, 23 Jun 2007 15:07:55 -0700
+From: Stuart Anderson <anderson@ligo.caltech.edu>
+To: linux-kernel@vger.kernel.org
+Subject: i2c_adapter unrecognized stepping
+Message-ID: <20070623220755.GA29173@ligo.caltech.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+X-Spam-Score: undef - Domain Whitelisted (ligo.caltech.edu: )
+X-Canit-Stats-ID: 6899218 - f658bddfbb23
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Please see http://bugzilla.kernel.org/show_bug.cgi?id=8636
-> 
-> In that report a pretty large slowdown with CFQ has been identified.
-> Jens has plunked a patch in there (Comment #50) and then ran away on
-> vacation.
-> 
-> If someone can test that patch and demonstrate its goodness, I'll
-> queue it up, thanks.
+Booting the 2.6.20.14 kernel on a Sun X4600M2 genreates the following messgae
+about unrecognized stepping. Is this a known issue and/or problem?
 
-This has unfortunately split up into two threads.  I identified the root 
-cause of the slowdown as NCQ in the thread "Re: SATA RAID5 speed drop of 
-100 MB/s" on LKML.
+Thanks.
 
-	Jeff
+...
+kernel: Initializing CPU#15
+kernel: Calibrating delay using timer specific routine.. 5186.68 BogoMIPS (lpj=10373366)
+kernel: CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+kernel: CPU: L2 Cache: 1024K (64 bytes/line)
+kernel: CPU 15/f -> Node 7
+kernel: CPU: Physical Processor ID: 7
+kernel: CPU: Processor Core ID: 1
+kernel: Dual-Core AMD Opteron(tm) Processor 8218 stepping 02
+kernel: CPU 15: Syncing TSC to CPU 0.
+kernel: CPU 15: synchronized TSC with CPU 0 (last diff -38 cycles, maxerr 2285 cycles)
+kernel: Brought up 16 CPUs
+...
+kernel: i2c_adapter i2c-1: : Unrecognized stepping 0x45. Defaulting to ADM1026.
+kernel: i2c_adapter i2c-1: : Unrecognized stepping 0x45. Defaulting to ADM1026.
+kernel: i2c_adapter i2c-1: : Found version/stepping 0x46. Assuming generic ADM1026.
 
-
+-- 
+Stuart Anderson  anderson@ligo.caltech.edu
+http://www.ligo.caltech.edu/~anderson
