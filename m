@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbXFWO3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759160AbXFWOfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759627AbXFWO3y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 10:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757089AbXFWO3s
+	id S1759160AbXFWOfB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 10:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbXFWOez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 10:29:48 -0400
-Received: from aa014msr.fastwebnet.it ([85.18.95.74]:49049 "EHLO
-	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756902AbXFWO3r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 10:29:47 -0400
-Date: Sat, 23 Jun 2007 16:28:37 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Alberto Gonzalez <info@gnebu.es>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question about fair schedulers
-Message-ID: <20070623162837.47f31bf8@localhost>
-In-Reply-To: <200706231556.36430.info@gnebu.es>
-References: <200706230007.15622.info@gnebu.es>
-	<200706231001.02497.info@gnebu.es>
-	<20070623152653.05ebac64@localhost>
-	<200706231556.36430.info@gnebu.es>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 23 Jun 2007 10:34:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58633 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752369AbXFWOey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 10:34:54 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3] doc/oops-tracing: add Code: decode info
+Date: Sat, 23 Jun 2007 16:34:42 +0200
+User-Agent: KMail/1.9.6
+Cc: Arkadiusz Miskiewicz <arekm@maven.pl>, Oleg Verych <olecom@flower.upol.cz>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
+References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706231517.28085.ak@suse.de> <20070623153239.78ee86fe@the-village.bc.nu>
+In-Reply-To: <20070623153239.78ee86fe@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706231634.42907.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jun 2007 15:56:36 +0200
-Alberto Gonzalez <info@gnebu.es> wrote:
+On Saturday 23 June 2007 16:32:39 Alan Cox wrote:
+ 
+> Having the scripts work with other shells is very helpful for porting,
+> cross building and the like.
 
-> > And yes, programs/distributions should set good defaults for you... and
-> > if they don't, just complain to them  :)  
-> 
-> I'm sure they'll do once a fair scheduler goes into mainline :)
+Well then for the majority of cross compile users you should consequently write 
+them in Windows batch language.
 
-Some already does... for example the current version of:
-	http://www.exit1.org/dvdrip/
+> Also on Linux /bin/sh is not 
+> neccessarily /bin/bash.
 
-it sets transcode nice to "+19" by default  :)
+If it's not I think these few distributions give Linux a bad name 
+because they introduce quite unnecessary incompatibilities.
+Hopefully they are not widely used.
 
-> 
-> I guess what I was missing from the beginning is that "fair" means that the 
-> scheduler will be fair among tasks that have the same priority, but if a task 
-> has a higher priority, it _will_ get more CPU. So we'll just have to mark 
-> applications like video players, audio players or games with a high priority, 
-> others like encoders or compilers with low priority, and leave the rest 
-> (browsers, word processors, email readers, etc...) as normal priority. This 
-> way a fair scheduler would be able to give each task right amount of CPU.
-
-Yes. I think that the more important thing is to nice background tasks
-(like encoders etc..), then games / video players can run without
-problems even without renicing (usually normal programs don't eat much
-CPU).
-
--- 
-	Paolo Ornati
-	Linux 2.6.22-rc5-g0864a4e2 on x86_64
+-Andi
