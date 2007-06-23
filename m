@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXFWWIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbXFWWLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbXFWWIS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 18:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXFWWIG
+	id S1754009AbXFWWLA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 18:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbXFWWKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 18:08:06 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55990 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751926AbXFWWIF (ORCPT
+	Sat, 23 Jun 2007 18:10:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55082 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751926AbXFWWKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 18:08:05 -0400
-Date: Sat, 23 Jun 2007 23:13:24 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Grozdan Nikolov <microchip@chello.be>, Torsten Duwe <duwe@lst.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: How innovative is Linux?
-Message-ID: <20070623231324.3caca035@the-village.bc.nu>
-In-Reply-To: <20070623210228.GY21478@ftp.linux.org.uk>
-References: <200706231417.16086.microchip@chello.be>
-	<20070623164608.05dc5c30@the-village.bc.nu>
-	<200706231812.02317.duwe@lst.de>
-	<200706231819.43556.microchip@chello.be>
-	<20070623202343.621a244b@the-village.bc.nu>
-	<20070623210228.GY21478@ftp.linux.org.uk>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Jun 2007 18:10:53 -0400
+Date: Sat, 23 Jun 2007 15:09:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, hch@infradead.org,
+       johnstul@us.ibm.com, oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com,
+       dipankar@in.ibm.com, davem@davemloft.net, kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 5/5 v2] Convert tasklets to work queues
+In-Reply-To: <1182626869.5493.143.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.0.98.0706231508420.3593@woody.linux-foundation.org>
+References: <20070622182051.859570787@goodmis.org>  <20070622182315.571740041@goodmis.org>
+  <20070623095359.4667514e.akpm@linux-foundation.org> 
+ <alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org>
+ <1182626869.5493.143.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jun 2007 22:02:29 +0100
-Al Viro <viro@ftp.linux.org.uk> wrote:
 
-> On Sat, Jun 23, 2007 at 08:23:43PM +0100, Alan Cox wrote:
-> > Proc type stuff is a lot older than Linux or Unix AFAIK. Loadable modules
-> > ditto but the full load/unload/autoload stuff I've not seen pre-Linux.
+
+On Sat, 23 Jun 2007, Steven Rostedt wrote:
+> > 
+> > On Sat, 23 Jun 2007, Andrew Morton wrote:
+> > > 
+> > > Anyway.  Please fix the many correct warnings which checkpatch.pl
+> > > generates
+> > 
+> > Actually, please don't.
 > 
-> Representation of process state and control of that state via files on
-> a filesystem? 
+> You sure?  If I were to do this recommended fix, I would simply add
+> another patch. One to do the fixes, the other to move the code.
 
-I don't know about proc in that sense prior to v8 unix I was thinking
-about the logical device stuff and filesystem objects/namepaces that
-produced program generated data.
+Sure, that sounds fine.
 
-
-
+		Linus
