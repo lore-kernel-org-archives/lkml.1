@@ -1,48 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbXFWAaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXFWAin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbXFWAaU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 20:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXFWA3f
+	id S1756146AbXFWAin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 20:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbXFWAif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 20:29:35 -0400
-Received: from ns2.suse.de ([195.135.220.15]:53623 "EHLO mx2.suse.de"
+	Fri, 22 Jun 2007 20:38:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53939 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbXFWA3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 20:29:34 -0400
+	id S1752169AbXFWAie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 20:38:34 -0400
 From: Andi Kleen <ak@suse.de>
-References: <20070623229.766711000@suse.de>
-In-Reply-To: <20070623229.766711000@suse.de>
-To: olaf@aepfle.de, patches@x86-64.org, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH for 2.6.22] [2/3] x86_64: Fix only make Macintosh drivers default on Macs
-Message-Id: <20070623002924.E08E114B2C@wotan.suse.de>
-Date: Sat, 23 Jun 2007 02:29:24 +0200 (CEST)
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Yinghai.Lu@sun.com
+Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
+Date: Sat, 23 Jun 2007 02:38:20 +0200
+User-Agent: KMail/1.9.6
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Muli Ben-Yehuda <muli@il.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200706221219.16243.yinghai.lu@sun.com> <200706230214.02535.ak@suse.de> <467C6906.6020105@sun.com>
+In-Reply-To: <467C6906.6020105@sun.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706230238.20929.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Olaf Hering <olaf@aepfle.de>
+> current I only test kexec only. So clean shut GART in first kernel will help.
+> 
+> where is hook for shutdown? add one in dma_ops?
 
-Include PPC_MAC in the default too, not only MAC which only covers
-m68k MACs.
+The low level code could just register its own shutdown handler.
+No need to go through dma_ops I think.
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-Signed-off-by: Andi Kleen <ak@suse.de>
-
----
- drivers/macintosh/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux/drivers/macintosh/Kconfig
-===================================================================
---- linux.orig/drivers/macintosh/Kconfig
-+++ linux/drivers/macintosh/Kconfig
-@@ -2,7 +2,7 @@
- menuconfig MACINTOSH_DRIVERS
- 	bool "Macintosh device drivers"
- 	depends on PPC || MAC || X86
--	default y if MAC
-+	default y if (PPC_PMAC || MAC)
- 
- if MACINTOSH_DRIVERS
- 
+-Andi
