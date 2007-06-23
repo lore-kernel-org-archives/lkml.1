@@ -1,171 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbXFWXUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbXFWX3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbXFWXUv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 19:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbXFWXUo
+	id S1754495AbXFWX3v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 19:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbXFWX3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 19:20:44 -0400
-Received: from ipn26-148.piekary.net ([83.238.26.148]:34794 "EHLO
-	ipn26-148.piekary.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbXFWXUn (ORCPT
+	Sat, 23 Jun 2007 19:29:43 -0400
+Received: from host-69-39-86-10.a2webhosting.com ([69.39.86.10]:57737 "EHLO
+	a2s21.a2hosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbXFWX3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 19:20:43 -0400
-Date: Sun, 24 Jun 2007 01:20:33 +0200
-From: Michal Januszewski <spock@gentoo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] fbdev: uvesafb driver
-Message-ID: <20070623232033.GB7148@spock.one.pl>
-Reply-To: spock@gentoo.org
-References: <20070623105243.GD12623@spock.one.pl> <20070623113557.f0295218.akpm@linux-foundation.org>
+	Sat, 23 Jun 2007 19:29:42 -0400
+Message-ID: <467DACCA.7070002@banksresearch.com>
+Date: Sat, 23 Jun 2007 19:29:14 -0400
+From: Wyatt Banks <wyatt@banksresearch.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20070623113557.f0295218.akpm@linux-foundation.org>
-X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: linux-kernel@vger.kernel.org
+CC: zippel@linux-m68k.org
+Subject: [PATCH] HFSPlus: simplify inode mode settting logic
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-A2hosting-MailScanner-Information: Please contact the ISP for more information
+X-A2hosting-MailScanner: Found to be clean
+X-A2hosting-MailScanner-SpamCheck: 
+X-A2hosting-MailScanner-From: wyatt@banksresearch.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - a2s21.a2hosting.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - banksresearch.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 11:35:57AM -0700, Andrew Morton wrote:
-> On Sat, 23 Jun 2007 12:52:43 +0200 Michal Januszewski <spock@gentoo.org> wrote:
+From:	Wyatt Banks <wyatt@banksresearch.com>
 
-> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > index 403dac7..5cc03f9 100644
-> > --- a/drivers/video/Kconfig
-> > +++ b/drivers/video/Kconfig
-> > @@ -585,6 +585,24 @@ config FB_TGA
-> >  
-> >  	  Say Y if you have one of those.
-> >  
-> > +config FB_UVESA
-> > +	tristate "Userspace VESA VGA graphics support"
-> > +	depends on FB && CONNECTOR
-> 
-> These dependencies are insufficient.
+HFSPlus: Fix broken inode mode setting logic.  Fix broken umask mount option.
 
-What exactly is missing here?  A dep on X86?  This would indicate the
-arches on which the driver has actually been tested.  But which arches
-are supported and which aren't is, in the end, up to the userspace helper.
- 
-> > +static struct cb_id uvesafb_cn_id = {
-> > +	.idx = CN_IDX_V86D,
-> > +	.val = CN_VAL_V86D_UVESAFB
-> > +};
-> > +static struct sock *nls;
-> > +static char v86d_path[PATH_MAX] = "/sbin/v86d";
-> 
-> Remove the PATH_MAX, save some memory.
-> 
-> Oh, it gets set via sysfs.  hrm.
+Signed-off-by:	Wyatt Banks <wyatt@banksresearch.com>
+---
+Patched against 2.6.21.5
 
-Hmm, I guess I could make it a hard-coded value, but paths to userspace 
-helpers should generally be configurable, right?
+hfsplus_cat_read_inode() decides if the selected inode is a directory or not.
+It then sets the 3rd parameter of hfsplus_get_perms() accordingly.  Inside
+hfsplus_get_perms() it again decides based on its 3rd parameter if the inode
+is a directory or not.  Besides this redundancy, mode is the BSD file type and mode
+bits (see Apple TechNote 1150 for details) and is never 0.  This makes a large
+portion of the branching logic unused.  What actually does happen in the branching
+is that the UGO mode bits are combined with the directory or regular file bit after
+the 2nd decision and this resultant mode is assigned to the inode.  This also loses
+suid, sgid, sticky, pipe, fifo, etc.
 
-> Now I'm wondering what this code actually does.  It would be nice to have
-> an overall design and implementation description in the changelog so we
-> don't have to reverse-engineer your thoughts from your implementation...
+This patch also fixes the umask mount option as a result.  I figured instead of
+filing a bug report, I'd just go ahead and fix it. :-)
 
-OK, I'll include a more detailed description in the next round of the
-patches.
- 
-> > +#ifdef __i386__
-> 
-> CONFIG_X86 would be more typical.
-> 
-> Be aware that CONFIG_X86 is true for both i386 and x86_64.  You don't state
-> whether this code works on x86_64.  If it can, it should.
+diff -uprN -X linux-2.6.21.5/Documentation/dontdiff linux-2.6.21.5/fs/hfsplus/inode.c linux-2.6.21.5-devel/fs/hfsplus/inode.c
+--- linux-2.6.21.5/fs/hfsplus/inode.c	2007-06-11 14:37:06.000000000 -0400
++++ linux-2.6.21.5-devel/fs/hfsplus/inode.c	2007-06-23 18:23:57.000000000 -0400
+@@ -173,7 +173,7 @@ out:
+	return NULL;
+ }
 
-AFAIK, it can't.  PMI code is meant to be run in 32-bit protected mode.
-I'll add a note about this to the patch and change __i386__ to
-CONFIG_X86_32.
- 
-> You might care to cc "H.  Peter Anvin" <hpa@zytor.com> on the next version
-> of this patch - he's a whizz at this sort of low-level x86 bios
-> communication stuff.
+-static void hfsplus_get_perms(struct inode *inode, struct hfsplus_perm *perms, int dir)
++static void hfsplus_get_perms(struct inode *inode, struct hfsplus_perm *perms)
+ {
+	struct super_block *sb = inode->i_sb;
+	u16 mode;
+@@ -188,14 +188,7 @@ static void hfsplus_get_perms(struct ino
+	if (!inode->i_gid && !mode)
+		inode->i_gid = HFSPLUS_SB(sb).gid;
 
-Thanks, I'll do that.
- 
-> > +	if (!request_mem_region(info->fix.smem_start, info->fix.smem_len,
-> > +	    "uvesafb")) {
-> > +		printk(KERN_WARNING "uvesafb: cannot reserve video memory at "
-> > +		       "0x%lx\n", info->fix.smem_start);
-> > +		/* We cannot make this fatal. Sometimes this comes from magic
-> > +		   spaces our resource handlers simply don't know about. */
-> 
-> so...  what happens?  The driver starts altering mrmory regions which it
-> doesn't own?
+-	if (dir) {
+-		mode = mode ? (mode & S_IALLUGO) :
+-			(S_IRWXUGO & ~(HFSPLUS_SB(sb).umask));
+-		mode |= S_IFDIR;
+-	} else if (!mode)
+-		mode = S_IFREG | ((S_IRUGO|S_IWUGO) &
+-			~(HFSPLUS_SB(sb).umask));
+-	inode->i_mode = mode;
++	inode->i_mode = mode & ~(HFSPLUS_SB(sb).umask);
 
-Fixed.  This was a leftover from vesafb.c.  Are there any reasons for not
-fixing it there as well?
- 
-> > +#ifndef MODULE
-> > +static int __devinit uvesafb_setup(char *options)
-> > +{
-> > +	char *this_opt;
-> > +
-> > +	if (!options || !*options)
-> > +		return 0;
-> > +
-> > +	while ((this_opt = strsep(&options, ",")) != NULL) {
-> > +		if (!*this_opt) continue;
-> > +
-> > +		if (!strcmp(this_opt, "redraw"))
-> > +			ypan = 0;
-> > +		else if (!strcmp(this_opt, "ypan"))
-> > +			ypan = 1;
-> > +		else if (!strcmp(this_opt, "ywrap"))
-> > +			ypan = 2;
-> > +		else if (!strcmp(this_opt, "vgapal"))
-> > +			pmi_setpal = 0;
-> > +		else if (!strcmp(this_opt, "pmipal"))
-> > +			pmi_setpal = 1;
-> > +		else if (!strncmp(this_opt, "mtrr:", 5))
-> > +			mtrr = simple_strtoul(this_opt+5, NULL, 0);
-> > +		else if (!strcmp(this_opt, "nomtrr"))
-> > +			mtrr = 0;
-> > +		else if (!strcmp(this_opt, "nocrtc"))
-> > +			nocrtc = 1;
-> > +		else if (!strcmp(this_opt, "noedid"))
-> > +			noedid = 1;
-> > +		else if (!strcmp(this_opt, "noblank"))
-> > +			blank = 0;
-> > +		else if (!strncmp(this_opt, "vtotal:", 7))
-> > +			vram_total = simple_strtoul(this_opt + 7, NULL, 0);
-> > +		else if (!strncmp(this_opt, "vremap:", 7))
-> > +			vram_remap = simple_strtoul(this_opt + 7, NULL, 0);
-> > +		else if (!strncmp(this_opt, "maxhf:", 6))
-> > +			maxhf = simple_strtoul(this_opt + 6, NULL, 0);
-> > +		else if (!strncmp(this_opt, "maxvf:", 6))
-> > +			maxvf = simple_strtoul(this_opt + 6, NULL, 0);
-> > +		else if (!strncmp(this_opt, "maxclk:", 7))
-> > +			maxclk = simple_strtoul(this_opt + 7, NULL, 0);
-> > +		else if (!strncmp(this_opt, "vbemode:", 8))
-> > +			vbemode = simple_strtoul(this_opt + 8, NULL,0);
-> > +		else if (this_opt[0] >= '0' && this_opt[0] <= '9') {
-> > +			mode_option = this_opt;
-> > +		} else {
-> > +			printk(KERN_WARNING
-> > +			       "uvesafb: unrecognized option %s\n", this_opt);
-> > +		}
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +#endif /* !MODULE */
-> 
-> The #ifdef MODULE is unpleasing.  Can we use module_param() here?  That'll
-> work for both modular and non-modular case.
+	HFSPLUS_I(inode).rootflags = perms->rootflags;
+	HFSPLUS_I(inode).userflags = perms->userflags;
+@@ -415,7 +408,7 @@ int hfsplus_cat_read_inode(struct inode
+			/* panic? */;
+		hfs_bnode_read(fd->bnode, &entry, fd->entryoffset,
+					sizeof(struct hfsplus_cat_folder));
+-		hfsplus_get_perms(inode, &folder->permissions, 1);
++		hfsplus_get_perms(inode, &folder->permissions);
+		inode->i_nlink = 1;
+		inode->i_size = 2 + be32_to_cpu(folder->valence);
+		inode->i_atime = hfsp_mt2ut(folder->access_date);
+@@ -435,7 +428,7 @@ int hfsplus_cat_read_inode(struct inode
 
-True, but it would also make uvesafb the only (?) fb driver that
-doesn't support the "video=smthfb:<options>" way of setting options.
-Unless it's considered deprecated, I think it would be best to leave
-it as it is, for the sake of consistency.
- 
-Thanks for all your comments & suggestions, and I'm sorry for the screw-up
-with checkpatch.pl.  I've fixed the code in my git tree and the updates
-will be included in the next version of this patch.
-
-Best regards,
-Michal
-
+		hfsplus_inode_read_fork(inode, HFSPLUS_IS_DATA(inode) ?
+					&file->data_fork : &file->rsrc_fork);
+-		hfsplus_get_perms(inode, &file->permissions, 0);
++		hfsplus_get_perms(inode, &file->permissions);
+		inode->i_nlink = 1;
+		if (S_ISREG(inode->i_mode)) {
+			if (file->permissions.dev)
