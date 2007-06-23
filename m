@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbXFWL61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbXFWMCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbXFWL61 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 07:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbXFWL6U
+	id S1755525AbXFWMCW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 08:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXFWMCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 07:58:20 -0400
-Received: from nat-warsl417-02.aon.at ([195.3.96.120]:32015 "EHLO email.aon.at"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750833AbXFWL6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 07:58:19 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 23 Jun 2007 07:58:19 EDT
-Date: Sat, 23 Jun 2007 13:51:22 +0200
-From: Bernhard Fischer <rep.dot.nop@gmail.com>
-To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 3/4] fbdev: uvesafb driver
-Message-ID: <20070623115122.GI4096@aon.at>
-References: <20070623105243.GD12623@spock.one.pl>
+	Sat, 23 Jun 2007 08:02:15 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:62138 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751017AbXFWMCO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 08:02:14 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: "upping" a semaphore from interrupt context?
+Date: Sat, 23 Jun 2007 14:02:03 +0200
+User-Agent: KMail/1.9.6
+Cc: Florin Iucha <florin@iucha.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070622173839.GB8398@iucha.net> <200706221934.18436.arnd@arndb.de> <Pine.LNX.4.64.0706230751230.4164@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0706230751230.4164@localhost.localdomain>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070623105243.GD12623@spock.one.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706231402.03617.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18VEU6lGvYUhev71OmuO8zfHtJ9acNnuAbFVzj
+ caKKTjO0iZ2grEO9VTgRgUH+29tUggH6RvNt9N1vQJ5UUTV1pb
+ GhGDwcfagg8wMcU+HvVQg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 12:52:43PM +0200, Michal Januszewski wrote:
+On Saturday 23 June 2007, Robert P. J. Day wrote:
+> On Fri, 22 Jun 2007, Arnd Bergmann wrote:
+> >
+> > yes, but you should not. The use of semaphores is not recommended
+> > for new code, it should be replaced with either a mutex or a
+> > completion.
+> 
+> can you clarify this?  it sounds like you're saying that the current
+> implementation of semaphores is entirely superfluous.  but surely it
+> isn't possible to replace all semaphores with either mutexes or
+> completions, is it?
 
->+static void uvesafb_cn_callback(void *data)
->+{
->+	struct cn_msg *msg = (struct cn_msg *)data;
->+	struct uvesafb_task *utask = (struct uvesafb_task *)msg->data;
->+	struct uvesafb_ktask *task;
->+
->+	if (msg->seq >= UVESAFB_TASKS_MAX)
->+		return;
->+
->+	task = uvfb_tasks[msg->seq];
->+
->+	if (!task || msg->ack != task->ack)
->+		return;
+No, not all of them, but the vast majority. There are multiple
+differences, the most important one being the 'counting' in
+semaphores. You can e.g. define a semaphore that can be held
+by N users at the same time, but not more. In a mutex, N is
+by definition 1, so only one thread can hold a mutex.
 
-You need utask only here, so could spare setting it before the
-checking above.
->+
->+	memcpy(&task->t, utask, sizeof(struct uvesafb_task));
->+
->+	if (task->t.buf_len && task->buf)
->+		memcpy(task->buf, ((u8*)utask) + sizeof(struct uvesafb_task),
->+						task->t.buf_len);
->+
->+	complete(task->done);
->+	return;
->+}
+There are other subtle differences in the implementation, e.g.
+you cannot mutex_trylock at interrupt time.
+
+	Arnd <><
