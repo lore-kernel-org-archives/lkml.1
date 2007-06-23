@@ -1,67 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbXFWUyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbXFWVCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752551AbXFWUyT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 16:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXFWUyH
+	id S1752759AbXFWVCj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 17:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbXFWVCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 16:54:07 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37488 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751388AbXFWUyG (ORCPT
+	Sat, 23 Jun 2007 17:02:32 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:46996 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbXFWVCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 16:54:06 -0400
-Date: Sat, 23 Jun 2007 22:54:26 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Oleg Verych <olecom@flower.upol.cz>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3]
-	doc/oops-tracing: add Code: decode info
-Message-ID: <20070623205426.GQ23017@stusta.de>
-References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706221626.39969.ak@suse.de> <20070622094429.0910c7cb.randy.dunlap@oracle.com> <200706221923.02736.ak@suse.de> <20070622132810.3c758590.randy.dunlap@oracle.com> <E1I2159-0005AH-DS@flower> <20070623104303.a186c5a8.randy.dunlap@oracle.com> <20070623105645.ad4dbace.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 23 Jun 2007 17:02:31 -0400
+Date: Sat, 23 Jun 2007 22:02:29 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Grozdan Nikolov <microchip@chello.be>, Torsten Duwe <duwe@lst.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: How innovative is Linux?
+Message-ID: <20070623210228.GY21478@ftp.linux.org.uk>
+References: <200706231417.16086.microchip@chello.be> <20070623164608.05dc5c30@the-village.bc.nu> <200706231812.02317.duwe@lst.de> <200706231819.43556.microchip@chello.be> <20070623202343.621a244b@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070623105645.ad4dbace.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20070623202343.621a244b@the-village.bc.nu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 10:56:45AM -0700, Andrew Morton wrote:
-> On Sat, 23 Jun 2007 10:43:03 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > > NAK.
-> > 
-> > Sorry I slept thru another wonderful festival on LKML.
-> 
-> That's probably the best strategy.
-> 
-> > You don't have the authority to NAK the patch.
-> 
-> Yeah.  nak to naks.
-> 
-> > OTOH, you also didn't supply a patch.  If you do this, I'll be
-> > glad to consider it.  If I can read it, that is.
-> 
-> Yes, I plan on merging that patch as-is.  If it was a compulsory part of
-> kbuild then that would be a problem but as some optional tool I don't think
-> that a bashism matters much.  Someone can fix it sometime should they feel
-> so motivated.
+On Sat, Jun 23, 2007 at 08:23:43PM +0100, Alan Cox wrote:
+> Proc type stuff is a lot older than Linux or Unix AFAIK. Loadable modules
+> ditto but the full load/unload/autoload stuff I've not seen pre-Linux.
 
-Oleg didn't express it very polite, but he has a valid point that bash 
-scripts should start with "#!/bin/bash" since /bin/sh might be some 
-shell other than bash.
+Representation of process state and control of that state via files on
+a filesystem?  AFAIK, it's 80s stuff and at least one of the sources
+had been research branch in Bell Labs - whether you call it Unix or not...
 
-Randy, am I right to assume that such a change to your patch would be OK?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Do you have any references for that animal in earlier systems?  A lot
+older than Unix would mean 50s or 60s...
