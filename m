@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbXFWNYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbXFWNZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbXFWNYu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 09:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758093AbXFWNWH
+	id S1756727AbXFWNZP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 09:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758111AbXFWNWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 09:22:07 -0400
-Received: from www.osadl.org ([213.239.205.134]:59225 "EHLO mail.tglx.de"
+	Sat, 23 Jun 2007 09:22:09 -0400
+Received: from www.osadl.org ([213.239.205.134]:59232 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757393AbXFWNWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 09:22:02 -0400
-Message-Id: <20070623124030.531042944@inhelltoy.tec.linutronix.de>
+	id S1757832AbXFWNWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 09:22:03 -0400
+Message-Id: <20070623124030.575989896@inhelltoy.tec.linutronix.de>
 References: <20070623124005.931747831@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 23 Jun 2007 13:32:34 -0000
+Date: Sat, 23 Jun 2007 13:32:35 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
@@ -20,53 +20,88 @@ Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        John Stultz <johnstul@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [patch -mm 09/28] Tick management: spread timer interrupt
-Content-Disposition: inline; filename=tick-spread-timer-interrupts.patch
+Subject: [patch -mm 10/28] highres: Improve debug output
+Content-Disposition: inline; filename=highres-improve-debug-output.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: john stultz <johnstul@us.ibm.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-After discussing w/ Thomas over IRC, it seems the issue is the sched
-tick fires on every cpu at the same time, causing extra lock contention.
+Add some more debug information to the hrtimer and clock events code.
 
-This smaller change, adds an extra offset per cpu so the ticks don't
-line up. This patch also drops the idle latency from 40us down to under
-20us.
-
-Signed-off-by: john stultz <johnstul@us.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- kernel/time/tick-sched.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/i386/kernel/apic.c    |    3 +++
+ kernel/hrtimer.c           |    5 ++++-
+ kernel/time/tick-oneshot.c |   15 ++++++++++++++-
+ 3 files changed, 21 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.22-rc4-mm/kernel/time/tick-sched.c
+Index: linux-2.6.22-rc4-mm/arch/i386/kernel/apic.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/time/tick-sched.c	2007-06-23 14:38:56.000000000 +0200
-+++ linux-2.6.22-rc4-mm/kernel/time/tick-sched.c	2007-06-23 14:38:58.000000000 +0200
-@@ -573,6 +573,7 @@ void tick_setup_sched_timer(void)
+--- linux-2.6.22-rc4-mm.orig/arch/i386/kernel/apic.c	2007-06-23 14:38:58.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/i386/kernel/apic.c	2007-06-23 14:38:58.000000000 +0200
+@@ -524,6 +524,9 @@ void __init setup_boot_APIC_clock(void)
+ 		 */
+ 		if (nmi_watchdog != NMI_IO_APIC)
+ 			lapic_clockevent.features &= ~CLOCK_EVT_FEAT_DUMMY;
++		else
++			printk(KERN_WARNING "APIC timer registered as dummy,"
++			       " due to nmi_watchdog=1!\n");
+ 	}
+ 
+ 	/* Setup the lapic or request the broadcast */
+Index: linux-2.6.22-rc4-mm/kernel/hrtimer.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/kernel/hrtimer.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/kernel/hrtimer.c	2007-06-23 14:38:58.000000000 +0200
+@@ -558,7 +558,8 @@ static inline int hrtimer_enqueue_reprog
+  */
+ static int hrtimer_switch_to_hres(void)
  {
- 	struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
- 	ktime_t now = ktime_get();
-+	u64 offset;
+-	struct hrtimer_cpu_base *base = &__get_cpu_var(hrtimer_bases);
++	int cpu = smp_processor_id();
++	struct hrtimer_cpu_base *base = &per_cpu(hrtimer_bases, cpu);
+ 	unsigned long flags;
  
- 	/*
- 	 * Emulate tick processing via per-CPU hrtimers:
-@@ -581,8 +582,12 @@ void tick_setup_sched_timer(void)
- 	ts->sched_timer.function = tick_sched_timer;
- 	ts->sched_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
+ 	if (base->hres_active)
+@@ -568,6 +569,8 @@ static int hrtimer_switch_to_hres(void)
  
--	/* Get the next period */
-+	/* Get the next period (per cpu) */
- 	ts->sched_timer.expires = tick_init_jiffy_update();
-+	offset = ktime_to_ns(tick_period) >> 1;
-+	do_div(offset, NR_CPUS);
-+	offset *= smp_processor_id();
-+	ts->sched_timer.expires = ktime_add_ns(ts->sched_timer.expires, offset);
+ 	if (tick_init_highres()) {
+ 		local_irq_restore(flags);
++		printk(KERN_WARNING "Could not switch to high resolution "
++				    "mode on CPU %d\n", cpu);
+ 		return 0;
+ 	}
+ 	base->hres_active = 1;
+Index: linux-2.6.22-rc4-mm/kernel/time/tick-oneshot.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/kernel/time/tick-oneshot.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/kernel/time/tick-oneshot.c	2007-06-23 14:38:58.000000000 +0200
+@@ -73,8 +73,21 @@ int tick_switch_to_oneshot(void (*handle
+ 	struct clock_event_device *dev = td->evtdev;
  
- 	for (;;) {
- 		hrtimer_forward(&ts->sched_timer, now, tick_period);
+ 	if (!dev || !(dev->features & CLOCK_EVT_FEAT_ONESHOT) ||
+-	    !tick_device_is_functional(dev))
++		    !tick_device_is_functional(dev)) {
++
++		printk(KERN_INFO "Clockevents: "
++		       "could not switch to one-shot mode:");
++		if (!dev) {
++			printk(" no tick device\n");
++		} else {
++			if (!tick_device_is_functional(dev))
++				printk(" %s is not functional.\n", dev->name);
++			else if (!(dev->features & CLOCK_EVT_FEAT_ONESHOT))
++				printk(" %s does not support one-shot mode.\n",
++				       dev->name);
++		}
+ 		return -EINVAL;
++	}
+ 
+ 	td->mode = TICKDEV_MODE_ONESHOT;
+ 	dev->event_handler = handler;
 
 -- 
 
