@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbXFWR4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbXFWR6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbXFWR4y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 13:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXFWR4s
+	id S1757689AbXFWR6I (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 13:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbXFWR55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 13:56:48 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:51367 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbXFWR4r convert rfc822-to-8bit (ORCPT
+	Sat, 23 Jun 2007 13:57:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59870 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752309AbXFWR54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 13:56:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=hBEEnQwolkIWN4EqKqs3GxN/kXhijLo694xsx8sKpjLkrGUfh33P8snYZZL0WudBZ+nEPI6RGuOD7dp2ENpadTQRo+vBCQ7MS6Epa3WoL84WCmEuL0HNdxB8SOr7Yr23syFQv2Cynwif5k4EXJEYzIH0eQN8VVu2CvjtsKKkd6Y=
-Date: Sat, 23 Jun 2007 19:49:45 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: jimmy bahuleyan <knight.camelot@gmail.com>
-Cc: Torsten Duwe <duwe@lst.de>, Grozdan Nikolov <microchip@chello.be>,
-       linux-kernel@vger.kernel.org
-Subject: Re: How innovative is Linux?
-Message-Id: <20070623194945.0b65de9e.diegocg@gmail.com>
-In-Reply-To: <467D58C2.6010909@gmail.com>
-References: <200706231417.16086.microchip@chello.be>
-	<200706231812.02317.duwe@lst.de>
-	<200706231819.43556.microchip@chello.be>
-	<200706231842.00798.duwe@lst.de>
-	<467D58C2.6010909@gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Sat, 23 Jun 2007 13:57:56 -0400
+Date: Sat, 23 Jun 2007 10:56:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Oleg Verych <olecom@flower.upol.cz>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3]
+ doc/oops-tracing: add Code: decode info
+Message-Id: <20070623105645.ad4dbace.akpm@linux-foundation.org>
+In-Reply-To: <20070623104303.a186c5a8.randy.dunlap@oracle.com>
+References: <20070621225108.bb69a93d.randy.dunlap@oracle.com>
+	<200706221626.39969.ak@suse.de>
+	<20070622094429.0910c7cb.randy.dunlap@oracle.com>
+	<200706221923.02736.ak@suse.de>
+	<20070622132810.3c758590.randy.dunlap@oracle.com>
+	<E1I2159-0005AH-DS@flower>
+	<20070623104303.a186c5a8.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Sat, 23 Jun 2007 23:00:42 +0530, jimmy bahuleyan <knight.camelot@gmail.com> escribió:
+On Sat, 23 Jun 2007 10:43:03 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> building upon or improving existing technology is as important as
-> inventing new things. if every one insisted on dreaming up new things, i
-> doubt we would've accomplished anything significant (not just in OS,
-> anywhere ;)
+> > NAK.
+> 
+> Sorry I slept thru another wonderful festival on LKML.
 
+That's probably the best strategy.
 
-Let's also not forget that many of the "innovative" features that Grodzan says
-Linux has copied to Solaris and other Unixes, were actually not invented by
-them. OS/2 already had dtrace in 1994 (it even had the same name), and many
-of the traditional Unix features were copied^Wheavily inspired in multics.
+> You don't have the authority to NAK the patch.
+
+Yeah.  nak to naks.
+
+> OTOH, you also didn't supply a patch.  If you do this, I'll be
+> glad to consider it.  If I can read it, that is.
+
+Yes, I plan on merging that patch as-is.  If it was a compulsory part of
+kbuild then that would be a problem but as some optional tool I don't think
+that a bashism matters much.  Someone can fix it sometime should they feel
+so motivated.
+
