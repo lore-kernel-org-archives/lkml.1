@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbXFWHyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbXFWIB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754147AbXFWHyd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 03:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXFWHyX
+	id S1754202AbXFWIB1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 04:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbXFWIBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 03:54:23 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:44096 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbXFWHyW (ORCPT
+	Sat, 23 Jun 2007 04:01:19 -0400
+Received: from server145.whmcpanel.net ([69.72.254.178]:41986 "EHLO
+	server459.whmcpanel.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbXFWIBS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 03:54:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=W32NqW/IGlT9TzUAUC5AU5jLTaRGxuyaUDXw6nNvKANWsnbAXGTYPAr98yBjXGxx70nlLfHy5p9HtXkalUp95DvWvug1GVO8xIjFhH9gSLZ6gbi7haHUiz3eA+XP7gvr4UtBcMGLm+3dhaa9EFWfIQmahx21Y4ToIg8lbw3WF1c=
-Message-ID: <467CD1A8.5070700@gmail.com>
-Date: Sat, 23 Jun 2007 16:54:16 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Sat, 23 Jun 2007 04:01:18 -0400
+From: Alberto Gonzalez <info@gnebu.es>
+To: Paolo Ornati <ornati@fastwebnet.it>
+Subject: Re: Question about fair schedulers
+Date: Sat, 23 Jun 2007 10:01:02 +0200
+User-Agent: KMail/1.9.7
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200706230007.15622.info@gnebu.es> <20070623090655.36d1794c@localhost>
+In-Reply-To: <20070623090655.36d1794c@localhost>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Carlo Wood <carlo@alinoe.com>, Manoj Kasichainula <manoj@io.com>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: SATA RAID5 speed drop of 100 MB/s
-References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <20070622214859.GC6970@alinoe.com> <467CC5C5.6040201@garzik.org>
-In-Reply-To: <467CC5C5.6040201@garzik.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706231001.02497.info@gnebu.es>
+X-PopBeforeSMTPSenders: info@gnebu.es
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - server459.whmcpanel.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - gnebu.es
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Carlo Wood wrote:
->> The dmesg output of 33480a0ede8dcc7e6483054279008f972bd56fd3 (thus
->> "before") is:
-> [...]
->> And the dmesg output of 551c012d7eea3dc5ec063c7ff9c718d39e77634f (thus
->> "after") is:
-> [...]
-> 
-> Your disk configurations are quite radically different between the two
-> kernels (see attached diff for key highlights).
-> 
-> The new behavior of the more recent kernel (551c012d7...) is that it now
-> fully drives your hardware :)  The reset problems go away, NCQ is
-> enabled, and if you had 3.0Gbps drives (you don't) they would be driven
-> at a faster speed.
-> 
-> Given that some drives might be better tuned for benchmarks in
-> non-queued mode, and that a major behavior difference is that your
-> drives are now NCQ-enabled, the first thing I would suggest you try is
-> disabling NCQ:
->     http://linux-ata.org/faq.html#ncq
-> 
-> Other indicators are the other changes in the "ahci 0000:00:1f.2:
-> flags:" line, which do affect other behaviors, though none so important
-> to RAID5 performance as NCQ, I would think.
-> 
-> Turning on NCQ also potentially affects barrier behavior in RAID, though
-> I'm guessing that is not a factor here.
+Thanks for your thoughts.
 
-Ah.. right.  That should have enabled NCQ.  Me slow today.  :-)
+On Saturday 23 June 2007, Paolo Ornati wrote:
+> On Sat, 23 Jun 2007 00:07:15 +0200
+>
+> Alberto Gonzalez wrote:
+> > My conclusion is that SD behaves as expected: it's more fair. But for a
+> > desktop, shouldn't an "intelligently unfair" scheduler be better?
+>
+> "intelligently unfair" is what the current scheduler is (because of
+> interactivity estimator).
+>
+> When it works (say 90% of the time) the desktop feels really good...
+> but when it doesn't it can be a disaster.
 
--- 
-tejun
+I see. So you mean that in 90% of the cases the mainline scheduler behaves 
+better than fair schedulers, but when its "logic" fails it behaves much worse 
+(the other 10% cases)? In my very simple test scenario the mainline scheduler 
+did behave much better. Maybe the problem comes with very complex scenarios 
+like the ones I've seen when testing these 2 fair schedulers (something like 
+compiling a kernel while you open 5 instances of glxgears, write an email, 
+play music in Amarok and watch 2 HD videos all at the same time). The 
+question would then be if these kind of situations are likely to happen in 
+real world, or even if it doesn't make more sense to try to improve the logic 
+of the mainline scheduler so that those 10% cases are handled better instead 
+of writing a new one that would behave worse in 90% of the cases and better 
+in the other 10%.
+
+	Alberto.
