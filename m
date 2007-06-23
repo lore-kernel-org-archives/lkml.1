@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbXFWL5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbXFWL61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753685AbXFWL5X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 07:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbXFWL5Q
+	id S1754898AbXFWL61 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 07:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbXFWL6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 07:57:16 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:33939 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbXFWL5P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 07:57:15 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 23 Jun 2007 07:52:51 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Florin Iucha <florin@iucha.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "upping" a semaphore from interrupt context?
-In-Reply-To: <200706221934.18436.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.64.0706230751230.4164@localhost.localdomain>
-References: <20070622173839.GB8398@iucha.net> <200706221934.18436.arnd@arndb.de>
+	Sat, 23 Jun 2007 07:58:20 -0400
+Received: from nat-warsl417-02.aon.at ([195.3.96.120]:32015 "EHLO email.aon.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750833AbXFWL6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 07:58:19 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 23 Jun 2007 07:58:19 EDT
+Date: Sat, 23 Jun 2007 13:51:22 +0200
+From: Bernhard Fischer <rep.dot.nop@gmail.com>
+To: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH 3/4] fbdev: uvesafb driver
+Message-ID: <20070623115122.GI4096@aon.at>
+References: <20070623105243.GD12623@spock.one.pl>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-343429529-1182599571=:4164"
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070623105243.GD12623@spock.one.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sat, Jun 23, 2007 at 12:52:43PM +0200, Michal Januszewski wrote:
 
---8323328-343429529-1182599571=:4164
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+>+static void uvesafb_cn_callback(void *data)
+>+{
+>+	struct cn_msg *msg = (struct cn_msg *)data;
+>+	struct uvesafb_task *utask = (struct uvesafb_task *)msg->data;
+>+	struct uvesafb_ktask *task;
+>+
+>+	if (msg->seq >= UVESAFB_TASKS_MAX)
+>+		return;
+>+
+>+	task = uvfb_tasks[msg->seq];
+>+
+>+	if (!task || msg->ack != task->ack)
+>+		return;
 
-On Fri, 22 Jun 2007, Arnd Bergmann wrote:
-
-> On Friday 22 June 2007, Florin Iucha wrote:
-> > I am writing a USB driver for some custom hardware, and I need to
-> > synchronize between the user-space and the USB subsystem.  Can I
-> > create a semaphore and "down" it in the reader then "up" it in the
-> > completion handler?
->
-> yes, but you should not. The use of semaphores is not recommended
-> for new code, it should be replaced with either a mutex or a
-> completion.
-
-can you clarify this?  it sounds like you're saying that the current
-implementation of semaphores is entirely superfluous.  but surely it
-isn't possible to replace all semaphores with either mutexes or
-completions, is it?
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
---8323328-343429529-1182599571=:4164--
+You need utask only here, so could spare setting it before the
+checking above.
+>+
+>+	memcpy(&task->t, utask, sizeof(struct uvesafb_task));
+>+
+>+	if (task->t.buf_len && task->buf)
+>+		memcpy(task->buf, ((u8*)utask) + sizeof(struct uvesafb_task),
+>+						task->t.buf_len);
+>+
+>+	complete(task->done);
+>+	return;
+>+}
