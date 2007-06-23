@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbXFWN2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761094AbXFWN2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760997AbXFWN2G (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 09:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbXFWNWX
+	id S1761094AbXFWN2Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 09:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758342AbXFWNWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 09:22:23 -0400
-Received: from www.osadl.org ([213.239.205.134]:59267 "EHLO mail.tglx.de"
+	Sat, 23 Jun 2007 09:22:24 -0400
+Received: from www.osadl.org ([213.239.205.134]:59264 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756112AbXFWNWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758129AbXFWNWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 23 Jun 2007 09:22:11 -0400
-Message-Id: <20070623124030.939120547@inhelltoy.tec.linutronix.de>
+Message-Id: <20070623124030.982824210@inhelltoy.tec.linutronix.de>
 References: <20070623124005.931747831@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 23 Jun 2007 13:32:43 -0000
+Date: Sat, 23 Jun 2007 13:32:44 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
@@ -20,79 +20,101 @@ Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        John Stultz <johnstul@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [patch -mm 18/28] x86_64: untangle asm/hpet.h from asm/timex.h
-Content-Disposition: inline; filename=x86-64-untangle-hpet-headers.patch
+Subject: [patch -mm 19/28] x86_64: Use generic cmos update
+Content-Disposition: inline; filename=x86-64-use-generic-cmos-update.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:	Chris Wright <chrisw@sous-sol.org>
+Use the generic cmos update function in kernel/time/ntp.c
 
-When making changes to x86_64 timers, I noticed that touching
-hpet.h triggered an unreasonably large rebuild.  Untangling
-it from timex.h quiets the extra rebuild quite a bit.
-
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chris Wright <chrisw@sous-sol.org>
 Cc: john stultz <johnstul@us.ibm.com>
 Cc: Andi Kleen <ak@suse.de>
 
 ---
- drivers/char/rtc.c         |    2 +-
- include/asm-x86_64/apic.h  |    2 ++
- include/asm-x86_64/hpet.h  |    1 -
- include/asm-x86_64/timex.h |    1 -
- 4 files changed, 3 insertions(+), 3 deletions(-)
+ arch/x86_64/Kconfig       |    4 ++++
+ arch/x86_64/kernel/time.c |   25 +++++++++----------------
+ 2 files changed, 13 insertions(+), 16 deletions(-)
 
-Index: linux-2.6.22-rc4-mm/drivers/char/rtc.c
+Index: linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/drivers/char/rtc.c	2007-06-23 14:38:55.000000000 +0200
-+++ linux-2.6.22-rc4-mm/drivers/char/rtc.c	2007-06-23 14:38:59.000000000 +0200
-@@ -82,7 +82,7 @@
- #include <asm/uaccess.h>
- #include <asm/system.h>
+--- linux-2.6.22-rc4-mm.orig/arch/x86_64/kernel/time.c	2007-06-23 14:38:58.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c	2007-06-23 14:38:59.000000000 +0200
+@@ -82,8 +82,9 @@ EXPORT_SYMBOL(profile_pc);
+  * sheet for details.
+  */
  
--#if defined(__i386__)
-+#ifdef CONFIG_X86
- #include <asm/hpet.h>
- #endif
+-static void set_rtc_mmss(unsigned long nowtime)
++static int set_rtc_mmss(unsigned long nowtime)
+ {
++	int retval = 0;
+ 	int real_seconds, real_minutes, cmos_minutes;
+ 	unsigned char control, freq_select;
  
-Index: linux-2.6.22-rc4-mm/include/asm-x86_64/timex.h
-===================================================================
---- linux-2.6.22-rc4-mm.orig/include/asm-x86_64/timex.h	2007-06-23 14:38:55.000000000 +0200
-+++ linux-2.6.22-rc4-mm/include/asm-x86_64/timex.h	2007-06-23 14:38:59.000000000 +0200
-@@ -9,7 +9,6 @@
- #include <asm/8253pit.h>
- #include <asm/msr.h>
- #include <asm/vsyscall.h>
--#include <asm/hpet.h>
- #include <asm/system.h>
- #include <asm/processor.h>
- #include <asm/tsc.h>
-Index: linux-2.6.22-rc4-mm/include/asm-x86_64/apic.h
-===================================================================
---- linux-2.6.22-rc4-mm.orig/include/asm-x86_64/apic.h	2007-06-23 14:38:55.000000000 +0200
-+++ linux-2.6.22-rc4-mm/include/asm-x86_64/apic.h	2007-06-23 14:38:59.000000000 +0200
-@@ -86,6 +86,8 @@ extern void setup_apic_routing(void);
- extern void setup_APIC_extened_lvt(unsigned char lvt_off, unsigned char vector,
- 				   unsigned char msg_type, unsigned char mask);
+@@ -123,6 +124,7 @@ static void set_rtc_mmss(unsigned long n
+ 	if (abs(real_minutes - cmos_minutes) >= 30) {
+ 		printk(KERN_WARNING "time.c: can't update CMOS clock "
+ 		       "from %d to %d\n", cmos_minutes, real_minutes);
++		retval = -1;
+ 	} else {
+ 		BIN_TO_BCD(real_seconds);
+ 		BIN_TO_BCD(real_minutes);
+@@ -142,12 +144,17 @@ static void set_rtc_mmss(unsigned long n
+ 	CMOS_WRITE(freq_select, RTC_FREQ_SELECT);
  
-+extern int apic_is_clustered_box(void);
+ 	spin_unlock(&rtc_lock);
 +
- #define K8_APIC_EXT_LVT_BASE    0x500
- #define K8_APIC_EXT_INT_MSG_FIX 0x0
- #define K8_APIC_EXT_INT_MSG_SMI 0x2
-Index: linux-2.6.22-rc4-mm/include/asm-x86_64/hpet.h
-===================================================================
---- linux-2.6.22-rc4-mm.orig/include/asm-x86_64/hpet.h	2007-06-23 14:38:55.000000000 +0200
-+++ linux-2.6.22-rc4-mm/include/asm-x86_64/hpet.h	2007-06-23 14:38:59.000000000 +0200
-@@ -55,7 +55,6 @@
++	return retval;
+ }
  
- extern int is_hpet_enabled(void);
- extern int hpet_rtc_timer_init(void);
--extern int apic_is_clustered_box(void);
- extern int hpet_arch_init(void);
- extern int hpet_timer_stop_set_go(unsigned long tick);
- extern int hpet_reenable(void);
++int update_persistent_clock(struct timespec now)
++{
++	return set_rtc_mmss(now.tv_sec);
++}
+ 
+ void main_timer_handler(void)
+ {
+-	static unsigned long rtc_update = 0;
+ /*
+  * Here we are in the timer irq handler. We have irqs locally disabled (so we
+  * don't need spin_lock_irqsave()) but we don't know if the timer_bh is running
+@@ -175,20 +182,6 @@ void main_timer_handler(void)
+ 	if (!using_apic_timer)
+ 		smp_local_timer_interrupt();
+ 
+-/*
+- * If we have an externally synchronized Linux clock, then update CMOS clock
+- * accordingly every ~11 minutes. set_rtc_mmss() will be called in the jiffy
+- * closest to exactly 500 ms before the next second. If the update fails, we
+- * don't care, as it'll be updated on the next turn, and the problem (time way
+- * off) isn't likely to go away much sooner anyway.
+- */
+-
+-	if (ntp_synced() && xtime.tv_sec > rtc_update &&
+-		abs(xtime.tv_nsec - 500000000) <= tick_nsec / 2) {
+-		set_rtc_mmss(xtime.tv_sec);
+-		rtc_update = xtime.tv_sec + 660;
+-	}
+- 
+ 	write_sequnlock(&xtime_lock);
+ }
+ 
+Index: linux-2.6.22-rc4-mm/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/arch/x86_64/Kconfig	2007-06-23 14:38:55.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/x86_64/Kconfig	2007-06-23 14:38:59.000000000 +0200
+@@ -32,6 +32,10 @@ config GENERIC_TIME_VSYSCALL
+ 	bool
+ 	default y
+ 
++config GENERIC_CMOS_UPDATE
++	bool
++	default y
++
+ config ZONE_DMA32
+ 	bool
+ 	default y
 
 -- 
 
