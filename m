@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbXFWNZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbXFWN0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760229AbXFWNZq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 09:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbXFWNWK
+	id S1759283AbXFWN0G (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 09:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758134AbXFWNWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 09:22:10 -0400
-Received: from www.osadl.org ([213.239.205.134]:59237 "EHLO mail.tglx.de"
+	Sat, 23 Jun 2007 09:22:12 -0400
+Received: from www.osadl.org ([213.239.205.134]:59241 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757897AbXFWNWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 09:22:04 -0400
-Message-Id: <20070623124030.621102552@inhelltoy.tec.linutronix.de>
+	id S1757999AbXFWNWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 09:22:05 -0400
+Message-Id: <20070623124030.665883517@inhelltoy.tec.linutronix.de>
 References: <20070623124005.931747831@inhelltoy.tec.linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Sat, 23 Jun 2007 13:32:36 -0000
+Date: Sat, 23 Jun 2007 13:32:37 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
@@ -20,58 +20,89 @@ Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        John Stultz <johnstul@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [patch -mm 11/28] hrtimer: speedup hrtimer_enqueue
-Content-Disposition: inline; filename=hrtimer-speedup-enqueue.patch
+Subject: [patch -mm 12/28] pcspkr: use the global PIT lock
+Content-Disposition: inline; filename=pcspkr-use-the-global-pit-lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
+Replace the pcspkr private PIT lock by the global PIT lock to
+serialize the PIT access all over the place.
 
-Speedup hrtimer_enqueue by evaluating the rbtree insertion result.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- kernel/hrtimer.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/x86_64/kernel/time.c   |    2 ++
+ drivers/input/misc/pcspkr.c |   11 ++++++++---
+ include/asm-x86_64/i8253.h  |    6 ++++++
+ 3 files changed, 16 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.22-rc4-mm/kernel/hrtimer.c
+Index: linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c
 ===================================================================
---- linux-2.6.22-rc4-mm.orig/kernel/hrtimer.c	2007-06-23 14:38:58.000000000 +0200
-+++ linux-2.6.22-rc4-mm/kernel/hrtimer.c	2007-06-23 14:38:58.000000000 +0200
-@@ -686,6 +686,7 @@ static void enqueue_hrtimer(struct hrtim
- 	struct rb_node **link = &base->active.rb_node;
- 	struct rb_node *parent = NULL;
- 	struct hrtimer *entry;
-+	int leftmost = 1;
+--- linux-2.6.22-rc4-mm.orig/arch/x86_64/kernel/time.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/arch/x86_64/kernel/time.c	2007-06-23 14:38:58.000000000 +0200
+@@ -33,6 +33,7 @@
+ #include <acpi/acpi_bus.h>
+ #endif
+ #include <asm/8253pit.h>
++#include <asm/i8253.h>
+ #include <asm/pgtable.h>
+ #include <asm/vsyscall.h>
+ #include <asm/timex.h>
+@@ -51,6 +52,7 @@ static char *timename = NULL;
+ DEFINE_SPINLOCK(rtc_lock);
+ EXPORT_SYMBOL(rtc_lock);
+ DEFINE_SPINLOCK(i8253_lock);
++EXPORT_SYMBOL(i8253_lock);
  
- 	/*
- 	 * Find the right place in the rbtree:
-@@ -697,18 +698,19 @@ static void enqueue_hrtimer(struct hrtim
- 		 * We dont care about collisions. Nodes with
- 		 * the same expiry time stay together.
- 		 */
--		if (timer->expires.tv64 < entry->expires.tv64)
-+		if (timer->expires.tv64 < entry->expires.tv64) {
- 			link = &(*link)->rb_left;
--		else
-+		} else {
- 			link = &(*link)->rb_right;
-+			leftmost = 0;
-+		}
+ volatile unsigned long __jiffies __section_jiffies = INITIAL_JIFFIES;
+ 
+Index: linux-2.6.22-rc4-mm/drivers/input/misc/pcspkr.c
+===================================================================
+--- linux-2.6.22-rc4-mm.orig/drivers/input/misc/pcspkr.c	2007-06-23 14:38:56.000000000 +0200
++++ linux-2.6.22-rc4-mm/drivers/input/misc/pcspkr.c	2007-06-23 14:38:58.000000000 +0200
+@@ -24,7 +24,12 @@ MODULE_AUTHOR("Vojtech Pavlik <vojtech@u
+ MODULE_DESCRIPTION("PC Speaker beeper driver");
+ MODULE_LICENSE("GPL");
+ 
+-static DEFINE_SPINLOCK(i8253_beep_lock);
++#ifdef CONFIG_X86
++/* Use the global PIT lock ! */
++#include <asm/i8253.h>
++#else
++static DEFINE_SPINLOCK(i8253_lock);
++#endif
+ 
+ static int pcspkr_event(struct input_dev *dev, unsigned int type, unsigned int code, int value)
+ {
+@@ -43,7 +48,7 @@ static int pcspkr_event(struct input_dev
+ 	if (value > 20 && value < 32767)
+ 		count = PIT_TICK_RATE / value;
+ 
+-	spin_lock_irqsave(&i8253_beep_lock, flags);
++	spin_lock_irqsave(&i8253_lock, flags);
+ 
+ 	if (count) {
+ 		/* enable counter 2 */
+@@ -58,7 +63,7 @@ static int pcspkr_event(struct input_dev
+ 		outb(inb_p(0x61) & 0xFC, 0x61);
  	}
  
- 	/*
- 	 * Insert the timer to the rbtree and check whether it
- 	 * replaces the first pending timer
- 	 */
--	if (!base->first || timer->expires.tv64 <
--	    rb_entry(base->first, struct hrtimer, node)->expires.tv64) {
-+	if (leftmost) {
- 		/*
- 		 * Reprogram the clock event device. When the timer is already
- 		 * expired hrtimer_enqueue_reprogram has either called the
+-	spin_unlock_irqrestore(&i8253_beep_lock, flags);
++	spin_unlock_irqrestore(&i8253_lock, flags);
+ 
+ 	return 0;
+ }
+Index: linux-2.6.22-rc4-mm/include/asm-x86_64/i8253.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.22-rc4-mm/include/asm-x86_64/i8253.h	2007-06-23 14:38:58.000000000 +0200
+@@ -0,0 +1,6 @@
++#ifndef __ASM_I8253_H__
++#define __ASM_I8253_H__
++
++extern spinlock_t i8253_lock;
++
++#endif	/* __ASM_I8253_H__ */
 
 -- 
 
