@@ -1,62 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbXFWVGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbXFWVLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752854AbXFWVGU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 17:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbXFWVGN
+	id S1753097AbXFWVLR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 17:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbXFWVLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 17:06:13 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36265 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbXFWVGM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 17:06:12 -0400
-Message-ID: <467D8AC9.8060001@oracle.com>
-Date: Sat, 23 Jun 2007 14:04:09 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Sat, 23 Jun 2007 17:11:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34139 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751544AbXFWVLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 17:11:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] PM: Reduce code duplication between main.c and user.c
+Date: Sat, 23 Jun 2007 23:17:46 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Verych <olecom@flower.upol.cz>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3]	doc/oops-tracing:
- add Code: decode info
-References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706221626.39969.ak@suse.de> <20070622094429.0910c7cb.randy.dunlap@oracle.com> <200706221923.02736.ak@suse.de> <20070622132810.3c758590.randy.dunlap@oracle.com> <E1I2159-0005AH-DS@flower> <20070623104303.a186c5a8.randy.dunlap@oracle.com> <20070623105645.ad4dbace.akpm@linux-foundation.org> <20070623205426.GQ23017@stusta.de>
-In-Reply-To: <20070623205426.GQ23017@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+Message-Id: <200706232317.48639.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sat, Jun 23, 2007 at 10:56:45AM -0700, Andrew Morton wrote:
->> On Sat, 23 Jun 2007 10:43:03 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>
->>>> NAK.
->>> Sorry I slept thru another wonderful festival on LKML.
->> That's probably the best strategy.
->>
->>> You don't have the authority to NAK the patch.
->> Yeah.  nak to naks.
->>
->>> OTOH, you also didn't supply a patch.  If you do this, I'll be
->>> glad to consider it.  If I can read it, that is.
->> Yes, I plan on merging that patch as-is.  If it was a compulsory part of
->> kbuild then that would be a problem but as some optional tool I don't think
->> that a bashism matters much.  Someone can fix it sometime should they feel
->> so motivated.
-> 
-> Oleg didn't express it very polite, but he has a valid point that bash 
-> scripts should start with "#!/bin/bash" since /bin/sh might be some 
-> shell other than bash.
-> 
-> Randy, am I right to assume that such a change to your patch would be OK?
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Sure.
+The SNAPSHOT_S2RAM ioctl code is outdated and it should not duplicate the
+suspend code in kernel/power/main.c.  Fix that.
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ kernel/power/main.c  |   89 ++++++++++++++++++++++++++++-----------------------
+ kernel/power/power.h |    3 +
+ kernel/power/user.c  |   38 ++-------------------
+ 3 files changed, 57 insertions(+), 73 deletions(-)
+
+Index: linux-2.6.22-rc5/kernel/power/main.c
+===================================================================
+--- linux-2.6.22-rc5.orig/kernel/power/main.c	2007-06-20 23:17:01.000000000 +0200
++++ linux-2.6.22-rc5/kernel/power/main.c	2007-06-23 19:40:41.000000000 +0200
+@@ -69,14 +69,11 @@ static inline void pm_finish(suspend_sta
+ 
+ /**
+  *	suspend_prepare - Do prep work before entering low-power state.
+- *	@state:		State we're entering.
+  *
+- *	This is common code that is called for each state that we're 
+- *	entering. Allocate a console, stop all processes, then make sure
+- *	the platform can enter the requested state.
++ *	This is common code that is called for each state that we're entering.
++ *	Run suspend notifiers, allocate a console and stop all processes.
+  */
+-
+-static int suspend_prepare(suspend_state_t state)
++static int suspend_prepare(void)
+ {
+ 	int error;
+ 	unsigned int free_pages;
+@@ -95,38 +92,18 @@ static int suspend_prepare(suspend_state
+ 		goto Thaw;
+ 	}
+ 
+-	if ((free_pages = global_page_state(NR_FREE_PAGES))
+-			< FREE_PAGE_NUMBER) {
++	free_pages = global_page_state(NR_FREE_PAGES);
++	if (free_pages < FREE_PAGE_NUMBER) {
+ 		pr_debug("PM: free some memory\n");
+ 		shrink_all_memory(FREE_PAGE_NUMBER - free_pages);
+ 		if (nr_free_pages() < FREE_PAGE_NUMBER) {
+ 			error = -ENOMEM;
+ 			printk(KERN_ERR "PM: No enough memory\n");
+-			goto Thaw;
+ 		}
+ 	}
+-
+-	suspend_console();
+-	error = device_suspend(PMSG_SUSPEND);
+-	if (error) {
+-		printk(KERN_ERR "Some devices failed to suspend\n");
+-		goto Resume_console;
+-	}
+-	if (pm_ops->prepare) {
+-		if ((error = pm_ops->prepare(state)))
+-			goto Resume_devices;
+-	}
+-
+-	error = disable_nonboot_cpus();
+ 	if (!error)
+ 		return 0;
+ 
+-	enable_nonboot_cpus();
+-	pm_finish(state);
+- Resume_devices:
+-	device_resume();
+- Resume_console:
+-	resume_console();
+  Thaw:
+ 	thaw_processes();
+ 	pm_restore_console();
+@@ -147,6 +124,12 @@ void __attribute__ ((weak)) arch_suspend
+ 	local_irq_enable();
+ }
+ 
++/**
++ *	suspend_enter - enter the desired system sleep state.
++ *	@state:		state to enter
++ *
++ *	This function should be called after devices have been suspended.
++ */
+ int suspend_enter(suspend_state_t state)
+ {
+ 	int error = 0;
+@@ -166,21 +149,50 @@ int suspend_enter(suspend_state_t state)
+ 	return error;
+ }
+ 
++/**
++ *	suspend_devices_and_enter - suspend devices and enter the desired system sleep
++ *			  state.
++ *	@state:		  state to enter
++ */
++int suspend_devices_and_enter(suspend_state_t state)
++{
++	int error;
++
++	if (!pm_ops)
++		return -ENOSYS;
++
++	suspend_console();
++	error = device_suspend(PMSG_SUSPEND);
++	if (error) {
++		printk(KERN_ERR "Some devices failed to suspend\n");
++		goto Resume_console;
++	}
++	if (pm_ops->prepare) {
++		error = pm_ops->prepare(state);
++		if (error)
++			goto Resume_devices;
++	}
++	error = disable_nonboot_cpus();
++	if (!error)
++		suspend_enter(state);
++
++	enable_nonboot_cpus();
++	pm_finish(state);
++ Resume_devices:
++	device_resume();
++ Resume_console:
++	resume_console();
++	return error;
++}
+ 
+ /**
+  *	suspend_finish - Do final work before exiting suspend sequence.
+- *	@state:		State we're coming out of.
+  *
+  *	Call platform code to clean up, restart processes, and free the 
+  *	console that we've allocated. This is not called for suspend-to-disk.
+  */
+-
+-static void suspend_finish(suspend_state_t state)
++static void suspend_finish(void)
+ {
+-	enable_nonboot_cpus();
+-	pm_finish(state);
+-	device_resume();
+-	resume_console();
+ 	thaw_processes();
+ 	pm_restore_console();
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+@@ -215,7 +227,6 @@ static inline int valid_state(suspend_st
+  *	Then, do the setup for suspend, enter the state, and cleaup (after
+  *	we've woken up).
+  */
+-
+ static int enter_state(suspend_state_t state)
+ {
+ 	int error;
+@@ -226,14 +237,14 @@ static int enter_state(suspend_state_t s
+ 		return -EBUSY;
+ 
+ 	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
+-	if ((error = suspend_prepare(state)))
++	if ((error = suspend_prepare()))
+ 		goto Unlock;
+ 
+ 	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
+-	error = suspend_enter(state);
++	error = suspend_devices_and_enter(state);
+ 
+ 	pr_debug("PM: Finishing wakeup.\n");
+-	suspend_finish(state);
++	suspend_finish();
+  Unlock:
+ 	mutex_unlock(&pm_mutex);
+ 	return error;
+Index: linux-2.6.22-rc5/kernel/power/power.h
+===================================================================
+--- linux-2.6.22-rc5.orig/kernel/power/power.h	2007-06-20 23:16:46.000000000 +0200
++++ linux-2.6.22-rc5/kernel/power/power.h	2007-06-21 23:10:10.000000000 +0200
+@@ -170,7 +170,6 @@ extern int swsusp_resume(void);
+ extern int swsusp_read(unsigned int *flags_p);
+ extern int swsusp_write(unsigned int flags);
+ extern void swsusp_close(void);
+-extern int suspend_enter(suspend_state_t state);
+ 
+ struct timeval;
+ /* kernel/power/swsusp.c */
+@@ -178,6 +177,8 @@ extern void swsusp_show_speed(struct tim
+ 				unsigned int, char *);
+ 
+ /* kernel/power/main.c */
++extern int suspend_enter(suspend_state_t state);
++extern int suspend_devices_and_enter(suspend_state_t state);
+ extern struct blocking_notifier_head pm_chain_head;
+ 
+ static inline int pm_notifier_call_chain(unsigned long val)
+Index: linux-2.6.22-rc5/kernel/power/user.c
+===================================================================
+--- linux-2.6.22-rc5.orig/kernel/power/user.c	2007-06-20 23:16:46.000000000 +0200
++++ linux-2.6.22-rc5/kernel/power/user.c	2007-06-21 23:29:10.000000000 +0200
+@@ -255,47 +255,19 @@ static int snapshot_ioctl(struct inode *
+ 		break;
+ 
+ 	case SNAPSHOT_S2RAM:
+-		if (!pm_ops) {
+-			error = -ENOSYS;
+-			break;
+-		}
+-
+ 		if (!data->frozen) {
+ 			error = -EPERM;
+ 			break;
+ 		}
+-
+ 		if (!mutex_trylock(&pm_mutex)) {
+ 			error = -EBUSY;
+ 			break;
+ 		}
+-
+-		if (pm_ops->prepare) {
+-			error = pm_ops->prepare(PM_SUSPEND_MEM);
+-			if (error)
+-				goto OutS3;
+-		}
+-
+-		/* Put devices to sleep */
+-		suspend_console();
+-		error = device_suspend(PMSG_SUSPEND);
+-		if (error) {
+-			printk(KERN_ERR "Failed to suspend some devices.\n");
+-		} else {
+-			error = disable_nonboot_cpus();
+-			if (!error) {
+-				/* Enter S3, system is already frozen */
+-				suspend_enter(PM_SUSPEND_MEM);
+-				enable_nonboot_cpus();
+-			}
+-			/* Wake up devices */
+-			device_resume();
+-		}
+-		resume_console();
+-		if (pm_ops->finish)
+-			pm_ops->finish(PM_SUSPEND_MEM);
+-
+- OutS3:
++		/*
++		 * Tasks are frozen and the notifiers have been called with
++		 * PM_HIBERNATION_PREPARE
++		 */
++		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
+ 		mutex_unlock(&pm_mutex);
+ 		break;
+ 
