@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbXFWQ7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbXFWRDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760922AbXFWQ7J (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 12:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbXFWQ66
+	id S1760909AbXFWRDJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 13:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXFWRC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 12:58:58 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:57997 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755252AbXFWQ65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 12:58:57 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] audit: fix oops removing watch if audit disabled
-Date: Sat, 23 Jun 2007 19:58:32 +0300
-User-Agent: KMail/1.9.7
-Cc: Tony Jones <tonyj@suse.de>, linux-audit@redhat.com,
-       linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
-References: <20070620223820.GA16416@suse.de> <20070623095153.279c1194.akpm@linux-foundation.org>
-In-Reply-To: <20070623095153.279c1194.akpm@linux-foundation.org>
+	Sat, 23 Jun 2007 13:02:57 -0400
+Received: from qb-out-0506.google.com ([72.14.204.224]:60261 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753762AbXFWRC5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 13:02:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SKjQ2bSO5CCaw8AcMyOZi6/xqHQ1K/qwvCQNsptpAWXpiX2gAUSs6+hPo7MdB+YaA821ZdaKfSPcR02qTleyaCMGw3wjrxPx8mce7eMFxigdoJk+0qiLU15qJj3/3VobdBn4/2Rv07Fu5h4RrM9paf3n938wAft0I4GbmbVRpHc=
+Message-ID: <a781481a0706231002jf4467ebja6c28e3e242ceb76@mail.gmail.com>
+Date: Sat, 23 Jun 2007 22:32:55 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: "upping" a semaphore from interrupt context?
+Cc: "Arnd Bergmann" <arnd@arndb.de>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Florin Iucha" <florin@iucha.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200706231752.08494.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart24139546.4GOUkIM0Jj";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706231958.32313.caglar@pardus.org.tr>
+Content-Disposition: inline
+References: <20070622173839.GB8398@iucha.net>
+	 <200706231402.03617.arnd@arndb.de>
+	 <a781481a0706230842l141cf400tb2f5645b6b6537fe@mail.gmail.com>
+	 <200706231752.08494.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart24139546.4GOUkIM0Jj
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-23 Haz 2007 Cts tarihinde, Andrew Morton =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9F=
-t=C4=B1:=20
-> This looks like 2.6.22 material to me.
+On 6/23/07, Oliver Neukum <oliver@neukum.org> wrote:
+> Am Samstag, 23. Juni 2007 schrieb Satyam Sharma:
+> > * 3. set up a timer and schedule another function to service the
+> > * interrupt / do what needs to be done then, hopefully the mutex
+> > * would be uncontended then => *gargh*
 >
-> Question is: is it also 2.6.21.x material?
+> You could use schedule_work(). However then why not use it always.
+> This would make sense if what you want to do is outright trivial.
 
-I even can reproduce same oops with 2.6.18 :)
+If you use schedule_work() to pass off work from interrupt context
+to process context, then you wouldn't be calling down_trylock()
+from interrupt context in the first place (which is what is being
+discussed here). You would simply pass off the entire code that
+uses the shared data (and wraps a *proper* down() or mutex_lock()
+around it, not the _trylock() variant) to the workqueue.
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+Also, that is precisely my point too. What I'm saying is that it is
+generally poor design to be wanting to use the _trylock() variant
+of semaphore / mutex in interrupt context. Workqueues _are_ the
+preferred mechanism to use for (most) such cases where you need
+to do something that may require you to sleep.
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart24139546.4GOUkIM0Jj
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGfVE4y7E6i0LKo6YRAo/QAKDWeiIS3djIZcU2ex6XvCZM33fjGgCeJ7/m
-UsjIP1agdO9hR5gbVgjYyjg=
-=oQL1
------END PGP SIGNATURE-----
-
---nextPart24139546.4GOUkIM0Jj--
+Satyam
