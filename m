@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbXFWA3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbXFWA3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbXFWA3m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 20:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbXFWA3e
+	id S1757298AbXFWA3y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 20:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXFWA3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 20:29:34 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53617 "EHLO mx2.suse.de"
+	Fri, 22 Jun 2007 20:29:35 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53618 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752513AbXFWA3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752565AbXFWA3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jun 2007 20:29:34 -0400
 From: Andi Kleen <ak@suse.de>
-Message-Id: <20070623229.766711000@suse.de>
-To: patches@x86-64.org, torvalds@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH for 2.6.22] [1/3] i386: Make CMPXCHG64 only dependent on PAE
-Date: Sat, 23 Jun 2007 02:29:23 +0200 (CEST)
+References: <20070623229.766711000@suse.de>
+In-Reply-To: <20070623229.766711000@suse.de>
+To: jbeulich@novell.com, patches@x86-64.org, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH for 2.6.22] [3/3] x86_64: Ignore compat mode SYSCALL when IA32_EMULATION is not defined
+Message-Id: <20070623002925.EED7414B35@wotan.suse.de>
+Date: Sat, 23 Jun 2007 02:29:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-It is only used for PAE kernels in set_64bit.
+Previously a program could switch to a compat mode segment and then
+execute SYSCALL and it would jump to an uninitialized MSR and crash
+the kernel.
 
-The problem is that due to a old Windows bug many CPUs need magic MSRs 
-to enable CMPXCHG64, and we can't do that nicely early enough before
-it is potentially used.
+Instead supply a dummy target for this case.
 
-But since we only need it in PAE kernels so only force the checking 
-for CMPXCHG65 with PAE.
+Pointed out by Jan Beulich
 
-This fixes a boot failure on Transmeta Crusoe
-
+Cc: jbeulich@novell.com
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/Kconfig.cpu |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86_64/kernel/entry.S   |    7 +++++++
+ arch/x86_64/kernel/setup64.c |    3 +++
+ 2 files changed, 10 insertions(+)
 
-Index: linux/arch/i386/Kconfig.cpu
+Index: linux/arch/x86_64/kernel/entry.S
 ===================================================================
---- linux.orig/arch/i386/Kconfig.cpu
-+++ linux/arch/i386/Kconfig.cpu
-@@ -299,7 +299,7 @@ config X86_POPAD_OK
- 
- config X86_CMPXCHG64
- 	bool
--	depends on !M386 && !M486
-+	depends on X86_PAE
- 	default y
- 
- config X86_ALIGNMENT_16
-Index: linux/arch/i386/Kconfig
+--- linux.orig/arch/x86_64/kernel/entry.S
++++ linux/arch/x86_64/kernel/entry.S
+@@ -1163,3 +1163,10 @@ ENTRY(call_softirq)
+ 	ret
+ 	CFI_ENDPROC
+ ENDPROC(call_softirq)
++
++KPROBE_ENTRY(ignore_sysret)
++	CFI_STARTPROC
++	mov $-ENOSYS,%eax
++	sysret
++	CFI_ENDPROC
++ENDPROC(ignore_sysret)
+Index: linux/arch/x86_64/kernel/setup64.c
 ===================================================================
---- linux.orig/arch/i386/Kconfig
-+++ linux/arch/i386/Kconfig
-@@ -541,7 +541,7 @@ config HIGHMEM4G
+--- linux.orig/arch/x86_64/kernel/setup64.c
++++ linux/arch/x86_64/kernel/setup64.c
+@@ -150,6 +150,8 @@ void pda_init(int cpu)
+ char boot_exception_stacks[(N_EXCEPTION_STACKS - 1) * EXCEPTION_STKSZ + DEBUG_STKSZ]
+ __attribute__((section(".bss.page_aligned")));
  
- config HIGHMEM64G
- 	bool "64GB"
--	depends on X86_CMPXCHG64
-+	depends on !M386 && !M486
- 	help
- 	  Select this if you have a 32-bit processor and more than 4
- 	  gigabytes of physical RAM.
++extern asmlinkage void ignore_sysret(void);
++
+ /* May not be marked __init: used by software suspend */
+ void syscall_init(void)
+ {
+@@ -160,6 +162,7 @@ void syscall_init(void)
+ 	 */ 
+ 	wrmsrl(MSR_STAR,  ((u64)__USER32_CS)<<48  | ((u64)__KERNEL_CS)<<32); 
+ 	wrmsrl(MSR_LSTAR, system_call); 
++	wrmsrl(MSR_CSTAR, ignore_sysret);
+ 
+ #ifdef CONFIG_IA32_EMULATION   		
+ 	syscall32_cpu_init ();
