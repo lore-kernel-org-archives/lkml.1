@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbXFWSmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbXFWSpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbXFWSmm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 14:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbXFWSme
+	id S1754671AbXFWSpm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 14:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbXFWSpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 14:42:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33699 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752136AbXFWSme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 14:42:34 -0400
-Date: Sat, 23 Jun 2007 14:42:21 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wang Zhenyu <zhenyu.z.wang@intel.com>, carlo@alinoe.com,
-       linux-kernel@vger.kernel.org, eric@anholt.net
-Subject: Re: [PATCH][AGPGART] intel_agp: don't load if no IGD and AGP port
-Message-ID: <20070623184221.GB18605@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Wang Zhenyu <zhenyu.z.wang@intel.com>, carlo@alinoe.com,
-	linux-kernel@vger.kernel.org, eric@anholt.net
-References: <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org> <20070618225009.GE13538@alinoe.com> <alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org> <20070619233716.GA5779@alinoe.com> <20070620011521.GB2856@zhen-devel.sh.intel.com> <20070620014227.GA4090@zhen-devel.sh.intel.com> <20070620140237.GB5524@alinoe.com> <20070620154610.GA2802@localhost.localdomain> <20070621054318.GA31381@zhen-devel.sh.intel.com> <20070623095203.66bb8572.akpm@linux-foundation.org>
+	Sat, 23 Jun 2007 14:45:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:11415 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbXFWSpe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 14:45:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:openpgp:content-type:content-transfer-encoding;
+        b=bhn1Ly2ywPqGVw8fuOGpmjPRWmI47kwD7lrCL3C5LGcRCaErtrbfeJccon+vA4rRwgV78Xd3dDz1dgo6PAga8Ov35Jp01vqibUOhWm7RpMHaeruH9UrxampSNLe/XNX11pWe4LwqdxH9yMzi+gIrtNjPYeOJbcdd+aS4olOyv4s=
+Message-ID: <467D6A21.8020507@gmail.com>
+Date: Sun, 24 Jun 2007 00:14:49 +0530
+From: jimmy bahuleyan <knight.camelot@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070623095203.66bb8572.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: linux-kernel@vger.kernel.org, sam@ravnborg.org, zippel@linux-m68k.org
+Subject: make xconfig failure on 2.6.21.5
+X-Enigmail-Version: 0.95.1
+OpenPGP: url=subkeys.pgp.net
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 09:52:03AM -0700, Andrew Morton wrote:
- > > On Thu, 21 Jun 2007 13:43:18 +0800 Wang Zhenyu <zhenyu.z.wang@intel.com> wrote:
- > > Thanks Carlo to report this problem. The following patch should fix
- > > his and potential issue.
- > > 
- > > [AGPGART] intel_agp: don't load if no IGD detected and no AGP port
- > > 
- > > After i915 chip, GMCH has no AGP port. Origin bridge driver in device
- > > table will try to access illegal regs like APBASE, APSIZE, etc. This
- > > may cause problem.
- > > 
- > > So mark them as NULL in the table, we won't load if no IGD got detect
- > > and bridge has no AGP port.
- > 
- > Looking at the above, I have no way of telling what the actual bug is, nor
- > have I any way of telling what the consequences would be of not having this
- > patch in 2.6.22.  Nor can I tell whether we want it in 2.6.21.x.
- > 
- > I probably _could_ work this out, and kinda did with a bit of list-trolling
- > (verdict: needed in 2.6.22) but please, take care to describe the
- > importance of a patch in the changelog?
 
-This got merged a day or two ago.
+Hi,
 
-"will try to access illegal regs.." being the key part of the changelog
-above.  Without this diff, it goes bang, and stops booting on certain
-chipsets.
+I have a Kubuntu 7.04 distro with Qt4 development packages installed.
+Trying to do a 'make xconfig' fails with:
 
-	Dave
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+  CHECK   qt
+*
+* Unable to find the QT installation. Please make sure that
+* the QT development package is correctly installed and
+* either install pkg-config or set the QTDIR environment
+* variable to the correct location.
+*
+  HOSTCC  scripts/kconfig/conf.o
+sed < scripts/kconfig/lkc_proto.h > scripts/kconfig/lkc_defs.h
+'s/P(\([^,]*\),.*/#define \1 (\*\1_p)/'
+  HOSTCC  scripts/kconfig/kconfig_load.o
+  HOSTCC  scripts/kconfig/kxgettext.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/lex.zconf.c
+  SHIPPED scripts/kconfig/zconf.hash.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+make[1]: *** No rule to make target `scripts/kconfig/.tmp_qtcheck',
+needed by `scripts/kconfig/qconf.o'.  Stop.
+make: *** [xconfig] Error 2
 
+
+Is this a problem with my setup or that kbuild/kconfig can't handle Qt4?
+I noticed that scripts/kconfig/Makefile checks for:
+
+pkg-config --exists qt
+pkg-config --exists qt-mt
+
+whereas the Qt4 installation I have the *.pc files are:
+
+Qt3Support.pc
+QtCore.pc
+QtGui.pc
+
+and also the places where kconfig checks for qconfig.h doesn't seem to
+be where Qt4 keeps it (in my installation),
+
+/usr/share/qt4/include/QtCore/qconfig.h
+/usr/share/qt4/include/Qt/qconfig.h
+
+
+Anyone else run into the same problem?
+
+
+-jb
 -- 
-http://www.codemonkey.org.uk
+Tact is the art of making a point without making an enemy.
