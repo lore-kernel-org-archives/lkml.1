@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbXFWIYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbXFWIdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbXFWIYR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 04:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXFWIYF
+	id S1754815AbXFWIdd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 04:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbXFWIdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 04:24:05 -0400
-Received: from 1wt.eu ([62.212.114.60]:3102 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbXFWIYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 04:24:04 -0400
-Date: Sat, 23 Jun 2007 10:23:22 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Alberto Gonzalez <info@gnebu.es>
-Cc: Paolo Ornati <ornati@fastwebnet.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question about fair schedulers
-Message-ID: <20070623082320.GX943@1wt.eu>
-References: <200706230007.15622.info@gnebu.es> <20070623090655.36d1794c@localhost> <200706231001.02497.info@gnebu.es>
+	Sat, 23 Jun 2007 04:33:24 -0400
+Received: from smtp-106-saturday.noc.nerim.net ([62.4.17.106]:1142 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752691AbXFWIdX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 04:33:23 -0400
+Date: Sat, 23 Jun 2007 10:34:35 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Vojtech Pavlik" <vojtech@ucw.cz>
+Subject: Re: Writing a driver for a legacy serial device
+Message-ID: <20070623103435.7c54d047@hyperion.delvare>
+In-Reply-To: <d120d5000706221247g618fffadh2c4296aa62a39b9e@mail.gmail.com>
+References: <20070619190502.05d4e0c8@hyperion.delvare>
+	<d120d5000706191159w29ebd0dajbd6cb9ac78d4faa2@mail.gmail.com>
+	<20070620105648.6d18ad66@hyperion.delvare>
+	<200706202311.33326.dtor@insightbb.com>
+	<20070621113358.1d65678d@hyperion.delvare>
+	<d120d5000706221247g618fffadh2c4296aa62a39b9e@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706231001.02497.info@gnebu.es>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 10:01:02AM +0200, Alberto Gonzalez wrote:
-> Thanks for your thoughts.
+Hi Dmitry,
+
+On Fri, 22 Jun 2007 15:47:43 -0400, Dmitry Torokhov wrote:
+> On 6/21/07, Jean Delvare <khali@linux-fr.org> wrote:
+> >
+> > OK. This leads me to a question: is it OK for me to add support for my
+> > non-input device to inputattach, or is a separate, dedicated helper
+> > tool preferred? Both ways are fine with me, I don't know what the input
+> > subsystem maintainers expect.
 > 
-> On Saturday 23 June 2007, Paolo Ornati wrote:
-> > On Sat, 23 Jun 2007 00:07:15 +0200
-> >
-> > Alberto Gonzalez wrote:
-> > > My conclusion is that SD behaves as expected: it's more fair. But for a
-> > > desktop, shouldn't an "intelligently unfair" scheduler be better?
-> >
-> > "intelligently unfair" is what the current scheduler is (because of
-> > interactivity estimator).
-> >
-> > When it works (say 90% of the time) the desktop feels really good...
-> > but when it doesn't it can be a disaster.
-> 
-> I see. So you mean that in 90% of the cases the mainline scheduler behaves 
-> better than fair schedulers, but when its "logic" fails it behaves much worse 
-> (the other 10% cases)? In my very simple test scenario the mainline scheduler 
-> did behave much better. Maybe the problem comes with very complex scenarios 
-> like the ones I've seen when testing these 2 fair schedulers (something like 
-> compiling a kernel while you open 5 instances of glxgears, write an email, 
-> play music in Amarok and watch 2 HD videos all at the same time). The 
-> question would then be if these kind of situations are likely to happen in 
-> real world, or even if it doesn't make more sense to try to improve the logic 
-> of the mainline scheduler so that those 10% cases are handled better instead 
-> of writing a new one that would behave worse in 90% of the cases and better 
-> in the other 10%.
+> Your device does not need any initialization done by userspace, does
+> it?
 
-No, in fact, the mainline scheduler is good only for the very particular
-cases you propose here. But on some fairly trivial situations (such as two
-processes consuming very close to 50% CPU), it can be a disaster. I've had
-proxies under medium load slow down sshd so much that it was impossible to
-log in. Most of the worst situations have been fixed since the early 2.6
-versions (2.6.11 was still horrible), but it's the general design which
-makes such cases hard to find and to fix.
+No, it doesn't. But it wants a specific serial line speed and mode.
 
-Your situation is clearly something standard where only the user can decide
-which application should get more CPU. You start two CPU hogs, and your mind
-tells you that you would prefer the video not to skip and the encoding to
-finish later. For other people, it might be the reverse because the video
-will be there just for monitoring purposes. The nice command was invented
-exactly for that, and people have been happily using it for the last 30
-years. I don't see why it should become hard to use ! Many CPU-sensitive
-applications already provide the ability to change their nice value
-themselves using a command line parameter.
+> How widespread is this device?
 
-And if it is still too hard to assign nice values from within your
-environment, then perhaps it's the environment which does not suit your
-needs. Even Windows users can choose to assign more priorities to
-foreground/background tasks, so it is something universally accepted,
-and I would be really surprized that you would not have the ability
-to proceed the same way.
+Not widespread. It's a family of evaluation modules for I2C/SMBus
+chips. They will mainly be used to develop and test chip drivers, I
+suppose. But OTOH, I'm not sure how it matters. We're in year 2007, I
+pretty much doubt that any of the devices supported by inputattach is
+still in widespread use. As a matter of fact, inputattach has been
+broken in Suse for half of the supported devices for almost two years
+now, and I couldn't find any bug report about it.
 
-> 	Alberto.
+> inputattach has "--dump" option
+> which sets up a SERIO_RS232/0/0/0 serio port. You could mark your
+> serio driver as manual bind driver and bind it trhough sysfs (echo -n
+> "taos-evm" /sys/device/serio/devices/serioX/drvctl to bind it).
 
-Regards,
-Willy
+One problem I foresee is that the dump mode sets the port to 2400 bps,
+while my evaluation module wants 1200 bps.
 
+Another problem is that the dump mode of inputattach doesn't appear to
+create a serio device. Probably not very surprising, as dump_init()
+never returns. So I don't think I can use that.
+
+-- 
+Jean Delvare
