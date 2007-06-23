@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbXFWEvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXFWFOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752344AbXFWEvh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 00:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXFWEv2
+	id S1752342AbXFWFOz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 01:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbXFWFOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 00:51:28 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:30564 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbXFWEv1 (ORCPT
+	Sat, 23 Jun 2007 01:14:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60607 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751397AbXFWFOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 00:51:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ptPeeLPhd193B9DFJKBQhxaAynlPG7BHxDjN9o7C5jZY3y76kFor0SgpX6b0FZ2nFQHe3LMIA8ZEBvrjrY70zvXMex0PsvMrMVAZN/RpPjLh2rn4ALKnDewR5cxTHt1mDlKCLq+6sNSqhY3fbEQL8nGO3aR+nTSstYT6tasH7Ks=
-Date: Sat, 23 Jun 2007 12:53:09 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Rob Landley <rob@landley.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Li Yang-r58472 <LeoLi@freescale.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, bryan.wu@analog.com,
-       TripleX Chung <xxx.phy@gmail.com>, Maggie Chen <chenqi@beyondsoft.com>
-Subject: Re: [PATCH] Chinese translation of Documentation/HOWTO
-Message-ID: <20070623045309.GA2555@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <989B956029373F45A0B8AF0297081890D83001@zch01exm26.fsl.freescale.net> <alpine.LFD.0.98.0706220950110.3593@woody.linux-foundation.org> <200706221511.46775.rob@landley.net>
+	Sat, 23 Jun 2007 01:14:45 -0400
+Date: Fri, 22 Jun 2007 22:14:22 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+Message-ID: <20070622221422.7888a382@oldman>
+In-Reply-To: <20070622040014.234651401@goodmis.org>
+References: <20070622040014.234651401@goodmis.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706221511.46775.rob@landley.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 22, 2007 at 03:11:45PM -0400, Rob Landley wrote:
->On Friday 22 June 2007 13:02:26 Linus Torvalds wrote:
->> In fact, I suspect pretty much any documentation (whether technical or
->> about processes and/or style) makes sense to have translated if the energy
->> and ability to do that exists. I suspect the "policies and processes"
->> kinds of docs make _more_ sense to translate initially, simply because
->> they are approachable on their own - but I certainly would never
->> discourage anybody from translating anything at all.
->>
->> That said, I don't think that merging the result into the standard kernel
->> makes sense - like it or not, right now English ends up being required
->> to be part of actually getting things into the "standard" kernel, and as
->> such, at _some_ point there has to be a connection point that switches
->> over to English, and trying to make the translations be an in-kernel thing
->> is thus kind of pointless.
->>
->> But as part of some "documentation site", it makes 100% sense.
->
->Ok, I've got some documentation site, specifically http://kernel.org/doc (and 
->I'll be completely redoing it as soon as I've recovered from my recent laptop 
->crash and OLS).
->
->Send me translations (preferably in HTML format), and I'll put 'em up.   (I've 
->already got the one that started this thread.)
->
->Thanks,
+On Fri, 22 Jun 2007 00:00:14 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> 
+> There's a very nice paper by Matthew Willcox that describes Softirqs,
+> Tasklets, Bottom Halves, Task Queues, Work Queues and Timers[1].
+> In the paper it describes the history of these items.  Softirqs and
+> tasklets were created to replace bottom halves after a company (Mindcraft)
+> showed that Microsoft on a 4x SMP box would out do Linux. It was discovered
+> that this was due to a bottle neck caused by the design of Bottom Halves.
+> So Alexey Kuznetsov and Dave Miller [1] (and I'm sure others) created
+> softirqs and tasklets to multithread the bottom halves.
+> 
+> This worked well, and for the time it shut-up Microsoft^WMindcraft from
+> saying Linux was slow at networking.
+> 
+> Time passed, and Linux developed other nifty tools, like kthreads and
+> work queues. These run in a process context and are not as menacing to
+> latencies as softirqs and tasklets are.  Specifically, a tasklet,
+> acts as a task by only being able to run the function on one CPU
+> at a time. The same tasklet can not run on multiple CPUS.  So in that
+> aspect it is like a task (a task can only exist on one CPU at a time).
+> But a tasklet is much harder on the rest of the system because it
+> runs in interrupt context.  This means that if a higher priority process
+> wants to run, it must wait for the tasklet to finish before doing so.
+> 
+> The most part, tasklets today are not used for time critical functions.
+> Running tasklets in thread context is not harmful to performance of
+> the overall system. But running them in interrupt context is, since
+> they increase the overall latency for high priority tasks.
 >
 
-Please also send a copy of HTML format to me, I will put them to
-http://www.kerneltravel.net (A Chinese website about Linux kernel).
+You will need to search and convert all network drivers that are using
+tasklets. Drivers like the ipw2200, will need to be converted to NAPI,
+and you probably have to fix a couple of places in the ieee80211 stack as well.
 
-Thanks!
-
-
-WANG Cong
