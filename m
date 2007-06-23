@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755700AbXFWJno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXFWJsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755700AbXFWJno (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 05:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXFWJng
+	id S1755407AbXFWJsv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 05:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbXFWJso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 05:43:36 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36291 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753107AbXFWJnf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 05:43:35 -0400
-Date: Sat, 23 Jun 2007 10:49:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>, David Smith <dsmith@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 03/10] Allow userspace applications to use marker.h to
- parse the markers section in the kernel binary.
-Message-ID: <20070623104905.20ae2929@the-village.bc.nu>
-In-Reply-To: <20070623093209.GB30849@infradead.org>
-References: <20070510015555.973107048@polymtl.ca>
-	<20070510020915.900170085@polymtl.ca>
-	<20070510065137.GA7943@infradead.org>
-	<46439941.4010909@redhat.com>
-	<20070623080953.GA29241@infradead.org>
-	<20070623102515.3a1fc583@the-village.bc.nu>
-	<20070623093209.GB30849@infradead.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sat, 23 Jun 2007 05:48:44 -0400
+Received: from www.osadl.org ([213.239.205.134]:47256 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753545AbXFWJso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 05:48:44 -0400
+Subject: [PATCH] FUTEX: Restore the dropped ERSCH fix
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Stable Team <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ulrich Drepper <drepper@redhat.com>
+Content-Type: text/plain
+Date: Sat, 23 Jun 2007 11:48:40 +0200
+Message-Id: <1182592120.20203.181.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jun 2007 10:32:09 +0100
-Christoph Hellwig <hch@infradead.org> wrote:
+The return value of futex_find_get_task() needs to be -ESRCH in case
+that the search fails. This was part of the original futex fixes and 
+got accidentally dropped, when the futex-tidy-up patch was split out.
 
-> On Sat, Jun 23, 2007 at 10:25:15AM +0100, Alan Cox wrote:
-> > Getting the marker exports right is what is needed to avoid having an
-> > unreliable parser and ending up with a reliable one.
-> > 
-> > Or would you rather someone loaded a JVM into kernel space so it was
-> > "shipped with the kernel"
-> 
-> You're totall missing the point here.  We're talking about kernel internal
-> interface, and the point for them has always been not to care about out
-> of tree users.  There is no relation to anything involving a JVM here.
+Results in a NULL pointer dereference in case the search fails.
 
-Of course there is Christoph.
+Restore it.
 
-If you have a system which generates and loads modules then they can't be
-in tree (as they don't exist except transiently). On the other hand if it
-outputs java byte codes then a JVM to process them can be in tree. It
-would be a stupid solution to the problem but you appear to be objecting
-to sane ones.
+Please apply also to 2.6.21 stable
 
-The system to create the dynamic modules could certainly be in-tree but to
-argue that code dynamically created should be "in tree" already is a
-bit silly really isn't it ?
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Stable Team <stable@kernel.org>
 
-A second way of point out your argument is totally and utterly bogus
-would be the MODULE_ interface. The modutils are clearly out of tree
-users.
+---
+ kernel/futex.c |   14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
-So whats the difference between modutils and markers ? Would it suddenely
-change if modutils developed modinfo --dump-markers ? 
+Index: linux-2.6/kernel/futex.c
+===================================================================
+--- linux-2.6.orig/kernel/futex.c	2007-06-23 11:39:20.000000000 +0200
++++ linux-2.6/kernel/futex.c	2007-06-23 11:39:20.000000000 +0200
+@@ -409,14 +409,12 @@ static struct task_struct * futex_find_g
+ 
+ 	rcu_read_lock();
+ 	p = find_task_by_pid(pid);
+-	if (!p)
+-		goto out_unlock;
+-	if ((current->euid != p->euid) && (current->euid != p->uid)) {
+-		p = NULL;
+-		goto out_unlock;
+-	}
+-	get_task_struct(p);
+-out_unlock:
++
++	if (!p || ((current->euid != p->euid) && (current->euid != p->uid)))
++		p = ERR_PTR(-ESRCH);
++	else
++		get_task_struct(p);
++
+ 	rcu_read_unlock();
+ 
+ 	return p;
 
-Alan
+
