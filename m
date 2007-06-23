@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbXFWQbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759671AbXFWQf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbXFWQbc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 12:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXFWQbX
+	id S1759671AbXFWQf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 12:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbXFWQfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 12:31:23 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:37726 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753899AbXFWQbX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 12:31:23 -0400
-Message-ID: <467D4AD3.1010205@lwfinger.net>
-Date: Sat, 23 Jun 2007 11:31:15 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-Newsgroups: opensuse.org.suse-linux.support.install-configure-administration
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: WiFi(wlan): reporting not real signal (always at 100%)
-References: <3rGdi.4012$%54.2782@prv-forum2.provo.novell.com>
-In-Reply-To: <3rGdi.4012$%54.2782@prv-forum2.provo.novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+	Sat, 23 Jun 2007 12:35:22 -0400
+Received: from mail.screens.ru ([213.234.233.54]:35460 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753762AbXFWQfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 12:35:22 -0400
+Date: Sat, 23 Jun 2007 20:35:31 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix signalfd interaction with thread-private signals
+Message-ID: <20070623163531.GA2346@tv-sign.ru>
+References: <alpine.LFD.0.98.0706211100200.3593@woody.linux-foundation.org> <20070621182340.GA92@tv-sign.ru> <alpine.LFD.0.98.0706211133350.3593@woody.linux-foundation.org> <20070621185856.GA153@tv-sign.ru> <1182468604.24740.22.camel@localhost.localdomain> <20070622084034.GA134@tv-sign.ru> <1182512473.24740.54.camel@localhost.localdomain> <20070622160405.GA189@tv-sign.ru> <1182551618.24740.79.camel@localhost.localdomain> <alpine.LFD.0.98.0706221540430.3593@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706221540430.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xavier Callejas wrote:
-> Hi,
+On 06/22, Linus Torvalds wrote:
 > 
-> My system is:
+> On Sat, 23 Jun 2007, Benjamin Herrenschmidt wrote:
+> > 
+> > > 
+> > > It does exactly so, please note this chunk
+> > > 
+> > >  @@ -330,7 +339,7 @@ asmlinkage long sys_signalfd(int ufd, si
+> > > 
+> > >                  init_waitqueue_head(&ctx->wqh);
+> > >                  ctx->sigmask = sigmask;
+> > >  -               ctx->tsk = current;
+> > >  +               ctx->tsk = current->group_leader;
+> > > 
+> > > > It might well be that signalfd's concept of context is wrong in the
+> > > > first place and it should be attached to processes rather than threads
+> > > > and that made more explicit in the first place...
+> > 
+> > Yup, looks like I was looking at a wrong patch... I think it's the right
+> > thing to do indeed.
 > 
-> openSUSE 10.2
-> kernel: 2.6.22-rc3-git2-47
-> Atheros wireles card
-> MadWifi version: svn r2484 (the last at jun/18/07)
-> 
-> Problem:
-> 
-> In NetworkManager applet (KDE (knetworkmanager) and also GNOME NetMgr
-> applet) the intensity signal graphic is always at 100% , and also if I
-> click on the applet to display the list of availables AP's and their
-> respective signal all of them show 100%.
-> 
-> I also have the default kernel of openSUSE (2.6.18) with madwifi 9.3.1, when
-> booting with this kernel the problem does not exist.
-> 
-> I think the problem could be in the respective kernel module that manage
-> wifi, or madwifi are passing bad arguments to this module.
+> Quite frankly, it strikes me that if we want to do this, then we shouldn't 
+> save the _process_ information at all, we should save the "sighand" 
+> instead.
 
-There are two things to check. The first is to do a 'cat /proc/net/wireless' and check the number 
-under the word link. The second is to do a 'iwlist scan' command and qheck the "Quality" value. If 
-these are both 100%, then it is a problem with the Atheros driver and should be reported as a 
-regression to the MadWifi mailing list and/or developers. The rest of the 2.6.22-rc3 kernel is 
-functioning correctly.
+Yes, unless we pass signalfd to another process.
 
-Larry
+> So either we save the process info, or we save the sighand, but saving the 
+> "group_leader" seems totally bogus. Especially as the group leader can 
+> change (by execve()).
+
+Note that exec() can change ->sighand as well, so in general this can't help.
+
+Currently not a problem, exec() detaches process from signalfd anyway.
+
+
+This reminds me, we have a similar problem with !CPUCLOCK_PERTHREAD()
+cpu-timers, iirc. They can survive after exec(), but only if it was
+->group_leader who does exec.
+
+Oleg.
+
