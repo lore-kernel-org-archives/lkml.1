@@ -1,96 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbXFWSu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbXFWSvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753443AbXFWSu6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 14:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbXFWSuu
+	id S1755332AbXFWSvX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 14:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbXFWSvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 14:50:50 -0400
-Received: from xenotime.net ([66.160.160.81]:55914 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750938AbXFWSut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 14:50:49 -0400
-Date: Sat, 23 Jun 2007 11:52:52 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, hch@infradead.org,
-       johnstul@us.ibm.com, oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com,
-       dipankar@in.ibm.com, davem@davemloft.net, kuznet@ms2.inr.ac.ru
-Subject: Re: [RFC PATCH 5/5 v2] Convert tasklets to work queues
-Message-Id: <20070623115252.fc36f20c.rdunlap@xenotime.net>
-In-Reply-To: <alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org>
-References: <20070622182051.859570787@goodmis.org>
-	<20070622182315.571740041@goodmis.org>
-	<20070623095359.4667514e.akpm@linux-foundation.org>
-	<alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sat, 23 Jun 2007 14:51:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33464 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751167AbXFWSvM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 14:51:12 -0400
+Date: Sat, 23 Jun 2007 11:50:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Wang Zhenyu <zhenyu.z.wang@intel.com>, carlo@alinoe.com,
+       linux-kernel@vger.kernel.org, eric@anholt.net
+Subject: Re: [PATCH][AGPGART] intel_agp: don't load if no IGD and AGP port
+Message-Id: <20070623115049.248ff86e.akpm@linux-foundation.org>
+In-Reply-To: <20070623184221.GB18605@redhat.com>
+References: <alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org>
+	<20070618225009.GE13538@alinoe.com>
+	<alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org>
+	<20070619233716.GA5779@alinoe.com>
+	<20070620011521.GB2856@zhen-devel.sh.intel.com>
+	<20070620014227.GA4090@zhen-devel.sh.intel.com>
+	<20070620140237.GB5524@alinoe.com>
+	<20070620154610.GA2802@localhost.localdomain>
+	<20070621054318.GA31381@zhen-devel.sh.intel.com>
+	<20070623095203.66bb8572.akpm@linux-foundation.org>
+	<20070623184221.GB18605@redhat.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Jun 2007 11:19:18 -0700 (PDT) Linus Torvalds wrote:
+On Sat, 23 Jun 2007 14:42:21 -0400 Dave Jones <davej@redhat.com> wrote:
 
+>  > I probably _could_ work this out, and kinda did with a bit of list-trolling
+>  > (verdict: needed in 2.6.22) but please, take care to describe the
+>  > importance of a patch in the changelog?
 > 
-> 
-> On Sat, 23 Jun 2007, Andrew Morton wrote:
-> > 
-> > Anyway.  Please fix the many correct warnings which checkpatch.pl
-> > generates
-> 
-> Actually, please don't.
-> 
-> Especially for code movement, *just* do the movement. Screw any 
-> checkpatch.pl crap - the code is better off not changing, because that way 
-> a big patch can not only be proven to not change anything at all, but 
-> software archeology tools can trivially find the true history of the code 
-> over code movement.
-> 
-> For example, "git blame -C" already finds copies and can annotate the 
-> history of a line of code past a pure code movement. But if you move *and* 
-> change things at the same time, it gets a lot harder to show where the 
-> code came from and that the movement itself caused no regressions.
-> 
-> So do cleanups _separately_ from movement.
-> 
-> (Yeah, yeah, "git blame -C -w" will generally work across whitespace 
-> changes too, but only whitespace _within_ a line. If you do things like 
-> split long lines etc, you immediately have a lot harder time to follow 
-> these thigns. Not impossible, but the point is that you're not *fixing* 
-> anything, you're just making things *worse* by doing changes and code 
-> movement at the same time).
-> 
-> Quite frankly, I personally am considering removing "checkpatch.pl". That 
-> thing is just a nazi dream. That hard-coded 80-character limit etc is just 
-> bad taste.
+> This got merged a day or two ago.
 
-Who wrote that part of CodingStyle?
-
-
-The script is certainly no substitute for personal review.
-And it's certainly not the final say on anything.
-(neither is CodingStyle AFAIK)
-It's just a helper for Andrew.
-
-The problem IMO is that we are seeing less and less patch review
-but it needs to be more and more.  Andrew is one of a handful of
-people who are reviewing lots of patches.  It shouldn't be his
-wheelbarrow to have to push around all the time.  So if a little
-automation can help Andrew, that's a good thing.  Until people
-revolt, that is.
-
-
-> Dammit, code cleanliness is not about "automated and mindless slavish 
-> following of rules". A process that is too inflexible is a *bad* process. 
-> I'd much rather have a few 80+ character lines than stupid and unreadable 
-> line wrapping just because the line hit 87 characters in length.
-> 
-> I don't have 25 lines on a screen either. 
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+OK.  -stable didn't appear to get a copy though?
