@@ -1,63 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXFWEVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbXFWE3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752083AbXFWEVW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 00:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbXFWEVM
+	id S1752440AbXFWE3H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 00:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbXFWE2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 00:21:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35536 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751015AbXFWEVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 00:21:11 -0400
-Message-ID: <467C9F8D.8020000@garzik.org>
-Date: Sat, 23 Jun 2007 00:20:29 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Woodhouse <dwmw2@infradead.org>,
-       Adrian Bunk <bunk@stusta.de>, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] schedule BLK_DEV_IDE_SATA for removal
-References: <20070621235211.GH23017@stusta.de>	<1182483586.10524.33.camel@shinybook.infradead.org>	<20070622101019.0f3b0d3d@the-village.bc.nu> <18044.39404.380472.887065@cargo.ozlabs.ibm.com>
-In-Reply-To: <18044.39404.380472.887065@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 23 Jun 2007 00:28:55 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:51705 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbXFWE2y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 00:28:54 -0400
+Date: Fri, 22 Jun 2007 21:28:34 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>, zippel@linux-m68k.org
+Cc: Ravikiran G Thirumalai <kiran@scalex86.org>, lenb@kernel.org,
+       andreas.herrmann3@amd.com, swhiteho@redhat.com, ak@suse.de,
+       shai@scalex86.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 7/12] acpi: fix another compile warning
+Message-Id: <20070622212834.cfa69fd0.randy.dunlap@oracle.com>
+In-Reply-To: <20070622205530.964ebef9.akpm@linux-foundation.org>
+References: <20070619225035.GI5193@alberich.amd.com>
+	<200706192338.02807.lenb@kernel.org>
+	<20070620084911.GO5193@alberich.amd.com>
+	<200706200936.31236.lenb@kernel.org>
+	<20070620182548.GA561@localdomain>
+	<20070622205530.964ebef9.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Alan Cox writes:
+On Fri, 22 Jun 2007 20:55:30 -0700 Andrew Morton wrote:
+
+> > On Wed, 20 Jun 2007 11:25:48 -0700 Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+> > Paper over 'select' inadequacies.  
+> > 
+> > Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> > 
+> > Index: linux-2.6.22-rc5/arch/x86_64/Kconfig
+> > ===================================================================
+> > --- linux-2.6.22-rc5.orig/arch/x86_64/Kconfig	2007-06-18 16:02:19.571323415 -0700
+> > +++ linux-2.6.22-rc5/arch/x86_64/Kconfig	2007-06-20 11:34:29.845354250 -0700
+> > @@ -366,6 +366,7 @@ config X86_64_ACPI_NUMA
+> >         depends on NUMA
+> >         select ACPI 
+> >  	select PCI
+> > +  	select PM
+> >         select ACPI_NUMA
+> >         default y
+> >         help
 > 
->> On Fri, 22 Jun 2007 11:39:45 +0800
->> David Woodhouse <dwmw2@infradead.org> wrote:
->>
->>> On Fri, 2007-06-22 at 01:52 +0200, Adrian Bunk wrote:
->>>> Users should use the libata based drivers for SATA drives.
->>> NAK. Not all IDE drivers are converted yet. Not even all the relatively
->>> common ones.
->> All the common SATA ones are. Just the PowerPC people are falling behind.
->> Really we should obsolete powerpc instead ;)
+> argh.  (and not just argh-at-your-email-client).
 > 
-> What SATA drive uses a non-libata driver on PowerPC?  In fact the
-> sata_svw driver used for SATA drives on G5s was one of the early
-> libata drivers.  Or are you talking about PATA?
+> I went through some hair-tearing a few months ago working out why it is so
+> damn hard to make CONFIG_PM go away and then I fixed it.  And now you're
+> proposing a change which would reinstate the obnoxious old behaviour.
+> 
+> Is the "bug" which you're "fixing" here caused by the randconfig
+> inadequacies?  Because randconfig is just busted and simply should auto-run
+> oldconfig.
 
-This entire thread is confused :)
+Running oldconfig won't fix randconfigs that have busted "select"
+chains (i.e., select does not follow chains like "depends on" does).
 
-Going back to $subject, it is relevant only to the scant few old-IDE 
-drivers that do indeed successfully probe and talk to SATA drives, from 
-SATA controllers.
+However, lots of this bustage isn't due to randconfig at all.
+It's due to Jan E.'s menuconfig changes (yes, which I supported).
+It seems that Jan didn't realize that a transition of a tristate symbol
+to a boolean converts y or m to y (and n to n) and all (?) of the new
+menuconfig symbols that control whether a menu is displayed or not
+are boolean.  One simple "fix" (or workaround) is to make them
+tristate.  Now that seems a little odd for a symbol that just controls
+whether a menu is displayed or not, so Satyam Sharma has made some
+other suggestions, and of course Andreas Herrmann has produced lots
+of patches to fix various issues that he has run into.
 
-The vast majority have always used libata for SATA, but another option 
-did indeed exist before libata appeared, for a few controllers.
+I can't tell you the final answer (I proposed the tristate fix).
+I don't particularly like some of the patches that change
+	depends on XYZ
+to
+	depends on XYZ && ksymbol
+in many lines of kconfig entries.
 
-Alan was just having a bit of fun at dwmw2's expense, since we do indeed 
-want to see libata drivers for PowerPC PATA as well :)
 
-	Jeff
+Not that it answers your question, but we should have hit this
+in -mm, not in mainline, but it appears that our testing was a bit
+insufficient.
 
+And of course, if someone would fix kconfig to follow "select" chains,
+we should bestow an award on them.  :)
+(however, I don't know if Roman would merge that patch)
 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
