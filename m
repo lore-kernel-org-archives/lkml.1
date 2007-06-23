@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbXFWIW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbXFWIYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbXFWIW1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 04:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbXFWIWU
+	id S1755382AbXFWIYR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 04:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbXFWIYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 04:22:20 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:52412 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752898AbXFWIWT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 04:22:19 -0400
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andi Kleen <ak@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>
-Subject: NAK (bashizm in the /bin/sh script): [PATCH v3] doc/oops-tracing: add Code: decode info
-In-Reply-To: <20070622132810.3c758590.randy.dunlap@oracle.com>
-References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706221626.39969.ak@suse.de> <20070622094429.0910c7cb.randy.dunlap@oracle.com> <200706221923.02736.ak@suse.de> <20070622132810.3c758590.randy.dunlap@oracle.com>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: jed (x86_64-pc-linux-glibc-debian)
-X-Mailer: slrn
-Date: Sat, 23 Jun 2007 10:34:59 +0200
-Message-Id: <E1I2159-0005AH-DS@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
+	Sat, 23 Jun 2007 04:24:05 -0400
+Received: from 1wt.eu ([62.212.114.60]:3102 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132AbXFWIYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 04:24:04 -0400
+Date: Sat, 23 Jun 2007 10:23:22 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Alberto Gonzalez <info@gnebu.es>
+Cc: Paolo Ornati <ornati@fastwebnet.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Question about fair schedulers
+Message-ID: <20070623082320.GX943@1wt.eu>
+References: <200706230007.15622.info@gnebu.es> <20070623090655.36d1794c@localhost> <200706231001.02497.info@gnebu.es>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706231001.02497.info@gnebu.es>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* From: Randy Dunlap
-* Newsgroups: linux.kernel
-* Date: Fri, 22 Jun 2007 13:28:10 -0700
-* Organization: Oracle Linux Eng.
+On Sat, Jun 23, 2007 at 10:01:02AM +0200, Alberto Gonzalez wrote:
+> Thanks for your thoughts.
+> 
+> On Saturday 23 June 2007, Paolo Ornati wrote:
+> > On Sat, 23 Jun 2007 00:07:15 +0200
+> >
+> > Alberto Gonzalez wrote:
+> > > My conclusion is that SD behaves as expected: it's more fair. But for a
+> > > desktop, shouldn't an "intelligently unfair" scheduler be better?
+> >
+> > "intelligently unfair" is what the current scheduler is (because of
+> > interactivity estimator).
+> >
+> > When it works (say 90% of the time) the desktop feels really good...
+> > but when it doesn't it can be a disaster.
+> 
+> I see. So you mean that in 90% of the cases the mainline scheduler behaves 
+> better than fair schedulers, but when its "logic" fails it behaves much worse 
+> (the other 10% cases)? In my very simple test scenario the mainline scheduler 
+> did behave much better. Maybe the problem comes with very complex scenarios 
+> like the ones I've seen when testing these 2 fair schedulers (something like 
+> compiling a kernel while you open 5 instances of glxgears, write an email, 
+> play music in Amarok and watch 2 HD videos all at the same time). The 
+> question would then be if these kind of situations are likely to happen in 
+> real world, or even if it doesn't make more sense to try to improve the logic 
+> of the mainline scheduler so that those 10% cases are handled better instead 
+> of writing a new one that would behave worse in 90% of the cases and better 
+> in the other 10%.
 
-[]
-> --- /dev/null
-> +++ linux-2.6.22-rc5/scripts/decodecode
-> @@ -0,0 +1,47 @@
-> +#!/bin/sh
-> +# Disassemble the Code: line in Linux oopses
-> +# usage: decodecode < oops.file
+No, in fact, the mainline scheduler is good only for the very particular
+cases you propose here. But on some fairly trivial situations (such as two
+processes consuming very close to 50% CPU), it can be a disaster. I've had
+proxies under medium load slow down sshd so much that it was impossible to
+log in. Most of the worst situations have been fixed since the early 2.6
+versions (2.6.11 was still horrible), but it's the general design which
+makes such cases hard to find and to fix.
 
-|-*- sh = dash -*-
-flower:-$ <kernelOops.txt sh decodecode
-Jun 18 22:05:11 localhost kernel: Code: 00 00 00 eb 1b 6b 4e 38 05 89 ca 03 53 \
-1c 4a 89 d0 31 d2 f7 f1 89 da 89 c1 89 f0 e8 83 ed ff ff e8 26 af 12 00 8b 76 6\
-4 83 ee 64 <8b> 46 64 0f 18 00 90 81 fe 14 5c 37 c0 0f 85 70 ff ff ff b8 84
-decodecode: 31: Syntax error: Bad substitution
-flower:-$
-|-*-
+Your situation is clearly something standard where only the user can decide
+which application should get more CPU. You start two CPU hogs, and your mind
+tells you that you would prefer the video not to skip and the encoding to
+finish later. For other people, it might be the reverse because the video
+will be there just for monitoring purposes. The nice command was invented
+exactly for that, and people have been happily using it for the last 30
+years. I don't see why it should become hard to use ! Many CPU-sensitive
+applications already provide the ability to change their nice value
+themselves using a command line parameter.
 
-Or you are writing for "#!/bin/bash", or i can help optimize and make
-this script "sh" compatible.
+And if it is still too hard to assign nice values from within your
+environment, then perhaps it's the environment which does not suit your
+needs. Even Windows users can choose to assign more priorities to
+foreground/background tasks, so it is something universally accepted,
+and I would be really surprized that you would not have the ability
+to proceed the same way.
 
-NAK.
---
-  frenzy
--o--=O`C
- #oo'L O
-<___=E M
+> 	Alberto.
+
+Regards,
+Willy
+
