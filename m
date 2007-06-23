@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXFWWC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbXFWWIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbXFWWC1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 18:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXFWWCV
+	id S1753739AbXFWWIS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 18:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbXFWWIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 18:02:21 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:38401 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751620AbXFWWCU (ORCPT
+	Sat, 23 Jun 2007 18:08:06 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55990 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751926AbXFWWIF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 18:02:20 -0400
-Date: Sun, 24 Jun 2007 00:02:22 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Grozdan Nikolov <microchip@chello.be>, linux-kernel@vger.kernel.org
+	Sat, 23 Jun 2007 18:08:05 -0400
+Date: Sat, 23 Jun 2007 23:13:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Grozdan Nikolov <microchip@chello.be>, Torsten Duwe <duwe@lst.de>,
+       linux-kernel@vger.kernel.org
 Subject: Re: How innovative is Linux?
-Message-ID: <20070623220222.GB13907@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Grozdan Nikolov <microchip@chello.be>, linux-kernel@vger.kernel.org
-References: <200706231417.16086.microchip@chello.be> <20070623154328.222a2f92@the-village.bc.nu> <200706231722.26931.microchip@chello.be> <20070623164608.05dc5c30@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070623164608.05dc5c30@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-ID: <20070623231324.3caca035@the-village.bc.nu>
+In-Reply-To: <20070623210228.GY21478@ftp.linux.org.uk>
+References: <200706231417.16086.microchip@chello.be>
+	<20070623164608.05dc5c30@the-village.bc.nu>
+	<200706231812.02317.duwe@lst.de>
+	<200706231819.43556.microchip@chello.be>
+	<20070623202343.621a244b@the-village.bc.nu>
+	<20070623210228.GY21478@ftp.linux.org.uk>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 04:46:08PM +0100, Alan Cox wrote:
-> Now if you want really innovative OS work go look in the lab or at
-> projects most people have never heard of and don't run.
+On Sat, 23 Jun 2007 22:02:29 +0100
+Al Viro <viro@ftp.linux.org.uk> wrote:
 
-Hey, I heard of one. I got a few friends that are sitting
-in an IRC channel and have been working on a complete new
-OS from scratch for like 10 years now (kernel, filesystem,
-graphics drivers, libraries - everything). I consider them
-to be totally nuts of course.  When I ask them why are you
-still doing this? Can't you use linux? Then the answer is
-that there are still companies interested in operating
-systems like that, precisely because they are not well-
-known. It would be pretty hard to exploit vulnerabilities
-in such a system (or that is their explanation anyway).
+> On Sat, Jun 23, 2007 at 08:23:43PM +0100, Alan Cox wrote:
+> > Proc type stuff is a lot older than Linux or Unix AFAIK. Loadable modules
+> > ditto but the full load/unload/autoload stuff I've not seen pre-Linux.
+> 
+> Representation of process state and control of that state via files on
+> a filesystem? 
 
--- 
-Carlo Wood <carlo@alinoe.com>
+I don't know about proc in that sense prior to v8 unix I was thinking
+about the logical device stuff and filesystem objects/namepaces that
+produced program generated data.
+
+
+
