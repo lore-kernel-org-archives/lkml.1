@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbXFWNNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757771AbXFWNPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757492AbXFWNNp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 09:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbXFWNNi
+	id S1757771AbXFWNPH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 09:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbXFWNO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 09:13:38 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37241 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753525AbXFWNNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 09:13:38 -0400
-Date: Sat, 23 Jun 2007 15:13:55 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Denis Cheng <crquan@gmail.com>, trivial@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trivial: the memset operation on a automatic array
-	variable should be optimized out by data initialization
-Message-ID: <20070623131355.GO23017@stusta.de>
-References: <467cac85.081b600a.5b88.457f@mx.google.com> <E1I20Wr-00064i-T0@flower>
+	Sat, 23 Jun 2007 09:14:57 -0400
+Received: from mx2.suse.de ([195.135.220.15]:54667 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753525AbXFWNO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 09:14:57 -0400
+From: Andi Kleen <ak@suse.de>
+To: vgoyal@in.ibm.com
+Subject: Re: [PATCH] x86-64: disable the GART before allocate aperture
+Date: Sat, 23 Jun 2007 15:14:00 +0200
+User-Agent: KMail/1.9.1
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, Yinghai Lu <Yinghai.Lu@sun.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200706221219.16243.yinghai.lu@sun.com> <200706230214.02535.ak@suse.de> <20070623111216.GA8726@in.ibm.com>
+In-Reply-To: <20070623111216.GA8726@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1I20Wr-00064i-T0@flower>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200706231514.01328.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 09:59:33AM +0200, Oleg Verych wrote:
-> * From: Denis Cheng
-> * Newsgroups: linux.kernel
-> * Date: Fri, 22 Jun 2007 22:15:49 -0700 (PDT)
->  
-> > From: Denis Cheng <crquan@gmail.com>
-> >
-> > the explicit memset call could be optimized out by data initialization,
-> > thus all the fill working can be done by the compiler implicitly.
-> 
-> Can be optimized and can be done by compiler are just words;
-> 
-> > and C standard guaranteed all the unspecified data field initialized to zero.
-> 
-> standards and implementation are on opposite poles of magnet
 
-Bullshit.
+> Yes, kdump kernel is generally <4GB . Won't I require IOMMU while I am
+> copying the high memory contents in second kernel (lets say 16 GB of memory
+> and destination device is not capable of addressing anything more than 4G
+> for DMA operation)?
 
-We expect a C compiler, and if a C compiler violates the C standard 
-that's a bug in the compiler that has to be fixed.
+It cannot happen; you don't support mmap on vmcore. Also even if it
+was possible it would likely work for networking/block IO because
+they support bouncing using their own mechanism.
 
-And gcc is usually quite good in following the C standard.
+When you read() from vmcore to write the data out you will always use the CPU 
+to copy and then do IO from the copied data.
 
-> > Signed-off-by: Denis Cheng <crquan@gmail.com>
-> >
-> > ---
-> > After comments in the former threads:
-> > http://lkml.org/lkml/2007/6/18/119
-> 
-> i see a patch
-> 
-> > http://lkml.org/lkml/2007/6/18/48
-> 
-> same patch.
->...
+> > If it's not then swiotlb will also not work because it won't get
+> > any memory <4GB.
+>
+> Will using IOMMU instead of swiotlb give noticeable perfomance boost.
 
-Open your eyes and you'll find thread overviews at the left side of 
-the URLs he gave...
+The difference is not that dramatic and less and less IO devices need
+it anyways. And if you're <4GB you will never need it.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-Andi
