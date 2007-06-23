@@ -1,38 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXFWSRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbXFWS0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbXFWSRq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 14:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXFWSRk
+	id S1753780AbXFWS0T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 14:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXFWS0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 14:17:40 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:45997 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753290AbXFWSRj (ORCPT
+	Sat, 23 Jun 2007 14:26:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33527 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752067AbXFWS0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 14:17:39 -0400
-From: Grozdan Nikolov <microchip@chello.be>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: How innovative is Linux?
-Date: Sat, 23 Jun 2007 20:17:35 +0200
-User-Agent: KMail/1.9.5
-References: <200706231417.16086.microchip@chello.be> <200706231722.26931.microchip@chello.be> <a781481a0706231102i5f59d0d9k7140f96576ef453a@mail.gmail.com>
-In-Reply-To: <a781481a0706231102i5f59d0d9k7140f96576ef453a@mail.gmail.com>
-Cc: linux-kernel@vger.kernel.org
+	Sat, 23 Jun 2007 14:26:03 -0400
+Date: Sat, 23 Jun 2007 11:19:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, hch@infradead.org,
+       johnstul@us.ibm.com, oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com,
+       dipankar@in.ibm.com, davem@davemloft.net, kuznet@ms2.inr.ac.ru
+Subject: Re: [RFC PATCH 5/5 v2] Convert tasklets to work queues
+In-Reply-To: <20070623095359.4667514e.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0706231113200.3593@woody.linux-foundation.org>
+References: <20070622182051.859570787@goodmis.org> <20070622182315.571740041@goodmis.org>
+ <20070623095359.4667514e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706232017.35856.microchip@chello.be>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->
-> then what is this? Provocation is _standard_ troll tactics.
->
-> Why don't you try being innovative yourself?
 
-Because I've seen many times how people outside the kernel community get 
-ignored or even labled as trolls when asking something, so I thought that 
-provocation in this case could be better productive for me.
+On Sat, 23 Jun 2007, Andrew Morton wrote:
+> 
+> Anyway.  Please fix the many correct warnings which checkpatch.pl
+> generates
+
+Actually, please don't.
+
+Especially for code movement, *just* do the movement. Screw any 
+checkpatch.pl crap - the code is better off not changing, because that way 
+a big patch can not only be proven to not change anything at all, but 
+software archeology tools can trivially find the true history of the code 
+over code movement.
+
+For example, "git blame -C" already finds copies and can annotate the 
+history of a line of code past a pure code movement. But if you move *and* 
+change things at the same time, it gets a lot harder to show where the 
+code came from and that the movement itself caused no regressions.
+
+So do cleanups _separately_ from movement.
+
+(Yeah, yeah, "git blame -C -w" will generally work across whitespace 
+changes too, but only whitespace _within_ a line. If you do things like 
+split long lines etc, you immediately have a lot harder time to follow 
+these thigns. Not impossible, but the point is that you're not *fixing* 
+anything, you're just making things *worse* by doing changes and code 
+movement at the same time).
+
+Quite frankly, I personally am considering removing "checkpatch.pl". That 
+thing is just a nazi dream. That hard-coded 80-character limit etc is just 
+bad taste. 
+
+Dammit, code cleanliness is not about "automated and mindless slavish 
+following of rules". A process that is too inflexible is a *bad* process. 
+I'd much rather have a few 80+ character lines than stupid and unreadable 
+line wrapping just because the line hit 87 characters in length.
+
+I don't have 25 lines on a screen either. 
+
+		Linus
