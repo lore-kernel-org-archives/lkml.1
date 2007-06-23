@@ -1,38 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbXFWQmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760442AbXFWQsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760282AbXFWQmX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 12:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXFWQmQ
+	id S1760442AbXFWQsT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 12:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbXFWQsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 12:42:16 -0400
-Received: from verein.lst.de ([213.95.11.210]:47989 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753762AbXFWQmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 12:42:15 -0400
-From: Torsten Duwe <duwe@lst.de>
-Organization: LST e.V.
-To: Grozdan Nikolov <microchip@chello.be>
-Subject: Re: How innovative is Linux?
-Date: Sat, 23 Jun 2007 18:42:00 +0200
-User-Agent: KMail/1.9.7
-References: <200706231417.16086.microchip@chello.be> <200706231812.02317.duwe@lst.de> <200706231819.43556.microchip@chello.be>
-In-Reply-To: <200706231819.43556.microchip@chello.be>
-Cc: linux-kernel@vger.kernel.org
+	Sat, 23 Jun 2007 12:48:08 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43442 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757588AbXFWQsG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 12:48:06 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: davem@davemloft.net, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix race in AF_UNIX
+References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
+	<20070605.224128.104032917.davem@davemloft.net>
+	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
+	<20070607.184731.10907840.davem@davemloft.net>
+	<E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
+	<m17ipxfi9d.fsf@ebiederm.dsl.xmission.com>
+	<E1I21IL-0004LH-00@dorka.pomaz.szeredi.hu>
+Date: Sat, 23 Jun 2007 10:42:05 -0600
+In-Reply-To: <E1I21IL-0004LH-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's
+	message of "Sat, 23 Jun 2007 10:48:37 +0200")
+Message-ID: <m1ir9eaahu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706231842.00798.duwe@lst.de>
-X-Spam-Score: 0 () 
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 23 June 2007, you wrote:
+Miklos Szeredi <miklos@szeredi.hu> writes:
 
-> hmm, wasn't loadable kernel modules first implemented in SunOS 4.x [...]
-Yes, but that was pretty cumbersome. You had to resolve the symbols in user 
-space, using a hopefully matching /vmunix. Linux was first to feature an 
-in-kernel linker and symbol table, IIRC.
+> Right.  But the devil is in the details, and (as you correctly point
+> out later) to implement this, the whole locking scheme needs to be
+> overhauled.  Problems:
+>
+>  - Using the queue lock to make the dequeue and the fd detach atomic
+>    wrt the GC is difficult, if not impossible: they are are far from
+>    each other with various magic in between.  It would need thorough
+>    understanding of these functions and _big_ changes to implement.
+>
+>  - Sleeping on u->readlock in GC is currently not possible, since that
+>    could deadlock with unix_dgram_recvmsg().  That function could
+>    probably be modified to release u->readlock, while waiting for
+>    data, similarly to unix_stream_recvmsg() at the cost of some added
+>    complexity.
+>
+>  - Sleeping on u->readlock is also impossible, because GC is holding
+>    unix_table_lock for the whole operation.  We could release
+>    unix_table_lock, but then would have to cope with sockets coming
+>    and going, making the current socket iterator unworkable.
+>
+> So theoretically it's quite simple, but it needs big changes.  And
+> this wouldn't even solve all the problems with the GC, like being a
+> possible DoS vector.
 
-	Torsten
+Making the GC fully incremental will solve the DoS vector problem as
+well.  Basically you do a fixed amount of reclaim in the new socket
+allocation code.
+
+It appears clear that since we can't stop the world and garbage
+collect we need an incremental collector.
+
+Eric
