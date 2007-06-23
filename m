@@ -1,68 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbXFWG56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbXFWHDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbXFWG56 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 02:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbXFWG5u
+	id S1753420AbXFWHDv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 03:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXFWHDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 02:57:50 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:21492 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413AbXFWG5u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 02:57:50 -0400
-Date: Sat, 23 Jun 2007 08:57:48 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Trent Piepho <xyzzy@speakeasy.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>, toralf.foerster@gmx.de,
-       Oliver Neukum <oneukum@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Luca Risolia <luca.risolia@studio.unibo.it>
-Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re:
- [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
-In-Reply-To: <Pine.LNX.4.64.0706230216140.1817@scrub.home>
-Message-ID: <Pine.LNX.4.64.0706230855180.26568@fbirervta.pbzchgretzou.qr>
-References: <200706211117.55908.toralf.foerster@gmx.de> 
- <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net> 
- <a781481a0706221420u6935e75er1ee5601e013b40d2@mail.gmail.com> 
- <Pine.LNX.4.64.0706222336210.1817@scrub.home> 
- <a781481a0706221501s4887f88bh3b8cc549deb6886e@mail.gmail.com> 
- <Pine.LNX.4.64.0706230017430.1817@scrub.home> 
- <a781481a0706221533j34c341c5gf7ff92997e2463a6@mail.gmail.com> 
- <Pine.LNX.4.64.0706230049480.1817@scrub.home> 
- <a781481a0706221626q17f533ccnac09b2cc7c89126d@mail.gmail.com> 
- <Pine.LNX.4.64.0706230137090.1817@scrub.home>
- <a781481a0706221649j19f9ce2apcf295ddf9530da1e@mail.gmail.com>
- <Pine.LNX.4.64.0706230216140.1817@scrub.home>
+	Sat, 23 Jun 2007 03:03:42 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36236 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751584AbXFWHDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 03:03:41 -0400
+Message-ID: <467CC5C5.6040201@garzik.org>
+Date: Sat, 23 Jun 2007 03:03:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Carlo Wood <carlo@alinoe.com>
+CC: Tejun Heo <htejun@gmail.com>, Manoj Kasichainula <manoj@io.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: SATA RAID5 speed drop of 100 MB/s
+References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <20070622214859.GC6970@alinoe.com>
+In-Reply-To: <20070622214859.GC6970@alinoe.com>
+Content-Type: multipart/mixed;
+ boundary="------------030600080503070105010006"
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------030600080503070105010006
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Jun 23 2007 02:26, Roman Zippel wrote:
->On Sat, 23 Jun 2007, Satyam Sharma wrote:
->
->> But why? Let it do just one thing, and do it well. Is their
->> any requirement anywhere that requires us to give a dual
->> meaning to these menuconfig objects -- i.e. to also control
->> the inclusion / exclusion of code from the kernel as well as
->> also for the presentation + user interface purpose that it
->> currently serves?
->
->This getting ridiculous. :-(
->You're the one who is attaching a new meaning to it.
->Any config symbol has multiple meanings depending on the context, the menu 
->property only changes _one_ of them, you want to drastically redefine it 
->and that's not going to happen.
+Carlo Wood wrote:
+> The dmesg output of 33480a0ede8dcc7e6483054279008f972bd56fd3 (thus
+> "before") is:
+[...]
+> And the dmesg output of 551c012d7eea3dc5ec063c7ff9c718d39e77634f (thus
+> "after") is:
+[...]
 
-Would it make sense to define a new entity called "configmenu" (or something
-else) that is equivalent to menuconfig with the following changes?
+Your disk configurations are quite radically different between the two 
+kernels (see attached diff for key highlights).
 
- * it creates a CM_ variable instead of a CONFIG_ one
- * the CM_ symbols are not available to Makefiles or C files
-   (so in fact, just to menuconfig and that they are listed in .config)
+The new behavior of the more recent kernel (551c012d7...) is that it now 
+fully drives your hardware :)  The reset problems go away, NCQ is 
+enabled, and if you had 3.0Gbps drives (you don't) they would be driven 
+at a faster speed.
+
+Given that some drives might be better tuned for benchmarks in 
+non-queued mode, and that a major behavior difference is that your 
+drives are now NCQ-enabled, the first thing I would suggest you try is 
+disabling NCQ:
+	http://linux-ata.org/faq.html#ncq
+
+Other indicators are the other changes in the "ahci 0000:00:1f.2: 
+flags:" line, which do affect other behaviors, though none so important 
+to RAID5 performance as NCQ, I would think.
+
+Turning on NCQ also potentially affects barrier behavior in RAID, though 
+I'm guessing that is not a factor here.
+
+	Jeff
 
 
-	Jan
--- 
+
+--------------030600080503070105010006
+Content-Type: text/plain;
+ name="diff.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff.txt"
+
+-ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 6 ports ? Gbps 0x3f impl SATA mode
+-ahci 0000:00:1f.2: flags: 64bit ilck stag led pmp pio 
++ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 6 ports 3 Gbps 0x3f impl SATA mode
++ahci 0000:00:1f.2: flags: 64bit ncq ilck stag pm led clo pmp pio slum part 
+ scsi0 : ahci
+-ata1: softreset failed (port busy but CLO unavailable)
+-ata1: softreset failed, retrying in 5 secs
+ ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+-ata1.00: ATA-7, max UDMA/133, 145226112 sectors: LBA48 NCQ (depth 0/32)
++ata1.00: ATA-7, max UDMA/133, 145226112 sectors: LBA48 NCQ (depth 31/32)
+ ata1.00: ata1: dev 0 multi count 0
+ ata1.00: configured for UDMA/133
+ scsi1 : ahci
+-ata2: softreset failed (port busy but CLO unavailable)
+-ata2: softreset failed, retrying in 5 secs
+ ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+-ata2.00: ATA-7, max UDMA/133, 145226112 sectors: LBA48 NCQ (depth 0/32)
++ata2.00: ATA-7, max UDMA/133, 145226112 sectors: LBA48 NCQ (depth 31/32)
+ ata2.00: ata2: dev 0 multi count 0
+ ata2.00: configured for UDMA/133
+ scsi2 : ahci
+ ata3: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+-ata3.00: ATA-7, max UDMA/133, 145226112 sectors: LBA48 NCQ (depth 0/32)
++ata3.00: ATA-7, max UDMA/133, 145226112 sectors: LBA48 NCQ (depth 31/32)
+ ata3.00: ata3: dev 0 multi count 0
+ ata3.00: configured for UDMA/133
+ scsi3 : ahci
+ ata4: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+-ata4.00: ATA-7, max UDMA/133, 625142448 sectors: LBA48 NCQ (depth 0/32)
++ata4.00: ATA-7, max UDMA/133, 625142448 sectors: LBA48 NCQ (depth 31/32)
+ ata4.00: configured for UDMA/133
+ scsi4 : ahci
+ ata5: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+
+--------------030600080503070105010006--
