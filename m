@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbXFWD4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752027AbXFWEE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbXFWD4z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 23:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXFWD4r
+	id S1752027AbXFWEE6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 00:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbXFWEEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 23:56:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:44311 "EHLO ozlabs.org"
+	Sat, 23 Jun 2007 00:04:49 -0400
+Received: from ozlabs.org ([203.10.76.45]:55498 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbXFWD4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 23:56:46 -0400
+	id S1750810AbXFWEEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 00:04:49 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18044.39404.380472.887065@cargo.ozlabs.ibm.com>
-Date: Sat, 23 Jun 2007 13:56:28 +1000
+Message-ID: <18044.39897.718750.969247@cargo.ozlabs.ibm.com>
+Date: Sat, 23 Jun 2007 14:04:41 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: David Woodhouse <dwmw2@infradead.org>, Adrian Bunk <bunk@stusta.de>,
-       bzolnier@gmail.com, linux-ide@vger.kernel.org,
+To: Dave Hansen <hansendc@us.ibm.com>
+Cc: Joel Schopp <jschopp@austin.ibm.com>, Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
        linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] schedule BLK_DEV_IDE_SATA for removal
-In-Reply-To: <20070622101019.0f3b0d3d@the-village.bc.nu>
-References: <20070621235211.GH23017@stusta.de>
-	<1182483586.10524.33.camel@shinybook.infradead.org>
-	<20070622101019.0f3b0d3d@the-village.bc.nu>
+Subject: Re: [PATCH] update checkpatch.pl to version 0.06
+In-Reply-To: <1182535330.26162.50.camel@localhost>
+References: <e12915ec7c0cfcb5d6a7c4432f458161@pinky>
+	<1182532151.26162.45.camel@localhost>
+	<467C0CE9.5010502@austin.ibm.com>
+	<1182535330.26162.50.camel@localhost>
 X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox writes:
+Dave Hansen writes:
 
-> On Fri, 22 Jun 2007 11:39:45 +0800
-> David Woodhouse <dwmw2@infradead.org> wrote:
-> 
-> > On Fri, 2007-06-22 at 01:52 +0200, Adrian Bunk wrote:
-> > > Users should use the libata based drivers for SATA drives.
-> > 
-> > NAK. Not all IDE drivers are converted yet. Not even all the relatively
-> > common ones.
-> 
-> All the common SATA ones are. Just the PowerPC people are falling behind.
-> Really we should obsolete powerpc instead ;)
+> Several of our on-disk filesystems have an ioctl function that already
+> has indented goto labels.  I don't think it's quite worth churning all
+> of these (working) filesystems to make a style checker happy.
 
-What SATA drive uses a non-libata driver on PowerPC?  In fact the
-sata_svw driver used for SATA drives on G5s was one of the early
-libata drivers.  Or are you talking about PATA?
+I agree.
+
+> I think it's worse style to be mixing label indentation in a file as it
+> is to create new "correct" indentation labels.  That's why I suggested
+> using context in the file to determine it rather than absolute rules.
+
+I don't think indentation of labels is something one can or should be
+too prescriptive about.  As you say, it depends on the context.
+
+Having a script being fascist about such things makes it useless,
+because I for one will just start ignoring the script totally.
 
 Paul.
