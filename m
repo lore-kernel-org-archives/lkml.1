@@ -1,24 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbXFWQwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbXFWQxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760828AbXFWQwo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 12:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759931AbXFWQwg
+	id S1760984AbXFWQxH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 12:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbXFWQwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 12:52:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35101 "EHLO
+	Sat, 23 Jun 2007 12:52:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56406 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755313AbXFWQwf (ORCPT
+	by vger.kernel.org with ESMTP id S1760184AbXFWQwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 12:52:35 -0400
-Date: Sat, 23 Jun 2007 09:51:53 -0700
+	Sat, 23 Jun 2007 12:52:54 -0400
+Date: Sat, 23 Jun 2007 09:52:03 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Tony Jones <tonyj@suse.de>
-Cc: linux-audit@redhat.com, linux-kernel@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 1/1] audit: fix oops removing watch if audit disabled
-Message-Id: <20070623095153.279c1194.akpm@linux-foundation.org>
-In-Reply-To: <20070620223820.GA16416@suse.de>
-References: <20070620223820.GA16416@suse.de>
+To: Wang Zhenyu <zhenyu.z.wang@intel.com>
+Cc: davej@redhat.com, carlo@alinoe.com, linux-kernel@vger.kernel.org,
+       eric@anholt.net
+Subject: Re: [PATCH][AGPGART] intel_agp: don't load if no IGD and AGP port
+Message-Id: <20070623095203.66bb8572.akpm@linux-foundation.org>
+In-Reply-To: <20070621054318.GA31381@zhen-devel.sh.intel.com>
+References: <alpine.LFD.0.98.0706181127380.14121@woody.linux-foundation.org>
+	<20070618195415.GA7481@alinoe.com>
+	<alpine.LFD.0.98.0706181332400.3593@woody.linux-foundation.org>
+	<20070618225009.GE13538@alinoe.com>
+	<alpine.LFD.0.98.0706181553450.3593@woody.linux-foundation.org>
+	<20070619233716.GA5779@alinoe.com>
+	<20070620011521.GB2856@zhen-devel.sh.intel.com>
+	<20070620014227.GA4090@zhen-devel.sh.intel.com>
+	<20070620140237.GB5524@alinoe.com>
+	<20070620154610.GA2802@localhost.localdomain>
+	<20070621054318.GA31381@zhen-devel.sh.intel.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,32 +36,25 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 20 Jun 2007 15:38:20 -0700 Tony Jones <tonyj@suse.de> wrote:
-> Removing a watched file will oops if audit is disabled (auditctl -e 0).
+> On Thu, 21 Jun 2007 13:43:18 +0800 Wang Zhenyu <zhenyu.z.wang@intel.com> wrote:
+> Thanks Carlo to report this problem. The following patch should fix
+> his and potential issue.
 > 
-> To reproduce:
-> - auditctl -e 1
-> - touch /tmp/foo
-> - auditctl -w /tmp/foo
-> - auditctl -e 0
-> - rm /tmp/foo (or mv)
+> [AGPGART] intel_agp: don't load if no IGD detected and no AGP port
 > 
-> Signed-off-by: Tony Jones <tonyj@suse.de>
-> ---
+> After i915 chip, GMCH has no AGP port. Origin bridge driver in device
+> table will try to access illegal regs like APBASE, APSIZE, etc. This
+> may cause problem.
 > 
-> diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-> index 74cc0fc..ce61f42 100644
-> --- a/kernel/auditfilter.c
-> +++ b/kernel/auditfilter.c
-> @@ -947,7 +947,7 @@ static void audit_update_watch(struct au
->  
->  		/* If the update involves invalidating rules, do the inode-based
->  		 * filtering now, so we don't omit records. */
-> -		if (invalidating &&
-> +		if (invalidating && current->audit_context &&
->  		    audit_filter_inodes(current, current->audit_context) == AUDIT_RECORD_CONTEXT)
->  			audit_set_auditable(current->audit_context);
+> So mark them as NULL in the table, we won't load if no IGD got detect
+> and bridge has no AGP port.
 
-This looks like 2.6.22 material to me.
+Looking at the above, I have no way of telling what the actual bug is, nor
+have I any way of telling what the consequences would be of not having this
+patch in 2.6.22.  Nor can I tell whether we want it in 2.6.21.x.
 
-Question is: is it also 2.6.21.x material?
+I probably _could_ work this out, and kinda did with a bit of list-trolling
+(verdict: needed in 2.6.22) but please, take care to describe the
+importance of a patch in the changelog?
+
+Thanks.
