@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbXFWD4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbXFWD4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbXFWD4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jun 2007 23:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXFWD4G
+	id S1752731AbXFWD4z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jun 2007 23:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbXFWD4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jun 2007 23:56:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49358 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750925AbXFWD4E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jun 2007 23:56:04 -0400
-Date: Fri, 22 Jun 2007 20:55:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: lenb@kernel.org, andreas.herrmann3@amd.com, swhiteho@redhat.com,
-       ak@suse.de, shai@scalex86.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 7/12] acpi: fix another compile warning
-Message-Id: <20070622205530.964ebef9.akpm@linux-foundation.org>
-In-Reply-To: <20070620182548.GA561@localdomain>
-References: <20070619225035.GI5193@alberich.amd.com>
-	<200706192338.02807.lenb@kernel.org>
-	<20070620084911.GO5193@alberich.amd.com>
-	<200706200936.31236.lenb@kernel.org>
-	<20070620182548.GA561@localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Jun 2007 23:56:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:44311 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750936AbXFWD4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Jun 2007 23:56:46 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18044.39404.380472.887065@cargo.ozlabs.ibm.com>
+Date: Sat, 23 Jun 2007 13:56:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Woodhouse <dwmw2@infradead.org>, Adrian Bunk <bunk@stusta.de>,
+       bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] schedule BLK_DEV_IDE_SATA for removal
+In-Reply-To: <20070622101019.0f3b0d3d@the-village.bc.nu>
+References: <20070621235211.GH23017@stusta.de>
+	<1182483586.10524.33.camel@shinybook.infradead.org>
+	<20070622101019.0f3b0d3d@the-village.bc.nu>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 20 Jun 2007 11:25:48 -0700 Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
-> Paper over 'select' inadequacies.  
+Alan Cox writes:
+
+> On Fri, 22 Jun 2007 11:39:45 +0800
+> David Woodhouse <dwmw2@infradead.org> wrote:
 > 
-> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> > On Fri, 2007-06-22 at 01:52 +0200, Adrian Bunk wrote:
+> > > Users should use the libata based drivers for SATA drives.
+> > 
+> > NAK. Not all IDE drivers are converted yet. Not even all the relatively
+> > common ones.
 > 
-> Index: linux-2.6.22-rc5/arch/x86_64/Kconfig
-> ===================================================================
-> --- linux-2.6.22-rc5.orig/arch/x86_64/Kconfig	2007-06-18 16:02:19.571323415 -0700
-> +++ linux-2.6.22-rc5/arch/x86_64/Kconfig	2007-06-20 11:34:29.845354250 -0700
-> @@ -366,6 +366,7 @@ config X86_64_ACPI_NUMA
->         depends on NUMA
->         select ACPI 
->  	select PCI
-> +  	select PM
->         select ACPI_NUMA
->         default y
->         help
+> All the common SATA ones are. Just the PowerPC people are falling behind.
+> Really we should obsolete powerpc instead ;)
 
-argh.  (and not just argh-at-your-email-client).
+What SATA drive uses a non-libata driver on PowerPC?  In fact the
+sata_svw driver used for SATA drives on G5s was one of the early
+libata drivers.  Or are you talking about PATA?
 
-I went through some hair-tearing a few months ago working out why it is so
-damn hard to make CONFIG_PM go away and then I fixed it.  And now you're
-proposing a change which would reinstate the obnoxious old behaviour.
-
-Is the "bug" which you're "fixing" here caused by the randconfig
-inadequacies?  Because randconfig is just busted and simply should auto-run
-oldconfig.
+Paul.
