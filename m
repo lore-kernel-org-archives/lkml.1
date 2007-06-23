@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbXFWRDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761214AbXFWRFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760909AbXFWRDJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 13:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXFWRC5
+	id S1761214AbXFWRFO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 13:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759969AbXFWRFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 13:02:57 -0400
-Received: from qb-out-0506.google.com ([72.14.204.224]:60261 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbXFWRC5 (ORCPT
+	Sat, 23 Jun 2007 13:05:01 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46277 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759151AbXFWRFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 13:02:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SKjQ2bSO5CCaw8AcMyOZi6/xqHQ1K/qwvCQNsptpAWXpiX2gAUSs6+hPo7MdB+YaA821ZdaKfSPcR02qTleyaCMGw3wjrxPx8mce7eMFxigdoJk+0qiLU15qJj3/3VobdBn4/2Rv07Fu5h4RrM9paf3n938wAft0I4GbmbVRpHc=
-Message-ID: <a781481a0706231002jf4467ebja6c28e3e242ceb76@mail.gmail.com>
-Date: Sat, 23 Jun 2007 22:32:55 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: "upping" a semaphore from interrupt context?
-Cc: "Arnd Bergmann" <arnd@arndb.de>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Florin Iucha" <florin@iucha.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200706231752.08494.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 23 Jun 2007 13:05:00 -0400
+Date: Sat, 23 Jun 2007 09:54:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: linux-kernel@vger.kernel.org, kraxel@bytesex.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>, stable@kernel.org
+Subject: Re: [PATCH] saa7134: fix thread shutdown handling
+Message-Id: <20070623095426.6049f883.akpm@linux-foundation.org>
+In-Reply-To: <467AC742.7070007@suse.com>
+References: <467AC742.7070007@suse.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070622173839.GB8398@iucha.net>
-	 <200706231402.03617.arnd@arndb.de>
-	 <a781481a0706230842l141cf400tb2f5645b6b6537fe@mail.gmail.com>
-	 <200706231752.08494.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/23/07, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Samstag, 23. Juni 2007 schrieb Satyam Sharma:
-> > * 3. set up a timer and schedule another function to service the
-> > * interrupt / do what needs to be done then, hopefully the mutex
-> > * would be uncontended then => *gargh*
->
-> You could use schedule_work(). However then why not use it always.
-> This would make sense if what you want to do is outright trivial.
+> On Thu, 21 Jun 2007 14:45:22 -0400 Jeff Mahoney <jeffm@suse.com> wrote:
+>  This patch changes the test for the thread pid from >= 0 to > 0.
+> 
+>  When the saa8134 driver initialization fails after a certain point,
+>  it goes through the complete shutdown process for the driver. Part
+>  of shutting it down includes tearing down the thread for tv audio.
+> 
+>  The test for tearing down the thread tests for >= 0. Since the dev
+>  structure is kzalloc'd, the test will always be true if we haven't
+>  tried to start the thread yet. We end up waiting on pid 0 to complete,
+>  which will never happen, so we lock up.
+> 
+>  This bug was observed in Novell Bugzilla 284718, when request_irq()
+>  failed.
+> 
+> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+> 
+> ---
+> 
+>  drivers/media/video/saa7134/saa7134-tvaudio.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/drivers/media/video/saa7134/saa7134-tvaudio.c	2007-06-12 15:45:16.000000000 -0400
+> +++ b/drivers/media/video/saa7134/saa7134-tvaudio.c	2007-06-15 14:16:14.000000000 -0400
+> @@ -1005,7 +1005,7 @@
+>  int saa7134_tvaudio_fini(struct saa7134_dev *dev)
+>  {
+>  	/* shutdown tvaudio thread */
+> -	if (dev->thread.pid >= 0) {
+> +	if (dev->thread.pid > 0) {
+>  		dev->thread.shutdown = 1;
+>  		wake_up_interruptible(&dev->thread.wq);
+>  		wait_for_completion(&dev->thread.exit);
+> 
 
-If you use schedule_work() to pass off work from interrupt context
-to process context, then you wouldn't be calling down_trylock()
-from interrupt context in the first place (which is what is being
-discussed here). You would simply pass off the entire code that
-uses the shared data (and wraps a *proper* down() or mutex_lock()
-around it, not the _trylock() variant) to the workqueue.
+This is no longer applicable to the dvb devel tree, because this code has
+been converted to the kthread API.
 
-Also, that is precisely my point too. What I'm saying is that it is
-generally poor design to be wanting to use the _trylock() variant
-of semaphore / mutex in interrupt context. Workqueues _are_ the
-preferred mechanism to use for (most) such cases where you need
-to do something that may require you to sleep.
+However I guess we do want this in 2.6.22 and in 2.6.21.x.  Mauro, if
+that's OK, do you want me to do the merges?
 
-Satyam
