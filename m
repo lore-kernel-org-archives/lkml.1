@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbXFXTmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbXFXToY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755655AbXFXTmS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXFXTmK
+	id S1754810AbXFXToY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbXFXToR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:42:10 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:65235 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbXFXTmI (ORCPT
+	Sun, 24 Jun 2007 15:44:17 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:21916 "EHLO
+	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750881AbXFXToQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:42:08 -0400
-Date: Sun, 24 Jun 2007 13:42:01 -0600
+	Sun, 24 Jun 2007 15:44:16 -0400
+Date: Sun, 24 Jun 2007 13:44:06 -0600
 From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: hsm violation
-In-reply-to: <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: enricoss@tiscali.it, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Tejun Heo <htejun@gmail.com>
-Message-id: <467EC909.9040006@shaw.ca>
+Subject: Re: character driver over PCI
+In-reply-to: <1182686296.981507.296500@z28g2000prd.googlegroups.com>
+To: ats <atita84@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Message-id: <467EC986.7040300@shaw.ca>
 MIME-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1; format=flowed
 Content-transfer-encoding: 7bit
-References: <fa.sspu6LOivd/touNtS2IsMKPqHa0@ifi.uio.no>
- <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no>
+References: <1182686296.981507.296500@z28g2000prd.googlegroups.com>
 User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sun, 24 Jun 2007 14:32:22 +0200 Enrico Sardi <enricoss@tiscali.it> wrote:
->> [   61.176000] ata1.00: exception Emask 0x2 SAct 0x2 SErr 0x0 action 0x2 
->> frozen
->> [   61.176000] ata1.00: (spurious completions during NCQ issue=0x0 
->> SAct=0x2 FIS=005040a1:00000004)
-
-..
-
+ats wrote:
+>  have a  wireless network card over PCMCIA....i need to just access
+> the registers of this card and pass this register details to the user
+> application.Since i will not connect to the network at this stage i
+> preferred bypassing the network stack.Hence instead of a network
+> driver i went ahead writing a character driver.
 > 
-> It's not obvious (to me) whether this is a driver bug, a hardware bug,
-> expected-normal-behaviour or what - those diagnostics (which we get to
-> see distressingly frequently) are pretty obscure.
+> 
+> I inserted the PCI module using insmod..That called PCI
+> probe....Inside PCI probe i registered by character driver by calling
+> register_chrdev().And i remapped the card memory by calling the
+> following sequence of functions.
+> 
+> 
+> pci_resource_start
+> request_mem_region
+> ioremap
+> 
+> Then i created a device using mknod and called the open function of
+> the character driver.....Till here everything works fine....
+> 
+> 
+> Once the device opened i made a readl call to read the mapped
+> memory..This fails..It gives me a segmentation fault.....If i call
+> readl in the probe function it works fine and reads the memory at that
+> location..However this call fails in open..What can be the reason...
+> 
+> Have i proceeded the right way....Are there any additional things to
+> be set..Am working on linux 2.6 kernel
+> 
+> Attached below is my prog
 
-The spurious completions during NCQ error is indicating that the drive 
-has indicated it's completed NCQ command tags which weren't outstanding. 
-  It's normally a result of a bad NCQ implementation on the drive. 
-Technically we can live with it, but it's rather dangerous (if it 
-indicates completions for non-outstanding commands, how do we know it 
-doesn't indicate completions for actually outstanding commands that 
-aren't actually completed yet..)
+I don't see where it is trying to read anything in this code. The way in 
+which you're doing that is likely the problem..
 
 -- 
 Robert Hancock      Saskatoon, SK, Canada
