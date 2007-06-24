@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbXFXQYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbXFXQ1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbXFXQYf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 12:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbXFXQY2
+	id S1752954AbXFXQ1R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 12:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXFXQ1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 12:24:28 -0400
-Received: from khc.piap.pl ([195.187.100.11]:59414 "EHLO khc.piap.pl"
+	Sun, 24 Jun 2007 12:27:10 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4561 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750970AbXFXQY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 12:24:28 -0400
-To: pharon@gmail.com
-Cc: Clemens Koller <clemens.koller@anagramm.de>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Dual slot PCI riser messes up ivtv
-References: <fa.ELPuDi4dcntxF8hk4oCNldcvgoc@ifi.uio.no>
-	<467A89D4.6080607@shaw.ca> <4683D4A0.3000100@anagramm.de>
-	<20070621162654.GA10008@csclub.uwaterloo.ca>
-	<4683EA26.6030306@anagramm.de> <1182695244.6316.11.camel@iamer-laptop>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 24 Jun 2007 18:24:24 +0200
-In-Reply-To: <1182695244.6316.11.camel@iamer-laptop> (Islam Amer's message of "Sun, 24 Jun 2007 17:27:24 +0300")
-Message-ID: <m3y7i9xqvb.fsf@maximus.localdomain>
+	id S1751314AbXFXQ1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 12:27:09 -0400
+Date: Sun, 24 Jun 2007 18:27:25 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Wyatt Banks <wyatt@banksresearch.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HFSPlus: simplify inode mode settting logic
+In-Reply-To: <467DACCA.7070002@banksresearch.com>
+Message-ID: <Pine.LNX.4.64.0706241825230.1817@scrub.home>
+References: <467DACCA.7070002@banksresearch.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Islam Amer <pharon@gmail.com> writes:
+Hi,
 
-> First the riser card is a dual slot one , with a chip on it so I assumed
-> it is active.
+On Sat, 23 Jun 2007, Wyatt Banks wrote:
 
-Perhaps REQ/GNT arbiter. A PCI-PCI bridge is a 100+ pin chip.
+> Besides this redundancy, mode is the BSD file type and mode
+> bits (see Apple TechNote 1150 for details) and is never 0.
 
-> Third : The bug lies in the situation where the PVR-150 card is in the
-> upper slot and the DVB card is in the lower slot, in which case the DVB
-> card does not work. That was the dmesg output I posted earlier.
+This is wrong, there is an extra note:
 
-Interesting, the lower slot is probably wired directly to edge
-connector so it should work. The upper connector should be the
-problematic.
--- 
-Krzysztof Halasa
+"If the S_IFMT field (upper 4 bits) of the fileMode field is zero, then 
+Mac OS X assumes that the permissions structure is uninitialized"
+
+bye, Roman
