@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbXFXWe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbXFXWhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752781AbXFXWe3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 18:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXFXWeW
+	id S1753248AbXFXWhz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 18:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbXFXWhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 18:34:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:3818 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbXFXWeV (ORCPT
+	Sun, 24 Jun 2007 18:37:48 -0400
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:44797 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbXFXWhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 18:34:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=kRBRxI9Y++Yfx3BZRvxoN398ey4XnD/C+yVsxfifsQsxdH3CkKyCUhtqLl6BKuF8zl4pWSvie0krn2j3qz9OY/UHT93oA7ONwrEOQEY/RHp67hyS6oxNOTldgTSuINCrOzpeWJLBCtxx8mT/j21tRZhBZ7LpEXhp+IUW7SCW+BY=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: isdn4linux@listserv.isdn4linux.de
-Subject: [PATCH] Guard against a potential NULL pointer dereference in old_capi_manufacturer()
-Date: Mon, 25 Jun 2007 00:34:21 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Carsten Paeth <calle@calle.de>,
-       Kai Germaschewski <kai@germaschewski.name>,
-       Karsten Keil <kkeil@suse.de>,
-       Kai Germaschewski <kai.germaschewski@gmx.de>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Sun, 24 Jun 2007 18:37:47 -0400
+Date: Sun, 24 Jun 2007 18:37:44 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: Chris Wright <chrisw@sous-sol.org>
+cc: linux-security-module@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH][RFC] security: Convert LSM into a static interface
+In-Reply-To: <20070624220903.GB3723@sequoia.sous-sol.org>
+Message-ID: <Line.LNX.4.64.0706241836270.14363@localhost.localdomain>
+References: <20070617135239.GA17689@sergelap> <4676007F.7060503@kernel.org>
+ <20070618044017.GW3723@sequoia.sous-sol.org> <20070620171037.GA28670@sergelap.ibm.com>
+ <20070620174613.GF3723@sequoia.sous-sol.org> <20070621160011.GB9913@sergelap.austin.ibm.com>
+ <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com>
+ <Line.LNX.4.64.0706241158320.12660@localhost.localdomain>
+ <Line.LNX.4.64.0706241653490.14183@localhost.localdomain>
+ <20070624220903.GB3723@sequoia.sous-sol.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706250034.21389.jesper.juhl@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In drivers/isdn/capi/kcapi.c::old_capi_manufacturer(), if the call 
-to get_capi_ctr_by_nr(ldef.contr); in line 823 returns NULL, then 
-we'll be dereferencing a NULL pointer in the very next line.
+On Sun, 24 Jun 2007, Chris Wright wrote:
 
-(Found by Coverity checker as bug #402)
+> * James Morris (jmorris@namei.org) wrote:
+> > -module_param_named(disable, capability_disable, int, 0);
+> > -MODULE_PARM_DESC(disable, "To disable capabilities module set disable = 1");
+> > +
+> > +static int __init capability_disable_setup(char *str)
+> > +{
+> > +	capability_disable = simple_strtol(str, NULL, 0);
+> > +	return 1;
+> > +}
+> > +__setup("capability_disable=", capability_disable_setup);
+> 
+> This changes the command line argument.  Other than that and a some
+> sanity testing I'll take this.
+
+Do you mean the name change, or the logic?
+
+The name needs to change because kernel parameters are in a global 
+namespace.
+
+If the logic has changed, I'm missing something :-)
 
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- drivers/isdn/capi/kcapi.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
-index 3ed34f7..3f9e962 100644
---- a/drivers/isdn/capi/kcapi.c
-+++ b/drivers/isdn/capi/kcapi.c
-@@ -821,6 +821,8 @@ static int old_capi_manufacturer(unsigned int cmd, void 
-__user *data)
- 				return -EFAULT;
- 		}
- 		card = get_capi_ctr_by_nr(ldef.contr);
-+		if (!card)
-+			return -EINVAL;
- 		card = capi_ctr_get(card);
- 		if (!card)
- 			return -ESRCH;
+-- 
+James Morris
+<jmorris@namei.org>
