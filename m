@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbXFXV3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbXFXV3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbXFXV3R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 17:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbXFXV3J
+	id S1754556AbXFXV3g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 17:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXFXV3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 17:29:09 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:3636 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbXFXV3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 17:29:07 -0400
-Date: Sun, 24 Jun 2007 23:29:06 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Salvatore De Paolis <depaolis.salvatore@libero.it>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: pivot_root alternative
-In-Reply-To: <20070624232734.28829225@debian>
-Message-ID: <Pine.LNX.4.64.0706242328520.11964@fbirervta.pbzchgretzou.qr>
-References: <20070624232734.28829225@debian>
+	Sun, 24 Jun 2007 17:29:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37132 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754056AbXFXV3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 17:29:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: Failure to properly reinit i8042 post suspend-to-ram
+Date: Sun, 24 Jun 2007 23:03:20 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, dmitry.torokhov@gmail.com
+References: <200706221607.33274.nigel@nigel.suspend2.net>
+In-Reply-To: <200706221607.33274.nigel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706242303.21065.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Jun 24 2007 23:27, Salvatore De Paolis wrote:
->
->i built the kernel with a busybox initramfs which runs from a usb stick. While
->i boot i need to mount the real root and i'm using pivot_root.
->Pivot_root . old-root return to me an "Invalid argument" error and googling i
->found here http://lkml.org/lkml/2005/10/8/17 that pivot_root should be avoided.
->I want to ask now what i should do to switch to a real root?
+On Friday, 22 June 2007 08:07, Nigel Cunningham wrote:
+> Hi.
+> 
+> I have recently begun to try and use suspend to ram more, and have an 
+> intermittent problem. Actually, it's a couple of (possibly related) problems, 
+> but I'll start with the one that's easiest.
+> 
+> Sometimes, when I resume, the keyboard stops responding. I then need to hold 
+> down the power button for 4 seconds. At the next boot, things are still not 
+> right. The i8042 controller seems to be confused about it's mode, because I 
+> get the following differences in dmesg to a 'normal' boot:
 
-use run-init from klibc?
+Well, I'm afraid no one has any idea.
+
+I think you can file a bug report with the kernel bugzilla.
+
+Greetings,
+Rafael
 
 
-	Jan
 -- 
+"Premature optimization is the root of all evil." - Donald Knuth
