@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbXFXSf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbXFXSnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753962AbXFXSf6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 14:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbXFXSft
+	id S1755523AbXFXSnX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 14:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbXFXSnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 14:35:49 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39256 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbXFXSfs (ORCPT
+	Sun, 24 Jun 2007 14:43:15 -0400
+Received: from fallback.us4.outblaze.com ([205.158.62.120]:54034 "EHLO
+	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbXFXSnO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 14:35:48 -0400
-Date: Sun, 24 Jun 2007 19:35:47 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070624183547.GA21478@ftp.linux.org.uk>
-References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 24 Jun 2007 14:43:14 -0400
+X-OB-Received: from unknown (205.158.62.62)
+  by wfilter2.us4.outblaze.com; 24 Jun 2007 18:35:26 -0000
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+From: "Ash Willis" <ashwillis@programmer.net>
+To: linux-kernel@vger.kernel.org
+Date: Sun, 24 Jun 2007 13:35:26 -0500
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+X-Originating-Ip: 212.139.44.104
+X-Originating-Server: ws1-7.us4.outblaze.com
+Message-Id: <20070624183526.B1E7F1158CD@ws1-7.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 11:04:57AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sun, 24 Jun 2007, Al Viro wrote:
-> > 
-> > Heh...  The first catches are lovely:
-> >                  struct fxsrAlignAssert {
-> >                          int _:!(offsetof(struct task_struct,
-> >                                          thread.i387.fxsave) & 15);
-> 
-> Ok, that's a bit odd.
-> 
-> > as an idiotic way to do BUILD_BUG() and
-> > #define _IOC_TYPECHECK(t) \
-> >         ((sizeof(t) == sizeof(t[1]) && \
-> >           sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
-> >           sizeof(t) : __invalid_size_argument_for_IOC)
-> > poisoning _IOW() et.al., so those who do something like
-> > 
-> > static const char *v4l1_ioctls[] = {
-> >         [_IOC_NR(VIDIOCGCAP)]       = "VIDIOCGCAP",
-> 
-> On the other hand, this one really does seem to be "nice".
+kloczek,
+The fact that it is now open source does mean that it's a suitable replacement.
 
-Why?  I'd say it's not better than BUILD_BUG_ON_ZERO() use
-instead of that ?:.   This code would remain unchanged; the
-entire reason why we run into problems is that a way to
-force an error at build time had produced something that
-was not a constant expression.  It's not a matter of having
-to change something in the users of that sucker (or _IOC_NR(), or
-_IOR(), or _IO()).  The code in question is there for one thing -
-to give (constant) sizeof(t) or an error if t doesn't look good for
-us.  That's all.  And we have a perfectly good way to do that...
+If you actually want a productive discussion, you'd be better off making an
+attempt at describing exactly _why_ ALSA is 'crap' and how in your opinion OSS
+overcomes ALSA's shortfalls.
 
-> I don't think it's a misfeature to be able to do "obvious compile-time 
-> constant optimizations" on initializer indexes. The bitfield size thing in 
-> some ways does do the same thing - it's clearly _odd_, but if I had my  
-> choice, I'd prefer a language that allows it over one that doesn't.
+IMHO, it would be far more realistic and managable to look at the OSS codebase
+and use it to make improvements to ALSA. I'm looking into one or two issues
+myself and I've mentioned looking at the OSS code for possible improvements on
+the alsa-devel list. I think it's generally agreed that OSS can't do much at all
+that ALSA doesn't already do. Sure, if you've been smoking crack, you might want
+to rip out ALSA and replace it with OSS to gain some minor functionality but
+you'd also lose functionality in the process.
 
-Er...  That's nice, assuming you don't suddenly run into "code with
-convoluted bunch of macros breaks on a different version of compiler
-and/or different CFLAGS".
+Unless you can describe how the actual architecture of ALSA is inferior and not
+just complain about some particular device not being fully supported, the best
+idea is clearly to port any lacking functionality from OSS -> ALSA. In the case
+that you can actually provide valid reasons for ALSA's inferiority, I shall
+respectfully eat my hat :)
 
-IOW, having the optimizer strength define the boundary between the programs
-that compile and ones that give an error is not a good idea, IMO.
+Either way, have bug reports been filed for areas of ALSA that you are unhappy
+with?
 
-Where do you place that boundary?  Is 0 && n good?  How about 0 & n?
-Or 0 * n?  Or n - n?  Or (n+1)-(n+1) from macro expansion?  Note that
-gcc does _not_ take the last one as integer constant expression, but
-happens to deal with the earlier ones.  OTOH, it does deal with n * m - n * m.
+Ash
 
-And I would not bet a dime on gcc versions being consistent with each other
-in that area.
+-- 
+Get a Free E-mail Account at Mail.com!
+Choose From 100+ Personalized Domains
+Visit http://www.mail.com today
 
-Now, there is one possible answer that makes some sense - allow removal
-of unevaluated parts in &&, || and ?:.  I can do that, but I'm not
-sure if it's actually worth doing.  The only case in the kernel tree
-become more readable with use of BUILD_BUG_ON_ZERO() anyway and I would
-be very surprised to find any real code where something of that kind
-would be a problem.
-
-> > Objections?  The only reason that doesn't break gcc to hell and back is
-> > that gcc has unfixed bugs in that area.  It certainly is not a valid C
-> > or even a remotely sane one.
-> 
-> I agree that it's obviously not "valid C", but I don't agree that it's not 
-> remotely sane. Why not allow that extension? 
-
-Because it's not well-defined and because having "let me check if this
-version of compiler will eat that" as the only way to tell if construct
-would be OK is not a good thing...
