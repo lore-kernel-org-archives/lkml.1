@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbXFXUUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbXFXUVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbXFXUUe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 16:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbXFXUT5
+	id S1755447AbXFXUVt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 16:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXFXUVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 16:19:57 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:50812 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752079AbXFXUTz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 16:19:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ABl8W1qwKS+Zet8dRKAnVB24TO2hNCd4n9/oAdu9XS0z89jiD1PS3wGgwMXVl35jkWvbojpYQ28BAkhYfe2jfJ2l4F8W3skTLjt2Ll1bumKTpV2PyfVE3tlAuMR6ryZTJn+lRDBBQQssJcITkvW6gRDZhDu7Uv60P8vKjvve/Fg=
-Message-ID: <7e63f56c0706241319i4c4c62e8keaaf8848d0b7e5c2@mail.gmail.com>
-Date: Sun, 24 Jun 2007 22:19:55 +0200
-From: "Robert Iakobashvili" <coroberti@gmail.com>
-To: djones@rossove.com
-Subject: Re: Scaling Max IP address limitation
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20070624110236.fa36b2f9.akpm@linux-foundation.org>
+	Sun, 24 Jun 2007 16:21:41 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60034 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751942AbXFXUVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 16:21:41 -0400
+Date: Sun, 24 Jun 2007 22:21:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [RC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
+Message-ID: <20070624202132.GC21757@elf.ucw.cz>
+References: <200706221647.50509.rjw@sisk.pl> <200706222347.55717.rjw@sisk.pl> <20070624170514.GA21757@elf.ucw.cz> <200706242226.39665.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <467EA7C1.4080006@rossove.com>
-	 <20070624110236.fa36b2f9.akpm@linux-foundation.org>
+In-Reply-To: <200706242226.39665.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, 24 Jun 2007 12:20:01 -0500 David Jones <djones@rossove.com> wrote:
-> > I am trying to add multiple IP addresses ( v6 ) to my FC7 box on eth0.
-> > But I am hitting a max limit of 4000 IP address . Seems like there is a
-> > limiting variable in linux kernel (which one? ) that prevents from
-> > adding more IP addresses than 4096. What do I need to change in Linux
-> > kernel  ( and then recompile ) to be able to add more IP addresses than
-> > 4K addresses per system? ..
+Hi!
 
-How are you doing this?
+> > > > > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+> > > > > versions of this patch and for very useful comments.
+> > > > ...
+> > > > > Reviewed-by: Pavel Machek <pavel@ucw.cz>
+> > > > 
+> > > > Eh, not sure this header is worth anything. Sometimes I'm lazy and
+> > > > stop when I see first problem.
+> > > > 
+> > > > >  	switch (action) {
+> > > > >  	case PM_HIBERNATION_PREPARE:
+> > > > >  	case PM_SUSPEND_PREPARE:
+> > > > >  		usermodehelper_disabled = 1;
+> > > > > -		return NOTIFY_OK;
+> > > > > +		retval = wait_event_timeout(running_helpers_waitq,
+> > > > > +					atomic_read(&running_helpers) == 0,
+> > > > 
+> > > > Are you sure here? What happens when atomic variable changes between
+> > > > the atomic_read and the function call?
+> > > 
+> > > Er, this is a macro. :-)
+> > > 
+> > > In fact we rely only on atomic_read(&running_helpers) being still zero after
+> > > helper_finished() has woken us up, but I think that's acceptable.
+> > > 
+> > > IOW, if the wait_event_timeout() returns with retval different from zero, this
+> > > means that atomic_read(&running_helpers) returned zero at one point after
+> > > we'd set usermodehelper_disabled, which is enough.  OTOH, if it doesn't
+> > 
+> > Ok, can you write short comment explaining that? /* We have set
+> > usermodehelper_disabled, so any new usermode helpers are not a problem
+> > */.
+> 
+> OK, please have a look at the updated patch below.
 
-Could it be some IPv6 issue like scope?
-
+ACK, and thanks for your patience.
+									Pavel
 
 -- 
-Sincerely,
-Robert Iakobashvili,
-coroberti %x40 gmail %x2e com
-...........................................................
-http://curl-loader.sourceforge.net
-A web testing and traffic generation tool.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
