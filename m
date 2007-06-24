@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbXFXPf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbXFXPnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756338AbXFXPf0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 11:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbXFXPfS
+	id S1756319AbXFXPnd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 11:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbXFXPnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 11:35:18 -0400
-Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:2367 "EHLO
-	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbXFXPfR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 11:35:17 -0400
-Message-ID: <467E8F2F.2090409@xs4all.nl>
-Date: Sun, 24 Jun 2007 17:35:11 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Folkert van Heusden <folkert@vanheusden.com>
-Subject: Re: 2.6.21.4: possible circular locking dependency detected
-References: <467AB953.9080106@xs4all.nl> <467ABCAD.7070304@xs4all.nl>
-In-Reply-To: <467ABCAD.7070304@xs4all.nl>
-X-Enigmail-Version: 0.95.1
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jun 2007 11:43:24 -0400
+Received: from vena.lwn.net ([206.168.112.25]:33147 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750927AbXFXPnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 11:43:23 -0400
+X-Greylist: delayed 1635 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jun 2007 11:43:23 EDT
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
+       kuznet@ms2.inr.ac.ru, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Fri, 22 Jun 2007 23:59:53 +0200."
+             <20070622215953.GA22917@elte.hu> 
+Date: Sun, 24 Jun 2007 09:16:07 -0600
+Message-ID: <10876.1182698167@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Udo van den Heuvel wrote:
-> Udo van den Heuvel wrote:
-> 
->> While copying a small file over to a windows box via cifs, once again I
->> got something like this:
-> 
-> Again with 2.6.21.5:
-> 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.21.5 #10
-> -------------------------------------------------------
-(cut)
+Ingo Molnar <mingo@elte.hu> wrote:
 
-There is a bugzilla entry with some more info.
-http://bugzilla.kernel.org/show_bug.cgi?id=8377
+> so how about the following, different approach: anyone who has a tasklet 
+> in any performance-sensitive codepath, please yell now.
 
-It looks like the bug has been there for a while. When will it go?
-Networking (at least) is not reliable in my situation.
+The cafe_ccic (OLPC) camera driver uses a tasklet to move frames out of
+the DMA buffers in the streaming I/O path.  With this change in place,
+I'd worry that the possibility of dropping frames would increase,
+especially considering that (1) this is running on OLPC hardware, and 
+(2) there is typically a streaming video application running in user
+space. 
 
+Obviously some testing is called for here.  I will make an attempt to do
+that testing, but the next few weeks involve some insane travel which
+will make that hard.  Stay tuned.
+
+Thanks,
+
+jon
+
+Jonathan Corbet / LWN.net / corbet@lwn.net
