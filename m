@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbXFXPxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbXFXPxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbXFXPxA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 11:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbXFXPww
+	id S1756822AbXFXPxU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 11:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbXFXPxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 11:52:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36079 "EHLO mx2.mail.elte.hu"
+	Sun, 24 Jun 2007 11:53:00 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:21797 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755302AbXFXPwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 11:52:51 -0400
-Date: Sun, 24 Jun 2007 17:52:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v18
-Message-ID: <20070624155214.GA11978@elte.hu>
-References: <20070622220202.GA16872@elte.hu> <20070623132418.GA32449@1wt.eu>
+	id S1755695AbXFXPw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 11:52:58 -0400
+Message-ID: <467E9356.1030200@msgid.tls.msk.ru>
+Date: Sun, 24 Jun 2007 19:52:54 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070623132418.GA32449@1wt.eu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Jeff Garzik <jeff@garzik.org>, Carlo Wood <carlo@alinoe.com>,
+       Tejun Heo <htejun@gmail.com>, Manoj Kasichainula <manoj@io.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: SATA RAID5 speed drop of 100 MB/s
+References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <20070622214859.GC6970@alinoe.com> <467CC5C5.6040201@garzik.org> <20070623125316.GB26672@alinoe.com> <467DA1F5.2060306@garzik.org> <467E5C5E.6000706@msgid.tls.msk.ru> <20070624125957.GA28067@gallifrey> <Pine.LNX.4.64.0706241021030.12207@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0706241021030.12207@p34.internal.lan>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Willy Tarreau <w@1wt.eu> wrote:
-
-> Today I had a little time to try CFS again (last time it was -v9!). I 
-> ran it on top of 2.6.20.14, and simply tried ocbench again. You 
-> remember ? With -v9, I ran 64 processes which all progressed very 
-> smoothly. With -v18, it's not the case anymore. When I run 64 
-> processes, only 7 of them show smooth rounds, while all the other ones 
-> are only updated once a second. Sometimes they only progress by one 
-> iteration, sometimes by a full round. Some are even updated once ever 
-> 2 seconds, because if I drag an xterm above them and quickly remove 
-> it, the xterm leaves a trace there for up to 2 seconds.
+Justin Piszcz wrote:
+> Don't forget about max_sectors_kb either (for all drives in the SW RAID5
+> array)
 > 
-> Also, only one of my 2 CPUs is used. I see the rq vary between 1 and 
-> 5, with a permanent 50% idle... :
+> max_sectors_kb = 8
+> $ dd if=/dev/zero of=file.out6 bs=1M count=10240
+> 10737418240 bytes (11 GB) copied, 55.4848 seconds, 194 MB/s
 > 
->    procs                      memory      swap          io     system      cpu
->  r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
->  1  0  0      0 874400   7864  90436    0    0     0     0  279  2204 50  0 50
->  3  0  0      0 874408   7864  90436    0    0     0     0  273  2122 50  1 50
->  1  0  0      0 874408   7864  90436    0    0     0     0  253  1660 49  1 50
->  3  0  0      0 874408   7864  90436    0    0     0     0  252  1977 50  0 50
->  2  0  0      0 874408   7864  90436    0    0     0     0  253  2274 49  1 50
->  3  0  0      0 874408   7864  90436    0    0     0     0  252  1846 49  1 50
->  1  0  0      0 874408   7864  90436    0    0     0     0  339  1782 49  1 50
-> 
-> I have no idea about what version brought that unexpected behaviour, 
-> but it's clearly something which needs to be tracked down.
+> max_sectors_kb = 128
+> 10737418240 bytes (11 GB) copied, 22.6298 seconds, 474 MB/s
 
-hm, the two problems might be related. Could you try v17 perhaps? In v18 
-i have 'unified' all the sched.c's between the various kernel releases, 
-maybe that brought in something unexpected on 2.6.20.14. (perhaps try 
-v2.6.21.5 based cfs too?)
+Well.  You're comparing something different.  Yes, this
+thread is about linux software raid5 in the first place,
+but I were commenting about [NT]CQ within a single drive.
 
-> My scheduler is at 250 Hz, and here are the values I found in 
-> /proc/sys/kernel:
+Overall, yes, the larger your reads/writes to the drive
+becomes, the faster its linear performance is.  Yet you
+have to consider real workload instead of very synthetic
+dd test.  It may be good approcsimation of a streaming
+video workload (when you feed a large video file over
+network or something like that), but even with this,
+you probably want to feed several files at once (different
+files to different clients), so single-threaded test
+here isn't very useful.  IMHO anyway, and good for a
+personal computer test.
 
-could you send me the file the cfs-debug-info.sh script produced. You 
-can pick the script up from:
-
-  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-
-(i'd suggest to send it in private mail, output is large and detailed. 
-If your kernel has no /proc/config.gz then please send me your .config 
-file too.)
-
-	Ingo
+/mjt
