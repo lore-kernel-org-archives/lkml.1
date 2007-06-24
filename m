@@ -1,120 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbXFXDsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbXFXD71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790AbXFXDsO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 23:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbXFXDsE
+	id S1754867AbXFXD71 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 23:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbXFXD7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 23:48:04 -0400
-Received: from mx2.suse.de ([195.135.220.15]:35534 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752980AbXFXDsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 23:48:01 -0400
-Date: Sun, 24 Jun 2007 05:47:55 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC] fsblock
-Message-ID: <20070624034755.GA3292@wotan.suse.de>
-References: <20070624014528.GA17609@wotan.suse.de> <467DE00A.9080700@garzik.org>
+	Sat, 23 Jun 2007 23:59:19 -0400
+Received: from qb-out-0506.google.com ([72.14.204.231]:49408 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbXFXD7S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 23:59:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Mg3mguQKisyaUV4MYIoWV3hUtQMOA1JaMRBheIhge8ZmfwhR68m/+bMgGG3j7v11BbrU8ixACGn+HCuqrAeza0RphA2z8EHUYqdWL2ooyh40siD3eSd/+cW+5BrA5PDo1ZxsTqu5gBj2uygfxMRoa1KK3qSEKYx9NRzbh7uMp9Q=
+Date: Sun, 24 Jun 2007 12:50:31 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Michal Januszewski <spock@gentoo.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] fbdev: uvesafb driver
+Message-ID: <20070624035031.GA4041@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	Michal Januszewski <spock@gentoo.org>,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <20070623105243.GD12623@spock.one.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <467DE00A.9080700@garzik.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070623105243.GD12623@spock.one.pl>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 11:07:54PM -0400, Jeff Garzik wrote:
-> Nick Piggin wrote:
-> >- No deadlocks (hopefully). The buffer layer is technically deadlocky by
-> >  design, because it can require memory allocations at page writeout-time.
-> >  It also has one path that cannot tolerate memory allocation failures.
-> >  No such problems for fsblock, which keeps fsblock metadata around for as
-> >  long as a page is dirty (this still has problems vs get_user_pages, but
-> >  that's going to require an audit of all get_user_pages sites. Phew).
-> >
-> >- In line with the above item, filesystem block allocation is performed
-> >  before a page is dirtied. In the buffer layer, mmap writes can dirty a
-> >  page with no backing blocks which is a problem if the filesystem is
-> >  ENOSPC (patches exist for buffer.c for this).
-> 
-> This raises an eyebrow...  The handling of ENOSPC prior to mmap write is 
-> more an ABI behavior, so I don't see how this can be fixed with internal 
-> changes, yet without changing behavior currently exported to userland 
-> (and thus affecting code based on such assumptions).
+> +static int uvesafb_blank(int blank, struct fb_info *info)
+> +{
+> +	struct uvesafb_par *par = info->par;
+> +	struct uvesafb_ktask *task;
+> +	int err = 1;
+> +
+> +	if (par->vbe_ib.capabilities & VBE_CAP_VGACOMPAT) {
+> +		int loop = 10000;
+> +		u8 seq = 0, crtc17 = 0;
+> +
+> +		if (blank == FB_BLANK_POWERDOWN) {
+> +			seq = 0x20;
+> +			crtc17 = 0x00;
+> +			err = 0;
+> +		} else {
+> +			seq = 0x00;
+> +			crtc17 = 0x80;
+> +			err = (blank == FB_BLANK_UNBLANK) ? 0 : -EINVAL;
+> +		}
+> +
+> +		vga_wseq(NULL, 0x00, 0x01);
+> +		seq |= vga_rseq(NULL, 0x01) & ~0x20;
+> +		vga_wseq(NULL, 0x00, seq);
+> +
+> +		crtc17 |= vga_rcrt(NULL, 0x17) & ~0x80;
+> +		while (loop--);
+> +		vga_wcrt(NULL, 0x17, crtc17);
+> +		vga_wseq(NULL, 0x00, 0x03);
+> +	} else {
+> +		task = uvesafb_prep();
+> +		if (!task)
+> +			return -ENOMEM;
+> +
+> +		task->t.regs.eax = 0x4f10;
+> +		switch (blank) {
+> +		case FB_BLANK_UNBLANK:
+> +			task->t.regs.ebx = 0x0001;
+> +			break;
+> +		case FB_BLANK_NORMAL:
+> +			task->t.regs.ebx = 0x0101;	/* standby */
+> +			break;
+> +		case FB_BLANK_POWERDOWN:
+> +			task->t.regs.ebx = 0x0401;	/* powerdown */
+> +			break;
+> +		default:
+> +			goto out;
+> +		}
+> +		task->t.flags = 0;
+> +
+> +		err = uvesafb_exec(task);
+> +		if (!err && (task->t.regs.eax & 0xffff) == 0x004f)
+> +			err = 0;
 
-I believe people are happy to have it SIGBUS (which is how the VM
-is already set up with page_mkwrite, and what fsblock does).
- 
- 
-> >- An inode's metadata must be tracked per-inode in order for fsync to
-> >  work correctly. buffer contains helpers to do this for basic
-> >  filesystems, but any block can be only the metadata for a single inode.
-> >  This is not really correct for things like inode descriptor blocks.
-> >  fsblock can track multiple inodes per block. (This is non trivial,
-> >  and it may be overkill so it could be reverted to a simpler scheme
-> >  like buffer).
-> 
-> hrm; no specific comment but this seems like an idea/area that needs to 
-> be fleshed out more, by converting some of the more advanced filesystems.
+There is no effect to this assignment.
 
-Yep. It's conceptually fairly simple though, and it might be easier
-than having filesystems implement their own complex syncing that finds
-and syncs everything themselves.
+	if (!err && ... )
+		err = 0;
 
+> +out:		uvesafb_free(task);
+> +	}
+> +	return err;
+> +}
 
-> >- Large block support. I can mount and run an 8K block size minix3 fs on
-> >  my 4K page system and it didn't require anything special in the fs. We
-> >  can go up to about 32MB blocks now, and gigabyte+ blocks would only
-> >  require  one more bit in the fsblock flags. fsblock_superpage blocks
-> >  are > PAGE_CACHE_SIZE, midpage ==, and subpage <.
-> 
-> definitely useful, especially if I rewrite my ibu filesystem for 2.6.x, 
-> like I've been planning.
+[...]
 
-Yeah, it wasn't the primary motivation for the rewrite, but it would
-be negligent to not even consider large blocks in such a rewrite, I
-think.
+> +static int __devinit uvesafb_init(void)
+> +{
+> +	int err;
+> +
+> +#ifndef MODULE
+> +	char *option = NULL;
+> +
+> +	if (fb_get_options("uvesafb", &option))
+> +		return -ENODEV;
+> +	uvesafb_setup(option);
+> +#endif
+> +	err = cn_add_callback(&uvesafb_cn_id, "uvesafb", uvesafb_cn_callback);
+> +	if (err)
+> +		goto err_out;
+> +
+> +	err = platform_driver_register(&uvesafb_driver);
+> +
+> +	if (!err) {
+> +		uvesafb_device = platform_device_alloc("uvesafb", 0);
+> +		if (uvesafb_device)
+> +			err = platform_device_add(uvesafb_device);
+> +		else
+> +			err = -ENOMEM;
+> +
+> +		if (err) {
+> +			platform_device_put(uvesafb_device);
+> +			platform_driver_unregister(&uvesafb_driver);
 
+Initialization failed. It should return from this function here.
+Otherwise it will attempt to call driver_create_file() with unregistered
+driver below.
 
-> >So. Comments? Is this something we want? If yes, then how would we
-> >transition from buffer.c to fsblock.c?
-> 
-> Your work is definitely interesting, but I think it will be even more 
-> interesting once ext2 (w/ dir in pagecache) and ext3 (journalling) are 
-> converted.
+And you forgot to put:
+			cn_del_callback(&uvesafb_cn_id);
 
-Well minix has dir in pagecache ;) But you're completely right: ext2
-will be the next step and then ext3 and things like XFS and NTFS
-will be the real test. I think I could eventually get ext2 done (one
-of the biggest headaches is simply just converting ->b_data accesses),
-however unlikely a journalling one.
+> +		}
+> +
+> +		err = driver_create_file(&uvesafb_driver.driver,
+> +				&driver_attr_v86d);
+> +		if (err) {
+> +			printk(KERN_WARNING "uvesafb: failed to register "
+> +					"attributes\n");
+> +			err = 0;
+> +		}
+> +	}
+> +	return err;
+> +
+> +err_out:
+> +	if (nls && nls->sk_socket)
+> +		sock_release(nls->sk_socket);
 
- 
-> My gut feeling is that there are several problem areas you haven't hit 
-> yet, with the new code.
+I can't find any uses of nls in this driver.
 
-I would agree with your gut :)
-
- 
-> Also, once things are converted, the question of transitioning from 
-> buffer.c will undoubtedly answer itself.  That's the way several of us 
-> handle transitions:  finish all the work, then look with fresh eyes and 
-> conceive a path from the current code to your enhanced code.
-
-Yeah that would be nice. It's very difficult because of so much
-filesystem code. I'd say it would be feasible to step buffer.c into
-fsblock.c, however if we were to track all (or even the common)
-filesystems along with that it would introduce a huge number of
-kind-of-redundant changes that I don't think all fs maintainers would
-have time to write (and as I said, I can't do it myself). Anyway,
-let's cross that bridge if and when we come to it.
-
-For now, the big thing that needs to be done is convert a "big" fs
-and see if the results tell us that it's workable.
-
-Thanks for the comments Jeff.
-
+> +	return err;
+> +}
 
