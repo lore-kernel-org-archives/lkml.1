@@ -1,79 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbXFXXXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbXFXXXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753773AbXFXXXQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 19:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXFXXXF
+	id S1755237AbXFXXXj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 19:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXFXXXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 19:23:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60041 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751081AbXFXXXE (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 19:23:04 -0400
-Date: Mon, 25 Jun 2007 09:22:46 +1000
-From: David Chinner <dgc@sgi.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Oliver Pinter <oliver.pntr@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: [REGRESSION 2.6-git] possible circular locking dependency detected with XFS
-Message-ID: <20070624232246.GF86004887@sgi.com>
-References: <6101e8c40706221340k65f15957k39a04193cb6e7c01@mail.gmail.com> <6bffcb0e0706221553s3a74ef58hcadc69bfa252283@mail.gmail.com>
+	Sun, 24 Jun 2007 19:23:30 -0400
+Received: from kanga.kvack.org ([66.96.29.28]:54186 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752347AbXFXXX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 19:23:29 -0400
+Date: Sun, 24 Jun 2007 19:23:14 -0400
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Oleg Verych <olecom@flower.upol.cz>, rae l <crquan@gmail.com>,
+       trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] trivial: the memset operation on a automatic array variable should be optimized out by data initialization
+Message-ID: <20070624232314.GA971@kvack.org>
+References: <467cac85.081b600a.5b88.457f@mx.google.com> <E1I20Wr-00064i-T0@flower> <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com> <20070624222518.GA10398@flower.upol.cz> <1182723318.6819.5.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6bffcb0e0706221553s3a74ef58hcadc69bfa252283@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1182723318.6819.5.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 12:53:11AM +0200, Michal Piotrowski wrote:
-> Hi Oliver,
-> 
-> On 22/06/07, Oliver Pinter <oliver.pntr@gmail.com> wrote:
-> >Hi all!
-> >
-> >I found this info:
-> >
-> >======================================================= [ INFO: possible
-> >circular locking dependency detected ] 2.6.22-rc5-wifi1 #2
-> >------------------------------------------------------- mount/2209 is
-> >trying to acquire lock: (&(&ip->i_lock)->mr_lock/1){--..}, at: [<c022b62d>]
-> >xfs_ilock+0x66/0x90
-> >
-> >but task is already holding lock: (&(&ip->i_lock)->mr_lock){----}, at:
-> >[<c022b62d>] xfs_ilock+0x66/0x90
-> >
-> 
-> AFAIR it is not a regression. It is a known bug (harmless).
+On Sun, Jun 24, 2007 at 03:15:17PM -0700, Arjan van de Ven wrote:
+> we should just alias our memset to the __builtin one, and then provide a
+> generic one from lib/ for the cases gcc needs to do a fallback.
 
-FWIW, it's not even a bug. The bug (if any) is due to the fact we
-can't properly express the XFS locking rules with lockdep. We
-recently added a bunch of notations that fixed the common false
-positives we were seeing, but as a result, it appears we now have a
-whole new set of false positive reports coming in that are even
-harder to fix.
+The last time I checked, gcc generated horrible badly performing code for 
+builtin memset/memcpy() when -Os is specified.
 
-As Christoph Hellwig has previously noted, the correct way to fix
-this in XFS is to completely change the locking within XFS directory
-operations to do strict parent/child locking like the VFS does.
-Unfortunately, that's not as simple as it sounds, because inode
-flushing and log tail pushing rely on inodes being locked in
-ascending inode order to prevent deadlocks within XFS. 
-
-That means when we lock multiple inodes in link, rename, etc, we
-have to lock them in ascending order. The exception to this is
-create, mkdir, mknod because the newly created inode will not be
-locked by definition so it is always safe to lock it.
-
-Hence if the new inode's number is less than the parent inode's
-number we can get lockdep warning about circular locking
-dependencies which don't actually exist. That is where this warning
-is coming from....
-
-Cheers,
-
-Dave.
+		-ben
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
