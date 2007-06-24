@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbXFXXUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753773AbXFXXXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754555AbXFXXUh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 19:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXFXXUa
+	id S1753773AbXFXXXQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 19:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXFXXXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 19:20:30 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:33070 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbXFXXUa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 19:20:30 -0400
-Date: Mon, 25 Jun 2007 01:33:14 +0200
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: rae l <crquan@gmail.com>, trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: memset() with zeroes (Re: [PATCH] trivial: the memset operation on a automatic array variable should be optimized out by data initialization)
-Message-ID: <20070624233314.GB10398@flower.upol.cz>
-References: <467cac85.081b600a.5b88.457f@mx.google.com> <E1I20Wr-00064i-T0@flower> <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com> <20070624222518.GA10398@flower.upol.cz> <1182723318.6819.5.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
+	Sun, 24 Jun 2007 19:23:05 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60041 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751081AbXFXXXE (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 19:23:04 -0400
+Date: Mon, 25 Jun 2007 09:22:46 +1000
+From: David Chinner <dgc@sgi.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Oliver Pinter <oliver.pntr@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: [REGRESSION 2.6-git] possible circular locking dependency detected with XFS
+Message-ID: <20070624232246.GF86004887@sgi.com>
+References: <6101e8c40706221340k65f15957k39a04193cb6e7c01@mail.gmail.com> <6bffcb0e0706221553s3a74ef58hcadc69bfa252283@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1182723318.6819.5.camel@laptopd505.fenrus.org>
-Organization: Palacky University in Olomouc, experimental physics department.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
+In-Reply-To: <6bffcb0e0706221553s3a74ef58hcadc69bfa252283@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 03:15:17PM -0700, Arjan van de Ven wrote:
+On Sat, Jun 23, 2007 at 12:53:11AM +0200, Michal Piotrowski wrote:
+> Hi Oliver,
 > 
-> > > I think all these benefits are the gcc's __builtin_memset optimization
-> > > than the explicit call to memset.
-> > 
-> > ... or from complex memset() implementation (some chips even didn't do
-> > `rep' fast enough somehow). Maybe code like below will be acceptable for
-> > both optimizers and maintainers?
+> On 22/06/07, Oliver Pinter <oliver.pntr@gmail.com> wrote:
+> >Hi all!
+> >
+> >I found this info:
+> >
+> >======================================================= [ INFO: possible
+> >circular locking dependency detected ] 2.6.22-rc5-wifi1 #2
+> >------------------------------------------------------- mount/2209 is
+> >trying to acquire lock: (&(&ip->i_lock)->mr_lock/1){--..}, at: [<c022b62d>]
+> >xfs_ilock+0x66/0x90
+> >
+> >but task is already holding lock: (&(&ip->i_lock)->mr_lock){----}, at:
+> >[<c022b62d>] xfs_ilock+0x66/0x90
+> >
 > 
-> 
-> we should just alias our memset to the __builtin one, and then provide a
-> generic one from lib/ for the cases gcc needs to do a fallback.
+> AFAIR it is not a regression. It is a known bug (harmless).
 
-In x86_64 there's infrastructure to check and select right memset().
-Therefor it's need, i think.
+FWIW, it's not even a bug. The bug (if any) is due to the fact we
+can't properly express the XFS locking rules with lockdep. We
+recently added a bunch of notations that fixed the common false
+positives we were seeing, but as a result, it appears we now have a
+whole new set of false positive reports coming in that are even
+harder to fix.
 
-But if one will took a look at usage, zero memset() optimization becomes
-obvious, one argument off -- one reg is free from clobbering.
+As Christoph Hellwig has previously noted, the correct way to fix
+this in XFS is to completely change the locking within XFS directory
+operations to do strict parent/child locking like the VFS does.
+Unfortunately, that's not as simple as it sounds, because inode
+flushing and log tail pushing rely on inodes being locked in
+ascending inode order to prevent deadlocks within XFS. 
 
-|-*-
-flower-:22-rc4-mm2/arch/x86_64$ grep memset -R . | grep "[ 0,]0," | wc -l
-42
-flower-:22-rc4-mm2/arch/x86_64$
-flower-:22-rc4-mm2/arch/x86_64$ cd ..
-flower-:22-rc4-mm2/arch$ grep memset -R . | grep "[ 0,]0," | wc -l
-735
-flower-:22-rc4-mm2/arch$
-flower-:22-rc4-mm2$ grep memset -R . | grep "[ 0,]0," | wc -l
-6679
-flower-:22-rc4-mm2$  
-|-*-
-____
+That means when we lock multiple inodes in link, rename, etc, we
+have to lock them in ascending order. The exception to this is
+create, mkdir, mknod because the newly created inode will not be
+locked by definition so it is always safe to lock it.
+
+Hence if the new inode's number is less than the parent inode's
+number we can get lockdep warning about circular locking
+dependencies which don't actually exist. That is where this warning
+is coming from....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
