@@ -1,140 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbXFXM6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbXFXNA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbXFXM6V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 08:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXFXM6N
+	id S1756152AbXFXNA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 09:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbXFXNAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 08:58:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:49387 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754755AbXFXM6M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 08:58:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VYbWi5GNEcTVg7X5eQFAWyjKd4QEdeCuC23c2IxWGr/RPJiXwkz6WFOAraQdmsCR1Vic8Z/03o5IzJ0Oha6p6kqpYxQzrjTrkNlSgu7Q42qoYfclWOdJBAJpF/ynpkMnhr9mqy2gXcjVXaLqv/ZrpkDKBJLhmYUwt58wruPYuMI=
-Message-ID: <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com>
-Date: Sun, 24 Jun 2007 20:58:10 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Oleg Verych" <olecom@flower.upol.cz>
-Subject: Re: [PATCH] trivial: the memset operation on a automatic array variable should be optimized out by data initialization
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <E1I20Wr-00064i-T0@flower>
+	Sun, 24 Jun 2007 09:00:17 -0400
+Received: from mx.treblig.org ([80.68.94.177]:4846 "EHLO mx.treblig.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754755AbXFXNAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 09:00:16 -0400
+Date: Sun, 24 Jun 2007 13:59:57 +0100
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Jeff Garzik <jeff@garzik.org>, Carlo Wood <carlo@alinoe.com>,
+       Tejun Heo <htejun@gmail.com>, Manoj Kasichainula <manoj@io.com>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: SATA RAID5 speed drop of 100 MB/s
+Message-ID: <20070624125957.GA28067@gallifrey>
+References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <20070622214859.GC6970@alinoe.com> <467CC5C5.6040201@garzik.org> <20070623125316.GB26672@alinoe.com> <467DA1F5.2060306@garzik.org> <467E5C5E.6000706@msgid.tls.msk.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <467cac85.081b600a.5b88.457f@mx.google.com>
-	 <E1I20Wr-00064i-T0@flower>
+In-Reply-To: <467E5C5E.6000706@msgid.tls.msk.ru>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
+X-Uptime: 13:53:15 up 51 days,  6:36,  1 user,  load average: 0.31, 0.39, 0.42
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/23/07, Oleg Verych <olecom@flower.upol.cz> wrote:
-> Why not just show actual objdump output on code (maybe with different
-> oxygen atoms used in gcc), rather than *talking* about optimization and
-> standards, hm?
-here is the objdump output of the two object files:
-As you could see, the older one used 0x38 bytes stack space while the
-new one used 0x28 bytes,
-and the object code is two bytes less,
-I think all these benefits are the gcc's __builtin_memset optimization
-than the explicit call to memset.
+* Michael Tokarev (mjt@tls.msk.ru) wrote:
 
-$ objdump -d /tmp/init.orig.o|grep -A23 -nw '<paging_init>'
-525:0000000000000395 <paging_init>:
-526- 395:       48 83 ec 38             sub    $0x38,%rsp
-527- 399:       48 8d 54 24 10          lea    0x10(%rsp),%rdx
-528- 39e:       fc                      cld
-529- 39f:       31 c0                   xor    %eax,%eax
-530- 3a1:       48 89 d7                mov    %rdx,%rdi
-531- 3a4:       ab                      stos   %eax,%es:(%rdi)
-532- 3a5:       ab                      stos   %eax,%es:(%rdi)
-533- 3a6:       ab                      stos   %eax,%es:(%rdi)
-534- 3a7:       ab                      stos   %eax,%es:(%rdi)
-535- 3a8:       ab                      stos   %eax,%es:(%rdi)
-536- 3a9:       48 89 7c 24 08          mov    %rdi,0x8(%rsp)
-537- 3ae:       ab                      stos   %eax,%es:(%rdi)
-538- 3af:       48 c7 44 24 10 00 10    movq   $0x1000,0x10(%rsp)
-539- 3b6:       00 00
-540- 3b8:       48 c7 44 24 18 00 00    movq   $0x100000,0x18(%rsp)
-541- 3bf:       10 00
-542- 3c1:       48 8b 05 00 00 00 00    mov    0(%rip),%rax        #
-3c8 <paging_init+0x33>
-543- 3c8:       48 89 44 24 20          mov    %rax,0x20(%rsp)
-544- 3cd:       48 89 d7                mov    %rdx,%rdi
-545- 3d0:       e8 00 00 00 00          callq  3d5 <paging_init+0x40>
-546- 3d5:       48 83 c4 38             add    $0x38,%rsp
-547- 3d9:       c3                      retq
-548-
-$ objdump -d /tmp/init.new.o|grep -A23 -nw '<paging_init>'
-525:0000000000000395 <paging_init>:
-526- 395:       48 83 ec 28             sub    $0x28,%rsp
-527- 399:       48 89 e7                mov    %rsp,%rdi
-528- 39c:       fc                      cld
-529- 39d:       31 c0                   xor    %eax,%eax
-530- 39f:       ab                      stos   %eax,%es:(%rdi)
-531- 3a0:       ab                      stos   %eax,%es:(%rdi)
-532- 3a1:       ab                      stos   %eax,%es:(%rdi)
-533- 3a2:       ab                      stos   %eax,%es:(%rdi)
-534- 3a3:       ab                      stos   %eax,%es:(%rdi)
-535- 3a4:       ab                      stos   %eax,%es:(%rdi)
-536- 3a5:       48 c7 04 24 00 10 00    movq   $0x1000,(%rsp)
-537- 3ac:       00
-538- 3ad:       48 c7 44 24 08 00 00    movq   $0x100000,0x8(%rsp)
-539- 3b4:       10 00
-540- 3b6:       48 8b 05 00 00 00 00    mov    0(%rip),%rax        #
-3bd <paging_init+0x28>
-541- 3bd:       48 89 44 24 10          mov    %rax,0x10(%rsp)
-542- 3c2:       48 89 e7                mov    %rsp,%rdi
-543- 3c5:       e8 00 00 00 00          callq  3ca <paging_init+0x35>
-544- 3ca:       48 83 c4 28             add    $0x28,%rsp
-545- 3ce:       c3                      retq
-546-
-547-00000000000003cf <alloc_low_page>:
-548- 3cf:       41 56                   push   %r14
+<snip>
 
+> By the way, I did some testing of various drives, and NCQ/TCQ indeed
+> shows some difference -- with multiple I/O processes (like "server"
+> workload), IF NCQ/TCQ is implemented properly, especially in the
+> drive.
+> 
+> For example, this is a good one:
+> 
+> Single Seagate 74Gb SCSI drive (10KRPM)
+> 
+> BlkSz Trd linRd rndRd linWr  rndWr  linR/W     rndR/W
 
->
-> I bet, that will be a key for success. And if you are interested in such
-> optimizations, why not to grep whole source tree for this kind of
-> things? I'm not sure one function in arch/x86_64 is only such ``unoptimized''.
-> And after doing that maybe you will see, that "{}" initializer can be
-> applied not only to integer values (you did init with of *long int*,
-> with *int*, btw), but to structs and others.
-with '{}' initializer, gcc will fill its memory with zeros.
+<snip>
 
-to other potential points to be optimized, I only see this trivial as
-the first point, I wonder how people gives comments on this; and if
-this optimization can be tested correctly, this can be done as an
-optimization example and I'll try others.
+> 1024k   1  83.1  36.0  55.8  34.6  28.2/27.6  20.3/19.4
+>         2        45.2        44.1             36.4/ 9.9
+>         4        48.1        47.6             40.7/ 7.1
+> 
+> The tests are direct-I/O over whole drive (/dev/sdX), with
+> either 1, 2, or 4 threads doing sequential or random reads
+> or writes in blocks of a given size.  For the R/W tests,
+> we've 2, 4 or 8 threads running in total (1, 2 or 4 readers
+> and the same amount of writers).  Numbers are MB/sec, as
+> totals (summary) for all threads.
+> 
+> Especially interesting is the very last column - random R/W
+> in parallel.  In almost all cases, more threads gives larger
+> total speed (I *guess* it's due to internal optimisations in
+> the drive -- with more threads the drive has more chances to
+> reorder commands to minimize seek time etc).
+> 
+> The only thing I don't understand is why with larger I/O block
+> size we see write speed drop with multiple threads.
 
->
-> Ahh, one more thing about _optimizing_ your time, i.e. not wasting one.
->
-> Add to CC list people, who already did reply on you patch. Otherwise
-> you are showing your disrespect for them and hiding from further
-> discussion.
-Thank you, I know it and I've already subscribed the linux kernel
-mailing list(linux-kernel@vger.kernel.org) so that I won't miss any
-further discussion about it.
+My guess is that something is chopping them up into smaller writes.
 
->
-> I think you do not, but Linux development not have an automatic system
-> for patch tracking, so you are on your own with your text editor and
-> e-mail client on this. Please take care for your time.
-What about that?
-Do you mean something such as git by "an automatic system"?
+> And in contrast to the above, here's another test run, now
+> with Seagate SATA ST3250620AS ("desktop" class) 250GB
+> 7200RPM drive:
+> 
+> BlkSz Trd linRd rndRd linWr rndWr   linR/W    rndR/W
 
->
-> --
->   frenzy
-> -o--=O`C
->  #oo'L O
-> <___=E M
->
+<snip>
 
+> 1024k   1  78.4  34.1  33.5  24.6  19.6/19.5  16.0/12.7
+>         2        33.3        24.6             15.4/13.8
+>         4        34.3        25.0             14.7/15.0
+> 
 
+<snip>
+
+> And second, so far I haven't seen a case where a drive
+> with NCQ/TCQ enabled works worse than without.  I don't
+> want to say there aren't such drives/controllers, but
+> it just happen that I haven't seen any.)
+
+Yes you have - the random writes with large blocks and 2 or 4 threads
+is significantly better for your non-NCQ drive; and getting more
+significant as you add more threads - I'm curious what happens
+on 8 threads or more.  
+
+Dave
 -- 
-Denis Cheng
-Linux Application Developer
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
