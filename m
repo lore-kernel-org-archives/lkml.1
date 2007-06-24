@@ -1,49 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbXFXTK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbXFXTTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757031AbXFXTK1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXFXTKL
+	id S1756224AbXFXTTU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXFXTTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:10:11 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33651 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbXFXTKJ (ORCPT
+	Sun, 24 Jun 2007 15:19:12 -0400
+Received: from dd8000.kasserver.com ([85.13.132.92]:43988 "EHLO
+	dd8000.kasserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752797AbXFXTTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:10:09 -0400
-Date: Sun, 24 Jun 2007 20:10:07 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070624191007.GC21478@ftp.linux.org.uk>
-References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <200706242007.10585.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706242007.10585.arnd@arndb.de>
-User-Agent: Mutt/1.4.1i
+	Sun, 24 Jun 2007 15:19:11 -0400
+X-Greylist: delayed 1763 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jun 2007 15:19:11 EDT
+Message-ID: <467EBCA1.5070702@gmx.net>
+Date: Sun, 24 Jun 2007 20:49:05 +0200
+From: otto Meier <gf435@gmx.net>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070613)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: sata_promise disk error 2.6.22-rc5 with hrt1 patch
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 08:07:10PM +0200, Arnd Bergmann wrote:
-> One minor issue though:
-> While BUILD_BUG_ON and a few other macros in linux/kernel.h are currently
-> exported to user space, I would think that they should really be hidden
-> in #ifdef __KERNEL__, which means that we also need something like
-> 
-> #ifdef __KERNEL__
-> #define _IOC_TYPECHECK(t) \
->         (sizeof(t) + BUILD_BUG_ON_ZERO(sizeof(t) == sizeof(t[1]) && \
->           sizeof(t) < (1 << _IOC_SIZEBITS)))
-> #else
-> #define _IOC_TYPECHECK(t) sizeof(t)
-> #endif
+Hello,
 
-Point, but then we might want to export the damn thing in properly
-named version (i.e. put it into __.... reserved namespace).  It
-doesn't depend on anything kernel-specific...
+I got the following in my logs:
 
-FWIW, the current version suffers from similar problem - it's outside
-of __KERNEL__ in userland-exported header and it can lead to breakage
-when included in build by something other than gcc...
+Jun 24 19:06:40 gate2 kernel: ata4.00: exception Emask 0x0 SAct 0x0 SErr
+0x0 action 0x0
+Jun 24 19:06:40 gate2 kernel: ata4.00: (port_status 0x00001000)
+Jun 24 19:06:40 gate2 kernel: ata4.00: cmd
+35/00:00:c1:17:92/00:04:17:00:00/e0 tag 0 cdb 0x0 data 524288 out
+Jun 24 19:06:40 gate2 kernel:          res
+50/00:00:c0:1b:92/00:00:17:00:00/e0 Emask 0x20 (host bus error)
+Jun 24 19:06:40 gate2 kernel: ata4.00: ata_hpa_resize 1: sectors =
+488397168, hpa_sectors = 488397168
+Jun 24 19:06:40 gate2 kernel: ata4.00: ata_hpa_resize 1: sectors =
+488397168, hpa_sectors = 488397168
+Jun 24 19:06:40 gate2 kernel: ata4.00: configured for UDMA/133
+Jun 24 19:06:40 gate2 kernel: ata4: EH complete
+Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] 488397168 512-byte
+hardware sectors (250059 MB)
+Jun 24 19:06:40 gate2 kernel: ata4.00: exception Emask 0x0 SAct 0x0 SErr
+0x0 action 0x0
+Jun 24 19:06:40 gate2 kernel: ata4.00: (port_status 0x00001000)
+Jun 24 19:06:40 gate2 kernel: ata4.00: cmd
+25/00:00:c1:15:92/00:02:17:00:00/e0 tag 0 cdb 0x0 data 262144 in
+Jun 24 19:06:40 gate2 kernel:          res
+50/00:00:c0:17:92/00:00:17:00:00/e0 Emask 0x20 (host bus error)
+Jun 24 19:06:40 gate2 kernel: ata4.00: ata_hpa_resize 1: sectors =
+488397168, hpa_sectors = 488397168
+Jun 24 19:06:40 gate2 kernel: ata4.00: ata_hpa_resize 1: sectors =
+488397168, hpa_sectors = 488397168
+Jun 24 19:06:40 gate2 kernel: ata4.00: configured for UDMA/133
+Jun 24 19:06:40 gate2 kernel: ata4: EH complete
+Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Write Protect is off
+Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] 488397168 512-byte
+hardware sectors (250059 MB)
+Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Write Protect is off
+Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+
+The system continued without seeing other effects.
+
+It is runnuning a 2.6.22-rc5 kernel with hrt1 patch.
+The drive ist part of a raid5 with 4 identical drives
+
+lspci -vvv gives:
+
+02:06.0 Mass storage controller: Promise Technology, Inc. PDC40718 (SATA
+300 TX4) (rev 02)
+        Subsystem: Promise Technology, Inc. PDC40718 (SATA 300 TX4)
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 72 (1000ns min, 4500ns max), Cache Line Size: 4 bytes
+        Interrupt: pin A routed to IRQ 16
+        Region 0: I/O ports at bc00 [size=128]
+        Region 2: I/O ports at b800 [size=256]
+        Region 3: Memory at fdeff000 (32-bit, non-prefetchable) [size=4K]
+        Region 4: Memory at fdec0000 (32-bit, non-prefetchable) [size=128K]
+        [virtual] Expansion ROM at fdda0000 [disabled] [size=32K]
+        Capabilities: [60] Power Management version 2
+                Flags: PMEClk- DSI+ D1+ D2- AuxCurrent=0mA
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+
+Has anyone an idea whats going on?
+
+Best regards
+
+
+
+
