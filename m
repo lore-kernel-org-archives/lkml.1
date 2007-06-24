@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXFXRDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbXFXRGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbXFXRDk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 13:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbXFXRDc
+	id S1754943AbXFXRGd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 13:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbXFXRGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 13:03:32 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:45371 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751299AbXFXRDb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 13:03:31 -0400
-X-Originating-Ip: 74.102.207.204
-Date: Sun, 24 Jun 2007 12:59:20 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Satyam Sharma <satyam.sharma@gmail.com>
-cc: Arnd Bergmann <arnd@arndb.de>, Florin Iucha <florin@iucha.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "upping" a semaphore from interrupt context?
-In-Reply-To: <a781481a0706240945j3a8afe8dkbb6b74d92bdedfc4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706241256380.8409@localhost.localdomain>
-References: <20070622173839.GB8398@iucha.net>  <200706221934.18436.arnd@arndb.de>
-  <Pine.LNX.4.64.0706230751230.4164@localhost.localdomain> 
- <200706231402.03617.arnd@arndb.de>  <a781481a0706230842l141cf400tb2f5645b6b6537fe@mail.gmail.com>
-  <Pine.LNX.4.64.0706231209490.15371@localhost.localdomain> 
- <a781481a0706231016i51c8534q918b4cb89126ede7@mail.gmail.com> 
- <Pine.LNX.4.64.0706241123130.7006@localhost.localdomain>
- <a781481a0706240945j3a8afe8dkbb6b74d92bdedfc4@mail.gmail.com>
+	Sun, 24 Jun 2007 13:06:24 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43539 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751739AbXFXRGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 13:06:24 -0400
+Date: Sun, 24 Jun 2007 19:05:14 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [RC][PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
+Message-ID: <20070624170514.GA21757@elf.ucw.cz>
+References: <200706221647.50509.rjw@sisk.pl> <20070622210750.GA4267@ucw.cz> <200706222347.55717.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706222347.55717.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jun 2007, Satyam Sharma wrote:
+Hi!
 
-> Whoa, hold on. But I've been explicitly mentioning *binary*
-> semaphores all along!
->
-> Of course users who want / allow multiple tasks (but only upto a
-> specific maximum number, which is what counted semaphores are all
-> about) to be present in a given critical section simultaneously
-> would still want to use the _counted_ semaphores, which is why you
-> won't see the old "struct semaphores" dying anytime soon.
+> > > Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+> > > versions of this patch and for very useful comments.
+> > ...
+> > > Reviewed-by: Pavel Machek <pavel@ucw.cz>
+> > 
+> > Eh, not sure this header is worth anything. Sometimes I'm lazy and
+> > stop when I see first problem.
+> > 
+> > >  	switch (action) {
+> > >  	case PM_HIBERNATION_PREPARE:
+> > >  	case PM_SUSPEND_PREPARE:
+> > >  		usermodehelper_disabled = 1;
+> > > -		return NOTIFY_OK;
+> > > +		retval = wait_event_timeout(running_helpers_waitq,
+> > > +					atomic_read(&running_helpers) == 0,
+> > 
+> > Are you sure here? What happens when atomic variable changes between
+> > the atomic_read and the function call?
+> 
+> Er, this is a macro. :-)
+> 
+> In fact we rely only on atomic_read(&running_helpers) being still zero after
+> helper_finished() has woken us up, but I think that's acceptable.
+> 
+> IOW, if the wait_event_timeout() returns with retval different from zero, this
+> means that atomic_read(&running_helpers) returned zero at one point after
+> we'd set usermodehelper_disabled, which is enough.  OTOH, if it doesn't
 
-ah, ok, i've been misreading all this, sorry.  i'm wondering, then,
-if, given both mutexes and completions, whether the general semantics
-of semaphores can be tightened up at all.  just curious.
+Ok, can you write short comment explaining that? /* We have set
+usermodehelper_disabled, so any new usermode helpers are not a problem
+*/.
 
-rday
+									Pavel
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
