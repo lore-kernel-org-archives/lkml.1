@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbXFXNRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbXFXNUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbXFXNRT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 09:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbXFXNRI
+	id S1756037AbXFXNUw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 09:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbXFXNUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 09:17:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38390 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754501AbXFXNRH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 09:17:07 -0400
-Subject: Re: Change in default vm_dirty_ratio
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matt Mackall <mpm@selenic.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, davej@redhat.com,
-       tim.c.chen@linux.intel.com, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.0.98.0706211605540.3593@woody.linux-foundation.org>
-References: <1182201271.4883.22.camel@localhost.localdomain>
-	 <20070618164711.9de1c38e.akpm@linux-foundation.org>
-	 <20070620042434.GC12096@redhat.com>
-	 <20070619214407.dfff0ca6.akpm@linux-foundation.org>
-	 <1182328536.21117.24.camel@twins>
-	 <20070620015826.03f1d71a.akpm@linux-foundation.org>
-	 <20070620091404.GO18863@kernel.dk> <1182331182.21117.39.camel@twins>
-	 <20070620092058.GP18863@kernel.dk> <20070621225320.GP11166@waste.org>
-	 <alpine.LFD.0.98.0706211605540.3593@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 23 Jun 2007 20:23:50 +0200
-Message-Id: <1182623031.7066.1.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jun 2007 09:20:44 -0400
+Received: from mail.suse.de ([195.135.220.2]:45613 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754568AbXFXNUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 09:20:43 -0400
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC] fsblock
+References: <20070624014528.GA17609@wotan.suse.de>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 24 Jun 2007 16:16:29 +0200
+In-Reply-To: <20070624014528.GA17609@wotan.suse.de>
+Message-ID: <p73lke95tfm.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-06-21 at 16:08 -0700, Linus Torvalds wrote:
+Nick Piggin <npiggin@suse.de> writes:
 > 
-> On Thu, 21 Jun 2007, Matt Mackall wrote:
-> > 
-> > Perhaps we want to throw some sliding window algorithms at it. We can
-> > bound requests and total I/O and if requests get retired too slowly we
-> > can shrink the windows. Alternately, we can grow the window if we're
-> > retiring things within our desired timeframe.
-> 
-> I suspect that would tend to be a good way to go. But it almost certainly 
-> has to be per-device, which implies that somebody would have to do some 
-> major coding/testing on this..
-> 
-> The vm_dirty_ratio thing is a global value, and I think we need that 
-> regardless (for the independent issue of memory deadlocks etc), but if we 
-> *additionally* had a per-device throttle that was based on some kind of 
-> adaptive thing, we could probably raise the global (hard) vm_dirty_ratio a 
-> lot.
+> - Structure packing. A page gets a number of buffer heads that are
+>   allocated in a linked list. fsblocks are allocated contiguously, so
+>   cacheline footprint is smaller in the above situation.
 
-I just did quite a bit of that:
+It would be interesting to test if that makes a difference for 
+database benchmarks running over file systems. Databases
+eat a lot of cache so in theory any cache improvements
+in the kernel which often runs cache cold then should be beneficial. 
 
-  http://lkml.org/lkml/2007/6/14/437
+But I guess it would need at least ext2 to test; Minix is probably not
+good enough.
 
+In general have you benchmarked the CPU overhead of old vs new code? 
+e.g. when we went to BIO scalability went up, but CPU costs
+of a single request also went up. It would be nice to not continue
+or better reverse that trend.
+
+> - Large block support. I can mount and run an 8K block size minix3 fs on
+>   my 4K page system and it didn't require anything special in the fs. We
+>   can go up to about 32MB blocks now, and gigabyte+ blocks would only
+>   require  one more bit in the fsblock flags. fsblock_superpage blocks
+>   are > PAGE_CACHE_SIZE, midpage ==, and subpage <.
+
+Can it be cleanly ifdefed or optimized away?  Unless the fragmentation
+problem is not solved it would seem rather pointless to me. Also I personally
+still think the right way to approach this is larger softpage size.
+
+-Andi
