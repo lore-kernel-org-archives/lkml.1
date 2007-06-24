@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbXFXSnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbXFXSo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523AbXFXSnX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 14:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbXFXSnP
+	id S1756383AbXFXSo7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 14:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbXFXSow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 14:43:15 -0400
-Received: from fallback.us4.outblaze.com ([205.158.62.120]:54034 "EHLO
-	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbXFXSnO convert rfc822-to-8bit (ORCPT
+	Sun, 24 Jun 2007 14:44:52 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39002 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbXFXSov (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 14:43:14 -0400
-X-OB-Received: from unknown (205.158.62.62)
-  by wfilter2.us4.outblaze.com; 24 Jun 2007 18:35:26 -0000
+	Sun, 24 Jun 2007 14:44:51 -0400
+Date: Sun, 24 Jun 2007 19:44:49 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070624184449.GB21478@ftp.linux.org.uk>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <b739fb9ad6e68bfe5d2a4b839abc8ea4@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-MIME-Version: 1.0
-From: "Ash Willis" <ashwillis@programmer.net>
-To: linux-kernel@vger.kernel.org
-Date: Sun, 24 Jun 2007 13:35:26 -0500
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-X-Originating-Ip: 212.139.44.104
-X-Originating-Server: ws1-7.us4.outblaze.com
-Message-Id: <20070624183526.B1E7F1158CD@ws1-7.us4.outblaze.com>
+In-Reply-To: <b739fb9ad6e68bfe5d2a4b839abc8ea4@kernel.crashing.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kloczek,
-The fact that it is now open source does mean that it's a suitable replacement.
+On Sun, Jun 24, 2007 at 08:18:52PM +0200, Segher Boessenkool wrote:
+> >#define _IOC_TYPECHECK(t) \
+> >        ((sizeof(t) == sizeof(t[1]) && \
+> >          sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
+> >          sizeof(t) : __invalid_size_argument_for_IOC)
+> >poisoning _IOW() et.al., so those who do something like
+> >
+> >static const char *v4l1_ioctls[] = {
+> >        [_IOC_NR(VIDIOCGCAP)]       = "VIDIOCGCAP",
+> >
+> >run into trouble.
+> 
+> >The only reason that doesn't break gcc to hell and back is
+> >that gcc has unfixed bugs in that area.
+> 
+> If I understand correctly what bugs you are talking about,
+> most (all?) of those were solved in the dark ages already
+> (i.e., the 3.x series).
 
-If you actually want a productive discussion, you'd be better off making an
-attempt at describing exactly _why_ ALSA is 'crap' and how in your opinion OSS
-overcomes ALSA's shortfalls.
+Alas, no.  gcc is amazingly (and inconsistently) sloppy about the
+things it accepts as integer constant expressions.
+ 
+> >It certainly is not a valid C
+> 
+> Why not?  Nothing in the C standard says all your externs
+> have to be defined in some other translation unit you link
+> with AFAIK.
 
-IMHO, it would be far more realistic and managable to look at the OSS codebase
-and use it to make improvements to ALSA. I'm looking into one or two issues
-myself and I've mentioned looking at the OSS code for possible improvements on
-the alsa-devel list. I think it's generally agreed that OSS can't do much at all
-that ALSA doesn't already do. Sure, if you've been smoking crack, you might want
-to rip out ALSA and replace it with OSS to gain some minor functionality but
-you'd also lose functionality in the process.
+It's not about externs.  It's about things like
 
-Unless you can describe how the actual architecture of ALSA is inferior and not
-just complain about some particular device not being fully supported, the best
-idea is clearly to port any lacking functionality from OSS -> ALSA. In the case
-that you can actually provide valid reasons for ALSA's inferiority, I shall
-respectfully eat my hat :)
+unsigned n;
+int a[] = {[n - n + n - n] = 1};
 
-Either way, have bug reports been filed for areas of ALSA that you are unhappy
-with?
+And yes, gcc does eat that.  With -pedantic -std=c99, at that.  
+However, 
 
-Ash
+unsigned n;
+int a[] = {[n + n - n - n] = 1};
 
--- 
-Get a Free E-mail Account at Mail.com!
-Choose From 100+ Personalized Domains
-Visit http://www.mail.com today
+gets you error: nonconstant array index in initializer
 
+And that's 4.1, not 3.x...
