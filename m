@@ -1,89 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbXFXQmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbXFXQp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753027AbXFXQmS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 12:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbXFXQmM
+	id S1753911AbXFXQp5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 12:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXFXQpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 12:42:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38523 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751000AbXFXQmL (ORCPT
+	Sun, 24 Jun 2007 12:45:50 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:49781 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750927AbXFXQpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 12:42:11 -0400
-Date: Sun, 24 Jun 2007 09:40:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Matt Mackall <mpm@selenic.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, davej@redhat.com,
-       tim.c.chen@linux.intel.com, linux-kernel@vger.kernel.org
-Subject: Re: Change in default vm_dirty_ratio
-In-Reply-To: <1182623031.7066.1.camel@lappy>
-Message-ID: <alpine.LFD.0.98.0706240907560.3593@woody.linux-foundation.org>
-References: <1182201271.4883.22.camel@localhost.localdomain> 
- <20070618164711.9de1c38e.akpm@linux-foundation.org>  <20070620042434.GC12096@redhat.com>
-  <20070619214407.dfff0ca6.akpm@linux-foundation.org>  <1182328536.21117.24.camel@twins>
-  <20070620015826.03f1d71a.akpm@linux-foundation.org>  <20070620091404.GO18863@kernel.dk>
- <1182331182.21117.39.camel@twins>  <20070620092058.GP18863@kernel.dk>
- <20070621225320.GP11166@waste.org>  <alpine.LFD.0.98.0706211605540.3593@woody.linux-foundation.org>
- <1182623031.7066.1.camel@lappy>
+	Sun, 24 Jun 2007 12:45:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PUtd38K1QihrD34QFgR+kWjshIBOUZY5xqYl1QQrRu/SK9pUkZQlVLTzr33cLy/UjL9JpXgw7rB54U3g5uyr6cBFVxkG+F7oO5JR4LgGZn9t5M0OcRV4o7/lkQbEtOM2mG0eYOSU3kdXbxAM0QJJ7OPbGtGEk8/jEiF+9CiQMv4=
+Message-ID: <a781481a0706240945j3a8afe8dkbb6b74d92bdedfc4@mail.gmail.com>
+Date: Sun, 24 Jun 2007 22:15:48 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: "upping" a semaphore from interrupt context?
+Cc: "Arnd Bergmann" <arnd@arndb.de>, "Florin Iucha" <florin@iucha.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0706241123130.7006@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070622173839.GB8398@iucha.net>
+	 <200706221934.18436.arnd@arndb.de>
+	 <Pine.LNX.4.64.0706230751230.4164@localhost.localdomain>
+	 <200706231402.03617.arnd@arndb.de>
+	 <a781481a0706230842l141cf400tb2f5645b6b6537fe@mail.gmail.com>
+	 <Pine.LNX.4.64.0706231209490.15371@localhost.localdomain>
+	 <a781481a0706231016i51c8534q918b4cb89126ede7@mail.gmail.com>
+	 <Pine.LNX.4.64.0706241123130.7006@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Robert,
 
+On 6/24/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+> On Sat, 23 Jun 2007, Satyam Sharma wrote:
+>
+> > On 6/23/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+>
+> > > hang on, how is that true?  as i read it, mutexes are more than
+> > > just binary semaphores -- they have additional restrictions that
+> > > regular semaphores don't.
+> >
+> > Yes, they do have additional restrictions (mutex_trylock() illegal
+> > from contexts that cannot sleep, mutexes may only be unlocked by
+> > tasks that took them in the first place). But note that these are
+> > _implementation_ sanity checks that were introduced to catch
+> > nonsensical usage, which was possible (and not explicitly being
+> > guarded against, because of the generic-ness that was needed to be
+> > maintained for the counted case too) with the "semaphore"s.
+> >
+> > > so i'm not convinced that binary semaphores can simply be replaced
+> > > by mutexes, unless that's not what you meant here.
+> >
+> > I do mean precisely that. I really cannot think of any sensible /
+> > normal usage case of binary semaphores that cannot be replaced with
+> > either mutexes (if that's the kind of locking you actually want) or
+> > completion handlers (if that's the kind of synchronization you
+> > actually want).
+>
+> ok, i can see what you're getting at now.  i'm just going to have to
+> convince myself that, once you have mutexes and completions, you have
+> no further need for even general counting semaphores.
 
-On Sat, 23 Jun 2007, Peter Zijlstra wrote:
+Whoa, hold on. But I've been explicitly mentioning *binary* semaphores
+all along!
 
-> On Thu, 2007-06-21 at 16:08 -0700, Linus Torvalds wrote:
-> > 
-> > The vm_dirty_ratio thing is a global value, and I think we need that 
-> > regardless (for the independent issue of memory deadlocks etc), but if we 
-> > *additionally* had a per-device throttle that was based on some kind of 
-> > adaptive thing, we could probably raise the global (hard) vm_dirty_ratio a 
-> > lot.
-> 
-> I just did quite a bit of that:
-> 
->   http://lkml.org/lkml/2007/6/14/437
+Of course users who want / allow multiple tasks (but only upto a specific
+maximum number, which is what counted semaphores are all about)
+to be present in a given critical section simultaneously would still want
+to use the _counted_ semaphores, which is why you won't see the old
+"struct semaphores" dying anytime soon.
 
-Ok, that does look interesting.
-
-A few comments:
-
- - Cosmetic: please please *please* don't do this:
-
-	-	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH) {
-	+	if (atomic_long_dec_return(&nfss->writeback) <
-	+			NFS_CONGESTION_OFF_THRESH)
-
-   we had a discussion about this not that long ago, and it drives me wild 
-   to see people split lines like that. It used to be readable. Now it's 
-   not.
-
-   If it's the checkpatch.pl thing that caused you to split it like that, 
-   I think we should just change the value where we start complaining. 
-   Maybe set it at 95 characters per line or something.
-
- - I appreciate the extensive comments on floating proportions, and the 
-   code looks really quite clean (apart from the cosmetic thing about) 
-   from a quick look-through.
-
-   HOWEVER. It does seem to be a bit of an overkill. Do we really need to 
-   be quite that clever, and do we really need to do 64-bit calculations 
-   for this? The 64-bit ops in particular seem quite iffy: if we ever 
-   actually pass in an amount that doesn't fit in 32 bits, we'll turn 
-   those per-cpu counters into totally synchronous global counters, which 
-   seems to defeat the whole point of them. So I'm a bit taken aback by 
-   that whole "mod64" thing
-
-   (I also hate the naming. I don't think "..._mod()" was a good name to 
-   begin with: "mod" means "modulus" to me, not "modify". Making it be 
-   called "mod64" just makes it even *worse*, since it's now _obviously_ 
-   about modulus - but isn't)
-
-So I'd appreciate some more explanations, but I'd also appreciate some 
-renaming of those functions. What used to be pretty bad naming just turned 
-*really* bad, imnsho.
-
-		Linus
+Satyam
