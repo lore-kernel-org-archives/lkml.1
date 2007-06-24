@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbXFXTki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbXFXTmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755804AbXFXTki (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXFXTkb
+	id S1755655AbXFXTmS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXFXTmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:40:31 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:59011 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751352AbXFXTka (ORCPT
+	Sun, 24 Jun 2007 15:42:10 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:65235 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbXFXTmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:40:30 -0400
-In-Reply-To: <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
-References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-sparse@vger.kernel.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Date: Sun, 24 Jun 2007 21:40:06 +0200
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.623)
+	Sun, 24 Jun 2007 15:42:08 -0400
+Date: Sun, 24 Jun 2007 13:42:01 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: hsm violation
+In-reply-to: <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: enricoss@tiscali.it, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Tejun Heo <htejun@gmail.com>
+Message-id: <467EC909.9040006@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.sspu6LOivd/touNtS2IsMKPqHa0@ifi.uio.no>
+ <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Why?  I'd say it's not better than BUILD_BUG_ON_ZERO() use
->> instead of that ?:
->
-> Oh, _that_ part I have no problem with. It's more that it seems that 
-> the
-> gcc optimization is ok at least as an extension.
+Andrew Morton wrote:
+> On Sun, 24 Jun 2007 14:32:22 +0200 Enrico Sardi <enricoss@tiscali.it> wrote:
+>> [   61.176000] ata1.00: exception Emask 0x2 SAct 0x2 SErr 0x0 action 0x2 
+>> frozen
+>> [   61.176000] ata1.00: (spurious completions during NCQ issue=0x0 
+>> SAct=0x2 FIS=005040a1:00000004)
 
-Sure, but it's not an extension (yet), but an implementation
-side-effect; it would have to be (semi-formally) defined in
-the manual to be an extension.  Until that happens, anyone
-using this "feature" risks haven his code broken at any time
-(or, rather, his code already was broken but he didn't know
-it).
+..
 
-See gcc.gnu.org/PR456 for more discussion.  Yes it's an old
-bug...
+> 
+> It's not obvious (to me) whether this is a driver bug, a hardware bug,
+> expected-normal-behaviour or what - those diagnostics (which we get to
+> see distressingly frequently) are pretty obscure.
 
+The spurious completions during NCQ error is indicating that the drive 
+has indicated it's completed NCQ command tags which weren't outstanding. 
+  It's normally a result of a bad NCQ implementation on the drive. 
+Technically we can live with it, but it's rather dangerous (if it 
+indicates completions for non-outstanding commands, how do we know it 
+doesn't indicate completions for actually outstanding commands that 
+aren't actually completed yet..)
 
-Segher
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
