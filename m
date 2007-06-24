@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbXFXWIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbXFXWJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753417AbXFXWIz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 18:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXFXWIs
+	id S1754043AbXFXWJp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 18:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbXFXWJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 18:08:48 -0400
-Received: from smtp-out3.libero.it ([212.52.84.43]:49737 "EHLO
-	smtp-out3.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbXFXWIs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 18:08:48 -0400
-X-Scanned: with antispam and antivirus automated system at libero.it
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAKeHfkaXLETW/2dsb2JhbACtSA
-Date: Mon, 25 Jun 2007 00:08:46 +0200
-From: Salvatore De Paolis <depaolis.salvatore@libero.it>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: pivot_root alternative
-Message-ID: <20070625000846.25f9a46f@debian>
-In-Reply-To: <467EE48D.5010204@arndnet.de>
-References: <20070624232734.28829225@debian>
-	<Pine.LNX.4.64.0706242328520.11964@fbirervta.pbzchgretzou.qr>
-	<467EE48D.5010204@arndnet.de>
-Organization: Debian Linux
-X-Mailer: Claws Mail 2.9.2cvs72 (GTK+ 2.10.13; i686-pc-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAHlBMVEUAKQB8FQC2NADbSQD6Ygr+dxn/iyn/pkL/ynQAAQDr4pu+AAAAAXRSTlMAQObYZgAAAltJREFUOMtNk81x4zAMhd2CfdujqWQLICgXYILaewTIBcSiKwipCla+puN9FClvMNKMjU94+CF4OBwuy7NZnoWZVb05FBt2f7qPRByCBruBPy0iie16BpjUV9D8ak0HnaBxlh8gR6aekSPoFCu4Ff+alUdyDk+Y4r2BHHPOUTy5q0H2Kc4VJNVHzkmoc7ZzrLEBHSlMy5qY3n0fmKdHA57w57l+jSOzg9BjBx2zHQAEbhb4d+DU2stzTXPYSs35BTwRpFKaJo2o4gWIHN+WFXXFXP2tQeMC39BhtZRTmrWCXsPjue6kKNWIbohxeYH0A9ygDFCyFBSj8gbebrmcSNPHE2ffwDNv84VI2lLo2MB2hEUEJKHx2x6R1xKB6acINyIq6MKyLM+/S4oor9jMVPsIj3XJ6yN+TkULRUndklOPciExCr6epqQ3XyOObsiPVHYNZ6d4ZawRRyraOCUdhl718uWpbuKx8xAqixMGGQNq+qjAGI4PhX/Su4gOPNpzTW7cJWIBiwk5vObcIpAEvll7su+9ent+AT9LwOIE/GT+MDsg7LIwERkSwcobc6pn7jphBeh757zQb2OObRlwXaCDl0Wuo92lyGNpkUIUTLy77BHejMip5fq5ADFrjg14McYHlGkpsKcX6PBNSWIxAhHvzbkBS9biWoarMU7Y9y9AisrfGJNA84K+jw04b6xDXYorK+j+fPzVkpNlABzR/VO2mloEo+nOEt/vs3JVagBKzvfosfeb//v4vQGB0tV2NAaHHraAFuGh5XpfxmpOp/9gpHeMAq2cTLEG/gGlWSVVOcldhwAAAABJRU5ErkJggg==
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jun 2007 18:09:37 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41843 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751222AbXFXWJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 18:09:36 -0400
+Date: Sun, 24 Jun 2007 15:09:03 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: James Morris <jmorris@namei.org>
+Cc: linux-security-module@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH][RFC] security: Convert LSM into a static interface
+Message-ID: <20070624220903.GB3723@sequoia.sous-sol.org>
+References: <20070617135239.GA17689@sergelap> <4676007F.7060503@kernel.org> <20070618044017.GW3723@sequoia.sous-sol.org> <20070620171037.GA28670@sergelap.ibm.com> <20070620174613.GF3723@sequoia.sous-sol.org> <20070621160011.GB9913@sergelap.austin.ibm.com> <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com> <Line.LNX.4.64.0706241158320.12660@localhost.localdomain> <Line.LNX.4.64.0706241653490.14183@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Line.LNX.4.64.0706241653490.14183@localhost.localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jun 2007 23:39:25 +0200
-Arnd Hannemann <arnd@arndnet.de> wrote:
+* James Morris (jmorris@namei.org) wrote:
+> -module_param_named(disable, capability_disable, int, 0);
+> -MODULE_PARM_DESC(disable, "To disable capabilities module set disable = 1");
+> +
+> +static int __init capability_disable_setup(char *str)
+> +{
+> +	capability_disable = simple_strtol(str, NULL, 0);
+> +	return 1;
+> +}
+> +__setup("capability_disable=", capability_disable_setup);
 
-> use run-init from klibc?
- 
-> However be aware of the limitation of run-init:
-> It only works for direct childs of root directory
-> /mnt/newroot won't work
-> /newroot should work ;-)
-> 
-> Good luck,
-> Arnd
+This changes the command line argument.  Other than that and a some
+sanity testing I'll take this.
 
-Thank you both, i'll take a look at run-init:)
-Nice to know about the child limitation but i just have to find klibc-utils
-inside buildroot or busybox if even exists:)
-
-Regards
-S.
+thanks,
+-chris
