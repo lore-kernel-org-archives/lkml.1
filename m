@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbXFXUii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXFXUi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbXFXUii (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 16:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXFXUia
+	id S1755894AbXFXUi4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 16:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXFXUiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 16:38:30 -0400
-Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:51972 "EHLO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbXFXUi3 (ORCPT
+	Sun, 24 Jun 2007 16:38:46 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42113 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754569AbXFXUik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 16:38:29 -0400
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
-	pathname matching
-Date: Sun, 24 Jun 2007 20:35:35 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <f5mkin$29j$1@taverner.cs.berkeley.edu>
-References: <466C303E.5010304@novell.com> <Line.LNX.4.64.0706211530290.483@localhost.localdomain> <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
-Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1182717335 2355 128.32.168.222 (24 Jun 2007 20:35:35 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Sun, 24 Jun 2007 20:35:35 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Sun, 24 Jun 2007 16:38:40 -0400
+Date: Sun, 24 Jun 2007 21:38:37 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070624203837.GE21478@ftp.linux.org.uk>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley  wrote:
->On Thu, 2007-06-21 at 21:54 +0200, Lars Marowsky-Bree wrote:
->> And now, yes, I know AA doesn't mediate IPC or networking (yet), but
->> that's a missing feature, not broken by design.
->
->The incomplete mediation flows from the design, since the pathname-based
->mediation doesn't generalize to cover all objects unlike label- or
->attribute-based mediation.
+On Sun, Jun 24, 2007 at 09:40:06PM +0200, Segher Boessenkool wrote:
+> >>Why?  I'd say it's not better than BUILD_BUG_ON_ZERO() use
+> >>instead of that ?:
+> >
+> >Oh, _that_ part I have no problem with. It's more that it seems that 
+> >the
+> >gcc optimization is ok at least as an extension.
+> 
+> Sure, but it's not an extension (yet), but an implementation
+> side-effect; it would have to be (semi-formally) defined in
+> the manual to be an extension.  Until that happens, anyone
+> using this "feature" risks haven his code broken at any time
+> (or, rather, his code already was broken but he didn't know
+> it).
+> 
+> See gcc.gnu.org/PR456 for more discussion.  Yes it's an old
+> bug...
 
-I don't see anything in the AA design that would prevent an extending
-it to mediate network and IPC while remaining consistent with its design
-so far.  Do you?  It seems to me the AA design is to mediate filesystem
-access using pathname-based access control, and that says nothing about
-how they mediate network access.
+Humm...  Right, so __builtin_offsetof() needs special treatment too.
+Oh, bugger.  Is
+	offsetof(struct foo, a.x[n])
+a documented extension?  I _know_ that it's not promised by 7.17,
+but gcc eats it (and obviously that sucker requires extra treatment
+in that case).
 
-I have built sandboxing tools before, and my experience is that the
-filesystem mediation is the hardest, gronkiest part.  In comparison,
-mediating networking and IPC is considerably easier.  The policy
-language for mediating access to the network can be pretty simple.
-The same for IPC.  Obviously you shouldn't expect the policy language
-for networking to use filenames, any more than you should expect the
-policy languages for filesystems to use TCP/IP port numbers; that wouldn't
-make any sense.
+Parsing __builtin_offsetof() arguments is going to be fun ;-/  Right
+now sparse has it as a predefined macro, but if we want to do that
+kind of analysis, we need to really parse it.  OTOH, that's not
+such a big deal...  Parser would need to accept
+	ident ( \[ expr \] | . ident )*
+there, typecheck would walk down, check types and find offsets of
+struct members on the way down and build expression on the way
+back (e.g. in form of constant + sum of stuff from [...]), doing
+evaluate_expression() on each index and slapping Int_const_expr
+on created nodes accordingly.  In the end, slap the Int_const_expr
+on resulting expression in obvious way.  expand would work as usual,
+no interesting nodes surviving by that point...
 
+OK, that's doable and probably should be split into implementation
+of __builtin_offsetof() (sans Int_const_expr logics) and Int_const_expr
+parts merged into the patch that does all handling of integer constant
+expressions.
 
->And the "use the natural abstraction for
->each object type" approach likewise doesn't yield any general model or
->anything that you can analyze systematically for data flow.
-
-I don't see this as relevant to whether AA should be merged.
-Fight that one in the marketplace for users, not L-K.
-
->> If I restrict my Mozilla to not access my on-disk mail folder, it can't
->> get there. (Barring bugs in programs which Mozilla is allowed to run
->> unconfined, sure.)
->
->Um, no.  It might not be able to directly open files via that path, but
->showing that it can never read or write your mail is a rather different
->matter.
-
-"Showing that it can never read or write your mail" is not part of AA's
-goals.  People whose goals differ from AA's can use a different tool.
-No one is forcing you to use AA if it isn't useful to you.
-
-I don't see this criticism as relevant to a merger decision.
+Joy.  OK, folks, disregard 16/16 in the current form; everything prior
+to it stands on its own.
