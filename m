@@ -1,57 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbXFXVtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbXFXVvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbXFXVtm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 17:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXFXVtf
+	id S1754916AbXFXVvx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 17:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbXFXVvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 17:49:35 -0400
-Received: from v035086.ppp.asahi-net.or.jp ([124.155.35.86]:7452 "HELO
-	daikokuya.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751081AbXFXVtf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 17:49:35 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jun 2007 17:49:34 EDT
-Date: Mon, 25 Jun 2007 06:42:53 +0900
-From: Neil Booth <neil@daikokuya.co.uk>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070624214253.GL7590@daikokuya.co.uk>
-References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070624203837.GE21478@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 24 Jun 2007 17:51:44 -0400
+Received: from smtpout.mac.com ([17.250.248.186]:53694 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751081AbXFXVvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 17:51:43 -0400
+In-Reply-To: <Pine.LNX.4.64.0706242153240.11964@fbirervta.pbzchgretzou.qr>
+References: <467EA7C1.4080006@rossove.com> <D6003DDE-0C36-437B-B70A-D422DFE153D0@mac.com> <Pine.LNX.4.64.0706242153240.11964@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <57B9EBB4-64D6-4836-BAD0-2A8C70579B60@mac.com>
+Cc: djones@rossove.com, LKML Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Scaling Max IP address limitation
+Date: Sun, 24 Jun 2007 17:51:33 -0400
+To: Jan Engelhardt <jengelh@computergmbh.de>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:-
+On Jun 24, 2007, at 15:58:54, Jan Engelhardt wrote:
+> On Jun 24 2007 15:08, Kyle Moffett wrote:
+>> Do you really need that many IP addresses?  When somebody finally  
+>> gets around to implementing REDIRECT support for ip6tables then  
+>> you could just redirect them all to the same port on the local  
+>> system.
+>
+> The way I see it, it's: "if someone gets around to implement *IPv6  
+> NAT*" (which, if its designers were asked, is contrary to the idea  
+> of ipv6).
 
-> > See gcc.gnu.org/PR456 for more discussion.  Yes it's an old
-> > bug...
-> 
-> Humm...  Right, so __builtin_offsetof() needs special treatment too.
-> Oh, bugger.  Is
-> 	offsetof(struct foo, a.x[n])
-> a documented extension?  I _know_ that it's not promised by 7.17,
-> but gcc eats it (and obviously that sucker requires extra treatment
-> in that case).
+I totally agree.  On the other hand, you need REDIRECT for things  
+like transparent proxies which by definition aren't visible as  
+anything other than a router or bridge.
 
-I asked on comp.std.c about this; the feeling was that only identifiers
-are intended to be permitted as the 2nd argument to offsetof.  If true
-the standard has a very obscure way of stating something that could
-be said much more simply.
- 
-> Parsing __builtin_offsetof() arguments is going to be fun ;-/  Right
-> now sparse has it as a predefined macro, but if we want to do that
-> kind of analysis, we need to really parse it.  OTOH, that's not
-> such a big deal...  Parser would need to accept
-> 	ident ( \[ expr \] | . ident )*
+>> Having routing table operations, IPsec transformations, etc just  
+>> be another step in the firewall rules would also be useful.  It  
+>> would be handy to be able to "-j ROUTE", then "-j IPSEC", then "-j  
+>> ROUTE" again, to re-route the now-encapsulated IPsec packets to  
+>> their proper destination.
+> Absolutely...
+>
+>> That would also eliminate the sort-of-hacky problems with  
+>> destination network interface in the bridging code:
+>
+> Where's the hack? iptables operates on what it sees, and it sees  
+> br0.  The physdev match is justified IMO.
 
-don't forget -> if you're going to accept extra stuff.  GCC forgot ->
-with the parser rewrite, yes I filed a PR.
+The problem is this:
+I want to be able to filter bridged network traffic *both* based on  
+the IP layer *and* the physical device it's going to be routed out.   
+Due to fundamental problems with a statically-ordered architecture,  
+it's impossible to get both, see commit  
+68df071a201f06b08cdc07111c6d4af918e64edd (found here: http:// 
+lists.netfilter.org/pipermail/netfilter-devel/2006-December/ 
+026388.html).  Basically if you want such cross-layer hooks, right  
+now your *ONLY* choice is to use marks with 2 drawbacks:  (1)  There  
+are a very small number of marks which must be carefully allocated by  
+your firewall-setup script  (2)  Marks are inherently extremely  
+fragile for passing data between layers.
 
-Neil.
+>> "-j BRIDGE" might be another step in the process, and conceivably  
+>> you could have independent bridge MAC tables too.
+>
+> Whether a packet goes out a bridge (was that the intention of -j  
+> BRIDGE?) is determined by the routing table, which, in most cases,  
+> is just a matter of destination address.
+
+No, the intent of "-j BRIDGE" would be _after_ "-j ROUTE" and some  
+kind of "-j ARP", to actually compute which physical port a given  
+packet should go.
+
+>> That would also appear to get rid of the need for all tables other  
+>> than
+>> "filter" and all predefined chains other than "INPUT" and  
+>> "OUTPUT".  Default
+>> rules would be these:
+>> nettables -A INPUT -j CONNTRACK
+>> nettables -A INPUT -j LOCALMATCH
+>> nettables -A INPUT --for-this-host -j ACCEPT
+>> nettables -A INPUT -j OUTPUT
+>
+> I'd prefer if Linux outputted its packets by default :)
+
+Well the problem is this:  Do you want the packet accepted locally or  
+forwarded.  If forwarded, how do you want it routed, and which  
+physical port do you want it to go out?  Without a statically-coded  
+ordering for all those things there is no way to say what the  
+"default" is.  You would need some way to switch between iptables/ 
+ip6tables (for compatibility) and pkttables/nettables (for advanced  
+functionality).
+
+> But this idea may have its benefit: by not restricting rules to  
+> certain positions like currently, throughput could be achieved.  
+> "Evil packets" f.e. could be dropped really early. (Well, you could  
+> also drop them early _today_, but a DROP in the mangle table will  
+> everyone make their eyes roll
+
+It does give you a million more ways to shoot yourself in the foot.   
+Some things would have constraints like "output device must be  
+set" (BRIDGE/ARP, for example).  If you accidentally stuck non- 
+constrained things in the wrong order you could get totally-non-IP- 
+compliant behavior.  On the other hand, it does give you many choices  
+about IPsec before or after ROUTING (or after one routing step and  
+before another), etc.
+
+Cheers,
+Kyle Moffett
+
