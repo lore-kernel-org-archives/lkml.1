@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXFXDIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbXFXD24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887AbXFXDIK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 23:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXFXDH7
+	id S1754297AbXFXD24 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 23:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbXFXD2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 23:07:59 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41766 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752885AbXFXDH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 23:07:58 -0400
-Message-ID: <467DE00A.9080700@garzik.org>
-Date: Sat, 23 Jun 2007 23:07:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Sat, 23 Jun 2007 23:28:48 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:32102 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752675AbXFXD2r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 23:28:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KliiKmEMm5ElFvGK2ZaQzQVsbDnxLDy2R1YxVBqTDqWQvxbRlBf+CTtj9tpkKlZbIFaPSd7Uxyr1ZQIFmKIV/l3R57F2J36wLCsjqFB2D1fzIqPGgdKcv7dN2ow14JAiV8Va6795mlx9EzlQcjPaxIk+QaHJIdUxfxT4nkrwJLo=
+Message-ID: <a781481a0706232028ie3b6277u65ba4c6bbc773f5e@mail.gmail.com>
+Date: Sun, 24 Jun 2007 08:58:45 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Trent Piepho" <xyzzy@speakeasy.org>
+Subject: Re: Kconfig troubles when using menuconfig - Was: [patch]Re: [linux-usb-devel] linux-2.6.22-rc5-gf1518a0 build #300 failed in zc0301_core.c
+Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>, toralf.foerster@gmx.de,
+       "Oliver Neukum" <oneukum@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       "Luca Risolia" <luca.risolia@studio.unibo.it>
+In-Reply-To: <Pine.LNX.4.58.0706231525130.4914@shell4.speakeasy.net>
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC] fsblock
-References: <20070624014528.GA17609@wotan.suse.de>
-In-Reply-To: <20070624014528.GA17609@wotan.suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <200706211117.55908.toralf.foerster@gmx.de>
+	 <200706211231.53898.luca.risolia@studio.unibo.it>
+	 <200706211326.45031.toralf.foerster@gmx.de>
+	 <200706211350.14526.oneukum@suse.de>
+	 <1182518566.14289.20.camel@gaivota>
+	 <Pine.LNX.4.58.0706221259500.4914@shell4.speakeasy.net>
+	 <a781481a0706221420u6935e75er1ee5601e013b40d2@mail.gmail.com>
+	 <Pine.LNX.4.58.0706231525130.4914@shell4.speakeasy.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> - No deadlocks (hopefully). The buffer layer is technically deadlocky by
->   design, because it can require memory allocations at page writeout-time.
->   It also has one path that cannot tolerate memory allocation failures.
->   No such problems for fsblock, which keeps fsblock metadata around for as
->   long as a page is dirty (this still has problems vs get_user_pages, but
->   that's going to require an audit of all get_user_pages sites. Phew).
-> 
-> - In line with the above item, filesystem block allocation is performed
->   before a page is dirtied. In the buffer layer, mmap writes can dirty a
->   page with no backing blocks which is a problem if the filesystem is
->   ENOSPC (patches exist for buffer.c for this).
+Hi,
 
-This raises an eyebrow...  The handling of ENOSPC prior to mmap write is 
-more an ABI behavior, so I don't see how this can be fixed with internal 
-changes, yet without changing behavior currently exported to userland 
-(and thus affecting code based on such assumptions).
+On 6/24/07, Trent Piepho <xyzzy@speakeasy.org> wrote:
+> On Sat, 23 Jun 2007, Satyam Sharma wrote:
+> > On 6/23/07, Trent Piepho <xyzzy@speakeasy.org> wrote:
+> > > [...]
+> > > Now all the usb drivers will gain USB as a dependency directly and can't be
+> > > set to something higher than USB.
+> >
+> > Ok, so we add this as solution 2.(c) to the reply I just sent to Jan :-)
+> >
+> > But I still prefer 2.(b) -- making the config scripts intelligent so that if a
+> > given "menuconfig FOO depends on BAR", then all the "config BAZ"s
+> > inside this menuconfig also automatically "depend on" BAR too.
+>
+> Of course, there currently is no "inside" a menuconfig.  You would have to do
+> something like make everything inside an "if FOO / endif" gain not just a
+> dependency on FOO, but also gain a dependency on all of FOO's dependencies.
 
+Yes, making the config scripts do what you describe there
+automagically is exactly what I meant there.
 
-> - An inode's metadata must be tracked per-inode in order for fsync to
->   work correctly. buffer contains helpers to do this for basic
->   filesystems, but any block can be only the metadata for a single inode.
->   This is not really correct for things like inode descriptor blocks.
->   fsblock can track multiple inodes per block. (This is non trivial,
->   and it may be overkill so it could be reverted to a simpler scheme
->   like buffer).
+> > This is simpler in the long run because it requires least amount
+> > (actually none) of redundant typing and would continue to work in
+> > the future if/when the:
+> > [...]
+> > configmenu FOO
+> > ...
+> > endconfigmenu # FOO
+> >
+> > kind of idiom ...
+>
+> Like that I suggested here?
+> http://article.gmane.org/gmane.linux.kernel/524823
+>
+> Basically, make menuconfig work like menu does, except the menu itself can be
+> turned on and off.  Instead of having menuconfig work like a config, but with
+> some kind of "menu" hint.  It seems like the former is more in line with what
+> menuconfig is actually used for.
 
-hrm; no specific comment but this seems like an idea/area that needs to 
-be fleshed out more, by converting some of the more advanced filesystems.
+Again, we're in complete agreement here (also like what Jan
+mentioned elsewhere on this thread). But then there's often
+too much "suggestions" on Kconfig/Kbuild matters on lkml,
+but too little code (wonder if that was what got Roman
+irritated yesterday). This may be because stuff in scripts/ doesn't
+quite get the kind of eyeballs kernel/ or fs/ or even drivers/ gets,
+but I guess the only way to get Roman around to our view would
+be start submitting patches for the solutions we're all fond of
+"suggesting" :-)
 
-
-> - Large block support. I can mount and run an 8K block size minix3 fs on
->   my 4K page system and it didn't require anything special in the fs. We
->   can go up to about 32MB blocks now, and gigabyte+ blocks would only
->   require  one more bit in the fsblock flags. fsblock_superpage blocks
->   are > PAGE_CACHE_SIZE, midpage ==, and subpage <.
-
-definitely useful, especially if I rewrite my ibu filesystem for 2.6.x, 
-like I've been planning.
-
-
-> So. Comments? Is this something we want? If yes, then how would we
-> transition from buffer.c to fsblock.c?
-
-Your work is definitely interesting, but I think it will be even more 
-interesting once ext2 (w/ dir in pagecache) and ext3 (journalling) are 
-converted.
-
-My gut feeling is that there are several problem areas you haven't hit 
-yet, with the new code.
-
-Also, once things are converted, the question of transitioning from 
-buffer.c will undoubtedly answer itself.  That's the way several of us 
-handle transitions:  finish all the work, then look with fresh eyes and 
-conceive a path from the current code to your enhanced code.
-
-	Jeff
-
-
+Satyam
