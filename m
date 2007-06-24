@@ -1,63 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXFXV3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbXFXVaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbXFXV3t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 17:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbXFXV3Z
+	id S1754251AbXFXVaK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 17:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbXFXV32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 17:29:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37133 "EHLO ogre.sisk.pl"
+	Sun, 24 Jun 2007 17:29:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37135 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754083AbXFXV3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754015AbXFXV3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 24 Jun 2007 17:29:21 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: Please release a stable kernel Linux 3.0
-Date: Sun, 24 Jun 2007 22:54:59 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
+Date: Sun, 24 Jun 2007 23:36:07 +0200
 User-Agent: KMail/1.9.5
-Cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       =?iso-8859-1?q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>,
-       linux-kernel@vger.kernel.org
-References: <200706212349.54983.zoltan.hubert@zzaero.com> <200706221700.08135.rjw@sisk.pl> <467C02AA.2080105@redhat.com>
-In-Reply-To: <467C02AA.2080105@redhat.com>
+Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Uli Luckas <u.luckas@road.de>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706242254.59695.rjw@sisk.pl>
+Message-Id: <200706242336.08321.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 22 June 2007 19:11, Chuck Ebbert wrote:
-> On 06/22/2007 11:00 AM, Rafael J. Wysocki wrote:
-> > On Friday, 22 June 2007 00:34, Chuck Ebbert wrote:
-> >> On 06/21/2007 06:29 PM, Jesper Juhl wrote:
-> >>> I myself have argued that we should be focusing more on stability and
-> >>> regression fixing, but I'm not so sure that a 2.6.7 devel branch would
-> >>> solve this. In general the 2.6.x.y -stable kernels seem to be doing
-> >>> the job pretty good.
-> >>>
-> >>  
-> >> Even the good ones that get lots of fixes aren't all that good. The
-> >> biggest problem ATM is that suspend is badly broken and keeps getting
-> >> worse...
-> > 
-> > Can you please provide me with any links to suspend-related bug reports from
-> > you?
-> > 
-> 
-> I get so many suspend/resume bug reports that I've given up trying
-> to get them fixed. And there are so many bugs that are even worse,
-> like crashes during normal use, data corruption, etc. that suspend
-> bugs don't get much attention. But here are the ones for Fedora 6;
-> the list would be much longer if I included Fedora 5 and 7:
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Can you please tell me what's the relationship between Fedora kernel vesions
-and the kernel.org kernels?
+At present, if a user mode helper is running while usermodehelper_pm_callback()
+is executed, the helper may be frozen and the completion in
+call_usermodehelper_exec() won't be completed until user space processes are
+thawed.  As a result, the freezing of kernel threads may fail, which is not
+desirable.
 
-Greetings,
-Rafael
+Prevent this from happening by introducing a counter of running user mode
+helpers and allowing usermodehelper_pm_callback() to succeed for
+action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+fails if that doesn't happen.]
 
+Special thanks to Uli Luckas <u.luckas@road.de> for reviewing the previous
+versions of this patch and for very useful comments.
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+Acked-by: Uli Luckas <u.luckas@road.de>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ kernel/kmod.c |   76 ++++++++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 66 insertions(+), 10 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
++++ linux-2.6.22-rc4-mm2/kernel/kmod.c
+@@ -41,14 +41,6 @@ extern int max_threads;
+ 
+ static struct workqueue_struct *khelper_wq;
+ 
+-/*
+- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
+- * immediately returning -EBUSY.  Used for preventing user land processes from
+- * being created after the user land has been frozen during a system-wide
+- * hibernation or suspend operation.
+- */
+-static int usermodehelper_disabled;
+-
+ #ifdef CONFIG_KMOD
+ 
+ /*
+@@ -275,15 +267,54 @@ static void __call_usermodehelper(struct
+ 	}
+ }
+ 
++#ifdef CONFIG_PM
++/*
++ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
++ * (used for preventing user land processes from being created after the user
++ * land has been frozen during a system-wide hibernation or suspend operation).
++ */
++static int usermodehelper_disabled;
++
++/* Number of helpers running */
++static atomic_t running_helpers = ATOMIC_INIT(0);
++
++/*
++ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
++ * helpers to finish.
++ */
++static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
++
++/*
++ * Time to wait for running_helpers to become zero before the setting of
++ * usermodehelper_disabled in usermodehelper_pm_callback() fails
++ */
++#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
++
+ static int usermodehelper_pm_callback(struct notifier_block *nfb,
+ 					unsigned long action,
+ 					void *ignored)
+ {
++	long retval;
++
+ 	switch (action) {
+ 	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
+ 		usermodehelper_disabled = 1;
+-		return NOTIFY_OK;
++		/*
++		 * From now on call_usermodehelper_exec() won't start any new
++		 * helpers, so it is sufficient if running_helpers turns out to
++		 * be zero at one point (it may be increased later, but that
++		 * doesn't matter).
++		 */
++		retval = wait_event_timeout(running_helpers_waitq,
++					atomic_read(&running_helpers) == 0,
++					RUNNING_HELPERS_TIMEOUT);
++		if (retval) {
++			return NOTIFY_OK;
++		} else {
++			usermodehelper_disabled = 0;
++			return NOTIFY_BAD;
++		}
+ 	case PM_POST_HIBERNATION:
+ 	case PM_POST_SUSPEND:
+ 		usermodehelper_disabled = 0;
+@@ -293,6 +324,29 @@ static int usermodehelper_pm_callback(st
+ 	return NOTIFY_DONE;
+ }
+ 
++static void new_helper(void)
++{
++	atomic_inc(&running_helpers);
++}
++
++static void helper_finished(void)
++{
++	if (atomic_dec_and_test(&running_helpers))
++		wake_up(&running_helpers_waitq);
++}
++
++static void register_pm_notifier_callback(void)
++{
++	pm_notifier(usermodehelper_pm_callback, 0);
++}
++#else /* CONFIG_PM */
++#define usermodehelper_disabled	0
++
++static inline void new_helper(void) {}
++static inline void helper_finished(void) {}
++static inline void register_pm_notifier_callback(void) {}
++#endif /* CONFIG_PM */
++
+ /**
+  * call_usermodehelper_setup - prepare to call a usermode helper
+  * @path - path to usermode executable
+@@ -397,6 +451,7 @@ int call_usermodehelper_exec(struct subp
+ 	DECLARE_COMPLETION_ONSTACK(done);
+ 	int retval;
+ 
++	new_helper();
+ 	if (sub_info->path[0] == '\0') {
+ 		retval = 0;
+ 		goto out;
+@@ -418,6 +473,7 @@ int call_usermodehelper_exec(struct subp
+ 
+   out:
+ 	call_usermodehelper_freeinfo(sub_info);
++	helper_finished();
+ 	return retval;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_exec);
+@@ -459,5 +515,5 @@ void __init usermodehelper_init(void)
+ {
+ 	khelper_wq = create_singlethread_workqueue("khelper");
+ 	BUG_ON(!khelper_wq);
+-	pm_notifier(usermodehelper_pm_callback, 0);
++	register_pm_notifier_callback();
+ }
