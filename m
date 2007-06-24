@@ -1,66 +1,355 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbXFXU5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbXFXU6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbXFXU5t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 16:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXFXU5l
+	id S1754857AbXFXU6o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 16:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXFXU6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 16:57:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:34746 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbXFXU5k convert rfc822-to-8bit (ORCPT
+	Sun, 24 Jun 2007 16:58:35 -0400
+Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:51146 "EHLO
+	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbXFXU6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 16:57:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KGr6fQrTxXZXCKG2xKiOjgIgdj+CoZiwj8LGTsw0fDkBgYp1hDk2S/iPBO4vaUWxCw92EeHaQa1DZWbhlku9KfU+2kW/di3irQWtFE51AD4bE3LSfsaXNyL/gTsawYen8gDcYB6tTLhauXyCX7DkIggI5vTXSZuflsIlqX/99Sc=
-Message-ID: <9a8748490706241357n12d1c158r503fe22a79acfa93@mail.gmail.com>
-Date: Sun, 24 Jun 2007 22:57:40 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Alberto Gonzalez" <info@gnebu.es>
-Subject: Re: Question about fair schedulers
-Cc: "Kyle Moffett" <mrmacman_g4@mac.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200706231928.22862.info@gnebu.es>
+	Sun, 24 Jun 2007 16:58:33 -0400
+Date: Sun, 24 Jun 2007 16:58:29 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: linux-security-module@vger.kernel.org
+cc: "Serge E. Hallyn" <serue@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, Andrew Morton <akpm@google.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: [PATCH][RFC] security: Convert LSM into a static interface
+In-Reply-To: <Line.LNX.4.64.0706241158320.12660@localhost.localdomain>
+Message-ID: <Line.LNX.4.64.0706241653490.14183@localhost.localdomain>
+References: <20070611123714.GA2063@sergelap.austin.ibm.com>
+ <878322.98602.qm@web36606.mail.mud.yahoo.com>
+ <afff21250706110926l244ddc28i44289cb08a6721e2@mail.gmail.com>
+ <20070617135239.GA17689@sergelap> <4676007F.7060503@kernel.org>
+ <20070618044017.GW3723@sequoia.sous-sol.org> <20070620171037.GA28670@sergelap.ibm.com>
+ <20070620174613.GF3723@sequoia.sous-sol.org> <20070621160011.GB9913@sergelap.austin.ibm.com>
+ <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com>
+ <Line.LNX.4.64.0706241158320.12660@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <200706230007.15622.info@gnebu.es>
-	 <200706230946.44023.info@gnebu.es>
-	 <EC86BD0E-7829-4DBF-864A-795804235C5C@mac.com>
-	 <200706231928.22862.info@gnebu.es>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23/06/07, Alberto Gonzalez <info@gnebu.es> wrote:
-> El Saturday 23 June 2007 18:35:18 Kyle Moffett escribió:
-[snip]
-> > "PROCESS1 is more important than PROCESS2" is pure policy and must be
-> > done from userspace.  We even give appropriate enforcement mechanisms
-> > to userspace to take such action (nice levels).
->
-> Yes, an app to change priorities would be very nice,
+Convert LSM into a static interface, as the ability to unload a security 
+module is not required by in-tree users and potentially complicates the 
+overall security architecture.
 
-You already have such an app. It is called 'renice' (and 'nice'). Most
-people can work out how to use those. :-)
+Needlessly exported LSM symbols have been unexported, to help reduce API 
+abuse.
 
-You also have graphical apps to do the job. For example, in KDE, try
-starting the "KDE System Guard" application (usually bound to the
-CTRL+ESC hotkey) and you'll see a nice list of all running processes.
-If you right-click a process you'll get a drop-down box with the
-bottom entry being "Renice Process...", simply click that and you can
-adjust the priority of that process.  You can also easily make it so
-that whenever you start a given application it gets niced to a
-specific priority; simply (again assuming KDE) right-click the icon
-you use to launch the application and edit it, select the
-"Application" tab and in the "Command: " field prefix the command used
-to launch the application with 'nice' and the priority you want, save
-your changes and the next time you launch that app it'll get the
-priority you wish.
-Gnome and most other environments also have similar capabilities.
+Module parameters for the capability and root_plug modules have been
+converted to kernel parameters.
 
+The SECURITY_FRAMEWORK_VERSION macro has also been removed.
+
+Signed-off-by: James Morris <jmorris@namei.org>
+---
+
+Please review & let me know if anything is broken.
+
+
+ Documentation/kernel-parameters.txt |   17 +++++++++++
+ security/Kconfig                    |    4 +-
+ security/capability.c               |   32 ++++----------------
+ security/commoncap.c                |    3 --
+ security/dummy.c                    |    1 -
+ security/root_plug.c                |   53 +++++++++++++---------------------
+ security/security.c                 |    9 +----
+ security/selinux/hooks.c            |    1 -
+ security/selinux/xfrm.c             |    1 -
+ 9 files changed, 48 insertions(+), 73 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 5d0283c..4c406fb 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -74,10 +74,12 @@ parameter is applicable:
+ 	PPT	Parallel port support is enabled.
+ 	PS2	Appropriate PS/2 support is enabled.
+ 	RAM	RAM disk support is enabled.
++	ROOTPLUG The example Root Plug LSM is enabled.
+ 	S390	S390 architecture is enabled.
+ 	SCSI	Appropriate SCSI support is enabled.
+ 			A lot of drivers has their options described inside of
+ 			Documentation/scsi/.
++	SECURITY Different security models are enabled.
+ 	SELINUX SELinux support is enabled.
+ 	SERIAL	Serial support is enabled.
+ 	SH	SuperH architecture is enabled.
+@@ -376,6 +378,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			possible to determine what the correct size should be.
+ 			This option provides an override for these situations.
+ 
++	capability_disable=
++			[SECURITY] Disable capabilities.  This would normally
++			be used only if an alternative security model is to be
++			configured.  Potentially dangerous and should only be
++			used if you are entirely sure of the consequences.
++
+ 	cdu31a=		[HW,CD]
+ 			Format: <io>,<irq>[,PAS]
+ 			See header of drivers/cdrom/cdu31a.c.
+@@ -1541,6 +1549,15 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	rootfstype=	[KNL] Set root filesystem type
+ 
++	root_plug_vendor_id=
++			[ROOTPLUG] Override the default vendor ID
++
++	root_plug_product_id=
++			[ROOTPLUG] Override the default product ID
++
++	root_plug_debug=
++			[ROOTPLUG] Enable debugging output
++
+ 	rw		[KNL] Mount root device read-write on boot
+ 
+ 	S		[KNL] Run init in single mode
+diff --git a/security/Kconfig b/security/Kconfig
+index 460e5c9..8ae5490 100644
+--- a/security/Kconfig
++++ b/security/Kconfig
+@@ -74,14 +74,14 @@ config SECURITY_NETWORK_XFRM
+ 	  If you are unsure how to answer this question, answer N.
+ 
+ config SECURITY_CAPABILITIES
+-	tristate "Default Linux Capabilities"
++	bool "Default Linux Capabilities"
+ 	depends on SECURITY
+ 	help
+ 	  This enables the "default" Linux capabilities functionality.
+ 	  If you are unsure how to answer this question, answer Y.
+ 
+ config SECURITY_ROOTPLUG
+-	tristate "Root Plug Support"
++	bool "Root Plug Support"
+ 	depends on USB && SECURITY
+ 	help
+ 	  This is a sample LSM module that should only be used as such.
+diff --git a/security/capability.c b/security/capability.c
+index 38296a0..1c97953 100644
+--- a/security/capability.c
++++ b/security/capability.c
+@@ -8,7 +8,6 @@
+  *
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/security.h>
+@@ -51,8 +50,13 @@ static struct security_operations capability_ops = {
+ static int secondary;
+ 
+ static int capability_disable;
+-module_param_named(disable, capability_disable, int, 0);
+-MODULE_PARM_DESC(disable, "To disable capabilities module set disable = 1");
++
++static int __init capability_disable_setup(char *str)
++{
++	capability_disable = simple_strtol(str, NULL, 0);
++	return 1;
++}
++__setup("capability_disable=", capability_disable_setup);
+ 
+ static int __init capability_init (void)
+ {
+@@ -75,26 +79,4 @@ static int __init capability_init (void)
+ 	return 0;
+ }
+ 
+-static void __exit capability_exit (void)
+-{
+-	if (capability_disable)
+-		return;
+-	/* remove ourselves from the security framework */
+-	if (secondary) {
+-		if (mod_unreg_security (KBUILD_MODNAME, &capability_ops))
+-			printk (KERN_INFO "Failure unregistering capabilities "
+-				"with primary module.\n");
+-		return;
+-	}
+-
+-	if (unregister_security (&capability_ops)) {
+-		printk (KERN_INFO
+-			"Failure unregistering capabilities with the kernel\n");
+-	}
+-}
+-
+ security_initcall (capability_init);
+-module_exit (capability_exit);
+-
+-MODULE_DESCRIPTION("Standard Linux Capabilities Security Module");
+-MODULE_LICENSE("GPL");
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 384379e..04bd44b 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -339,6 +339,3 @@ EXPORT_SYMBOL(cap_task_post_setuid);
+ EXPORT_SYMBOL(cap_task_reparent_to_init);
+ EXPORT_SYMBOL(cap_syslog);
+ EXPORT_SYMBOL(cap_vm_enough_memory);
+-
+-MODULE_DESCRIPTION("Standard Linux Common Capabilities Security Module");
+-MODULE_LICENSE("GPL");
+diff --git a/security/dummy.c b/security/dummy.c
+index 8ffd764..6d4e34b 100644
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -15,7 +15,6 @@
+ #undef DEBUG
+ 
+ #include <linux/capability.h>
+-#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/mman.h>
+ #include <linux/pagemap.h>
+diff --git a/security/root_plug.c b/security/root_plug.c
+index 38dd4f3..3125e25 100644
+--- a/security/root_plug.c
++++ b/security/root_plug.c
+@@ -22,7 +22,6 @@
+  *	License.
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/security.h>
+@@ -33,25 +32,34 @@ static int secondary;
+ 
+ /* default is a generic type of usb to serial converter */
+ static int vendor_id = 0x0557;
+-static int product_id = 0x2008;
+ 
+-module_param(vendor_id, uint, 0400);
+-MODULE_PARM_DESC(vendor_id, "USB Vendor ID of device to look for");
++static int __init root_plug_vendor_id(char *str)
++{
++	vendor_id = simple_strtol(str, NULL, 0);
++	return 1;
++}
++__setup("root_plug_vendor_id=", root_plug_vendor_id);
++
++static int product_id = 0x2008;
+ 
+-module_param(product_id, uint, 0400);
+-MODULE_PARM_DESC(product_id, "USB Product ID of device to look for");
++static int __init root_plug_product_id(char *str)
++{
++	product_id = simple_strtol(str, NULL, 0);
++	return 1;
++}
++__setup("root_plug_product_id=", root_plug_product_id);
+ 
+ /* should we print out debug messages */
+ static int debug = 0;
+ 
+-module_param(debug, bool, 0600);
+-MODULE_PARM_DESC(debug, "Debug enabled or not");
++static int __init root_plug_debug(char *str)
++{
++	debug = simple_strtol(str, NULL, 0);
++	return 1;
++}
++__setup("root_plug_debug=", root_plug_debug);
+ 
+-#if defined(CONFIG_SECURITY_ROOTPLUG_MODULE)
+-#define MY_NAME THIS_MODULE->name
+-#else
+ #define MY_NAME "root_plug"
+-#endif
+ 
+ #define root_dbg(fmt, arg...)					\
+ 	do {							\
+@@ -117,25 +125,4 @@ static int __init rootplug_init (void)
+ 	return 0;
+ }
+ 
+-static void __exit rootplug_exit (void)
+-{
+-	/* remove ourselves from the security framework */
+-	if (secondary) {
+-		if (mod_unreg_security (MY_NAME, &rootplug_security_ops))
+-			printk (KERN_INFO "Failure unregistering Root Plug "
+-				" module with primary module.\n");
+-	} else { 
+-		if (unregister_security (&rootplug_security_ops)) {
+-			printk (KERN_INFO "Failure unregistering Root Plug "
+-				"module with the kernel\n");
+-		}
+-	}
+-	printk (KERN_INFO "Root Plug module removed\n");
+-}
+-
+ security_initcall (rootplug_init);
+-module_exit (rootplug_exit);
+-
+-MODULE_DESCRIPTION("Root Plug sample LSM module, written for Linux Journal article");
+-MODULE_LICENSE("GPL");
+-
+diff --git a/security/security.c b/security/security.c
+index fc8601b..e49dae2 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -17,7 +17,6 @@
+ #include <linux/kernel.h>
+ #include <linux/security.h>
+ 
+-#define SECURITY_FRAMEWORK_VERSION	"1.0.0"
+ 
+ /* things that live in dummy.c */
+ extern struct security_operations dummy_security_ops;
+@@ -51,8 +50,7 @@ static void __init do_security_initcalls(void)
+  */
+ int __init security_init(void)
+ {
+-	printk(KERN_INFO "Security Framework v" SECURITY_FRAMEWORK_VERSION
+-	       " initialized\n");
++	printk(KERN_INFO "Security Framework initialized\n");
+ 
+ 	if (verify(&dummy_security_ops)) {
+ 		printk(KERN_ERR "%s could not verify "
+@@ -172,8 +170,5 @@ int mod_unreg_security(const char *name, struct security_operations *ops)
+ 	return security_ops->unregister_security(name, ops);
+ }
+ 
+-EXPORT_SYMBOL_GPL(register_security);
+-EXPORT_SYMBOL_GPL(unregister_security);
+-EXPORT_SYMBOL_GPL(mod_reg_security);
+-EXPORT_SYMBOL_GPL(mod_unreg_security);
++/* Export required for modular use of security.h inlines */
+ EXPORT_SYMBOL(security_ops);
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index ad8dd4e..105319a 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -20,7 +20,6 @@
+  *      as published by the Free Software Foundation.
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/ptrace.h>
+diff --git a/security/selinux/xfrm.c b/security/selinux/xfrm.c
+index bd8d1ef..b589238 100644
+--- a/security/selinux/xfrm.c
++++ b/security/selinux/xfrm.c
+@@ -31,7 +31,6 @@
+  *   2. Emulating a reasonable SO_PEERSEC across machines
+  *   3. Testing addition of sk_policy's with security context via setsockopt
+  */
+-#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/security.h>
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+1.5.2.1
+
