@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbXFXRJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbXFXRLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756366AbXFXRJp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 13:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbXFXRJg
+	id S1756179AbXFXRLd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 13:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbXFXRLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 13:09:36 -0400
-Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:4697 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751742AbXFXRJf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 13:09:35 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Frequent SATA resets with sata_nv (fwd)
-User-Agent: KMail/1.9.7
-References: <alpine.DEB.0.99.0706232051520.31644@cheetah.fastcat.org>
-In-Reply-To: <alpine.DEB.0.99.0706232051520.31644@cheetah.fastcat.org>
+	Sun, 24 Jun 2007 13:11:23 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36359 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751477AbXFXRLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 13:11:22 -0400
+Date: Sun, 24 Jun 2007 19:10:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: matthieu castet <castet.matthieu@free.fr>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-net@vger.kernel.org
+Subject: Re: FW : airo suspend problem
+Message-ID: <20070624171032.GB21757@elf.ucw.cz>
+References: <1181985273.4673a9f9e9a4e@imp.free.fr> <20070622205817.GA3885@ucw.cz> <467CDDEB.2090602@free.fr>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 2063
-Date: Sun, 24 Jun 2007 18:09:29 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706241809.29449.s0348365@sms.ed.ac.uk>
+In-Reply-To: <467CDDEB.2090602@free.fr>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry, accidentally dropped LKML)
+Hi!
 
-On Sunday 24 June 2007 01:52:30 you wrote:
-> Googling around lkml.org, I found a few threads investigating what look
-> like very similar problems, some of which never seemed to find the
-> solution, but one of which came up with a fairly quick answer it seemed,
-> namely that the drive's NCQ implementation was horked:
-> http://lkml.org/lkml/2007/4/18/32
+> >>PS : after the failed suspend to ram due to airo driver, I tried to 
+> >>unload airo
+> >>driver and it hanged. After a reset, I got my ext3 root fs corrupted :(
+> >
+> >Corrupted or 'just needed journal replay'?
+> Really corrupted :
+> on reboot, there was no journal replay, but boot hanged. After some 
+> investigation some symbolic links were pointing to garbage (lot's of 
+> /etc/rcx.d/ ones). After a fsck (partial log attached) and some manual 
+> fix for symbolic links, the system was operational.
 
-Well, there's been generic problems with the ADMA code on the CK804, but I 
-think Robert fixed them (added CC). I've certainly had NO problems since 
-2.6.21.
+Hmm, that's strange and bad, because we do sync before s2ram... and
+s2ram being _so_ broken that it corrupts memory would be bad, too.
 
-However, assuming the drive's NCQ _is_ busted and needs to be blacklisted, you 
-might find you can temporarily work around the problem by loading the sata_nv 
-module with adma=0, or boot with sata_nv.adma=0. Not to point the finger at 
-ADMA support specifically, of course, but simply that ADMA enables the NCQ 
-features.
-
-It'd be good if you could report back whether this helps fix it.
-
-> While I don't have older logs to verify exactly when this started, it
-> was fairly recent, perhaps around my 2.6.20.1 to 2.6.21.1 kernel
-> upgrade.
-
-Yes, this is probably around the time adma became the default.
+Is it reproducible? (Yep, asking someone to corrupt his machine is
+unnince, but... suspend to ram does not really deal with disks...)
+								Pavel
 
 -- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
