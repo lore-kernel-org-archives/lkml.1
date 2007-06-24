@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbXFXUAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756200AbXFXUAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbXFXUAB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 16:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbXFXT7l
+	id S1756200AbXFXUAg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 16:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbXFXT74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:59:41 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:43733 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752730AbXFXT7j (ORCPT
+	Sun, 24 Jun 2007 15:59:56 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52487 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754563AbXFXT7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:59:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V2pRgoCijBkrhntRrjvYuhwOfTslwH3wQB59b0yUYO7zIfj2zBcy7O5K216RQniu1d7s/UvNDrS1dy6PNQSQUgBMDW+nDSIfGvyGxRq4fC/zTPfI19jNqLzu2t5CsgXW64o8b8BYKpxeLYMBpLArxW9eaJJW+gEQ7Be0alF8/Co=
-Message-ID: <7e63f56c0706241259u6e123ed6yc02b76f0260adaa5@mail.gmail.com>
-Date: Sun, 24 Jun 2007 21:59:39 +0200
-From: "Robert Iakobashvili" <coroberti@gmail.com>
-To: djones@rossove.com
-Subject: Re: Scaling Max IP address limitation
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20070624110236.fa36b2f9.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jun 2007 15:59:53 -0400
+Date: Sun, 24 Jun 2007 20:59:52 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070624195952.GD21478@ftp.linux.org.uk>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <467EA7C1.4080006@rossove.com>
-	 <20070624110236.fa36b2f9.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Jun 24, 2007 at 12:04:44PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Sun, 24 Jun 2007, Al Viro wrote:
+> > 
+> > Why?  I'd say it's not better than BUILD_BUG_ON_ZERO() use
+> > instead of that ?:
+> 
+> Oh, _that_ part I have no problem with. It's more that it seems that the 
+> gcc optimization is ok at least as an extension.
 
-> On Sun, 24 Jun 2007 12:20:01 -0500 David Jones <djones@rossove.com> wrote:
+gcc logs:
+	* expressions of form <....> can be reduced to cheaper form
+	  by <....>.  Tested and merged.
 
-> > I am trying to add multiple IP addresses ( v6 ) to my FC7 box on eth0.
-> > But I am hitting a max limit of 4000 IP address . Seems like there is a
-> > limiting variable in linux kernel (which one? ) that prevents from
-> > adding more IP addresses than 4096. What do I need to change in Linux
-> > kernel  ( and then recompile ) to be able to add more IP addresses than
-> > 4K addresses per system? ..
+gcc logs a year later:
+	* revert commit <...>, it causes subtle problems (see PR<....>,
+	  <....> and <....>).  Proposed replacement is too intrusive
+	  for stable branch.
 
+gcc logs a month later:
+	* tested and merged the real fix for PR<....>; will go into the
+	  next release.
 
-We are adding tens of thousand IPv4 addresses using netlink interface
-without any problems. The maximum we added was 60K of secondary
-IPv4 addresses. It consumes some memory, however.
+foobar logs a year later:
+	* gcc versions between <...> and <...> refuse to compile baz.c,
+	  complain about non-constant index in initializer.  Waded through
+	  the sewers of macros we have in barf.h and blah.h, found what
+	  had been causing that.  Fixed.
 
-We have also added thousands of IPv6. I will try to test, if there is any
-limit for doing it.
-
--- 
-Sincerely,
-Robert Iakobashvili,
-coroberti %x40 gmail %x2e com
-...........................................................
-http://curl-loader.sourceforge.net
-A web testing and traffic generation tool.
+Ain't fun...
