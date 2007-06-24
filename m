@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbXFXUsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbXFXUvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbXFXUsu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 16:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXFXUsn
+	id S1754760AbXFXUvi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 16:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXFXUvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 16:48:43 -0400
-Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:48700 "EHLO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbXFXUsl (ORCPT
+	Sun, 24 Jun 2007 16:51:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49097 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751531AbXFXUva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 16:48:41 -0400
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
-	pathname matching
-Date: Sun, 24 Jun 2007 20:45:47 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <f5ml5r$29j$2@taverner.cs.berkeley.edu>
-References: <20070615200623.GA2616@elf.ucw.cz> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain> <467B4D61.3020509@novell.com> <1182514816.24664.49.camel@moss-spartans.epoch.ncsc.mil>
-Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1182717947 2355 128.32.168.222 (24 Jun 2007 20:45:47 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Sun, 24 Jun 2007 20:45:47 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Sun, 24 Jun 2007 16:51:30 -0400
+Date: Sun, 24 Jun 2007 21:57:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tomasz =?UTF-8?B?S8WCb2N6a28=?= <kloczek@rudy.mif.pg.gda.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Message-ID: <20070624215724.025a5de5@the-village.bc.nu>
+In-Reply-To: <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+	<20070624200837.16e11305@the-village.bc.nu>
+	<Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley  wrote:
->That would certainly help, although one might quibble with the use of
->the word "confinement" at all wrt AppArmor (it has a long-established
->technical meaning that implies information flow control, and that goes
->beyond even complete mediation - it requires global and persistent
->protection of the data based on its properties, which requires stable
->and unambiguous identifiers).
+> Sory Alan but I don't want philosophical/historical discuss.
+> Try to answer on question "ALSA or OSS ?" using *only* technical arguments.
 
-1. Yes, that's the usage that has the greatest historical claim, but
-"confinement" has also been used in the security community to refer to
-limiting the overt side effects a process can have rather than controlling
-information flow.  The term "confinement" is arguably ambiguous, but I
-think there is a semi-established meaning that doesn't imply information
-flow control.
+We dropped OSS for ALSA for technical reasons. Those being that ALSA
+- has a better audio API
+- is more flexible
+- provides OSS as emulation
+- supports more hardware
 
-2. This is a can of worms we probably don't want to open.  Keep in
-mind that SELinux doesn't meet definition of confinement in Lampson's
-original paper, either, because it only restricts overt information flows.
-SELinux doesn't prevent covert channels, even though Lampson's original
-paper included them as part of the confinement problem.  Yet I don't
-think it would be reasonable to criticize someone for describing SELinux
-as a tool for "confinement".  I don't know of any practical solution
-that solves the confinement problem as Lampson envisioned it.  I'd
-recommend making decisions on the basis of whether the mechanisms are
-useful, rather than whether they solve Lampson's notion of the
-"confinement" problem.
+I used to maintain the kernel OSS code (the fork when Hannu and friends
+took their project non-free). I did the work to make the sound layer
+modular when the vendors realises that the open one needed to be modular
+and that since that was the main play of the non-free one that Hannu
+wasn't going to be doing it. From a technical perspective ALSA is the
+better design especially for flexible devices.
+
+At the desktop level these days it doesn't really matter much, the
+desktops use their own sound servers which sit on top of OSS, ALSA and
+other sound systems.
+
+Alan
+ 
