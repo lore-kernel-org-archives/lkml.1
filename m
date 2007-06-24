@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbXFXUvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbXFXUvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbXFXUvi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 16:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXFXUvb
+	id S1753769AbXFXUvv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 16:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbXFXUvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 16:51:31 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49097 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751531AbXFXUva (ORCPT
+	Sun, 24 Jun 2007 16:51:41 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:48717 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbXFXUvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 16:51:30 -0400
-Date: Sun, 24 Jun 2007 21:57:24 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tomasz =?UTF-8?B?S8WCb2N6a28=?= <kloczek@rudy.mif.pg.gda.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Message-ID: <20070624215724.025a5de5@the-village.bc.nu>
-In-Reply-To: <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
-References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
-	<20070624200837.16e11305@the-village.bc.nu>
-	<Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jun 2007 16:51:40 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+	pathname matching
+Date: Sun, 24 Jun 2007 20:48:46 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <f5mlbe$29j$3@taverner.cs.berkeley.edu>
+References: <20070615200623.GA2616@elf.ucw.cz> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil> <20070622080640.GB14593@suse.de> <1182513228.24664.24.camel@moss-spartans.epoch.ncsc.mil>
+Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1182718126 2355 128.32.168.222 (24 Jun 2007 20:48:46 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Sun, 24 Jun 2007 20:48:46 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sory Alan but I don't want philosophical/historical discuss.
-> Try to answer on question "ALSA or OSS ?" using *only* technical arguments.
+Stephen Smalley  wrote:
+>On Fri, 2007-06-22 at 01:06 -0700, John Johansen wrote:
+>> No the "incomplete" mediation does not flow from the design.  We have
+>> deliberately focused on doing the necessary modifications for pathname
+>> based mediation.  The IPC and network mediation are a wip.
+>
+>The fact that you have to go back to the drawing board for them is that
+>you didn't get the abstraction right in the first place.
 
-We dropped OSS for ALSA for technical reasons. Those being that ALSA
-- has a better audio API
-- is more flexible
-- provides OSS as emulation
-- supports more hardware
-
-I used to maintain the kernel OSS code (the fork when Hannu and friends
-took their project non-free). I did the work to make the sound layer
-modular when the vendors realises that the open one needed to be modular
-and that since that was the main play of the non-free one that Hannu
-wasn't going to be doing it. From a technical perspective ALSA is the
-better design especially for flexible devices.
-
-At the desktop level these days it doesn't really matter much, the
-desktops use their own sound servers which sit on top of OSS, ALSA and
-other sound systems.
-
-Alan
- 
+Calling this "going back to the drawing board" board strikes me as an
+unfair criticism, when the real situation is that in the future the AA
+folks will need to extend their code to mediate network and IPC (not
+throw all the current code away and start over from scratch, and not
+replace big swaths of the current code).
