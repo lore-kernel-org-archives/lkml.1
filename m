@@ -1,71 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbXFXWGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbXFXWHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752806AbXFXWGs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 18:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXFXWGj
+	id S1753331AbXFXWHf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 18:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbXFXWH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 18:06:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:45642 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbXFXWGi (ORCPT
+	Sun, 24 Jun 2007 18:07:27 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:7057 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751081AbXFXWH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 18:06:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MaqmC9gqZ1MeVDeHmvtU6ynzmfkmJqpF6Zx4gXkjEfRD8LV9YSZHScWOk2Ao/7KdAZBILgmmk5/1v0LScRjDn1SyQLCDoEB1Y5swFneODbMMUw9Lu2hBm2bYe+ACwv/MJn3xK5jGblZ+QdC+vTPQwoVhLAhjGXF0BrVXpso8i18=
-Message-ID: <15e53e180706241506p53ec648ib93d684bbe076a46@mail.gmail.com>
-Date: Sun, 24 Jun 2007 23:06:37 +0100
-From: GMail <hughsient@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: [patch] Reporting the lid status using INPUT
-Cc: linux-acpi <linux-acpi@vger.kernel.org>, a_bartok@freemail.hu,
-       "Bastien Nocera" <hadess@hadess.net>, "David Zeuthen" <david@fubar.dk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200706161351.28885.dtor@insightbb.com>
+	Sun, 24 Jun 2007 18:07:26 -0400
+Date: Mon, 25 Jun 2007 00:07:23 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Michael Tokarev <mjt@tls.msk.ru>,
+       "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Manoj Kasichainula <manoj@io.com>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: SATA RAID5 speed drop of 100 MB/s
+Message-ID: <20070624220723.GA21724@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Justin Piszcz <jpiszcz@lucidpixels.com>,
+	Michael Tokarev <mjt@tls.msk.ru>,
+	"Dr. David Alan Gilbert" <linux@treblig.org>,
+	Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+	Manoj Kasichainula <manoj@io.com>, linux-kernel@vger.kernel.org,
+	IDE/ATA development list <linux-ide@vger.kernel.org>
+References: <4679B2DE.9090903@garzik.org> <20070622214859.GC6970@alinoe.com> <467CC5C5.6040201@garzik.org> <20070623125316.GB26672@alinoe.com> <467DA1F5.2060306@garzik.org> <467E5C5E.6000706@msgid.tls.msk.ru> <20070624125957.GA28067@gallifrey> <Pine.LNX.4.64.0706241021030.12207@p34.internal.lan> <467E9356.1030200@msgid.tls.msk.ru> <Pine.LNX.4.64.0706241257190.12207@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1181910567.4819.7.camel@work> <1181919208.2681.6.camel@work>
-	 <1182013911.2309.4.camel@work> <200706161351.28885.dtor@insightbb.com>
+In-Reply-To: <Pine.LNX.4.64.0706241257190.12207@p34.internal.lan>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/06/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> On Saturday 16 June 2007 13:11, Richard Hughes wrote:
-> > On Fri, 2007-06-15 at 15:53 +0100, Richard Hughes wrote:
-> > > On Fri, 2007-06-15 at 10:29 -0400, Dmitry Torokhov wrote:
-> > > > On 6/15/07, Richard Hughes <hughsient@gmail.com> wrote:
-> > > > > On Fri, 2007-06-15 at 13:29 +0100, Richard Hughes wrote:
-> > > > > > in response to an event, but I'm thinking in a resume hook we should
-> > > > > > probably do acpi_evaluate_integer(handle, "_LID", NULL, &state) and then
-> > > > > > send an event, just so userspace is aware of what the state of the panel
-> > > > > > is.
-> > > > >
-> > > > > Attached patch fixed the issue for me. Comments?
-> > > > >
-> > > >
-> > > > The patch makes perfect sense. The only issue I have is this:
-> > > >
-> > > > > +       /* on resume we send the state; it might be the same, but userspace
-> > > > > +        * should handle duplicated events */
-> > > >
-> > > > If switch state matches to what input layer thinks it is the event
-> > > > will not even reach userspace.
-> > >
-> > > Okay, new patch attached, thanks for the speedy review.
-> >
-> > This fix is also confirmed by somebody else, see
-> > https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243030
-> >
-> > It would be great if this could go into .22, although I appreciate it's
-> > quite late in the day.
-> >
->
-> This is of course Len's call but in my book this is a bugfix and as such
-> is appropriate for -rc4/rc5.
+On Sun, Jun 24, 2007 at 12:59:10PM -0400, Justin Piszcz wrote:
+> Concerning NCQ/no NCQ, without NCQ I get an additional 15-50MB/s in speed 
+> per various bonnie++ tests.
 
-Guys? Any ack-nak?
+There is more going on than a bad NCQ implementation of the drive imho.
+I did a long test over night (and still only got two schedulers done,
+will do the other two tomorrow), and the difference between a queue depth
+of 1 and 2 is DRAMATIC.
 
-Richard.
+See http://www.xs4all.nl/~carlo17/noop_queue_depth.png
+and http://www.xs4all.nl/~carlo17/anticipatory_queue_depth.png
+
+The bonnie++ tests are done in a directory on the /dev/md7 and
+/dev/ssd2 partitions respectively. Each bonnie test is performed
+four times.
+
+The hdparm -t tests (that show no difference with a -tT test) are
+each done five times, for /dev/sdd, /dev/md7 and /dev/sda (that is
+one of the RAID5 drives used for /dev/md7).
+
+Thus in total there are 2 * 4 + 3 * 5 = 23 data points per
+queue depth value in each graph.
+
+The following can be observed:
+
+1) There is hardly any difference between the two schedulers (noop
+   is a little faster for the bonny test).
+2) An NCQ depth of 1 is WAY faster on RAID5 (bonnie; around 125 MB/s),
+   the NCQ depth of 2 is by far the slowest for the RAID5 (bonnie;
+   around 40 MB/s). NCQ depths of 3 and higher show no difference,
+   but are also slow (bonnie; around 75 MB/s).
+3) There is no significant influence of the NCQ depth for non-RAID,
+   either the /dev/sda (hdparm -t) or /dev/sdd disk (hdparm -t and
+   bonnie).
+4) With a NCQ depth > 1, the hdparm -t measurement of /dev/md7 is
+   VERY unstable. Sometimes it gives the maximum (around 150 MB/s),
+   and sometimes as low as 30 MB/s, seemingly independent of the
+   NCQ depth. Note that those measurement were done on an otherwise
+   unloaded machine in single user mode; and the measurements were
+   all done one after an other. The strong fluctuation of the hdparm
+   results for the RAID device (while the underlaying devices do not
+   show this behaviour) are unexplainable.
+
+>From the above I conclude that something must be wrong with the
+software RAID implementation - and not just with the harddisks, imho.
+At least, that's what it looks like to me. I am not an expert though ;)
+
+-- 
+Carlo Wood <carlo@alinoe.com>
+
+PS RAID5 (md7 = sda7 + sdb7 + sdc7): Three times a Western Digital
+   Raptor 10k rpm (WDC WD740ADFD-00NLR1).
+   non-RAID (sdd2): Seagate barracuda 7200 rpm (ST3320620AS).
+
+   The reason that now I measure around 145 MB/s instead of 165 MB/s
+   as reported in previous post (with hdparm -t /dev/md7) is because
+   before I use hdparm -t /dev/md2, which is closer to the outside
+   of the disk and therefore faster. /dev/md2 still is around 165 MB/s.
+
