@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbXFXV5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbXFXV50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbXFXV5L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 17:57:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXFXV46
+	id S1753629AbXFXV50 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 17:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbXFXV5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 17:56:58 -0400
-Received: from slowhand.arndnet.de ([88.198.19.76]:40568 "EHLO mail.unitix.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751352AbXFXV46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 17:56:58 -0400
-X-Greylist: delayed 1094 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jun 2007 17:56:58 EDT
-Message-ID: <467EE48D.5010204@arndnet.de>
-Date: Sun, 24 Jun 2007 23:39:25 +0200
-From: Arnd Hannemann <arnd@arndnet.de>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Sun, 24 Jun 2007 17:57:09 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:48101
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753493AbXFXV5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 17:57:07 -0400
+Date: Sun, 24 Jun 2007 14:57:43 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Wagner <daw-usenet@taverner.cs.berkeley.edu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+ pathname matching
+In-Reply-To: <f5mmuu$4d4$1@taverner.cs.berkeley.edu>
+Message-ID: <Pine.LNX.4.64.0706241449300.12806@asgard.lang.hm>
+References: <46732124.80509@novell.com> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
+ <20070622121742.GC6222@think.oraclecorp.com> <Line.LNX.4.64.0706220858170.5751@localhost.localdomain>
+ <f5mmuu$4d4$1@taverner.cs.berkeley.edu>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Salvatore De Paolis <depaolis.salvatore@libero.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: pivot_root alternative
-References: <20070624232734.28829225@debian> <Pine.LNX.4.64.0706242328520.11964@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706242328520.11964@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt schrieb:
-> On Jun 24 2007 23:27, Salvatore De Paolis wrote:
->> i built the kernel with a busybox initramfs which runs from a usb stick. While
->> i boot i need to mount the real root and i'm using pivot_root.
->> Pivot_root . old-root return to me an "Invalid argument" error and googling i
->> found here http://lkml.org/lkml/2005/10/8/17 that pivot_root should be avoided.
->> I want to ask now what i should do to switch to a real root?
-> 
-> use run-init from klibc?
+On Sun, 24 Jun 2007, David Wagner wrote:
 
-However be aware of the limitation of run-init:
-It only works for direct childs of root directory
-/mnt/newroot won't work
-/newroot should work ;-)
+> Argument 3. AA isn't complete until it mediates network and IPC.
+>
+> Let me comment on these one-by-one.
+>
+> 3. This one I agree with.  If you want to sandbox network daemons that
+> you're concerned might get hacked, then you really want your sandbox to
+> mediate everything.  Right now the security provided by AA (if that's
+> what you are using it for) will be limited by its incomplete mediation,
+> since a knowledgeable motivated attacker who hacks your daemon may be
+> able to use network or IPC to break out of the sandbox, depending upon
+> the network and host configuration.  Filesystem mediation alone might be
+> better than nothing, I suppose, if you're worried about script kiddies,
+> but it's certainly not a basis for strong security claims.  The state of
+> the art in sandboxing obviously requires complete mediation, and we've
+> known that for a decade.
 
-Good luck,
-Arnd
+the issue I see is that AA may not have to implement any new in-kernel 
+infrastructure to do this.
+
+as recently as yesterday there have been discussions on the netfilter list 
+about how to implement filter rules based on the application name (see the 
+thread titled 'filter by application name') if this gets implemented 
+independantly of AA then AA could provide a policy implementation layer 
+over netfilter if desired (or sysadmins could just use their current 
+favorite tool to control the network and AA to control the filesystem)
+
+so holding up AA becouse this isn't implemented yet seems to be counter 
+productive. people are working on this, and it is going to go in at some 
+point independantly of AA, so why tie AA to it?
+
+IPC is a very imprecise term. it includes lots of different ways for 
+processes to communicate with each other. some forms of IPC are covered by 
+AA today (unix sockets), others aren't. but each of the different methods 
+is going to involve some difference in how it's controlled. if you want to 
+talk IPC be specific about what IPC methods you are talking bout limiting.
+
+David Lang
