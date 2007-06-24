@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbXFXV50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755879AbXFXV6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbXFXV50 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 17:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbXFXV5J
+	id S1755879AbXFXV6y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 17:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXFXV6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 17:57:09 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:48101
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbXFXV5H (ORCPT
+	Sun, 24 Jun 2007 17:58:47 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41074 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751282AbXFXV6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 17:57:07 -0400
-Date: Sun, 24 Jun 2007 14:57:43 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: David Wagner <daw-usenet@taverner.cs.berkeley.edu>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-In-Reply-To: <f5mmuu$4d4$1@taverner.cs.berkeley.edu>
-Message-ID: <Pine.LNX.4.64.0706241449300.12806@asgard.lang.hm>
-References: <46732124.80509@novell.com> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
- <20070622121742.GC6222@think.oraclecorp.com> <Line.LNX.4.64.0706220858170.5751@localhost.localdomain>
- <f5mmuu$4d4$1@taverner.cs.berkeley.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sun, 24 Jun 2007 17:58:47 -0400
+Date: Sun, 24 Jun 2007 14:58:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Richard Henderson <rth@tamu.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Avoid potential NULL deref in scripts/genksyms/lex.l
+Message-Id: <20070624145837.f3141572.akpm@linux-foundation.org>
+In-Reply-To: <200706242340.03871.jesper.juhl@gmail.com>
+References: <200706242340.03871.jesper.juhl@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jun 2007, David Wagner wrote:
+On Sun, 24 Jun 2007 23:40:03 +0200 Jesper Juhl <jesper.juhl@gmail.com> wrote:
 
-> Argument 3. AA isn't complete until it mediates network and IPC.
->
-> Let me comment on these one-by-one.
->
-> 3. This one I agree with.  If you want to sandbox network daemons that
-> you're concerned might get hacked, then you really want your sandbox to
-> mediate everything.  Right now the security provided by AA (if that's
-> what you are using it for) will be limited by its incomplete mediation,
-> since a knowledgeable motivated attacker who hacks your daemon may be
-> able to use network or IPC to break out of the sandbox, depending upon
-> the network and host configuration.  Filesystem mediation alone might be
-> better than nothing, I suppose, if you're worried about script kiddies,
-> but it's certainly not a basis for strong security claims.  The state of
-> the art in sandboxing obviously requires complete mediation, and we've
-> known that for a decade.
+> strchr() returns NULL in case the string is not found and if that 
+> happens we risk dereferencing a NULL pointer. It never hurts to 
+> check for that condition and exit normally with an error rather 
+> than crashing.
+> 
+> (no, the indentation is not according to CodingStyle, it's simply 
+>  following whatever else is in that file)
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+>  scripts/genksyms/lex.l        |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/scripts/genksyms/lex.l b/scripts/genksyms/lex.l
+> index 5e544a0..28edc0c 100644
+> --- a/scripts/genksyms/lex.l
+> +++ b/scripts/genksyms/lex.l
+> @@ -154,6 +154,8 @@ repeat:
+>  
+>        file = strchr(yytext, '\"')+1;
+>        e = strchr(file, '\"');
 
-the issue I see is that AA may not have to implement any new in-kernel 
-infrastructure to do this.
+If `file' can be null we'd have oopsed here.
 
-as recently as yesterday there have been discussions on the netfilter list 
-about how to implement filter rules based on the application name (see the 
-thread titled 'filter by application name') if this gets implemented 
-independantly of AA then AA could provide a policy implementation layer 
-over netfilter if desired (or sysadmins could just use their current 
-favorite tool to control the network and AA to control the filesystem)
+> +      if (!file || !e)
+> +	exit(1);
+>        *e = '\0';
+>        cur_filename = memcpy(xmalloc(e-file+1), file, e-file+1);
+>        cur_line = atoi(yytext+2);
 
-so holding up AA becouse this isn't implemented yet seems to be counter 
-productive. people are working on this, and it is going to go in at some 
-point independantly of AA, so why tie AA to it?
+I don't think the bug which you're fixing can occur:
 
-IPC is a very imprecise term. it includes lots of different ways for 
-processes to communicate with each other. some forms of IPC are covered by 
-AA today (unix sockets), others aren't. but each of the different methods 
-is going to involve some difference in how it's controlled. if you want to 
-talk IPC be specific about what IPC methods you are talking bout limiting.
+^#[ \t]+{INT}[ \t]+\"[^\"\n]+\".*\n     return FILENAME;
 
-David Lang
+has anyone reported crashes in there?
