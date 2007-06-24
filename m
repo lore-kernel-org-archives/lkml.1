@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbXFXX3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbXFXXjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754505AbXFXX3w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 19:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXFXX3l
+	id S1753895AbXFXXjc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 19:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXFXXjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 19:29:41 -0400
-Received: from smtpout.mac.com ([17.250.248.177]:51837 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751004AbXFXX3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 19:29:40 -0400
-In-Reply-To: <20070624232734.28829225@debian>
-References: <20070624232734.28829225@debian>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3FDD4C43-2F9A-46B3-BFA5-DC5E5A30D985@mac.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Arnd Hannemann <arnd@arndnet.de>
+	Sun, 24 Jun 2007 19:39:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:10607 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751226AbXFXXjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 19:39:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:reply-to:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=iW8Yb45BNtMQg5maUATZsF4uZd2cgnEC40Dc8E9JYkh7/bsrJTAtY3MEci0jCoqTYovjtkzNOGfI+dXCzlWG9lI3rCrBBhviU4bVeMf0o+we9hbKLgEAeCl0I1KShSJjyZQkj4zrUChaKi5p/91eHY2slj/9VpNTpCf9sD/vxEc=
+Subject: Re: [RFC] [PATCH 2.6.21.5] ppp: fix osize too small errors when
+	decoding mppe
+From: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
+Reply-To: konstantin.sharlaimov@gmail.com
+To: David Miller <davem@davemloft.net>
+Cc: paulus@samba.org, vsu@altlinux.ru, netdev@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070623.230702.60547745.davem@davemloft.net>
+References: <4679116E.9050507@gmail.com>
+	 <20070623.230702.60547745.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 25 Jun 2007 10:38:41 +1100
+Message-Id: <1182728324.8980.17.camel@traveler>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: pivot_root alternative
-Date: Sun, 24 Jun 2007 19:29:20 -0400
-To: Salvatore De Paolis <depaolis.salvatore@libero.it>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 24, 2007, at 17:27:34, Salvatore De Paolis wrote:
-> i built the kernel with a busybox initramfs which runs from a usb  
-> stick. While i boot i need to mount the real root and i'm using  
-> pivot_root.  Pivot_root . old-root return to me an "Invalid  
-> argument" error and googling i found here http://lkml.org/lkml/ 
-> 2005/10/8/17 that pivot_root should be avoided.  I want to ask now  
-> what i should do to switch to a real root?
+On Sat, 2007-06-23 at 23:07 -0700, David Miller wrote:
 
-One interesting fact about the mount() syscall is this: when  
-overmounting a directory tree, a process whose current working  
-directory is within said directory tree will see the old vfsmounts  
-until it does an absolute chdir().  Shells tend not to be terribly  
-useful for this because they use absolute paths more than necessary,  
-but I think you can make it work.  For instance, if you run these  
-commands after mounting the root filesystem:
+The original version of this fix have made it to the 2.6.22-rc5 already
+and should be replaced with this one, however the two can coexist in the
+same code for a while.
 
-mount -t proc proc /realroot/proc
-cd /
-mount --move /realroot /
-find /proc/$$/cwd/ -mindepth 1 -maxdepth 1 -print0 \
-		| xargs -0 rm -rf -- '{}' ';'
-cd /
+> > --- linux-2.6.21.3/drivers/net/ppp_generic.c.orig	2007-06-20 09:14:13.000000000
+> > +1100
+> > +++ linux-2.6.21.3/drivers/net/ppp_generic.c	2007-06-20 09:18:06.000000000 +1100
+> 
+> Please prevent your email client from corrupting patches like
+> this by adding new lines.
 
-This will set up proc on the new root filesystem, move /realroot to  
-the root directory, and delete the contents of the old initramfs  
-using the old current-working-directory link of your shell.  The  
-amusing thing is that you are using the "find" and "rm" commands from  
-the newly mounted root filesystem to remove the contents of the  
-completely hidden initramfs.  The only reason it's actually possible  
-is because you have the tenuous thread of the working directory.
-
-Cheers,
-Kyle Moffett
+Also, thank you for pointing this issue out, I'll fix it.
 
