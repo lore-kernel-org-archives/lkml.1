@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbXFXXTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbXFXXUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbXFXXTI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 19:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXFXXS5
+	id S1754555AbXFXXUh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 19:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXFXXUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 19:18:57 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:39204 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbXFXXS4 (ORCPT
+	Sun, 24 Jun 2007 19:20:30 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:33070 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbXFXXUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 19:18:56 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Failure to properly reinit i8042 post suspend-to-ram
-Date: Mon, 25 Jun 2007 09:18:52 +1000
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>, dmitry.torokhov@gmail.com
-References: <200706221607.33274.nigel@nigel.suspend2.net> <200706242303.21065.rjw@sisk.pl>
-In-Reply-To: <200706242303.21065.rjw@sisk.pl>
+	Sun, 24 Jun 2007 19:20:30 -0400
+Date: Mon, 25 Jun 2007 01:33:14 +0200
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: rae l <crquan@gmail.com>, trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: memset() with zeroes (Re: [PATCH] trivial: the memset operation on a automatic array variable should be optimized out by data initialization)
+Message-ID: <20070624233314.GB10398@flower.upol.cz>
+References: <467cac85.081b600a.5b88.457f@mx.google.com> <E1I20Wr-00064i-T0@flower> <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com> <20070624222518.GA10398@flower.upol.cz> <1182723318.6819.5.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1555325.xrpAWpFU3E";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706250918.52959.nigel@nigel.suspend2.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182723318.6819.5.camel@laptopd505.fenrus.org>
+Organization: Palacky University in Olomouc, experimental physics department.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1555325.xrpAWpFU3E
-Content-Type: text/plain;
-  charset="cp 850"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sun, Jun 24, 2007 at 03:15:17PM -0700, Arjan van de Ven wrote:
+> 
+> > > I think all these benefits are the gcc's __builtin_memset optimization
+> > > than the explicit call to memset.
+> > 
+> > ... or from complex memset() implementation (some chips even didn't do
+> > `rep' fast enough somehow). Maybe code like below will be acceptable for
+> > both optimizers and maintainers?
+> 
+> 
+> we should just alias our memset to the __builtin one, and then provide a
+> generic one from lib/ for the cases gcc needs to do a fallback.
 
-Hi.
+In x86_64 there's infrastructure to check and select right memset().
+Therefor it's need, i think.
 
-On Monday 25 June 2007 07:03:20 Rafael J. Wysocki wrote:
-> Hi,
->=20
-> On Friday, 22 June 2007 08:07, Nigel Cunningham wrote:
-> > Hi.
-> >=20
-> > I have recently begun to try and use suspend to ram more, and have an=20
-> > intermittent problem. Actually, it's a couple of (possibly related) pro=
-blems,=20
-> > but I'll start with the one that's easiest.
-> >=20
-> > Sometimes, when I resume, the keyboard stops responding. I then need to=
- hold=20
-> > down the power button for 4 seconds. At the next boot, things are still=
- not=20
-> > right. The i8042 controller seems to be confused about it's mode, becau=
-se I=20
-> > get the following differences in dmesg to a 'normal' boot:
->=20
-> Well, I'm afraid no one has any idea.
->=20
-> I think you can file a bug report with the kernel bugzilla.
+But if one will took a look at usage, zero memset() optimization becomes
+obvious, one argument off -- one reg is free from clobbering.
 
-Yeah. I think I'll do some more debugging first, though - seek to find out =
-exactly what is failing.
-
-Regards,
-
-Nigel
-
-=2D-=20
-Nigel, Michelle and Alisdair Cunningham
-5 Mitchell Street
-Cobden 3266
-Victoria, Australia
-
---nextPart1555325.xrpAWpFU3E
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGfvvcN0y+n1M3mo0RAnfdAJ97Hjau7F/dAfVVaVt7Jd4YuhWeogCfVxxs
-2MlXjfPy7iEsSLlKUgL67zo=
-=+bY4
------END PGP SIGNATURE-----
-
---nextPart1555325.xrpAWpFU3E--
+|-*-
+flower-:22-rc4-mm2/arch/x86_64$ grep memset -R . | grep "[ 0,]0," | wc -l
+42
+flower-:22-rc4-mm2/arch/x86_64$
+flower-:22-rc4-mm2/arch/x86_64$ cd ..
+flower-:22-rc4-mm2/arch$ grep memset -R . | grep "[ 0,]0," | wc -l
+735
+flower-:22-rc4-mm2/arch$
+flower-:22-rc4-mm2$ grep memset -R . | grep "[ 0,]0," | wc -l
+6679
+flower-:22-rc4-mm2$  
+|-*-
+____
