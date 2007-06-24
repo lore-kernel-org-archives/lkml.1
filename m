@@ -1,38 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbXFXXXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbXFXX3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755237AbXFXXXj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 19:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbXFXXXa
+	id S1754505AbXFXX3w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 19:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXFXX3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 19:23:30 -0400
-Received: from kanga.kvack.org ([66.96.29.28]:54186 "EHLO kanga.kvack.org"
+	Sun, 24 Jun 2007 19:29:41 -0400
+Received: from smtpout.mac.com ([17.250.248.177]:51837 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752347AbXFXXX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 19:23:29 -0400
-Date: Sun, 24 Jun 2007 19:23:14 -0400
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Oleg Verych <olecom@flower.upol.cz>, rae l <crquan@gmail.com>,
-       trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] trivial: the memset operation on a automatic array variable should be optimized out by data initialization
-Message-ID: <20070624232314.GA971@kvack.org>
-References: <467cac85.081b600a.5b88.457f@mx.google.com> <E1I20Wr-00064i-T0@flower> <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com> <20070624222518.GA10398@flower.upol.cz> <1182723318.6819.5.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1182723318.6819.5.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.1i
+	id S1751004AbXFXX3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 19:29:40 -0400
+In-Reply-To: <20070624232734.28829225@debian>
+References: <20070624232734.28829225@debian>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3FDD4C43-2F9A-46B3-BFA5-DC5E5A30D985@mac.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Arnd Hannemann <arnd@arndnet.de>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: pivot_root alternative
+Date: Sun, 24 Jun 2007 19:29:20 -0400
+To: Salvatore De Paolis <depaolis.salvatore@libero.it>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 03:15:17PM -0700, Arjan van de Ven wrote:
-> we should just alias our memset to the __builtin one, and then provide a
-> generic one from lib/ for the cases gcc needs to do a fallback.
+On Jun 24, 2007, at 17:27:34, Salvatore De Paolis wrote:
+> i built the kernel with a busybox initramfs which runs from a usb  
+> stick. While i boot i need to mount the real root and i'm using  
+> pivot_root.  Pivot_root . old-root return to me an "Invalid  
+> argument" error and googling i found here http://lkml.org/lkml/ 
+> 2005/10/8/17 that pivot_root should be avoided.  I want to ask now  
+> what i should do to switch to a real root?
 
-The last time I checked, gcc generated horrible badly performing code for 
-builtin memset/memcpy() when -Os is specified.
+One interesting fact about the mount() syscall is this: when  
+overmounting a directory tree, a process whose current working  
+directory is within said directory tree will see the old vfsmounts  
+until it does an absolute chdir().  Shells tend not to be terribly  
+useful for this because they use absolute paths more than necessary,  
+but I think you can make it work.  For instance, if you run these  
+commands after mounting the root filesystem:
 
-		-ben
--- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <zyntrop@kvack.org>.
+mount -t proc proc /realroot/proc
+cd /
+mount --move /realroot /
+find /proc/$$/cwd/ -mindepth 1 -maxdepth 1 -print0 \
+		| xargs -0 rm -rf -- '{}' ';'
+cd /
+
+This will set up proc on the new root filesystem, move /realroot to  
+the root directory, and delete the contents of the old initramfs  
+using the old current-working-directory link of your shell.  The  
+amusing thing is that you are using the "find" and "rm" commands from  
+the newly mounted root filesystem to remove the contents of the  
+completely hidden initramfs.  The only reason it's actually possible  
+is because you have the tenuous thread of the working directory.
+
+Cheers,
+Kyle Moffett
+
