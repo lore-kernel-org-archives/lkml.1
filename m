@@ -1,102 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbXFXTTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbXFXTYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756224AbXFXTTU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbXFXTTM
+	id S1756466AbXFXTYk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXFXTYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:19:12 -0400
-Received: from dd8000.kasserver.com ([85.13.132.92]:43988 "EHLO
-	dd8000.kasserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752797AbXFXTTL (ORCPT
+	Sun, 24 Jun 2007 15:24:33 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45276
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbXFXTYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:19:11 -0400
-X-Greylist: delayed 1763 seconds by postgrey-1.27 at vger.kernel.org; Sun, 24 Jun 2007 15:19:11 EDT
-Message-ID: <467EBCA1.5070702@gmx.net>
-Date: Sun, 24 Jun 2007 20:49:05 +0200
-From: otto Meier <gf435@gmx.net>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070613)
+	Sun, 24 Jun 2007 15:24:32 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: Rules on how to use sysfs in userspace programs
+Date: Sun, 24 Jun 2007 15:24:32 -0400
+User-Agent: KMail/1.9.6
+Cc: "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org
+References: <20070608203637.GA9259@kroah.com> <200706232131.46016.rob@landley.net> <3ae72650706240403j779a9aedyf6321de1d22b19fd@mail.gmail.com>
+In-Reply-To: <3ae72650706240403j779a9aedyf6321de1d22b19fd@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: sata_promise disk error 2.6.22-rc5 with hrt1 patch
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706241524.33109.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sunday 24 June 2007 07:03:39 Kay Sievers wrote:
+> On 6/24/07, Rob Landley <rob@landley.net> wrote:
+> > On Saturday 23 June 2007 08:49:47 Kay Sievers wrote:
+> > > On 6/22/07, Rob Landley <rob@landley.net> wrote:
+> > > > On Friday 08 June 2007 16:36:37 Greg KH wrote:
+> > > > > Over time there have been a number of problems when sysfs has
+> > > > > changed in "unexpected" ways.  Here's a document that Kay wrote a
+> > > > > while ago that I'd like to add to the kernel Documentation
+> > > > > directory to help userspace programmers out.
+> > > > >
+> > > > > Any comments or critique of this is greatly appreciated.
+> > > >
+> > > > Still catching up from my laptop dying.
+> > > >
+> > > > I find the explanation of /sys/subsystem almost unintelligible.  What
+> > > > will the new one actually look like?
+> > >
+> > > "It is planned to merge all three classification-directories into one
+> > >  place at /sys/subsystem/,  following the current layout of the
+> > > bus-directories."
+> > >
+> > > Means that /sys/subsystem/ will have a devices/ directory, full of
+> > > symlinks to the devices, all in a flat list. Subsytem-global attribute
+> > > files/directories are not mixed with the devices in the same directory
+> > > like in /sys/class, it will also not contain any hierarchy like the
+> > > layout of /sys/block.
+> >
+> > But will it still be possible to distinguish block devices from character
+> > devices when teaching mdev to quickly scan for devices to populate /dev
+> > in embedded systems using the "new" locations for things?
+>
+> Sure, all devices have a "subsystem" link, you have to readlink()
+> that, and if it ends in "block, you have a blockdev. But as mentioned
+> in an earlier mail, you should stop scanning /sys/devices/ and always
+> come from the subsystem directories, so you get "block" for free.
 
-I got the following in my logs:
+I'm not scanning /sys/devices, I'm scanning /sys/block and /sys/class which 
+this document implies are deprecated and going away.  I'm trying to figure 
+out what replaced them.  Now instead of following a path to naturally get 
+char devices in one pass and block devices in another, it seems I have to 
+readlink a symlink and do string manipulation to identify the device type 
+once I've found the device.
 
-Jun 24 19:06:40 gate2 kernel: ata4.00: exception Emask 0x0 SAct 0x0 SErr
-0x0 action 0x0
-Jun 24 19:06:40 gate2 kernel: ata4.00: (port_status 0x00001000)
-Jun 24 19:06:40 gate2 kernel: ata4.00: cmd
-35/00:00:c1:17:92/00:04:17:00:00/e0 tag 0 cdb 0x0 data 524288 out
-Jun 24 19:06:40 gate2 kernel:          res
-50/00:00:c0:1b:92/00:00:17:00:00/e0 Emask 0x20 (host bus error)
-Jun 24 19:06:40 gate2 kernel: ata4.00: ata_hpa_resize 1: sectors =
-488397168, hpa_sectors = 488397168
-Jun 24 19:06:40 gate2 kernel: ata4.00: ata_hpa_resize 1: sectors =
-488397168, hpa_sectors = 488397168
-Jun 24 19:06:40 gate2 kernel: ata4.00: configured for UDMA/133
-Jun 24 19:06:40 gate2 kernel: ata4: EH complete
-Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] 488397168 512-byte
-hardware sectors (250059 MB)
-Jun 24 19:06:40 gate2 kernel: ata4.00: exception Emask 0x0 SAct 0x0 SErr
-0x0 action 0x0
-Jun 24 19:06:40 gate2 kernel: ata4.00: (port_status 0x00001000)
-Jun 24 19:06:40 gate2 kernel: ata4.00: cmd
-25/00:00:c1:15:92/00:02:17:00:00/e0 tag 0 cdb 0x0 data 262144 in
-Jun 24 19:06:40 gate2 kernel:          res
-50/00:00:c0:17:92/00:00:17:00:00/e0 Emask 0x20 (host bus error)
-Jun 24 19:06:40 gate2 kernel: ata4.00: ata_hpa_resize 1: sectors =
-488397168, hpa_sectors = 488397168
-Jun 24 19:06:40 gate2 kernel: ata4.00: ata_hpa_resize 1: sectors =
-488397168, hpa_sectors = 488397168
-Jun 24 19:06:40 gate2 kernel: ata4.00: configured for UDMA/133
-Jun 24 19:06:40 gate2 kernel: ata4: EH complete
-Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Write Protect is off
-Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Mode Sense: 00 3a 00 00
-Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Write cache: enabled,
-read cache: enabled, doesn't support DPO or FUA
-Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] 488397168 512-byte
-hardware sectors (250059 MB)
-Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Write Protect is off
-Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Mode Sense: 00 3a 00 00
-Jun 24 19:06:40 gate2 kernel: sd 3:0:0:0: [sdd] Write cache: enabled,
-read cache: enabled, doesn't support DPO or FUA
+I can do this, I'd just like to confirm it's "the way" now, and by "the way" I 
+mean Greg won't change his mind and yank it next month.
 
-The system continued without seeing other effects.
+> > > If /sys/subsystem exists, just look at /sys/subsystem/*/devices/*, you
+> > > will find every kernel device here, with exactly the logic to access
+> > > it. Every device with a "dev" file, it is a char device, unless
+> > > $SUBYSTEM=="block".
+> >
+> > Oh good.  That last sentence contains the heuristic I need.
 
-It is runnuning a 2.6.22-rc5 kernel with hrt1 patch.
-The drive ist part of a raid5 with 4 identical drives
+Ok, hang on, looking back on this I'm confused again.
 
-lspci -vvv gives:
+When you say /sys/subsystem are you referring to a literal path (which my sys 
+directory currently doesn't have a subdirectory named "subsystem"), or do you 
+mean /sys/$SUBSYSTEM where today I have /sys/class and /sys/block?
 
-02:06.0 Mass storage controller: Promise Technology, Inc. PDC40718 (SATA
-300 TX4) (rev 02)
-        Subsystem: Promise Technology, Inc. PDC40718 (SATA 300 TX4)
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B-
-        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-        Latency: 72 (1000ns min, 4500ns max), Cache Line Size: 4 bytes
-        Interrupt: pin A routed to IRQ 16
-        Region 0: I/O ports at bc00 [size=128]
-        Region 2: I/O ports at b800 [size=256]
-        Region 3: Memory at fdeff000 (32-bit, non-prefetchable) [size=4K]
-        Region 4: Memory at fdec0000 (32-bit, non-prefetchable) [size=128K]
-        [virtual] Expansion ROM at fdda0000 [disabled] [size=32K]
-        Capabilities: [60] Power Management version 2
-                Flags: PMEClk- DSI+ D1+ D2- AuxCurrent=0mA
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> > > If /sys/subsystem/ doesn't exist, you have to search all through
+> > > /sys/bus/, /sys/class/, /sys/block/, every directory with completely
+> >
+> > No, only /sys/class and /sys/block.  Currently, /sys/class contains char
+> > devices and /sys/block contains block devices.  You don't have to invoke
+> > mknod for a bus.
+>
+> Sure, you have! There are devices in /sys/bus which export device
+> nodes, and the number will just grow.
 
+I have yet to encounter any, could you give me some examples?
 
-Has anyone an idea whats going on?
+find /sys/bus -name dev
 
-Best regards
+Nope, nothing...
 
+Would these device nodes be char devices, or block devices, or... something 
+else entirely?  (The practical distinction between /sys/class and /sys/block 
+used to be that one contained char devices and the other block devices.  I 
+could work with that.  I'm sad to see it going away...)
 
+> That's why the document states: "There is no such thing like class-,
+> bus-, physical devices, interfaces, and such that you can rely on in
+> userspace. Everything is just simply a "device". Class-, bus-,
+> physical, ... types are just kernel implementation details, which
+> should not be expected by applications that handle devices."
 
+Whether you feed "b" or "c" to mknod is a kernel implementation detail?
 
+Are you unifying char and block devices so mknod doesn't have to distinguish 
+between them anymore?
+
+> > I'm very interested in helping out with it, and updating mdev based on
+> > the documentation rather than the source code, but not until after OLS I
+> > expect. :)
+>
+> Sure, any help is welcome here.
+
+What I've had to do each time was install a new kernel, find out what had 
+changed by examination, and update programs to work with the new stuff.
+
+I'd like to be able to do it from documentation.
+
+> Thanks,
+> Kay
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
