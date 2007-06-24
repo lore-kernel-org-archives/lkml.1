@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbXFXUqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbXFXUsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbXFXUqo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 16:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXFXUqg
+	id S1754615AbXFXUsu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 16:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbXFXUsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 16:46:36 -0400
-Received: from ipx20189.ipxserver.de ([80.190.249.56]:1653 "EHLO
-	ipx20189.ipxserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752253AbXFXUqf (ORCPT
+	Sun, 24 Jun 2007 16:48:43 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:48700 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751491AbXFXUsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 16:46:35 -0400
-Date: Sun, 24 Jun 2007 22:46:29 +0200
-From: Christian Leber <christian@leber.de>
+	Sun, 24 Jun 2007 16:48:41 -0400
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@osdl.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org
-Subject: Re: beeping patch for debugging acpi sleep
-Message-ID: <20070624204629.GA28049@core>
-References: <20070518213701.GA810@core> <20070520200142.GB5235@ucw.cz> <20070602182014.GB29546@core> <20070609130817.GI27793@elf.ucw.cz> <20070616194634.GA15953@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070616194634.GA15953@core>
-X-Accept-Language: de en
-X-Location: Europe, Germany, Mannheim
-X-Operating-System: Debian GNU/Linux (sid)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
+	pathname matching
+Date: Sun, 24 Jun 2007 20:45:47 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <f5ml5r$29j$2@taverner.cs.berkeley.edu>
+References: <20070615200623.GA2616@elf.ucw.cz> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain> <467B4D61.3020509@novell.com> <1182514816.24664.49.camel@moss-spartans.epoch.ncsc.mil>
+Reply-To: daw-usenet@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1182717947 2355 128.32.168.222 (24 Jun 2007 20:45:47 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Sun, 24 Jun 2007 20:45:47 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 16, 2007 at 09:46:34PM +0200, Christian Leber wrote:
+Stephen Smalley  wrote:
+>That would certainly help, although one might quibble with the use of
+>the word "confinement" at all wrt AppArmor (it has a long-established
+>technical meaning that implies information flow control, and that goes
+>beyond even complete mediation - it requires global and persistent
+>protection of the data based on its properties, which requires stable
+>and unambiguous identifiers).
 
-> The results are a bit unclear, I took a 2.6.22-rc4 with beep.
-> Logged into KDE.
-> (hardware: Dell Latitude D810)
-> 
-> S = successfull resume
-> D = had to resume 2 times, that means when pressing the power button the
-> LED goes from blinking to on and after a few seconds it goes back to
-> blinking, but without a beep in between; after pressing the power button
-> a second time resume is successfull
-> F = resume failes, NO beep
-> 
-> -run 1: D D F
-> -run 2: D D D(some X garbadge) F
-> -run 3: S S S S S S F
-> -run 4: S S F
-> -run 5: D F
+1. Yes, that's the usage that has the greatest historical claim, but
+"confinement" has also been used in the security community to refer to
+limiting the overt side effects a process can have rather than controlling
+information flow.  The term "confinement" is arguably ambiguous, but I
+think there is a semi-established meaning that doesn't imply information
+flow control.
 
-I tracked the problem halfway down, with 2.6.20-rc1-ubuntu1 [1] it works
-and with 2.6.20-rc2-ubuntu2 [2] not.
-
-The diff is here, unfortunately the acpi changes are about 100kb.
-http://debian.christian-leber.de/2.2-3.4.patch
-
-(the problem is a bit different, it suspends, when trying to resume it
-goes back to suspend and when i try again it's dead)
-
-For some reason that i don't get vanilla 2.6.20-rc1 doesn't boot because
-ata_piix doesn't work "PCI: Unable to reserve I/O region...." no remote
-idea why it works with the ubuntu kernel.
-So i can't bisect it.
-
-
-Christian Leber
-
-
-[1] https://launchpad.net/ubuntu/+source/linux-source-2.6.20/2.6.20-2.2
-[2] https://launchpad.net/ubuntu/+source/linux-source-2.6.20/2.6.20-3.4
-
--- 
-http://rettetdieti.vde-uni-mannheim.de/
-
+2. This is a can of worms we probably don't want to open.  Keep in
+mind that SELinux doesn't meet definition of confinement in Lampson's
+original paper, either, because it only restricts overt information flows.
+SELinux doesn't prevent covert channels, even though Lampson's original
+paper included them as part of the confinement problem.  Yet I don't
+think it would be reasonable to criticize someone for describing SELinux
+as a tool for "confinement".  I don't know of any practical solution
+that solves the confinement problem as Lampson envisioned it.  I'd
+recommend making decisions on the basis of whether the mechanisms are
+useful, rather than whether they solve Lampson's notion of the
+"confinement" problem.
