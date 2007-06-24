@@ -1,56 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbXFXTh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbXFXTjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756828AbXFXTh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXFXThO
+	id S1756682AbXFXTjb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbXFXTjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:37:14 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:44339 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751529AbXFXThN (ORCPT
+	Sun, 24 Jun 2007 15:39:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60457 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752570AbXFXTjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:37:13 -0400
-Date: Sun, 24 Jun 2007 13:37:05 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-In-reply-to: <fa.MQ77mllForge5OWcDydLlI0yp8s@ifi.uio.no>
-To: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Message-id: <467EC7E1.5070301@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-2; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.4npeXBdRGMm2JoKWe0qhjQdrJkk@ifi.uio.no>
- <fa.bAhr1dmoWCFU+8Kxo95nsy5DRRU@ifi.uio.no>
- <fa.MQ77mllForge5OWcDydLlI0yp8s@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Sun, 24 Jun 2007 15:39:23 -0400
+Date: Sun, 24 Jun 2007 12:39:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH] Update the alignment for 4K stacks.
+Message-Id: <20070624123906.5e1c4b2a.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706241518590.24337@localhost.localdomain>
+References: <Pine.LNX.4.64.0706241518590.24337@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomasz K³oczko wrote:
-> On Sun, 24 Jun 2007, Alan Cox wrote:
-> [..]
->> Years ago Linux dumped OSS for ALSA because ALSA offered far better
->> functionality and support. Why would we go back to the stone age ?
->>
->> Its something useful to various other platforms with basically no
->> hardware support but Linux has ALSA and very good hardware support and
->> ALSA even has emulation for back compatibility with old OSS apps.
->>
->> Ten years ago it would probably have made a difference, five maybe, today
->> its a release of historical code at best, and since they shipped binary
->> modules for Linux more like 'getting around to complying with the
->> licence' than anything else.
-> 
-> Sory Alan but I don't want philosophical/historical discuss.
-> Try to answer on question "ALSA or OSS ?" using *only* technical arguments.
+On Sun, 24 Jun 2007 15:21:37 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
 
-If you are the one advocating using OSS, it's up to you to explain why 
-it's better using technical arguments, which you haven't done. I rather 
-doubt it is possible to do so convincingly.
+>  arch/i386/kernel/irq.c |    8 ++------
+>  arch/sh/kernel/irq.c   |    8 ++------
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+These two files are maintained by different developers who run
+separate development trees.  Please do not try to alter them
+both in the same patch.
