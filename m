@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbXFXTxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbXFXTzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753501AbXFXTxp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXFXTxh
+	id S1753921AbXFXTzM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXFXTy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:53:37 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:16558 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbXFXTxg (ORCPT
+	Sun, 24 Jun 2007 15:54:58 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:33065 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbXFXTy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:53:36 -0400
-Date: Sun, 24 Jun 2007 13:53:28 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Frequent SATA resets with sata_nv (fwd)
-In-reply-to: <fa.Z5bo5y2TvW4efa6slAJpcdPwqAA@ifi.uio.no>
-To: "Matthew \"Cheetah\" Gabeler-Lee" <cheetah-lkmlsata@fastcat.org>
-Cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
-Message-id: <467ECBB8.2030706@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.Z5bo5y2TvW4efa6slAJpcdPwqAA@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Sun, 24 Jun 2007 15:54:56 -0400
+In-Reply-To: <D6003DDE-0C36-437B-B70A-D422DFE153D0@mac.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, djones@rossove.com,
+       LKML Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       netdev-owner@vger.kernel.org
+MIME-Version: 1.0
+Subject: Re: Scaling Max IP address limitation
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF73D2E5B5.A62E8708-ON88257304.006BD251-88257304.006D56F9@us.ibm.com>
+From: David Stevens <dlstevens@us.ibm.com>
+Date: Sun, 24 Jun 2007 12:54:49 -0700
+X-MIMETrack: Serialize by Router on D03NM121/03/M/IBM(Release 7.0.2HF32 | October 17, 2006) at
+ 06/24/2007 13:54:54,
+	Serialize complete at 06/24/2007 13:54:54
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(ccing linux-ide)
+> <Unrelated wishful thinking>
+> I keep having hopeful dreams that one day netfilter will grow support 
+> for cross-protocol NAT (IE: NAT a TCPv4 connection over TCPv6 to the 
+> IPv6-only local web server, or vice versa).  It would seem that would 
+> require a merged "xtables" program.
 
-Matthew "Cheetah" Gabeler-Lee wrote:
-> (Please cc me on replies)
-> 
-> I have three samsung hdds (/sys/block/sda/device/model says SAMSUNG 
-> SP2504C) in a raid configuration.  My system frequently (2-3x/day) 
-> experiences temporary lockups, which produce messages as below in my 
-> dmesg/syslog.  The system recovers, but the hang is annoying to say the 
-> least.
-> 
-> All three drives are connected to sata_nv ports.  Oddly, it almost 
-> always happens on ata6 or ata7 (the second and third ports of that 4 
-> port setup on my motherboard).  There is an identical drive connected at 
-> ata5, but I've only once or twice seen it hit that drive.
-> 
-> Googling around lkml.org, I found a few threads investigating what look 
-> like very similar problems, some of which never seemed to find the 
-> solution, but one of which came up with a fairly quick answer it seemed, 
-> namely that the drive's NCQ implementation was horked: 
-> http://lkml.org/lkml/2007/4/18/32
-> 
-> While I don't have older logs to verify exactly when this started, it 
-> was fairly recent, perhaps around my 2.6.20.1 to 2.6.21.1 kernel 
-> upgrade.
-> 
-> Any other info or tests I can provide/run to help?
-> 
-> Syslog snippet:
-> Jun 21 10:35:23 cheetah kernel: ata6: EH in ADMA mode, notifier 0x0 notifier_error 0x0 gen_ctl 0x1501000 status 0x400 next cpb count 0x0 next cpb idx 0x0
-> Jun 21 10:35:24 cheetah kernel: ata6: CPB 0: ctl_flags 0x9, resp_flags 0x0
-> Jun 21 10:35:24 cheetah kernel: ata6: timeout waiting for ADMA IDLE, stat=0x400
-> Jun 21 10:35:24 cheetah kernel: ata6: timeout waiting for ADMA LEGACY, stat=0x400
-> Jun 21 10:35:24 cheetah kernel: ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> Jun 21 10:35:24 cheetah kernel: ata6.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x0 data 0
-> Jun 21 10:35:24 cheetah kernel:          res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-> Jun 21 10:35:24 cheetah kernel: ata6: soft resetting port
-> Jun 21 10:35:24 cheetah kernel: ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> Jun 21 10:35:24 cheetah kernel: ata6.00: configured for UDMA/133
-> Jun 21 10:35:24 cheetah kernel: ata6: EH complete
-> Jun 21 10:35:24 cheetah kernel: SCSI device sdb: 488397168 512-byte hdwr sectors (250059 MB)
-> Jun 21 10:35:24 cheetah kernel: sdb: Write Protect is off
-> Jun 21 10:35:24 cheetah kernel: sdb: Mode Sense: 00 3a 00 00
-> Jun 21 10:35:24 cheetah kernel: SCSI device sdb: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+        You don't actually need it (at least for easy cases like that),
+because IPv6 defines IPv4 mapped IPv6 addresses of the form
+::ffff:a.b.c.d. These will generate IPv4 packets for a.b.c.d, from
+a v6 socket.
+        Unless you're using v6only binding (a sysctl option), you can
+connect to v6-only servers using a v4 network and a v4 address of the
+server. The peer address on those connections will show up as a v4
+mapped address, and all the traffic will be v4, but the socket layer
+is all v6.
 
-Unfortunately, this kind of problem is rather difficult to diagnose. 
-Essentially what's happened is that we've sent a command (in this case a 
-cache flush) to the controller but it's given no indication that it's 
-done anything with it (somewhat different from the case in the link you 
-mentioned above, where the controller indicates it's sent the command 
-and is waiting for completion). This could be some kind of drive issue 
-or drive/controller incompatibility, a controller bug, the driver doing 
-something the controller doesn't expect..
+                                                                +-DLS
 
-Does this drive actually support NCQ? I can't tell from this part of the 
-  log.
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
 
