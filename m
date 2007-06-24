@@ -1,38 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbXFXTGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbXFXTIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbXFXTGI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXFXTF4
+	id S1756747AbXFXTIx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXFXTIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:05:56 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49580 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751625AbXFXTF4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:05:56 -0400
-Date: Sun, 24 Jun 2007 12:04:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-In-Reply-To: <20070624183547.GA21478@ftp.linux.org.uk>
-Message-ID: <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
-References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk>
- <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org>
- <20070624183547.GA21478@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sun, 24 Jun 2007 15:08:46 -0400
+Received: from smtpout.mac.com ([17.250.248.185]:49698 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751631AbXFXTIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 15:08:46 -0400
+In-Reply-To: <467EA7C1.4080006@rossove.com>
+References: <467EA7C1.4080006@rossove.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D6003DDE-0C36-437B-B70A-D422DFE153D0@mac.com>
+Cc: LKML Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Scaling Max IP address limitation
+Date: Sun, 24 Jun 2007 15:08:37 -0400
+To: djones@rossove.com
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 24, 2007, at 13:20:01, David Jones wrote:
+> Hi, I am trying to add multiple IP addresses ( v6 ) to my FC7 box  
+> on eth0. But I am hitting a max limit of 4000 IP address . Seems  
+> like there is a limiting variable in linux kernel (which one? )  
+> that prevents from adding more IP addresses than 4096. What do I  
+> need to change in Linux kernel  ( and then recompile ) to be able  
+> to add more IP addresses than 4K addresses per system? ..
 
+Do you really need that many IP addresses?  When somebody finally  
+gets around to implementing REDIRECT support for ip6tables then you  
+could just redirect them all to the same port on the local system.   
+Then with a happy little getsockopt() you can find out the original  
+IP address for use in whatever application you are running.  That's  
+likely to be a thousand times more efficient than binary searching  
+through 5000+ mostly-sequential IP addresses per received packet.
 
-On Sun, 24 Jun 2007, Al Viro wrote:
-> 
-> Why?  I'd say it's not better than BUILD_BUG_ON_ZERO() use
-> instead of that ?:
+<Unrelated wishful thinking>
+I keep having hopeful dreams that one day netfilter will grow support  
+for cross-protocol NAT (IE: NAT a TCPv4 connection over TCPv6 to the  
+IPv6-only local web server, or vice versa).  It would seem that would  
+require a merged "xtables" program.
 
-Oh, _that_ part I have no problem with. It's more that it seems that the 
-gcc optimization is ok at least as an extension.
+Having routing table operations, IPsec transformations, etc just be  
+another step in the firewall rules would also be useful.  It would be  
+handy to be able to "-j ROUTE", then "-j IPSEC", then "-j ROUTE"  
+again, to re-route the now-encapsulated IPsec packets to their proper  
+destination.  That would also eliminate the sort-of-hacky problems  
+with destination network interface in the bridging code: "-j BRIDGE"  
+might be another step in the process, and conceivably you could have  
+independent bridge MAC tables too.  You'd probably also want "-j  
+BRIDGE_TEST" and "-j ROUTE_TEST" to compute the output network  
+interface without actually modifying the addresses.
 
-		Linus
+That would also appear to get rid of the need for all tables other  
+than "filter" and all predefined chains other than "INPUT" and  
+"OUTPUT".  Default rules would be these:
+nettables -A INPUT -j CONNTRACK
+nettables -A INPUT -j LOCALMATCH
+nettables -A INPUT --for-this-host -j ACCEPT
+nettables -A INPUT -j OUTPUT
+nettables -A OUTPUT -j ROUTE
+nettables -A OUTPUT -j TRANSMIT
+
+Forwarded packets would be sent right into the OUTPUT chain from the  
+INPUT chain by appropriate rules.  Instead of turning off  
+ip_forwarding in /proc/sys, you could just change the "-j OUTPUT" in  
+the INPUT chain to "-j ACCEPT", and it would be impossible to forward  
+packets.  I can't see any functionality that we have today which a  
+mechanism like this wouldn't support, aside from the fact that it  
+hands the admin a loaded nuclear missile aimed at their foot  
+(Flushing the INPUT chain would basically be analogous to committing  
+network suicide, although there exist other ways to do that with  
+netfilter today.
+</Unrelated wishful thinking>
+
+Cheers,
+Kyle Moffett
+
