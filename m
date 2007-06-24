@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbXFXTIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbXFXTJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbXFXTIx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXFXTIq
+	id S1756869AbXFXTJz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXFXTJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:08:46 -0400
-Received: from smtpout.mac.com ([17.250.248.185]:49698 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751631AbXFXTIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:08:46 -0400
-In-Reply-To: <467EA7C1.4080006@rossove.com>
-References: <467EA7C1.4080006@rossove.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D6003DDE-0C36-437B-B70A-D422DFE153D0@mac.com>
-Cc: LKML Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org
+	Sun, 24 Jun 2007 15:09:47 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:55297 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751649AbXFXTJq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 15:09:46 -0400
+In-Reply-To: <20070624184449.GB21478@ftp.linux.org.uk>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <b739fb9ad6e68bfe5d2a4b839abc8ea4@kernel.crashing.org> <20070624184449.GB21478@ftp.linux.org.uk>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c18a28cc8094adeac7ff98652609a8cb@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Scaling Max IP address limitation
-Date: Sun, 24 Jun 2007 15:08:37 -0400
-To: djones@rossove.com
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Date: Sun, 24 Jun 2007 21:09:28 +0200
+To: Al Viro <viro@ftp.linux.org.uk>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 24, 2007, at 13:20:01, David Jones wrote:
-> Hi, I am trying to add multiple IP addresses ( v6 ) to my FC7 box  
-> on eth0. But I am hitting a max limit of 4000 IP address . Seems  
-> like there is a limiting variable in linux kernel (which one? )  
-> that prevents from adding more IP addresses than 4096. What do I  
-> need to change in Linux kernel  ( and then recompile ) to be able  
-> to add more IP addresses than 4K addresses per system? ..
+>> If I understand correctly what bugs you are talking about,
+>> most (all?) of those were solved in the dark ages already
+>> (i.e., the 3.x series).
+>
+> Alas, no.  gcc is amazingly (and inconsistently) sloppy about the
+> things it accepts as integer constant expressions.
 
-Do you really need that many IP addresses?  When somebody finally  
-gets around to implementing REDIRECT support for ip6tables then you  
-could just redirect them all to the same port on the local system.   
-Then with a happy little getsockopt() you can find out the original  
-IP address for use in whatever application you are running.  That's  
-likely to be a thousand times more efficient than binary searching  
-through 5000+ mostly-sequential IP addresses per received packet.
+Ah yes, now I see what you were talking about.  Most of this
+is well-known, but feel free to file more PRs :-)
 
-<Unrelated wishful thinking>
-I keep having hopeful dreams that one day netfilter will grow support  
-for cross-protocol NAT (IE: NAT a TCPv4 connection over TCPv6 to the  
-IPv6-only local web server, or vice versa).  It would seem that would  
-require a merged "xtables" program.
+>>> It certainly is not a valid C
+>>
+>> Why not?  Nothing in the C standard says all your externs
+>> have to be defined in some other translation unit you link
+>> with AFAIK.
+>
+> It's not about externs.  It's about things like
+>
+> unsigned n;
+> int a[] = {[n - n + n - n] = 1};
+>
+> And yes, gcc does eat that.
 
-Having routing table operations, IPsec transformations, etc just be  
-another step in the firewall rules would also be useful.  It would be  
-handy to be able to "-j ROUTE", then "-j IPSEC", then "-j ROUTE"  
-again, to re-route the now-encapsulated IPsec packets to their proper  
-destination.  That would also eliminate the sort-of-hacky problems  
-with destination network interface in the bridging code: "-j BRIDGE"  
-might be another step in the process, and conceivably you could have  
-independent bridge MAC tables too.  You'd probably also want "-j  
-BRIDGE_TEST" and "-j ROUTE_TEST" to compute the output network  
-interface without actually modifying the addresses.
+Yeah.
 
-That would also appear to get rid of the need for all tables other  
-than "filter" and all predefined chains other than "INPUT" and  
-"OUTPUT".  Default rules would be these:
-nettables -A INPUT -j CONNTRACK
-nettables -A INPUT -j LOCALMATCH
-nettables -A INPUT --for-this-host -j ACCEPT
-nettables -A INPUT -j OUTPUT
-nettables -A OUTPUT -j ROUTE
-nettables -A OUTPUT -j TRANSMIT
+> With -pedantic -std=c99, at that.
+> However,
+>
+> unsigned n;
+> int a[] = {[n + n - n - n] = 1};
+>
+> gets you error: nonconstant array index in initializer
+>
+> And that's 4.1, not 3.x...
 
-Forwarded packets would be sent right into the OUTPUT chain from the  
-INPUT chain by appropriate rules.  Instead of turning off  
-ip_forwarding in /proc/sys, you could just change the "-j OUTPUT" in  
-the INPUT chain to "-j ACCEPT", and it would be impossible to forward  
-packets.  I can't see any functionality that we have today which a  
-mechanism like this wouldn't support, aside from the fact that it  
-hands the admin a loaded nuclear missile aimed at their foot  
-(Flushing the INPUT chain would basically be analogous to committing  
-network suicide, although there exist other ways to do that with  
-netfilter today.
-</Unrelated wishful thinking>
+Why are you using such an ancient compiler? :-)
+(Not that it is fixed in the current release though).
 
-Cheers,
-Kyle Moffett
+
+Segher
 
