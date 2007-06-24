@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbXFXByH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbXFXDIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbXFXByH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 21:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXFXBx5
+	id S1754887AbXFXDIK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 23:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXFXDH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 21:53:57 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60499 "EHLO mx2.suse.de"
+	Sat, 23 Jun 2007 23:07:59 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41766 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbXFXBx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 21:53:56 -0400
-Date: Sun, 24 Jun 2007 03:53:55 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	id S1752885AbXFXDH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 23:07:58 -0400
+Message-ID: <467DE00A.9080700@garzik.org>
+Date: Sat, 23 Jun 2007 23:07:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Memory Management List <linux-mm@kvack.org>,
        linux-fsdevel@vger.kernel.org
 Subject: Re: [RFC] fsblock
-Message-ID: <20070624015355.GE17609@wotan.suse.de>
 References: <20070624014528.GA17609@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <20070624014528.GA17609@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just clarify a few things. Don't you hate rereading a long work you
-wrote? (oh, you're supposed to do that *before* you press send?).
-
-On Sun, Jun 24, 2007 at 03:45:28AM +0200, Nick Piggin wrote:
+Nick Piggin wrote:
+> - No deadlocks (hopefully). The buffer layer is technically deadlocky by
+>   design, because it can require memory allocations at page writeout-time.
+>   It also has one path that cannot tolerate memory allocation failures.
+>   No such problems for fsblock, which keeps fsblock metadata around for as
+>   long as a page is dirty (this still has problems vs get_user_pages, but
+>   that's going to require an audit of all get_user_pages sites. Phew).
 > 
-> I'm announcing "fsblock" now because it is quite intrusive and so I'd
-> like to get some thoughts about significantly changing this core part
-> of the kernel.
-> 
-> fsblock is a rewrite of the "buffer layer" (ding dong the witch is
-> dead), which I have been working on, on and off and is now at the stage
-> where some of the basics are working-ish. This email is going to be
-> long...
-> 
-> Firstly, what is the buffer layer?  The buffer layer isn't really a
-> buffer layer as in the buffer cache of unix: the block device cache
-> is unified with the pagecache (in terms of the pagecache, a blkdev
-> file is just like any other, but with a 1:1 mapping between offset
-> and block).
+> - In line with the above item, filesystem block allocation is performed
+>   before a page is dirtied. In the buffer layer, mmap writes can dirty a
+>   page with no backing blocks which is a problem if the filesystem is
+>   ENOSPC (patches exist for buffer.c for this).
 
-I mean, in Linux, the block device cache is unified. UNIX I believe
-did all its caching in a buffer cache, below the filesystem.
+This raises an eyebrow...  The handling of ENOSPC prior to mmap write is 
+more an ABI behavior, so I don't see how this can be fixed with internal 
+changes, yet without changing behavior currently exported to userland 
+(and thus affecting code based on such assumptions).
 
- 
+
+> - An inode's metadata must be tracked per-inode in order for fsync to
+>   work correctly. buffer contains helpers to do this for basic
+>   filesystems, but any block can be only the metadata for a single inode.
+>   This is not really correct for things like inode descriptor blocks.
+>   fsblock can track multiple inodes per block. (This is non trivial,
+>   and it may be overkill so it could be reverted to a simpler scheme
+>   like buffer).
+
+hrm; no specific comment but this seems like an idea/area that needs to 
+be fleshed out more, by converting some of the more advanced filesystems.
+
+
 > - Large block support. I can mount and run an 8K block size minix3 fs on
 >   my 4K page system and it didn't require anything special in the fs. We
+>   can go up to about 32MB blocks now, and gigabyte+ blocks would only
+>   require  one more bit in the fsblock flags. fsblock_superpage blocks
+>   are > PAGE_CACHE_SIZE, midpage ==, and subpage <.
 
-Oh, and I don't have a Linux mkfs that makes minixv3 filesystems.
-I had an image kindly made for me because I don't use minix. If
-you want to test large block support, I won't email it to you though:
-you can just convert ext2 or ext3 to fsblock ;)
+definitely useful, especially if I rewrite my ibu filesystem for 2.6.x, 
+like I've been planning.
+
+
+> So. Comments? Is this something we want? If yes, then how would we
+> transition from buffer.c to fsblock.c?
+
+Your work is definitely interesting, but I think it will be even more 
+interesting once ext2 (w/ dir in pagecache) and ext3 (journalling) are 
+converted.
+
+My gut feeling is that there are several problem areas you haven't hit 
+yet, with the new code.
+
+Also, once things are converted, the question of transitioning from 
+buffer.c will undoubtedly answer itself.  That's the way several of us 
+handle transitions:  finish all the work, then look with fresh eyes and 
+conceive a path from the current code to your enhanced code.
+
+	Jeff
+
+
