@@ -1,152 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbXFXBb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbXFXBps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755016AbXFXBb6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Jun 2007 21:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbXFXBbu
+	id S1755122AbXFXBps (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Jun 2007 21:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXFXBpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Jun 2007 21:31:50 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:60512
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753489AbXFXBbt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Jun 2007 21:31:49 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: Rules on how to use sysfs in userspace programs
-Date: Sat, 23 Jun 2007 21:31:45 -0400
-User-Agent: KMail/1.9.6
-Cc: "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org
-References: <20070608203637.GA9259@kroah.com> <200706221746.03298.rob@landley.net> <3ae72650706230549oaf3f965ufa311177ea4134af@mail.gmail.com>
-In-Reply-To: <3ae72650706230549oaf3f965ufa311177ea4134af@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Jun 2007 21:45:39 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60278 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753440AbXFXBpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Jun 2007 21:45:38 -0400
+Date: Sun, 24 Jun 2007 03:45:28 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: [RFC] fsblock
+Message-ID: <20070624014528.GA17609@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706232131.46016.rob@landley.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 23 June 2007 08:49:47 Kay Sievers wrote:
-> On 6/22/07, Rob Landley <rob@landley.net> wrote:
-> > On Friday 08 June 2007 16:36:37 Greg KH wrote:
-> > > Over time there have been a number of problems when sysfs has changed
-> > > in "unexpected" ways.  Here's a document that Kay wrote a while ago
-> > > that I'd like to add to the kernel Documentation directory to help
-> > > userspace programmers out.
-> > >
-> > > Any comments or critique of this is greatly appreciated.
-> >
-> > Still catching up from my laptop dying.
-> >
-> > I find the explanation of /sys/subsystem almost unintelligible.  What
-> > will the new one actually look like?
->
-> "It is planned to merge all three classification-directories into one
->  place at /sys/subsystem/,  following the current layout of the
-> bus-directories."
->
-> Means that /sys/subsystem/ will have a devices/ directory, full of
-> symlinks to the devices, all in a flat list. Subsytem-global attribute
-> files/directories are not mixed with the devices in the same directory
-> like in /sys/class, it will also not contain any hierarchy like the
-> layout of /sys/block.
 
-But will it still be possible to distinguish block devices from character 
-devices when teaching mdev to quickly scan for devices to populate /dev in 
-embedded systems using the "new" locations for things?
+I'm announcing "fsblock" now because it is quite intrusive and so I'd
+like to get some thoughts about significantly changing this core part
+of the kernel.
 
-> > If I want to find all block devices in the system, it looks like I should
-> > now look at /sys/subsystem/block.
->
-> Yes, in this order (if you want to use it, but /sys/block will still be
-> there): /sys/subsytem/block/devices/*
->   /sys/class/block/*
->   /sys/block/*/*
+fsblock is a rewrite of the "buffer layer" (ding dong the witch is
+dead), which I have been working on, on and off and is now at the stage
+where some of the basics are working-ish. This email is going to be
+long...
 
-If /sys/block will still be there, and this is reliable and just "not 
-deprecated _yet_", then life is good.  I got the impression from the document 
-that /sys/block was going away at some point.
+Firstly, what is the buffer layer?  The buffer layer isn't really a
+buffer layer as in the buffer cache of unix: the block device cache
+is unified with the pagecache (in terms of the pagecache, a blkdev
+file is just like any other, but with a 1:1 mapping between offset
+and block).
 
-> > (And "subsystem" is not a variable here but
-> > the actual directory name?  I presume it moved for Feng Shui reasons.)
->
-> "one place at /sys/subsystem/"
->
-> Yes, it will be all pretty consistent, the event-environment contains
-> $SUBSYSTEM, we will  have /sys/subsystem/$SUBSYSTEM/devices/ directory
-> and at every device a symlink named "subsystem" pointing back to the
-> /sys/subsystem/$SUBSYSTEM/ directory.
+There are filesystem APIs to access the block device, but these go
+through the block device pagecache as well. These don't exactly
+define the buffer layer either.
 
-Which is good to know, but only useful if called from event context rather 
-than scanning for devices from init scripts so it can mknod in /dev and fire 
-off subsidiary scripts.
+The buffer layer is a layer between the pagecache and the block
+device for block based filesystems. It keeps a translation between
+logical offset and physical block number, as well as meta
+information such as locks, dirtyness, and IO status of each block.
+This information is tracked via the buffer_head structure.
 
-> > If I want to find char devices, where do I look?  /sys/subsystem... 
-> > char? class?  Is a char device now anything under /sys/subsystem that is
-> > _not_ in /sys/subsystem/block?  (Minus bus devices?)  Is there a specific
-> > directory for these?
->
-> If /sys/subsystem exists, just look at /sys/subsystem/*/devices/*, you
-> will find every kernel device here, with exactly the logic to access
-> it. Every device with a "dev" file, it is a char device, unless
-> $SUBYSTEM=="block".
+Why rewrite the buffer layer?  Lots of people have had a desire to
+completely rip out the buffer layer, but we can't do that[*] because
+it does actually serve a useful purpose. Why the bad rap? Because
+the code is old and crufty, and buffer_head is an awful name. It must 
+be among the oldest code in the core fs/vm, and the main reason is
+because of the inertia of so many and such complex filesystems.
 
-Oh good.  That last sentence contains the heuristic I need.
+[*] About the furthest we could go is use the struct page for the
+information otherwise stored in the buffer_head, but this would be
+tricky and suboptimal for filesystems with non page sized blocks and
+would probably bloat the struct page as well.
 
-> If /sys/subsystem/ doesn't exist, you have to search all through
-> /sys/bus/, /sys/class/, /sys/block/, every directory with completely
+So why rewrite rather than incremental improvements? Incremental
+improvements are logically the correct way to do this, and we probably
+could go from buffer.c to fsblock.c in steps. But I didn't do this
+because: a) the blinding pace at which things move in this area would
+make me an old man before it would be complete; b) I didn't actually
+know exactly what it was going to look like before starting on it; c)
+I wanted stable root filesystems and such when testing it; and d) I
+found it reasonably easy to have both layers coexist (it uses an extra
+page flag, but even that wouldn't be needed if the old buffer layer
+was better decoupled from the page cache).
 
-No, only /sys/class and /sys/block.  Currently, /sys/class contains char 
-devices and /sys/block contains block devices.  You don't have to invoke 
-mknod for a bus.
+I started this as an exercise to see how the buffer layer could be
+improved, and I think it is working out OK so far. The name is fsblock
+because it basically ties the fs layer to the block layer. I think
+Andrew has wanted to rename buffer_head to block before, but block is
+too clashy, and it isn't a great deal more descriptive than buffer_head.
+I believe fsblock is.
 
-> different access pattern to find your device. You may want to look at
-> the udev code, it's all implemented there:
-> http://git.kernel.org/?p=linux/hotplug/udev.git;a=blob;f=udevtrigger.c;hb=H
->EAD#l498
->
-> > This document is highly polluted with what NOT to do.
->
-> Yeah, that's sysfs. It exports all the useless kernel implementation
-> details, so that _what_not_to_do_ is the biggest problem we have. :)
+I'll go through a list of things where I have hopefully improved on the
+buffer layer, off the top of my head. The big caveat here is that minix
+is the only real filesystem I have converted so far, and complex
+journalled filesystems might pose some problems that water down its
+goodness (I don't know).
 
-If you document a specific subset of the data it exports and say "you can rely 
-on this being there, lots of the rest is implementation details", then people 
-have less cause to complain when the bits you haven't documented change.
+- data structure size. struct fsblock is 20 bytes on 32-bit, and 40 on
+  64-bit (could easily be 32 if we can have int bitops). Compare this
+  to around 50 and 100ish for struct buffer_head. With a 4K page and 1K
+  blocks, IO requires 10% RAM overhead in buffer heads alone. With
+  fsblocks you're down to around 3%.
 
-Right now, it's all undocumented and if you try to wade through the 
-documentation it spends most of its time reminiscing about the bad old days 
-of...  nine months ago.
+- Structure packing. A page gets a number of buffer heads that are
+  allocated in a linked list. fsblocks are allocated contiguously, so
+  cacheline footprint is smaller in the above situation.
 
-> There is much too much internal stuff available here, that never can
-> be kept stable in the usual sense, as long as we allow to change
-> kernel/driver internals at the same time.
+- Data / metadata separation. I have a struct fsblock and a struct
+  fsblock_meta, so we could put more stuff into the usually less used
+  fsblock_meta without bloating it up too much. After a few tricks, these
+  are no longer any different in my code, and dirty up the typing quite
+  a lot (and I'm aware it still has some warnings, thanks). So if not
+  useful this could be taken out.
 
-Then document what is stable, please.
+- Locking. fsblocks completely use the pagecache for locking and lookups.
+  The page lock is used, but there is no extra per-inode lock that buffer
+  has. Would go very nicely with lockless pagecache. RCU is used for one
+  non-blocking fsblock lookup (find_get_block), but I'd really rather hope
+  filesystems can tolerate that blocking, and get rid of RCU completely.
+  (actually this is not quite true because mapping->private_lock is still
+  used for mark_buffer_dirty_inode equivalent, but that's a relatively
+  rare operation).
 
-> > I'm looking for a
-> > clear "what SHOULD I do", and it takes some wading to find it. 
-> > (Historical cruft about what not to do is potentially a separate
-> > document, it's not useful for people learning this stuff now who weren't
-> > playing with the legacy mechanisms.)  The description of /sys/subsystem
-> > spends so much time talking about old legacy issues it never gives a
-> > clear description of the new way of doing things, which is theoretically
-> > what this document is about...
->
-> It was a first cut, I did months ago, and sure, it needs some work.
+- Coupling with pagecache metadata. Pagecache pages contain some metadata
+  that is logically redundant because it is tracked in buffers as well
+  (eg. a page is dirty if one or more buffers are dirty, or uptodate if
+  all buffers are uptodate). This is great because means we can avoid that
+  layer in some situations, but they can get out of sync. eg. if a
+  filesystem writes a buffer out by hand, its pagecache page will stay
+  dirty, and the next "writeout" will notice it has no dirty buffers and
+  call it clean. fsblock-based writeout or readin will update page
+  metadata too, which is cleaner. It also uses page locking for IO ops
+  instead of an extra layer of locking which seems nice.
 
-I'm very interested in helping out with it, and updating mdev based on the 
-documentation rather than the source code, but not until after OLS I 
-expect. :)
+- No deadlocks (hopefully). The buffer layer is technically deadlocky by
+  design, because it can require memory allocations at page writeout-time.
+  It also has one path that cannot tolerate memory allocation failures.
+  No such problems for fsblock, which keeps fsblock metadata around for as
+  long as a page is dirty (this still has problems vs get_user_pages, but
+  that's going to require an audit of all get_user_pages sites. Phew).
 
-> Thanks,
-> Kay
+- In line with the above item, filesystem block allocation is performed
+  before a page is dirtied. In the buffer layer, mmap writes can dirty a
+  page with no backing blocks which is a problem if the filesystem is
+  ENOSPC (patches exist for buffer.c for this).
 
-Thanks,
+- Block memory accessors for filesystems. If the buffer layer was to ever
+  be replaced completely, this means block device pagecache would not be
+  restricted to lowmem. It also doesn't have theoretical CPU cache
+  aliasing problems that buffer heads do.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+- A real "nobh" mode. nobh was created I think mainly to avoid problems
+  with buffer_head memory consumption, especially on lowmem machines. It
+  is basically a hack (sorry), which requires special code in filesystems,
+  and duplication of quite a bit of tricky buffer layer code (and bugs).
+  It also doesn't work so well for buffers with non-trivial private data
+  (like most journalling ones). fsblock implements this with basically a
+  few lines of code, and it shold work in situations like ext3.
+
+- Similarly, it gets around the circular reference problem where a buffer
+  holds a ref on a page and a page holds a ref on a buffer, but the page
+  has been removed from pagecache. These occur with some journalled fses
+  like ext3 ordered, and eventually fill up memory and have to be
+  reclaimed via the LRU (which is often not a problem, but I have seen
+  real workloads where the reclaim causes throughput to drop quite a lot).
+
+- An inode's metadata must be tracked per-inode in order for fsync to
+  work correctly. buffer contains helpers to do this for basic
+  filesystems, but any block can be only the metadata for a single inode.
+  This is not really correct for things like inode descriptor blocks.
+  fsblock can track multiple inodes per block. (This is non trivial,
+  and it may be overkill so it could be reverted to a simpler scheme
+  like buffer).
+
+- Large block support. I can mount and run an 8K block size minix3 fs on
+  my 4K page system and it didn't require anything special in the fs. We
+  can go up to about 32MB blocks now, and gigabyte+ blocks would only
+  require  one more bit in the fsblock flags. fsblock_superpage blocks
+  are > PAGE_CACHE_SIZE, midpage ==, and subpage <.
+
+  Core pagecache code is pretty creaky with respect to this. I think it is
+  mostly race free, but it requires stupid unlocking and relocking hacks
+  because the vm usually passes single locked pages to the fs layers, and we
+  need to lock all pages of a block in offset ascending order. This could be
+  avoided by doing locking on only the first page of a block for locking in
+  the fsblock layer, but that's a bit scary too. Probably better would be to
+  move towards offset,length rather than page based fs APIs where everything
+  can be batched up nicely and this sort of non-trivial locking can be more
+  optimal.
+
+  Large blocks also have a performance black spot where an 8K sized and
+  aligned write(2) would require an RMW in the filesystem. Again because of
+  the page based nature of the fs API, and this too would be fixed if
+  the APIs were better.
+
+  Large block memory access via filesystem uses vmap, but it will go back
+  to kmap if the access doesn't cross a page. Filesystems really should do
+  this because vmap is slow as anything. I've implemented a vmap cache
+  which basically wouldn't work on 32-bit systems (because of limited vmap
+  space) for performance testing (and yes it sometimes tries to unmap in
+  interrupt context, I know, I'm using loop). We could possibly do a self
+  limiting cache, but I'd rather build some helpers to hide the raw multi
+  page access for things like bitmap scanning and bit setting etc. and
+  avoid too much vmaps.
+
+- Code size. I'm sure I'm still missing some things, but at the moment we
+  can do this in about the same amount of icache as buffer.c. If we turn
+  off large block support, I think it is around 2/3 the size.
+
+That's basically it for now. I have a few more ideas for cool things, but
+there are only so many hours in a day. Comments are non-existant so far,
+and there is lots of debugging stuff and some things are a little dirty,
+but it should be slightly familiar if you understand buffer.c. I'm not so
+interested in hearing about trivial nitpicking at this point because things
+are far from final or proposed for upstream. There is still a race or two,
+but I think they can all be solved.
+
+So. Comments? Is this something we want? If yes, then how would we
+transition from buffer.c to fsblock.c?
+
