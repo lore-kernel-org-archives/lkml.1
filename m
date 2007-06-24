@@ -1,139 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbXFXTYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbXFXTZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756466AbXFXTYk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXFXTYd
+	id S1754625AbXFXTZM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbXFXTY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:24:33 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45276
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbXFXTYc (ORCPT
+	Sun, 24 Jun 2007 15:24:58 -0400
+Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:22616 "EHLO
+	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752558AbXFXTY5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:24:32 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: Rules on how to use sysfs in userspace programs
-Date: Sun, 24 Jun 2007 15:24:32 -0400
-User-Agent: KMail/1.9.6
-Cc: "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org
-References: <20070608203637.GA9259@kroah.com> <200706232131.46016.rob@landley.net> <3ae72650706240403j779a9aedyf6321de1d22b19fd@mail.gmail.com>
-In-Reply-To: <3ae72650706240403j779a9aedyf6321de1d22b19fd@mail.gmail.com>
+	Sun, 24 Jun 2007 15:24:57 -0400
+Date: Sun, 24 Jun 2007 21:24:54 +0200 (CEST)
+From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+In-Reply-To: <20070624200837.16e11305@the-village.bc.nu>
+Message-ID: <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+ <20070624200837.16e11305@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706241524.33109.rob@landley.net>
+Content-Type: MULTIPART/MIXED; BOUNDARY="0-145854784-1182713094=:25800"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 June 2007 07:03:39 Kay Sievers wrote:
-> On 6/24/07, Rob Landley <rob@landley.net> wrote:
-> > On Saturday 23 June 2007 08:49:47 Kay Sievers wrote:
-> > > On 6/22/07, Rob Landley <rob@landley.net> wrote:
-> > > > On Friday 08 June 2007 16:36:37 Greg KH wrote:
-> > > > > Over time there have been a number of problems when sysfs has
-> > > > > changed in "unexpected" ways.  Here's a document that Kay wrote a
-> > > > > while ago that I'd like to add to the kernel Documentation
-> > > > > directory to help userspace programmers out.
-> > > > >
-> > > > > Any comments or critique of this is greatly appreciated.
-> > > >
-> > > > Still catching up from my laptop dying.
-> > > >
-> > > > I find the explanation of /sys/subsystem almost unintelligible.  What
-> > > > will the new one actually look like?
-> > >
-> > > "It is planned to merge all three classification-directories into one
-> > >  place at /sys/subsystem/,  following the current layout of the
-> > > bus-directories."
-> > >
-> > > Means that /sys/subsystem/ will have a devices/ directory, full of
-> > > symlinks to the devices, all in a flat list. Subsytem-global attribute
-> > > files/directories are not mixed with the devices in the same directory
-> > > like in /sys/class, it will also not contain any hierarchy like the
-> > > layout of /sys/block.
-> >
-> > But will it still be possible to distinguish block devices from character
-> > devices when teaching mdev to quickly scan for devices to populate /dev
-> > in embedded systems using the "new" locations for things?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--0-145854784-1182713094=:25800
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8BIT
+
+On Sun, 24 Jun 2007, Alan Cox wrote:
+[..]
+> Years ago Linux dumped OSS for ALSA because ALSA offered far better
+> functionality and support. Why would we go back to the stone age ?
 >
-> Sure, all devices have a "subsystem" link, you have to readlink()
-> that, and if it ends in "block, you have a blockdev. But as mentioned
-> in an earlier mail, you should stop scanning /sys/devices/ and always
-> come from the subsystem directories, so you get "block" for free.
-
-I'm not scanning /sys/devices, I'm scanning /sys/block and /sys/class which 
-this document implies are deprecated and going away.  I'm trying to figure 
-out what replaced them.  Now instead of following a path to naturally get 
-char devices in one pass and block devices in another, it seems I have to 
-readlink a symlink and do string manipulation to identify the device type 
-once I've found the device.
-
-I can do this, I'd just like to confirm it's "the way" now, and by "the way" I 
-mean Greg won't change his mind and yank it next month.
-
-> > > If /sys/subsystem exists, just look at /sys/subsystem/*/devices/*, you
-> > > will find every kernel device here, with exactly the logic to access
-> > > it. Every device with a "dev" file, it is a char device, unless
-> > > $SUBYSTEM=="block".
-> >
-> > Oh good.  That last sentence contains the heuristic I need.
-
-Ok, hang on, looking back on this I'm confused again.
-
-When you say /sys/subsystem are you referring to a literal path (which my sys 
-directory currently doesn't have a subdirectory named "subsystem"), or do you 
-mean /sys/$SUBSYSTEM where today I have /sys/class and /sys/block?
-
-> > > If /sys/subsystem/ doesn't exist, you have to search all through
-> > > /sys/bus/, /sys/class/, /sys/block/, every directory with completely
-> >
-> > No, only /sys/class and /sys/block.  Currently, /sys/class contains char
-> > devices and /sys/block contains block devices.  You don't have to invoke
-> > mknod for a bus.
+> Its something useful to various other platforms with basically no
+> hardware support but Linux has ALSA and very good hardware support and
+> ALSA even has emulation for back compatibility with old OSS apps.
 >
-> Sure, you have! There are devices in /sys/bus which export device
-> nodes, and the number will just grow.
+> Ten years ago it would probably have made a difference, five maybe, today
+> its a release of historical code at best, and since they shipped binary
+> modules for Linux more like 'getting around to complying with the
+> licence' than anything else.
 
-I have yet to encounter any, could you give me some examples?
+Sory Alan but I don't want philosophical/historical discuss.
+Try to answer on question "ALSA or OSS ?" using *only* technical arguments.
 
-find /sys/bus -name dev
+Maybe it is not clear for you but now way for introduce better OSS support 
+for FOSS applications is completly oppened (there is no legal 
+contrargumets fo not using OSS).
+There is no ALSA on non-Linux systems (and will not be) so all other 
+OSes/Unices will have better sound support than Linux (better on technical 
+level and also on support level because all this systems will use 
+common OSS) .. and it is only matter of time (when/how fast ?).
+If you dont see this please stop ..
 
-Nope, nothing...
-
-Would these device nodes be char devices, or block devices, or... something 
-else entirely?  (The practical distinction between /sys/class and /sys/block 
-used to be that one contained char devices and the other block devices.  I 
-could work with that.  I'm sad to see it going away...)
-
-> That's why the document states: "There is no such thing like class-,
-> bus-, physical devices, interfaces, and such that you can rely on in
-> userspace. Everything is just simply a "device". Class-, bus-,
-> physical, ... types are just kernel implementation details, which
-> should not be expected by applications that handle devices."
-
-Whether you feed "b" or "c" to mknod is a kernel implementation detail?
-
-Are you unifying char and block devices so mknod doesn't have to distinguish 
-between them anymore?
-
-> > I'm very interested in helping out with it, and updating mdev based on
-> > the documentation rather than the source code, but not until after OLS I
-> > expect. :)
->
-> Sure, any help is welcome here.
-
-What I've had to do each time was install a new kernel, find out what had 
-changed by examination, and update programs to work with the new stuff.
-
-I'd like to be able to do it from documentation.
-
-> Thanks,
-> Kay
-
-Rob
+kloczek
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+-----------------------------------------------------------
+*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
+-----------------------------------------------------------
+Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
+--0-145854784-1182713094=:25800--
