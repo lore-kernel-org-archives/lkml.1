@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbXFXTJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbXFXTK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbXFXTJz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 15:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXFXTJr
+	id S1757031AbXFXTK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 15:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXFXTKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 15:09:47 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:55297 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751649AbXFXTJq (ORCPT
+	Sun, 24 Jun 2007 15:10:11 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33651 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbXFXTKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 15:09:46 -0400
-In-Reply-To: <20070624184449.GB21478@ftp.linux.org.uk>
-References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <b739fb9ad6e68bfe5d2a4b839abc8ea4@kernel.crashing.org> <20070624184449.GB21478@ftp.linux.org.uk>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c18a28cc8094adeac7ff98652609a8cb@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jun 2007 15:10:09 -0400
+Date: Sun, 24 Jun 2007 20:10:07 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Date: Sun, 24 Jun 2007 21:09:28 +0200
-To: Al Viro <viro@ftp.linux.org.uk>
-X-Mailer: Apple Mail (2.623)
+Message-ID: <20070624191007.GC21478@ftp.linux.org.uk>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <200706242007.10585.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706242007.10585.arnd@arndb.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> If I understand correctly what bugs you are talking about,
->> most (all?) of those were solved in the dark ages already
->> (i.e., the 3.x series).
->
-> Alas, no.  gcc is amazingly (and inconsistently) sloppy about the
-> things it accepts as integer constant expressions.
+On Sun, Jun 24, 2007 at 08:07:10PM +0200, Arnd Bergmann wrote:
+> One minor issue though:
+> While BUILD_BUG_ON and a few other macros in linux/kernel.h are currently
+> exported to user space, I would think that they should really be hidden
+> in #ifdef __KERNEL__, which means that we also need something like
+> 
+> #ifdef __KERNEL__
+> #define _IOC_TYPECHECK(t) \
+>         (sizeof(t) + BUILD_BUG_ON_ZERO(sizeof(t) == sizeof(t[1]) && \
+>           sizeof(t) < (1 << _IOC_SIZEBITS)))
+> #else
+> #define _IOC_TYPECHECK(t) sizeof(t)
+> #endif
 
-Ah yes, now I see what you were talking about.  Most of this
-is well-known, but feel free to file more PRs :-)
+Point, but then we might want to export the damn thing in properly
+named version (i.e. put it into __.... reserved namespace).  It
+doesn't depend on anything kernel-specific...
 
->>> It certainly is not a valid C
->>
->> Why not?  Nothing in the C standard says all your externs
->> have to be defined in some other translation unit you link
->> with AFAIK.
->
-> It's not about externs.  It's about things like
->
-> unsigned n;
-> int a[] = {[n - n + n - n] = 1};
->
-> And yes, gcc does eat that.
-
-Yeah.
-
-> With -pedantic -std=c99, at that.
-> However,
->
-> unsigned n;
-> int a[] = {[n + n - n - n] = 1};
->
-> gets you error: nonconstant array index in initializer
->
-> And that's 4.1, not 3.x...
-
-Why are you using such an ancient compiler? :-)
-(Not that it is fixed in the current release though).
-
-
-Segher
-
+FWIW, the current version suffers from similar problem - it's outside
+of __KERNEL__ in userland-exported header and it can lead to breakage
+when included in build by something other than gcc...
