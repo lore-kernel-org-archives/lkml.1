@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbXFXVge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbXFXVkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182AbXFXVge (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 17:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbXFXVg0
+	id S1754039AbXFXVkT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 17:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXFXVkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 17:36:26 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:58497 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbXFXVgZ (ORCPT
+	Sun, 24 Jun 2007 17:40:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:24466 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbXFXVkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 17:36:25 -0400
-From: Nikita Danilov <nikita@clusterfs.com>
+	Sun, 24 Jun 2007 17:40:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ROdSu8Ucd1D7Q2Ox2NnPrNc8a8CGRVI2Ea7n4Fb5nYEQzVDyqTqSxfCvy5xQxIDw2m1dlvCrYzhew+uBPCIcIiFcggdI+vQXvBh0zILKuccPD3/gGsGky91thzkd2jgvifGcIZ/i2VXd/+5YoacZ05iCKIV5EbzjHN4wZFboep4=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Richard Henderson <rth@tamu.edu>
+Subject: [PATCH] Avoid potential NULL deref in scripts/genksyms/lex.l
+Date: Sun, 24 Jun 2007 23:40:03 +0200
+User-Agent: KMail/1.9.7
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18046.58325.643267.468662@gargle.gargle.HOWL>
-Date: Mon, 25 Jun 2007 01:36:21 +0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Grozdan Nikolov <microchip@chello.be>, linux-kernel@vger.kernel.org
-Subject: Re: How innovative is Linux?
-Newsgroups: gmane.linux.kernel
-In-Reply-To: <20070623164608.05dc5c30@the-village.bc.nu>
-References: <200706231417.16086.microchip@chello.be>
-	<20070623154328.222a2f92@the-village.bc.nu>
-	<200706231722.26931.microchip@chello.be>
-	<20070623164608.05dc5c30@the-village.bc.nu>
-X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
+Content-Disposition: inline
+Message-Id: <200706242340.03871.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox writes:
+strchr() returns NULL in case the string is not found and if that 
+happens we risk dereferencing a NULL pointer. It never hurts to 
+check for that condition and exit normally with an error rather 
+than crashing.
 
-[...]
+(no, the indentation is not according to CodingStyle, it's simply 
+ following whatever else is in that file)
 
- > 
- > A few innovations that afaik first appeared the Linux kernel
- > - Making multiple hosts appear transparently as one IP address
- > - Futex fast hybrid locking
 
-DEC Firefly workstation, before 1987.
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-Nikita.
+ scripts/genksyms/lex.l        |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/scripts/genksyms/lex.l b/scripts/genksyms/lex.l
+index 5e544a0..28edc0c 100644
+--- a/scripts/genksyms/lex.l
++++ b/scripts/genksyms/lex.l
+@@ -154,6 +154,8 @@ repeat:
+ 
+       file = strchr(yytext, '\"')+1;
+       e = strchr(file, '\"');
++      if (!file || !e)
++	exit(1);
+       *e = '\0';
+       cur_filename = memcpy(xmalloc(e-file+1), file, e-file+1);
+       cur_line = atoi(yytext+2);
