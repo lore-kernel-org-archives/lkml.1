@@ -1,95 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbXFXVp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbXFXVrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682AbXFXVp3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 17:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXFXVpX
+	id S1754939AbXFXVrS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 17:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbXFXVrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 17:45:23 -0400
-Received: from imf23aec.mail.bellsouth.net ([205.152.59.71]:50439 "EHLO
-	imf23aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751081AbXFXVpW (ORCPT
+	Sun, 24 Jun 2007 17:47:10 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:60864 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751017AbXFXVrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 17:45:22 -0400
-Date: Sun, 24 Jun 2007 16:45:19 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: "Jay L. T. Cornwall" <jay@esuna.co.uk>
-Cc: linux-kernel@vger.kernel.org, kronos.it@gmail.com,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: 2.6.22-rc5: pdflush oops under heavy disk load
-Message-ID: <20070624164519.04f215b8@osprey.hogchain.net>
-In-Reply-To: <467ED4A8.4080500@esuna.co.uk>
-References: <467B12CA.5060405@esuna.co.uk>
-	<467BE118.4090308@redhat.com>
-	<467BE4F1.7040308@esuna.co.uk>
-	<467D0EB0.9030100@esuna.co.uk>
-	<20070624125957.2e27820c@osprey.hogchain.net>
-	<467ED4A8.4080500@esuna.co.uk>
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 24 Jun 2007 17:47:09 -0400
+Message-ID: <467EE583.5090804@gmail.com>
+Date: Sun, 24 Jun 2007 23:43:31 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: =?ISO-8859-15?Q?Tomasz_K=3Foczko?= <kloczek@rudy.mif.pg.gda.pl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl> <Pine.LNX.4.64.0706242126200.11964@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0706242126200.11964@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jun 2007 21:31:36 +0100
-"Jay L. T. Cornwall" <jay@esuna.co.uk> wrote:
+On 06/24/2007 09:27 PM, Jan Engelhardt wrote:
 
-> Jay Cliburn wrote:
+> On Jun 24 2007 21:24, Tomasz K?oczko wrote:
+>> Try to answer on question "ALSA or OSS ?" using *only* technical
+>> arguments.
 > 
-> >> The common factor here seems to be the buffer_head circular list
-> >> leading to invalid pointers in bh->b_this_page.
-> >>
-> >> I'm beginning to suspect the Attansic L1 Gigabit Etherner driver
-> >> (marked as EXPERIMENTAL in 2.6.22-rc5). I can't reproduce these
-> >> panics on disk-to-disk copies or SCP across the localhost
-> >> interface. However, SCP from a server onto either of two different
-> >> HDDs hits these oopses fairly quickly.
-> 
-> > How much RAM is installed in your machine?  If it's 4GB or more,
-> > does your problem go away if you boot with mem=3000M?
-> 
-> Intriguing. Yes, this machine has 4GB of RAM. If I boot with mem=3000M
-> the problem does indeed go away - I can't induce an oops even after
-> transferring tens of GB across the interface.
-> 
-> I'm not sure I follow why that would be the case, except that it
-> relates to pci_map_page behaviour. But I guess you have an inkling?
-> 
+> Ok: The OSS cs46xx driver did not support the rear 2 channels.
 
-For reasons not yet clear to me, it appears the L1 driver has a bug or
-the device itself has trouble with DMA in high memory.  This patch,
-drafted by Luca Tettamanti, is being explored as a workaround.  I'd be
-interested to know if it fixes your problem.
+Not sure it's going to count as only technical in wanker language but note 
+that a very important driver such as Envy24 also works decidely worse in the 
+open sourced OSS. In the "module envy24 not found" sense.
 
-[Aside: For future reference, atl1-devel@lists.sourceforge.net is a
-mailing list devoted to L1 driver development.]
+Which is the same sense as anything currently available from sound/isa in fact.
 
-Jay
-
-
-
-diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
-index 6862c11..a600601 100644
---- a/drivers/net/atl1/atl1_main.c
-+++ b/drivers/net/atl1/atl1_main.c
-@@ -2104,15 +2104,12 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
- 	if (err)
- 		return err;
- 
--	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
-+	err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
- 	if (err) {
--		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
--		if (err) {
--			dev_err(&pdev->dev, "no usable DMA configuration\n");
--			goto err_dma;
--		}
--		pci_using_64 = false;
-+		dev_err(&pdev->dev, "no usable DMA configuration\n");
-+		goto err_dma;
- 	}
-+	pci_using_64 = false;
- 	/* Mark all PCI regions associated with PCI device
- 	 * pdev as being reserved by owner atl1_driver_name
- 	 */
-
+Rene.
