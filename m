@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbXFXGGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbXFXGL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbXFXGGy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 02:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbXFXGGp
+	id S1755326AbXFXGL7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 02:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbXFXGLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 02:06:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34804
+	Sun, 24 Jun 2007 02:11:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54107
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753133AbXFXGGo (ORCPT
+	by vger.kernel.org with ESMTP id S1753676AbXFXGLt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 02:06:44 -0400
-Date: Sat, 23 Jun 2007 23:07:02 -0700 (PDT)
-Message-Id: <20070623.230702.60547745.davem@davemloft.net>
-To: konstantin.sharlaimov@gmail.com
-Cc: paulus@samba.org, vsu@altlinux.ru, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 2.6.21.5] ppp: fix osize too small errors when
- decoding mppe
+	Sun, 24 Jun 2007 02:11:49 -0400
+Date: Sat, 23 Jun 2007 23:12:07 -0700 (PDT)
+Message-Id: <20070623.231207.44965284.davem@davemloft.net>
+To: okir@lst.de
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: Make skb_seq_read unmap the last fragment
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4679116E.9050507@gmail.com>
-References: <4679116E.9050507@gmail.com>
+In-Reply-To: <200706190956.26252.okir@lst.de>
+References: <200706190956.26252.okir@lst.de>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,26 +25,23 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
-Date: Wed, 20 Jun 2007 22:37:18 +1100
+From: Olaf Kirch <okir@lst.de>
+Date: Tue, 19 Jun 2007 09:56:24 +0200
 
-> The mppe_decompress() function required a buffer that is 1 byte too small when
-> receiving a message of mru size. This fixes buffer allocation to prevent this
-> from occurring.
+> From: Olaf Kirch <olaf.kirch@oracle.com>
 > 
-> Signed-off-by: Konstantin Sharlaimov <konstantin.sharlaimov@gmail.com>
+> Make skb_seq_read unmap the last fragment
+> 
+> Having walked through the entire skbuff, skb_seq_read would leave the
+> last fragment mapped.  As a consequence, the unwary caller would leak
+> kmaps, and proceed with preempt_count off by one. The only (kind of
+> non-intuitive) workaround is to use skb_seq_read_abort.
+> 
+> This patch makes sure skb_seq_read always unmaps frag_data after having
+> cycled through the skb's paged part.
+> 
+> Signed-off-by: olaf.kirch@oracle.com
 
-This looks better, I've reverted the original version of the
-fix and applied this new one.
+Thanks for finding and fixing this bug.
 
-> --- linux-2.6.21.3/drivers/net/ppp_generic.c.orig	2007-06-20 09:14:13.000000000
-> +1100
-> +++ linux-2.6.21.3/drivers/net/ppp_generic.c	2007-06-20 09:18:06.000000000 +1100
-
-Please prevent your email client from corrupting patches like
-this by adding new lines.
-
-I've fixed up your patches by hand now twice, I'm not going to do it
-any more.
-
-Thanks.
+Patch applied, thanks again Olaf.
