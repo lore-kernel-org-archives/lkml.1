@@ -1,100 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbXFYTN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbXFYTNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049AbXFYTN1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 15:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbXFYTNT
+	id S1755516AbXFYTNo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 15:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXFYTNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 15:13:19 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:58503 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbXFYTNS convert rfc822-to-8bit (ORCPT
+	Mon, 25 Jun 2007 15:13:33 -0400
+Received: from smtp108.plus.mail.re1.yahoo.com ([69.147.102.71]:44421 "HELO
+	smtp108.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755288AbXFYTNa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 15:13:18 -0400
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
-In-Reply-To: <1182797325.1689.14.camel@hinata.boston.redhat.com>
-References: <20070622040014.234651401@goodmis.org>
-	 <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
-	 <20070622204058.GA11777@elte.hu>
-	 <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
-	 <20070622215953.GA22917@elte.hu>
-	 <1182797325.1689.14.camel@hinata.boston.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Mon, 25 Jun 2007 15:11:18 -0400
-Message-Id: <1182798678.5493.179.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8BIT
+	Mon, 25 Jun 2007 15:13:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=lKtmUg3gs5oap5LerreL8Hf1duvwQcNwGdr8/Zz7vmKUIBQfHFsgahdyUd8+ZZzejGNFV5FVsCo/jHsNkgNqn/pESYsKswyZl1c9OrXOX4vGPUHxVi8DB1Pqu51GxwAm7ZVGHbUeAh9nbhxZjTx9k+KIAZM19bWRLbppZR/t0po=  ;
+X-YMail-OSG: j9vJiq4VM1kCNXWjPhY3JEjZnj1CTZdxP9yuQ23iQ3qfVkxMghNdIo9Ms2_j9_ZZ_lV.F_DSYw--
+Date: Mon, 25 Jun 2007 21:06:36 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] update description in Documentation/filesystems/vfs.txt (typo fixed)
+Message-ID: <20070625190636.GA30724@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070624122116.GA8067@gollum.tnic> <w10qlMfE.1182764076.1306850.penberg@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <w10qlMfE.1182764076.1306850.penberg@cs.helsinki.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-25 at 14:48 -0400, Kristian H¯gsberg wrote:
-
-> OK, here's a yell.  I'm using tasklets in the new firewire stack for all
-
-Thanks for speaking up!
-
-> interrupt handling.  All my interrupt handler does is read out the event
-> mask and schedule the appropriate tasklets.  Most of these tasklets
-> typically just end up scheduling work or completing a completion, so
-> moving it to a workqueue is pretty pointless.  In particular, the
-> isochronous DMA events must be handled with as little latency as
-> possible, so a workqueue in that code path would be pretty bad.
+On Mon, Jun 25, 2007 at 12:34:36PM +0300, Pekka Enberg wrote:
 > 
-> I'm not strongly attached to tasklets, and it sounds like I got it wrong
-> and used the wrong delayed execution mechanism.  But that's just another
-> data point that suggests that there are too many of these.  I guess I
-> need to sit down and look into porting that to softirqs?
+> Hi Borislav,
 > 
-> However, I don't really understand how you can discuss a wholesale
-> replacing of tasklets with workqueues, given the very different
-> execution sematics of the two mechanisms.  I would think that others
-> have used tasklets for similar purposes as I have and moving that to
-> workqueues just has to break a bunch of stuff.  I don't know the various
-> places tasklets are used as well as other people in this thread, but I
-> think deprecating them and moving code to either softirqs or workqueues
-> on a case by case basis is a better approach.  That way we also avoid
-> the gross wrappers.
-
-The gross wrappers were a perfect way to shed light on something that is
-overused, and should most likely be replaced.
-
-Does your system need to have these functions that are in tasklets need
-to be non-reentrant?  I wonder how many "irq critical" functions used
-tasklets just because adding a softirq requires too much (no generic
-softirq code).  A tasklet is constrained to run on one CPU at a time,
-and it is not guaranteed to run on the CPU it was scheduled on.
-
-Perhaps it's time to add a new functionality while removing tasklets.
-Things that are ok to bounce around CPUs (like tasklets do) can most
-likely be replaced by a work queue. But these highly critical tasks
-probably would benefit from being a softirq.
-
-Maybe we should be looking at something like GENERIC_SOFTIRQ to run
-functions that a driver could add. But they would run only on the CPU
-that scheduled them, and do not guarantee non-reentrant as tasklets do
-today.
-
-I think I even found a bug in a driver that was trying to get around the
-non-reentrancy of a tasklet (will post this soon).
-
-It's looking like only a few tasklets have this critical requirement,
-and are the candidates to move to a more generic softirq.  The rest of
-the tasklets would be switched to work queues, and this gross wrapper of
-mine can do that in the meantime so we can find those that should be
-converted to a generic softirq.
-
--- Steve
+> On 6/24/2007, "Borislav Petkov" <bbpetkov@yahoo.de> wrote:
+> > @@ -3,7 +3,7 @@
+> > 
+> >  	Original author: Richard Gooch <rgooch@atnf.csiro.au>
+> > 
+> > -		  Last updated on October 28, 2005
+> > +		  Last updated on Juni 24, 2007.
+> 
+> There's a typo here so do s/Juni/June/g please before sending to Andrew.
+> Other than that, looks good to me.
+> 
+> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
 
+Index: linux-2.6.22-rc5/Documentation/filesystems/vfs.txt
+===================================================================
+--- linux-2.6.22-rc5/Documentation/filesystems/vfs.txt.orig	2007-06-24 13:42:40.000000000 +0200
++++ linux-2.6.22-rc5/Documentation/filesystems/vfs.txt	2007-06-24 14:14:48.000000000 +0200
+@@ -3,7 +3,7 @@
+ 
+ 	Original author: Richard Gooch <rgooch@atnf.csiro.au>
+ 
+-		  Last updated on October 28, 2005
++		  Last updated on June 24, 2007.
+ 
+   Copyright (C) 1999 Richard Gooch
+   Copyright (C) 2005 Pekka Enberg
+@@ -107,7 +107,7 @@
+ struct file_system_type
+ -----------------------
+ 
+-This describes the filesystem. As of kernel 2.6.13, the following
++This describes the filesystem. As of kernel 2.6.22, the following
+ members are defined:
+ 
+ struct file_system_type {
+@@ -119,6 +119,8 @@
+         struct module *owner;
+         struct file_system_type * next;
+         struct list_head fs_supers;
++	struct lock_class_key s_lock_key;
++	struct lock_class_key s_umount_key;
+ };
+ 
+   name: the name of the filesystem type, such as "ext2", "iso9660",
+@@ -137,11 +139,12 @@
+ 
+   next: for internal VFS use: you should initialize this to NULL
+ 
++  s_lock_key, s_umount_key: lockdep-specific
++
+ The get_sb() method has the following arguments:
+ 
+-  struct super_block *sb: the superblock structure. This is partially
+-	initialized by the VFS and the rest must be initialized by the
+-	get_sb() method
++  struct file_system_type *fs_type: decribes the filesystem, partly initialized
++  	by the specific filesystem code
+ 
+   int flags: mount flags
+ 
+@@ -150,12 +153,13 @@
+   void *data: arbitrary mount options, usually comes as an ASCII
+ 	string
+ 
+-  int silent: whether or not to be silent on error
++  struct vfsmount *mnt: a vfs-internal representation of a mount point
+ 
+ The get_sb() method must determine if the block device specified
+-in the superblock contains a filesystem of the type the method
+-supports. On success the method returns the superblock pointer, on
+-failure it returns NULL.
++in the dev_name and fs_type contains a filesystem of the type the method
++supports. If it succeeds in opening the named block device, it initializes a
++struct super_block descriptor for the filesystem contained by the block device.
++On failure it returns an error.
+ 
+ The most interesting member of the superblock structure that the
+ get_sb() method fills in is the "s_op" field. This is a pointer to
+
+-- 
+Regards/Gruﬂ,
+    Boris.
