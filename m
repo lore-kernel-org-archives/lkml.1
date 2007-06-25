@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbXFYKqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbXFYKrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754095AbXFYKqy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 06:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbXFYKqq
+	id S1754299AbXFYKrz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 06:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbXFYKrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 06:46:46 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:18154 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751876AbXFYKqq (ORCPT
+	Mon, 25 Jun 2007 06:47:49 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:52658 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbXFYKrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 06:46:46 -0400
-Date: Mon, 25 Jun 2007 12:46:45 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-In-Reply-To: <Pine.BSO.4.63.0706251153060.25800@rudy.mif.pg.gda.pl>
-Message-ID: <Pine.LNX.4.64.0706251243490.11964@fbirervta.pbzchgretzou.qr>
-References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
- <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
- <Pine.LNX.4.64.0706242126200.11964@fbirervta.pbzchgretzou.qr>
- <Pine.BSO.4.63.0706251153060.25800@rudy.mif.pg.gda.pl>
+	Mon, 25 Jun 2007 06:47:48 -0400
+X-Originating-Ip: 74.102.207.204
+Date: Mon, 25 Jun 2007 06:43:37 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] X86: Update alignment when 4K stacks are used.
+Message-ID: <Pine.LNX.4.64.0706250642050.3880@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-1640784192-1182768405=:11964"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----699020219-1640784192-1182768405=:11964
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
+---
 
-On Jun 25 2007 12:06, Tomasz Kłoczko wrote:
->>
->> On Jun 24 2007 21:24, Tomasz Kłoczko wrote:
->> > Try to answer on question "ALSA or OSS ?" using *only* technical arguments.
->>
->> Ok: The OSS cs46xx driver did not support the rear 2 channels.
->
-> Yes it is true .. OSS (Hannu tree) dos not provide rear 2 channels in
-> cs46xx driver because .. in this OSS tree there is no cs46xx driver :>
+  it's not clear from MAINTAINERS who's responsible for something this
+generic.
 
-I think that says it all why ALSA should be kept.
+diff --git a/arch/i386/kernel/irq.c b/arch/i386/kernel/irq.c
+index d2daf67..504f134 100644
+--- a/arch/i386/kernel/irq.c
++++ b/arch/i386/kernel/irq.c
+@@ -149,15 +149,11 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
 
+ #ifdef CONFIG_4KSTACKS
 
-	Jan
+-/*
+- * These should really be __section__(".bss.page_aligned") as well, but
+- * gcc's 3.0 and earlier don't handle that correctly.
+- */
+ static char softirq_stack[NR_CPUS * THREAD_SIZE]
+-		__attribute__((__aligned__(THREAD_SIZE)));
++		__attribute__((__section__(".bss.page_aligned")));
+
+ static char hardirq_stack[NR_CPUS * THREAD_SIZE]
+-		__attribute__((__aligned__(THREAD_SIZE)));
++		__attribute__((__section__(".bss.page_aligned")));
+
+ /*
+  * allocate per-cpu stacks for hardirq and for softirq processing
 -- 
----699020219-1640784192-1182768405=:11964--
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
