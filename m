@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbXFYPUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbXFYP1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757460AbXFYPUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 11:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXFYPUa
+	id S1757051AbXFYP1Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 11:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbXFYP1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 11:20:30 -0400
-Received: from waste.org ([66.93.16.53]:43684 "EHLO waste.org"
+	Mon, 25 Jun 2007 11:27:01 -0400
+Received: from mail.screens.ru ([213.234.233.54]:48469 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755776AbXFYPUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 11:20:30 -0400
-Date: Mon, 25 Jun 2007 10:20:04 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Alexander Gabert <pappy@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       Arjan van de Ven <arjan@infradead.org>, libc-alpha@sourceware.org,
-       hardened@gentoo.org
-Subject: Re: [PATCH] get_random_long() and AT_ENTROPY for auxv, kernel 2.6.21.5
-Message-ID: <20070625152004.GS11115@waste.org>
-References: <4675C678.3080807@gentoo.org> <1182128803.22999.9.camel@laptopd505.fenrus.org> <20070620203022.GO11166@waste.org> <467EADA0.9020101@gentoo.org> <20070625034508.GE11115@waste.org> <467FD8E9.1000200@gentoo.org>
-MIME-Version: 1.0
+	id S1754021AbXFYP1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 11:27:00 -0400
+Date: Mon, 25 Jun 2007 19:27:36 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Pavel Machek <pavel@ucw.cz>, Uli Luckas <u.luckas@road.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks
+Message-ID: <20070625152736.GB160@tv-sign.ru>
+References: <20070625104332.GA147@tv-sign.ru> <200706251703.42979.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <467FD8E9.1000200@gentoo.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200706251703.42979.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 05:02:01PM +0200, Alexander Gabert wrote:
-> >Am I right in thinking you have three unrelated patches here?
-> >  
-> I don't think so but you may be right nonetheless if my opinion.
+On 06/25, Rafael J. Wysocki wrote:
+>
+> On Monday, 25 June 2007 12:43, Oleg Nesterov wrote:
+> 
+> > Second, call_usermodehelper's path should first increment the counter, and only
+> > then check usermodehelper_disabled,
+> 
+> It does this already.
 
-The point is: the way we do development here is to break things down
-into a series of simple, obvious pieces and send them individually.
-Each patch should build and run when applied on top of the earlier
-patches. Then each part can be reviewed, tested, and applied on its
-own. It also makes figuring out what happened in the future and
-tracking down bugs much easier.
+Ah, sorry, I looked at this patch without seeing the underlying code.
 
-So send three patches in this order:
+BTW, isn't it better to rename new_helper/helper_finished to
+helper_lock/helper_unlock ?
 
-- fix get_random_int
-- rename it
-- add auxv bits
+> If I understand that correctly, it should suffice to place smp_mb() after
+> usermodehelper_disabled = 1; in usermodehelper_pm_callback() and another
+> smp_mb() after atomic_inc(&running_helpers); in new_helper().
+> 
+> Is that correct?
 
-Also, you might want to drop Linus from the cc: list unless he's
-chimed in on this topic already. The likely path here is for the first
-two patches to go through me and the last to go through Arjan, then on
-to Andrew Morton for his -mm tree, and then to Linus after a bit.
+Afaics, yes.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Oleg.
+
