@@ -1,47 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbXFYMNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbXFYMRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbXFYMNy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 08:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbXFYMNs
+	id S1753945AbXFYMRQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 08:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbXFYMRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 08:13:48 -0400
-Received: from saeurebad.de ([85.214.36.134]:47893 "EHLO saeurebad.de"
+	Mon, 25 Jun 2007 08:17:01 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:2045 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbXFYMNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 08:13:47 -0400
-Date: Mon, 25 Jun 2007 14:13:16 +0200
-From: Johannes Weiner <hannes-kernel@saeurebad.de>
-To: vignesh babu <vignesh.babu@wipro.com>
-Cc: daniel.pirkl@email.cz, dushistov@mail.ru,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Janitors List <kernel-janitors@lists.osdl.org>
-Subject: Re: [PATCH]is_power_of_2-ufs/super.c
-Message-ID: <20070625121316.GA19544@saeurebad.de>
-Mail-Followup-To: vignesh babu <vignesh.babu@wipro.com>,
-	daniel.pirkl@email.cz, dushistov@mail.ru,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Kernel Janitors List <kernel-janitors@lists.osdl.org>
-References: <1181808559.2474.9.camel@merlin.linuxcoe.com>
+	id S1751958AbXFYMRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 08:17:00 -0400
+Date: Mon, 25 Jun 2007 14:17:19 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Duane Griffin <duaneg@dghda.com>
+cc: linux-kernel@vger.kernel.org, didier <did447@gmail.com>,
+       Solra Bizna <sbizna@tejat.net>, Daniel Drake <dsd@gentoo.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2/2] HFS+: Add custom dentry hash and comparison operations
+In-Reply-To: <20070620000647.280620153@dastardly.home.dghda.com>
+Message-ID: <Pine.LNX.4.64.0706251412030.1817@scrub.home>
+References: <20070620000644.891099313@dastardly.home.dghda.com>
+ <20070620000647.280620153@dastardly.home.dghda.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181808559.2474.9.camel@merlin.linuxcoe.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-On Thu, Jun 14, 2007 at 01:39:18PM +0530, vignesh babu wrote:
-> Replacing (n & (n-1)) in the context of power of 2 checks
-> with is_power_of_2
+On Wed, 20 Jun 2007, Duane Griffin wrote:
 
-You might want to run
+> Add custom dentry hash and comparison operations for HFS+ filesystems
+> that are case-insensitive and/or do automatic unicode decomposition.
+> The new operations reuse the existing HFS+ ASCII to unicode conversion,
+> unicode decomposition and case folding functionality.
 
-	egrep -R '([a-zA-Z0-9_.>]+) *& *\(\1 *- *1\)' /usr/src/linux
+The changes in the previous patch required a few changes in this patch as 
+well, but there were also a few small problems. The case condition wasn't 
+quite correct and some characters have to be ignored during compare/hash.
 
-This does not match if the check is broken into multiple lines, though.
-Still, 66 matches so far. Perhaps a big patch that removes most of these
-occurrences would be more appropriate.
+bye, Roman
 
-	Hannes
+
+From: Duane Griffin <duaneg@dghda.com>
+
+Add custom dentry hash and comparison operations for HFS+ filesystems
+that are case-insensitive and/or do automatic unicode decomposition.
+The new operations reuse the existing HFS+ ASCII to unicode conversion,
+unicode decomposition and case folding functionality.
+
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+
+---
+ fs/hfsplus/btree.c      |    4 +
+ fs/hfsplus/dir.c        |    2 
+ fs/hfsplus/hfsplus_fs.h |    4 +
+ fs/hfsplus/inode.c      |    5 +
+ fs/hfsplus/super.c      |    1 
+ fs/hfsplus/unicode.c    |  123 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 138 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/fs/hfsplus/dir.c
+===================================================================
+--- linux-2.6.orig/fs/hfsplus/dir.c	2007-04-26 19:45:57.000000000 +0200
++++ linux-2.6/fs/hfsplus/dir.c	2007-06-25 13:39:46.000000000 +0200
+@@ -36,6 +36,8 @@ static struct dentry *hfsplus_lookup(str
+ 	u16 type;
+ 
+ 	sb = dir->i_sb;
++
++	dentry->d_op = &hfsplus_dentry_operations;
+ 	dentry->d_fsdata = NULL;
+ 	hfs_find_init(HFSPLUS_SB(sb).cat_tree, &fd);
+ 	hfsplus_cat_build_key(sb, fd.search_key, dir->i_ino, &dentry->d_name);
+Index: linux-2.6/fs/hfsplus/hfsplus_fs.h
+===================================================================
+--- linux-2.6.orig/fs/hfsplus/hfsplus_fs.h	2007-04-26 19:45:57.000000000 +0200
++++ linux-2.6/fs/hfsplus/hfsplus_fs.h	2007-06-25 12:59:16.000000000 +0200
+@@ -150,6 +150,7 @@ struct hfsplus_sb_info {
+ #define HFSPLUS_SB_NODECOMPOSE	0x0002
+ #define HFSPLUS_SB_FORCE	0x0004
+ #define HFSPLUS_SB_HFSX		0x0008
++#define HFSPLUS_SB_CASEFOLD	0x0010
+ 
+ 
+ struct hfsplus_inode_info {
+@@ -321,6 +322,7 @@ void hfsplus_file_truncate(struct inode 
+ /* inode.c */
+ extern const struct address_space_operations hfsplus_aops;
+ extern const struct address_space_operations hfsplus_btree_aops;
++extern struct dentry_operations hfsplus_dentry_operations;
+ 
+ void hfsplus_inode_read_fork(struct inode *, struct hfsplus_fork_raw *);
+ void hfsplus_inode_write_fork(struct inode *, struct hfsplus_fork_raw *);
+@@ -353,6 +355,8 @@ int hfsplus_strcasecmp(const struct hfsp
+ int hfsplus_strcmp(const struct hfsplus_unistr *, const struct hfsplus_unistr *);
+ int hfsplus_uni2asc(struct super_block *, const struct hfsplus_unistr *, char *, int *);
+ int hfsplus_asc2uni(struct super_block *, struct hfsplus_unistr *, const char *, int);
++int hfsplus_hash_dentry(struct dentry *dentry, struct qstr *str);
++int hfsplus_compare_dentry(struct dentry *dentry, struct qstr *s1, struct qstr *s2);
+ 
+ /* wrapper.c */
+ int hfsplus_read_wrapper(struct super_block *);
+Index: linux-2.6/fs/hfsplus/inode.c
+===================================================================
+--- linux-2.6.orig/fs/hfsplus/inode.c	2007-04-26 19:45:57.000000000 +0200
++++ linux-2.6/fs/hfsplus/inode.c	2007-06-25 13:52:54.000000000 +0200
+@@ -130,6 +130,11 @@ const struct address_space_operations hf
+ 	.writepages	= hfsplus_writepages,
+ };
+ 
++struct dentry_operations hfsplus_dentry_operations = {
++	.d_hash       = hfsplus_hash_dentry,
++	.d_compare    = hfsplus_compare_dentry,
++};
++
+ static struct dentry *hfsplus_file_lookup(struct inode *dir, struct dentry *dentry,
+ 					  struct nameidata *nd)
+ {
+Index: linux-2.6/fs/hfsplus/unicode.c
+===================================================================
+--- linux-2.6.orig/fs/hfsplus/unicode.c	2007-06-25 12:59:15.000000000 +0200
++++ linux-2.6/fs/hfsplus/unicode.c	2007-06-25 13:35:23.000000000 +0200
+@@ -312,3 +312,126 @@ int hfsplus_asc2uni(struct super_block *
+ 		return -ENAMETOOLONG;
+ 	return 0;
+ }
++
++/*
++ * Hash a string to an integer as appropriate for the HFS+ filesystem.
++ * Composed unicode characters are decomposed and case-folding is performed
++ * if the appropriate bits are (un)set on the superblock.
++ */
++int hfsplus_hash_dentry(struct dentry *dentry, struct qstr *str)
++{
++	struct super_block *sb = dentry->d_sb;
++	const char *astr;
++	const u16 *dstr;
++	int casefold, decompose, size, dsize, len;
++	unsigned long hash;
++	wchar_t c;
++	u16 c2;
++
++	casefold = (HFSPLUS_SB(sb).flags & HFSPLUS_SB_CASEFOLD);
++	decompose = !(HFSPLUS_SB(sb).flags & HFSPLUS_SB_NODECOMPOSE);
++	hash = init_name_hash();
++	astr = str->name;
++	len = str->len;
++	while (len > 0) {
++		size = asc2unichar(sb, astr, len, &c);
++		astr += size;
++		len -= size;
++
++		if (decompose && (dstr = decompose_unichar(c, &dsize))) {
++			do {
++				c2 = *dstr++;
++				if (!casefold || (c2 = case_fold(c2)))
++					hash = partial_name_hash(c2, hash);
++			} while (--dsize > 0);
++		} else {
++			c2 = c;
++			if (!casefold || (c2 = case_fold(c2)))
++				hash = partial_name_hash(c2, hash);
++		}
++	}
++	str->hash = end_name_hash(hash);
++
++	return 0;
++}
++
++/*
++ * Compare strings with HFS+ filename ordering.
++ * Composed unicode characters are decomposed and case-folding is performed
++ * if the appropriate bits are (un)set on the superblock.
++ */
++int hfsplus_compare_dentry(struct dentry *dentry, struct qstr *s1, struct qstr *s2)
++{
++	struct super_block *sb = dentry->d_sb;
++	int casefold, decompose, size;
++	int dsize1, dsize2, len1, len2;
++	const u16 *dstr1, *dstr2;
++	const char *astr1, *astr2;
++	u16 c1, c2;
++	wchar_t c;
++
++	casefold = (HFSPLUS_SB(sb).flags & HFSPLUS_SB_CASEFOLD);
++	decompose = !(HFSPLUS_SB(sb).flags & HFSPLUS_SB_NODECOMPOSE);
++	astr1 = s1->name;
++	len1 = s1->len;
++	astr2 = s2->name;
++	len2 = s2->len;
++	dsize1 = dsize2 = 0;
++	dstr1 = dstr2 = NULL;
++
++	while (len1 > 0 && len2 > 0) {
++		if (!dsize1) {
++			size = asc2unichar(sb, astr1, len1, &c);
++			astr1 += size;
++			len1 -= size;
++
++			if (!decompose || !(dstr1 = decompose_unichar(c, &dsize1))) {
++				c1 = c;
++				dstr1 = &c1;
++				dsize1 = 1;
++			}
++		}
++
++		if (!dsize2) {
++			size = asc2unichar(sb, astr2, len2, &c);
++			astr2 += size;
++			len2 -= size;
++
++			if (!decompose || !(dstr2 = decompose_unichar(c, &dsize2))) {
++				c2 = c;
++				dstr2 = &c2;
++				dsize2 = 1;
++			}
++		}
++
++		c1 = *dstr1;
++		c2 = *dstr2;
++		if (casefold) {
++			if  (!(c1 = case_fold(c1))) {
++				dstr1++;
++				dsize1--;
++				continue;
++			}
++			if (!(c2 = case_fold(c2))) {
++				dstr2++;
++				dsize2--;
++				continue;
++			}
++		}
++		if (c1 < c2)
++			return -1;
++		else if (c1 > c2)
++			return 1;
++
++		dstr1++;
++		dsize1--;
++		dstr2++;
++		dsize2--;
++	}
++
++	if (len1 < len2)
++		return -1;
++	if (len1 > len2)
++		return 1;
++	return 0;
++}
+Index: linux-2.6/fs/hfsplus/btree.c
+===================================================================
+--- linux-2.6.orig/fs/hfsplus/btree.c	2007-04-26 19:45:57.000000000 +0200
++++ linux-2.6/fs/hfsplus/btree.c	2007-06-25 12:59:16.000000000 +0200
+@@ -61,8 +61,10 @@ struct hfs_btree *hfs_btree_open(struct 
+ 		if ((HFSPLUS_SB(sb).flags & HFSPLUS_SB_HFSX) &&
+ 		    (head->key_type == HFSPLUS_KEY_BINARY))
+ 			tree->keycmp = hfsplus_cat_bin_cmp_key;
+-		else
++		else {
+ 			tree->keycmp = hfsplus_cat_case_cmp_key;
++			HFSPLUS_SB(sb).flags |= HFSPLUS_SB_CASEFOLD;
++		}
+ 	} else {
+ 		printk(KERN_ERR "hfs: unknown B*Tree requested\n");
+ 		goto fail_page;
+Index: linux-2.6/fs/hfsplus/super.c
+===================================================================
+--- linux-2.6.orig/fs/hfsplus/super.c	2007-06-25 13:29:08.000000000 +0200
++++ linux-2.6/fs/hfsplus/super.c	2007-06-25 13:30:11.000000000 +0200
+@@ -381,6 +381,7 @@ static int hfsplus_fill_super(struct sup
+ 		iput(root);
+ 		goto cleanup;
+ 	}
++	sb->s_root->d_op = &hfsplus_dentry_operations;
+ 
+ 	str.len = sizeof(HFSP_HIDDENDIR_NAME) - 1;
+ 	str.name = HFSP_HIDDENDIR_NAME;
