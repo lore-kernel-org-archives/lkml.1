@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbXFYWjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbXFYWok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbXFYWjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 18:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbXFYWjJ
+	id S1754664AbXFYWok (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 18:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbXFYWob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 18:39:09 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:38196 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbXFYWjJ (ORCPT
+	Mon, 25 Jun 2007 18:44:31 -0400
+Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:34239 "EHLO
+	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752277AbXFYWob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 18:39:09 -0400
-Message-ID: <4680445C.8000703@oracle.com>
-Date: Mon, 25 Jun 2007 15:40:28 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Mon, 25 Jun 2007 18:44:31 -0400
+Date: Tue, 26 Jun 2007 00:42:22 +0200
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: harald@skogtun.org
+Cc: schilling@fokus.fraunhofer.de, linux-kernel@vger.kernel.org,
+       dwmw2@infradead.org, david@lang.hm
+Subject: Re: Linux Kernel include files
+Message-ID: <468044ce.TbSfwc4mY5Plx+iX%Joerg.Schilling@fokus.fraunhofer.de>
+References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
+ <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
+ <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
+ <1182483527.10524.31.camel@shinybook.infradead.org>
+ <467fdc75.0ficjl92unPDO1uk%Joerg.Schilling@fokus.fraunhofer.de>
+ <1182785277.12109.121.camel@pmac.infradead.org>
+ <87wsxrdi6e.fsf@basilikum.skogtun.org>
+ <468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
+ <87ir9byak9.fsf@basilikum.skogtun.org>
+ <87ejjzyac0.fsf@basilikum.skogtun.org>
+ <4680384e.iAYvC5ix5Dbya44W%Joerg.Schilling@fokus.fraunhofer.de>
+ <87hcovy8dz.fsf@basilikum.skogtun.org>
+In-Reply-To: <87hcovy8dz.fsf@basilikum.skogtun.org>
+User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: long-term regression
-References: <Pine.LNX.4.64.0706171052240.28371@asgard.lang.hm> <20070621052807.cc64605d.akpm@linux-foundation.org> <20070621083659.dabf3a22.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706242157570.6215@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706242157570.6215@asgard.lang.hm>
-Content-Type: text/plain; charset=windows-1256; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Thu, 21 Jun 2007, Randy Dunlap wrote:
-> 
->> Date: Thu, 21 Jun 2007 08:36:59 -0700
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->> To: Andrew Morton <akpm@linux-foundation.org>
->> Cc: david@lang.hm, linux-kernel@vger.kernel.org,
->>     linux-usb-devel@lists.sourceforge.net
->> Subject: Re: long-term regression
->>
->> On Thu, 21 Jun 2007 05:28:07 -0700 Andrew Morton wrote:
->>
->>>> On Sun, 17 Jun 2007 10:57:55 -0700 (PDT) david@lang.hm wrote:
->>>> I haven't had time to bisect this, but I'm having a problem on a AMD64
->>>> gentoo system where the printer doesn't work with recent kernels.
->>>>
->>>> 2.6.18-rc3 worked
->>>> 2.6.21.1 doesn't
->>>> 2.6.22-rc4 doesn't
->>>>
->>>> unfortunantly the system is gooted on 2.6.18 at the moment and I'm 
->>>> out of
->>>> town so my ability to test is limited I can provide the 2.6.22-rc4
->>>> (attached) and 2.6.18-rc3 configs.
->>>>
->>>> dmesg appears to show the port being detected, but writes to the port
->>>> under newer kernels appear to complete, but no data gets to the 
->>>> printer.
->>>>
->>>> any suggestions other then doing the large bisect?
->>>
->>> That would be good, thanks.  Please be sure to cc linux-usb-devel on
->>> the results.
->>
->> OK, I'm curious about how someone deduced that this is a problem
->> with a USB printer vs. parallel port printer since the config file has:
->>
->> CONFIG_PRINTER=y
->> CONFIG_USB_PRINTER=y
->>
->> The kernel boot log should probably be posted also.
-> 
-> here is the dmesg from 2.6.22-rc4 and kern.log showing 2.6.22.-rc4 and 
-> 2.6.180rc3
-> 
-> the printer not working is the parallel port.
+Harald Arnesen <harald@skogtun.org> wrote:
 
-This email didn't show up on lkml or linux-usb-devel due to size limits (it was 900+ KB).
+> Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling) writes:
+>
+> >> FYI, cdrtools also compile and link fine with Sun's C compiler.
+> >
+> > Mmmmm, if you call "cdrecord -scanbus", what do you get?
+>
+> I may have misunderstood your make system. I cd-ed into the cdrtools
+> directory, ran ./Gmake.linux clean (I had already compiled with GCC),
+> and then ./Gmake.linux CCOM=suncc. I didn't see any errors at the end of
+> the make output.
+>
+> However, what confused me was that the cdrecord binary wasn't removed.
+> And scrolling back, I see several compile errors from Sun's C compiler.
+>
+> Shouldn't "make clean" remove the executable files?
 
-David, please send your working 2.6.18 config file.
+make clean only removes the *.o files.
 
-Can you post the kernel log files on the web somewhere?
+If you call "make relink", all results are removed before recreating.
+
+BTW: your problem is caused by a "bash" bug. With a shell that correctly
+works with "sh -ce 'command...'", you would see an abort after the first
+error.
+
+Jörg
 
 -- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
