@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbXFYVwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbXFYVwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638AbXFYVwW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbXFYVwM
+	id S1756795AbXFYVwy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXFYVwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:52:12 -0400
-Received: from esuna.co.uk ([83.223.102.198]:49883 "EHLO mail.esuna.co.uk"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753039AbXFYVwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:52:11 -0400
-Message-ID: <468038FC.6090302@esuna.co.uk>
-Date: Mon, 25 Jun 2007 22:51:56 +0100
-From: "Jay L. T. Cornwall" <jay@esuna.co.uk>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: Chris Snook <csnook@redhat.com>
-CC: Luca Tettamanti <kronos.it@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
-       Jay Cliburn <jacliburn@bellsouth.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] atl1: disable 64bit DMA
-References: <467B12CA.5060405@esuna.co.uk> <467BE118.4090308@redhat.com> <467BE4F1.7040308@esuna.co.uk> <467D0EB0.9030100@esuna.co.uk> <20070624125957.2e27820c@osprey.hogchain.net> <467ED4A8.4080500@esuna.co.uk> <20070624164519.04f215b8@osprey.hogchain.net> <467FB237.2030703@esuna.co.uk> <467FB844.6060702@bellsouth.net> <20070625211855.GA19275@dreamland.darkstar.lan> <46803557.50805@redhat.com>
-In-Reply-To: <46803557.50805@redhat.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jun 2007 17:52:43 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:45343 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751842AbXFYVwl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 17:52:41 -0400
+Date: Mon, 25 Jun 2007 15:52:39 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070625215239.GK5181@schatzie.adilger.int>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+References: <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070625134500.GE1951@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
+On Jun 25, 2007  19:15 +0530, Amit K. Arora wrote:
+> +#define FA_FL_DEALLOC	0x01 /* default is allocate */
+> +#define FA_FL_KEEP_SIZE	0x02 /* default is extend/shrink size */
+> +#define FA_FL_DEL_DATA	0x04 /* default is keep written data on DEALLOC */
 
-> What boards have we seen this on?  It's quite possible this is:
+In XFS one of the (many) ALLOC modes is to zero existing data on allocate.
+For ext4 all this would mean is calling ext4_ext_mark_uninitialized() on
+each extent.  For some workloads this would be much faster than truncate
+and reallocate of all the blocks in a file.
 
-I can reproduce on an Asus P5K with a Core 2 Duo E6600.
+In that light, please change the comment to /* default is keep existing data */
+so that it doesn't imply this is only for DEALLOC.
 
-lspci identifies the controller as:
-  02:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit
-  Ethernet Adapter (rev b0)
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
-dmesg notes the PCI-DMA mapping implementation:
-  PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-
--- 
-Jay L. T. Cornwall, http://www.esuna.co.uk/~jay/
-PhD Student
-Imperial College London
