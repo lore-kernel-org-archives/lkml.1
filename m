@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbXFYDNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbXFYDTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbXFYDNO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 23:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbXFYDNF
+	id S1754750AbXFYDTe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 23:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbXFYDT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 23:13:05 -0400
-Received: from smtpout.mac.com ([17.250.248.186]:55020 "EHLO smtpout.mac.com"
+	Sun, 24 Jun 2007 23:19:26 -0400
+Received: from mga03.intel.com ([143.182.124.21]:2525 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752899AbXFYDNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 23:13:04 -0400
-In-Reply-To: <c6d9bea0706221551g2a50e5a1u56a11b1965fdd61d@mail.gmail.com>
-References: <c6d9bea0706211254r6d457e36wfb3722880a3b4abd@mail.gmail.com> <200706220117.09966.arnd@arndb.de> <c6d9bea0706221551g2a50e5a1u56a11b1965fdd61d@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <14E8CC97-77F3-4656-ACEC-324B92BE3067@mac.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+	id S1752899AbXFYDTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 23:19:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,457,1175497200"; 
+   d="scan'208";a="242783882"
+From: Auke Kok <auke-jan.h.kok@intel.com>
+Subject: [PATCH 1/2] [RESEND] PCI: read revision ID by default
+To: gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz
+Cc: linux-kernel@vger.kernel.org, grundler@parisc-linux.org,
+       davem@davemloft.net, davej@redhat.com
+Date: Sun, 24 Jun 2007 20:19:18 -0700
+Message-ID: <20070625031918.4711.2705.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: inotify and /proc?
-Date: Sun, 24 Jun 2007 23:12:55 -0400
-To: "C. Scott Ananian" <cscott@laptop.org>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+X-OriginalArrivalTime: 25 Jun 2007 03:19:24.0271 (UTC) FILETIME=[A13D1FF0:01C7B6D7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 22, 2007, at 18:51:10, C. Scott Ananian wrote:
-> Back to kernel-land: in an IPv6 only world, it might make sense to  
-> export a /proc file compatible with the format of /etc/resolv.conf,  
-> with one DNS server address per line.  If glibc uses/used inotify  
-> on /etc/resolv.conf, then symlinking /etc/resolv.conf to /proc/net/ 
-> ipv6_dns allows glibc to get kernel DNS autoconfiguration updates  
-> without a special case.  [Assuming that glibc was smart enough to  
-> watch the referenced file and not the symlink...]
->
-> A draft patch to implement /proc/net/ipv6_dns is attached, just to  
-> make the discussion concrete. [Not guaranteed to apply cleanly, as  
-> I'm not sure that gmail won't munge the whitespace.  But it should  
-> be readable at least.]
+Currently there are 97 occurrences where drivers need the pci
+revision ID. We can do this once for all devices. Even the pci
+subsystem needs the revision several times for quirks. The extra
+u8 member pads out nicely in the pci_dev struct.
 
-Ewwww, I suspect you're likely to get a lot of NAKs from people on  
-this one.
+Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+---
 
-1)  Why must the kernel grok the DNS portions of the packets?  Can't  
-you just have a little userspace daemon which listens for the  
-appropriate ICMPv6 messages and updates /etc/resolv.conf  
-accordingly?  That way you could even have userspace policy about  
-which DNS information is acceptable for the given system.
+ arch/powerpc/kernel/pci_64.c |    2 ++
+ arch/sparc64/kernel/pci.c    |    1 +
+ drivers/pci/probe.c          |    1 +
+ include/linux/pci.h          |    1 +
+ 4 files changed, 5 insertions(+), 0 deletions(-)
 
-2)  New files in /proc which aren't directly related to processes are  
-strictly forbidden.  Hopefully eventually (IE: in several years when  
-appropriate replacements are widely used) the /proc/meminfo, /proc/ 
-cpuinfo, /proc/mdstat, and other similar non-process-related files  
-can be made to go away, but we certainly aren't adding new ones.
-
-3)  It's really ugly to generate random text data from kernelspace,  
-because then people write 42 different userspace parsers for the text  
-data and each one has subtle incompatibilities which make it  
-impossible to extend the file in the future.  This is why (2) is true.
-
-4)  Within 30 sec of such a patch going in, the virtualization people  
-are going to start griping at you for not properly implementing a  
-virtual namespace-ized IPv6 DNS autoconfiguration proc-file.  Since  
-that really can't be done easily without putting lots of policy in  
-the kernel it's probably easier to just follow the advice in (1) and  
-do it in userspace.
-
-Cheers,
-Kyle Moffett
-
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 249cca2..b2c55ca 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -367,8 +367,10 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+ 	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+ 		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+ 	dev->class = get_int_prop(node, "class-code", 0);
++	dev->revision = get_int_prop(node, "revision-id", 0);
+ 
+ 	DBG("    class: 0x%x\n", dev->class);
++	DBG("    revision: 0x%x\n", dev->revision);
+ 
+ 	dev->current_state = 4;		/* unknown power state */
+ 	dev->error_state = pci_channel_io_normal;
+diff --git a/arch/sparc64/kernel/pci.c b/arch/sparc64/kernel/pci.c
+index 81f4a5e..55ad1b8 100644
+--- a/arch/sparc64/kernel/pci.c
++++ b/arch/sparc64/kernel/pci.c
+@@ -448,6 +448,7 @@ struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
+ 		 */
+ 		pci_read_config_dword(dev, PCI_CLASS_REVISION, &class);
+ 		dev->class = class >> 8;
++		dev->revision = class & 0xff;
+ 
+ 		sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+ 			dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index e48fcf0..a574b7f 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -702,6 +702,7 @@ static int pci_setup_device(struct pci_dev * dev)
+ 		dev->bus->number, PCI_SLOT(dev->devfn), PCI_FUNC(dev->devfn));
+ 
+ 	pci_read_config_dword(dev, PCI_CLASS_REVISION, &class);
++	dev->revision = class & 0xff;
+ 	class >>= 8;				    /* upper 3 bytes */
+ 	dev->class = class;
+ 	class >>= 8;
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index fbf3766..9847936 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -138,6 +138,7 @@ struct pci_dev {
+ 	unsigned short	subsystem_vendor;
+ 	unsigned short	subsystem_device;
+ 	unsigned int	class;		/* 3 bytes: (base,sub,prog-if) */
++	u8		revision;	/* PCI revision, low byte of class word */
+ 	u8		hdr_type;	/* PCI header type (`multi' flag masked out) */
+ 	u8		rom_base_reg;	/* which config register controls the ROM */
+ 	u8		pin;  		/* which interrupt pin this device uses */
