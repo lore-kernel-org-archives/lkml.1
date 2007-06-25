@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbXFYI6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbXFYJAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbXFYI6j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 04:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXFYI6a
+	id S1753168AbXFYJAe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 05:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbXFYJA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 04:58:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34022 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751122AbXFYI63 (ORCPT
+	Mon, 25 Jun 2007 05:00:27 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52506 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750853AbXFYJA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 04:58:29 -0400
-Date: Mon, 25 Jun 2007 10:58:26 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [patch 1/3] add the fsblock layer
-Message-ID: <20070625085826.GA19928@one.firstfloor.org>
-References: <20070624014528.GA17609@wotan.suse.de> <20070624014613.GB17609@wotan.suse.de> <p73fy4h5q3c.fsf@bingen.suse.de> <1182716322.6819.3.camel@laptopd505.fenrus.org>
+	Mon, 25 Jun 2007 05:00:26 -0400
+Date: Mon, 25 Jun 2007 10:06:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Nobin Mathew" <nobin.mathew@gmail.com>
+Cc: "Carlo Wood" <carlo@alinoe.com>,
+       "Tomasz =?UTF-8?B?S8WCb2N6a28=?=" <kloczek@rudy.mif.pg.gda.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Message-ID: <20070625100618.3653863d@the-village.bc.nu>
+In-Reply-To: <8d6898730706242041q61f56b07kf4dc181fdad4e4dc@mail.gmail.com>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+	<20070624200837.16e11305@the-village.bc.nu>
+	<Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
+	<20070624215724.025a5de5@the-village.bc.nu>
+	<20070624224411.GB21724@alinoe.com>
+	<8d6898730706242041q61f56b07kf4dc181fdad4e4dc@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1182716322.6819.3.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 01:18:42PM -0700, Arjan van de Ven wrote:
-> 
-> > Hmm, could define a macro DECLARE_ATOMIC_BITMAP(maxbit) that expands to the smallest
-> > possible type for each architecture. And a couple of ugly casts for set_bit et.al.
-> > but those could be also hidden in macros. Should be relatively easy to do.
-> 
-> or make a "smallbit" type that is small/supported, so 64 bit if 32 bit
-> isn't supported, otherwise 32
+> If it is native ALSA driver then it will restart after each underrun
+> and overrun. It is the applications job to do this, alsa-lib provides
+> all support for this. I have no idea of OSS and OSS emulation in ALSA.
 
-That wouldn't handle the case where you only need e.g. 8 bits
-That's fine for x86 too. It only hates atomic accesses crossing cache line
-boundaries (but handles them too, just slow) 
-
--Andi
+OSS should autorestart on underrun and just moan about overruns and drop
+bits. So if it's not following that behaviour he is IMHO correct for the
+OSS emulation case.
