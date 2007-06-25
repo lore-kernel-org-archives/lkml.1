@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbXFYOFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbXFYOGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbXFYOFW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 10:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbXFYOFK
+	id S1756676AbXFYOGg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 10:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbXFYOG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 10:05:10 -0400
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:56887 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753509AbXFYOFJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 10:05:09 -0400
-Date: Mon, 25 Jun 2007 16:05:07 +0200
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Tomasz =?iso-8859-2?Q?K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-Message-ID: <20070625140507.GC31762@boogie.lpds.sztaki.hu>
-References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl> <20070624215724.025a5de5@the-village.bc.nu> <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl> <s5h3b0gi9mp.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl> <20070625130147.GB31762@boogie.lpds.sztaki.hu> <Pine.BSO.4.63.0706251538060.25800@rudy.mif.pg.gda.pl>
+	Mon, 25 Jun 2007 10:06:29 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1605 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752300AbXFYOG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 10:06:28 -0400
+Date: Mon, 25 Jun 2007 16:06:25 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Clemens Koller <clemens.koller@anagramm.de>
+cc: David Woodhouse <dwmw2@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH] cross-architecture ELF clean up
+In-Reply-To: <467FC985.7080703@anagramm.de>
+Message-ID: <Pine.LNX.4.64.0706251559440.1817@scrub.home>
+References: <20070620230854.246399397@goop.org>  <20070620230902.387008536@goop.org>
+ <1182762166.12109.19.camel@pmac.infradead.org> <Pine.LNX.4.64.0706251538540.4386@scrub.home>
+ <467FC985.7080703@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.BSO.4.63.0706251538060.25800@rudy.mif.pg.gda.pl>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 03:41:44PM +0200, Tomasz K³oczko wrote:
+Hi,
 
-> Sorry but skype does not for me after switching to ALSA (on skype cfg 
-> level). Probably ALSA developers can explain why :>
-> All above on fresh FC6 and 1.3.53 skype.
+On Mon, 25 Jun 2007, Clemens Koller wrote:
 
-$ dpkg -l | grep skype
-ii  skype                             1.4.0.74-1
+> > glibc provides its own version, so it doesn't has to be exported at all.
+> 
+> AFAIK the glibc folks want to rely more on the linux kernel headers
+> in the future and not provide more or less redundant headers anymore...
 
-Gabor
+In this case it's more an ABI header, it doesn't export any kernel 
+interfaces.
 
--- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
+bye, Roman
