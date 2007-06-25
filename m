@@ -1,144 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbXFYVqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbXFYVse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbXFYVqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXFYVqb
+	id S1755606AbXFYVse (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbXFYVs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:46:31 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:60609 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbXFYVq3 (ORCPT
+	Mon, 25 Jun 2007 17:48:26 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:47815 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbXFYVsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:46:29 -0400
-Date: Mon, 25 Jun 2007 15:46:26 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070625214626.GJ5181@schatzie.adilger.int>
-Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-References: <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070625150320.GA8686@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+	Mon, 25 Jun 2007 17:48:25 -0400
+Date: Mon, 25 Jun 2007 14:48:35 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH 1/2] x86-64: disable the GART in shutdown
+In-reply-to: <200706251234.04548.yinghai.lu@sun.com>
+To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Muli Ben-Yehuda <muli@il.ibm.com>, Vivek Goyal <vgoyal@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200706251448.36201.yinghai.lu@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200706221219.16243.yinghai.lu@sun.com>
+ <200706221934.59966.yinghai.lu@sun.com> <200706251234.04548.yinghai.lu@sun.com>
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 25, 2007  20:33 +0530, Amit K. Arora wrote:
-> I have not implemented FA_FL_FREE_ENOSPC and FA_ZERO_SPACE flags yet, as
-> *suggested* by Andreas in http://lkml.org/lkml/2007/6/14/323  post.
-> If it is decided that these flags are also needed, I will update this
-> patch. Thanks!
+[PATCH 1/2] x86-64: disable the GART in shutdown
 
-Can you clarify - what is the current behaviour when ENOSPC (or some other
-error) is hit?  Does it keep the current fallocate() or does it free it?
+For K8 system: 4G RAM with memory hole remapping enabled, or more than 4G RAM
+installed. when using kexec to load second kernel. In the second kernel,
+ when mem is allocated for GART, it will do the memset for clear, it will cause
+restart, because some device still used that for dma.
+solution will be:
+in second kernel: disable that at first before we try to allocate mem for it.
+or in the first kernel: do disable that before shutdown.
+Andi/Eric/Alan prefer to second one for clean shutdown in first kernel.
+Andi also point out need to consider to AGP enable but mem less 4G case too.
 
-For FA_ZERO_SPACE - I'd think this would (IMHO) be the default - we
-don't want to expose uninitialized disk blocks to userspace.  I'm not
-sure if this makes sense at all.
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-> On Mon, Jun 25, 2007 at 07:15:00PM +0530, Amit K. Arora wrote:
-> > Implement new flags and values for mode argument.
-> > 
-> > This patch implements the new flags and values for the "mode" argument
-> > of the fallocate system call. It is based on the discussion between
-> > Andreas Dilger and David Chinner on the man page proposed (by the later)
-> > on fallocate.
-> > 
-> > Signed-off-by: Amit Arora <aarora@in.ibm.com>
-> > 
-> > Index: linux-2.6.22-rc4/include/linux/fs.h
-> > ===================================================================
-> > --- linux-2.6.22-rc4.orig/include/linux/fs.h
-> > +++ linux-2.6.22-rc4/include/linux/fs.h
-> > @@ -267,15 +267,16 @@ extern int dir_notify_enable;
-> >  #define SYNC_FILE_RANGE_WAIT_AFTER	4
-> > 
-> >  /*
-> > - * sys_fallocate modes
-> > - * Currently sys_fallocate supports two modes:
-> > - * FA_ALLOCATE  : This is the preallocate mode, using which an application/user
-> > - *		  may request (pre)allocation of blocks.
-> > - * FA_DEALLOCATE: This is the deallocate mode, which can be used to free
-> > - *		  the preallocated blocks.
-> > + * sys_fallocate mode flags and values
-> >   */
-> > -#define FA_ALLOCATE	0x1
-> > -#define FA_DEALLOCATE	0x2
-> > +#define FA_FL_DEALLOC	0x01 /* default is allocate */
-> > +#define FA_FL_KEEP_SIZE	0x02 /* default is extend/shrink size */
-> > +#define FA_FL_DEL_DATA	0x04 /* default is keep written data on DEALLOC */
-> > +
-> > +#define FA_ALLOCATE	0
-> > +#define FA_DEALLOCATE	FA_FL_DEALLOC
-> > +#define FA_RESV_SPACE	FA_FL_KEEP_SIZE
-> > +#define FA_UNRESV_SPACE	(FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA)
-> > 
-> >  #ifdef __KERNEL__
-> > 
-> > Index: linux-2.6.22-rc4/fs/open.c
-> > ===================================================================
-> > --- linux-2.6.22-rc4.orig/fs/open.c
-> > +++ linux-2.6.22-rc4/fs/open.c
-> > @@ -356,23 +356,26 @@ asmlinkage long sys_ftruncate64(unsigned
-> >   * sys_fallocate - preallocate blocks or free preallocated blocks
-> >   * @fd: the file descriptor
-> >   * @mode: mode specifies if fallocate should preallocate blocks OR free
-> > - *	  (unallocate) preallocated blocks. Currently only FA_ALLOCATE and
-> > - *	  FA_DEALLOCATE modes are supported.
-> > + *	  (unallocate) preallocated blocks.
-> >   * @offset: The offset within file, from where (un)allocation is being
-> >   *	    requested. It should not have a negative value.
-> >   * @len: The amount (in bytes) of space to be (un)allocated, from the offset.
-> >   *
-> >   * This system call, depending on the mode, preallocates or unallocates blocks
-> >   * for a file. The range of blocks depends on the value of offset and len
-> > - * arguments provided by the user/application. For FA_ALLOCATE mode, if this
-> > + * arguments provided by the user/application. For FA_ALLOCATE and
-> > + * FA_RESV_SPACE modes, if the sys_fallocate()
-> >   * system call succeeds, subsequent writes to the file in the given range
-> >   * (specified by offset & len) should not fail - even if the file system
-> >   * later becomes full. Hence the preallocation done is persistent (valid
-> > - * even after reopen of the file and remount/reboot).
-> > + * even after reopen of the file and remount/reboot). If FA_RESV_SPACE mode
-> > + * is passed, the file size will not be changed even if the preallocation
-> > + * is beyond EOF.
-> >   *
-> >   * It is expected that the ->fallocate() inode operation implemented by the
-> >   * individual file systems will update the file size and/or ctime/mtime
-> > - * depending on the mode and also on the success of the operation.
-> > + * depending on the mode (change is visible to user or not - say file size)
-> > + * and obviously, on the success of the operation.
-> >   *
-> >   * Note: Incase the file system does not support preallocation,
-> >   * posix_fallocate() should fall back to the library implementation (i.e.
-> > @@ -398,7 +401,8 @@ asmlinkage long sys_fallocate(int fd, in
-> > 
-> >  	/* Return error if mode is not supported */
-> >  	ret = -EOPNOTSUPP;
-> > -	if (mode != FA_ALLOCATE && mode != FA_DEALLOCATE)
-> > +	if (!(mode == FA_ALLOCATE || mode == FA_DEALLOCATE ||
-> > +		mode == FA_RESV_SPACE || mode == FA_UNRESV_SPACE))
-> >  		goto out;
-> > 
-> >  	ret = -EBADF;
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ arch/x86_64/kernel/pci-dma.c  |    5 +++++
+ arch/x86_64/kernel/pci-gart.c |   21 +++++++++++++++++++++
+ arch/x86_64/kernel/reboot.c   |    4 ++++
+ include/asm-x86_64/proto.h    |    7 +++++++
+ 4 files changed, 37 insertions(+)
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
+index ae091cd..6c4fe16 100644
+--- a/arch/x86_64/kernel/pci-gart.c
++++ b/arch/x86_64/kernel/pci-gart.c
+@@ -571,6 +571,26 @@ static const struct dma_mapping_ops gart_dma_ops = {
+ 	.unmap_sg = gart_unmap_sg,
+ };
+ 
++void gart_iommu_shutdown(void)
++{
++	struct pci_dev *dev;
++	int i;
++
++	if (no_agp && (dma_ops != &gart_dma_ops))
++		return;
++
++        for (i = 0; i < num_k8_northbridges; i++) {
++                u32 ctl;
++
++                dev = k8_northbridges[i];
++                pci_read_config_dword(dev, 0x90, &ctl);
++
++                ctl &= ~1;
++
++                pci_write_config_dword(dev, 0x90, ctl);
++        }
++}
++
+ void __init gart_iommu_init(void)
+ { 
+ 	struct agp_kern_info info;
+diff --git a/arch/x86_64/kernel/pci-dma.c b/arch/x86_64/kernel/pci-dma.c
+index 9f80aad..b406b54 100644
+--- a/arch/x86_64/kernel/pci-dma.c
++++ b/arch/x86_64/kernel/pci-dma.c
+@@ -322,6 +322,11 @@ static int __init pci_iommu_init(void)
+ 	return 0;
+ }
+ 
++void pci_iommu_shutdown(void)
++{
++	gart_iommu_shutdown();
++}
++
+ #ifdef CONFIG_PCI
+ /* Many VIA bridges seem to corrupt data for DAC. Disable it here */
+ 
+diff --git a/arch/x86_64/kernel/reboot.c b/arch/x86_64/kernel/reboot.c
+index 7503068..e6e65c2 100644
+--- a/arch/x86_64/kernel/reboot.c
++++ b/arch/x86_64/kernel/reboot.c
+@@ -16,6 +16,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/apic.h>
++#include <asm/proto.h>
+ 
+ /*
+  * Power off function, if any
+@@ -81,6 +82,7 @@ static inline void kb_wait(void)
+ void machine_shutdown(void)
+ {
+ 	unsigned long flags;
++
+ 	/* Stop the cpus and apics */
+ #ifdef CONFIG_SMP
+ 	int reboot_cpu_id;
+@@ -111,6 +113,8 @@ void machine_shutdown(void)
+ 	disable_IO_APIC();
+ 
+ 	local_irq_restore(flags);
++
++	pci_iommu_shutdown();
+ }
+ 
+ void machine_emergency_restart(void)
+diff --git a/include/asm-x86_64/proto.h b/include/asm-x86_64/proto.h
+index 85255db..b70aa0c 100644
+--- a/include/asm-x86_64/proto.h
++++ b/include/asm-x86_64/proto.h
+@@ -85,11 +85,13 @@ extern int exception_trace;
+ extern unsigned cpu_khz;
+ extern unsigned tsc_khz;
+ 
++extern void pci_iommu_shutdown(void);
+ extern void no_iommu_init(void);
+ extern int force_iommu, no_iommu;
+ extern int iommu_detected;
+ #ifdef CONFIG_IOMMU
+ extern void gart_iommu_init(void);
++extern void gart_iommu_shutdown(void);
+ extern void __init gart_parse_options(char *);
+ extern void iommu_hole_init(void);
+ extern int fallback_aper_order;
+@@ -101,6 +103,11 @@ extern int fix_aperture;
+ #else
+ #define iommu_aperture 0
+ #define iommu_aperture_allowed 0
++
++static inline void gart_iommu_shutdown(void)
++{
++}
++
+ #endif
+ 
+ extern int reboot_force;
