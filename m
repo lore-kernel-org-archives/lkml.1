@@ -1,391 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbXFYVpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbXFYVqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753138AbXFYVpz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXFYVpq
+	id S1755969AbXFYVqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXFYVqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:45:46 -0400
-Received: from lucidpixels.com ([75.144.35.66]:50563 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751817AbXFYVpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:45:44 -0400
-Date: Mon, 25 Jun 2007 17:45:38 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Jesse Barnes <jesse.barnes@intel.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Andi Kleen <andi@firstfloor.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-In-Reply-To: <200706251434.43863.jesse.barnes@intel.com>
-Message-ID: <Pine.LNX.4.64.0706251740430.14673@p34.internal.lan>
-References: <200706251434.43863.jesse.barnes@intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 25 Jun 2007 17:46:31 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:60609 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751652AbXFYVq3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 17:46:29 -0400
+Date: Mon, 25 Jun 2007 15:46:26 -0600
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070625214626.GJ5181@schatzie.adilger.int>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+References: <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070625150320.GA8686@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Will try this patch shortly w/ 2.6.22-rc6.
+On Jun 25, 2007  20:33 +0530, Amit K. Arora wrote:
+> I have not implemented FA_FL_FREE_ENOSPC and FA_ZERO_SPACE flags yet, as
+> *suggested* by Andreas in http://lkml.org/lkml/2007/6/14/323  post.
+> If it is decided that these flags are also needed, I will update this
+> patch. Thanks!
 
-p34:/usr/src/linux-2.6.22-rc6# patch -p1 < ../mtrr-v3.patch
-patching file Documentation/kernel-parameters.txt
-patching file arch/i386/kernel/cpu/mtrr/generic.c
-patching file arch/i386/kernel/cpu/mtrr/if.c
-patching file arch/i386/kernel/cpu/mtrr/main.c
-patching file arch/i386/kernel/cpu/mtrr/mtrr.h
-patching file arch/x86_64/kernel/bugs.c
-patching file arch/x86_64/kernel/setup.c
-patching file include/asm-x86_64/mtrr.h
-p34:/usr/src/linux-2.6.22-rc6#
+Can you clarify - what is the current behaviour when ENOSPC (or some other
+error) is hit?  Does it keep the current fallocate() or does it free it?
 
-So far so good.
+For FA_ZERO_SPACE - I'd think this would (IMHO) be the default - we
+don't want to expose uninitialized disk blocks to userspace.  I'm not
+sure if this makes sense at all.
 
-On Mon, 25 Jun 2007, Jesse Barnes wrote:
+> On Mon, Jun 25, 2007 at 07:15:00PM +0530, Amit K. Arora wrote:
+> > Implement new flags and values for mode argument.
+> > 
+> > This patch implements the new flags and values for the "mode" argument
+> > of the fallocate system call. It is based on the discussion between
+> > Andreas Dilger and David Chinner on the man page proposed (by the later)
+> > on fallocate.
+> > 
+> > Signed-off-by: Amit Arora <aarora@in.ibm.com>
+> > 
+> > Index: linux-2.6.22-rc4/include/linux/fs.h
+> > ===================================================================
+> > --- linux-2.6.22-rc4.orig/include/linux/fs.h
+> > +++ linux-2.6.22-rc4/include/linux/fs.h
+> > @@ -267,15 +267,16 @@ extern int dir_notify_enable;
+> >  #define SYNC_FILE_RANGE_WAIT_AFTER	4
+> > 
+> >  /*
+> > - * sys_fallocate modes
+> > - * Currently sys_fallocate supports two modes:
+> > - * FA_ALLOCATE  : This is the preallocate mode, using which an application/user
+> > - *		  may request (pre)allocation of blocks.
+> > - * FA_DEALLOCATE: This is the deallocate mode, which can be used to free
+> > - *		  the preallocated blocks.
+> > + * sys_fallocate mode flags and values
+> >   */
+> > -#define FA_ALLOCATE	0x1
+> > -#define FA_DEALLOCATE	0x2
+> > +#define FA_FL_DEALLOC	0x01 /* default is allocate */
+> > +#define FA_FL_KEEP_SIZE	0x02 /* default is extend/shrink size */
+> > +#define FA_FL_DEL_DATA	0x04 /* default is keep written data on DEALLOC */
+> > +
+> > +#define FA_ALLOCATE	0
+> > +#define FA_DEALLOCATE	FA_FL_DEALLOC
+> > +#define FA_RESV_SPACE	FA_FL_KEEP_SIZE
+> > +#define FA_UNRESV_SPACE	(FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA)
+> > 
+> >  #ifdef __KERNEL__
+> > 
+> > Index: linux-2.6.22-rc4/fs/open.c
+> > ===================================================================
+> > --- linux-2.6.22-rc4.orig/fs/open.c
+> > +++ linux-2.6.22-rc4/fs/open.c
+> > @@ -356,23 +356,26 @@ asmlinkage long sys_ftruncate64(unsigned
+> >   * sys_fallocate - preallocate blocks or free preallocated blocks
+> >   * @fd: the file descriptor
+> >   * @mode: mode specifies if fallocate should preallocate blocks OR free
+> > - *	  (unallocate) preallocated blocks. Currently only FA_ALLOCATE and
+> > - *	  FA_DEALLOCATE modes are supported.
+> > + *	  (unallocate) preallocated blocks.
+> >   * @offset: The offset within file, from where (un)allocation is being
+> >   *	    requested. It should not have a negative value.
+> >   * @len: The amount (in bytes) of space to be (un)allocated, from the offset.
+> >   *
+> >   * This system call, depending on the mode, preallocates or unallocates blocks
+> >   * for a file. The range of blocks depends on the value of offset and len
+> > - * arguments provided by the user/application. For FA_ALLOCATE mode, if this
+> > + * arguments provided by the user/application. For FA_ALLOCATE and
+> > + * FA_RESV_SPACE modes, if the sys_fallocate()
+> >   * system call succeeds, subsequent writes to the file in the given range
+> >   * (specified by offset & len) should not fail - even if the file system
+> >   * later becomes full. Hence the preallocation done is persistent (valid
+> > - * even after reopen of the file and remount/reboot).
+> > + * even after reopen of the file and remount/reboot). If FA_RESV_SPACE mode
+> > + * is passed, the file size will not be changed even if the preallocation
+> > + * is beyond EOF.
+> >   *
+> >   * It is expected that the ->fallocate() inode operation implemented by the
+> >   * individual file systems will update the file size and/or ctime/mtime
+> > - * depending on the mode and also on the success of the operation.
+> > + * depending on the mode (change is visible to user or not - say file size)
+> > + * and obviously, on the success of the operation.
+> >   *
+> >   * Note: Incase the file system does not support preallocation,
+> >   * posix_fallocate() should fall back to the library implementation (i.e.
+> > @@ -398,7 +401,8 @@ asmlinkage long sys_fallocate(int fd, in
+> > 
+> >  	/* Return error if mode is not supported */
+> >  	ret = -EOPNOTSUPP;
+> > -	if (mode != FA_ALLOCATE && mode != FA_DEALLOCATE)
+> > +	if (!(mode == FA_ALLOCATE || mode == FA_DEALLOCATE ||
+> > +		mode == FA_RESV_SPACE || mode == FA_UNRESV_SPACE))
+> >  		goto out;
+> > 
+> >  	ret = -EBADF;
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-> On some machines, buggy BIOSes don't properly setup WB MTRRs to
-> cover all available RAM, meaning the last few megs (or even gigs)
-> of memory will be marked uncached.  Since Linux tends to allocate
-> from high memory addresses first, this causes the machine to be
-> unusably slow as soon as the kernel starts really using memory
-> (i.e. right around init time).
->
-> This patch works around the problem by scanning the MTRRs at
-> boot and figuring out whether the current end_pfn value (setup
-> by early e820 code) goes beyond the highest WB MTRR range, and
-> if so, trimming it to match.  A fairly obnoxious KERN_WARNING
-> is printed too, letting the user know that not all of their
-> memory is available due to a likely BIOS bug.
->
-> Something similar could be done on i386 if needed, but the boot
-> ordering would be slightly different, since the MTRR code on i386
-> depends on the boot_cpu_data structure being setup.
->
-> This patch fixes a bug in the last patch that caused the code to
-> run on non-Intel machines (AMD machines apparently don't need it
-> and it's untested on other non-Intel machines, so best keep it
-> off).
->
-> akpm -- this one should replace all the mtrr patches currently
-> in your tree.
->
-> Yinghai, maybe you can test this on one of your AMD machines to
-> make sure I got the CPU code right?
->
-> Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
->
-> Thanks,
-> Jesse
->
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 5d0283c..642db9b 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -553,6 +553,12 @@ and is between 256 and 4096 characters. It is defined in the file
-> 			See drivers/char/README.epca and
-> 			Documentation/digiepca.txt.
->
-> +	disable_mtrr_trim [X86-64, Intel only]
-> +			By default the kernel will trim any uncacheable
-> +			memory out of your available memory pool based on
-> +			MTRR settings.  This parameter disables that behavior,
-> +			possibly causing your machine to run very slowly.
-> +
-> 	dmascc=		[HW,AX25,SERIAL] AX.25 Z80SCC driver with DMA
-> 			support available.
-> 			Format: <io_dev0>[,<io_dev1>[,..<io_dev32>]]
-> diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-> index 6d59378..bf70d2d 100644
-> --- a/arch/i386/kernel/cpu/mtrr/generic.c
-> +++ b/arch/i386/kernel/cpu/mtrr/generic.c
-> @@ -13,7 +13,7 @@
-> #include "mtrr.h"
->
-> struct mtrr_state {
-> -	struct mtrr_var_range *var_ranges;
-> +	struct mtrr_var_range var_ranges[MAX_VAR_RANGES];
-> 	mtrr_type fixed_ranges[NUM_FIXED_RANGES];
-> 	unsigned char enabled;
-> 	unsigned char have_fixed;
-> @@ -84,12 +84,6 @@ void get_mtrr_state(void)
-> 	struct mtrr_var_range *vrs;
-> 	unsigned lo, dummy;
->
-> -	if (!mtrr_state.var_ranges) {
-> -		mtrr_state.var_ranges = kmalloc(num_var_ranges * sizeof (struct mtrr_var_range),
-> -						GFP_KERNEL);
-> -		if (!mtrr_state.var_ranges)
-> -			return;
-> -	}
-> 	vrs = mtrr_state.var_ranges;
->
-> 	rdmsr(MTRRcap_MSR, lo, dummy);
-> diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/i386/kernel/cpu/mtrr/if.c
-> index c7d8f17..1b3a09c 100644
-> --- a/arch/i386/kernel/cpu/mtrr/if.c
-> +++ b/arch/i386/kernel/cpu/mtrr/if.c
-> @@ -11,10 +11,6 @@
-> #include <asm/mtrr.h>
-> #include "mtrr.h"
->
-> -/* RED-PEN: this is accessed without any locking */
-> -extern unsigned int *usage_table;
-> -
-> -
-> #define FILE_FCOUNT(f) (((struct seq_file *)((f)->private_data))->private)
->
-> static const char *const mtrr_strings[MTRR_NUM_TYPES] =
-> @@ -396,7 +392,7 @@ static int mtrr_seq_show(struct seq_file *seq, void *offset)
-> 	for (i = 0; i < max; i++) {
-> 		mtrr_if->get(i, &base, &size, &type);
-> 		if (size == 0)
-> -			usage_table[i] = 0;
-> +			mtrr_usage_table[i] = 0;
-> 		else {
-> 			if (size < (0x100000 >> PAGE_SHIFT)) {
-> 				/* less than 1MB */
-> @@ -410,7 +406,7 @@ static int mtrr_seq_show(struct seq_file *seq, void *offset)
-> 			len += seq_printf(seq,
-> 				   "reg%02i: base=0x%05lx000 (%4luMB), size=%4lu%cB: %s, count=%d\n",
-> 			     i, base, base >> (20 - PAGE_SHIFT), size, factor,
-> -			     mtrr_attrib_to_str(type), usage_table[i]);
-> +			     mtrr_attrib_to_str(type), mtrr_usage_table[i]);
-> 		}
-> 	}
-> 	return 0;
-> diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-> index 55b0051..0e4be8b 100644
-> --- a/arch/i386/kernel/cpu/mtrr/main.c
-> +++ b/arch/i386/kernel/cpu/mtrr/main.c
-> @@ -38,8 +38,8 @@
-> #include <linux/cpu.h>
-> #include <linux/mutex.h>
->
-> +#include <asm/e820.h>
-> #include <asm/mtrr.h>
-> -
-> #include <asm/uaccess.h>
-> #include <asm/processor.h>
-> #include <asm/msr.h>
-> @@ -47,7 +47,7 @@
->
-> u32 num_var_ranges = 0;
->
-> -unsigned int *usage_table;
-> +unsigned int mtrr_usage_table[MAX_VAR_RANGES];
-> static DEFINE_MUTEX(mtrr_mutex);
->
-> u64 size_or_mask, size_and_mask;
-> @@ -121,13 +121,8 @@ static void __init init_table(void)
-> 	int i, max;
->
-> 	max = num_var_ranges;
-> -	if ((usage_table = kmalloc(max * sizeof *usage_table, GFP_KERNEL))
-> -	    == NULL) {
-> -		printk(KERN_ERR "mtrr: could not allocate\n");
-> -		return;
-> -	}
-> 	for (i = 0; i < max; i++)
-> -		usage_table[i] = 1;
-> +		mtrr_usage_table[i] = 1;
-> }
->
-> struct set_mtrr_data {
-> @@ -381,7 +376,7 @@ int mtrr_add_page(unsigned long base, unsigned long size,
-> 			goto out;
-> 		}
-> 		if (increment)
-> -			++usage_table[i];
-> +			++mtrr_usage_table[i];
-> 		error = i;
-> 		goto out;
-> 	}
-> @@ -390,12 +385,13 @@ int mtrr_add_page(unsigned long base, unsigned long size,
-> 	if (i >= 0) {
-> 		set_mtrr(i, base, size, type);
-> 		if (likely(replace < 0))
-> -			usage_table[i] = 1;
-> +			mtrr_usage_table[i] = 1;
-> 		else {
-> -			usage_table[i] = usage_table[replace] + !!increment;
-> +			mtrr_usage_table[i] = mtrr_usage_table[replace] +
-> +				!!increment;
-> 			if (unlikely(replace != i)) {
-> 				set_mtrr(replace, 0, 0, 0);
-> -				usage_table[replace] = 0;
-> +				mtrr_usage_table[replace] = 0;
-> 			}
-> 		}
-> 	} else
-> @@ -525,11 +521,11 @@ int mtrr_del_page(int reg, unsigned long base, unsigned long size)
-> 		printk(KERN_WARNING "mtrr: MTRR %d not used\n", reg);
-> 		goto out;
-> 	}
-> -	if (usage_table[reg] < 1) {
-> +	if (mtrr_usage_table[reg] < 1) {
-> 		printk(KERN_WARNING "mtrr: reg: %d has count=0\n", reg);
-> 		goto out;
-> 	}
-> -	if (--usage_table[reg] < 1)
-> +	if (--mtrr_usage_table[reg] < 1)
-> 		set_mtrr(reg, 0, 0, 0);
-> 	error = reg;
->  out:
-> @@ -589,16 +585,11 @@ struct mtrr_value {
-> 	unsigned long	lsize;
-> };
->
-> -static struct mtrr_value * mtrr_state;
-> +static struct mtrr_value mtrr_state[MAX_VAR_RANGES];
->
-> static int mtrr_save(struct sys_device * sysdev, pm_message_t state)
-> {
-> 	int i;
-> -	int size = num_var_ranges * sizeof(struct mtrr_value);
-> -
-> -	mtrr_state = kzalloc(size,GFP_ATOMIC);
-> -	if (!mtrr_state)
-> -		return -ENOMEM;
->
-> 	for (i = 0; i < num_var_ranges; i++) {
-> 		mtrr_if->get(i,
-> @@ -620,7 +611,6 @@ static int mtrr_restore(struct sys_device * sysdev)
-> 				 mtrr_state[i].lsize,
-> 				 mtrr_state[i].ltype);
-> 	}
-> -	kfree(mtrr_state);
-> 	return 0;
-> }
->
-> @@ -631,6 +621,59 @@ static struct sysdev_driver mtrr_sysdev_driver = {
-> 	.resume		= mtrr_restore,
-> };
->
-> +static int disable_mtrr_trim;
-> +
-> +static int __init disable_mtrr_trim_setup(char *str)
-> +{
-> +	disable_mtrr_trim = 1;
-> +	return 0;
-> +}
-> +early_param("disable_mtrr_trim", disable_mtrr_trim_setup);
-> +
-> +#ifdef CONFIG_X86_64
-> +/**
-> + * mtrr_trim_uncached_memory - trim RAM not covered by MTRRs
-> + *
-> + * Some buggy BIOSes don't setup the MTRRs properly for systems with certain
-> + * memory configurations.  This routine checks to make sure the MTRRs having
-> + * a write back type cover all of the memory the kernel is intending to use.
-> + * If not, it'll trim any memory off the end by adjusting end_pfn, removing
-> + * it from the kernel's allocation pools, warning the user with an obnoxious
-> + * message.
-> + */
-> +void __init mtrr_trim_uncached_memory(void)
-> +{
-> +	unsigned long i, base, size, highest_addr = 0, def, dummy;
-> +	mtrr_type type;
-> +
-> +	/* Make sure we only trim uncachable memory on Intel machines */
-> +	rdmsr(MTRRdefType_MSR, def, dummy);
-> +	def &= 0xff;
-> +	if (!is_cpu(INTEL) || disable_mtrr_trim || def != MTRR_TYPE_UNCACHABLE)
-> +		return;
-> +
-> +	/* Find highest cached pfn */
-> +	for (i = 0; i < num_var_ranges; i++) {
-> +		mtrr_if->get(i, &base, &size, &type);
-> +		if (type != MTRR_TYPE_WRBACK)
-> +			continue;
-> +		base <<= PAGE_SHIFT;
-> +		size <<= PAGE_SHIFT;
-> +		if (highest_addr < base + size)
-> +			highest_addr = base + size;
-> +	}
-> +
-> +	if ((highest_addr >> PAGE_SHIFT) != end_pfn) {
-> +		printk(KERN_WARNING "***************\n");
-> +		printk(KERN_WARNING "**** WARNING: likely BIOS bug\n");
-> +		printk(KERN_WARNING "**** MTRRs don't cover all of "
-> +		       "memory, trimmed %ld pages\n", end_pfn -
-> +		       (highest_addr >> PAGE_SHIFT));
-> +		printk(KERN_WARNING "***************\n");
-> +		end_pfn = highest_addr >> PAGE_SHIFT;
-> +	}
-> +}
-> +#endif
->
-> /**
->  * mtrr_bp_init - initialize mtrrs on the boot CPU
-> diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
-> index 289dfe6..14fb88b 100644
-> --- a/arch/i386/kernel/cpu/mtrr/mtrr.h
-> +++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
-> @@ -14,6 +14,7 @@
-> #define MTRRphysMask_MSR(reg) (0x200 + 2 * (reg) + 1)
->
-> #define NUM_FIXED_RANGES 88
-> +#define MAX_VAR_RANGES 256
-> #define MTRRfix64K_00000_MSR 0x250
-> #define MTRRfix16K_80000_MSR 0x258
-> #define MTRRfix16K_A0000_MSR 0x259
-> @@ -34,6 +35,8 @@
->    an 8 bit field: */
-> typedef u8 mtrr_type;
->
-> +extern unsigned int mtrr_usage_table[MAX_VAR_RANGES];
-> +
-> struct mtrr_ops {
-> 	u32	vendor;
-> 	u32	use_intel_if;
-> diff --git a/arch/x86_64/kernel/bugs.c b/arch/x86_64/kernel/bugs.c
-> index c3c6b91..c138eac 100644
-> --- a/arch/x86_64/kernel/bugs.c
-> +++ b/arch/x86_64/kernel/bugs.c
-> @@ -14,7 +14,6 @@
-> void __init check_bugs(void)
-> {
-> 	identify_cpu(&boot_cpu_data);
-> -	mtrr_bp_init();
-> #if !defined(CONFIG_SMP)
-> 	printk("CPU: ");
-> 	print_cpu_info(&boot_cpu_data);
-> diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
-> index eb6524f..409b63c 100644
-> --- a/arch/x86_64/kernel/setup.c
-> +++ b/arch/x86_64/kernel/setup.c
-> @@ -266,6 +266,10 @@ void __init setup_arch(char **cmdline_p)
-> 	 * we are rounding upwards:
-> 	 */
-> 	end_pfn = e820_end_of_ram();
-> +	/* Trim memory not covered by WB MTRRs */
-> +	mtrr_bp_init();
-> +	mtrr_trim_uncached_memory();
-> +
-> 	num_physpages = end_pfn;
->
-> 	check_efer();
-> diff --git a/include/asm-x86_64/mtrr.h b/include/asm-x86_64/mtrr.h
-> index b557c48..51ad788 100644
-> --- a/include/asm-x86_64/mtrr.h
-> +++ b/include/asm-x86_64/mtrr.h
-> @@ -78,6 +78,7 @@ extern int mtrr_add_page (unsigned long base, unsigned long size,
-> 		     unsigned int type, char increment);
-> extern int mtrr_del (int reg, unsigned long base, unsigned long size);
-> extern int mtrr_del_page (int reg, unsigned long base, unsigned long size);
-> +extern void mtrr_trim_uncached_memory(void);
-> #  else
-> static __inline__ int mtrr_add (unsigned long base, unsigned long size,
-> 				unsigned int type, char increment)
-> @@ -99,7 +100,9 @@ static __inline__ int mtrr_del_page (int reg, unsigned long base,
-> {
->     return -ENODEV;
-> }
-> -
-> +static __inline__ void mtrr_trim_uncached_memory(void)
-> +{
-> +}
-> #endif /* CONFIG_MTRR */
->
-> #ifdef CONFIG_COMPAT
->
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
