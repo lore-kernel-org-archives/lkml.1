@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbXFYUcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbXFYUcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752949AbXFYUcd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXFYUc0
+	id S1754165AbXFYUcp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbXFYUc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:32:26 -0400
-Received: from gw03.mail.saunalahti.fi ([195.197.172.111]:36831 "EHLO
-	gw03.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbXFYUcZ (ORCPT
+	Mon, 25 Jun 2007 16:32:29 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:57162 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbXFYUc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:32:25 -0400
-Message-ID: <46802649.9000403@opensound.com>
-Date: Mon, 25 Jun 2007 23:32:09 +0300
-From: Hannu Savolainen <hannu@opensound.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-CC: Jan Engelhardt <jengelh@computergmbh.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl> <Pine.LNX.4.64.0706242126200.11964@fbirervta.pbzchgretzou.qr> <Pine.BSO.4.63.0706251153060.25800@rudy.mif.pg.gda.pl>
-In-Reply-To: <Pine.BSO.4.63.0706251153060.25800@rudy.mif.pg.gda.pl>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 25 Jun 2007 16:32:28 -0400
+Subject: Re: Linux Kernel include files
+From: David Woodhouse <dwmw2@infradead.org>
+To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
+Cc: harald@skogtun.org, schilling@fokus.fraunhofer.de,
+       linux-kernel@vger.kernel.org, david@lang.hm
+In-Reply-To: <468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
+References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
+	 <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
+	 <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
+	 <1182483527.10524.31.camel@shinybook.infradead.org>
+	 <467fdc75.0ficjl92unPDO1uk%Joerg.Schilling@fokus.fraunhofer.de>
+	 <1182785277.12109.121.camel@pmac.infradead.org>
+	 <87wsxrdi6e.fsf@basilikum.skogtun.org>
+	 <468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
+Content-Type: text/plain
+Date: Mon, 25 Jun 2007 21:32:18 +0100
+Message-Id: <1182803538.12109.146.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomasz K³oczko kirjoitti:
-> On Sun, 24 Jun 2007, Jan Engelhardt wrote:
->
->>
->> On Jun 24 2007 21:24, Tomasz K³oczko wrote:
->>> Try to answer on question "ALSA or OSS ?" using *only* technical 
->>> arguments.
->>
->> Ok: The OSS cs46xx driver did not support the rear 2 channels.
-The cs46xx OSS driver in the kernel is not our work. This discussion is 
-about _our_ OSS 4.0 so the above is not a valid argument.
-> Yes it is true .. OSS (Hannu tree) dos not provide rear 2 channels in
-> cs46xx driver because .. in this OSS tree there is no cs46xx driver :>
-The driver for cs46xx/cs4280 devices in OSS 4.0 is called cs4280.c. It's 
-based on the same sample sources from Crystal than the kernel cs46xx 
-one. It doesn't support the rear channels any better which could be an 
-argument. However OSS is now an open source community project so anybody 
-has freedom to fix this problem.
+On Mon, 2007-06-25 at 22:26 +0200, Joerg Schilling wrote:
+> Well, I was in hope that a small typo (in special as the correct
+> spelling is in the file README.compile) should not be a problem.
+> 
+> You need to use CCOM=suncc 
 
-Best regards,
+No, I need someone else to use CCOM=suncc for me. Unless suncc works on
+Linux/PowerPC _and_ you find me a few extra hours in the day to deal
+with bugs for someone who can't even be bothered to write a coherent bug
+report.
 
-Hannu
+-- 
+dwmw2
+
