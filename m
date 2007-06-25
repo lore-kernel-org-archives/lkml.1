@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbXFYEno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbXFYEs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbXFYEno (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 00:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXFYEng
+	id S1755878AbXFYEs4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 00:48:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbXFYEst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 00:43:36 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55583 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbXFYEng (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 00:43:36 -0400
-Subject: Re: [PATCH] get_random_long() and AT_ENTROPY for auxv, kernel
-	2.6.21.5
-From: Arjan van de Ven <arjan@infradead.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Alexander Gabert <pappy@gentoo.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, libc-alpha@sourceware.org,
-       hardened@gentoo.org
-In-Reply-To: <20070625034508.GE11115@waste.org>
-References: <4675C678.3080807@gentoo.org>
-	 <1182128803.22999.9.camel@laptopd505.fenrus.org>
-	 <20070620203022.GO11166@waste.org> <467EADA0.9020101@gentoo.org>
-	 <20070625034508.GE11115@waste.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 24 Jun 2007 21:43:03 -0700
-Message-Id: <1182746583.26621.5.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+	Mon, 25 Jun 2007 00:48:49 -0400
+Received: from mailgw.cvut.cz ([147.32.3.235]:45050 "EHLO mailgw.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752953AbXFYEst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 00:48:49 -0400
+Message-ID: <467F492B.6000002@vc.cvut.cz>
+Date: Sun, 24 Jun 2007 21:48:43 -0700
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.4) Gecko/20070509 Iceape/1.1.2 (Debian-1.1.2-1)
+MIME-Version: 1.0
+To: James Morris <jmorris@namei.org>
+CC: Chris Wright <chrisw@sous-sol.org>, linux-security-module@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
+References: <20070617135239.GA17689@sergelap> <4676007F.7060503@kernel.org> <20070618044017.GW3723@sequoia.sous-sol.org> <20070620171037.GA28670@sergelap.ibm.com> <20070620174613.GF3723@sequoia.sous-sol.org> <20070621160011.GB9913@sergelap.austin.ibm.com> <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com> <Line.LNX.4.64.0706241158320.12660@localhost.localdomain> <Line.LNX.4.64.0706241653490.14183@localhost.localdomain> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain>
+In-Reply-To: <Line.LNX.4.64.0706250031350.15974@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-24 at 22:45 -0500, Matt Mackall wrote:
-> On Sun, Jun 24, 2007 at 07:45:04PM +0200, Alexander Gabert wrote:
-> > Hi Linus,
-> > hi LKML,
-> > 
-> > i would like to thank LKML and especially Eric (thanks for the per_cpu 
-> > macro tips and design guidelines!) and the other contributors to this idea.
-> > 
-> > This time the patch is rather big because it also removes 
-> > get_random_int() and introduces get_random_long() throughout the kernel.
-> 
-> Stop right there. You still haven't answered my original question.
-> What is the point of this exercise in the first place, please?
-> 
-> Am I right in thinking you have three unrelated patches here?
-> 
-> - something to do with aux vector headers
+James Morris wrote:
+> Convert LSM into a static interface, as the ability to unload a security 
+> module is not required by in-tree users and potentially complicates the 
+> overall security architecture.
 
-the primary goal is to pass a random value to userspace at process
-start; this to save glibc from having to open /dev/urandom on ever
-program start (which it does now for all apps compiled with
--fstack-protector, which in various distros is "everything").
+Hello,
 
-> - sweeping change of get_random_int to get_random_long for no obvious reason
+> -module_param(debug, bool, 0600);
+> -MODULE_PARM_DESC(debug, "Debug enabled or not");
+> +static int __init root_plug_debug(char *str)
+> +{
+> +	debug = simple_strtol(str, NULL, 0);
+> +	return 1;
+> +}
+> +__setup("root_plug_debug=", root_plug_debug);
 
-and this is because Alexander wants 2 and not 1 random int to be passed
-for his own glibc proposed change (combined with get_random_int() being
-designed for only 4 bytes per process ;-)
+is this necessary?  What about just documenting 
+root_plug.{vendor_id,product_id,debug}, so it won't break existing 
+root_plug users (if there are any) ?  I thought that typed 
+module_param() is prefered over untyped __setup()...
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+						Thanks,
+							Petr
+
 
