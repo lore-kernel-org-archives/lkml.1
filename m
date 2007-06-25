@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751153AbXFYJBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693AbXFYJDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751153AbXFYJBE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 05:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbXFYJAx
+	id S1753693AbXFYJDe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 05:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXFYJD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 05:00:53 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52510 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751093AbXFYJAv (ORCPT
+	Mon, 25 Jun 2007 05:03:26 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:34686 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751093AbXFYJDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 05:00:51 -0400
-Date: Mon, 25 Jun 2007 10:04:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Auke Kok <auke-jan.h.kok@intel.com>
-Cc: gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, grundler@parisc-linux.org,
-       davem@davemloft.net, davej@redhat.com
-Subject: Re: [PATCH 2/2] [RESEND] PCI: Change all drivers to use
- pci_device->revision
-Message-ID: <20070625100447.1b3ae35e@the-village.bc.nu>
-In-Reply-To: <20070625031929.4711.79012.stgit@localhost.localdomain>
-References: <20070625031918.4711.2705.stgit@localhost.localdomain>
-	<20070625031929.4711.79012.stgit@localhost.localdomain>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 25 Jun 2007 05:03:25 -0400
+Subject: Re: [PATCH] cross-architecture ELF clean up
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Arch <linux-arch@vger.kernel.org>,
+       Richard Henderson <rth@twiddle.net>, Ian Molton <spyro@f2s.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Aubrey Li <aubrey.li@analog.com>, Mikael Starvik <starvik@axis.com>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>, Andi Kleen <ak@suse.de>,
+       Tony Luck <tony.luck@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Matthew Wilcox <matthew@wil.cx>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+       Chris Zankel <chris@zankel.net>
+In-Reply-To: <20070620230902.387008536@goop.org>
+References: <20070620230854.246399397@goop.org>
+	 <20070620230902.387008536@goop.org>
+Content-Type: text/plain
+Date: Mon, 25 Jun 2007 10:02:46 +0100
+Message-Id: <1182762166.12109.19.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jun 2007 20:19:29 -0700
-Auke Kok <auke-jan.h.kok@intel.com> wrote:
+On Wed, 2007-06-20 at 16:08 -0700, Jeremy Fitzhardinge wrote:
+> This patch cleans up the ELF headers and their users.  It does several
+> related things:
 
-> Instead of all drivers reading pci config space to get the revision
-> ID, they can now use the pci_device->revision member.
-> 
-> This exposes some issues where drivers where reading a word or a dword
-> for the revision number, and adding useless error-handling around the
-> read. Some drivers even just read it for no purpose of all.
-> 
-> In devices where the revision ID is being copied over and used in what
-> appears to be the equivalent of hotpath, I have left the copy code
-> and the cached copy as not to influence the driver's performance.
-> 
-> Compile tested with make all{yes,mod}config on x86_64 and i386.
+Looks good. We can get away with exporting a lot less of this to
+userspace too, can't we?
 
-Ack the drivers/ata part but please split this up per subsystem and send
-the chunks to the subsystem maintainers.
+-- 
+dwmw2
 
-Alan
