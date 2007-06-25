@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbXFYVzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbXFYV4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbXFYVzq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbXFYVzi
+	id S1756702AbXFYV4R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbXFYV4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:55:38 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57426 "EHLO amd.ucw.cz"
+	Mon, 25 Jun 2007 17:56:05 -0400
+Received: from dsl.myri.com ([64.172.73.26]:1931 "EHLO myri.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751482AbXFYVzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:55:37 -0400
-Date: Mon, 25 Jun 2007 23:55:27 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Uli Luckas <u.luckas@road.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks (rev. 2)
-Message-ID: <20070625215527.GE2051@elf.ucw.cz>
-References: <200706252352.24137.rjw@sisk.pl>
+	id S1751152AbXFYV4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 17:56:04 -0400
+X-Greylist: delayed 1010 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 17:56:04 EDT
+Message-ID: <468035BC.9080008@myri.com>
+Date: Mon, 25 Jun 2007 17:38:04 -0400
+From: Loic Prylli <loic@myri.com>
+User-Agent: Thunderbird/2.0.0.4 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706252352.24137.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] MTRR: Fix race causing set_mtrr to go into infinite loop
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Processors synchronization in set_mtrr requires the .gate field
+to be set after .count field is properly initialized. Without an explicit
+barrier, the compiler was reordering those memory stores. That was sometimes
+causing a processor (in ipi_handler) to see the .gate change and
+decrement .count before the latter is set by set_mtrr() (which
+then hangs in a infinite loop with irqs disabled).
 
-> [I hope the ACKs still apply.]
+Signed-off-by: Loic Prylli <loic@myri.com>
+---
+ arch/i386/kernel/cpu/mtrr/main.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Uhuh, not 100% sure.
+diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
+index 55b0051..75dc6d5 100644
+--- a/arch/i386/kernel/cpu/mtrr/main.c
++++ b/arch/i386/kernel/cpu/mtrr/main.c
+@@ -229,6 +229,8 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+ 	data.smp_size = size;
+ 	data.smp_type = type;
+ 	atomic_set(&data.count, num_booting_cpus() - 1);
++	/* make sure data.count is visible before unleashing other CPUs */
++	smp_wmb();
+ 	atomic_set(&data.gate,0);
+ 
+ 	/*  Start the ball rolling on other CPUs  */
+@@ -242,6 +244,7 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+ 
+ 	/* ok, reset count and toggle gate */
+ 	atomic_set(&data.count, num_booting_cpus() - 1);
++	smp_wmb();
+ 	atomic_set(&data.gate,1);
+ 
+ 	/* do our MTRR business */
+@@ -260,6 +263,7 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+ 		cpu_relax();
+ 
+ 	atomic_set(&data.count, num_booting_cpus() - 1);
++	smp_wmb();
+ 	atomic_set(&data.gate,0);
+ 
+ 	/*
+-- 1.5.2.2 
 
-> +static int usermodehelper_disabled;
-> +
-
-
-...
-
->  	case PM_HIBERNATION_PREPARE:
->  	case PM_SUSPEND_PREPARE:
->  		usermodehelper_disabled = 1;
-> -		return NOTIFY_OK;
-> +		smp_mb();
-
-usermodehelper_disabled should be atomic variable, too, so we don't
-have to play these ugly tricks by hand? This should not be
-performance-critical, right?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
