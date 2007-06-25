@@ -1,129 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbXFYU21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbXFYU2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbXFYU21 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbXFYU2S
+	id S1751882AbXFYU2l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbXFYU2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:28:18 -0400
-Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:33157 "EHLO
-	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751261AbXFYU2R (ORCPT
+	Mon, 25 Jun 2007 16:28:32 -0400
+Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:34109 "EHLO
+	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752750AbXFYU2a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:28:17 -0400
-X-Greylist: delayed 1937 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 16:28:16 EDT
-To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Theodore Tso <tytso@mit.edu>, Al Viro <viro@ftp.linux.org.uk>,
-       davids@webmaster.com,
-       "Linux-Kernel\@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com>
-	<or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070622013417.GT21478@ftp.linux.org.uk>
-	<20070622041949.GA15625@thunk.org>
-	<orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<20070625132853.GH10008@csclub.uwaterloo.ca>
-From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Date: Mon, 25 Jun 2007 16:54:52 -0300
-In-Reply-To: <20070625132853.GH10008@csclub.uwaterloo.ca> (Lennart Sorensen's message of "Mon\, 25 Jun 2007 09\:28\:53 -0400")
-Message-ID: <orhcov7qsz.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Mon, 25 Jun 2007 16:28:30 -0400
+Date: Mon, 25 Jun 2007 22:26:20 +0200
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: harald@skogtun.org, dwmw2@infradead.org
+Cc: schilling@fokus.fraunhofer.de, linux-kernel@vger.kernel.org, david@lang.hm
+Subject: Re: Linux Kernel include files
+Message-ID: <468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
+References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
+ <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
+ <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
+ <1182483527.10524.31.camel@shinybook.infradead.org>
+ <467fdc75.0ficjl92unPDO1uk%Joerg.Schilling@fokus.fraunhofer.de>
+ <1182785277.12109.121.camel@pmac.infradead.org>
+ <87wsxrdi6e.fsf@basilikum.skogtun.org>
+In-Reply-To: <87wsxrdi6e.fsf@basilikum.skogtun.org>
+User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 25, 2007, lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
+Harald Arnesen <harald@skogtun.org> wrote:
 
-> On Fri, Jun 22, 2007 at 03:00:30AM -0300, Alexandre Oliva wrote:
->> I was here to dispell the lies that were being spread about GPLv3, the
->> spirit and the goals of the GPL, as far as I understood them.
+> David Woodhouse <dwmw2@infradead.org> writes:
+>
+> >> >  Can you be more specific about why this is a problem? Don't
+> >> > we mostly define those crappy types using arch-specific knowledge, as
+> >> > 'int', 'long', etc?
+> >> 
+> >> I recommend you to install Sun Studio and to try to compile star or cdrtools
+> >> using Sun Studio by calling "make CCOM_suncc".
+> >>
+> >> ftp://ftp.berlios.de/pub/star/alpha/
+> >> ftp://ftp.berlios.de/pub/cdrecord/alpha/
+> >> 
+> >> You may need to hand edit the file incs/<arch-dir>/{xconfig.h!rules.conf}
+> >> 
+> >> in order to enable the auto-disabled features.
+> >> 
+> >> In any case, self reading the error messages from Sun Studio helps more than
+> >> trying to discuss it.
+> >
+> > I have no interest in doing this for myself, and I suspect that if I
+> > tried it I'd find that Sun Studio doesn't exist for Linux/PowerPC
+> > anyway. Please just show the error messages.
+>
+> Apart from the usual whining about GNU make, the error message is:
+> make: *** No rule to make target `CCOM_suncc'.  Stop.
+>
+> If I actually install smake, as Jörg recommends, the message becomes:
+> smake: Can't find any source for 'CCOM_suncc'.
+> smake: Couldn't make 'CCOM_suncc'.
 
-> Just because someone has a different opinion than you or the FSF does
-> not make what they say a lie.
+Well, I was in hope that a small typo (in special as the correct spelling is in 
+the file README.compile) should not be a problem.
 
-As a general statement, yours is absolutely correct.
+You need to use CCOM=suncc 
 
-However, the situation at hand is quite different AFAICT.  It's about
-people repeatedly making statements that misconstrued the intent of a
-third party, even after having been drawn attention to this.  AFAICT,
-both elements needed to characterize lying are present: deviation from
-the truth, and intent to instill the incorrect statements on others as
-if they were true.
-
-Now, it might be that those making such statements hadn't fully
-realized what they were writing on was on others' intentions, rather
-than objective facts or their own opinions, and that they didn't
-realize they were misrepresenting those intentions before I brought
-this up here.  In this case, if they confirm it, I'll be delighted to
-retract my assessment of such behavior as 'lying'.
-
-> Well what the spirit is, is certainly debateable,
-
-If you misunderstand what 'the spirit of a legal text' as something
-other than the intent of whoever wrote that document, then yes, it is
-debatable.  You may want to take up the alleged inaccuracy to
-Wikipedia: http://en.wikipedia.org/wiki/Letter_and_spirit_of_the_law
-
-  When one obeys the letter of the law but not the spirit, he is
-  obeying the literal interpretation of the words (the "letter") of
-  the law, but not the intent of those who wrote the law. Conversely,
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  when one obeys the spirit of the law but not the letter, he is doing
-  what the authors of the law intended, though not adhering to the
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  literal wording.
-
-> Any organization that claims anyone that doesn't agree with its view of
-> thw world and its interpretation of some written text is "confused" will
-> be treated like all other religigous fanatics, and not listened too.
-
-I suppose it thus follows that people will then take this perception
-further and selectively ignore portions of texts written by these
-parties.  And then become frustrated and complain when their
-conclusions don't match those that are evidently encoded in the
-portions that were ignored by them.  And then complain when they're
-misunderstanding the text, or when they're characterized as confused,
-or however else their selective attention and its misleading
-consequences are characterized.
-
-> Intelligent people know better than to listen to such groups.
-
-Ignoring facts that don't fit your ideology, or that support an
-ideology you reject, will mislead you, no matter what your fanaticism
-or anti-fanaticism is.
-
-> I think I know exactly as much about the GPL now as I did two weeks ago.
-
-Good for you (assuming you're not saying you've refused to learn
-anything just because I was the one passing on the knowledge, because,
-well, this would be unintelligent too, right? ;-)
-
-
-Consider this scenario: vendor tivoizes Linux in the device, and
-includes the corresponding sources only in a partition that is
-theoretically accessible using the shipped kernel, but that nothing in
-the software available in the machine will let you get to.  Further,
-sources (like everything else on disk) are encrypted, and you can only
-decrypt it with hardware crypto that is disabled if the boot loader
-doesn't find a correct signature for the boot partition, or maybe the
-signature is irrelevant, given that everything on disk is encrypted in
-such a way that, if you don't have the keys, you can't update the
-kernel properly anyway.  The vendor refuses to give customers other
-copies of the sources.  To add insult to the injury, the vendor
-configures the computer to set up the encrypted disk partition
-containing the sources as a swap device, such that the shared-secret
-key used to access that entire filesystem is overwritten upon the
-first boot, rendering the entire previous contents of the partition
-holding the source code into an incomprehensible stream of bits.
-
-Does anyone think this is permitted by the letter of GPLv2?  Is it in
-the spirit of GPLv2?  How are the sources passed on in this way going
-to benefit the user or the community?
-
-Is this still desirable by the Linux developers?
+Jörg
 
 -- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
