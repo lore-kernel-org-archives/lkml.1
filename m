@@ -1,35 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbXFYVN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbXFYVOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbXFYVN1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbXFYVNV
+	id S1754138AbXFYVOl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXFYVOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:13:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37870 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbXFYVNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:13:20 -0400
-Date: Mon, 25 Jun 2007 23:12:59 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Petr Vandrovec <petr@vmware.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22-rc5-yesterdaygit with VM debug: BUG in mm/rmap.c:66: anon_vma_link ?
-Message-ID: <20070625211259.GD7059@v2.random>
-References: <467F6882.9000800@vmware.com> <Pine.LNX.4.64.0706252129430.22492@blonde.wat.veritas.com>
+	Mon, 25 Jun 2007 17:14:33 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:38541 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbXFYVOc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 17:14:32 -0400
+Date: Mon, 25 Jun 2007 17:14:28 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: Andreas Gruenbacher <agruen@suse.de>
+cc: Chris Wright <chrisw@sous-sol.org>, linux-security-module@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
+In-Reply-To: <200706252237.59226.agruen@suse.de>
+Message-ID: <Line.LNX.4.64.0706251712570.24003@localhost.localdomain>
+References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org>
+ <Line.LNX.4.64.0706250031350.15974@localhost.localdomain>
+ <200706252237.59226.agruen@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706252129430.22492@blonde.wat.veritas.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 10:05:09PM +0100, Hugh Dickins wrote:
-> size of memory?); but I rather think validate_anon_vma has outlived its
-> usefulness, and is better just removed - which gives a magnificent
+On Mon, 25 Jun 2007, Andreas Gruenbacher wrote:
 
-Probably yes. But the most fundamental issue is that this code
-probably was never meant to be enabled through a menuconfig tweak but
-only by editing the source.
+> It's useful for some LSMs to be modular, and LSMs which are y/n options won't 
+> have any security architecture issues with unloading at all. 
+
+Which LSMs?  Upstream, there are SELinux and capabilty, and they're not 
+safe as loadable modules.
+
+> The mere fact 
+> that SELinux cannot be built as a module is a rather weak argument for 
+> disabling LSM modules as a whole, so  please don't.
+
+That's not the argument.  Please review the thread.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
