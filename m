@@ -1,82 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbXFYUEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbXFYUGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbXFYUEh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXFYUE2
+	id S1752520AbXFYUGj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbXFYUGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:04:28 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:54295 "EHLO madara.hpl.hp.com"
+	Mon, 25 Jun 2007 16:06:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51964 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753039AbXFYUE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:04:27 -0400
-Date: Mon, 25 Jun 2007 13:01:58 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Andi Kleen <ak@suse.de>
-Cc: b.steinbrink@gmx.de, ingo@elte.hu, linux-kernel@vger.kernel.org,
-       levon@movementarian.org, perfmon@napali.hpl.hp.com,
-       oprofile-list@lists.sourceforge.net, wcohen@redhat.com,
-       Stephane Eranian <eranian@hpl.hp.com>
-Subject: Re: [PATCH 1/2] Always probe the NMI watchdog
-Message-ID: <20070625200158.GC12139@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070618103214.GA12045@atjola.homenet> <20070620183448.GB3251@atjola.homenet> <20070625120926.0a86373c.akpm@linux-foundation.org> <200706252136.18366.ak@suse.de>
-Mime-Version: 1.0
+	id S1751209AbXFYUGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 16:06:32 -0400
+Date: Mon, 25 Jun 2007 22:06:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch, v2.6.22-rc6] sys_time() speedup
+Message-ID: <20070625200601.GA18980@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200706252136.18366.ak@suse.de>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-On Mon, Jun 25, 2007 at 09:36:17PM +0200, Andi Kleen wrote:
-> On Monday 25 June 2007 21:09, Andrew Morton wrote:
-> > On Wed, 20 Jun 2007 20:34:48 +0200
-> >
-> > Bj__rn Steinbrink <B.Steinbrink@gmx.de> wrote:
-> > > The performance counter allocator relies on the nmi watchdog being
-> > > probed, so we have to do that even if the watchdog is not enabled.
-> >
-> > So...  what's the status of this lot?
-> >
-> > I've just merged this patch and the second one:
-> >
-> > Subject: [PATCH 2/2] Reserve the right performance counter for the Intel
-> > PerfMon NMI watchdog Message-ID: <20070620183551.GC3251@atjola.homenet>
-> >
-> > but there was no followup discussion afaict.
-> >
-> > Andi, Stephane: acks?
-> 
-> Yes, although I'm still a little uneasy about the always probe one.
-> 
+Subject: [patch] sys_time() speedup
+From: Ingo Molnar <mingo@elte.hu>
 
-I looked at the code I have in my tree coming from Bjon's patches and
-I am a bit confused by the flow for probing as well.
+improve performance of sys_time(). sys_time() returns time in seconds, 
+but it does so by calling do_gettimeofday() and then returning the 
+tv_sec portion of the GTOD time. But the data structure "xtime", which 
+is updated by every timer/scheduler tick, already offers HZ granularity 
+time.
 
-The register allocator works globally, i.e., you reserve a register
-for all CPUs at once.
+the patch improves the sysbench OLTP macrobenchmark significantly:
 
-The probe_nmi_watchdog() routine simply probes the CPU type to initialize
-the watchdog data structure (wd_ops). This needs to be done once and for all.
-Why put it in a route that is called with on_each_cpu()?
+2.6.22-rc6:
 
-I think the tricky part is that we do want to reserve perfctr1 even though
-the NMI watchdog is not active. This comes from the fact that the NMI watchdog
-knows about only one counter and if it can't get that one, it probably fails.
-By reserving it from the start, we ensure NMI watchdog will work when eventually
-activated.
+#threads
+   1:        transactions:                        3733   (373.21 per sec.)
+   2:        transactions:                        6676   (667.46 per sec.)
+   3:        transactions:                        6957   (695.50 per sec.)
+   4:        transactions:                        7055   (705.48 per sec.)
+   5:        transactions:                        6596   (659.33 per sec.)
 
-Unlike sharing between Oprofile and perfmon which works by enforcing
-mutual exclusion between the two subsystems, the NMI watchdog must work
-concurrently with either Oprofile or Perfmon.
+2.6.22-rc6 + sys_time.patch:
 
-Bjorn, did I understand the constraints correctly?
+   1:        transactions:                        4005   (400.47 per sec.)
+   2:        transactions:                        7379   (737.77 per sec.)
+   3:        transactions:                        7347   (734.49 per sec.)
+   4:        transactions:                        7468   (746.65 per sec.)
+   5:        transactions:                        7428   (742.47 per sec.)
 
--- 
--Stephane
+mixed API uses of gettimeofday() and time() are guaranteed to be 
+coherent via the use of a at-most-once-per-second slowpath that updates 
+xtime.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/time.c |   27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
+
+Index: linux/kernel/time.c
+===================================================================
+--- linux.orig/kernel/time.c
++++ linux/kernel/time.c
+@@ -57,14 +57,17 @@ EXPORT_SYMBOL(sys_tz);
+  */
+ asmlinkage long sys_time(time_t __user * tloc)
+ {
+-	time_t i;
+-	struct timeval tv;
++	/*
++	 * We read xtime.tv_sec atomically - it's updated
++	 * atomically by update_wall_time(), so no need to
++	 * even read-lock the xtime seqlock:
++	 */
++	time_t i = xtime.tv_sec;
+ 
+-	do_gettimeofday(&tv);
+-	i = tv.tv_sec;
++	smp_rmb(); /* sys_time() results are coherent */
+ 
+ 	if (tloc) {
+-		if (put_user(i,tloc))
++		if (put_user(i, tloc))
+ 			i = -EFAULT;
+ 	}
+ 	return i;
+@@ -373,6 +376,20 @@ void do_gettimeofday (struct timeval *tv
+ 
+ 	tv->tv_sec = sec;
+ 	tv->tv_usec = usec;
++
++	/*
++	 * Make sure xtime.tv_sec [returned by sys_time()] always
++	 * follows the gettimeofday() result precisely. This
++	 * condition is extremely unlikely, it can hit at most
++	 * once per second:
++	 */
++	if (unlikely(xtime.tv_sec != tv->tv_sec)) {
++		unsigned long flags;
++
++		write_seqlock_irqsave(&xtime_lock);
++		update_wall_time();
++		write_seqlock_irqrestore(&xtime_lock);
++	}
+ }
+ 
+ EXPORT_SYMBOL(do_gettimeofday);
