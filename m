@@ -1,88 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXFYGgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbXFYGiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbXFYGgO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 02:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbXFYGfv
+	id S1756847AbXFYGiU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 02:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbXFYGiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 02:35:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36381 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754872AbXFYGfs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 02:35:48 -0400
-Date: Mon, 25 Jun 2007 07:35:45 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: vm/fs meetup in september?
-Message-ID: <20070625063545.GA1964@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Nick Piggin <npiggin@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linux Memory Management List <linux-mm@kvack.org>,
-	linux-fsdevel@vger.kernel.org
-References: <20070624042345.GB20033@wotan.suse.de>
+	Mon, 25 Jun 2007 02:38:14 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:36994 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753783AbXFYGiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 02:38:13 -0400
+Date: Mon, 25 Jun 2007 08:45:59 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mingo@elte.hu, torvalds@linux-foundation.org, cebbert@redhat.com,
+       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070625064559.GA1680@ff.dom.local>
+References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621201624.GD22303@elte.hu> <20070622081702.GA14746@elte.hu> <E1I22yO-0004TX-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070624042345.GB20033@wotan.suse.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <E1I22yO-0004TX-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 06:23:45AM +0200, Nick Piggin wrote:
-> I'd just like to take the chance also to ask about a VM/FS meetup some
-> time around kernel summit (maybe take a big of time during UKUUG or so).
+On Sat, Jun 23, 2007 at 12:36:08PM +0200, Miklos Szeredi wrote:
+...
+> And it's not a NO_HZ kernel.
+...
 
-I won't be around until a day or two before KS, so I'd prefer to have it
-after KS if possible.
+BTW, maybe I've missed this and it's unconnected, but I hope the
+first config has been changed - especially this CONFIG_AGP_AMD64 = y,
+and this bug from mm/slab.c has gone long ago...
 
-> I don't want to do it in the VM summit, because that kind of alienates
-> the filesystem guys. What I want to talk about is anything and everything
-> that the VM can do better to help the fs and vice versa.  I'd like to
-> stay away from memory management where not too applicable to the fs.
-
-As more of a filesystem person I wouldn't mind it being attached to a VM
-conf.  In the worst case we'll just rename it VM/FS conference.  When and
-where is it scheduled?
-
-> - the address space operations APIs, and their page based nature. I think
->   it would be nice to generally move toward offset,length based ones as
->   much as possible because it should give more efficiency and flexibility
->   in the filesystem.
-> 
-> - write_begin API if it is still an issue by that date. Hope not :)
-> 
-> - truncate races
-> 
-> - fsblock if it hasn't been shot down by then
-
-Don't forget high order pagecache please.
-
-> - how to make complex API changes without having to fix most things
->   yourself.
-
-More issues:
-
- - aio once again
- - refactoring the dio code to separate locking down user VM and doing
-   the actual page based I/O.  I've seen valid requests from kernel
-   initiated direct I/O from a few real world linux users.
- - generic code for delayed allocation and writeout using efficient
-   multi-page allocator calls.  I'll hopefully have an example (lifted XFS
-   code) by then
- - what to do about reads/writes from kernelspace.  Currently we have
-   some places (loop mostly) calling directly into ->prepare_write / 
-   ->commit_write which is completely wrong from the layerin perspective
-   and a locking nightmare for distributed or generally more complex
-   filesystems.  And we have a lot of places using set_fs/set_ds and
-   calling into ->write.  The first category could probably be covered
-   by using the splice infrastructure, but for the latter we'd want
-   something more optimal and less hacky, especially given all the overhead
-   related avoiding deadlocks involing the user address space in the
-   generic write path.  Maybe it's time for generic_file_kernel_write?
-
+Jarek P.
