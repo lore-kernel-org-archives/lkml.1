@@ -1,113 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbXFYNpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbXFYNsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbXFYNpP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 09:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbXFYNpA
+	id S1755985AbXFYNsI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 09:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbXFYNr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 09:45:00 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:59065 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbXFYNo6 (ORCPT
+	Mon, 25 Jun 2007 09:47:57 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:22648 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753412AbXFYNr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 09:44:58 -0400
-Date: Mon, 25 Jun 2007 19:15:00 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Cc: David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070625134500.GE1951@amitarora.in.ibm.com>
-References: <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com>
+	Mon, 25 Jun 2007 09:47:56 -0400
+Subject: Documentation of kernel messages (Summary)
+From: Michael Holzheu <holzheu@linux.vnet.ibm.com>
+Reply-To: holzheu@linux.vnet.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, randy.dunlap@oracle.com,
+       gregkh@suse.de, pavel@ucw.cz, kunai@linux-foundation.jp,
+       tim.bird@am.sony.com, gh@us.ibm.com, arjan@infradead.org,
+       sam@ravnborg.org, jengelh@computergmbh.de, hpa@zytor.com,
+       joe@perches.com, auke-jan.h.kok@intel.com, hansendc@us.ibm.com,
+       rob@landley.net, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
+       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
+In-Reply-To: <20070613111549.db1fa4d9.akpm@linux-foundation.org>
+References: <1181747217.29512.9.camel@localhost.localdomain>
+	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Mon, 25 Jun 2007 15:48:41 +0200
+Message-Id: <1182779321.7142.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070625132810.GA1951@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement new flags and values for mode argument.
+Hi all,
 
-This patch implements the new flags and values for the "mode" argument
-of the fallocate system call. It is based on the discussion between
-Andreas Dilger and David Chinner on the man page proposed (by the later)
-on fallocate.
+Any idea, how to proceed with this topic? Do you think that any of the
+suggested solutions for documentation / translation of kernel messages
+will have a chance to be included in the kernel?
 
-Signed-off-by: Amit Arora <aarora@in.ibm.com>
+I tried to summarize the outcome of this discussion...
 
-Index: linux-2.6.22-rc4/include/linux/fs.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/fs.h
-+++ linux-2.6.22-rc4/include/linux/fs.h
-@@ -267,15 +267,16 @@ extern int dir_notify_enable;
- #define SYNC_FILE_RANGE_WAIT_AFTER	4
- 
- /*
-- * sys_fallocate modes
-- * Currently sys_fallocate supports two modes:
-- * FA_ALLOCATE  : This is the preallocate mode, using which an application/user
-- *		  may request (pre)allocation of blocks.
-- * FA_DEALLOCATE: This is the deallocate mode, which can be used to free
-- *		  the preallocated blocks.
-+ * sys_fallocate mode flags and values
-  */
--#define FA_ALLOCATE	0x1
--#define FA_DEALLOCATE	0x2
-+#define FA_FL_DEALLOC	0x01 /* default is allocate */
-+#define FA_FL_KEEP_SIZE	0x02 /* default is extend/shrink size */
-+#define FA_FL_DEL_DATA	0x04 /* default is keep written data on DEALLOC */
-+
-+#define FA_ALLOCATE	0
-+#define FA_DEALLOCATE	FA_FL_DEALLOC
-+#define FA_RESV_SPACE	FA_FL_KEEP_SIZE
-+#define FA_UNRESV_SPACE	(FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA)
- 
- #ifdef __KERNEL__
- 
-Index: linux-2.6.22-rc4/fs/open.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/open.c
-+++ linux-2.6.22-rc4/fs/open.c
-@@ -356,23 +356,26 @@ asmlinkage long sys_ftruncate64(unsigned
-  * sys_fallocate - preallocate blocks or free preallocated blocks
-  * @fd: the file descriptor
-  * @mode: mode specifies if fallocate should preallocate blocks OR free
-- *	  (unallocate) preallocated blocks. Currently only FA_ALLOCATE and
-- *	  FA_DEALLOCATE modes are supported.
-+ *	  (unallocate) preallocated blocks.
-  * @offset: The offset within file, from where (un)allocation is being
-  *	    requested. It should not have a negative value.
-  * @len: The amount (in bytes) of space to be (un)allocated, from the offset.
-  *
-  * This system call, depending on the mode, preallocates or unallocates blocks
-  * for a file. The range of blocks depends on the value of offset and len
-- * arguments provided by the user/application. For FA_ALLOCATE mode, if this
-+ * arguments provided by the user/application. For FA_ALLOCATE and
-+ * FA_RESV_SPACE modes, if the sys_fallocate()
-  * system call succeeds, subsequent writes to the file in the given range
-  * (specified by offset & len) should not fail - even if the file system
-  * later becomes full. Hence the preallocation done is persistent (valid
-- * even after reopen of the file and remount/reboot).
-+ * even after reopen of the file and remount/reboot). If FA_RESV_SPACE mode
-+ * is passed, the file size will not be changed even if the preallocation
-+ * is beyond EOF.
-  *
-  * It is expected that the ->fallocate() inode operation implemented by the
-  * individual file systems will update the file size and/or ctime/mtime
-- * depending on the mode and also on the success of the operation.
-+ * depending on the mode (change is visible to user or not - say file size)
-+ * and obviously, on the success of the operation.
-  *
-  * Note: Incase the file system does not support preallocation,
-  * posix_fallocate() should fall back to the library implementation (i.e.
-@@ -398,7 +401,8 @@ asmlinkage long sys_fallocate(int fd, in
- 
- 	/* Return error if mode is not supported */
- 	ret = -EOPNOTSUPP;
--	if (mode != FA_ALLOCATE && mode != FA_DEALLOCATE)
-+	if (!(mode == FA_ALLOCATE || mode == FA_DEALLOCATE ||
-+		mode == FA_RESV_SPACE || mode == FA_UNRESV_SPACE))
- 		goto out;
- 
- 	ret = -EBADF;
+There are two main issues:
+
+* Translate messages
+* Document messages
+
+For both, we have to give messages identifiers in order to match them
+to the corresponding documentation / translation. Three possible
+solutions have been suggested:
+
+1. Use message numbers maintained by driver owners
+2. Automatically create hashes for printks
+3. Use printk format string as message identifier
+
+Regarding the question where to put documentation and translations we
+have two options:
+
+* In the kernel tree
+* Somewhere outside the kernel tree
+
+Another issue of the discussion was the usage of the component name for
+printks.
+
+Useful comments:
+================
+Andrew Morton:
+Suggested an alternative approach using a new printk function with
+message ID parameter. Documentation / Translation should be done
+outside the kernel.
+
+Gerrit Huizenga:
+Suggested an alternative approach using hashes as message IDs.
+
+Greg Kroah-Hartman:
+He pointed out, that we need a solution which integrates dev_xxx()
+macros.
+
+Randy Dunlop:
+He doesn't want to have message documentation included in the
+kernel-doc tool. We should create new tool for kernel messages.
+
+Pavel Machek:
+Suggested to use gettext for message documentation / translation.
+
+Useful links:
+=============
+There already exists a mailing list for the kernel messages topic:
+https://lists.linux-foundation.org/mailman/listinfo/lf_kernel_messages
+
+There was an LWN article summarizing some aspects of the discussion:
+http://lwn.net/Articles/238948/
+
+Pros and Cons of the different Message ID methods:
+==================================================
+Message numbers maintained by driver owners:
++ Unique IDs
++ Can be kept stable between different kernel versions
++ Efficient way of matching printk to Documentation or translation
+- Difficult to maintain
+
+printk hashes:
++ Easy to maintain
++ Efficient way of matching printk to Documentation or translation
+- Additional preprocessor step needed
+- No unique IDs
+- Ugly in messages, since hashes can have many characters
+- Volatile, since typo fixes change hash values
+
+Format strings:
++ No change needed for printks
++ Matching of printk to corresponding documentation or translation is
+  not as efficient as using hashes
+- No unique IDs
+
+Pros and Cons of external documentation (vs. internal documentation):
+====================================================================
++ Developers have less work to do
++ Kernel sources and patches have less lines of code, since message
+  descriptions are not contained in the kernel sources.
++ You can support multiple languages
+
+- Hard to keep printks and descriptions up-to-date. If using hashes,
+  each typo fix in a printk breaks the link to your documentation.
+- Since the developer knows the meaning of a printk best, he probably
+  would be the right person to write the description.
+- For every Distribution or vanilla kernel you probably need separate
+  external message databases.
+
+Pros and Cons of using component names in printks:
+==================================================
++ Makes it easier to identify source of message
++ Makes message more unique (especially, when using Hashes or format
+  strings as message IDs)
+- Changes of printks necessary
+
+Implementation issues (depending on what solution we implement):
+===============================================================
+* Preprocessor tool for hashes
+* Check tool for messages/message description
+* Tool to extract kernel documentation from kernel tree
+* Sysadmin tool to query message descriptions
+* New kernel macros for Messages to support Component names / message
+  numbers
+
+
