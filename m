@@ -1,47 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbXFYJgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbXFYJid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbXFYJgn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 05:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbXFYJgg
+	id S1754126AbXFYJid (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 05:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbXFYJi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 05:36:36 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:63010 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751889AbXFYJgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 05:36:35 -0400
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: linux-usb-devel@lists.sourceforge.net
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH] Export usb_gadgetfs.h to userspace
-Date: Mon, 25 Jun 2007 11:29:39 +0200
-Message-Id: <11827637791662-git-send-email-hskinnemoen@atmel.com>
-X-Mailer: git-send-email 1.5.2.2
+	Mon, 25 Jun 2007 05:38:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52454 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751350AbXFYJiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 05:38:25 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX18cFzoeeuccix/nV9d+3zbQPCj8zUhsNTvppHufbb
+	NyqoWt1r4Oj7CK
+Message-ID: <467F8D1C.8030706@gmx.net>
+Date: Mon, 25 Jun 2007 11:38:36 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.58 is released
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The gadgetfs test program from http://www.linux-usb.org/gadget/
-depends on it. I assume most other users of gadgetfs needs this header
-too.
+Gidday,
 
-Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
----
- include/linux/Kbuild |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I just released man-pages-2.58.
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index f317c27..b216ee3 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -152,6 +152,7 @@ header-y += tipc.h
- header-y += toshiba.h
- header-y += ultrasound.h
- header-y += un.h
-+header-y += usb_gadgetfs.h
- header-y += utime.h
- header-y += video_decoder.h
- header-y += video_encoder.h
+This release is now available for download at:
+
+    http://www.kernel.org/pub/linux/docs/manpages
+    or ftp://ftp.kernel.org/pub/linux/docs/manpages
+
+and soon at:
+
+    ftp://ftp.win.tue.nl/pub/linux-local/manpages
+
+Some changes in this release that may be of interest to readers of this
+list are noted below.
+
+Cheers,
+
+Michael
+(man-pages maintenance is supported by Google, as a Google engineer 20%
+project.)
+
+==================== Changes in man-pages-2.58 ====================
+
+Global changes
+--------------
+
+Various pages, as detailed below
+    mtk
+        Added or updated VERSIONS sections.
+
+New pages
+---------
+
+credentials.7
+    mtk
+        An overview of Linux process identifiers (PIDs, PPIDs,
+        PGIDS, SIDs, UIDs, GIDs).
+
+
+Changes to individual pages
+---------------------------
+
+listen.2
+    mtk
+        Updated discussion of somaxconn limit.
+
+strcat.3
+    Marc Boyer
+        Improve the discussion of strncat().
+
+strcpy.3
+    Marc Boyer
+        Improve the discussion of strncpy().
+
+proc.5
+    mtk
+        Added discussion of /proc/sys/net/core/somaxconn.
+
+
 -- 
-1.5.2.2
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
 
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
