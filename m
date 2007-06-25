@@ -1,112 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbXFYGfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXFYGgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756350AbXFYGfy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 02:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXFYGfo
+	id S1756882AbXFYGgO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 02:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbXFYGfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 02:35:44 -0400
-Received: from www.osadl.org ([213.239.205.134]:47139 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752380AbXFYGfn convert rfc822-to-8bit (ORCPT
+	Mon, 25 Jun 2007 02:35:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36381 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754872AbXFYGfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 02:35:43 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: drivers/mtd/devices/at91_dataflash26.c
-Date: Mon, 25 Jun 2007 08:35:04 +0200
-User-Agent: KMail/1.9.5
-Cc: dwmw2@infradead.org, Andrew Victor <andrew@sanpeople.com>,
-       tglx@linutronix.de, Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <200704271812.26392.david-b@pacbell.net> <200705102331.12366.hjk@linutronix.de> <200706241951.37589.david-b@pacbell.net>
-In-Reply-To: <200706241951.37589.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Mon, 25 Jun 2007 02:35:48 -0400
+Date: Mon, 25 Jun 2007 07:35:45 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: vm/fs meetup in september?
+Message-ID: <20070625063545.GA1964@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Nick Piggin <npiggin@suse.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux Memory Management List <linux-mm@kvack.org>,
+	linux-fsdevel@vger.kernel.org
+References: <20070624042345.GB20033@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706250835.04848.hjk@linutronix.de>
+In-Reply-To: <20070624042345.GB20033@wotan.suse.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 25 Juni 2007 04:51 schrieb David Brownell:
-> On Thursday 10 May 2007, Hans-Jürgen Koch wrote:
-> > Am Donnerstag 10 Mai 2007 22:07 schrieb David Brownell:
-> > > On Friday 27 April 2007, David Brownell wrote:
-> > > > On Friday 27 April 2007, Hans-Jürgen Koch wrote:
-> > > > 
-> > > > > > 	 the m25p80 driver
-> > > > > > was pretty close to working with those Atmel devices too ...
-> > > > > > most of the commands are identical.
-> > > > > 
-> > > > > Thanks for that hint, I'll have a look at the data sheet.
-> > > 
-> > > Any progress on that?  I looked again, and yes most commands
-> > > are identical.
-> 
-> Still true.  :)
+On Sun, Jun 24, 2007 at 06:23:45AM +0200, Nick Piggin wrote:
+> I'd just like to take the chance also to ask about a VM/FS meetup some
+> time around kernel summit (maybe take a big of time during UKUUG or so).
 
-I came to the same conclusion.
+I won't be around until a day or two before KS, so I'd prefer to have it
+after KS if possible.
 
-> 
-> For that and a boatload of other SPI flash chips.  I'm
-> wondering just what that JEDEC standard covers; either
-> it's got useful command coverage, or vendors of SPI flash
-> noticed that converging command sets is a Good Thing.
-> 
-> 
-> > >  - That driver relies on an AT91-only SPI stack that's not
-> > >    going upstream, instead of drivers/spi/atmel_spi.c;
-> > > 
-> > >  - Driver can't even be selected on kernel.org kernel (!!);
-> > > 
-> > >  - The m25p80 driver will need at most minor tweaks to
-> > >    handle those AT26 (and AT25) series chips;
-> > > 
-> > > So 340ea370c2ce89d1c15fbf785460f2f74314ce58 should be reverted.
-> 
-> Also still true...
+> I don't want to do it in the VM summit, because that kind of alienates
+> the filesystem guys. What I want to talk about is anything and everything
+> that the VM can do better to help the fs and vice versa.  I'd like to
+> stay away from memory management where not too applicable to the fs.
 
-I agree.
+As more of a filesystem person I wouldn't mind it being attached to a VM
+conf.  In the worst case we'll just rename it VM/FS conference.  When and
+where is it scheduled?
 
+> - the address space operations APIs, and their page based nature. I think
+>   it would be nice to generally move toward offset,length based ones as
+>   much as possible because it should give more efficiency and flexibility
+>   in the filesystem.
 > 
+> - write_begin API if it is still an issue by that date. Hope not :)
 > 
-> > > 
-> > > - Dave
-> > >
-> > 
-> > Dave,
-> > sorry for not responding earlier, I was busy with lots of other 
-> > stuff. At the moment, I'm working on this again. I had a bit
-> > of trouble getting a recent kernel working on my test system,
-> > but that seems to be OK now.
-> > 
-> > You'll hear from me soon.
+> - truncate races
 > 
-> Ping?  Have a look at
-> 
->     http://lists.infradead.org/pipermail/linux-mtd/2007-June/018706.html
+> - fsblock if it hasn't been shot down by then
 
-Great! Didn't notice that one.
+Don't forget high order pagecache please.
 
-> 
-> which depends on the resent mutex conversion patch in the
-> "previous message" link of that patch.
-> 
-> That should highlight more reasons why at91_dataflash should
-> be reverted ASAP.  I'd expect you would be able to just drop
-> that in and have it work ... 
+> - how to make complex API changes without having to fix most things
+>   yourself.
 
-Looks like that.
+More issues:
 
-> unless you're seeing that nCS0 
-> issue built out of at91rm9200 errata, in which case there's
-> an experiment I can forward to you.  :)
-
-I'll look at that ASAP. I had tons of other work on my desk and last time
-I tried, SPI was broken on my device. It would be OK for me if you threw out
-that at91_dataflash/at91_dataflash26 stuff now.
-
-Thanks,
-Hans
+ - aio once again
+ - refactoring the dio code to separate locking down user VM and doing
+   the actual page based I/O.  I've seen valid requests from kernel
+   initiated direct I/O from a few real world linux users.
+ - generic code for delayed allocation and writeout using efficient
+   multi-page allocator calls.  I'll hopefully have an example (lifted XFS
+   code) by then
+ - what to do about reads/writes from kernelspace.  Currently we have
+   some places (loop mostly) calling directly into ->prepare_write / 
+   ->commit_write which is completely wrong from the layerin perspective
+   and a locking nightmare for distributed or generally more complex
+   filesystems.  And we have a lot of places using set_fs/set_ds and
+   calling into ->write.  The first category could probably be covered
+   by using the splice infrastructure, but for the latter we'd want
+   something more optimal and less hacky, especially given all the overhead
+   related avoiding deadlocks involing the user address space in the
+   generic write path.  Maybe it's time for generic_file_kernel_write?
 
