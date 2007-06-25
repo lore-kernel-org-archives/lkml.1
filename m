@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXFYCSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbXFYC3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbXFYCSy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 22:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbXFYCSr
+	id S1754057AbXFYC3U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 22:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbXFYC3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 22:18:47 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:54732
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbXFYCSq (ORCPT
+	Sun, 24 Jun 2007 22:29:09 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:45579 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752327AbXFYC3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 22:18:46 -0400
-Date: Sun, 24 Jun 2007 19:19:05 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Adrian Bunk <bunk@stusta.de>
-cc: Jeff Garzik <jeff@garzik.org>, Arjan van de Ven <arjan@infradead.org>,
-       Benjamin LaHaise <bcrl@kvack.org>, Oleg Verych <olecom@flower.upol.cz>,
-       rae l <crquan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: -Os versus -O2
-In-Reply-To: <20070625014627.GC1094@stusta.de>
-Message-ID: <Pine.LNX.4.64.0706241914380.10397@asgard.lang.hm>
-References: <E1I20Wr-00064i-T0@flower> <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com>
- <20070624222518.GA10398@flower.upol.cz> <1182723318.6819.5.camel@laptopd505.fenrus.org>
- <20070624232314.GA971@kvack.org> <1182730156.6819.8.camel@laptopd505.fenrus.org>
- <20070625001203.GB971@kvack.org> <1182731022.6819.10.camel@laptopd505.fenrus.org>
- <20070625004106.GA1094@stusta.de> <467F1B8D.3080507@garzik.org>
- <20070625014627.GC1094@stusta.de>
+	Sun, 24 Jun 2007 22:29:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=cDUW7OtL4KuVKbKKZuIWoUDt4Su4BJRc3osGAX0H58wMznUf4I1QU+zkKEpf5PK95UH+6s4CFAuB0Ab33CSloSzu8e9/WvPvbXZcsuKMj13McQ26Kmhna3KLUmynXem49vqe9R61klRviBt7DVyATnIe30ec9DLHe0JQZx4dGzg=
+Message-ID: <467F286B.40607@gmail.com>
+Date: Mon, 25 Jun 2007 11:28:59 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Jeff Garzik <jeff@garzik.org>
+CC: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, enricoss@tiscali.it,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH 2.6.22-rc5] libata: add HTS541616J9SA00 to NCQ blacklist
+References: <fa.sspu6LOivd/touNtS2IsMKPqHa0@ifi.uio.no> <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no> <467EC909.9040006@shaw.ca> <467F2495.3080509@gmail.com>
+In-Reply-To: <467F2495.3080509@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jun 2007, Adrian Bunk wrote:
+Another member of HTS5416* family doing spurious NCQ completion.
 
-> On Sun, Jun 24, 2007 at 09:34:05PM -0400, Jeff Garzik wrote:
->> Adrian Bunk wrote:
->>> The interesting questions are:
->>> Does -Os still sometimes generate faster code with gcc 4.2?
->>> If yes, why?
->>
->> Smaller code can mean fewer page faults, fewer cache invalidations, etc.
->>
->> It's not just a matter of compiler code generation, gotta look at the whole
->> picture.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Enrico Sardi <enricoss@tiscali.it>
+---
+ drivers/ata/libata-core.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-the picture gets even murkier when you consider that even if neither 
-option overflows the cpu cache the one that takes more space in the cache 
-leaves less space in the cache for the userspacde code that the system is 
-actually there to run.
-
-> Sure, but my point is that if the kernel is considered special and the
-> best optimization for the kernel is therefore between -Os and -O2, we
-> should try to find this point of best optimization.
->
-> This should address Arjans point that -Os might not be best choice for
-> best performance (and it's actually our fault if gcc generates stupid
-> but small code when we use -Os).
-
-what can be done to find the horribly bad but small code among the "it's 
-smaller and would be less efficiant if you didn't consider the cache" 
-majority?
-
-David Lang
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index adfae9d..fbca8d8 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3803,6 +3803,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
+ 	/* Drives which do spurious command completion */
+ 	{ "HTS541680J9SA00",	"SB2IC7EP",	ATA_HORKAGE_NONCQ, },
+ 	{ "HTS541612J9SA00",	"SBDIC7JP",	ATA_HORKAGE_NONCQ, },
++	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
+ 	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
+ 
+ 	/* Devices with NCQ limits */
