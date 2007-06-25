@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbXFYTH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbXFYTLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbXFYTH7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 15:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbXFYTHv
+	id S1754507AbXFYTLN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 15:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbXFYTK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 15:07:51 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48132 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751740AbXFYTHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 15:07:50 -0400
-Date: Mon, 25 Jun 2007 17:14:11 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Lars Marowsky-Bree <lmb@suse.de>, Crispin Cowan <crispin@novell.com>,
-       Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation, pathname matching
-Message-ID: <20070625151411.GB1018@elf.ucw.cz>
-References: <20070621183311.GC18990@elf.ucw.cz> <20070621192407.GF20105@marowsky-bree.de> <Line.LNX.4.64.0706211530290.483@localhost.localdomain> <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil> <20070622003436.GB6222@think.oraclecorp.com> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain> <20070622121742.GC6222@think.oraclecorp.com> <Line.LNX.4.64.0706220858170.5751@localhost.localdomain> <20070622140240.GM6222@think.oraclecorp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070622140240.GM6222@think.oraclecorp.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Mon, 25 Jun 2007 15:10:59 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56245 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751520AbXFYTK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 15:10:58 -0400
+Date: Mon, 25 Jun 2007 12:09:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: Andi Kleen <ak@suse.de>, eranian@hpl.hp.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, levon@movementarian.org,
+       perfmon@napali.hpl.hp.com, oprofile-list@lists.sourceforge.net,
+       wcohen@redhat.com
+Subject: Re: [PATCH 1/2] Always probe the NMI watchdog
+Message-Id: <20070625120926.0a86373c.akpm@linux-foundation.org>
+In-Reply-To: <20070620183448.GB3251@atjola.homenet>
+References: <20070618103214.GA12045@atjola.homenet>
+	<200706201431.44014.ak@suse.de>
+	<20070620124959.GB24906@frankl.hpl.hp.com>
+	<200706201501.02582.ak@suse.de>
+	<20070620183315.GA3251@atjola.homenet>
+	<20070620183448.GB3251@atjola.homenet>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 20 Jun 2007 20:34:48 +0200
+Bj__rn Steinbrink <B.Steinbrink@gmx.de> wrote:
 
-> We've been over the "AA is different" discussion in threads about a
-> billion times, and at the last kernel summit.  I think Lars and others
-> have done a pretty good job of describing the problems they are trying
-> to solve, can we please move on to discussing technical issues around
-> that?
+> The performance counter allocator relies on the nmi watchdog being
+> probed, so we have to do that even if the watchdog is not enabled.
+> 
 
-Actually, I surprised Lars a lot by telling him ln /etc/shadow /tmp/
-allows any user to make AA ineffective on large part of systems -- in
-internal discussion. (It is not actually a _bug_, but it is certainly
-unexpected).
+So...  what's the status of this lot?
 
-(Does it surprise you, too? I'm pretty sure it would surprise many users).
+I've just merged this patch and the second one:
 
-James summarized it nicely:
+Subject: [PATCH 2/2] Reserve the right performance counter for the Intel PerfMon NMI watchdog
+Message-ID: <20070620183551.GC3251@atjola.homenet>
 
-# The design of the AppArmor is based on _appearing simple_, but at the
-# expense of completeness and thus correctness.
+but there was no followup discussion afaict.
 
-If even Lars can be surprised by AAs behaviour, I do not think we can
-say "AA is different". I'm afraid that AA is trap for users. It
-appears simple, and mostly does what it is told, but does not do _what
-user wants_.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Andi, Stephane: acks?
+
+If acked, do we agree that this is 2.6.22 material?
+
+Thanks.
