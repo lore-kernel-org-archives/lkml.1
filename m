@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbXFYN4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbXFYN5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756298AbXFYN4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 09:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbXFYN4l
+	id S1757189AbXFYN5V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 09:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXFYN5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 09:56:41 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:55889 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752615AbXFYN4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 09:56:40 -0400
-Message-ID: <467FC939.3080603@rfo.atmel.com>
-Date: Mon, 25 Jun 2007 15:55:05 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
+	Mon, 25 Jun 2007 09:57:08 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:60223 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753412AbXFYN5G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 09:57:06 -0400
+Message-ID: <467FC985.7080703@anagramm.de>
+Date: Mon, 25 Jun 2007 15:56:21 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-To: Russell King <rmk+lkml@arm.linux.org.uk>, Hugh Dickins <hugh@veritas.com>,
-       Andrew Victor <andrew@sanpeople.com>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com> <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com> <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0706221040310.17139@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
-	 <20070624083849.GA19079@flint.arm.linux.org.uk> <Pine.LNX.4.64.0706241122030.27778@blonde.wat.veritas.com> <20070624105152.GB14099@flint.arm.linux.org.uk>
-	 <Pine.LNX.4.64.0706250120560.28286@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0706250120560.28286@blonde.wat.veritas.com>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
-Content-Transfer-Encoding: 7bit
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: 
+To: Roman Zippel <zippel@linux-m68k.org>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH] cross-architecture ELF clean up
+References: <20070620230854.246399397@goop.org>  <20070620230902.387008536@goop.org> <1182762166.12109.19.camel@pmac.infradead.org> <Pine.LNX.4.64.0706251538540.4386@scrub.home>
+In-Reply-To: <Pine.LNX.4.64.0706251538540.4386@scrub.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX19EcujkQqAs33AmChX4ZpTsLR1+TprM2URdV5f
+ xI4izE1m9CEPxOZRDvdYO0Xm+10ETCYyALZYQ+xBKAIGK7jPZ4
+ sC1tJfRQ19M2OuwtCvMDQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins :
-> On Sun, 24 Jun 2007, Russell King wrote:
->> On Sun, Jun 24, 2007 at 11:24:16AM +0100, Hugh Dickins wrote:
->>> On Sun, 24 Jun 2007, Russell King wrote:
->>>> On Fri, Jun 22, 2007 at 07:39:33PM +0100, Hugh Dickins wrote:
->>>>
->>>> Please forward the original problem report.
->>> Done.
->> Okay, that seems to back up my suspicions - it's definitely AT91-based.
->> Since AT91-based machines do not have a DMA coherent cache,
->> arch_is_coherent() must be defined to '0'.  The only way that kmalloc
->> could be reached is if that were defined to something other than '0',
->> and if that's done on a machine with DMA incoherent caches, that will
->> lead to data corruption.
+Hi, Roman!
+
+Roman Zippel schrieb:
+> Hi,
 > 
-> Yes, having looked through that now, I agree with you 100%.
-
-AT91 _is_ defined with the arch_is_coherent() switch set to 0 (in 
-include/asm-arm/memory.h and not overloaded).
-
->> I think we need to wait for Nicolas to respond on this issue before
->> running headlong into applying a sticky plaster for something which is
->> actually a deeper issue.
+> On Mon, 25 Jun 2007, David Woodhouse wrote:
 > 
-> No need for Nicolas to respond, I think I've found what's "wrong":
-> see below.
+>> On Wed, 2007-06-20 at 16:08 -0700, Jeremy Fitzhardinge wrote:
+>>> This patch cleans up the ELF headers and their users.  It does several
+>>> related things:
+>> Looks good. We can get away with exporting a lot less of this to
+>> userspace too, can't we?
 > 
->> However, the arch_is_coherent() path _is_ buggy as it stands, but in
->> more than the way identified thus far.  Eg, it doesn't set __GFP_DMA
->> appropriately for various DMA masks, so it might return DMA inaccessible
->> memory.
+> glibc provides its own version, so it doesn't has to be exported at all.
 
-Ok it is bad but, in AT91, all memory is accessible with DMA.
-
-[..]
-
-> The slub allocation which gives rise to Nicolas' oops in not in
-> ARM, but (I'm guessing) in drivers/mmc/core/sd.c: one of those
-> 	status = kmalloc(64, GFP_KERNEL);
-> where status is passed down for the response from mmc_sd_switch.
-
-True, the oops appears after a mmc switch command (#6 command).
-
-[..]
-
-Not sure I can add much to what Hugh has said. If you need some more 
-precision anyway, I will try to answer.
+AFAIK the glibc folks want to rely more on the linux kernel headers
+in the future and not provide more or less redundant headers anymore...
+Please talk to them about the future plans.
 
 Regards,
 -- 
-Nicolas Ferre
-
-
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
