@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbXFYWUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbXFYWZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755468AbXFYWUo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 18:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbXFYWU3
+	id S1753175AbXFYWZR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 18:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbXFYWZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 18:20:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:5923 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754301AbXFYWU2 (ORCPT
+	Mon, 25 Jun 2007 18:25:04 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:63891 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbXFYWZC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 18:20:28 -0400
+	Mon, 25 Jun 2007 18:25:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mdLPZlfAZj+ZsV6j1VQhuGTibSCpZcIZDshtZtEUYiDp9M+lXYLhC9smyXTwJVeRpri389+aTkGG7LIAKRbFVEOeUd9Uhp1NHIDVeLH0WK06dyLa2DqSBZd3XPxzxQjG7qPzobNCNN85ydh3QiLqoVud6MavG5dcT4/WGL8ER+Y=
-Message-ID: <9a8748490706251520g24ff7a9dk716d73e7dbfd9ec3@mail.gmail.com>
-Date: Tue, 26 Jun 2007 00:20:27 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Roman Zippel" <zippel@linux-m68k.org>
-Subject: Re: [patch, v2.6.22-rc6] sys_time() speedup
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "John Stultz" <johnstul@us.ibm.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <Pine.LNX.4.64.0706252356400.1817@scrub.home>
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=HgmLPsWB6rb4hZV2x8gv5Dily4xmuY5s1u4lwS1/NIHUrE/L6MToxSLLtGo6Kad0hDdz2O97Obl4cRHoSPC1HPEKLvkVyG/JCPgX7tpjP+E0QYkGEMM9TCnElq7T1cE6vSsSTH1nqrWJHgh2LZcGPZ/bznHfLU1Se0ZBdiFwXkM=
+Message-ID: <524f69650706251525g7b17ea02o5fb3e637615fe542@mail.gmail.com>
+Date: Mon, 25 Jun 2007 17:25:00 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: linux-fsdevel@vger.kernel.org, jlayton@redhat.com,
+       linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
+Subject: Re: [PATCH] CIFS: make cifsd (more)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070625200601.GA18980@elte.hu>
-	 <200706252309.47467.zippel@linux-m68k.org>
-	 <9a8748490706251417v10b3f24bwdf7ebd44093eaddf@mail.gmail.com>
-	 <Pine.LNX.4.64.0706252356400.1817@scrub.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/06/07, Roman Zippel <zippel@linux-m68k.org> wrote:
-> Hi,
->
-> On Mon, 25 Jun 2007, Jesper Juhl wrote:
->
-> > > On Monday 25 June 2007, Ingo Molnar wrote:
-> > >
-> > > > the patch improves the sysbench OLTP macrobenchmark significantly:
-> > >
-> > > Has that any real practical relevance?
-> > >
-> > It seems to me that Ingo's patch offers slightly improved performance
-> > for any program using the time() system call, with no real drawbacks,
-> > so why wouldn't we want to use it?
->
-> How do you come to the conclusion it has no real drawbacks?
+Jeff,
+Not seeing any objections to your revised approach (to not allowing
+signals for cifsd kernel thread), I just merged something similar to
+your patch to the cifs-2.6.git tree (also fixed some nearby lines that
+went past 80 columns).
 
-His change to do_gettimeofday() will of course slow that path down a
-tiny bit since he's adding an extra 'if', but since it's wrapped in
-unlikely() and should hit at most one time pr second I would guess the
-performance impact of that to be negligible.
-The change to sys_time() does away with some local variables and
-replaces the call to do_gettimeofday() with a memory barrier and a
-simple read of xtime.tv_se. I find it hard to believe (although I have
-not tested it) that that wouldn't be faster than the original.
+Thanks
 
-So that's how I came to that conclusion; just reading the patch, going
-over what it does in my head and thinking about it a bit.  Not the
-most scientific of things I admit.
 
-Even if it is not faster, what would make it slower?  Have you spotted
-something I have not?
 
-> Ingo provided no information about his test setup and his patch was a
-> little strange, so I can't say that yet.
->
-What did you find strange about it? I'm currious.
-Sure it needs testing and of course it would be nice with some more
-details on Ingo's test setup.
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index f4e9266..27c1ebe 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -348,7 +348,6 @@ cifs_demultiplex_thread(struct TCP_Server_Info *server)
+ 	int isMultiRsp;
+ 	int reconnect;
+
+-	allow_signal(SIGKILL);
+ 	current->flags |= PF_MEMALLOC;
+ 	server->tsk = current;	/* save process info to wake at shutdown */
+ 	cFYI(1, ("Demultiplex PID: %d", current->pid));
+@@ -2074,7 +2073,7 @@ cifs_mount(struct super_block *sb, struct
+cifs_sb_info *cifs_sb,
+ 				   always wake up processes blocked in
+ 				   tcp in recv_mesg then we could remove the
+ 				   send_sig call */
+-				send_sig(SIGKILL,srvTcp->tsk,1);
++				force_sig(SIGKILL,srvTcp->tsk);
+ 				tsk = srvTcp->tsk;
+ 				if(tsk)
+ 					kthread_stop(tsk);
+@@ -2093,7 +2092,7 @@ cifs_mount(struct super_block *sb, struct
+cifs_sb_info *cifs_sb,
+ 					if ((temp_rc == -ESHUTDOWN) &&
+ 					   (pSesInfo->server) && (pSesInfo->server->tsk)) {
+ 						struct task_struct *tsk;
+-						send_sig(SIGKILL,pSesInfo->server->tsk,1);
++						force_sig(SIGKILL,pSesInfo->server->tsk);
+ 						tsk = pSesInfo->server->tsk;
+ 						if (tsk)
+ 							kthread_stop(tsk);
+@@ -3345,7 +3344,7 @@ cifs_umount(struct super_block *sb, struct
+cifs_sb_info *cifs_sb)
+ 			} else if (rc == -ESHUTDOWN) {
+ 				cFYI(1,("Waking up socket by sending it signal"));
+ 				if (cifsd_task) {
+-					send_sig(SIGKILL,cifsd_task,1);
++					force_sig(SIGKILL,cifsd_task);
+ 					kthread_stop(cifsd_task);
+ 				}
+ 				rc = 0;
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Thanks,
+
+Steve
