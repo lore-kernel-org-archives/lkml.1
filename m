@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbXFYCLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbXFYCNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754758AbXFYCLj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 22:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbXFYCLb
+	id S1754196AbXFYCNE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 22:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbXFYCMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 22:11:31 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:61949 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752134AbXFYCLa (ORCPT
+	Sun, 24 Jun 2007 22:12:50 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:40058 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752285AbXFYCMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 22:11:30 -0400
-Date: Sun, 24 Jun 2007 22:10:53 -0400
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       alan@lxorguk.ukuu.org.uk, ebiederm@xmission.com, vgoyal@in.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-64: disable the GART in shutdown
-Message-ID: <20070625021053.GC12557@rhun.ibm.com>
-References: <200706221219.16243.yinghai.lu@sun.com> <200706230214.02535.ak@suse.de> <467C6906.6020105@sun.com> <200706221934.59966.yinghai.lu@sun.com> <20070623095209.248684e7.akpm@linux-foundation.org> <86802c440706241722o6d18d4acsf3293eb2a83c4688@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440706241722o6d18d4acsf3293eb2a83c4688@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	Sun, 24 Jun 2007 22:12:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=K+Bzq5MrWmXYKEDAD7sdscGnsQlqlZdoncVM+6doZyqHp2VRxh28FI3971z/FrpKDFvztS0HWxuXQUjXoEyOKEBAzvdve+CMRE7q6qAiNUqhqNRO/Bp/gyr0KlvtKX6+B40OH2U+eLoGZGR8Z8bzWbxop02c71DZsfzEfrbQToI=
+Message-ID: <467F2495.3080509@gmail.com>
+Date: Mon, 25 Jun 2007 11:12:37 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: Andrew Morton <akpm@linux-foundation.org>, enricoss@tiscali.it,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: hsm violation
+References: <fa.sspu6LOivd/touNtS2IsMKPqHa0@ifi.uio.no> <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no> <467EC909.9040006@shaw.ca>
+In-Reply-To: <467EC909.9040006@shaw.ca>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 05:22:30PM -0700, Yinghai Lu wrote:
-> On 6/23/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >>  void __init gart_iommu_init(void)
-> >>  {
-> >>       struct agp_kern_info info;
-> >> diff --git a/arch/x86_64/kernel/pci-dma.c b/arch/x86_64/kernel/pci-dma.c
-> >> index 9f80aad..64f2ab3 100644
-> >> --- a/arch/x86_64/kernel/pci-dma.c
-> >> +++ b/arch/x86_64/kernel/pci-dma.c
-> >> @@ -322,6 +322,13 @@ static int __init pci_iommu_init(void)
-> >>       return 0;
-> >>  }
-> >>
-> >> +void pci_iommu_shutdown(void)
-> >> +{
-> >> +#ifdef CONFIG_IOMMU
-> >> +     gart_iommu_shutdown();
-> >> +#endif
-> >> +}
-> >
-> >It'd be better to avoid the ifdef-in-C by providing a stub function in a
-> >header file if !CONFIG_IOMMU.  That's quite standard kernel practice and
-> >might help avoid some other problems...
+Robert Hancock wrote:
+> Andrew Morton wrote:
+>> On Sun, 24 Jun 2007 14:32:22 +0200 Enrico Sardi <enricoss@tiscali.it>
+>> wrote:
+>>> [   61.176000] ata1.00: exception Emask 0x2 SAct 0x2 SErr 0x0 action
+>>> 0x2 frozen
+>>> [   61.176000] ata1.00: (spurious completions during NCQ issue=0x0
+>>> SAct=0x2 FIS=005040a1:00000004)
+>>
+>> It's not obvious (to me) whether this is a driver bug, a hardware bug,
+>> expected-normal-behaviour or what - those diagnostics (which we get to
+>> see distressingly frequently) are pretty obscure.
 > 
-> move ifdef into gart_iommu_shudown()?
+> The spurious completions during NCQ error is indicating that the drive
+> has indicated it's completed NCQ command tags which weren't outstanding.
+>  It's normally a result of a bad NCQ implementation on the drive.
+> Technically we can live with it, but it's rather dangerous (if it
+> indicates completions for non-outstanding commands, how do we know it
+> doesn't indicate completions for actually outstanding commands that
+> aren't actually completed yet..)
 
-What Andrew means is
-(in a header file)
+There is a small race window there.  Please consider the following sequence.
 
-#ifdef CONFIG_IOMMU
-extern void gart_iommu_shutdown(void);
-#else
-static inline void gart_iommu_shutdown(void)
-{
-}
-#endif /* CONFIG_IOMMU */
+1. drive sends SDB FIS with spurious completion in it.
+2. block layer issues new r/w command to the drive.  SDB FIS is still in
+flight.
+3. ata driver issues the command (the pending bit is set prior to
+transmitting command FIS).
+4. controller completes receiving FIS from #1.  Driver reads the mask
+and completes all indicated commands.  If spurious completion in #1
+happens to match the slot allocated in #3, the driver just completed a
+command which hasn't been issued to the drive yet.
 
-Cheers,
-Muli
+So, it actually is dangerous.  We might even be seeing the real
+completion as spurious one (as the command is completed prematurely).
+
+It seems all those HTS541* drives share this problem.  Four of them are
+already on the blacklist and the other OS reportedly blacklists three of
+them too.  I'll submit a patch to add HTS541616J9SA00.
+
+Thanks.
+
+-- 
+tejun
