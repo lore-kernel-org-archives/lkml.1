@@ -1,79 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbXFYRAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbXFYRBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbXFYRAq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 13:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbXFYRAZ
+	id S1756637AbXFYRBA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 13:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbXFYRAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 13:00:25 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:40140 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751458AbXFYRAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 13:00:23 -0400
-Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: James Morris <jmorris@namei.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-security-module@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>
-In-Reply-To: <Line.LNX.4.64.0706250031350.15974@localhost.localdomain>
-References: <20070617135239.GA17689@sergelap> <4676007F.7060503@kernel.org>
-	 <20070618044017.GW3723@sequoia.sous-sol.org>
-	 <20070620171037.GA28670@sergelap.ibm.com>
-	 <20070620174613.GF3723@sequoia.sous-sol.org>
-	 <20070621160011.GB9913@sergelap.austin.ibm.com>
-	 <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com>
-	 <Line.LNX.4.64.0706241158320.12660@localhost.localdomain>
-	 <Line.LNX.4.64.0706241653490.14183@localhost.localdomain>
-	 <20070624220903.GB3723@sequoia.sous-sol.org>
-	 <Line.LNX.4.64.0706250031350.15974@localhost.localdomain>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 25 Jun 2007 12:59:29 -0400
-Message-Id: <1182790769.5636.83.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jun 2007 13:00:40 -0400
+Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:24011 "EHLO
+	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755463AbXFYRAi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 13:00:38 -0400
+Date: Mon, 25 Jun 2007 19:00:35 +0200 (CEST)
+From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
+To: Takashi Iwai <tiwai@suse.de>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+In-Reply-To: <s5hzm2ogqr7.wl%tiwai@suse.de>
+Message-ID: <Pine.BSO.4.63.0706251840080.25800@rudy.mif.pg.gda.pl>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+ <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
+ <20070624215724.025a5de5@the-village.bc.nu> <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl>
+ <s5h3b0gi9mp.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl>
+ <s5hzm2ogqr7.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="0-1581095560-1182790835=:25800"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-25 at 00:33 -0400, James Morris wrote:
-> Convert LSM into a static interface, as the ability to unload a security 
-> module is not required by in-tree users and potentially complicates the 
-> overall security architecture.
-> 
-> Needlessly exported LSM symbols have been unexported, to help reduce API
-> abuse.
-> 
-> Parameters for the capability and root_plug modules are now specified at 
-> boot.
-> 
-> The SECURITY_FRAMEWORK_VERSION macro has also been removed.
-> 
-> Signed-off-by: James Morris <jmorris@namei.org>
-> ---
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> diff --git a/security/security.c b/security/security.c
-> index fc8601b..e49dae2 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -172,8 +170,5 @@ int mod_unreg_security(const char *name, struct security_operations *ops)
->  	return security_ops->unregister_security(name, ops);
->  }
->  
-> -EXPORT_SYMBOL_GPL(register_security);
-> -EXPORT_SYMBOL_GPL(unregister_security);
-> -EXPORT_SYMBOL_GPL(mod_reg_security);
-> -EXPORT_SYMBOL_GPL(mod_unreg_security);
-> +/* Export required for modular use of security.h inlines */
->  EXPORT_SYMBOL(security_ops);
+--0-1581095560-1182790835=:25800
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-I think you want to eliminate that last export too, by taking the
-security hooks that are called by modules into out-of-line wrapper
-functions in security.c rather than directly referencing security_ops.
+On Mon, 25 Jun 2007, Takashi Iwai wrote:
+[..]
+>> ALSA still does not provides good soud devices virtualization for more
+>> then one application. Each day I'm using bludy words when I'm try to use
+>> skype which oppens /dev/mixer after run galeon with flash plugin which
+>> opens /dev/snd/pcm* or when I start GNOME session with soud enabled
+>> (handled by esd whuich uses ALSA).
+>
+> So, do you mean the soft-mixing is the biggest issue?  That's just a
+> part of a design issue, and if we want to go to that way, the
+> impelemtation would be trivial, regardless on ALSA or not.  Totally
+> irrelevant argument regarding "remove ALSA".
 
+I dont know is soft mixing is biggest issue but ..
+Few minutes ago I'm upgrade to skype 1.4.x.
+
+Lets try again above experiment:
+
+$ strace -f -e trace=file galeon 2>&1 | grep dev/snd
+[pid 28593] open("/dev/snd/controlC0", O_RDWR) = 46
+[pid 28593] open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK) = 47
+
+OK .. now I'm enter on www.youtube.com and start playing random video.
+Look on above: soud device was oppened in non bloking mode.
+
+After few seconds I'm close tab with video in galeon.
+Just after this I'm start skype and try call to test123 and calling isn't 
+possible:
+
+$ strace -f -e trace=file skype 2>&1 | grep dev/snd
+[pid 30173] open("/dev/snd/controlC0", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC1", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC1", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC1", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC2", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC2", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC2", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC3", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC4", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC5", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC6", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC7", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC8", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC9", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC10", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC11", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC12", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC13", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC14", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC15", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC16", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC17", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC18", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC19", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC20", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC21", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC22", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC23", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC24", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC25", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC26", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC27", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC28", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC29", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC30", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC31", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC0", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC1", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC1", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC1", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC2", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC2", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC2", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC3", O_RDONLY <unfinished ...>
+[pid 30173] open("/dev/snd/controlC4", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC5", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC6", O_RDONLY <unfinished ...>
+[pid 30173] open("/dev/snd/controlC7", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC8", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC9", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC10", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC11", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC12", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC13", O_RDONLY <unfinished ...>
+[pid 30173] open("/dev/snd/controlC14", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC15", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC16", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC17", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC18", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC19", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC20", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC21", O_RDONLY) =tory)
+[pid 30173] open("/dev/snd/controlC23", O_RDo such file or directory)
+[pid 30173] open("/dev/snd/controlC24", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/control O_RDONLY) = -1 ENOENT (No suchfile or directory)
+[pid 30173] open("/dev/snd/controlC26", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC27", O_RDONLY) = -1 ENOENsuch file or directory)
+[pid 30173] open("/ev/snd/controlC28", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC29", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/controlC30", O_RDONLY) = -1 ENOENT (No such file or directory)
+[pid 30173] open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_ASYNC) = -1 EBUSY (Device or resource busy)
+[pid 30173] open("/dev/snd/controlC0", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 43
+[pid 30173] open("/dev/snd/pcmC0D0c", O_RDWR|O_NONBLOCK|O_ASYNC) = 44
+[pid 30173] open("/dev/snd/controlC0", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 43
+[pid 30173] open("/dev/snd/pcmC0D0c", O_RDWR|O_NONBLOCK|O_ASYNC) = 44
+[pid 30173] open("/dev/snd/controlC0", O_RDONLY) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDWR|O_NONBLOCK) = 43
+[pid 30173] open("/dev/snd/controlC0", O_RDONLY) = 44
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 44
+[pid 30173] open("/dev/snd/controlC0", O_RDWR) = 44
+[pid 30173] open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_ASYNC) = -1 EBUSY (Device or resource busy)
+[..]
+
+/dev/snd/pcmC0D0p is busy ? YES because it was oppened by another 
+application in non blocking mode which makes device .. unavalable to other :)
+Welcome in wonderful ALSA word ..
+
+And interesting .. why skype tries to open so meny devices (?)
+
+kloczek
 -- 
-Stephen Smalley
-National Security Agency
-
+-----------------------------------------------------------
+*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
+-----------------------------------------------------------
+Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
+--0-1581095560-1182790835=:25800--
