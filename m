@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbXFYPIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbXFYPJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827AbXFYPIo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 11:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbXFYPIg
+	id S1757196AbXFYPJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 11:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbXFYPJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 11:08:36 -0400
-Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:33547 "EHLO
-	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754974AbXFYPIf (ORCPT
+	Mon, 25 Jun 2007 11:09:00 -0400
+Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:25184 "HELO
+	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755438AbXFYPI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 11:08:35 -0400
-Date: Mon, 25 Jun 2007 17:06:27 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: david@lang.hm, arnd@arndb.de
-Cc: vapier.adi@gmail.com, schilling@fokus.fraunhofer.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux Kernel include files
-Message-ID: <467fd9f3.Vc25RVyWdnB9qPjQ%Joerg.Schilling@fokus.fraunhofer.de>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
- <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
- <200706220159.07948.arnd@arndb.de>
-In-Reply-To: <200706220159.07948.arnd@arndb.de>
-User-Agent: nail 11.22 3/20/05
+	Mon, 25 Jun 2007 11:08:59 -0400
+X-YMail-OSG: 4Xwca0AVM1khyT..8NYqZCRQ_W.amIZSN6OjHsRoFOxlp5LdilOB9sEDJhhO6dllYUHjIZ8yqA--
+X-RocketYMMF: rancidfat
+Date: Mon, 25 Jun 2007 08:08:58 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH][RFC] security: Convert LSM into a static interface
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, James Morris <jmorris@namei.org>,
+       linux-security-module@vger.kernel.org,
+       Chris Wright <chrisw@sous-sol.org>, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+In-Reply-To: <20070625143222.GA11997@vino.hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <409527.74718.qm@web36609.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann <arnd@arndb.de> wrote:
 
-> On Friday 22 June 2007, david@lang.hm wrote:
-> > this has been discussed many times and the answer is that the kernel is 
-> > not gong to change it's side of things to ANSI C.
->
-> I don't think that's entirely true with regard to the include files.
-> We have always tried not to step on anyone's toes there, e.g. regarding
-> the use of __u32 vs. uint32_t style types. It's certainly desirable
-> to make the kernel headers that are _meant_ for inclusion compatible
-> with standard compilers.
->
-> Mike Frysinger has posted a few patches that make the installed headers
-> friendlier to strict C99 users. While there was some negative feedback
-> about these patches, it was not about the idea of making the installed
-> headers C99 clean, but rather about the question whether those non-clean
-> parts should be exported in the first place.
+--- "Serge E. Hallyn" <serge@hallyn.com> wrote:
 
-Wouldn't it be simpler to ask the developers to deliver their include files
-in a state that is clean for user space programs?
 
-Jörg
+> > I think the value is overrated. You would never want to do that
+> > in a production environment, and in a debug environment you could
+> > just as easily reboot and get some start-up testing out of the way.
+> 
+> And in a development environment you can just as easily select
+> CONFIG_XYZ=y, no?
+> 
+> So we have two options, one which provides greater choice and
+> flexibility.
 
--- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
+I have no problem with leaving things the way they are today,
+and none with the proposed change. Either way works for me. It
+would be a little bit better for me if it stayed as is, but that's
+not a coding issue.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
