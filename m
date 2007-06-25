@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbXFYTfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbXFYTiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593AbXFYTfl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 15:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbXFYTfd
+	id S1755070AbXFYTiR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 15:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXFYTiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 15:35:33 -0400
-Received: from nn7.de ([85.214.94.156]:36172 "EHLO nn7.de"
+	Mon, 25 Jun 2007 15:38:09 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58895 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753039AbXFYTfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 15:35:33 -0400
-Subject: Re: [PATCH] hwmon/coretemp: Fix a broken error path -
-	microcode	update fix
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Rudolf Marek <r.marek@assembler.cz>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-In-Reply-To: <46800759.6040605@assembler.cz>
-References: <1182026585.4230.8.camel@localhost>
-	 <20070616231745.1b0f7bd9@hyperion.delvare>
-	 <1182071803.4815.5.camel@localhost>  <467575BF.1090207@assembler.cz>
-	 <1182335403.21563.99.camel@localhost>  <467AE640.9090409@assembler.cz>
-	 <1182779850.21781.11.camel@localhost>  <46800759.6040605@assembler.cz>
-Content-Type: text/plain
+	id S1752634AbXFYTiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 15:38:08 -0400
+From: Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] Always probe the NMI watchdog
+Date: Mon, 25 Jun 2007 21:36:17 +0200
+User-Agent: KMail/1.9.1
+Cc: =?iso-8859-1?q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       eranian@hpl.hp.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       levon@movementarian.org, perfmon@napali.hpl.hp.com,
+       oprofile-list@lists.sourceforge.net, wcohen@redhat.com
+References: <20070618103214.GA12045@atjola.homenet> <20070620183448.GB3251@atjola.homenet> <20070625120926.0a86373c.akpm@linux-foundation.org>
+In-Reply-To: <20070625120926.0a86373c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Mon, 25 Jun 2007 21:35:28 +0200
-Message-Id: <1182800128.4674.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+Content-Disposition: inline
+Message-Id: <200706252136.18366.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-25 at 20:20 +0200, Rudolf Marek wrote:
-> > Hi Rudolf,
-> > 
-> > just one more update:
-> > 
-> > When I put my machine into s2ram and make it resume, one of the coretemp
-> > sensors gets lost. Ahh and I am already rmmod coretemp / loading
-> > microcode after resume / insmod coretemp...
-> 
-> Hello, If I understand correctly you unload the driver before suspend. Resume, 
-> update microcode, load the driver correct?
+On Monday 25 June 2007 21:09, Andrew Morton wrote:
+> On Wed, 20 Jun 2007 20:34:48 +0200
+>
+> Bj__rn Steinbrink <B.Steinbrink@gmx.de> wrote:
+> > The performance counter allocator relies on the nmi watchdog being
+> > probed, so we have to do that even if the watchdog is not enabled.
+>
+> So...  what's the status of this lot?
+>
+> I've just merged this patch and the second one:
+>
+> Subject: [PATCH 2/2] Reserve the right performance counter for the Intel
+> PerfMon NMI watchdog Message-ID: <20070620183551.GC3251@atjola.homenet>
+>
+> but there was no followup discussion afaict.
+>
+> Andi, Stephane: acks?
 
-no I did not unload the driver but rmmod it after resume before I load
-the microcode.
+Yes, although I'm still a little uneasy about the always probe one.
 
-> Please can you check dmesg if for example one core complains about bad microcode 
-> version?
+> If acked, do we agree that this is 2.6.22 material?
 
-indeed core1 still complains. and I just now loaded the new microcode
-( rmmod of coretemp before and insmod after) and voila coretemp displays
-both cpu's again. So I guess the microcode reloading is done to soon
-after resume...
+The first (always probe) is probably .22 material, but needs more testing 
+first.
 
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+-Andi
