@@ -1,42 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbXFYT4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbXFYUEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbXFYT4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 15:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbXFYT43
+	id S1755222AbXFYUEh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbXFYUE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 15:56:29 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:42496 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753147AbXFYT43 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 15:56:29 -0400
-Date: Mon, 25 Jun 2007 15:56:23 -0400
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86-64: disable the GART in shutdown v2
-Message-ID: <20070625195623.GD5334@rhun.ibm.com>
-References: <200706221219.16243.yinghai.lu@sun.com> <467C6906.6020105@sun.com> <200706221934.59966.yinghai.lu@sun.com> <200706251234.04548.yinghai.lu@sun.com> <20070625194112.GC5334@rhun.ibm.com> <46801D10.50203@sun.com>
+	Mon, 25 Jun 2007 16:04:28 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:54295 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753039AbXFYUE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 16:04:27 -0400
+Date: Mon, 25 Jun 2007 13:01:58 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Andi Kleen <ak@suse.de>
+Cc: b.steinbrink@gmx.de, ingo@elte.hu, linux-kernel@vger.kernel.org,
+       levon@movementarian.org, perfmon@napali.hpl.hp.com,
+       oprofile-list@lists.sourceforge.net, wcohen@redhat.com,
+       Stephane Eranian <eranian@hpl.hp.com>
+Subject: Re: [PATCH 1/2] Always probe the NMI watchdog
+Message-ID: <20070625200158.GC12139@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070618103214.GA12045@atjola.homenet> <20070620183448.GB3251@atjola.homenet> <20070625120926.0a86373c.akpm@linux-foundation.org> <200706252136.18366.ak@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46801D10.50203@sun.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200706252136.18366.ak@suse.de>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 12:52:48PM -0700, Yinghai Lu wrote:
-
-> >I suggest include/asm-x86_64/iommu.h for this. proto.h doesn't have
-> >anything to do with it.
+Hi,
+On Mon, Jun 25, 2007 at 09:36:17PM +0200, Andi Kleen wrote:
+> On Monday 25 June 2007 21:09, Andrew Morton wrote:
+> > On Wed, 20 Jun 2007 20:34:48 +0200
+> >
+> > Bj__rn Steinbrink <B.Steinbrink@gmx.de> wrote:
+> > > The performance counter allocator relies on the nmi watchdog being
+> > > probed, so we have to do that even if the watchdog is not enabled.
+> >
+> > So...  what's the status of this lot?
+> >
+> > I've just merged this patch and the second one:
+> >
+> > Subject: [PATCH 2/2] Reserve the right performance counter for the Intel
+> > PerfMon NMI watchdog Message-ID: <20070620183551.GC3251@atjola.homenet>
+> >
+> > but there was no followup discussion afaict.
+> >
+> > Andi, Stephane: acks?
 > 
-> move iommu releated to iommu.h and add iommu_ops struct?
+> Yes, although I'm still a little uneasy about the always probe one.
+> 
 
-That's how I would do it, to complement dma_mapping.h.
+I looked at the code I have in my tree coming from Bjon's patches and
+I am a bit confused by the flow for probing as well.
 
-Cheers,
-Muli
+The register allocator works globally, i.e., you reserve a register
+for all CPUs at once.
+
+The probe_nmi_watchdog() routine simply probes the CPU type to initialize
+the watchdog data structure (wd_ops). This needs to be done once and for all.
+Why put it in a route that is called with on_each_cpu()?
+
+I think the tricky part is that we do want to reserve perfctr1 even though
+the NMI watchdog is not active. This comes from the fact that the NMI watchdog
+knows about only one counter and if it can't get that one, it probably fails.
+By reserving it from the start, we ensure NMI watchdog will work when eventually
+activated.
+
+Unlike sharing between Oprofile and perfmon which works by enforcing
+mutual exclusion between the two subsystems, the NMI watchdog must work
+concurrently with either Oprofile or Perfmon.
+
+Bjorn, did I understand the constraints correctly?
+
+-- 
+-Stephane
