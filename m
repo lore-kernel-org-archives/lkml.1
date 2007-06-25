@@ -1,108 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbXFYKyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbXFYKyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755111AbXFYKyT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 06:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbXFYKyG
+	id S1755253AbXFYKyr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 06:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbXFYKyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 06:54:06 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:51599 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752185AbXFYKyE (ORCPT
+	Mon, 25 Jun 2007 06:54:39 -0400
+Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:39018 "EHLO
+	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752281AbXFYKyh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 06:54:04 -0400
-Date: Mon, 25 Jun 2007 12:53:58 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20070625105358.GA18739@gundam.enneenne.com>
-Mime-Version: 1.0
+	Mon, 25 Jun 2007 06:54:37 -0400
+From: Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>
+Date: Mon, 25 Jun 2007 12:54:35 +0200
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       arw@arw.name
+Subject: Re: [PATCH] Check files' signatures before doing suid/sgid [2/4]
+Message-ID: <20070625105435.GD24777@faui01.informatik.uni-erlangen.de>
+References: <11824417551424-git-send-email-arw@arw.name> <1182446251.2704.0.camel@laptopd505.fenrus.org> <20070621172557.GE9741@cip.informatik.uni-erlangen.de> <1182446983.2704.4.camel@laptopd505.fenrus.org> <20070621174612.GG9741@cip.informatik.uni-erlangen.de> <Pine.LNX.4.64.0706232001070.11964@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070621093719.GB4836@enneenne.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH] ARM PXA: invalid clocks settings.
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <Pine.LNX.4.64.0706232001070.11964@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes some bugs in the CPU clocks settings entered by commit
-7053acbd78336abf5d4bc3d8a875a03624cfb83f. These bugs also prevent the system
-in going to sleep correctly leaving it into a non consistent status.
 
-The clocks enable/disable defines was changed from:
+Hi,
 
-	#define CKEN_CAMERA  (1 << 24)
+> >If a process uses read() it needs some executable and writable memory. We do
+> >check for this in mprotect(). There is a problem with the i386-architecture,
+> >because it allows execution of any readable page (except with newer
+> >processors). But beyond that ugliness of i386, it should not be possible to
+> >execute anything without us noticing it (hopefully).
+>
+> r and x together is not a problem IMHO.
 
-to:
-
-	#define CKEN_CAMERA  (24)
-
-so direct access to the CKEN register should be now in the form:
-
-	CKEN |= (1 << CKEN_CAMERA)
-
-Signed-off-by: Rodolfo Giometti <giometti@linux.it>
----
- arch/arm/mach-pxa/pxa27x.c  |    5 +++--
- sound/arm/pxa2xx-ac97.c     |    2 +-
- sound/soc/pxa/pxa2xx-ac97.c |    2 +-
- 3 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/arch/arm/mach-pxa/pxa27x.c b/arch/arm/mach-pxa/pxa27x.c
-index c64bab4..7be8a74 100644
---- a/arch/arm/mach-pxa/pxa27x.c
-+++ b/arch/arm/mach-pxa/pxa27x.c
-@@ -140,9 +140,10 @@ void pxa_cpu_pm_enter(suspend_state_t state)
- 	extern void pxa_cpu_resume(void);
- 
- 	if (state == PM_SUSPEND_STANDBY)
--		CKEN = CKEN_MEMC | CKEN_OSTIMER | CKEN_LCD | CKEN_PWM0;
-+		CKEN = (1 << CKEN_MEMC) | (1 << CKEN_OSTIMER) | \
-+			(1 << CKEN_LCD) | (1 << CKEN_PWM0);
- 	else
--		CKEN = CKEN_MEMC | CKEN_OSTIMER;
-+		CKEN = (1 << CKEN_MEMC) | (1 << CKEN_OSTIMER);
- 
- 	/* ensure voltage-change sequencer not initiated, which hangs */
- 	PCFR &= ~PCFR_FVC;
-diff --git a/sound/arm/pxa2xx-ac97.c b/sound/arm/pxa2xx-ac97.c
-index 19c65a8..7bc2767 100644
---- a/sound/arm/pxa2xx-ac97.c
-+++ b/sound/arm/pxa2xx-ac97.c
-@@ -361,7 +361,7 @@ static int __devinit pxa2xx_ac97_probe(struct platform_device *dev)
-  err:
- 	if (card)
- 		snd_card_free(card);
--	if (CKEN & CKEN_AC97) {
-+	if (CKEN & (1 << CKEN_AC97)) {
- 		GCR |= GCR_ACLINK_OFF;
- 		free_irq(IRQ_AC97, NULL);
- 		pxa_set_cken(CKEN_AC97, 0);
-diff --git a/sound/soc/pxa/pxa2xx-ac97.c b/sound/soc/pxa/pxa2xx-ac97.c
-index b222755..129d851 100644
---- a/sound/soc/pxa/pxa2xx-ac97.c
-+++ b/sound/soc/pxa/pxa2xx-ac97.c
-@@ -300,7 +300,7 @@ static int pxa2xx_ac97_probe(struct platform_device *pdev)
- 	return 0;
- 
-  err:
--	if (CKEN & CKEN_AC97) {
-+	if (CKEN & (1 << CKEN_AC97)) {
- 		GCR |= GCR_ACLINK_OFF;
- 		free_irq(IRQ_AC97, NULL);
- 		pxa_set_cken(CKEN_AC97, 0);
--- 
-1.5.2.2
-
+It is, if you would want to have rw but can only get rwx.
+regards,
+	Johannes
 
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Johannes Schlumberger                      Department of Computer Science IV
+Martensstrasse 1  D-91058 Erlangen Germany  University of Erlangen-Nuremberg
+             http://wwwcip.informatik.uni-erlangen.de/~spjsschl
