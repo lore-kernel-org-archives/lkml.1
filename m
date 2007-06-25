@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbXFYUUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbXFYUWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbXFYUUQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbXFYUUE
+	id S1753477AbXFYUWX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbXFYUWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:20:04 -0400
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116]:47223 "EHLO
-	gw02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbXFYUUD (ORCPT
+	Mon, 25 Jun 2007 16:22:15 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:14154 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375AbXFYUWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:20:03 -0400
-X-Greylist: delayed 628 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 16:20:03 EDT
-Message-ID: <468020F1.1090602@opensound.com>
-Date: Mon, 25 Jun 2007 23:09:21 +0300
-From: Hannu Savolainen <hannu@opensound.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 25 Jun 2007 16:22:15 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=LjEGmdiPwW9V0Vynl0QZg+hQJA9SsbgBGdQCR34beye7V4pdu5WaS1Xn8koHdAOdr
+	BBr0wy6KXy1xMX5WOQ6pQ==
+Message-ID: <468023CA.2090401@google.com>
+Date: Mon, 25 Jun 2007 13:21:30 -0700
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-Subject: Handling xruns in OSS (was re:whatever)
-References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>	<20070624200837.16e11305@the-village.bc.nu>	<Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>	<20070624215724.025a5de5@the-village.bc.nu>	<20070624224411.GB21724@alinoe.com>	<8d6898730706242041q61f56b07kf4dc181fdad4e4dc@mail.gmail.com>	<20070625100618.3653863d@the-village.bc.nu> <s5h8xa8iaee.wl%tiwai@suse.de>
-In-Reply-To: <s5h8xa8iaee.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Christoph Lameter <clameter@sgi.com>
+CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@google.com>, a.p.zijlstra@chello.nl
+Subject: Re: [RFC 1/7] cpuset write dirty map
+References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com> <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai kirjoitti:
-> At Mon, 25 Jun 2007 10:06:18 +0100,
-> Alan Cox wrote:
->   
->>> If it is native ALSA driver then it will restart after each underrun
->>> and overrun. It is the applications job to do this, alsa-lib provides
->>> all support for this. I have no idea of OSS and OSS emulation in ALSA.
->>>       
->> OSS should autorestart on underrun and just moan about overruns and drop
->> bits. So if it's not following that behaviour he is IMHO correct for the
->> OSS emulation case.
->>     
->
-> I think he is right in the case of read (although I don't remember his
-> post as my buffer overran).  The playback is automaically reset and
-> restarted at underrun.
->
-> But, the patch there is wrong.  It should handle -EPIPE, which means
-> XRUN, while -ESTRPIPE means the suspend state.
->   
-To be exact the OSS should not even stop the device when a xrun occurs. 
-Instead it should keep playing silence until the application writes more 
-output data and to discard the oldest recorded data when an overrun 
-occurs. This is more effective than stopping and restarting the device.
+Christoph Lameter wrote:
+> 
+> What testing was done? Would you include the results of tests in your next 
+> post?
 
-Best regards,
+	Sorry for the delay in responding -- I was chasing phantom failures.
 
-Hannu
+	I created a stress test which involved using cpusets and mems_allowed
+to split memory so that all daemons had memory set aside for them, and
+my memory stress test had a separate set of memory. The stress test was
+mmaping 7GB of a very large file on disk. It then scans the entire 7GB
+of memory reading and modifying each byte. 7GB is more than the amount
+of physical memory made available to the stress test.
+
+	Using iostat I can see the initial period of reading from disk,
+followed by a period of simultaneous reads and writes as dirty bytes are
+pushed to make room for new reads.
+
+	In a separate log-in, in the other cpuset, I am running:
+
+while `true`; do date | tee -a date.txt; sleep 5; done
+
+	date.txt resides on the same disk as the large file mentioned above.
+The above while-loop serves the dual purpose of providing me visual
+clues of progress along with the opportunity for the "tee" command to
+become throttled writing to the disk.
+
+	The effect of this patchset is straightforward. Without it there are
+long hangs between appearances of the date. With it the dates are all 5
+(or sometimes 6) seconds apart.
+
+	I also added printks to the kernel to verify that, without these
+patches, the tee was being throttled (along with lots of other things),
+and with the patch only pdflush is being throttled.
+	-- Ethan
