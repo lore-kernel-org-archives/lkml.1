@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbXFYN5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbXFYN5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbXFYN5V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 09:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXFYN5I
+	id S1757273AbXFYN5n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 09:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755111AbXFYN5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 09:57:08 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:60223 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753412AbXFYN5G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 09:57:06 -0400
-Message-ID: <467FC985.7080703@anagramm.de>
-Date: Mon, 25 Jun 2007 15:56:21 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: Roman Zippel <zippel@linux-m68k.org>
-CC: David Woodhouse <dwmw2@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Arch <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH] cross-architecture ELF clean up
-References: <20070620230854.246399397@goop.org>  <20070620230902.387008536@goop.org> <1182762166.12109.19.camel@pmac.infradead.org> <Pine.LNX.4.64.0706251538540.4386@scrub.home>
-In-Reply-To: <Pine.LNX.4.64.0706251538540.4386@scrub.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX19EcujkQqAs33AmChX4ZpTsLR1+TprM2URdV5f
- xI4izE1m9CEPxOZRDvdYO0Xm+10ETCYyALZYQ+xBKAIGK7jPZ4
- sC1tJfRQ19M2OuwtCvMDQ==
+	Mon, 25 Jun 2007 09:57:34 -0400
+Received: from nn7.de ([85.214.94.156]:59796 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754869AbXFYN5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 09:57:34 -0400
+Subject: Re: [PATCH] hwmon/coretemp: Fix a broken error path - microcode
+	update fix
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Rudolf Marek <r.marek@assembler.cz>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+In-Reply-To: <467AE640.9090409@assembler.cz>
+References: <1182026585.4230.8.camel@localhost>
+	 <20070616231745.1b0f7bd9@hyperion.delvare>
+	 <1182071803.4815.5.camel@localhost>  <467575BF.1090207@assembler.cz>
+	 <1182335403.21563.99.camel@localhost>  <467AE640.9090409@assembler.cz>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 25 Jun 2007 13:57:30 +0000
+Message-Id: <1182779850.21781.11.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Roman!
+On Thu, 2007-06-21 at 22:57 +0200, Rudolf Marek wrote:
+> Hello Soeren,
+[...]
+> Soeren pointed at some T60, T60p BIOS update and luckily, there is a
+> easy way 
+> how to extract the microcode update and even convert it into the .txt
+> format as 
+> microcode update utility (http://www.urbanmyth.org/microcode/)
+> expects.
+> Attached scripts generates the mcode.txt file which may be used by the
+> update 
+> utility. Please can you give a try?
 
-Roman Zippel schrieb:
-> Hi,
-> 
-> On Mon, 25 Jun 2007, David Woodhouse wrote:
-> 
->> On Wed, 2007-06-20 at 16:08 -0700, Jeremy Fitzhardinge wrote:
->>> This patch cleans up the ELF headers and their users.  It does several
->>> related things:
->> Looks good. We can get away with exporting a lot less of this to
->> userspace too, can't we?
-> 
-> glibc provides its own version, so it doesn't has to be exported at all.
+Hi Rudolf,
 
-AFAIK the glibc folks want to rely more on the linux kernel headers
-in the future and not provide more or less redundant headers anymore...
-Please talk to them about the future plans.
+just one more update:
 
-Regards,
+When I put my machine into s2ram and make it resume, one of the coretemp
+sensors gets lost. Ahh and I am already rmmod coretemp / loading
+microcode after resume / insmod coretemp...
+
+Any idea's on that ?
+
+Soeren
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
