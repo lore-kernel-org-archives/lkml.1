@@ -1,159 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbXFYTcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbXFYTfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225AbXFYTcd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 15:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbXFYTcZ
+	id S1754656AbXFYTfW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 15:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbXFYTfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 15:32:25 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:40179 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752273AbXFYTcY (ORCPT
+	Mon, 25 Jun 2007 15:35:11 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:55129 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752885AbXFYTfJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 15:32:24 -0400
-Date: Mon, 25 Jun 2007 12:34:03 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86-64: disable the GART in shutdown v2
-In-reply-to: <200706221934.59966.yinghai.lu@sun.com>
-To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Muli Ben-Yehuda <muli@il.ibm.com>, Vivek Goyal <vgoyal@in.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200706251234.04548.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200706221219.16243.yinghai.lu@sun.com> <467C6906.6020105@sun.com>
- <200706221934.59966.yinghai.lu@sun.com>
-User-Agent: KMail/1.8.2
+	Mon, 25 Jun 2007 15:35:09 -0400
+Subject: [POSSIBLE BUG] use of tasklet_unlock in ipath_no_bufs_available
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Roland Dreier <rdreier@cisco.com>, mshefty@ichips.intel.com,
+       halr@voltaire.com, openib-general@openib.org
+Content-Type: text/plain
+Date: Mon, 25 Jun 2007 15:33:14 -0400
+Message-Id: <1182799994.5493.201.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86-64: disable the GART in shutdown
+As some of you know, lately I've been trying to get rid of tasklets. In
+doing so, I've come across this usage of tasklet_unlock.
 
-For K8 system: 4G RAM with memory hole remapping enabled, or more than 4G RAM
-installed. when using kexec to load second kernel. In the second kernel,
- when mem is allocated for GART, it will do the memset for clear, it will cause
-restart, because some device still used that for dma.
-solution will be:
-in second kernel: disable that at first before we try to allocate mem for it.
-or in the first kernel: do disable that before shutdown.
-Andi/Eric/Alan prefer to second one for clean shutdown in first kernel.
-Andi also point out need to consider to AGP enable but mem less 4G case too.
+The only user of tasklet_unlock in the kernel outside of softirq.c is
+ipath_no_bufs_available in drivers/inifiniband/hw/ipath/ipath_ruc.c
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+Here's the offending code:
 
- arch/x86_64/kernel/pci-dma.c  |    5 +++++
- arch/x86_64/kernel/pci-gart.c |   21 +++++++++++++++++++++
- arch/x86_64/kernel/reboot.c   |    4 ++++
- include/asm-x86_64/proto.h    |    7 +++++++
- 4 files changed, 37 insertions(+)
-diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
-index ae091cd..6c4fe16 100644
---- a/arch/x86_64/kernel/pci-gart.c
-+++ b/arch/x86_64/kernel/pci-gart.c
-@@ -571,6 +571,27 @@ static const struct dma_mapping_ops gart_dma_ops = {
- 	.unmap_sg = gart_unmap_sg,
- };
- 
-+void gart_iommu_shutdown(void)
-+{
-+	struct pci_dev *dev;
-+	int i;
-+
-+
-+	if (noagp && (dma_ops != &gart_dma_ops))
-+		return;
-+
-+	for (i = 0; i < num_k8_northbridges; i++) {
-+		u32 ctl;
-+
-+		dev = k8_northbridges[i];
-+		pci_read_config_dword(dev, 0x90, &ctl);
-+
-+		ctl &= ~1;
-+
-+		pci_write_config_dword(dev, 0x90, ctl);
-+	}
-+}
-+
- void __init gart_iommu_init(void)
- { 
- 	struct agp_kern_info info;
-diff --git a/arch/x86_64/kernel/pci-dma.c b/arch/x86_64/kernel/pci-dma.c
-index 9f80aad..b406b54 100644
---- a/arch/x86_64/kernel/pci-dma.c
-+++ b/arch/x86_64/kernel/pci-dma.c
-@@ -322,6 +322,11 @@ static int __init pci_iommu_init(void)
- 	return 0;
- }
- 
-+void pci_iommu_shutdown(void)
-+{
-+	gart_iommu_shutdown();
-+}
-+
- #ifdef CONFIG_PCI
- /* Many VIA bridges seem to corrupt data for DAC. Disable it here */
- 
-diff --git a/arch/x86_64/kernel/reboot.c b/arch/x86_64/kernel/reboot.c
-index 7503068..e6e65c2 100644
---- a/arch/x86_64/kernel/reboot.c
-+++ b/arch/x86_64/kernel/reboot.c
-@@ -16,6 +16,7 @@
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/apic.h>
-+#include <asm/proto.h>
- 
- /*
-  * Power off function, if any
-@@ -81,6 +82,7 @@ static inline void kb_wait(void)
- void machine_shutdown(void)
- {
- 	unsigned long flags;
-+
- 	/* Stop the cpus and apics */
- #ifdef CONFIG_SMP
- 	int reboot_cpu_id;
-@@ -111,6 +113,8 @@ void machine_shutdown(void)
- 	disable_IO_APIC();
- 
- 	local_irq_restore(flags);
-+
-+	pci_iommu_shutdown();
- }
- 
- void machine_emergency_restart(void)
-diff --git a/include/asm-x86_64/proto.h b/include/asm-x86_64/proto.h
-index 85255db..b70aa0c 100644
---- a/include/asm-x86_64/proto.h
-+++ b/include/asm-x86_64/proto.h
-@@ -85,11 +85,13 @@ extern int exception_trace;
- extern unsigned cpu_khz;
- extern unsigned tsc_khz;
- 
-+extern void pci_iommu_shutdown(void);
- extern void no_iommu_init(void);
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
- #ifdef CONFIG_IOMMU
- extern void gart_iommu_init(void);
-+extern void gart_iommu_shutdown(void);
- extern void __init gart_parse_options(char *);
- extern void iommu_hole_init(void);
- extern int fallback_aper_order;
-@@ -101,6 +103,11 @@ extern int fix_aperture;
- #else
- #define iommu_aperture 0
- #define iommu_aperture_allowed 0
-+
-+static inline void gart_iommu_shutdown(void)
-+{
-+}
-+
- #endif
- 
- extern int reboot_force;
+void ipath_no_bufs_available(struct ipath_qp *qp, struct ipath_ibdev *dev)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&dev->pending_lock, flags);
+	if (list_empty(&qp->piowait))
+		list_add_tail(&qp->piowait, &dev->piowait);
+	spin_unlock_irqrestore(&dev->pending_lock, flags);
+	/*
+	 * Note that as soon as want_buffer() is called and
+	 * possibly before it returns, ipath_ib_piobufavail()
+	 * could be called.  If we are still in the tasklet function,
+	 * tasklet_hi_schedule() will not call us until the next time
+	 * tasklet_hi_schedule() is called.
+	 * We clear the tasklet flag now since we are committing to return
+	 * from the tasklet function.
+	 */
+	clear_bit(IPATH_S_BUSY, &qp->s_flags);
+	tasklet_unlock(&qp->s_task);
+	want_buffer(dev->dd);
+	dev->n_piowait++;
+}
+
+
+As the comment states, it looks like it's trying to prevent a race where
+the want_buffer can allow for ipath_ib_piobufavail be called which would
+schedule this tasklet again. But since the tasklet is running, it would
+simply be skipped if it were to schedule on another CPU. And this would
+mean that the tasklet would need to wait for it to be scheduled again
+before doing the work.
+
+  Is my above analysis correct?
+
+Now for the BUG.
+
+Lets say this situation does happen. Lets look at the code.
+
+softirq.c: tasklet_hi_action
+
+		if (tasklet_trylock(t)) {
+			if (!atomic_read(&t->count)) {
+				if (!test_and_clear_bit(TASKLET_STATE_SCHED, &t->state))
+					BUG();
+				t->func(t->data);
+				tasklet_unlock(t);
+				continue;
+			}
+			tasklet_unlock(t);
+		}
+
+The race being prevented is the failure of the tasklet_trylock running
+on another CPU. The call to tasklet_unlock in ipath_no_bufs_available is
+letting the other CPU succeed, and the comment suggests that this is OK
+because this function will be exiting shortly. But what it doesn't take
+into consideration is the above "tasklet_unlock" called again in
+tasklet_hi_action.
+
+So while the tasklet function is allowed to run on another CPU, we are
+unlocking the tasklet on this CPU. So now this tasklet function is no
+longer protected from being reentrant. There is now no guarantee that
+the tasklet function would only be running on one CPU.
+
+What's worse, we also add the chance of hitting the above BUG(). If the
+tasklet gets scheduled again, takes an interrupt before doing the
+tast_and_clear, another CPU runs the tasklet and clears the
+TASKLET_STATE_SCHED, when the first instance comes back from the
+interrupt, it will hit the BUG.
+
+So, does all this make sense, or am I full of crap.  Still, I think
+tasklet_unlock and tasklet_trylock should not be exported for anyone
+else to use besides softirq.c and perhaps the ipath code needs to find a
+better way around this.
+
+-- Steve
+
+
