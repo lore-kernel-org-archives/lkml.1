@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbXFYVvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbXFYVva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756527AbXFYVvQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbXFYVvB
+	id S1752843AbXFYVva (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756423AbXFYVvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:51:01 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:59372 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753014AbXFYVvA (ORCPT
+	Mon, 25 Jun 2007 17:51:14 -0400
+Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:34168 "EHLO
+	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755904AbXFYVvM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:51:00 -0400
-Date: Mon, 25 Jun 2007 14:51:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: christopher.leech@intel.com, sam@ravnborg.org,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] IOATDMA: fix section mismatches
-Message-Id: <20070625145147.c34cbfca.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Mon, 25 Jun 2007 17:51:12 -0400
+Date: Mon, 25 Jun 2007 23:49:02 +0200
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: harald@skogtun.org
+Cc: schilling@fokus.fraunhofer.de, linux-kernel@vger.kernel.org,
+       dwmw2@infradead.org, david@lang.hm
+Subject: Re: Linux Kernel include files
+Message-ID: <4680384e.iAYvC5ix5Dbya44W%Joerg.Schilling@fokus.fraunhofer.de>
+References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
+ <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
+ <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
+ <1182483527.10524.31.camel@shinybook.infradead.org>
+ <467fdc75.0ficjl92unPDO1uk%Joerg.Schilling@fokus.fraunhofer.de>
+ <1182785277.12109.121.camel@pmac.infradead.org>
+ <87wsxrdi6e.fsf@basilikum.skogtun.org>
+ <468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
+ <87ir9byak9.fsf@basilikum.skogtun.org>
+ <87ejjzyac0.fsf@basilikum.skogtun.org>
+In-Reply-To: <87ejjzyac0.fsf@basilikum.skogtun.org>
+User-Agent: nail 11.22 3/20/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Harald Arnesen <harald@skogtun.org> wrote:
 
-Rename struct pci_driver data so that false section mismatch
-warnings won't be produced.
+> Harald Arnesen <harald@skogtun.org> writes:
+>
+> > Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling) writes:
+> >
+> >>> If I actually install smake, as Jörg recommends, the message becomes:
+> >>> smake: Can't find any source for 'CCOM_suncc'.
+> >>> smake: Couldn't make 'CCOM_suncc'.
+> >>
+> >> Well, I was in hope that a small typo (in special as the correct spelling is in 
+> >> the file README.compile) should not be a problem.
+> >>
+> >> You need to use CCOM=suncc 
+> >
+> > Then it (star, I haven't tried cdrtools yes) compiles and links fine.
+> > There must be something wrong with your Linux installation.
+>
+> FYI, cdrtools also compile and link fine with Sun's C compiler.
 
-Sam, ISTM that depending on variable names is the weakest & worst part of
-modpost section checking.  Should __init_refok work here?  I got build
-errors when I tried to use it, probably because the struct pci_driver
-probe and remove methods are not marked "__init_refok".
+Mmmmm, if you call "cdrecord -scanbus", what do you get?
 
-WARNING: drivers/dma/ioatdma.o(.data+0x10): Section mismatch: reference to .init.text: (between 'ioat_pci_drv' and 'ioat_pci_tbl')
-WARNING: drivers/dma/ioatdma.o(.data+0x14): Section mismatch: reference to .exit.text: (between 'ioat_pci_drv' and 'ioat_pci_tbl')
+Jörg
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/dma/ioatdma.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
---- linux-2.6.22-rc6.orig/drivers/dma/ioatdma.c
-+++ linux-2.6.22-rc6/drivers/dma/ioatdma.c
-@@ -556,7 +556,7 @@ static struct pci_device_id ioat_pci_tbl
- 	{ 0, }
- };
- 
--static struct pci_driver ioat_pci_drv = {
-+static struct pci_driver ioat_pci_driver = {
- 	.name 	= "ioatdma",
- 	.id_table = ioat_pci_tbl,
- 	.probe	= ioat_probe,
-@@ -699,7 +699,7 @@ static int __devinit ioat_probe(struct p
- 	if (err)
- 		goto err_set_dma_mask;
- 
--	err = pci_request_regions(pdev, ioat_pci_drv.name);
-+	err = pci_request_regions(pdev, ioat_pci_driver.name);
- 	if (err)
- 		goto err_request_regions;
- 
-@@ -828,14 +828,14 @@ static int __init ioat_init_module(void)
- 	/* if forced, worst case is that rmmod hangs */
- 	__unsafe(THIS_MODULE);
- 
--	return pci_register_driver(&ioat_pci_drv);
-+	return pci_register_driver(&ioat_pci_driver);
- }
- 
- module_init(ioat_init_module);
- 
- static void __exit ioat_exit_module(void)
- {
--	pci_unregister_driver(&ioat_pci_drv);
-+	pci_unregister_driver(&ioat_pci_driver);
- }
- 
- module_exit(ioat_exit_module);
+-- 
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
