@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbXFYXGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbXFYXHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752545AbXFYXGx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 19:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbXFYXGp
+	id S1753004AbXFYXHv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 19:07:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbXFYXHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 19:06:45 -0400
-Received: from cloudburst.actrix.co.nz ([203.96.16.181]:33690 "EHLO
-	cloudburst.actrix.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbXFYXGo (ORCPT
+	Mon, 25 Jun 2007 19:07:43 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:28338 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751531AbXFYXHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 19:06:44 -0400
-X-Greylist: delayed 1767 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 19:06:44 EDT
-Message-ID: <9362.218.101.54.21.1182811032.squirrel@218.101.54.21>
-In-Reply-To: <46803772.7020408@rillion.net>
-References: <46803772.7020408@rillion.net>
-Date: Tue, 26 Jun 2007 10:37:12 +1200 (NZST)
-Subject: Re: Patent or not patent a new idea
-From: manningc2@actrix.co.nz
-To: "Graeme Sheppard" <nodes@rillion.net>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Mon, 25 Jun 2007 19:07:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Metro+DpHfHZUAo9m4mKxeDVIRqlKcZDIsBFerh9WWsQ8J35tpSJOSoCpJ0QdIewXfT4As81Y7pOnmz34gkt2lcGPLBhcUmp1KEsayDxtNIJR4uvWBcE7KAI+4WvpjJDJL3lV2gSRwJOo5jO4ZeDLCgmz/doDBYlbO7fPEVipEQ=
+Message-ID: <9a8748490706251607t4de9ce52o13ef0e683296f324@mail.gmail.com>
+Date: Tue, 26 Jun 2007 01:07:41 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: Surya <surya.prabhakar@wipro.com>
+Subject: Re: [PATCH]: check_region cleanup in sbpcd.c
+Cc: emoenke@gwdg.de, "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       kernel-janitors@lists.osdl.org
+In-Reply-To: <1181621746.28392.9.camel@bluegenie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1181209169.2422.12.camel@bluegenie>
+	 <9a8748490706070308m7c2212fq30fe712e26e2463b@mail.gmail.com>
+	 <1181215018.3275.2.camel@bluegenie>
+	 <9a8748490706070902i218e01bdq1c418c770e99ca4@mail.gmail.com>
+	 <1181270772.3275.15.camel@bluegenie>
+	 <9a8748490706110418m70d4b26ege20a51f04b8ff7ff@mail.gmail.com>
+	 <1181621746.28392.9.camel@bluegenie>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Dear devs,
+On 12/06/07, Surya <surya.prabhakar@wipro.com> wrote:
+[snip]
+> >
+> I am sending with all the corrections, if its ok to acknowledge it?
 >
-> In a moment of serendipity I thought of a concept which may be
-> advantageous
-> if incorporated into the kernel. I was going to offer it to the OIN but
-> they responded they only consider existing patents and I don't have the
-> money to afford one.
+Looks good to me.
+
 >
-> I am seeking advice on how to proceed. It could be used as a defensive
-> patent in which case I can email an expert who can file it. If that is the
-> concept is sound. I am not expecting any royalties from this myself. The
-> alternative is to dump it here to the LKML.
+> Signed-off-by: Surya Prabhakar <surya.prabhakar@wipro.com>
+Reviewed-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-If your only purpose is to try generate a defensive patent, then just
-dumping the idea in the public domain serves the same purpose, probably
-better.
-
-I have a few patents, some of which are defensive. That has not prevented
-the USPTO issuing quite a few patents that are in clear violation of mine.
-A defensive patent clearly did not prevent these patents from being
-issued. A defensive patent might make it slightly easier to protect
-yourself should one of the later patents try flex their muscle, but an
-idea that is well articulated in a public forum should be sufficient
-protection too.
-
-AINAL and all that...
-
-
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
