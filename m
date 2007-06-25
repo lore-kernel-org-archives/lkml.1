@@ -1,84 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757377AbXFYPT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbXFYPT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757377AbXFYPT1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 11:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbXFYPTS
+	id S1757431AbXFYPT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 11:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbXFYPTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 11:19:18 -0400
-Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:33593 "EHLO
-	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756075AbXFYPTR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 11:19:17 -0400
-Date: Mon, 25 Jun 2007 17:17:09 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: dwmw2@infradead.org
-Cc: schilling@fokus.fraunhofer.de, linux-kernel@vger.kernel.org, david@lang.hm
-Subject: Re: Linux Kernel include files
-Message-ID: <467fdc75.0ficjl92unPDO1uk%Joerg.Schilling@fokus.fraunhofer.de>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
- <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
- <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
- <1182483527.10524.31.camel@shinybook.infradead.org>
-In-Reply-To: <1182483527.10524.31.camel@shinybook.infradead.org>
-User-Agent: nail 11.22 3/20/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 25 Jun 2007 11:19:49 -0400
+Received: from mail.screens.ru ([213.234.233.54]:46734 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755739AbXFYPTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 11:19:48 -0400
+Date: Mon, 25 Jun 2007 19:20:11 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Uli Luckas <u.luckas@road.de>,
+       linux-kernel@vger.kernel.org
+Subject: synchronize_qrcu_timeout()
+Message-ID: <20070625152011.GA160@tv-sign.ru>
+References: <20070625104332.GA147@tv-sign.ru> <20070625145851.GB12976@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070625145851.GB12976@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Fri, 2007-06-22 at 01:38 +0200, Joerg Schilling wrote:
-> > The main problems are not really hard to fix......
+On 06/25, Paul E. McKenney wrote:
+>
+> On Mon, Jun 25, 2007 at 02:43:32PM +0400, Oleg Nesterov wrote:
 > > 
-> > -	Most problems eem to be related to the fact that Linux does not
-> > 	use C-99 based types in the kernel and the related type definitions 
-> > 	are not written in plain C. This is something that should be fixed
-> > 	with a source consolidation program or by defining aliases to 
-> > 	C-99 types in case the compiler is not GCC.
->
->
-> The argument has been made that the standard C99 types are _optional_,
-> and anything included from a C library's headers without _explicitly_
-> being included by the user shouldn't define those types.
+> > Sadly, you can't use srcu/qrcu because it doesn't handle timeouts.	
+> 
+> Interesting...  So the thought is to have a synchronize_srcu_timeout()
+> or something similar that waited for a grace period to elapse or for
+> a timeout to expire, whichever comes first?  It should not be too hard
+> to arrange something, if needed.
 
-????
+Yes. As for qrcu (see http://marc.info/?t=116484476500001), I think it is easy.
+First, we add "int interrupted" into struct qrcu_struct, then something like this
 
-This uses double negation and is close to unreadable.
+	long synchronize_qrcu_timeout(struct qrcu_struct *qp, long tout)
+	{
+		int idx;
 
-A kernel include file that defines an interface to a user space program
-should be self containing (that means that all includes for all non-standard
-types should be done inside these include files). Whether or not C-99 
-types are used or not is less important than to use type definitions written 
-in clean C so compilers other than gcc may use them.
+		smp_mb();
+		mutex_lock(&qp->mutex);
 
-> Personally, I think that's a load of bollocks. And it certainly doesn't
-> apply to Linux-specific files like <linux/cdrom.h>, which are perfectly
-> entitled to use a C standard from last millennium, regardless of
-> namespace 'pollution' issues. That's why we continue to use the crappy
-> __u32 types. Can you be more specific about why this is a problem? Don't
-> we mostly define those crappy types using arch-specific knowledge, as
-> 'int', 'long', etc?
+	again:
+		idx = qp->completed & 0x1;
 
-I recommend you to install Sun Studio and to try to compile star or cdrtools
-using Sun Studio by calling "make CCOM_suncc".
+		if (unlikely(qp->interrupted)) {
+			idx ^= 0x1;
+			goto restart;
+		}
 
-ftp://ftp.berlios.de/pub/star/alpha/
-ftp://ftp.berlios.de/pub/cdrecord/alpha/
 
-You may need to hand edit the file incs/<arch-dir>/{xconfig.h!rules.conf}
+		if (atomic_read(qp->ctr + idx) == 1)
+			goto out;
 
-in order to enable the auto-disabled features.
+		atomic_inc(qp->ctr + (idx ^ 0x1));
+		qp->completed++;
 
-In any case, self reading the error messages from Sun Studio helps more than
-trying to discuss it.
+		atomic_dec(qp->ctr + idx);
+	restart:
+		__wait_event_timeout(qp->wq, !atomic_read(qp->ctr + idx), tout);
+		if (unlikely(!tout)) {
+			qp->interrupted = 1;
+			goto out;
+		}
 
-Jörg
+		if (unlikely(qp->interrupted)) {
+			qp->interrupted = 0;
+			goto again;
+		}
 
--- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
+	out:
+		mutex_unlock(&qp->mutex);
+		smp_mb();
+
+		return tout;
+	}
+
+Of course, this needs some other changes to implement synchronize_qrcu() on top
+of synchronize_qrcu_timeout(). I also think that this doesn't break
+
+	[RFC PATCH] QRCU fastpath optimization
+	http://marc.info/?l=linux-kernel&m=117125577710947
+
+Looks like we can do something similar for srcu.
+
+Oleg.
+
