@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbXFYUcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbXFYUeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754165AbXFYUcp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbXFYUc3
+	id S1753968AbXFYUeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbXFYUeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:32:29 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:57162 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbXFYUc2 (ORCPT
+	Mon, 25 Jun 2007 16:34:09 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:51852 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbXFYUeH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:32:28 -0400
-Subject: Re: Linux Kernel include files
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
-Cc: harald@skogtun.org, schilling@fokus.fraunhofer.de,
-       linux-kernel@vger.kernel.org, david@lang.hm
-In-Reply-To: <468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
-	 <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
-	 <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
-	 <1182483527.10524.31.camel@shinybook.infradead.org>
-	 <467fdc75.0ficjl92unPDO1uk%Joerg.Schilling@fokus.fraunhofer.de>
-	 <1182785277.12109.121.camel@pmac.infradead.org>
-	 <87wsxrdi6e.fsf@basilikum.skogtun.org>
-	 <468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
-Content-Type: text/plain
-Date: Mon, 25 Jun 2007 21:32:18 +0100
-Message-Id: <1182803538.12109.146.camel@pmac.infradead.org>
+	Mon, 25 Jun 2007 16:34:07 -0400
+Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru
+In-Reply-To: <1182802021.1689.50.camel@hinata.boston.redhat.com>
+References: <20070622040014.234651401@goodmis.org>
+	 <alpine.LFD.0.98.0706221010490.3593@woody.linux-foundation.org>
+	 <20070622204058.GA11777@elte.hu>
+	 <alpine.LFD.0.98.0706221432080.3593@woody.linux-foundation.org>
+	 <20070622215953.GA22917@elte.hu>
+	 <1182797325.1689.14.camel@hinata.boston.redhat.com>
+	 <1182798678.5493.179.camel@localhost.localdomain>
+	 <1182802021.1689.50.camel@hinata.boston.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Mon, 25 Jun 2007 16:31:04 -0400
+Message-Id: <1182803464.5493.213.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-25 at 22:26 +0200, Joerg Schilling wrote:
-> Well, I was in hope that a small typo (in special as the correct
-> spelling is in the file README.compile) should not be a problem.
+On Mon, 2007-06-25 at 16:07 -0400, Kristian Høgsberg wrote:
+
+> > Maybe we should be looking at something like GENERIC_SOFTIRQ to run
+> > functions that a driver could add. But they would run only on the CPU
+> > that scheduled them, and do not guarantee non-reentrant as tasklets do
+> > today.
 > 
-> You need to use CCOM=suncc 
+> Sounds like this will fill the gap.  Of course, this won't reduce the
+> number of delayed-execution mechanisms available...
 
-No, I need someone else to use CCOM=suncc for me. Unless suncc works on
-Linux/PowerPC _and_ you find me a few extra hours in the day to deal
-with bugs for someone who can't even be bothered to write a coherent bug
-report.
+I disagree. Adding a generic softirq is not really adding another
+delayed-execution, it's just extending the sofitrq.  It would not have
+any different semantics as a normal softirq, except that it would be
+dynamic for modules to use.  A tasklet has different concepts than
+softirq. It adds non-reentrancy and that the tasklet function can run
+where it wasn't scheduled.
 
--- 
-dwmw2
+Adding a generic softirq would keep the same concepts as a softirq but
+just extend the users for it. Tasklets are probably not the best for
+critical sections since it can be postponed longer if it was scheduled
+on another CPU that is handling a bunch of other tasklets. So the
+latency of running the tasklet is higher and you lose a cache advantage
+by jumping to another CPU to execute.
+
+Work queues already exist, so all we need to do to replace tasklets is
+to extend softirqs for those critical cases that tasklets are used, and
+replace the rest with work queues. By removing the non critical tasklets
+to work queues will even lower the latency to execution of the more
+critical tasklets.
+
+-- Steve
+
 
