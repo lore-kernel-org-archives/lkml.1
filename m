@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbXFYD6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbXFYEAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753908AbXFYD6Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 23:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXFYD6I
+	id S1755381AbXFYEAZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 00:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbXFYEAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 23:58:08 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:56714 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755416AbXFYD57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 23:57:59 -0400
-Date: Sun, 24 Jun 2007 20:57:33 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
-       linux-security-module@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH][RFC] security: Convert LSM into a static interface
-Message-ID: <20070625035733.GF3723@sequoia.sous-sol.org>
-References: <20070625013944.GD3723@sequoia.sous-sol.org> <928208.47508.qm@web36606.mail.mud.yahoo.com>
+	Mon, 25 Jun 2007 00:00:13 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:48226 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750812AbXFYEAL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 00:00:11 -0400
+Message-ID: <467F3DA8.8030908@zytor.com>
+Date: Sun, 24 Jun 2007 20:59:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <928208.47508.qm@web36606.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Arnd Hannemann <arnd@arndnet.de>
+CC: Jan Engelhardt <jengelh@computergmbh.de>,
+       Salvatore De Paolis <depaolis.salvatore@libero.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: pivot_root alternative
+References: <20070624232734.28829225@debian> <Pine.LNX.4.64.0706242328520.11964@fbirervta.pbzchgretzou.qr> <467EE48D.5010204@arndnet.de>
+In-Reply-To: <467EE48D.5010204@arndnet.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Casey Schaufler (casey@schaufler-ca.com) wrote:
-> Just hoping to avoid a change collision. If I have to deal
-> with this today it's easy, if it doesn't show up anywhere
-> until 2.6.28 I'm breezing, but if it all hits in two weeks I
-> have some scrambling and yet another delay to deal with. Not
-> your problem, a little information would be helpful though.
+Arnd Hannemann wrote:
+> Jan Engelhardt schrieb:
+>> On Jun 24 2007 23:27, Salvatore De Paolis wrote:
+>>> i built the kernel with a busybox initramfs which runs from a usb stick. While
+>>> i boot i need to mount the real root and i'm using pivot_root.
+>>> Pivot_root . old-root return to me an "Invalid argument" error and googling i
+>>> found here http://lkml.org/lkml/2005/10/8/17 that pivot_root should be avoided.
+>>> I want to ask now what i should do to switch to a real root?
+>> use run-init from klibc?
+> 
+> However be aware of the limitation of run-init:
+> It only works for direct childs of root directory
+> /mnt/newroot won't work
+> /newroot should work ;-)
+> 
 
-Assuming no issues, 2.6.23 (which is months away, although
-merge window isn't).
+Hm, that should probably be fixed.  It should be able to work on any
+directory as long as there isn't another *filesystem* involved...
 
-> BTW, I reviewed my notes from the early days of LSM and it
-> turns out that I agree with the notion that loadable modules
-> don't make a whole lot of sense. So long as I can choose
-> security models as easily as I can change file systems, I'm
-> reasonably happy. That, and that the "default" "regular"
-> policy isn't too terribly different from the traditional
-> Unix policy.
-
-The default will continue to be capabilities.
-
-thanks,
--chris
+	-hpa
