@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbXFYKpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbXFYKqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752516AbXFYKpa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 06:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXFYKpN
+	id S1753891AbXFYKqT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 06:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbXFYKqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 06:45:13 -0400
-Received: from mx2.suse.de ([195.135.220.15]:58868 "EHLO mx2.suse.de"
+	Mon, 25 Jun 2007 06:46:12 -0400
+Received: from ns1.suse.de ([195.135.220.2]:56975 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753087AbXFYKpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 06:45:11 -0400
-Date: Mon, 25 Jun 2007 12:45:03 +0200
-Message-ID: <s5h7ipsia8g.wl%tiwai@suse.de>
+	id S1751334AbXFYKqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 06:46:11 -0400
+Date: Mon, 25 Jun 2007 12:46:05 +0200
+Message-ID: <s5h645cia6q.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: perex@suse.cz, akpm <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: perex@suse.cz, Randy Dunlap <randy.dunlap@oracle.com>,
+       akpm <akpm@linux-foundation.org>, lkml <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] ALSA: use __devexit_p
-In-Reply-To: <20070623144022.94eb0f27.randy.dunlap@oracle.com>
+In-Reply-To: <467DA3D1.6040702@garzik.org>
 References: <20070623144022.94eb0f27.randy.dunlap@oracle.com>
+	<467DA3D1.6040702@garzik.org>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta27)
  (fiddleheads) (+CVS-20060704) (i386-suse-linux)
@@ -26,17 +27,31 @@ Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 23 Jun 2007 14:40:22 -0700,
-Randy Dunlap wrote:
+At Sat, 23 Jun 2007 18:50:57 -0400,
+Jeff Garzik wrote:
 > 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+> This reminds me...
 > 
-> Change __devexit to __devexit_p:
-> sound/isa/opl3sa2.c:956: error: expected expression before '__attribute__'
+> Someone needs to go through ALSA and audit all delays executed via 
+> $FOO_interruptible().
 > 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Several delays within ALSA wait for hardware conditions, and do not 
+> check for signals pending, which means that the wait-for-condition loop 
+> becomes a busy loop:
+> 
+> 	while (1) {
+> 		foo = read_hardware()
+> 		if (foo & interesting_bits)
+> 			break;
+> 		schedule_timeout_interruptible(1);
+> 	}
+> 
+> The proper fix is (a) remove "_interruptible" [recommended] or (b) check 
+> for signals.
+> 
+> grep'ing for "_interruptible" quickly finds several such ALSA bugs.
 
-Thanks, I applied them to ALSA tree now.
+Yep...  I fixed now on ALSA tree.  Thanks for hints!
 
 
 Takashi
