@@ -1,38 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbXFYGiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXFYGl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbXFYGiU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 02:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbXFYGiO
+	id S1756882AbXFYGl0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 02:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbXFYGlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 02:38:14 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:36994 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753783AbXFYGiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 02:38:13 -0400
-Date: Mon, 25 Jun 2007 08:45:59 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: mingo@elte.hu, torvalds@linux-foundation.org, cebbert@redhat.com,
-       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070625064559.GA1680@ff.dom.local>
-References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621201624.GD22303@elte.hu> <20070622081702.GA14746@elte.hu> <E1I22yO-0004TX-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1I22yO-0004TX-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 25 Jun 2007 02:41:19 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:31674 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753644AbXFYGlS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 02:41:18 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=JF1YikzHXDEdf3J+IlWxJFSUEEgy8brIwzu5RSqqhPGblN+LlInTEV12mCcmM6w128B0RzilAn33hoNsuWjQbNvSPCSFhMYda282ausiTeoAXyJqvS14LmLhiT+Q758DAhMVmK6wztN6XlbCtxL7K9HXSAjtv2IOcxuOzwKkKQQ=  ;
+X-YMail-OSG: FZ19sR0VM1kiYAnEF0mJtm0vy2qpVLjUAPWJdbyx_m7R_ROli3lVnV1rmYofcZyLNv0rbGFrrg--
+Message-ID: <467F6388.7080101@yahoo.com.au>
+Date: Mon, 25 Jun 2007 16:41:12 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       suresh.b.siddha@intel.com
+Subject: Re: [patch 10/26] SLUB: Faster more efficient slab determination
+ for __kmalloc.
+References: <20070618095838.238615343@sgi.com>	<20070618095915.826976488@sgi.com>	<20070619130858.693ae66e.akpm@linux-foundation.org>	<Pine.LNX.4.64.0706191522230.7633@schroedinger.engr.sgi.com>	<20070619152957.a03fbb2c.akpm@linux-foundation.org>	<Pine.LNX.4.64.0706191533580.7633@schroedinger.engr.sgi.com> <20070619154654.218f902c.akpm@linux-foundation.org>
+In-Reply-To: <20070619154654.218f902c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 23, 2007 at 12:36:08PM +0200, Miklos Szeredi wrote:
-...
-> And it's not a NO_HZ kernel.
-...
+Andrew Morton wrote:
+> On Tue, 19 Jun 2007 15:38:01 -0700 (PDT)
+> Christoph Lameter <clameter@sgi.com> wrote:
+> 
+> 
+>>Ok and BUILD_BUG_ON really works? Had some bad experiences with it.
+> 
+> 
+> hm, I don't recall any problems, apart from its very obscure error
+> reporting.
+> 
+> But if it breaks, we get an opportunity to fix it ;)
 
-BTW, maybe I've missed this and it's unconnected, but I hope the
-first config has been changed - especially this CONFIG_AGP_AMD64 = y,
-and this bug from mm/slab.c has gone long ago...
+It doesn't work outside function scope, which can be annoying. The
+workaround is to just create a dummy function and put the BUILD_BUG_ON
+inside that.
 
-Jarek P.
+-- 
+SUSE Labs, Novell Inc.
