@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbXFYHIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbXFYHKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756958AbXFYHIi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 03:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXFYHI1
+	id S1757235AbXFYHKD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 03:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbXFYHJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 03:08:27 -0400
-Received: from mail-in-06.arcor-online.net ([151.189.21.46]:33669 "EHLO
-	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751599AbXFYHI0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 03:08:26 -0400
-In-Reply-To: <20070625050424.GZ943@1wt.eu>
-References: <1182723318.6819.5.camel@laptopd505.fenrus.org> <20070624232314.GA971@kvack.org> <1182730156.6819.8.camel@laptopd505.fenrus.org> <20070625001203.GB971@kvack.org> <1182731022.6819.10.camel@laptopd505.fenrus.org> <20070625004106.GA1094@stusta.de> <1182733127.6819.13.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0706241801320.10397@asgard.lang.hm> <1182734240.26621.2.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0706241824080.10397@asgard.lang.hm> <20070625050424.GZ943@1wt.eu>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e6d26e7ee86cc527095de2716f285aff@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: Benjamin LaHaise <bcrl@kvack.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@stusta.de>,
-       david@lang.hm, Oleg Verych <olecom@flower.upol.cz>,
-       rae l <crquan@gmail.com>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: -Os versus -O2
-Date: Mon, 25 Jun 2007 09:08:23 +0200
-To: Willy Tarreau <w@1wt.eu>
-X-Mailer: Apple Mail (2.623)
+	Mon, 25 Jun 2007 03:09:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44854 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752013AbXFYHJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 03:09:54 -0400
+Date: Mon, 25 Jun 2007 03:09:38 -0400
+From: Jakub Jelinek <jakub@redhat.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Matt Mackall <mpm@selenic.com>, Alexander Gabert <pappy@gentoo.org>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       libc-alpha@sourceware.org, hardened@gentoo.org
+Subject: Re: [PATCH] get_random_long() and AT_ENTROPY for auxv, kernel 2.6.21.5
+Message-ID: <20070625070938.GN7012@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <4675C678.3080807@gentoo.org> <1182128803.22999.9.camel@laptopd505.fenrus.org> <20070620203022.GO11166@waste.org> <467EADA0.9020101@gentoo.org> <20070625034508.GE11115@waste.org> <1182746583.26621.5.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182746583.26621.5.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In my experience, -Os produced faster code on gcc-2.95 than -O2 or -O3.
+On Sun, Jun 24, 2007 at 09:43:03PM -0700, Arjan van de Ven wrote:
+> > - something to do with aux vector headers
+> 
+> the primary goal is to pass a random value to userspace at process
+> start; this to save glibc from having to open /dev/urandom on ever
+> program start (which it does now for all apps compiled with
+> -fstack-protector, which in various distros is "everything").
 
-On what CPU?  The effect of different optimisations varies
-hugely between different CPUs (and architectures).
+There are 2 ways to compile -fstack-protector supporting glibc actually,
+only one opens /dev/urandom on every program initialization, the other
+computes the stack guard from some bits of the stack address (so indirectly
+depends on get_random_int() in stack randomization).
+Nevertheless, having one random long (32-bit for 32-bit arches, 64-bit
+otherwise) in aux vector would be useful.
 
-> It was not only because of cache considerations, but because gcc used
-> different tricks to avoid poor optimizations, and at the end, the CPU
-> ended executing the alternative code faster.
-
--Os is "as fast as you can without bloating the code size",
-so that is the expected result for CPUs that don't need
-special hand-holding around certain performance pitfalls.
-
-> With gcc-3.3, -Os show roughly the same performance as -O2 for me on
-> various programs. However, with gcc-3.4, I noticed a slow down with
-> -Os. And with gcc-4, using -Os optimizes only for size, even if the
-> output code is slow as hell. I've had programs whose speed dropped
-> by 70% using -Os on gcc-4.
-
-Well you better report those!  <http://gcc.gnu.org/bugzilla>
-
-> But in some situtations, it's desirable to have the smallest possible
-> kernel whatever its performance. This goes for installation CDs for
-> instance.
-
-There are much better ways to achieve that.
-
-
-Segher
-
+	Jakub
