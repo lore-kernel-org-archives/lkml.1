@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbXFYUrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbXFYUti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754378AbXFYUrY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbXFYUrQ
+	id S1754913AbXFYUti (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXFYUtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:47:16 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:39782 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbXFYUrP (ORCPT
+	Mon, 25 Jun 2007 16:49:31 -0400
+Received: from smtp.avagotech.com ([202.153.6.34]:56532 "EHLO
+	sgpsmtp2.avagotech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbXFYUta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:47:15 -0400
-Date: Mon, 25 Jun 2007 13:48:51 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, ak@suse.de
-Subject: [PATCH] mtrr/cyrix: fix sections
-Message-Id: <20070625134851.78873cc0.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 25 Jun 2007 16:49:30 -0400
+X-Greylist: delayed 2099 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 16:49:30 EDT
+Message-ID: <46802222.90104@lpbroadband.net>
+Date: Mon, 25 Jun 2007 14:14:26 -0600
+From: Frank Bennett <bennett78@lpbroadband.net>
+Reply-To: bennett78@lpbroadband.net
+User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
+MIME-Version: 1.0
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, kernel@avr32linux.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] AVR32 fixes
+References: <20070623164143.2bba7104@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <20070623164143.2bba7104@dhcp-255-175.norway.atmel.com>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-imss-version: 2.047
+X-imss-result: Passed
+X-imss-scanInfo: M:T L:E SM:1
+X-imss-tmaseResult: TT:1 TS:-13.8630 TC:1F TRN:39 TV:3.6.1039(15260.003)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:1 C:1 M:1 S:3 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Haavard Skinnemoen wrote:
+> Hi Linus,
+>
+> Please pull the 'for-linus' branch of
+>
+>   git://www.atmel.no/~hskinnemoen/linux/kernel/avr32.git for-linus
+>
+> to receive the following updates.
+>
+> The status of the various SL*B allocators on AVR32 is now as follows:
+>   * SLAB works, but debugging is effectively disabled due to
+>     ARCH_KMALLOC_MINALIGN.
+>   * SLUB works, including debugging.
+>   * SLOB seems to ignore ARCH_KMALLOC_MINALIGN, so it breaks DMA
+>     (SPI in particular is affected by this.)
+>
+> So since SLUB is currently the allocator that works best on AVR32, I've
+> enabled it by default for both ATSTK1002 and ATNGW100. Big thanks to
+> Christoph for fixing the ARCH_KMALLOC_MINALIGN vs. CONFIG_SLUB_DEBUG
+> issue.
+>
+> David Brownell (1):
+>       [AVR32] Initialize dma_mask and dma_coherent_mask
+>
+> Haavard Skinnemoen (2):
+>       [AVR32] Fix bug in invalidate_dcache_region()
+>       [AVR32] Update defconfigs
+>
+> ben.nizette@iinet.net.au (1):
+>       [AVR32] NGW100, Remove relics of the old USART mapping scheme
+>   
+snip, snip.....
+makes fine, but requires :
+export ARCH=avr32
+export CROSS_COMPILE=avr32-linux-
+make defconfig
+make
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CHK     include/linux/compile.h
+  MODPOST vmlinux
+  UIMAGE arch/avr32/boot/images/uImage
+"mkimage" command not found - U-Boot images will not be built
+  Image arch/avr32/boot/images/uImage is ready
+make[1]: `arch/avr32/boot/images/vmlinux.elf' is up to date.
+  Building modules, stage 2.
+  MODPOST 20 modules
 
-Are there peculiarities about Cyrix that mean this isn't needed?
+-Frank Bennett
 
-main.c::mtrr_add() or mtrr_del() [exported]
-calls main.c::mtrr_add_page() or mtrr_del_page() or mtrr_restore() [resume]
-calls main.c::set_mtrr()
-calls main.c::ipi_handler()
-calls main.c::mtrr_if->set_all() == which can be cyrix_set_all
-
-WARNING: arch/i386/kernel/built-in.o(.text+0x8657): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
-WARNING: arch/i386/kernel/built-in.o(.text+0x866b): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
-WARNING: arch/i386/kernel/built-in.o(.text+0x867e): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
-WARNING: arch/i386/kernel/built-in.o(.text+0x8684): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
-WARNING: arch/i386/kernel/built-in.o(.text+0x868a): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/i386/kernel/cpu/mtrr/cyrix.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux-2.6.22-rc6.orig/arch/i386/kernel/cpu/mtrr/cyrix.c
-+++ linux-2.6.22-rc6/arch/i386/kernel/cpu/mtrr/cyrix.c
-@@ -233,12 +233,12 @@ typedef struct {
- 	mtrr_type type;
- } arr_state_t;
- 
--static arr_state_t arr_state[8] __devinitdata = {
-+static arr_state_t arr_state[8] = {
- 	{0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}, {0UL, 0UL, 0UL},
- 	{0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}
- };
- 
--static unsigned char ccr_state[7] __devinitdata = { 0, 0, 0, 0, 0, 0, 0 };
-+static unsigned char ccr_state[7] = { 0, 0, 0, 0, 0, 0, 0 };
- 
- static void cyrix_set_all(void)
- {
