@@ -1,123 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbXFYVTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbXFYVZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756066AbXFYVTR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXFYVS7
+	id S1754733AbXFYVZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbXFYVZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:18:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:6837 "EHLO
+	Mon, 25 Jun 2007 17:25:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:14808 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbXFYVS6 (ORCPT
+	with ESMTP id S1752343AbXFYVZs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:18:58 -0400
+	Mon, 25 Jun 2007 17:25:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=A3Kj6ZtYNxD9wQ8O47Z/EMnHtY7D13WVLnUtdDm9vjco+KUTOZhGIPkL63gokL5D0rkHQEz+9dVtdZ6BoHHweuezulXfm0tSwja4P1iVzRPWEo2iYETTygIQ7rMy0f6P2CThryq2dJczFtO7Jg8151LGBbRMSexD7m7QM6uPl5Q=
-Date: Mon, 25 Jun 2007 23:18:55 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Jay Cliburn <jacliburn@bellsouth.net>,
-       "Jay L. T. Cornwall" <jay@esuna.co.uk>, linux-kernel@vger.kernel.org,
-       Chris Snook <csnook@redhat.com>, netdev@vger.kernel.org
-Subject: [PATCH] atl1: disable 64bit DMA
-Message-ID: <20070625211855.GA19275@dreamland.darkstar.lan>
-References: <467B12CA.5060405@esuna.co.uk> <467BE118.4090308@redhat.com> <467BE4F1.7040308@esuna.co.uk> <467D0EB0.9030100@esuna.co.uk> <20070624125957.2e27820c@osprey.hogchain.net> <467ED4A8.4080500@esuna.co.uk> <20070624164519.04f215b8@osprey.hogchain.net> <467FB237.2030703@esuna.co.uk> <467FB844.6060702@bellsouth.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <467FB844.6060702@bellsouth.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=aEbYVw7qvdZmKiOT/UxGgjqLDllhXCTuo/aZIAM1HoL4KsAv77RPE05hvkoK1pSn3Y+jGx+cYjfzUrBYTIBUWyvC5GgihORsveQ4nf2HZmMz+x1piXk3uOWVyoNf5kPZDUZ8tI2rvya0kgoVvBLHSFyX+ZNjA9oTPi1deZLYQnk=
+Subject: Re: [patch] Reporting the lid status using INPUT
+From: Richard Hughes <hughsient@gmail.com>
+To: =?ISO-8859-1?Q?Bart=F3k?= Albert <a_bartok@freemail.hu>
+Cc: Dmitry Torokhov <dtor@insightbb.com>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Bastien Nocera <hadess@hadess.net>, David Zeuthen <david@fubar.dk>,
+       linux-kernel <linux-kernel@vger.kernel.org>, len.brown@intel.com
+In-Reply-To: <freemail.20070525224936.77205@fm01.freemail.hu>
+References: <freemail.20070525224936.77205@fm01.freemail.hu>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 25 Jun 2007 22:24:59 +0100
+Message-Id: <1182806699.2299.16.camel@work>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Mon, Jun 25, 2007 at 07:42:44AM -0500, Jay Cliburn ha scritto: 
-> Jay L. T. Cornwall wrote:
-> >Jay Cliburn wrote:
+On Mon, 2007-06-25 at 22:49 +0200, Bartók Albert wrote:
+> GMail On 16/06/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+> > On Saturday 16 June 2007 13:11, Richard Hughes wrote:
+> > > On Fri, 2007-06-15 at 15:53 +0100, Richard Hughes wrote:
+> > > > On Fri, 2007-06-15 at 10:29 -0400, Dmitry Torokhov wrote:
+> > > > > On 6/15/07, Richard Hughes <hughsient@gmail.com> wrote:
+> > > > > > On Fri, 2007-06-15 at 13:29 +0100, Richard Hughes wrote:
+> > > > > > > in response to an event, but I'm thinking in a resume hook we should
+> > > > > > > probably do acpi_evaluate_integer(handle, "_LID", NULL, &state) and then
+> > > > > > > send an event, just so userspace is aware of what the state of the panel
+> > > > > > > is.
+> > > > > >
+> > > > > > Attached patch fixed the issue for me. Comments?
+> > > > > >
+> > > > >
+> > > > > The patch makes perfect sense. The only issue I have is this:
+> > > > >
+> > > > > > +       /* on resume we send the state; it might be the same, but userspace
+> > > > > > +        * should handle duplicated events */
+> > > > >
+> > > > > If switch state matches to what input layer thinks it is the event
+> > > > > will not even reach userspace.
+> > > >
+> > > > Okay, new patch attached, thanks for the speedy review.
+> > >
+> > > This fix is also confirmed by somebody else, see
+> > > https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243030
+> > >
+> > > It would be great if this could go into .22, although I appreciate it's
+> > > quite late in the day.
+> > >
 > >
-> >>For reasons not yet clear to me, it appears the L1 driver has a bug or
-> >>the device itself has trouble with DMA in high memory.  This patch,
-> >>drafted by Luca Tettamanti, is being explored as a workaround.  I'd be
-> >>interested to know if it fixes your problem.
-> >
-> >Yes, it certainly seems to. Now running with this patch and 4GB active,
-> >I've transferred about 15GB with no problem so far. It usually oopses
-> >after a GB or two.
-> >
-> >I guess it's not an ideal solution, architecturally speaking, but it's a
-> >good deal better than an unstable driver. If there's any other patches
-> >you'd like me to test or traces to capture, I'm happy to help out.
-> >Otherwise I'll run with this one for now since it does the job!
+> > This is of course Len's call but in my book this is a bugfix and as such
+> > is appropriate for -rc4/rc5.
 > 
-> Okay Jay, thanks.
+> > Guys? Any ack-nak?
 > 
-> Luca, would you please submit your patch to Jeff Garzik and netdev?
+> works perfectly for me so far.
 
-Hi Jeff,
-a couple of users reported hard lockups when using L1 NICs on machines
-with 4GB or more of RAM. We're still waiting official confirmation from
-the vendor, but it seems that L1 has problems doing DMA to/from high
-memory (physical address above the 4GB limit). Passing 32bit DMA mask
-cures the problem.
+Thanks. Len, can you add this to your tree please. Thanks.
 
-Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
-
----
-I think that the patch should be included in 2.6.22.
-
- drivers/net/atl1/atl1_main.c |   15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
-index 6862c11..a730f15 100644
---- a/drivers/net/atl1/atl1_main.c
-+++ b/drivers/net/atl1/atl1_main.c
-@@ -2097,21 +2097,16 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
- 	struct net_device *netdev;
- 	struct atl1_adapter *adapter;
- 	static int cards_found = 0;
--	bool pci_using_64 = true;
- 	int err;
- 
- 	err = pci_enable_device(pdev);
- 	if (err)
- 		return err;
- 
--	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
-+	err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
- 	if (err) {
--		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
--		if (err) {
--			dev_err(&pdev->dev, "no usable DMA configuration\n");
--			goto err_dma;
--		}
--		pci_using_64 = false;
-+		dev_err(&pdev->dev, "no usable DMA configuration\n");
-+		goto err_dma;
- 	}
- 	/* Mark all PCI regions associated with PCI device
- 	 * pdev as being reserved by owner atl1_driver_name
-@@ -2176,7 +2171,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
- 
- 	netdev->ethtool_ops = &atl1_ethtool_ops;
- 	adapter->bd_number = cards_found;
--	adapter->pci_using_64 = pci_using_64;
- 
- 	/* setup the private structure */
- 	err = atl1_sw_init(adapter);
-@@ -2193,9 +2187,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
- 	 */
- 	/* netdev->features |= NETIF_F_TSO; */
- 
--	if (pci_using_64)
--		netdev->features |= NETIF_F_HIGHDMA;
--
- 	netdev->features |= NETIF_F_LLTX;
- 
- 	/*
+Richard.
 
 
-Luca
--- 
-Non ho ancora capito se il mio cane e` maschio o femmina:
-quando fa la pipi` si chiude in bagno
