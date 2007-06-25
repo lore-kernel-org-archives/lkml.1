@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbXFYSu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbXFYSup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbXFYSu7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 14:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbXFYSuq
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 14:50:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42212 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753212AbXFYSup (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1755217AbXFYSup (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 25 Jun 2007 14:50:45 -0400
-Date: Mon, 25 Jun 2007 11:50:44 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXFYSua
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 25 Jun 2007 14:50:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46373 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753231AbXFYSu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 14:50:29 -0400
+Date: Mon, 25 Jun 2007 20:50:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-In-Reply-To: <Pine.LNX.4.64.0706251933540.13382@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0706251147400.9332@schroedinger.engr.sgi.com>
-References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
- <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706221040310.17139@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
- <20070624083849.GA19079@flint.arm.linux.org.uk>
- <Pine.LNX.4.64.0706241122030.27778@blonde.wat.veritas.com>
- <20070624105152.GB14099@flint.arm.linux.org.uk>
- <Pine.LNX.4.64.0706250120560.28286@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706250607260.5191@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706251729250.4911@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706250952490.8320@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706251804420.7592@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706251108180.8907@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706251933540.13382@blonde.wat.veritas.com>
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch, 2.6.22-rc6] fix nmi_watchdog=2 bootup hang, take #2
+Message-ID: <20070625185014.GA3935@elte.hu>
+References: <20070605094555.GA28097@elte.hu> <20070605095025.GA29029@elte.hu> <20070605095600.GA29270@elte.hu> <20070610181016.GA15979@atjola.homenet> <20070618121122.GA14375@elte.hu> <20070625061819.GA21874@elte.hu> <20070625065956.GA31725@elte.hu> <20070625080521.GA24333@elte.hu> <20070625082652.GA3870@elte.hu> <20070625124512.GA5118@atjola.homenet>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070625124512.GA5118@atjola.homenet>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jun 2007, Hugh Dickins wrote:
 
-> > The "sometimes we have kmalloced buffers" locations need to be fixed.
+* Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+
+> > and of course i'm happy to test any patch that is simpler than the 
+> > brutal revert i sent.
 > 
-> I've said enough, I'd better leave it to others to deter you or not
-> from fiddling around pointlessly here.
+> wrmsrl() looks broken, dropping the upper 32bits of the value to be 
+> written. Does this help?
 
-Are there any locations left after the two fixes to pa-risc and arm?
+this did the trick, rc6 plus your fix and the NMI watchdog works again! 
+Thanks! I suspect other code (oprofile?) broke due to this too.
 
-If the ARM fix solves the issue then we may not need that special casing 
-anymore. Maybe the sometimes has become never?
+below is a tidied up patch for upstream application. Must-have for 
+2.6.22.
 
+	Ingo
 
+----------------->
+From: Björn Steinbrink <B.Steinbrink@gmx.de>
+Subject: [patch, 2.6.22-rc6] fix nmi_watchdog=2 bootup hang, take #2
 
+wrmsrl() is broken, dropping the upper 32bits of the value to be
+written. This broke the NMI watchdog on AMD hardware. (and it
+probably broke other code too.)
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/asm-i386/paravirt.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/include/asm-i386/paravirt.h
+===================================================================
+--- linux.orig/include/asm-i386/paravirt.h
++++ linux/include/asm-i386/paravirt.h
+@@ -539,7 +539,7 @@ static inline int paravirt_write_msr(uns
+ 	val = paravirt_read_msr(msr, &_err);	\
+ } while(0)
+ 
+-#define wrmsrl(msr,val)		((void)paravirt_write_msr(msr, val, 0))
++#define wrmsrl(msr,val)		wrmsr(msr, (u32)((u64)(val)), ((u64)(val))>>32)
+ #define wrmsr_safe(msr,a,b)	paravirt_write_msr(msr, a, b)
+ 
+ /* rdmsr with exception handling */
