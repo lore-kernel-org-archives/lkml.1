@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbXFYGRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbXFYGSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbXFYGRP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 02:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbXFYGRA
+	id S1756778AbXFYGSR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 02:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbXFYGSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 02:17:00 -0400
-Received: from mail-in-12.arcor-online.net ([151.189.21.52]:48410 "EHLO
-	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752152AbXFYGQ7 (ORCPT
+	Mon, 25 Jun 2007 02:18:09 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:22433 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752152AbXFYGSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 02:16:59 -0400
-In-Reply-To: <20070624214253.GL7590@daikokuya.co.uk>
-References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <20070624214253.GL7590@daikokuya.co.uk>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <decc78d5943353c7bc07ee7e4566e836@kernel.crashing.org>
+	Mon, 25 Jun 2007 02:18:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=ECJjn0gWuAM4dqwynEJbS8ctJiCpGcX3Kt6B0be7UAv8WNvGLgLc4pWaW6CSrX60444zuS5hv0IT2+mvx9StQPaSuv3o8tZdV1wf9Q5CHtRcbjRt0tP4qWIB5scuZ0LVsSu3k4Nu+Q+ugWHXzQjhQK8j3k3HOv0VDUN6RcaXTMc=  ;
+X-YMail-OSG: H6w7BkUVM1mEzE1keSTQb2QkqjybzVOZWzyL7s.ZtrVb_K8I38fE5U0E.Zoh3hbaKvBGlggK8Q--
+Message-ID: <467F5E14.5030401@yahoo.com.au>
+Date: Mon, 25 Jun 2007 16:17:56 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Paul Mundt <lethal@linux-sh.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] slob: poor man's NUMA support.
+References: <20070619090616.GA23697@linux-sh.org>
+In-Reply-To: <20070619090616.GA23697@linux-sh.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-sparse@vger.kernel.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Date: Mon, 25 Jun 2007 08:16:33 +0200
-To: Neil Booth <neil@daikokuya.co.uk>
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> don't forget -> if you're going to accept extra stuff.  GCC forgot ->
-> with the parser rewrite, yes I filed a PR.
+Paul Mundt wrote:
+> This adds preliminary NUMA support to SLOB, primarily aimed at systems
+> with small nodes (tested all the way down to a 128kB SRAM block), whether
+> asymmetric or otherwise.
 
--> is not allowed within the second arg to __builtin_offsetof().
-Or do you mean something else?  What's the PR #, and did it ever
-get fixed?
+Fine by me as well, FWIW. My points about per-cpu/node queues were not
+to say that I'm really opposed to getting this in first. In a way, you
+sell yourself short with the patch name: the implementation may be just
+a basic one, but simplicity is a key point of SLOB... Adding numa
+awareness to the slob APIs is obviously a key step and makes it much
+easier to experiment with enhancements to the implementation.
 
+Unless it has been picked up already, I'd call it "initial NUMA support"
+;) Thanks! Would be great to hear about your experiences using SLOB as
+well -- how much memory you're saving, how it performs, etc.
 
-Segher
-
+-- 
+SUSE Labs, Novell Inc.
