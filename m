@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbXFYVEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbXFYVEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbXFYVEE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbXFYVDo
+	id S1755989AbXFYVEY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbXFYVD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:03:44 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:59864
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558AbXFYVDm (ORCPT
+	Mon, 25 Jun 2007 17:03:58 -0400
+Received: from fw1-az.mvista.com ([65.200.49.156]:4619 "EHLO
+	zipcode.az.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752230AbXFYVD5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:03:42 -0400
-Date: Mon, 25 Jun 2007 14:02:22 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@suse.cz>
-cc: Chris Mason <chris.mason@oracle.com>, James Morris <jmorris@namei.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>, Lars Marowsky-Bree <lmb@suse.de>,
-       Crispin Cowan <crispin@novell.com>, Greg KH <greg@kroah.com>,
-       Andreas Gruenbacher <agruen@suse.de>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 39/45] AppArmor: Profile loading and manipulation,
- pathname matching
-In-Reply-To: <20070625151411.GB1018@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.64.0706251358210.20356@asgard.lang.hm>
-References: <20070621183311.GC18990@elf.ucw.cz> <20070621192407.GF20105@marowsky-bree.de>
- <Line.LNX.4.64.0706211530290.483@localhost.localdomain>
- <20070621195400.GK20105@marowsky-bree.de> <1182459594.20464.16.camel@moss-spartans.epoch.ncsc.mil>
- <20070622003436.GB6222@think.oraclecorp.com> <Line.LNX.4.64.0706212044590.2100@localhost.localdomain>
- <20070622121742.GC6222@think.oraclecorp.com> <Line.LNX.4.64.0706220858170.5751@localhost.localdomain>
- <20070622140240.GM6222@think.oraclecorp.com> <20070625151411.GB1018@elf.ucw.cz>
+	Mon, 25 Jun 2007 17:03:57 -0400
+Date: Mon, 25 Jun 2007 14:01:49 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, jaylubo@motorola.com
+Subject: [PATCH] serial: Clear proper MPSC interrupt cause bits
+Message-ID: <20070625210149.GB11031@mag.az.mvista.com>
+References: <20070622023208.GA20651@mag.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070622023208.GA20651@mag.az.mvista.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jun 2007, Pavel Machek wrote:
+From: Jay Lubomirski <jaylubo@motorola.com>
 
-> Hi!
->
->> We've been over the "AA is different" discussion in threads about a
->> billion times, and at the last kernel summit.  I think Lars and others
->> have done a pretty good job of describing the problems they are trying
->> to solve, can we please move on to discussing technical issues around
->> that?
->
-> Actually, I surprised Lars a lot by telling him ln /etc/shadow /tmp/
-> allows any user to make AA ineffective on large part of systems -- in
-> internal discussion. (It is not actually a _bug_, but it is certainly
-> unexpected).
->
-> (Does it surprise you, too? I'm pretty sure it would surprise many users).
+The interrupt clearing code in mpsc_sdma_intr_ack() mistakenly clears the
+interrupt for both controllers instead of just the one its supposed to.
+This can result in the other controller appearing to hang because its
+interrupt was effectively lost.
 
-no, it doesn't surprise me in the least. AA is controlling access to the 
-thing called /etc/shadow, if you grant access to it in other ways you 
-bypass the restrictions.
+So, don't clear the interrupt cause bits for both MPSC controllers when
+clearing the interrupt for one of them.  Just clear the one that is
+supposed to be cleared.
 
-if you follow the ln /etc/shadow /tmp/ with chmod 777 /tmp/shadow the 
-system is completely insecure.
+Signed-off-by: Jay Lubomirski <jaylubo@motorola.com>
+Acked-by: Mark A. Greer <mgreer@mvista.com>
+---
+Please add this to 2.6.21.x and 2.6.22-rc6, if its not too late.
 
-this is standard stuff that normal sysadmins expect. it's only people who 
-have focused on the label approach who would expect it to be any 
-different.
+ drivers/serial/mpsc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> James summarized it nicely:
->
-> # The design of the AppArmor is based on _appearing simple_, but at the
-> # expense of completeness and thus correctness.
->
-> If even Lars can be surprised by AAs behaviour, I do not think we can
-> say "AA is different". I'm afraid that AA is trap for users. It
-> appears simple, and mostly does what it is told, but does not do _what
-> user wants_.
-
-I thought it had been made very clear that hard links like this were a 
-potential way around the restrictions, which is why controlled tasks are 
-not allowed to do arbatrary hard links.
-
-David Lang
+diff --git a/drivers/serial/mpsc.c b/drivers/serial/mpsc.c
+index d09f209..00924fe 100644
+--- a/drivers/serial/mpsc.c
++++ b/drivers/serial/mpsc.c
+@@ -503,7 +503,8 @@ mpsc_sdma_intr_ack(struct mpsc_port_info *pi)
+ 
+ 	if (pi->mirror_regs)
+ 		pi->shared_regs->SDMA_INTR_CAUSE_m = 0;
+-	writel(0, pi->shared_regs->sdma_intr_base + SDMA_INTR_CAUSE);
++	writeb(0x00, pi->shared_regs->sdma_intr_base + SDMA_INTR_CAUSE +
++	       pi->port.line);
+ 	return;
+ }
