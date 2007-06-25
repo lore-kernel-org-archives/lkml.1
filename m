@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbXFYM5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbXFYM5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbXFYM5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 08:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXFYM5I
+	id S1755834AbXFYM5f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 08:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbXFYM5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 08:57:08 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:1648 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbXFYM5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 08:57:07 -0400
-Date: Mon, 25 Jun 2007 17:04:34 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, ak@suse.de, hch@infradead.org,
-       devel@openvz.org
-Subject: Re: [PATCH -mm 2/2] x86_64: semi-rewrite of PTRACE_PEEKUSR, PTRACE_POKEUSR
-Message-ID: <20070625130434.GC6632@localhost.sw.ru>
-References: <20070620150844.GC6663@localhost.sw.ru> <20070620214148.51AE34D05DC@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070620214148.51AE34D05DC@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+	Mon, 25 Jun 2007 08:57:14 -0400
+Received: from cmx2.usace.army.mil ([140.194.245.34]:16918 "EHLO
+	cmx2.usace.army.mil" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754044AbXFYM5K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 08:57:10 -0400
+X-Greylist: delayed 847 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 08:57:10 EDT
+Message-ID: <467FB844.6060702@bellsouth.net>
+Date: Mon, 25 Jun 2007 07:42:44 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+Reply-To: jacliburn@bellsouth.net
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: "Jay L. T. Cornwall" <jay@esuna.co.uk>
+CC: linux-kernel@vger.kernel.org, kronos.it@gmail.com,
+       Chris Snook <csnook@redhat.com>
+Subject: Re: Attansic L1 page corruption
+References: <467B12CA.5060405@esuna.co.uk>	<467BE118.4090308@redhat.com>	<467BE4F1.7040308@esuna.co.uk>	<467D0EB0.9030100@esuna.co.uk>	<20070624125957.2e27820c@osprey.hogchain.net>	<467ED4A8.4080500@esuna.co.uk> <20070624164519.04f215b8@osprey.hogchain.net> <467FB237.2030703@esuna.co.uk>
+In-Reply-To: <467FB237.2030703@esuna.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Jun 2007 12:43:01.0501 (UTC) FILETIME=[5DE0EAD0:01C7B726]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 20, 2007 at 02:41:48PM -0700, Roland McGrath wrote:
-> What's the purpose of the change?
+Jay L. T. Cornwall wrote:
+> Jay Cliburn wrote:
+> 
+>> For reasons not yet clear to me, it appears the L1 driver has a bug or
+>> the device itself has trouble with DMA in high memory.  This patch,
+>> drafted by Luca Tettamanti, is being explored as a workaround.  I'd be
+>> interested to know if it fixes your problem.
+> 
+> Yes, it certainly seems to. Now running with this patch and 4GB active,
+> I've transferred about 15GB with no problem so far. It usually oopses
+> after a GB or two.
+> 
+> I guess it's not an ideal solution, architecturally speaking, but it's a
+> good deal better than an unstable driver. If there's any other patches
+> you'd like me to test or traces to capture, I'm happy to help out.
+> Otherwise I'll run with this one for now since it does the job!
 
-Chopping small bits of utrace to mainline.
+Okay Jay, thanks.
 
-regset stuff looks reasonable and self-contained enough to start with.
-However, regset part in utrace contain quite a few unused things, so
-I'm leaving those alone. Their time will come (or won't).
+Luca, would you please submit your patch to Jeff Garzik and netdev?
 
-This way we can merge non-racy stuff first and leave core utrace for
-later.
+Jay
 
