@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbXFYXkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbXFYXlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754430AbXFYXkk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 19:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbXFYXkb
+	id S1754952AbXFYXlb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 19:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbXFYXlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 19:40:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45654 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbXFYXka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 19:40:30 -0400
-Message-ID: <4680526A.3020908@redhat.com>
-Date: Mon, 25 Jun 2007 19:40:26 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Jay Cliburn <jacliburn@bellsouth.net>,
-       "Jay L. T. Cornwall" <jay@esuna.co.uk>,
-       Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] atl1: disable 64bit DMA
-References: <467B12CA.5060405@esuna.co.uk> <467BE118.4090308@redhat.com> <467BE4F1.7040308@esuna.co.uk> <467D0EB0.9030100@esuna.co.uk> <20070624125957.2e27820c@osprey.hogchain.net> <467ED4A8.4080500@esuna.co.uk> <20070624164519.04f215b8@osprey.hogchain.net> <467FB237.2030703@esuna.co.uk> <467FB844.6060702@bellsouth.net> <20070625211855.GA19275@dreamland.darkstar.lan> <46803557.50805@redhat.com> <468038FC.6090302@esuna.co.uk> <46803A40.4070009@redhat.com> <20070625180039.4f083846@osprey.hogchain.net> <46804CFC.4000702@pobox.com>
-In-Reply-To: <46804CFC.4000702@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 25 Jun 2007 19:41:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47349 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751531AbXFYXlY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 19:41:24 -0400
+Date: Mon, 25 Jun 2007 16:41:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, perex@suse.cz,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH] ALSA: fix ice1712 section mismatch
+Message-Id: <20070625164110.94ecade1.akpm@linux-foundation.org>
+In-Reply-To: <20070625161739.8115c40c.randy.dunlap@oracle.com>
+References: <20070625161739.8115c40c.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Jay Cliburn wrote:
->> On Mon, 25 Jun 2007 17:57:20 -0400
->> Chris Snook <csnook@redhat.com> wrote:
->>
->>> Jay L. T. Cornwall wrote:
->>>> Chris Snook wrote:
->>>>
->>>>> What boards have we seen this on?  It's quite possible this is:
->>>> I can reproduce on an Asus P5K with a Core 2 Duo E6600.
->>>>
->>>> lspci identifies the controller as:
->>>>   02:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit
->>>>   Ethernet Adapter (rev b0)
->>>>
->>>> dmesg notes the PCI-DMA mapping implementation:
->>>>   PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
->>>>
->>> I had a hunch this was on Intel.  I'd rather just disable this when
->>> swiotlb is in use, unless we get more complaints.  It's probably
->>> ultimately a BIOS quirk anyway.
->>
->> So far we have reports from both camps:
->>
->> Asus M2N8-VMX (AM2):    1 report of lockup
->> http://sourceforge.net/mailarchive/forum.php?thread_name=46780384.063603.26165%40m12-15.163.com&forum_name=atl1-devel 
->>
->>
->> Asus P5K (LGA775):    2 reports of lockups
->> http://sourceforge.net/mailarchive/forum.php?thread_name=467E7E34.4010603%40gmail.com&forum_name=atl1-devel 
->>
->> http://lkml.org/lkml/2007/6/25/107
->>
->> The common denominator in these reports is 4GB RAM.
-> 
-> Although its possible this device doesn't really support 64-bit, it's 
-> more likely that this is a platform problem of some sort, or a driver 
-> bug of some sort.  In the driver, maybe it has a problem when you 
-> -cross- a 4GB boundary, which is not uncommon.
-> 
->     Jeff
+On Mon, 25 Jun 2007 16:17:39 -0700 Randy Dunlap <randy.dunlap@oracle.com>
+wrote:
 
-I'm going on the record to say I don't trust the chipsets on these boards, and 
-I'd like anyone having these problems to let us 
-(atl1-devel@lists.sourceforge.net) know if they encounter similar problems with 
-any other hardware.  That said, I'm not going to stand in the way of stability 
-just because it *might* be someone else's fault.  I don't think limiting 
-ourselves to dma32, at least while we track this down, is much of a loss on 
-current hardware.
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Cannot mix const and __initdata:
+> sound/pci/ice1712/prodigy192.c:708: error: ak4114_controls causes a section type conflict
+> 
 
-Acked-By: Chris Snook <csnook@redhat.com>
+This is a fatal compilation error, isn't it?
+
+> ---
+>  sound/pci/ice1712/prodigy192.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.22-rc6.orig/sound/pci/ice1712/prodigy192.c
+> +++ linux-2.6.22-rc6/sound/pci/ice1712/prodigy192.c
+> @@ -705,7 +705,7 @@ static int ak4114_input_sw_put(struct sn
+>  }
+>  
+>  
+> -static const struct snd_kcontrol_new ak4114_controls[] __devinitdata = {
+> +static struct snd_kcontrol_new ak4114_controls[] __devinitdata = {
+>  	{
+>  		.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
+>  		.name = "MIODIO IEC958 Capture Input",
+
+That patch is already in the alsa git tree (has been there for five days),
+so I would of course prefer that the alsa guys merge it into 2.6.22.
+
+However alsa merges are a bit spotty, so I'll queue this up anyway and will
+merge it in a day or three if nothing else happens, OK?
+
