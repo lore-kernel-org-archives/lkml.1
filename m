@@ -1,62 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbXFYTwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbXFYTwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755808AbXFYTwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 15:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbXFYTwS
+	id S1753742AbXFYTwj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 15:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbXFYTw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 15:52:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41756 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753095AbXFYTwR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 15:52:17 -0400
-Date: Mon, 25 Jun 2007 12:52:03 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-Message-ID: <20070625125203.5719952c@freepuppy.localdomain.hemminger.net>
-In-Reply-To: <467FF23B.30509@imap.cc>
-References: <10876.1182698167@lwn.net>
-	<467FF23B.30509@imap.cc>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; x86_64-redhat-linux-gnu)
+	Mon, 25 Jun 2007 15:52:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33257 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755869AbXFYTw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 15:52:27 -0400
+Date: Mon, 25 Jun 2007 15:52:13 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>
+Subject: Re: [PATCH] RFC: have tcp_recvmsg() check kthread_should_stop() and
+ treat it as if it were signalled
+Message-Id: <20070625155213.665e5215.jlayton@redhat.com>
+In-Reply-To: <a781481a0706251241n36126456x7f4b445a86d1a68f@mail.gmail.com>
+References: <20070608123527.9b4cdafe.jlayton@redhat.com>
+	<E1HwpmG-0008LW-00@gondolin.me.apana.org.au>
+	<20070609070826.7bd3480c.jlayton@redhat.com>
+	<a781481a0706251241n36126456x7f4b445a86d1a68f@mail.gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jun 2007 18:50:03 +0200
-Tilman Schmidt <tilman@imap.cc> wrote:
+On Tue, 26 Jun 2007 01:11:20 +0530
+"Satyam Sharma" <satyam.sharma@gmail.com> wrote:
 
-> Ingo Molnar <mingo@elte.hu> wrote:
-> > so how about the following, different approach: anyone who has a tasklet 
-> > in any performance-sensitive codepath, please yell now.
+> Hi,
+> 
+> On 6/9/07, Jeff Layton <jlayton@redhat.com> wrote:
+> > On Sat, 09 Jun 2007 11:30:04 +1000
+> > Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> >
+> > > Please cc networking patches to netdev@vger.kernel.org.
+> > >
+> > > Jeff Layton <jlayton@redhat.com> wrote:
+> > > >
+> > > > The following patch is a first stab at removing this need. It makes it
+> > > > so that in tcp_recvmsg() we also check kthread_should_stop() at any
+> > > > point where we currently check to see if the task was signalled. If
+> > > > that returns true, then it acts as if it were signalled and returns to
+> > > > the calling function.
+> 
+> I got bit by the same thing when I was implementing a kthread that sleeps
+> on skb_recv_datagram() (=> wait_for_packet) with noblock = 0 over a netlink
+> socket. I need to use the same SIGKILL hack before kthread_stop() to ensure
+> the kthread does wake up *and* unblock from skb_recv_datagram() when the
+> module is being unloaded. Searched hard, but just couldn't find a prettier
+> solution (if someone knows, please let me know).
+> 
+> > > This just doesn't seem to fit.  Why should networking care about kthreads?
+> 
+> I agree.
+> 
+> > > Perhaps you can get kthread_stop to send a signal instead?
+> 
+> Yes, why not embed a send_sig(SIGKILL) just before the wake_up_process()
+> in kthread_stop() itself?
+> 
+> Looking at some happily out-of-date comments in the kthread code, I can
+> guess that at some point of time (perhaps very early drafts) Rusty actually
+> *did* implement the whole kthread_stop() functionality using signals, but
+> I suspect it might've been discarded and the kthread_stop_info approach
+> used instead to protect from spurious signals from userspace. (?)
+> 
+> So could we have signals in _addition_ to kthread_stop_info and change
+> kthread_should_stop() to check for both:
+> 
+> kthread_stop_info.k == current && signal_pending(current)
+> 
+> If !kthread_should_stop() && signal_pending(current) => spurious signal,
+> so just flush and discard (in the kthread).
+> 
+> > The problem there is that we still have to make the kthread let signals
+> > through. The nice thing about this approach is that we can make the
+> > kthread ignore signals, but still allow it to break out of kernel_recvmsg
+> > when a kthread_stop is done.
+> 
+> Why is it wrong for kthreads to let signals through? We can ignore out
+> all signals we're not interested in, and flush the spurious ones ...
+> otherwise there really isn't much those kthreads can do that get blocked
+> in such functions, is there?
+> 
+> Satyam
 
+Yes, after I wrote that I began to question that assumption too. I was
+pretty much going on a statement by Christoph Hellwig on an earlier
+patch that I did:
 
-Getting rid of tasklet's may seem like a good idea. But doing it by changing
-them all to workqueue's would have bad consequences for networking.
+-----[snip]------
+The right way to fix this is to stop sending signals at all and have
+a kernel-internal way to get out of kernel_recvmsg.  Uses of signals by
+kernel thread generally are bugs.
+-----[snip]------
 
-The first issue is that it would change the semantic assumptions in the
-places where tasklets are used. Many places "know" that a tasklet runs in soft
-irq context so extra locking is not needed.
+Though this makes no sense to me. I don't see any reason why kthreads
+can't use signals, and hacking support for breaking out of sleeping
+functions seems redundant.
 
-The performance overhead of changing to workqueue's could also be disastrous for
-some devices. There are 10G device drivers that use tasklets to handle transmit
-completion.
-
-
-Here is a more detailed list how network devices are using tasklet's
-
-Receive packet handling: ifb, ppp, ipw2200, ipw2100
-Receive buffer refill: acenic, s2io
-Receive & Transmit: sc9031, sundance
-Transmit buffer allocation: smc91x
-Phy handling: skge
-
-Sorry, if you are going to get rid of tasklets, you need to fix all the
-network drivers first.
+My latest patch for cifsd has it block all signals from userspace
+and uses force_sig() instead of send_sig() when trying to stop the
+thread. This seems to work pretty well and  still insulates the thread
+from userspace signals.
 
 -- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+Jeff Layton <jlayton@redhat.com>
