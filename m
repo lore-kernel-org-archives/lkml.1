@@ -1,69 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbXFYKrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXFYKuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbXFYKrz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 06:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbXFYKrt
+	id S1753906AbXFYKuS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 06:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbXFYKuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 06:47:49 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:52658 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbXFYKrs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 06:47:48 -0400
-X-Originating-Ip: 74.102.207.204
-Date: Mon, 25 Jun 2007 06:43:37 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
+	Mon, 25 Jun 2007 06:50:07 -0400
+Received: from saeurebad.de ([85.214.36.134]:47312 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751239AbXFYKuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 06:50:05 -0400
+Date: Mon, 25 Jun 2007 12:49:56 +0200
+From: Johannes Weiner <hannes-kernel@saeurebad.de>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] X86: Update alignment when 4K stacks are used.
-Message-ID: <Pine.LNX.4.64.0706250642050.3880@localhost.localdomain>
+Cc: xfs-masters@oss.sgi.com
+Subject: [BUG] Lockdep warning with XFS on 2.6.22-rc6
+Message-ID: <20070625104956.GA22130@saeurebad.de>
+Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	xfs-masters@oss.sgi.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: multipart/mixed; boundary="ew6BAiZeqk4r7MaW"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+--ew6BAiZeqk4r7MaW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
----
+Hi,
 
-  it's not clear from MAINTAINERS who's responsible for something this
-generic.
+this is what just hit the ring buffer when I was surfing with elinks on a
+brand-new -rc6.
 
-diff --git a/arch/i386/kernel/irq.c b/arch/i386/kernel/irq.c
-index d2daf67..504f134 100644
---- a/arch/i386/kernel/irq.c
-+++ b/arch/i386/kernel/irq.c
-@@ -149,15 +149,11 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
+	Hannes
 
- #ifdef CONFIG_4KSTACKS
+--ew6BAiZeqk4r7MaW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="lockdep-report.txt"
 
--/*
-- * These should really be __section__(".bss.page_aligned") as well, but
-- * gcc's 3.0 and earlier don't handle that correctly.
-- */
- static char softirq_stack[NR_CPUS * THREAD_SIZE]
--		__attribute__((__aligned__(THREAD_SIZE)));
-+		__attribute__((__section__(".bss.page_aligned")));
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.22-rc6 #14
+-------------------------------------------------------
+elinks/4461 is trying to acquire lock:
+ (&(&ip->i_lock)->mr_lock/1){----}, at: [<c01ef3d0>] xfs_ilock+0x50/0xd0
 
- static char hardirq_stack[NR_CPUS * THREAD_SIZE]
--		__attribute__((__aligned__(THREAD_SIZE)));
-+		__attribute__((__section__(".bss.page_aligned")));
+but task is already holding lock:
+ (&(&ip->i_lock)->mr_lock){----}, at: [<c01ef3d0>] xfs_ilock+0x50/0xd0
 
- /*
-  * allocate per-cpu stacks for hardirq and for softirq processing
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+which lock already depends on the new lock.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&(&ip->i_lock)->mr_lock){----}:
+       [<c0137e0d>] __lock_acquire+0xe0d/0xfc0
+       [<c013802d>] lock_acquire+0x6d/0x90
+       [<c012e4f1>] down_write_nested+0x41/0x60
+       [<c01ef412>] xfs_ilock+0x92/0xd0
+       [<c01eff98>] xfs_iget_core+0x398/0x5c0
+       [<c01f027e>] xfs_iget+0xbe/0x120
+       [<c02098bd>] xfs_trans_iget+0xfd/0x160
+       [<c01f379c>] xfs_ialloc+0xac/0x500
+       [<c020a46c>] xfs_dir_ialloc+0x6c/0x2a0
+       [<c02109ae>] xfs_create+0x33e/0x630
+       [<c021bf7f>] xfs_vn_mknod+0x19f/0x210
+       [<c016fd12>] vfs_mknod+0xa2/0xf0
+       [<c03c3dbf>] unix_bind+0x1bf/0x2e0
+       [<c0373ba4>] sys_bind+0x54/0x80
+       [<c037518d>] sys_socketcall+0x7d/0x260
+       [<c01029ce>] sysenter_past_esp+0x5f/0x99
+       [<ffffffff>] 0xffffffff
+
+-> #0 (&(&ip->i_lock)->mr_lock/1){----}:
+       [<c0137c85>] __lock_acquire+0xc85/0xfc0
+       [<c013802d>] lock_acquire+0x6d/0x90
+       [<c012e6e1>] down_read_nested+0x41/0x60
+       [<c01ef3d0>] xfs_ilock+0x50/0xd0
+       [<c020dd45>] xfs_lock_inodes+0x175/0x190
+       [<c02054af>] xfs_lock_for_rename+0x22f/0x280
+       [<c02055af>] xfs_rename+0xaf/0x8c0
+       [<c021bb64>] xfs_vn_rename+0x34/0x80
+       [<c0170237>] vfs_rename+0x307/0x370
+       [<c0171e3b>] sys_renameat+0x1bb/0x1f0
+       [<c0171e98>] sys_rename+0x28/0x30
+       [<c01029ce>] sysenter_past_esp+0x5f/0x99
+       [<ffffffff>] 0xffffffff
+
+other info that might help us debug this:
+
+3 locks held by elinks/4461:
+ #0:  (&inode->i_mutex/1){--..}, at: [<c016f459>] lock_rename+0xe9/0xf0
+ #1:  (&inode->i_mutex){--..}, at: [<c03c8a8c>] mutex_lock+0x1c/0x20
+ #2:  (&(&ip->i_lock)->mr_lock){----}, at: [<c01ef3d0>] xfs_ilock+0x50/0xd0
+
+stack backtrace:
+ [<c010398a>] show_trace_log_lvl+0x1a/0x30
+ [<c01046a2>] show_trace+0x12/0x20
+ [<c0104765>] dump_stack+0x15/0x20
+ [<c0135d4c>] print_circular_bug_tail+0x6c/0x80
+ [<c0137c85>] __lock_acquire+0xc85/0xfc0
+ [<c013802d>] lock_acquire+0x6d/0x90
+ [<c012e6e1>] down_read_nested+0x41/0x60
+ [<c01ef3d0>] xfs_ilock+0x50/0xd0
+ [<c020dd45>] xfs_lock_inodes+0x175/0x190
+ [<c02054af>] xfs_lock_for_rename+0x22f/0x280
+ [<c02055af>] xfs_rename+0xaf/0x8c0
+ [<c021bb64>] xfs_vn_rename+0x34/0x80
+ [<c0170237>] vfs_rename+0x307/0x370
+ [<c0171e3b>] sys_renameat+0x1bb/0x1f0
+ [<c0171e98>] sys_rename+0x28/0x30
+ [<c01029ce>] sysenter_past_esp+0x5f/0x99
+ =======================
+
+--ew6BAiZeqk4r7MaW--
