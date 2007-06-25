@@ -1,37 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbXFYBkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbXFYBoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756234AbXFYBkV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 21:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbXFYBkK
+	id S1755717AbXFYBoz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 21:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXFYBos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 21:40:10 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:44453 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbXFYBkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 21:40:07 -0400
-Date: Sun, 24 Jun 2007 18:39:44 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
-       linux-security-module@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH][RFC] security: Convert LSM into a static interface
-Message-ID: <20070625013944.GD3723@sequoia.sous-sol.org>
-References: <20070624220903.GB3723@sequoia.sous-sol.org> <181834.50504.qm@web36605.mail.mud.yahoo.com>
+	Sun, 24 Jun 2007 21:44:48 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:40642 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbXFYBos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 21:44:48 -0400
+Message-ID: <467F1D34.5080807@gmail.com>
+Date: Mon, 25 Jun 2007 03:41:08 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <181834.50504.qm@web36605.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: david@lang.hm
+CC: Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@stusta.de>,
+       Benjamin LaHaise <bcrl@kvack.org>, Oleg Verych <olecom@flower.upol.cz>,
+       rae l <crquan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: -Os versus -O2
+References: <467cac85.081b600a.5b88.457f@mx.google.com>  <E1I20Wr-00064i-T0@flower>  <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com>  <20070624222518.GA10398@flower.upol.cz>  <1182723318.6819.5.camel@laptopd505.fenrus.org>  <20070624232314.GA971@kvack.org>  <1182730156.6819.8.camel@laptopd505.fenrus.org>  <20070625001203.GB971@kvack.org>  <1182731022.6819.10.camel@laptopd505.fenrus.org>  <20070625004106.GA1094@stusta.de>  <1182733127.6819.13.camel@laptopd505.fenrus.org>  <Pine.LNX.4.64.0706241801320.10397@asgard.lang.hm> <1182734240.26621.2.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0706241824080.10397@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0706241824080.10397@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Casey Schaufler (casey@schaufler-ca.com) wrote:
-> So, for planning purposes, when ought I expect to have to start
-> dealing with this?
+On 06/25/2007 03:33 AM, david@lang.hm wrote:
 
-What is your specific concern or use case?
+> is the list of what's included in -O2 vs -Os different for different 
+> CPU's? what about within a single family of processors? (even in the x86 
+> family the costs of jumps, loops, and cache misses varies drasticly)
+
+At least not in the example Duron/Athlon case. Both -march=athlon{,-4) but 
+64K versus 256K L2 which I'd expect to be an important difference in the -Os 
+versus -O2 behaviour.
+
+Rene.
