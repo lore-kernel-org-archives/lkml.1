@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbXFYUqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbXFYUrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbXFYUqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbXFYUqe
+	id S1754378AbXFYUrY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbXFYUrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:46:34 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:47615 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750718AbXFYUqd (ORCPT
+	Mon, 25 Jun 2007 16:47:16 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:39782 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbXFYUrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:46:33 -0400
-X-Sasl-enc: JZv4nZJF/eRxToBgzSL/qsZ9UUwP0NJ/Ch+w1mPCarK5 1182804391
-Message-ID: <46802A98.4030407@imap.cc>
-Date: Mon, 25 Jun 2007 22:50:32 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-References: <10876.1182698167@lwn.net>  <467FF23B.30509@imap.cc> <1182791203.5493.161.camel@localhost.localdomain>
-In-Reply-To: <1182791203.5493.161.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigAEC128417FD881998CB234FF"
+	Mon, 25 Jun 2007 16:47:15 -0400
+Date: Mon, 25 Jun 2007 13:48:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, ak@suse.de
+Subject: [PATCH] mtrr/cyrix: fix sections
+Message-Id: <20070625134851.78873cc0.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigAEC128417FD881998CB234FF
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Am 25.06.2007 19:06 schrieb Steven Rostedt:
-> On Mon, 2007-06-25 at 18:50 +0200, Tilman Schmidt wrote:
->=20
->> The Siemens Gigaset ISDN base driver uses tasklets in its isochronous
->> data paths. [...]
->> Does that qualify as performance sensitive for the purpose of this
->> discussion?
->=20
-> Actually, no.  16ms, even 8ms is an incredible amount of time. Unless
-> you have a thread that is running at a higher priority than the thread
-> that handles the work queue performing the task, you would have no
-> problems making that deadline.
+Are there peculiarities about Cyrix that mean this isn't needed?
 
-Ok, I'm reassured. I'll look into converting these to a work queue
-then, although I can't promise when I'll get around to it.
+main.c::mtrr_add() or mtrr_del() [exported]
+calls main.c::mtrr_add_page() or mtrr_del_page() or mtrr_restore() [resume]
+calls main.c::set_mtrr()
+calls main.c::ipi_handler()
+calls main.c::mtrr_if->set_all() == which can be cyrix_set_all
 
-In fact, if these timing requirements are so easy to meet, perhaps
-it doesn't even need its own work queue, and just making each
-tasklet into a work item and queueing them to the global queue
-with schedule_work() would do? Or am I getting too reckless now?
+WARNING: arch/i386/kernel/built-in.o(.text+0x8657): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
+WARNING: arch/i386/kernel/built-in.o(.text+0x866b): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
+WARNING: arch/i386/kernel/built-in.o(.text+0x867e): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
+WARNING: arch/i386/kernel/built-in.o(.text+0x8684): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
+WARNING: arch/i386/kernel/built-in.o(.text+0x868a): Section mismatch: reference to .init.data: (between 'cyrix_set_all' and 'centaur_get_free_region')
 
-Thanks,
-Tilman
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/i386/kernel/cpu/mtrr/cyrix.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigAEC128417FD881998CB234FF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGgCqfMdB4Whm86/kRAgPuAJ0bsDe8Mf+d9mc3e33262HvJ9MYqgCeLcNg
-a43MDFI4n0ZeUoOQVAxGav4=
-=TsdQ
------END PGP SIGNATURE-----
-
---------------enigAEC128417FD881998CB234FF--
+--- linux-2.6.22-rc6.orig/arch/i386/kernel/cpu/mtrr/cyrix.c
++++ linux-2.6.22-rc6/arch/i386/kernel/cpu/mtrr/cyrix.c
+@@ -233,12 +233,12 @@ typedef struct {
+ 	mtrr_type type;
+ } arr_state_t;
+ 
+-static arr_state_t arr_state[8] __devinitdata = {
++static arr_state_t arr_state[8] = {
+ 	{0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}, {0UL, 0UL, 0UL},
+ 	{0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}, {0UL, 0UL, 0UL}
+ };
+ 
+-static unsigned char ccr_state[7] __devinitdata = { 0, 0, 0, 0, 0, 0, 0 };
++static unsigned char ccr_state[7] = { 0, 0, 0, 0, 0, 0, 0 };
+ 
+ static void cyrix_set_all(void)
+ {
