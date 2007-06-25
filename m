@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbXFYHTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbXFYHT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752185AbXFYHTo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 03:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbXFYHTh
+	id S1752796AbXFYHT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 03:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbXFYHTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 03:19:37 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:1730 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbXFYHTg (ORCPT
+	Mon, 25 Jun 2007 03:19:49 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:37602 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752383AbXFYHTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 03:19:36 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=VTTR4DQtKlp8xoAx9DaaMCN5dfiH7N9a11X6l0OY861N5A14atUThWSbD3Uhk8bAn
-	jhrfjXVutQLfdDB/Pj/fg==
-Message-ID: <6599ad830706250019h117ff575h156cf112f5778e43@mail.gmail.com>
-Date: Mon, 25 Jun 2007 00:19:25 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [patch -rss] Make RSS accounting display more user friendly
-Cc: "Pavel Emelianov" <xemul@openvz.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <661de9470706222048g638a06dboc0b2e85975a9ba70@mail.gmail.com>
+	Mon, 25 Jun 2007 03:19:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=3AW+EQu9ffr1ld8FQIALDiNqzXRZRtcDiBRV3a9QimjUtrwcifVKbEBhHyozOouJg4963o5AFDO+DhN2utXCT4ZPZgl2gJNc+1aMogLp0nBEZwFDxw+mTcINxVAu3BqvDGnWLRHCczy0E2H9ZILYhTeAtRH3RpZjfbja5TkAnXo=  ;
+X-YMail-OSG: AK6mT8IVM1niHyTXxKmmhW6JEGCqw3Jps3.S5MnNHiAL0JvbHQXd09ruUy0meB3G34K3RRtWgA--
+Message-ID: <467F6C8F.9040400@yahoo.com.au>
+Date: Mon, 25 Jun 2007 17:19:43 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <andi@firstfloor.org>
+CC: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 1/3] add the fsblock layer
+References: <20070624014528.GA17609@wotan.suse.de>	<20070624014613.GB17609@wotan.suse.de> <p73fy4h5q3c.fsf@bingen.suse.de>
+In-Reply-To: <p73fy4h5q3c.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070620154655.13844.42876.sendpatchset@balbir-laptop>
-	 <6599ad830706211217l65d76d4ehb42f9165bcf45dd@mail.gmail.com>
-	 <467B2F4F.2030101@openvz.org>
-	 <6599ad830706220839h2a556c76he11b78c2c4cdb86e@mail.gmail.com>
-	 <661de9470706222048g638a06dboc0b2e85975a9ba70@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/22/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
-> The problem with input in bytes is that the user will have to ensure
-> that the input is
-> a  multiple of page size, which implies that she would need to use the
-> calculator every time.
->
+Andi Kleen wrote:
+> Nick Piggin <npiggin@suse.de> writes:
+> 
+> 
+> [haven't read everything, just commenting on something that caught my eye]
+> 
+> 
+>>+struct fsblock {
+>>+	atomic_t	count;
+>>+	union {
+>>+		struct {
+>>+			unsigned long	flags; /* XXX: flags could be int for better packing */
+> 
+> 
+> int is not supported by many architectures, but works on x86 at least.
 
-Having input in bytes seems pretty natural to me. Why not just have
-the RSS controller round the input to the nearest page (or whatever
-granularity of memory the controller is able to limit at)?
+Yeah, that would be nice. We could actually use this for buffer_head as well,
+but saving 4% there isn't so important as saving 20% for fsblock :)
 
-Paul
+
+> Hmm, could define a macro DECLARE_ATOMIC_BITMAP(maxbit) that expands to the smallest
+> possible type for each architecture. And a couple of ugly casts for set_bit et.al.
+> but those could be also hidden in macros. Should be relatively easy to do.
+
+Cool. It would probably be useful for other things as well.
+
+-- 
+SUSE Labs, Novell Inc.
