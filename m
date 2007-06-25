@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbXFYMoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbXFYMol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbXFYMoL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 08:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXFYMn6
+	id S1755878AbXFYMol (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 08:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbXFYMob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 08:43:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:60920 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752300AbXFYMn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 08:43:56 -0400
-Message-ID: <467FB856.2030200@goop.org>
-Date: Mon, 25 Jun 2007 08:43:02 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 25 Jun 2007 08:44:31 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:59445 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755639AbXFYMo3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 08:44:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GCF6xGnVW/J/DDfoqHt2K4bzUDwDigbr52reCBj0G3ohNsFjz8RLzFACa44/bp+tknE/k+ZrW8j6oHFxqnj8cR3sgJ1DmAyi3g2NggI59rh913CMr+IMOP1yh0CMpfPRE/Oimr0+H4KvrhnY/BbjrR0wVx0aCTngv6tocOlo3X8=
+Message-ID: <7e63f56c0706250544u78353454y44f4aab12a9e3fa8@mail.gmail.com>
+Date: Mon, 25 Jun 2007 15:44:28 +0300
+From: "Robert Iakobashvili" <coroberti@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: Scaling Max IP address limitation
+Cc: djones@rossove.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706251437130.3137@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Arch <linux-arch@vger.kernel.org>,
-       Richard Henderson <rth@twiddle.net>, Ian Molton <spyro@f2s.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Aubrey Li <aubrey.li@analog.com>, Mikael Starvik <starvik@axis.com>,
-       David Howells <dhowells@redhat.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>, Andi Kleen <ak@suse.de>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Matthew Wilcox <matthew@wil.cx>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-       Chris Zankel <chris@zankel.net>
-Subject: Re: [PATCH] cross-architecture ELF clean up
-References: <20070620230854.246399397@goop.org>	 <20070620230902.387008536@goop.org> <1182762166.12109.19.camel@pmac.infradead.org>
-In-Reply-To: <1182762166.12109.19.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <467EA7C1.4080006@rossove.com>
+	 <20070624110236.fa36b2f9.akpm@linux-foundation.org>
+	 <7e63f56c0706241259u6e123ed6yc02b76f0260adaa5@mail.gmail.com>
+	 <467F063A.2030805@rossove.com>
+	 <7e63f56c0706250147w508d3aeay5f7aaca8215953c8@mail.gmail.com>
+	 <Pine.LNX.4.64.0706251130320.11964@fbirervta.pbzchgretzou.qr>
+	 <7e63f56c0706250241q19c6cb49yb846a38eb10a53e6@mail.gmail.com>
+	 <Pine.LNX.4.64.0706251437130.3137@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Wed, 2007-06-20 at 16:08 -0700, Jeremy Fitzhardinge wrote:
->   
->> This patch cleans up the ELF headers and their users.  It does several
->> related things:
->>     
+On 6/25/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
 >
-> Looks good. We can get away with exporting a lot less of this to
-> userspace too, can't we?
->   
+> On Jun 25 2007 12:41, Robert Iakobashvili wrote:
+> >> > I am getting after initial successes some errors:
+> >> > "rtnl_talk(): RTNETLINK answers: Cannot allocate memory"
+> >> > and
+> >> > #ip addr | wc-l is 8194.
+> >>
+> >> I'd be surprised if it was 4096 on x86 and 8192 on x86_64...
+> >
+> > Missed to mention: the CPU is Pentium-4.
+>
+> That's like saying you've got a SPARC. Or a MIPS. Or a PPC.
+> (I can't infer from your answer whether that is running 32 or 64-bit
+> kernel, because there are P4s with and without 64-bit extensions.)
 
-Probably.  What needs to be exported at all?
+32/32
 
-    J
+>         Jan
+> --
+>
 
+
+-- 
+Sincerely,
+Robert Iakobashvili,
+coroberti %x40 gmail %x2e com
+...........................................................
+http://curl-loader.sourceforge.net
+A web testing and traffic generation tool.
