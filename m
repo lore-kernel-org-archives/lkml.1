@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbXFYWTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbXFYWUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753679AbXFYWTq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 18:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbXFYWTf
+	id S1754694AbXFYWUa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 18:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbXFYWUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 18:19:35 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:5398 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbXFYWTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 18:19:34 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 2.6.22] cxgb3 - fix register to stop bc/mc traffic
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Mon, 25 Jun 2007 15:19:30 -0700
-Message-ID: <20070625221930.19394.90772.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
+	Mon, 25 Jun 2007 18:20:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41766 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751381AbXFYWUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 18:20:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks (rev. 2)
+Date: Tue, 26 Jun 2007 00:27:01 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org
+References: <200706252352.24137.rjw@sisk.pl> <20070625215527.GE2051@elf.ucw.cz>
+In-Reply-To: <20070625215527.GE2051@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706260027.02396.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Monday, 25 June 2007 23:55, Pavel Machek wrote:
+> Hi!
+> 
+> > [I hope the ACKs still apply.]
+> 
+> Uhuh, not 100% sure.
+> 
+> > +static int usermodehelper_disabled;
+> > +
+> 
+> 
+> ...
+> 
+> >  	case PM_HIBERNATION_PREPARE:
+> >  	case PM_SUSPEND_PREPARE:
+> >  		usermodehelper_disabled = 1;
+> > -		return NOTIFY_OK;
+> > +		smp_mb();
+> 
+> usermodehelper_disabled should be atomic variable, too, so we don't
+> have to play these ugly tricks by hand? This should not be
+> performance-critical, right?
 
-Use the right register to stop broadcast/multicast traffic. 
+Well, I think we'd need to add the barriers anyway.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+The problem, as far as I understand it, is that the instructions can get
+reordered if there are no barriers in there.
 
- drivers/net/cxgb3/xgmac.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+Greetings,
+Rafael
 
-diff --git a/drivers/net/cxgb3/xgmac.c b/drivers/net/cxgb3/xgmac.c
-index b261be1..c302b1a 100644
---- a/drivers/net/cxgb3/xgmac.c
-+++ b/drivers/net/cxgb3/xgmac.c
-@@ -335,11 +335,11 @@ int t3_mac_set_mtu(struct cmac *mac, uns
- 	hwm = min(hwm, MAC_RXFIFO_SIZE - 8192);
- 	lwm = min(3 * (int)mtu, MAC_RXFIFO_SIZE / 4);
- 
--	v = t3_read_reg(adap, A_XGM_RXFIFO_CFG + mac->offset);
- 	if (adap->params.rev == T3_REV_B2 &&
- 	    (t3_read_reg(adap, A_XGM_RX_CTRL + mac->offset) & F_RXEN)) {
- 		disable_exact_filters(mac);
--		t3_set_reg_field(adap, A_XGM_RXFIFO_CFG + mac->offset,
-+		v = t3_read_reg(adap, A_XGM_RX_CFG + mac->offset);
-+		t3_set_reg_field(adap, A_XGM_RX_CFG + mac->offset,
- 				 F_ENHASHMCAST | F_COPYALLFRAMES, F_DISBCAST);
- 
- 		/* drain rx FIFO */
-@@ -347,11 +347,12 @@ int t3_mac_set_mtu(struct cmac *mac, uns
- 				    A_XGM_RX_MAX_PKT_SIZE_ERR_CNT +
- 				    mac->offset,
- 				    1 << 31, 1, 20, 5)) {
--			t3_write_reg(adap, A_XGM_RXFIFO_CFG + mac->offset, v);
-+			t3_write_reg(adap, A_XGM_RX_CFG + mac->offset, v);
- 			enable_exact_filters(mac);
- 			return -EIO;
- 		}
- 		t3_write_reg(adap, A_XGM_RX_MAX_PKT_SIZE + mac->offset, mtu);
-+		t3_write_reg(adap, A_XGM_RX_CFG + mac->offset, v);
- 		enable_exact_filters(mac);
- 	} else
- 		t3_write_reg(adap, A_XGM_RX_MAX_PKT_SIZE + mac->offset, mtu);
-@@ -362,6 +363,7 @@ int t3_mac_set_mtu(struct cmac *mac, uns
- 	 */
- 	hwm = rx_fifo_hwm(mtu);
- 	lwm = min(3 * (int)mtu, MAC_RXFIFO_SIZE / 4);
-+	v = t3_read_reg(adap, A_XGM_RXFIFO_CFG + mac->offset);
- 	v &= ~V_RXFIFOPAUSELWM(M_RXFIFOPAUSELWM);
- 	v |= V_RXFIFOPAUSELWM(lwm / 8);
- 	if (G_RXFIFOPAUSEHWM(v))
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
