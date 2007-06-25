@@ -1,52 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbXFYVn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbXFYVpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbXFYVn4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbXFYVnt
+	id S1755319AbXFYVpc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbXFYVpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:43:49 -0400
-Received: from mail.mimer.no ([213.184.200.1]:41426 "EHLO odin.mimer.no"
+	Mon, 25 Jun 2007 17:45:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41572 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752269AbXFYVns convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:43:48 -0400
-From: Harald Arnesen <harald@skogtun.org>
-To: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-Cc: dwmw2@infradead.org, schilling@fokus.fraunhofer.de,
-       linux-kernel@vger.kernel.org, david@lang.hm
-Subject: Re: Linux Kernel include files
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
-	<Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
-	<467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
-	<1182483527.10524.31.camel@shinybook.infradead.org>
-	<467fdc75.0ficjl92unPDO1uk%Joerg.Schilling@fokus.fraunhofer.de>
-	<1182785277.12109.121.camel@pmac.infradead.org>
-	<87wsxrdi6e.fsf@basilikum.skogtun.org>
-	<468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
-Date: Mon, 25 Jun 2007 23:43:34 +0200
-In-Reply-To: <468024ec.9RebHj/O0BpNRyoY%Joerg.Schilling@fokus.fraunhofer.de>
-	(Joerg Schilling's message of "Mon, 25 Jun 2007 22:26:20 +0200")
-Message-ID: <87ir9byak9.fsf@basilikum.skogtun.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	id S1751755AbXFYVpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 17:45:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks (rev. 2)
+Date: Mon, 25 Jun 2007 23:52:23 +0200
+User-Agent: KMail/1.9.5
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
+       Uli Luckas <u.luckas@road.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706252352.24137.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling) writes:
+[I hope the ACKs still apply.]
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
->> If I actually install smake, as Jörg recommends, the message becomes:
->> smake: Can't find any source for 'CCOM_suncc'.
->> smake: Couldn't make 'CCOM_suncc'.
->
-> Well, I was in hope that a small typo (in special as the correct spelling is in 
-> the file README.compile) should not be a problem.
->
-> You need to use CCOM=suncc 
+At present, if a user mode helper is running while usermodehelper_pm_callback()
+is executed, the helper may be frozen and the completion in
+call_usermodehelper_exec() won't be completed until user space processes are
+thawed.  As a result, the freezing of kernel threads may fail, which is not
+desirable.
 
-Then it (star, I haven't tried cdrtools yes) compiles and links fine.
-There must be something wrong with your Linux installation.
--- 
-Hilsen Harald.
+Prevent this from happening by introducing a counter of running user mode
+helpers and allowing usermodehelper_pm_callback() to succeed for
+action = PM_HIBERNATION_PREPARE or action = PM_SUSPEND_PREPARE only if there
+are no helpers running.  [Namely, usermodehelper_pm_callback() waits for at most
+RUNNING_HELPERS_TIMEOUT for the number of running helpers to become zero and
+fails if that doesn't happen.]
 
+Special thanks to Uli Luckas <u.luckas@road.de>, Pavel Machek <pavel@ucw.cz> and
+Oleg Nesterov <oleg@tv-sign.ru> for reviewing the previous versions of this
+patch and for very useful comments.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Uli Luckas <u.luckas@road.de>
+Acked-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ kernel/kmod.c |   78 ++++++++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 68 insertions(+), 10 deletions(-)
+
+Index: linux-2.6.22-rc4-mm2/kernel/kmod.c
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/kernel/kmod.c
++++ linux-2.6.22-rc4-mm2/kernel/kmod.c
+@@ -41,14 +41,6 @@ extern int max_threads;
+ 
+ static struct workqueue_struct *khelper_wq;
+ 
+-/*
+- * If set, both call_usermodehelper_keys() and call_usermodehelper_pipe() exit
+- * immediately returning -EBUSY.  Used for preventing user land processes from
+- * being created after the user land has been frozen during a system-wide
+- * hibernation or suspend operation.
+- */
+-static int usermodehelper_disabled;
+-
+ #ifdef CONFIG_KMOD
+ 
+ /*
+@@ -275,15 +267,55 @@ static void __call_usermodehelper(struct
+ 	}
+ }
+ 
++#ifdef CONFIG_PM
++/*
++ * If set, call_usermodehelper_exec() will exit immediately returning -EBUSY
++ * (used for preventing user land processes from being created after the user
++ * land has been frozen during a system-wide hibernation or suspend operation).
++ */
++static int usermodehelper_disabled;
++
++/* Number of helpers running */
++static atomic_t running_helpers = ATOMIC_INIT(0);
++
++/*
++ * Wait queue head used by usermodehelper_pm_callback() to wait for all running
++ * helpers to finish.
++ */
++static DECLARE_WAIT_QUEUE_HEAD(running_helpers_waitq);
++
++/*
++ * Time to wait for running_helpers to become zero before the setting of
++ * usermodehelper_disabled in usermodehelper_pm_callback() fails
++ */
++#define RUNNING_HELPERS_TIMEOUT	(5 * HZ)
++
+ static int usermodehelper_pm_callback(struct notifier_block *nfb,
+ 					unsigned long action,
+ 					void *ignored)
+ {
++	long retval;
++
+ 	switch (action) {
+ 	case PM_HIBERNATION_PREPARE:
+ 	case PM_SUSPEND_PREPARE:
+ 		usermodehelper_disabled = 1;
+-		return NOTIFY_OK;
++		smp_mb();
++		/*
++		 * From now on call_usermodehelper_exec() won't start any new
++		 * helpers, so it is sufficient if running_helpers turns out to
++		 * be zero at one point (it may be increased later, but that
++		 * doesn't matter).
++		 */
++		retval = wait_event_timeout(running_helpers_waitq,
++					atomic_read(&running_helpers) == 0,
++					RUNNING_HELPERS_TIMEOUT);
++		if (retval) {
++			return NOTIFY_OK;
++		} else {
++			usermodehelper_disabled = 0;
++			return NOTIFY_BAD;
++		}
+ 	case PM_POST_HIBERNATION:
+ 	case PM_POST_SUSPEND:
+ 		usermodehelper_disabled = 0;
+@@ -293,6 +325,30 @@ static int usermodehelper_pm_callback(st
+ 	return NOTIFY_DONE;
+ }
+ 
++static void helper_lock(void)
++{
++	atomic_inc(&running_helpers);
++	smp_mb__after_atomic_inc();
++}
++
++static void helper_unlock(void)
++{
++	if (atomic_dec_and_test(&running_helpers))
++		wake_up(&running_helpers_waitq);
++}
++
++static void register_pm_notifier_callback(void)
++{
++	pm_notifier(usermodehelper_pm_callback, 0);
++}
++#else /* CONFIG_PM */
++#define usermodehelper_disabled	0
++
++static inline void helper_lock(void) {}
++static inline void helper_unlock(void) {}
++static inline void register_pm_notifier_callback(void) {}
++#endif /* CONFIG_PM */
++
+ /**
+  * call_usermodehelper_setup - prepare to call a usermode helper
+  * @path - path to usermode executable
+@@ -397,6 +453,7 @@ int call_usermodehelper_exec(struct subp
+ 	DECLARE_COMPLETION_ONSTACK(done);
+ 	int retval;
+ 
++	helper_lock();
+ 	if (sub_info->path[0] == '\0') {
+ 		retval = 0;
+ 		goto out;
+@@ -418,6 +475,7 @@ int call_usermodehelper_exec(struct subp
+ 
+   out:
+ 	call_usermodehelper_freeinfo(sub_info);
++	helper_unlock();
+ 	return retval;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_exec);
+@@ -459,5 +517,5 @@ void __init usermodehelper_init(void)
+ {
+ 	khelper_wq = create_singlethread_workqueue("khelper");
+ 	BUG_ON(!khelper_wq);
+-	pm_notifier(usermodehelper_pm_callback, 0);
++	register_pm_notifier_callback();
+ }
