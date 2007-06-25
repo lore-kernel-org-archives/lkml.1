@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbXFYNu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757039AbXFYNvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbXFYNu4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 09:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbXFYNuq
+	id S1757039AbXFYNvQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 09:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756628AbXFYNuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 09:50:46 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:52865 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753792AbXFYNup (ORCPT
+	Mon, 25 Jun 2007 09:50:54 -0400
+Received: from web36610.mail.mud.yahoo.com ([209.191.85.27]:43588 "HELO
+	web36610.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756346AbXFYNux (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 09:50:45 -0400
-Date: Mon, 25 Jun 2007 19:20:51 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Cc: David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: [PATCH 7/7][TAKE5] ext4: support new modes
-Message-ID: <20070625135051.GH1951@amitarora.in.ibm.com>
-References: <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070625132810.GA1951@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 25 Jun 2007 09:50:53 -0400
+X-YMail-OSG: fo05iGsVM1n4KqiLtSvxvoIs8mJuIpOPahb3hMbnbbTEuVOav3QOatFzf9fnHTKyGw--
+X-RocketYMMF: rancidfat
+Date: Mon, 25 Jun 2007 06:50:52 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH][RFC] security: Convert LSM into a static interface
+To: "Serge E. Hallyn" <serge@hallyn.com>, James Morris <jmorris@namei.org>
+Cc: linux-security-module@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, Andrew Morton <akpm@google.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+In-Reply-To: <20070625035743.GA8786@vino.hallyn.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <350610.33706.qm@web36610.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support new values of mode in ext4.
 
-This patch supports new mode values/flags in ext4. With this patch ext4
-will be able to support FA_ALLOCATE and FA_RESV_SPACE modes. Supporting
-FA_DEALLOCATE and FA_UNRESV_SPACE fallocate modes in ext4 is a work for
-future.
+--- "Serge E. Hallyn" <serge@hallyn.com> wrote:
 
-Signed-off-by: Amit Arora <aarora@in.ibm.com>
+> Quoting James Morris (jmorris@namei.org):
+> > Convert LSM into a static interface, as the ability to unload a security 
+> > module is not required by in-tree users and potentially complicates the 
+> > overall security architecture.
+> > 
+> > Needlessly exported LSM symbols have been unexported, to help reduce API 
+> > abuse.
+> > 
+> > Module parameters for the capability and root_plug modules have been
+> > converted to kernel parameters.
+> > 
+> > The SECURITY_FRAMEWORK_VERSION macro has also been removed.
+> 
+> Sigh, as much as I would *like* to stay out of this (I don't
+> use modules at all on any system where I can avoid it), won't
+> it make development - and especially testing - of new lsms
+> much more painful and therefore less likely?
 
-Index: linux-2.6.22-rc4/fs/ext4/extents.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/extents.c
-+++ linux-2.6.22-rc4/fs/ext4/extents.c
-@@ -2477,7 +2477,8 @@ int ext4_ext_writepage_trans_blocks(stru
- /*
-  * preallocate space for a file. This implements ext4's fallocate inode
-  * operation, which gets called from sys_fallocate system call.
-- * Currently only FA_ALLOCATE mode is supported on extent based files.
-+ * Currently only FA_ALLOCATE  and FA_RESV_SPACE modes are supported on
-+ * extent based files.
-  * We may have more modes supported in future - like FA_DEALLOCATE, which
-  * tells fallocate to unallocate previously (pre)allocated blocks.
-  * For block-mapped files, posix_fallocate should fall back to the method
-@@ -2499,7 +2500,8 @@ long ext4_fallocate(struct inode *inode,
- 	 * currently supporting (pre)allocate mode for extent-based
- 	 * files _only_
- 	 */
--	if (mode != FA_ALLOCATE || !(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
-+	if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) ||
-+		!(mode == FA_ALLOCATE || mode == FA_RESV_SPACE))
- 		return -EOPNOTSUPP;
- 
- 	/* preallocation to directories is currently not supported */
-@@ -2572,9 +2574,10 @@ retry:
- 
- 	/*
- 	 * Time to update the file size.
--	 * Update only when preallocation was requested beyond the file size.
-+	 * Update only when preallocation was requested beyond the file size
-+	 * and when FA_FL_KEEP_SIZE mode is not specified!
- 	 */
--	if ((offset + len) > i_size_read(inode)) {
-+	if (!(mode & FA_FL_KEEP_SIZE) && (offset + len) > i_size_read(inode)) {
- 		if (ret > 0) {
- 			/*
- 			 * if no error, we assume preallocation succeeded
+While there's lots of pain involved in developing an LSM
+modern development environments (e.g. virtual machines)
+have reduced the value of loadable modules for debug purposes.
+
+> I realize there has been a dearth of new LSMs to date,
+
+but so much excitment over those proposed!
+
+> but if
+> for instance a new solaris 10 based capability module were written,
+> well, people would want to be able to
+> 
+> 	rmmod capability
+> 	modprobe cap_prm
+
+I think the value is overrated. You would never want to do that
+in a production environment, and in a debug environment you could
+just as easily reboot and get some start-up testing out of the way.
+
+
+Casey Schaufler
+casey@schaufler-ca.com
