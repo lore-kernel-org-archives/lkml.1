@@ -1,87 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbXFYPCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbXFYPDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbXFYPCR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 11:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbXFYPCI
+	id S1757008AbXFYPDh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 11:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbXFYPD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 11:02:08 -0400
-Received: from gateway-a.fh-trier.de ([143.93.54.181]:56607 "EHLO
-	gateway-a.fh-trier.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754903AbXFYPCH (ORCPT
+	Mon, 25 Jun 2007 11:03:27 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38211 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755462AbXFYPDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 11:02:07 -0400
-Message-ID: <467FD8E9.1000200@gentoo.org>
-Date: Mon, 25 Jun 2007 17:02:01 +0200
-From: Alexander Gabert <pappy@gentoo.org>
-Organization: Hardened Gentoo Linux
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       Arjan van de Ven <arjan@infradead.org>, libc-alpha@sourceware.org,
-       hardened@gentoo.org
-Subject: Re: [PATCH] get_random_long() and AT_ENTROPY for auxv, kernel 2.6.21.5
-References: <4675C678.3080807@gentoo.org> <1182128803.22999.9.camel@laptopd505.fenrus.org> <20070620203022.GO11166@waste.org> <467EADA0.9020101@gentoo.org> <20070625034508.GE11115@waste.org>
-In-Reply-To: <20070625034508.GE11115@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jun 2007 11:03:25 -0400
+Date: Mon, 25 Jun 2007 20:33:20 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Cc: David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070625150320.GA8686@amitarora.in.ibm.com>
+References: <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070625134500.GE1951@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
-sorry for not answering your questions in the first place, i hope this 
-did not mean to make a bad impression
-Matt Mackall schrieb:
-> On Sun, Jun 24, 2007 at 07:45:04PM +0200, Alexander Gabert wrote:
->   
->> Hi Linus,
->> hi LKML,
->>
->> i would like to thank LKML and especially Eric (thanks for the per_cpu 
->> macro tips and design guidelines!) and the other contributors to this idea.
->>
->> This time the patch is rather big because it also removes 
->> get_random_int() and introduces get_random_long() throughout the kernel.
->>     
->
-> Stop right there. You still haven't answered my original question.
-> What is the point of this exercise in the first place, please?
->
-> Am I right in thinking you have three unrelated patches here?
->   
-I don't think so but you may be right nonetheless if my opinion.
-> - something to do with aux vector headers
->   
-Adding the new field
-> - something to do with get_random_int repeating itself
->   
-Found while adding the new field and testing it.
-> - sweeping change of get_random_int to get_random_long for no obvious reason
->   
-It is needed for properly initializing a SSP guard which is (afaik) a 
-long value.
-> These should be three completely separate patches.
->   
-Probably ... but bear in mind that the goal is still the same: allowing 
-glibc to use SSP with /proc/self/auxv instead of fopen(/dev/urandom) as 
-it is now.
-Effectively saving three syscalls (open,read,close) and making life 
-easier for glibc because randomization "generated" in the kernel does 
-not deplete /dev/urandom too much for high coverage SSP userlands (i.e. 
-Gentoo Hardened).
+I have not implemented FA_FL_FREE_ENOSPC and FA_ZERO_SPACE flags yet, as
+*suggested* by Andreas in http://lkml.org/lkml/2007/6/14/323  post.
+If it is decided that these flags are also needed, I will update this
+patch. Thanks!
 
-I can imagine that Redhat would do the same with the SSP implementation 
-in glibc, i think if this patch moves into kernel, they will bring out a 
-glibc patch that is checking for AT_ENTROPY and using the opening of 
-/dev/urandom for retrieving randomized data as a fallback for machines 
-where such a kernel is not available.  This is a win-win situation for 
-both sides- the kernel wins because the pressure on /dev/urandom is 
-released a bit (applicable to SSP environments) and the glibc wins 
-because it has a reliable, fast, cheap and easy to use source for 
-randomization.
-
-
-Thank you,
-
-Alex
-
+On Mon, Jun 25, 2007 at 07:15:00PM +0530, Amit K. Arora wrote:
+> Implement new flags and values for mode argument.
+> 
+> This patch implements the new flags and values for the "mode" argument
+> of the fallocate system call. It is based on the discussion between
+> Andreas Dilger and David Chinner on the man page proposed (by the later)
+> on fallocate.
+> 
+> Signed-off-by: Amit Arora <aarora@in.ibm.com>
+> 
+> Index: linux-2.6.22-rc4/include/linux/fs.h
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/include/linux/fs.h
+> +++ linux-2.6.22-rc4/include/linux/fs.h
+> @@ -267,15 +267,16 @@ extern int dir_notify_enable;
+>  #define SYNC_FILE_RANGE_WAIT_AFTER	4
+> 
+>  /*
+> - * sys_fallocate modes
+> - * Currently sys_fallocate supports two modes:
+> - * FA_ALLOCATE  : This is the preallocate mode, using which an application/user
+> - *		  may request (pre)allocation of blocks.
+> - * FA_DEALLOCATE: This is the deallocate mode, which can be used to free
+> - *		  the preallocated blocks.
+> + * sys_fallocate mode flags and values
+>   */
+> -#define FA_ALLOCATE	0x1
+> -#define FA_DEALLOCATE	0x2
+> +#define FA_FL_DEALLOC	0x01 /* default is allocate */
+> +#define FA_FL_KEEP_SIZE	0x02 /* default is extend/shrink size */
+> +#define FA_FL_DEL_DATA	0x04 /* default is keep written data on DEALLOC */
+> +
+> +#define FA_ALLOCATE	0
+> +#define FA_DEALLOCATE	FA_FL_DEALLOC
+> +#define FA_RESV_SPACE	FA_FL_KEEP_SIZE
+> +#define FA_UNRESV_SPACE	(FA_FL_DEALLOC | FA_FL_KEEP_SIZE | FA_FL_DEL_DATA)
+> 
+>  #ifdef __KERNEL__
+> 
+> Index: linux-2.6.22-rc4/fs/open.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/fs/open.c
+> +++ linux-2.6.22-rc4/fs/open.c
+> @@ -356,23 +356,26 @@ asmlinkage long sys_ftruncate64(unsigned
+>   * sys_fallocate - preallocate blocks or free preallocated blocks
+>   * @fd: the file descriptor
+>   * @mode: mode specifies if fallocate should preallocate blocks OR free
+> - *	  (unallocate) preallocated blocks. Currently only FA_ALLOCATE and
+> - *	  FA_DEALLOCATE modes are supported.
+> + *	  (unallocate) preallocated blocks.
+>   * @offset: The offset within file, from where (un)allocation is being
+>   *	    requested. It should not have a negative value.
+>   * @len: The amount (in bytes) of space to be (un)allocated, from the offset.
+>   *
+>   * This system call, depending on the mode, preallocates or unallocates blocks
+>   * for a file. The range of blocks depends on the value of offset and len
+> - * arguments provided by the user/application. For FA_ALLOCATE mode, if this
+> + * arguments provided by the user/application. For FA_ALLOCATE and
+> + * FA_RESV_SPACE modes, if the sys_fallocate()
+>   * system call succeeds, subsequent writes to the file in the given range
+>   * (specified by offset & len) should not fail - even if the file system
+>   * later becomes full. Hence the preallocation done is persistent (valid
+> - * even after reopen of the file and remount/reboot).
+> + * even after reopen of the file and remount/reboot). If FA_RESV_SPACE mode
+> + * is passed, the file size will not be changed even if the preallocation
+> + * is beyond EOF.
+>   *
+>   * It is expected that the ->fallocate() inode operation implemented by the
+>   * individual file systems will update the file size and/or ctime/mtime
+> - * depending on the mode and also on the success of the operation.
+> + * depending on the mode (change is visible to user or not - say file size)
+> + * and obviously, on the success of the operation.
+>   *
+>   * Note: Incase the file system does not support preallocation,
+>   * posix_fallocate() should fall back to the library implementation (i.e.
+> @@ -398,7 +401,8 @@ asmlinkage long sys_fallocate(int fd, in
+> 
+>  	/* Return error if mode is not supported */
+>  	ret = -EOPNOTSUPP;
+> -	if (mode != FA_ALLOCATE && mode != FA_DEALLOCATE)
+> +	if (!(mode == FA_ALLOCATE || mode == FA_DEALLOCATE ||
+> +		mode == FA_RESV_SPACE || mode == FA_UNRESV_SPACE))
+>  		goto out;
+> 
+>  	ret = -EBADF;
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
