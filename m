@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbXFZAA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbXFZADI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbXFZAA0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 20:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXFZAAO
+	id S1755283AbXFZADI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 20:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXFZACz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 20:00:14 -0400
-Received: from vena.lwn.net ([206.168.112.25]:51598 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751699AbXFZAAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 20:00:13 -0400
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru, Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Sun, 24 Jun 2007 09:16:07 MDT."
-             <10876.1182698167@lwn.net> 
-Date: Mon, 25 Jun 2007 18:00:12 -0600
-Message-ID: <10203.1182816012@lwn.net>
+	Mon, 25 Jun 2007 20:02:55 -0400
+Received: from imf22aec.mail.bellsouth.net ([205.152.59.70]:34823 "EHLO
+	imf22aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751922AbXFZACy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 20:02:54 -0400
+Date: Mon, 25 Jun 2007 18:00:39 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Chris Snook <csnook@redhat.com>
+Cc: "Jay L. T. Cornwall" <jay@esuna.co.uk>,
+       Luca Tettamanti <kronos.it@gmail.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] atl1: disable 64bit DMA
+Message-ID: <20070625180039.4f083846@osprey.hogchain.net>
+In-Reply-To: <46803A40.4070009@redhat.com>
+References: <467B12CA.5060405@esuna.co.uk>
+	<467BE118.4090308@redhat.com>
+	<467BE4F1.7040308@esuna.co.uk>
+	<467D0EB0.9030100@esuna.co.uk>
+	<20070624125957.2e27820c@osprey.hogchain.net>
+	<467ED4A8.4080500@esuna.co.uk>
+	<20070624164519.04f215b8@osprey.hogchain.net>
+	<467FB237.2030703@esuna.co.uk>
+	<467FB844.6060702@bellsouth.net>
+	<20070625211855.GA19275@dreamland.darkstar.lan>
+	<46803557.50805@redhat.com>
+	<468038FC.6090302@esuna.co.uk>
+	<46803A40.4070009@redhat.com>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A couple of days ago I said:
+On Mon, 25 Jun 2007 17:57:20 -0400
+Chris Snook <csnook@redhat.com> wrote:
 
-> The cafe_ccic (OLPC) camera driver uses a tasklet to move frames out of
-> the DMA buffers in the streaming I/O path....
+> Jay L. T. Cornwall wrote:
+> > Chris Snook wrote:
+> > 
+> >> What boards have we seen this on?  It's quite possible this is:
+> > 
+> > I can reproduce on an Asus P5K with a Core 2 Duo E6600.
+> > 
+> > lspci identifies the controller as:
+> >   02:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit
+> >   Ethernet Adapter (rev b0)
+> > 
+> > dmesg notes the PCI-DMA mapping implementation:
+> >   PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+> > 
 > 
-> Obviously some testing is called for here.  I will make an attempt to do
-> that testing
+> I had a hunch this was on Intel.  I'd rather just disable this when
+> swiotlb is in use, unless we get more complaints.  It's probably
+> ultimately a BIOS quirk anyway.
 
-I've done that testing - I have an OLPC B3 unit running V2 of the
-tasklet->workqueue patch, and all seems well.  30 FPS to the display and
-no dropped frames.  The tasklets/0 process is running 3-5% CPU, in case
-that's interesting.  For whatever reason, I see about 3% *more* idle
-time when running just mplayer than I did without the patch.
+So far we have reports from both camps:
 
-Consider my minor qualms withdrawn, there doesn't seem to be any trouble
-in this area.
+Asus M2N8-VMX (AM2):	1 report of lockup
+http://sourceforge.net/mailarchive/forum.php?thread_name=46780384.063603.26165%40m12-15.163.com&forum_name=atl1-devel
 
-Thanks,
+Asus P5K (LGA775):	2 reports of lockups
+http://sourceforge.net/mailarchive/forum.php?thread_name=467E7E34.4010603%40gmail.com&forum_name=atl1-devel
+http://lkml.org/lkml/2007/6/25/107
 
-jon
-
-Jonathan Corbet / LWN.net / corbet@lwn.net
+The common denominator in these reports is 4GB RAM.
