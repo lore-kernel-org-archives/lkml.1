@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbXFYUti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbXFYUuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbXFYUti (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbXFYUtb
+	id S1755360AbXFYUuW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbXFYUuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:49:31 -0400
-Received: from smtp.avagotech.com ([202.153.6.34]:56532 "EHLO
-	sgpsmtp2.avagotech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbXFYUta (ORCPT
+	Mon, 25 Jun 2007 16:50:08 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:65095 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbXFYUuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:49:30 -0400
-X-Greylist: delayed 2099 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 16:49:30 EDT
-Message-ID: <46802222.90104@lpbroadband.net>
-Date: Mon, 25 Jun 2007 14:14:26 -0600
-From: Frank Bennett <bennett78@lpbroadband.net>
-Reply-To: bennett78@lpbroadband.net
-User-Agent: Thunderbird 1.5.0.7 (X11/20060909)
-MIME-Version: 1.0
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, kernel@avr32linux.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] AVR32 fixes
-References: <20070623164143.2bba7104@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <20070623164143.2bba7104@dhcp-255-175.norway.atmel.com>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
+	Mon, 25 Jun 2007 16:50:06 -0400
+Subject: Re: [POSSIBLE BUG] use of tasklet_unlock in ipath_no_bufs_available
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ralph Campbell <ralph.campbell@qlogic.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Roland Dreier <rdreier@cisco.com>, openib-general@openib.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1182803821.18911.237.camel@brick.pathscale.com>
+References: <1182799994.5493.201.camel@localhost.localdomain>
+	 <1182803821.18911.237.camel@brick.pathscale.com>
+Content-Type: text/plain
+Date: Mon, 25 Jun 2007 16:49:08 -0400
+Message-Id: <1182804548.5493.216.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-X-imss-version: 2.047
-X-imss-result: Passed
-X-imss-scanInfo: M:T L:E SM:1
-X-imss-tmaseResult: TT:1 TS:-13.8630 TC:1F TRN:39 TV:3.6.1039(15260.003)
-X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
-X-imss-settings: Baseline:1 C:1 M:1 S:3 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
-> Hi Linus,
->
-> Please pull the 'for-linus' branch of
->
->   git://www.atmel.no/~hskinnemoen/linux/kernel/avr32.git for-linus
->
-> to receive the following updates.
->
-> The status of the various SL*B allocators on AVR32 is now as follows:
->   * SLAB works, but debugging is effectively disabled due to
->     ARCH_KMALLOC_MINALIGN.
->   * SLUB works, including debugging.
->   * SLOB seems to ignore ARCH_KMALLOC_MINALIGN, so it breaks DMA
->     (SPI in particular is affected by this.)
->
-> So since SLUB is currently the allocator that works best on AVR32, I've
-> enabled it by default for both ATSTK1002 and ATNGW100. Big thanks to
-> Christoph for fixing the ARCH_KMALLOC_MINALIGN vs. CONFIG_SLUB_DEBUG
-> issue.
->
-> David Brownell (1):
->       [AVR32] Initialize dma_mask and dma_coherent_mask
->
-> Haavard Skinnemoen (2):
->       [AVR32] Fix bug in invalidate_dcache_region()
->       [AVR32] Update defconfigs
->
-> ben.nizette@iinet.net.au (1):
->       [AVR32] NGW100, Remove relics of the old USART mapping scheme
->   
-snip, snip.....
-makes fine, but requires :
-export ARCH=avr32
-export CROSS_COMPILE=avr32-linux-
-make defconfig
-make
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CHK     include/linux/compile.h
-  MODPOST vmlinux
-  UIMAGE arch/avr32/boot/images/uImage
-"mkimage" command not found - U-Boot images will not be built
-  Image arch/avr32/boot/images/uImage is ready
-make[1]: `arch/avr32/boot/images/vmlinux.elf' is up to date.
-  Building modules, stage 2.
-  MODPOST 20 modules
+On Mon, 2007-06-25 at 13:37 -0700, Ralph Campbell wrote:
+> This was fixed by a patch that Arthur Jones sent out to
+> general@lists.openfabrics.org
 
--Frank Bennett
+Great!
+
+> 
+> Tue Jun 19 16:42:09 PDT 2007
+> [PATCH 17/28] IB/ipath - wait for PIO available interrupt
+> 
+> I imagine that it is working its way into Roland's git tree
+> for Linus.
+
+ 	 * tasklet_hi_schedule() is called.
+-	 * We clear the tasklet flag now since we are committing to return
+-	 * from the tasklet function.
++	 * We leave the busy flag set so that another post send doesn't
++	 * try to put the same QP on the piowait list again.
+ 	 */
+-	clear_bit(IPATH_S_BUSY, &qp->s_busy);
+-	tasklet_unlock(&qp->s_task);
+ 	want_buffer(dev->dd);
+ 	dev->n_piowait++;
+
+This removes the final use of tasklet_unlock.  I'll submit a patch to
+remove this from being a public function. So no others think they can
+easily get to the internals of a tasklet.
+
+-- Steve
+
 
