@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbXFYJlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbXFYJsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbXFYJlk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 05:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXFYJlb
+	id S1753925AbXFYJsi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 05:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXFYJs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 05:41:31 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:39186 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbXFYJla (ORCPT
+	Mon, 25 Jun 2007 05:48:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:52725 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751335AbXFYJs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 05:41:30 -0400
+	Mon, 25 Jun 2007 05:48:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EqZMLHVLJIbU+hCessxpLo6a/u6yJQuNY442soF4W6rg0r2CYB6yu6d9g6DqIsUQATRgimUgW/YFaIE3dE8/NgJL2NyEL+C3q0vITJ08py/hlYlcq/Z1gHPE7aqjIU1c4Az6f4cpK2SydOOyY+5j8pw1yCVuLZdZJD2b0ghQMJM=
-Message-ID: <7e63f56c0706250241q19c6cb49yb846a38eb10a53e6@mail.gmail.com>
-Date: Mon, 25 Jun 2007 12:41:29 +0300
-From: "Robert Iakobashvili" <coroberti@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: Scaling Max IP address limitation
-Cc: djones@rossove.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706251130320.11964@fbirervta.pbzchgretzou.qr>
+        h=received:message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=VVjx5Kagfr/m7IwdhNR3wq6SocGwkQfw7Iyh9Jl67VviET+GvesHo/QP2Zte65mr6twzy5848kO1Y11KzHz/ooPJqaXMvn00vGscPI1jNPo1Jey8r7kTSD63Jq30DJipuhwPM6Fo1D5Vutcz53ryjIywAHx9Vxs4NLUKv9UzpYI=
+Message-ID: <467F8F5A.3000205@googlemail.com>
+Date: Mon, 25 Jun 2007 11:48:10 +0200
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <467EA7C1.4080006@rossove.com>
-	 <20070624110236.fa36b2f9.akpm@linux-foundation.org>
-	 <7e63f56c0706241259u6e123ed6yc02b76f0260adaa5@mail.gmail.com>
-	 <467F063A.2030805@rossove.com>
-	 <7e63f56c0706250147w508d3aeay5f7aaca8215953c8@mail.gmail.com>
-	 <Pine.LNX.4.64.0706251130320.11964@fbirervta.pbzchgretzou.qr>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Darrick J. Wong" <djwong@us.ibm.com>, Andi Kleen <ak@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Stephane Eranian <eranian@hpl.hp.com>,
+       =?ISO-8859-2?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Trent Piepho <xyzzy@speakeasy.org>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>
+Subject: [1/2] 2.6.22-rc6: known regressions with patches
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi all,
 
-On 6/25/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
-> On Jun 25 2007 11:47, Robert Iakobashvili wrote:
-> >
-> > I am getting after initial successes some errors:
-> > "rtnl_talk(): RTNETLINK answers: Cannot allocate memory"
-> > and
-> > #ip addr | wc-l is 8194.
->
-> I'd be surprised if it was 4096 on x86 and 8192 on x86_64...
+Here is a list of some known regressions in 2.6.22-rc6
+with patches available.
 
-Missed to mention: the CPU is Pentium-4.
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+*STATISTICS* (a.k.a. list of aces)
+
+Name                    Regressions fixed since 21-Jun-2007
+Andi Kleen                             1
+Hugh Dickins                           1
+Jean Delvare                           1
 
 
--- 
-Sincerely,
-Robert Iakobashvili,
-coroberti %x40 gmail %x2e com
-...........................................................
-http://curl-loader.sourceforge.net
-A web testing and traffic generation tool.
+
+Unclassified
+
+Subject    : fix nmi_watchdog=2 bootup hang
+References : http://lkml.org/lkml/2007/6/25/51
+Submitter  : Ingo Molnar <mingo@elte.hu>
+Caused-By  : Jeremy Fitzhardinge <jeremy@xensource.com>
+             Andi Kleen <ak@suse.de>
+             commit f8822f42019eceed19cc6c0f985a489e17796ed8
+Status     : patch available
+
+Subject    : Kconfig troubles when using menuconfig
+References : http://lkml.org/lkml/2007/6/22/159
+Submitter  : Mauro Carvalho Chehab <mchehab@infradead.org>
+Handled-By : Trent Piepho <xyzzy@speakeasy.org>
+Patch      : http://lkml.org/lkml/2007/6/23/244
+Status     : patch available
+
+Subject    : Device hang when offlining a CPU due to IRQ misrouting
+References : http://lkml.org/lkml/2007/5/31/419
+Submitter  : Darrick J. Wong <djwong@us.ibm.com>
+Handled-By : Siddha, Suresh B <suresh.b.siddha@intel.com>
+Patch      : http://lkml.org/lkml/2007/6/19/422
+Status     : patch available
+
+Subject    : OProfile issues
+References : http://lkml.org/lkml/2007/6/12/207
+Submitter  : Stephane Eranian <eranian@hpl.hp.com>
+Handled-By : Björn Steinbrink <B.Steinbrink@gmx.de>
+Patch      : http://lkml.org/lkml/2007/6/12/392
+Status     : patch was suggested
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
