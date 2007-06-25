@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbXFYWxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbXFYW4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994AbXFYWxq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 18:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXFYWxi
+	id S1754736AbXFYW4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 18:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXFYW4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 18:53:38 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:34464 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbXFYWxh (ORCPT
+	Mon, 25 Jun 2007 18:56:09 -0400
+Received: from mail.blastwave.org ([147.87.98.10]:56412 "EHLO
+	mail.blastwave.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbXFYW4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 18:53:37 -0400
-Message-ID: <46804697.2080603@gmail.com>
-Date: Tue, 26 Jun 2007 00:49:59 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: =?UTF-8?B?VG9tYXN6IEvFgm9jemtv?= <kloczek@rudy.mif.pg.gda.pl>
-CC: Takashi Iwai <tiwai@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl> <20070624215724.025a5de5@the-village.bc.nu> <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl> <s5h3b0gi9mp.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl> <s5hzm2ogqr7.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251840080.25800@rudy.mif.pg.gda.pl>
-In-Reply-To: <Pine.BSO.4.63.0706251840080.25800@rudy.mif.pg.gda.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Mon, 25 Jun 2007 18:56:08 -0400
+X-Greylist: delayed 1318 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 18:56:08 EDT
+Date: Tue, 26 Jun 2007 00:34:05 +0200
+From: Attila Kinali <attila@kinali.ch>
+To: Graeme Sheppard <nodes@rillion.net>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Patent or not patent a new idea
+Message-Id: <20070626003405.c3dceba9.attila@kinali.ch>
+In-Reply-To: <46803772.7020408@rillion.net>
+References: <46803772.7020408@rillion.net>
+Organization: NERV
+X-Mailer: Sylpheed 2.4.0rc (GTK+ 2.10.12; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/25/2007 07:00 PM, Tomasz Kłoczko wrote:
+On Tue, 26 Jun 2007 09:45:22 +1200
+Graeme Sheppard <nodes@rillion.net> wrote:
 
-> $ strace -f -e trace=file galeon 2>&1 | grep dev/snd
-> [pid 28593] open("/dev/snd/controlC0", O_RDWR) = 46
-> [pid 28593] open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK) = 47
+> I am seeking advice on how to proceed. It could be used as a defensive
+> patent in which case I can email an expert who can file it. If that is the
+> concept is sound. I am not expecting any royalties from this myself. The
+> alternative is to dump it here to the LKML.
 
-[ ... ]
+Do what anyone with a little bit of brain would do: publish it[1]!
 
-> [pid 30173] open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_ASYNC) = -1 
-> EBUSY (Device or resource busy)
-> [..]
-> 
-> /dev/snd/pcmC0D0p is busy ? YES because it was oppened by another 
-> application in non blocking mode which makes device .. unavalable to 
-> other :)
+Patenting it and using as defensive patent wont work. Unless
+you are able to control Saurons Ring. If you want to know more
+just read up on current patent practice. IEEE has quite a few
+articles on that issue, i'm sure that ACM and the like should
+have also a few.
 
-Nothing to do with O_NONBLOCK:
+			Attila Kinali
 
-$ strace -f -e trace=file firefox 2>&1 | grep dev/snd
-[pid  1889] ....
-[pid  1889] open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK) = 38
-[pid  1889] open("/dev/snd/controlC0", O_RDONLY) = 37
-[pid  1889] open("/dev/snd/timer", O_RDONLY|O_NONBLOCK) = 37
-
-$ strace -f -e trace=file ogg123 foo.ogg 2>&1 | grep dev/snd
-[pid  1916] ...
-[pid  1916] open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_APPEND) = 5
-[pid  1916] open("/dev/snd/controlC0", O_RDONLY) = 4
-[pid  1916] open("/dev/snd/timer", O_RDONLY|O_NONBLOCK) = 4
-
-And both the youtube video (flash 9) and my ogg file play fine. Now, I don't 
-actually know about that O_ASYNC thing you have in there but it looks as 
-though you're simply not using dmix. Which card, and if you specify an ALSA 
-device somewhere, is it the "default" device?
-
-And fix your inbound mailer -- it's rejecting my posts.
-
-Rene.
-
+[1] I know of at least one larger company here that stopped
+issuing patents but publishes its developments in a local newspaper.
+-- 
+Linux ist... wenn man einfache Dinge auch mit einer kryptischen
+post-fix Sprache loesen kann
+                        -- Daniel Hottinger
