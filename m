@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbXFYURu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbXFYUSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbXFYURu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbXFYURm
+	id S1752655AbXFYUSz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 16:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbXFYUSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:17:42 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42626 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbXFYURl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:17:41 -0400
-Date: Mon, 25 Jun 2007 22:18:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
-Cc: arjan@infradead.org, schilling@fokus.fraunhofer.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux Kernel include files
-Message-ID: <20070625201846.GB12937@uranus.ravnborg.org>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de> <1182469678.2704.16.camel@laptopd505.fenrus.org> <467fd703.72QYmCwQ6G3TPmF6%Joerg.Schilling@fokus.fraunhofer.de>
+	Mon, 25 Jun 2007 16:18:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:28540 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbXFYUSs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 16:18:48 -0400
+Date: Mon, 25 Jun 2007 13:20:46 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: davidel@xmailserver.org, akpm <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] eventfd: clean compile when CONFIG_EVENTFD=n
+Message-Id: <20070625132046.95654351.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <467fd703.72QYmCwQ6G3TPmF6%Joerg.Schilling@fokus.fraunhofer.de>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 04:53:55PM +0200, Joerg Schilling wrote:
-> 
-> star needs "ext2_fs.h". This file is not usable at all on many Linux 
-> distributions, even with GCC.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I was curious so I did:
+Fix gcc warning and add parameter checking when CONFIG_EVENTFD=n:
 
-$ mkdir ~/foo
-$ cd ~/kernel/linux-2.6
-$ make INSTALL_HDR_PATH=~/foo
-$ cd ~/foo
-$ cat j.c
-#include <stdio.h>
-#include "etx2_fs.h"
+fs/aio.c: In function 'aio_complete':
+fs/aio.c:955: warning: statement with no effect
 
-main()
-{
-	printf("helloo\n");
-}
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/linux/eventfd.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-$ gcc -o j j.c
-=> No warning, no errors
-
-$ gcc -ansi -pedantic -o j j.c
-In file included from j.c:2:
-ext2_fs.h:53:25: warning: ISO C does not permit named variadic macros
-
-$ gcc -ansi -pedantic -std=c99 -o j j.c
-In file included from j.c:2:
-ext2_fs.h:53:25: warning: ISO C does not permit named variadic macros
-j.c:5: warning: return type defaults to ‘int’
-
-Is it this part you are referring to in the above or have I overlooked something?
-
-	Sam
+--- linux-2.6.22-rc6.orig/include/linux/eventfd.h
++++ linux-2.6.22-rc6/include/linux/eventfd.h
+@@ -19,7 +19,8 @@ int eventfd_signal(struct file *file, in
+ #else /* CONFIG_EVENTFD */
+ 
+ #define eventfd_fget(fd) ERR_PTR(-ENOSYS)
+-#define eventfd_signal(f, n) 0
++static inline int eventfd_signal(struct file *file, int n)
++{ return 0; }
+ 
+ #endif /* CONFIG_EVENTFD */
+ 
