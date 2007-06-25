@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbXFYLDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbXFYLcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405AbXFYLDm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 07:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXFYLDe
+	id S1753046AbXFYLcu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 07:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXFYLcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 07:03:34 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:53992 "EHLO mail.sf-mail.de"
+	Mon, 25 Jun 2007 07:32:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52761 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbXFYLDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 07:03:33 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Richard Hughes <hughsient@gmail.com>
-Subject: Re: Add INPUT support to toshiba_acpi
-Date: Mon, 25 Jun 2007 13:03:38 +0200
-User-Agent: KMail/1.9.7
-Cc: John Belmonte <john@neggie.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Bastien Nocera <hadess@hadess.net>
-References: <1180614979.2693.26.camel@localhost.localdomain> <200706231656.39597.eike-kernel@sf-tec.de> <1182765156.2519.0.camel@work>
-In-Reply-To: <1182765156.2519.0.camel@work>
+	id S1751319AbXFYLcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 07:32:41 -0400
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1519661.JvPYJ4N3vj";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706251303.47652.eike-kernel@sf-tec.de>
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/utrace
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: Alan Stern's message of  Tuesday, 19 June 2007 16:35:29 -0400 <Pine.LNX.4.44L0.0706191517260.2672-200000@iolanthe.rowland.org>
+X-Shopping-List: (1) Magnanimous sugar livers
+   (2) Midget explosions
+   (3) Irritating grief suction
+   (4) Impious witches
+   (5) Advantageous rails
+Message-Id: <20070625113238.1AC4A4D05E7@magilla.localdomain>
+Date: Mon, 25 Jun 2007 04:32:38 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1519661.JvPYJ4N3vj
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+I added this on top of your patch to make it compile (and look a little nicer).
+With that, bptest worked nicely.
 
-Richard Hughes wrote:
-> On Sat, 2007-06-23 at 16:56 +0200, Rolf Eike Beer wrote:
-> > None of the above keys generated a key event. Neither does "Brightness
-> > down", but it still works. "Brightness up" generates an event and works.
-> > Kpowersave tells me it can't do brightness switching in software (which
-> > works in WinXtraPain).
->
-> Do you know how windows does this? Do you have to load a special
-> system-try thing to make the keys work?
+---
+ arch/i386/kernel/kprobes.c |   19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-I'll have a look once I find time to boot Windows.
-
-Eike
-
---nextPart1519661.JvPYJ4N3vj
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGf6ETXKSJPmm5/E4RAsXUAKCQ+l+LO4tPfhU+WgPVbqx828NSXgCdHWVT
-BIEDo46KH72aH7FjiCJ+dCM=
-=ABkB
------END PGP SIGNATURE-----
-
---nextPart1519661.JvPYJ4N3vj--
+Index: b/arch/i386/kernel/kprobes.c
+===================================================================
+--- a/arch/i386/kernel/kprobes.c
++++ b/arch/i386/kernel/kprobes.c
+@@ -35,6 +35,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/desc.h>
+ #include <asm/uaccess.h>
++#include <asm/debugreg.h>
+ 
+ void jprobe_return_end(void);
+ 
+@@ -660,16 +661,16 @@ int __kprobes kprobe_exceptions_notify(s
+ 			ret = NOTIFY_STOP;
+ 		break;
+ 	case DIE_DEBUG:
+-
+-	/* The DR6 value is stored in args->err */
+-#define DR6	(args->err)
+-
+-		if ((DR6 & DR_STEP) && post_kprobe_handler(args->regs)) {
+-			if ((DR6 & ~DR_STEP) == 0)
+-				ret = NOTIFY_STOP;
+-		}
++		/*
++		 * The %db6 value is stored in args->err.
++		 * If DR_STEP is the only bit set and it's ours,
++		 * we should eat this exception.
++		 */
++		if ((args->err & DR_STEP) &&
++		    post_kprobe_handler(args->regs) &&
++		    (args->err & ~DR_STEP) == 0)
++			ret = NOTIFY_STOP;
+ 		break;
+-#undef DR6
+ 
+ 	case DIE_GPF:
+ 	case DIE_PAGE_FAULT:
