@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbXFYU40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbXFYVBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654AbXFYU40 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 16:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbXFYU4T
+	id S1753088AbXFYVBK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXFYVA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 16:56:19 -0400
-Received: from fmx03.freemail.hu ([195.228.245.53]:59507 "HELO
-	fmx03.freemail.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750718AbXFYU4S convert rfc822-to-8bit (ORCPT
+	Mon, 25 Jun 2007 17:00:58 -0400
+Received: from fw1-az.mvista.com ([65.200.49.156]:4447 "EHLO
+	zipcode.az.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751426AbXFYVA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 16:56:18 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 25 Jun 2007 16:56:18 EDT
-Date: Mon, 25 Jun 2007 22:49:36 +0200 (CEST)
-From: =?ISO-8859-2?Q?Bart=F3k_Albert?= <a_bartok@freemail.hu>
-Subject: Re: [patch] Reporting the lid status using INPUT
-To: GMail <hughsient@gmail.com>
-cc: Dmitry Torokhov <dtor@insightbb.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Bastien Nocera <hadess@hadess.net>, David Zeuthen <david@fubar.dk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <15e53e180706241506p53ec648ib93d684bbe076a46@mail.gmail.com>
-Message-ID: <freemail.20070525224936.77205@fm01.freemail.hu>
-X-Originating-IP: [131.111.8.102]
-X-HTTP-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070603 Fedora/2.0.0.4-2.fc7 Firefox/2.0.0.4
+	Mon, 25 Jun 2007 17:00:57 -0400
+Date: Mon, 25 Jun 2007 13:58:47 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Mark A. Greer" <mgreer@mvista.com>, linux-kernel@vger.kernel.org,
+       jaylubo@motorola.com
+Subject: Re: [PATCH] serial: Clear proper MPSC interrupt cause bits
+Message-ID: <20070625205847.GA11031@mag.az.mvista.com>
+References: <20070622023208.GA20651@mag.az.mvista.com> <20070623095144.0ec7e8c6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/plain; CHARSET=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070623095144.0ec7e8c6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jun 23, 2007 at 09:51:44AM -0700, Andrew Morton wrote:
+> > On Thu, 21 Jun 2007 19:32:08 -0700 "Mark A. Greer" <mgreer@mvista.com> wrote:
+> > From: Jay Lubomirski <jaylubo@motorola.com>
+> > 
+> > Don't clobber the interrupt cause bits for both MPSC controllers when
+> > clearing the interrupt for one of them.  Just clear the one that is
+> > supposed to be cleared.
+> > 
+> > Signed-off-by: Jay Lubomirski <jaylubo@motorola.com>
+> > Acked-by: Mark A. Greer <mgreer@mvista.com>
+> > ---
+> >  drivers/serial/mpsc.c |    3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/serial/mpsc.c b/drivers/serial/mpsc.c
+> > index d09f209..00924fe 100644
+> > --- a/drivers/serial/mpsc.c
+> > +++ b/drivers/serial/mpsc.c
+> > @@ -503,7 +503,8 @@ mpsc_sdma_intr_ack(struct mpsc_port_info *pi)
+> >  
+> >  	if (pi->mirror_regs)
+> >  		pi->shared_regs->SDMA_INTR_CAUSE_m = 0;
+> > -	writel(0, pi->shared_regs->sdma_intr_base + SDMA_INTR_CAUSE);
+> > +	writeb(0x00, pi->shared_regs->sdma_intr_base + SDMA_INTR_CAUSE +
+> > +	       pi->port.line);
+> >  	return;
+> >  }
+> 
+> In my naive little mpscless bubbleworld, I am believing that this is a
+> pretty important fix, and that people in an mpscful world might want it in
+> 2.6.22.  And even in 2.6.21.x.
 
+Yes, that's probably true although the timing has to be just right for
+it to occurs so its not that frequent.
+I don't know what I have to do to get it into 2.6.22 at this late moment
+(or 2.6.21.x for that matter).
 
+> But alas, that's just a guess, which was forced upon me by the lack of
+> suitable information in your changelog.
 
+My aplogies.
 
-GMail On 16/06/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> On Saturday 16 June 2007 13:11, Richard Hughes wrote:
-> > On Fri, 2007-06-15 at 15:53 +0100, Richard Hughes wrote:
-> > > On Fri, 2007-06-15 at 10:29 -0400, Dmitry Torokhov wrote:
-> > > > On 6/15/07, Richard Hughes <hughsient@gmail.com> wrote:
-> > > > > On Fri, 2007-06-15 at 13:29 +0100, Richard Hughes wrote:
-> > > > > > in response to an event, but I'm thinking in a resume hook we should
-> > > > > > probably do acpi_evaluate_integer(handle, "_LID", NULL, &state) and then
-> > > > > > send an event, just so userspace is aware of what the state of the panel
-> > > > > > is.
-> > > > >
-> > > > > Attached patch fixed the issue for me. Comments?
-> > > > >
-> > > >
-> > > > The patch makes perfect sense. The only issue I have is this:
-> > > >
-> > > > > +       /* on resume we send the state; it might be the same, but userspace
-> > > > > +        * should handle duplicated events */
-> > > >
-> > > > If switch state matches to what input layer thinks it is the event
-> > > > will not even reach userspace.
-> > >
-> > > Okay, new patch attached, thanks for the speedy review.
-> >
-> > This fix is also confirmed by somebody else, see
-> > https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243030
-> >
-> > It would be great if this could go into .22, although I appreciate it's
-> > quite late in the day.
-> >
->
-> This is of course Len's call but in my book this is a bugfix and as such
-> is appropriate for -rc4/rc5.
+> So please, tell us what are the real-world consequences of your patch (or
+> the lack of it), thanks.
 
-> Guys? Any ack-nak?
+I'll resubmit the patch with a better description momentarily.
+Sorry for the hassle.
 
-works perfectly for me so far.
-
-Albert
-
-
-
-15% KEDVEZMÉNY minden PLASZTIKAI MÛTÉTRE az Aesthetica orvosi központban! Klikk ide!http://www.webdesign.hu/aesthetica/flash_microsite/?id=9;p_code=2079
-
+Mark
