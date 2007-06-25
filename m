@@ -1,377 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbXFYVfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbXFYVgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbXFYVfg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbXFYVf3
+	id S1755400AbXFYVgy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbXFYVgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:35:29 -0400
-Received: from mga03.intel.com ([143.182.124.21]:5503 "EHLO mga03.intel.com"
+	Mon, 25 Jun 2007 17:36:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42167 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751348AbXFYVf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:35:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,460,1175497200"; 
-   d="scan'208";a="243230176"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH] trim memory not covered by WB MTRRs
-Date: Mon, 25 Jun 2007 14:34:42 -0700
-User-Agent: KMail/1.9.7
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
+	id S1751517AbXFYVgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 17:36:43 -0400
+Message-ID: <46803557.50805@redhat.com>
+Date: Mon, 25 Jun 2007 17:36:23 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Luca Tettamanti <kronos.it@gmail.com>
+CC: Jeff Garzik <jgarzik@pobox.com>, Jay Cliburn <jacliburn@bellsouth.net>,
+       "Jay L. T. Cornwall" <jay@esuna.co.uk>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] atl1: disable 64bit DMA
+References: <467B12CA.5060405@esuna.co.uk> <467BE118.4090308@redhat.com> <467BE4F1.7040308@esuna.co.uk> <467D0EB0.9030100@esuna.co.uk> <20070624125957.2e27820c@osprey.hogchain.net> <467ED4A8.4080500@esuna.co.uk> <20070624164519.04f215b8@osprey.hogchain.net> <467FB237.2030703@esuna.co.uk> <467FB844.6060702@bellsouth.net> <20070625211855.GA19275@dreamland.darkstar.lan>
+In-Reply-To: <20070625211855.GA19275@dreamland.darkstar.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706251434.43863.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On some machines, buggy BIOSes don't properly setup WB MTRRs to
-cover all available RAM, meaning the last few megs (or even gigs)
-of memory will be marked uncached.  Since Linux tends to allocate
-from high memory addresses first, this causes the machine to be
-unusably slow as soon as the kernel starts really using memory
-(i.e. right around init time).
+Luca Tettamanti wrote:
+> Il Mon, Jun 25, 2007 at 07:42:44AM -0500, Jay Cliburn ha scritto: 
+>> Jay L. T. Cornwall wrote:
+>>> Jay Cliburn wrote:
+>>>
+>>>> For reasons not yet clear to me, it appears the L1 driver has a bug or
+>>>> the device itself has trouble with DMA in high memory.  This patch,
+>>>> drafted by Luca Tettamanti, is being explored as a workaround.  I'd be
+>>>> interested to know if it fixes your problem.
+>>> Yes, it certainly seems to. Now running with this patch and 4GB active,
+>>> I've transferred about 15GB with no problem so far. It usually oopses
+>>> after a GB or two.
+>>>
+>>> I guess it's not an ideal solution, architecturally speaking, but it's a
+>>> good deal better than an unstable driver. If there's any other patches
+>>> you'd like me to test or traces to capture, I'm happy to help out.
+>>> Otherwise I'll run with this one for now since it does the job!
+>> Okay Jay, thanks.
+>>
+>> Luca, would you please submit your patch to Jeff Garzik and netdev?
+> 
+> Hi Jeff,
+> a couple of users reported hard lockups when using L1 NICs on machines
+> with 4GB or more of RAM. We're still waiting official confirmation from
+> the vendor, but it seems that L1 has problems doing DMA to/from high
+> memory (physical address above the 4GB limit). Passing 32bit DMA mask
+> cures the problem.
+> 
+> Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
+> 
+> ---
+> I think that the patch should be included in 2.6.22.
+> 
+>  drivers/net/atl1/atl1_main.c |   15 +++------------
+>  1 file changed, 3 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+> index 6862c11..a730f15 100644
+> --- a/drivers/net/atl1/atl1_main.c
+> +++ b/drivers/net/atl1/atl1_main.c
+> @@ -2097,21 +2097,16 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+>  	struct net_device *netdev;
+>  	struct atl1_adapter *adapter;
+>  	static int cards_found = 0;
+> -	bool pci_using_64 = true;
+>  	int err;
+>  
+>  	err = pci_enable_device(pdev);
+>  	if (err)
+>  		return err;
+>  
+> -	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
+> +	err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+>  	if (err) {
+> -		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+> -		if (err) {
+> -			dev_err(&pdev->dev, "no usable DMA configuration\n");
+> -			goto err_dma;
+> -		}
+> -		pci_using_64 = false;
+> +		dev_err(&pdev->dev, "no usable DMA configuration\n");
+> +		goto err_dma;
+>  	}
+>  	/* Mark all PCI regions associated with PCI device
+>  	 * pdev as being reserved by owner atl1_driver_name
+> @@ -2176,7 +2171,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+>  
+>  	netdev->ethtool_ops = &atl1_ethtool_ops;
+>  	adapter->bd_number = cards_found;
+> -	adapter->pci_using_64 = pci_using_64;
+>  
+>  	/* setup the private structure */
+>  	err = atl1_sw_init(adapter);
+> @@ -2193,9 +2187,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+>  	 */
+>  	/* netdev->features |= NETIF_F_TSO; */
+>  
+> -	if (pci_using_64)
+> -		netdev->features |= NETIF_F_HIGHDMA;
+> -
+>  	netdev->features |= NETIF_F_LLTX;
+>  
+>  	/*
+> 
+> 
+> Luca
 
-This patch works around the problem by scanning the MTRRs at
-boot and figuring out whether the current end_pfn value (setup
-by early e820 code) goes beyond the highest WB MTRR range, and
-if so, trimming it to match.  A fairly obnoxious KERN_WARNING
-is printed too, letting the user know that not all of their
-memory is available due to a likely BIOS bug.
+What boards have we seen this on?  It's quite possible this is:
 
-Something similar could be done on i386 if needed, but the boot
-ordering would be slightly different, since the MTRR code on i386
-depends on the boot_cpu_data structure being setup.
+a) an iommu-related problem specific to AMD or specific to Intel
+b) a BIOS problem that atl1 happens to be a victim of
 
-This patch fixes a bug in the last patch that caused the code to
-run on non-Intel machines (AMD machines apparently don't need it
-and it's untested on other non-Intel machines, so best keep it
-off).
+I'd rather not disable this unconditionally if we can get more 
+information about why it's breaking.  Doing so might just end up 
+covering up the most obvious manifestation of a larger problem.
 
-akpm -- this one should replace all the mtrr patches currently
-in your tree.
-
-Yinghai, maybe you can test this on one of your AMD machines to
-make sure I got the CPU code right?
-
-Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-
-Thanks,
-Jesse
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 5d0283c..642db9b 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -553,6 +553,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 			See drivers/char/README.epca and
- 			Documentation/digiepca.txt.
- 
-+	disable_mtrr_trim [X86-64, Intel only]
-+			By default the kernel will trim any uncacheable
-+			memory out of your available memory pool based on
-+			MTRR settings.  This parameter disables that behavior,
-+			possibly causing your machine to run very slowly.
-+
- 	dmascc=		[HW,AX25,SERIAL] AX.25 Z80SCC driver with DMA
- 			support available.
- 			Format: <io_dev0>[,<io_dev1>[,..<io_dev32>]]
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index 6d59378..bf70d2d 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -13,7 +13,7 @@
- #include "mtrr.h"
- 
- struct mtrr_state {
--	struct mtrr_var_range *var_ranges;
-+	struct mtrr_var_range var_ranges[MAX_VAR_RANGES];
- 	mtrr_type fixed_ranges[NUM_FIXED_RANGES];
- 	unsigned char enabled;
- 	unsigned char have_fixed;
-@@ -84,12 +84,6 @@ void get_mtrr_state(void)
- 	struct mtrr_var_range *vrs;
- 	unsigned lo, dummy;
- 
--	if (!mtrr_state.var_ranges) {
--		mtrr_state.var_ranges = kmalloc(num_var_ranges * sizeof (struct mtrr_var_range), 
--						GFP_KERNEL);
--		if (!mtrr_state.var_ranges)
--			return;
--	} 
- 	vrs = mtrr_state.var_ranges;
- 
- 	rdmsr(MTRRcap_MSR, lo, dummy);
-diff --git a/arch/i386/kernel/cpu/mtrr/if.c b/arch/i386/kernel/cpu/mtrr/if.c
-index c7d8f17..1b3a09c 100644
---- a/arch/i386/kernel/cpu/mtrr/if.c
-+++ b/arch/i386/kernel/cpu/mtrr/if.c
-@@ -11,10 +11,6 @@
- #include <asm/mtrr.h>
- #include "mtrr.h"
- 
--/* RED-PEN: this is accessed without any locking */
--extern unsigned int *usage_table;
--
--
- #define FILE_FCOUNT(f) (((struct seq_file *)((f)->private_data))->private)
- 
- static const char *const mtrr_strings[MTRR_NUM_TYPES] =
-@@ -396,7 +392,7 @@ static int mtrr_seq_show(struct seq_file *seq, void *offset)
- 	for (i = 0; i < max; i++) {
- 		mtrr_if->get(i, &base, &size, &type);
- 		if (size == 0)
--			usage_table[i] = 0;
-+			mtrr_usage_table[i] = 0;
- 		else {
- 			if (size < (0x100000 >> PAGE_SHIFT)) {
- 				/* less than 1MB */
-@@ -410,7 +406,7 @@ static int mtrr_seq_show(struct seq_file *seq, void *offset)
- 			len += seq_printf(seq, 
- 				   "reg%02i: base=0x%05lx000 (%4luMB), size=%4lu%cB: %s, count=%d\n",
- 			     i, base, base >> (20 - PAGE_SHIFT), size, factor,
--			     mtrr_attrib_to_str(type), usage_table[i]);
-+			     mtrr_attrib_to_str(type), mtrr_usage_table[i]);
- 		}
- 	}
- 	return 0;
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-index 55b0051..0e4be8b 100644
---- a/arch/i386/kernel/cpu/mtrr/main.c
-+++ b/arch/i386/kernel/cpu/mtrr/main.c
-@@ -38,8 +38,8 @@
- #include <linux/cpu.h>
- #include <linux/mutex.h>
- 
-+#include <asm/e820.h>
- #include <asm/mtrr.h>
--
- #include <asm/uaccess.h>
- #include <asm/processor.h>
- #include <asm/msr.h>
-@@ -47,7 +47,7 @@
- 
- u32 num_var_ranges = 0;
- 
--unsigned int *usage_table;
-+unsigned int mtrr_usage_table[MAX_VAR_RANGES];
- static DEFINE_MUTEX(mtrr_mutex);
- 
- u64 size_or_mask, size_and_mask;
-@@ -121,13 +121,8 @@ static void __init init_table(void)
- 	int i, max;
- 
- 	max = num_var_ranges;
--	if ((usage_table = kmalloc(max * sizeof *usage_table, GFP_KERNEL))
--	    == NULL) {
--		printk(KERN_ERR "mtrr: could not allocate\n");
--		return;
--	}
- 	for (i = 0; i < max; i++)
--		usage_table[i] = 1;
-+		mtrr_usage_table[i] = 1;
- }
- 
- struct set_mtrr_data {
-@@ -381,7 +376,7 @@ int mtrr_add_page(unsigned long base, unsigned long size,
- 			goto out;
- 		}
- 		if (increment)
--			++usage_table[i];
-+			++mtrr_usage_table[i];
- 		error = i;
- 		goto out;
- 	}
-@@ -390,12 +385,13 @@ int mtrr_add_page(unsigned long base, unsigned long size,
- 	if (i >= 0) {
- 		set_mtrr(i, base, size, type);
- 		if (likely(replace < 0))
--			usage_table[i] = 1;
-+			mtrr_usage_table[i] = 1;
- 		else {
--			usage_table[i] = usage_table[replace] + !!increment;
-+			mtrr_usage_table[i] = mtrr_usage_table[replace] +
-+				!!increment;
- 			if (unlikely(replace != i)) {
- 				set_mtrr(replace, 0, 0, 0);
--				usage_table[replace] = 0;
-+				mtrr_usage_table[replace] = 0;
- 			}
- 		}
- 	} else
-@@ -525,11 +521,11 @@ int mtrr_del_page(int reg, unsigned long base, unsigned long size)
- 		printk(KERN_WARNING "mtrr: MTRR %d not used\n", reg);
- 		goto out;
- 	}
--	if (usage_table[reg] < 1) {
-+	if (mtrr_usage_table[reg] < 1) {
- 		printk(KERN_WARNING "mtrr: reg: %d has count=0\n", reg);
- 		goto out;
- 	}
--	if (--usage_table[reg] < 1)
-+	if (--mtrr_usage_table[reg] < 1)
- 		set_mtrr(reg, 0, 0, 0);
- 	error = reg;
-  out:
-@@ -589,16 +585,11 @@ struct mtrr_value {
- 	unsigned long	lsize;
- };
- 
--static struct mtrr_value * mtrr_state;
-+static struct mtrr_value mtrr_state[MAX_VAR_RANGES];
- 
- static int mtrr_save(struct sys_device * sysdev, pm_message_t state)
- {
- 	int i;
--	int size = num_var_ranges * sizeof(struct mtrr_value);
--
--	mtrr_state = kzalloc(size,GFP_ATOMIC);
--	if (!mtrr_state)
--		return -ENOMEM;
- 
- 	for (i = 0; i < num_var_ranges; i++) {
- 		mtrr_if->get(i,
-@@ -620,7 +611,6 @@ static int mtrr_restore(struct sys_device * sysdev)
- 				 mtrr_state[i].lsize,
- 				 mtrr_state[i].ltype);
- 	}
--	kfree(mtrr_state);
- 	return 0;
- }
- 
-@@ -631,6 +621,59 @@ static struct sysdev_driver mtrr_sysdev_driver = {
- 	.resume		= mtrr_restore,
- };
- 
-+static int disable_mtrr_trim;
-+
-+static int __init disable_mtrr_trim_setup(char *str)
-+{
-+	disable_mtrr_trim = 1;
-+	return 0;
-+}
-+early_param("disable_mtrr_trim", disable_mtrr_trim_setup);
-+
-+#ifdef CONFIG_X86_64
-+/**
-+ * mtrr_trim_uncached_memory - trim RAM not covered by MTRRs
-+ *
-+ * Some buggy BIOSes don't setup the MTRRs properly for systems with certain
-+ * memory configurations.  This routine checks to make sure the MTRRs having
-+ * a write back type cover all of the memory the kernel is intending to use.
-+ * If not, it'll trim any memory off the end by adjusting end_pfn, removing
-+ * it from the kernel's allocation pools, warning the user with an obnoxious
-+ * message.
-+ */
-+void __init mtrr_trim_uncached_memory(void)
-+{
-+	unsigned long i, base, size, highest_addr = 0, def, dummy;
-+	mtrr_type type;
-+
-+	/* Make sure we only trim uncachable memory on Intel machines */
-+	rdmsr(MTRRdefType_MSR, def, dummy);
-+	def &= 0xff;
-+	if (!is_cpu(INTEL) || disable_mtrr_trim || def != MTRR_TYPE_UNCACHABLE)
-+		return;
-+
-+	/* Find highest cached pfn */
-+	for (i = 0; i < num_var_ranges; i++) {
-+		mtrr_if->get(i, &base, &size, &type);
-+		if (type != MTRR_TYPE_WRBACK)
-+			continue;
-+		base <<= PAGE_SHIFT;
-+		size <<= PAGE_SHIFT;
-+		if (highest_addr < base + size)
-+			highest_addr = base + size;
-+	}
-+
-+	if ((highest_addr >> PAGE_SHIFT) != end_pfn) {
-+		printk(KERN_WARNING "***************\n");
-+		printk(KERN_WARNING "**** WARNING: likely BIOS bug\n");
-+		printk(KERN_WARNING "**** MTRRs don't cover all of "
-+		       "memory, trimmed %ld pages\n", end_pfn -
-+		       (highest_addr >> PAGE_SHIFT));
-+		printk(KERN_WARNING "***************\n");
-+		end_pfn = highest_addr >> PAGE_SHIFT;
-+	}
-+}
-+#endif
- 
- /**
-  * mtrr_bp_init - initialize mtrrs on the boot CPU
-diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
-index 289dfe6..14fb88b 100644
---- a/arch/i386/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
-@@ -14,6 +14,7 @@
- #define MTRRphysMask_MSR(reg) (0x200 + 2 * (reg) + 1)
- 
- #define NUM_FIXED_RANGES 88
-+#define MAX_VAR_RANGES 256
- #define MTRRfix64K_00000_MSR 0x250
- #define MTRRfix16K_80000_MSR 0x258
- #define MTRRfix16K_A0000_MSR 0x259
-@@ -34,6 +35,8 @@
-    an 8 bit field: */
- typedef u8 mtrr_type;
- 
-+extern unsigned int mtrr_usage_table[MAX_VAR_RANGES];
-+
- struct mtrr_ops {
- 	u32	vendor;
- 	u32	use_intel_if;
-diff --git a/arch/x86_64/kernel/bugs.c b/arch/x86_64/kernel/bugs.c
-index c3c6b91..c138eac 100644
---- a/arch/x86_64/kernel/bugs.c
-+++ b/arch/x86_64/kernel/bugs.c
-@@ -14,7 +14,6 @@
- void __init check_bugs(void)
- {
- 	identify_cpu(&boot_cpu_data);
--	mtrr_bp_init();
- #if !defined(CONFIG_SMP)
- 	printk("CPU: ");
- 	print_cpu_info(&boot_cpu_data);
-diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
-index eb6524f..409b63c 100644
---- a/arch/x86_64/kernel/setup.c
-+++ b/arch/x86_64/kernel/setup.c
-@@ -266,6 +266,10 @@ void __init setup_arch(char **cmdline_p)
- 	 * we are rounding upwards:
- 	 */
- 	end_pfn = e820_end_of_ram();
-+	/* Trim memory not covered by WB MTRRs */
-+	mtrr_bp_init();
-+	mtrr_trim_uncached_memory();
-+
- 	num_physpages = end_pfn;
- 
- 	check_efer();
-diff --git a/include/asm-x86_64/mtrr.h b/include/asm-x86_64/mtrr.h
-index b557c48..51ad788 100644
---- a/include/asm-x86_64/mtrr.h
-+++ b/include/asm-x86_64/mtrr.h
-@@ -78,6 +78,7 @@ extern int mtrr_add_page (unsigned long base, unsigned long size,
- 		     unsigned int type, char increment);
- extern int mtrr_del (int reg, unsigned long base, unsigned long size);
- extern int mtrr_del_page (int reg, unsigned long base, unsigned long size);
-+extern void mtrr_trim_uncached_memory(void);
- #  else
- static __inline__ int mtrr_add (unsigned long base, unsigned long size,
- 				unsigned int type, char increment)
-@@ -99,7 +100,9 @@ static __inline__ int mtrr_del_page (int reg, unsigned long base,
- {
-     return -ENODEV;
- }
--
-+static __inline__ void mtrr_trim_uncached_memory(void)
-+{
-+}
- #endif /* CONFIG_MTRR */
- 
- #ifdef CONFIG_COMPAT
+	-- Chris
