@@ -1,116 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbXFYRYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbXFYR2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215AbXFYRYY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 13:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbXFYRYP
+	id S1753774AbXFYR2A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 13:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXFYR1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 13:24:15 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:14805 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbXFYRYO (ORCPT
+	Mon, 25 Jun 2007 13:27:50 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:31745 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbXFYR1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 13:24:14 -0400
-Date: Mon, 25 Jun 2007 18:23:27 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
-       Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
-In-Reply-To: <Pine.LNX.4.64.0706250952490.8320@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0706251804420.7592@blonde.wat.veritas.com>
-References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706212244090.19755@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706211835070.11608@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
- <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
- <Pine.LNX.4.64.0706221040310.17139@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
- <20070624083849.GA19079@flint.arm.linux.org.uk>
- <Pine.LNX.4.64.0706241122030.27778@blonde.wat.veritas.com>
- <20070624105152.GB14099@flint.arm.linux.org.uk>
- <Pine.LNX.4.64.0706250120560.28286@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706250607260.5191@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0706251729250.4911@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706250952490.8320@schroedinger.engr.sgi.com>
+	Mon, 25 Jun 2007 13:27:49 -0400
+Message-ID: <467FFAAA.8010103@rossove.com>
+Date: Mon, 25 Jun 2007 12:26:02 -0500
+From: David Jones <djones@rossove.com>
+Reply-To: djones@rossove.com
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAACmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAY2xhbWV0ZXJAc2dpLmNvbQBhbmRyZXdAc2FucGVvcGxlLmNvbQBuaWNvbGFzLmZlcnJlQHJmby5hdG1lbC5jb20AbGludXgtYXJtLWtlcm5lbEBsaXN0cy5hcm0ubGludXgub3JnLnVrAHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRpb24ub3JnAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAbWFyYy5waWduYXRAaGV2cy5jaABkcnpldXNAZHJ6ZXVzLmN4AHJtaytsa21sQGFybS5saW51eC5vcmcudWsA
-X-Brightmail-Tracker: AAAAAA==
+To: Robert Iakobashvili <coroberti@gmail.com>
+CC: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Scaling Max IP address limitation
+References: <467EA7C1.4080006@rossove.com>	 <20070624110236.fa36b2f9.akpm@linux-foundation.org>	 <7e63f56c0706241259u6e123ed6yc02b76f0260adaa5@mail.gmail.com>	 <467F063A.2030805@rossove.com>	 <7e63f56c0706250147w508d3aeay5f7aaca8215953c8@mail.gmail.com>	 <Pine.LNX.4.64.0706251130320.11964@fbirervta.pbzchgretzou.qr>	 <7e63f56c0706250241q19c6cb49yb846a38eb10a53e6@mail.gmail.com>	 <Pine.LNX.4.64.0706251437130.3137@fbirervta.pbzchgretzou.qr> <7e63f56c0706250544u78353454y44f4aab12a9e3fa8@mail.gmail.com>
+In-Reply-To: <7e63f56c0706250544u78353454y44f4aab12a9e3fa8@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jun 2007, Christoph Lameter wrote:
-> On Mon, 25 Jun 2007, Hugh Dickins wrote:
-> 
-> > > In many situations the page struct passed to flush_dcache_page is
-> > > simply used to calculate the virtual address. So its mostly harmless.
-> > > Trouble starts when page attributes like the mapping is used.
-> > 
-> > Mostly harmless indeed.  I don't understand why you insist on trying
-> > to complicate the situation.  flush_dcache_page is only expected to
-> > do something on pages mapped into userspace (correct me if I'm wrong
-> > there), it's expected to do nothing on kmalloc'ed pages.  It's
-> > been working that way for years, and will continue to work that way
-> > with slub, providing either page_mapping or flush_dcache_page checks
-> > PageSlab to avoid oopsing on page->mapping.
-> 
-> It is definitely intended to work. Otherwise we would not have code 
-> like this:
-> 
-> christoph@fly:~/linux-2.6$ find . -name "*.c" | xargs grep "flush_dcache_page"|grep virt
-> ./drivers/scsi/scsi_tgt_if.c:   flush_dcache_page(virt_to_page(ev));
-> ./drivers/scsi/scsi_tgt_if.c:           flush_dcache_page(virt_to_page(ev));
+Ok I have tried it on a Pentium-M ( 32 Bit ,) with 512 MB RAM and  Core 
+2 Duo with 1Gig RAM  ( running SMP kernel , 2 CPUS) with same results. 
+Cant go more than ~4K addresses. I have tried them with vanilla and 
+custom kernels all 2.6.19+ versions.  Results are same on both systems , 
+so thats the reason I am thinking that there is some limit in kernel 
+source tree which I cant seem to find . Really appreciate your help in 
+this regard.
+Thanks,
+-d
 
-I didn't claim that flush_dcache_page(virt_to_page(virt)) is not expected
-to work.  I claim that flush_dcache_page is expected to be a noop rather
-than an oops on a kmalloced page.
+Robert Iakobashvili wrote:
+> On 6/25/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>>
+>> On Jun 25 2007 12:41, Robert Iakobashvili wrote:
+>> >> > I am getting after initial successes some errors:
+>> >> > "rtnl_talk(): RTNETLINK answers: Cannot allocate memory"
+>> >> > and
+>> >> > #ip addr | wc-l is 8194.
+>> >>
+>> >> I'd be surprised if it was 4096 on x86 and 8192 on x86_64...
+>> >
+>> > Missed to mention: the CPU is Pentium-4.
+>>
+>> That's like saying you've got a SPARC. Or a MIPS. Or a PPC.
+>> (I can't infer from your answer whether that is running 32 or 64-bit
+>> kernel, because there are P4s with and without 64-bit extensions.)
+>
+> 32/32
+>
+>>         Jan
+>> -- 
+>>
+>
+>
 
-> > 2.6.22-rc6 has page_mapping making that check: we could argue about
-> > which is the better site for it, there are good arguments both ways
-> > (page_mapping is the correct place, flush_dcache_page is the more
-> > efficient place), I suggest we leave it as is.
-> 
-> Ok. I think your patch is fine as a quick fix for 2.6.22. I am a bit 
-> uneasy with that given that its in such a broadly used function while its 
-> only use is to enable flush_dcache_page to work. But we need the general 
-> issue taken care of after 2.6.22.
-
-What general issue?
-
-> 
-> > > A kmalloc slab object (even 64 byte) may be crossing a page boundary 
-> > > with a ARCH_KMALLOC_MINALIGN of 4 or 8. So I think that 
-> > > flush_dcache_range *must* be used rather than flush_dcache_page. 
-> > 
-> > Why????  All we require of flush_dcache_page is that it not oops on
-> > the first page in the range: we don't need to change over to
-> > flush_dcache_range for that.
-> 
-> As explained about: There are corner cases in which it does not work. You 
-> seem to assume that flush_dcache_page can become a no op. That may not be 
-> true on platforms that need explicit cache flushing for a DMA engine to 
-> access a data structure. The above listed use suggests that the caller 
-> expects flushing to occur correctly.
-
-The scsi_tgt_if.c use you show above?  That's not dealing with
-kmalloced pages, is it?  True, the pages it is dealing with don't
-have page->mapping set, so those architectures which use page->mapping
-to find what to do in their flush_dcache_page, won't do anything there
-in their flush_dcache_page.  Whether that's a bug or not, I wouldn't
-pretend to know; but it's nothing to do with the present discussion.
-
-Please see Documentation/cachetlb.txt: flush_dcache_page is about
-pagecache pages mapped into userspace.  We don't use kmalloc for those,
-but we do sometimes need to flush_dcache_page in places which commonly
-deal with pagecache pages, but sometimes handle kmalloc'ed buffers too.
-Luckily we don't have to deal with buffers in which the first page is
-kmalloced and the next comes from pagecache.
-
-Hugh
