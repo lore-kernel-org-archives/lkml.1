@@ -1,46 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbXFYWfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbXFYWjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbXFYWfG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 18:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbXFYWey
+	id S1754299AbXFYWjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 18:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbXFYWjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 18:34:54 -0400
-Received: from ns1.suse.de ([195.135.220.2]:42288 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755112AbXFYWex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 18:34:53 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: [PATCH] MTRR: Fix race causing set_mtrr to go into infinite loop
-Date: Tue, 26 Jun 2007 00:34:41 +0200
-User-Agent: KMail/1.9.6
-Cc: Loic Prylli <loic@myri.com>, linux-kernel@vger.kernel.org
-References: <468035BC.9080008@myri.com> <46803C1D.2040009@redhat.com>
-In-Reply-To: <46803C1D.2040009@redhat.com>
+	Mon, 25 Jun 2007 18:39:09 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:38196 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbXFYWjJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 18:39:09 -0400
+Message-ID: <4680445C.8000703@oracle.com>
+Date: Mon, 25 Jun 2007 15:40:28 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: david@lang.hm
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: long-term regression
+References: <Pine.LNX.4.64.0706171052240.28371@asgard.lang.hm> <20070621052807.cc64605d.akpm@linux-foundation.org> <20070621083659.dabf3a22.randy.dunlap@oracle.com> <Pine.LNX.4.64.0706242157570.6215@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0706242157570.6215@asgard.lang.hm>
+Content-Type: text/plain; charset=windows-1256; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706260034.41940.ak@suse.de>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 June 2007 00:05:17 Chuck Ebbert wrote:
-> On 06/25/2007 05:38 PM, Loic Prylli wrote:
+david@lang.hm wrote:
+> On Thu, 21 Jun 2007, Randy Dunlap wrote:
 > 
-> [cc: Andi]
+>> Date: Thu, 21 Jun 2007 08:36:59 -0700
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>> To: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: david@lang.hm, linux-kernel@vger.kernel.org,
+>>     linux-usb-devel@lists.sourceforge.net
+>> Subject: Re: long-term regression
+>>
+>> On Thu, 21 Jun 2007 05:28:07 -0700 Andrew Morton wrote:
+>>
+>>>> On Sun, 17 Jun 2007 10:57:55 -0700 (PDT) david@lang.hm wrote:
+>>>> I haven't had time to bisect this, but I'm having a problem on a AMD64
+>>>> gentoo system where the printer doesn't work with recent kernels.
+>>>>
+>>>> 2.6.18-rc3 worked
+>>>> 2.6.21.1 doesn't
+>>>> 2.6.22-rc4 doesn't
+>>>>
+>>>> unfortunantly the system is gooted on 2.6.18 at the moment and I'm 
+>>>> out of
+>>>> town so my ability to test is limited I can provide the 2.6.22-rc4
+>>>> (attached) and 2.6.18-rc3 configs.
+>>>>
+>>>> dmesg appears to show the port being detected, but writes to the port
+>>>> under newer kernels appear to complete, but no data gets to the 
+>>>> printer.
+>>>>
+>>>> any suggestions other then doing the large bisect?
+>>>
+>>> That would be good, thanks.  Please be sure to cc linux-usb-devel on
+>>> the results.
+>>
+>> OK, I'm curious about how someone deduced that this is a problem
+>> with a USB printer vs. parallel port printer since the config file has:
+>>
+>> CONFIG_PRINTER=y
+>> CONFIG_USB_PRINTER=y
+>>
+>> The kernel boot log should probably be posted also.
 > 
-> > Processors synchronization in set_mtrr requires the .gate field
-> > to be set after .count field is properly initialized. Without an explicit
-> > barrier, the compiler was reordering those memory stores. That was sometimes
-> > causing a processor (in ipi_handler) to see the .gate change and
-> > decrement .count before the latter is set by set_mtrr() (which
-> > then hangs in a infinite loop with irqs disabled).
+> here is the dmesg from 2.6.22-rc4 and kern.log showing 2.6.22.-rc4 and 
+> 2.6.180rc3
+> 
+> the printer not working is the parallel port.
 
-Hmm, perhaps we should just put the smp_wmb into atomic_set().
-Near all other atomic operations have memory barriers too. I think
-that would be the better fix.
+This email didn't show up on lkml or linux-usb-devel due to size limits (it was 900+ KB).
 
--Andi
+David, please send your working 2.6.18 config file.
+
+Can you post the kernel log files on the web somewhere?
+
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
