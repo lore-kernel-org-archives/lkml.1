@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbXFYBoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbXFYBqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbXFYBoz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 21:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbXFYBos
+	id S1756348AbXFYBqS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 21:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbXFYBqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 21:44:48 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:40642 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752194AbXFYBos (ORCPT
+	Sun, 24 Jun 2007 21:46:09 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38873 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752134AbXFYBqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 21:44:48 -0400
-Message-ID: <467F1D34.5080807@gmail.com>
-Date: Mon, 25 Jun 2007 03:41:08 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: david@lang.hm
-CC: Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@stusta.de>,
-       Benjamin LaHaise <bcrl@kvack.org>, Oleg Verych <olecom@flower.upol.cz>,
-       rae l <crquan@gmail.com>, linux-kernel@vger.kernel.org
+	Sun, 24 Jun 2007 21:46:08 -0400
+Date: Mon, 25 Jun 2007 03:46:28 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Benjamin LaHaise <bcrl@kvack.org>,
+       Oleg Verych <olecom@flower.upol.cz>, rae l <crquan@gmail.com>,
+       linux-kernel@vger.kernel.org
 Subject: Re: -Os versus -O2
-References: <467cac85.081b600a.5b88.457f@mx.google.com>  <E1I20Wr-00064i-T0@flower>  <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com>  <20070624222518.GA10398@flower.upol.cz>  <1182723318.6819.5.camel@laptopd505.fenrus.org>  <20070624232314.GA971@kvack.org>  <1182730156.6819.8.camel@laptopd505.fenrus.org>  <20070625001203.GB971@kvack.org>  <1182731022.6819.10.camel@laptopd505.fenrus.org>  <20070625004106.GA1094@stusta.de>  <1182733127.6819.13.camel@laptopd505.fenrus.org>  <Pine.LNX.4.64.0706241801320.10397@asgard.lang.hm> <1182734240.26621.2.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0706241824080.10397@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0706241824080.10397@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Message-ID: <20070625014627.GC1094@stusta.de>
+References: <E1I20Wr-00064i-T0@flower> <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com> <20070624222518.GA10398@flower.upol.cz> <1182723318.6819.5.camel@laptopd505.fenrus.org> <20070624232314.GA971@kvack.org> <1182730156.6819.8.camel@laptopd505.fenrus.org> <20070625001203.GB971@kvack.org> <1182731022.6819.10.camel@laptopd505.fenrus.org> <20070625004106.GA1094@stusta.de> <467F1B8D.3080507@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <467F1B8D.3080507@garzik.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/25/2007 03:33 AM, david@lang.hm wrote:
+On Sun, Jun 24, 2007 at 09:34:05PM -0400, Jeff Garzik wrote:
+> Adrian Bunk wrote:
+>> The interesting questions are:
+>> Does -Os still sometimes generate faster code with gcc 4.2?
+>> If yes, why?
+>
+> Smaller code can mean fewer page faults, fewer cache invalidations, etc.
+>
+> It's not just a matter of compiler code generation, gotta look at the whole 
+> picture.
 
-> is the list of what's included in -O2 vs -Os different for different 
-> CPU's? what about within a single family of processors? (even in the x86 
-> family the costs of jumps, loops, and cache misses varies drasticly)
+Sure, but my point is that if the kernel is considered special and the 
+best optimization for the kernel is therefore between -Os and -O2, we 
+should try to find this point of best optimization.
 
-At least not in the example Duron/Athlon case. Both -march=athlon{,-4) but 
-64K versus 256K L2 which I'd expect to be an important difference in the -Os 
-versus -O2 behaviour.
+This should address Arjans point that -Os might not be best choice for 
+best performance (and it's actually our fault if gcc generates stupid 
+but small code when we use -Os).
 
-Rene.
+> 	Jeff
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
