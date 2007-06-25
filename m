@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbXFYCds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbXFYCjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbXFYCds (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 22:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbXFYCdl
+	id S1754832AbXFYCjr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 22:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbXFYCjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 22:33:41 -0400
-Received: from lixom.net ([66.141.50.11]:48152 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752344AbXFYCdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 22:33:41 -0400
-Date: Sun, 24 Jun 2007 21:42:52 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org, akpm@osdl.org, paulus@samba.org
-Subject: Re: [PATCH] pcmcia: ppc64 needs 32-bit ioaddr_t
-Message-ID: <20070625024252.GA31653@lixom.net>
-References: <20070625005439.GA31289@lixom.net> <200706250335.56739.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706250335.56739.arnd@arndb.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: olof@lixom.net (Olof Johansson)
+	Sun, 24 Jun 2007 22:39:36 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:56095 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752285AbXFYCjf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 22:39:35 -0400
+Date: Sun, 24 Jun 2007 20:39:27 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH 2.6.22-rc5] libata: add HTS541616J9SA00 to NCQ blacklist
+In-reply-to: <467F286B.40607@gmail.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       enricoss@tiscali.it, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Message-id: <467F2ADF.1040600@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.sspu6LOivd/touNtS2IsMKPqHa0@ifi.uio.no>
+ <fa.19XJG1Asdp1zwcWLxolIH6F+5lY@ifi.uio.no> <467EC909.9040006@shaw.ca>
+ <467F2495.3080509@gmail.com> <467F286B.40607@gmail.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 03:35:56AM +0200, Arnd Bergmann wrote:
-> On Monday 25 June 2007, Olof Johansson wrote:
-> > ppc64 really needs ioaddr_t to be 32-bit, since I/O addresses really are
-> > MMIO addresses, and remapped at an offset that's well above 16 bits in
-> > some cases.
-> > 
-> > While the type is exported to userspace, there hasn't been any platforms
-> > with PCMCIA on 64-bit powerpc until now, so changing it won't regress
-> > any existing users.
+Tejun Heo wrote:
+> Another member of HTS5416* family doing spurious NCQ completion.
 > 
-> I just realized that this argument is bogus, because the user space tools
-> are probably, or at least potentially, built as 32 bit binaries, which
-> means that any interface using these _will_ break.
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> Cc: Enrico Sardi <enricoss@tiscali.it>
+> ---
+>  drivers/ata/libata-core.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index adfae9d..fbca8d8 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -3803,6 +3803,7 @@ static const struct ata_blacklist_entry ata_device_blacklist [] = {
+>  	/* Drives which do spurious command completion */
+>  	{ "HTS541680J9SA00",	"SB2IC7EP",	ATA_HORKAGE_NONCQ, },
+>  	{ "HTS541612J9SA00",	"SBDIC7JP",	ATA_HORKAGE_NONCQ, },
+> +	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
+>  	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
+>  
+>  	/* Devices with NCQ limits */
+> 
 
-Fortunately, on the userspace ABI, it should just be the cardmgr
-ioctls that are affected. In this case there are no current 64-bit PPC
-platforms with PCMCIA, so there are no existing users to regress. New
-users (with 32-bit userspace) shouldn't be using the cardmgr tools.
+Is that the right ID string? Strange that that one has Hitachi at the 
+front and the others don't..
 
-So yes, someone who takes an old 32-bit userspace with cardmgr, moves
-it to a new 64-bit platform and expects the old 32-bit tools to work
-will find that they don't. Not that they would have otherwise either.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-> However, I could not find any actual user space interfaces in 2.6.22-rc
-> that are built around ioaddr_t. What are they, or have the been removed
-> by now?
-
-Last time I posted this I got the answer from Christoph that it's cardmgr
-and the ioctl interface it uses, and there's still users out there that
-have been neglecting the error messages, etc.
-
-Unfortunately, ioaddr_t is used both in the ioctl interface as well as
-to pass around some of the same structures within the kernel. So I could
-either do major overhaul of the PCMCIA stack, or change this type for
-ppc64. I went for the latter given that MIPS and ARM obviously already
-got away with doing it.
-
-
--Olof
