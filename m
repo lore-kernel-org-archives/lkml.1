@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbXFYXNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbXFYXRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbXFYXNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 19:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbXFYXNO
+	id S1752170AbXFYXRr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 19:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbXFYXRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 19:13:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42061 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751392AbXFYXNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 19:13:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: Please release a stable kernel Linux 3.0
-Date: Tue, 26 Jun 2007 01:20:12 +0200
-User-Agent: KMail/1.9.5
-Cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       =?iso-8859-1?q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>,
-       linux-kernel@vger.kernel.org
-References: <200706212349.54983.zoltan.hubert@zzaero.com> <200706242254.59695.rjw@sisk.pl> <467FEF6E.9050908@redhat.com>
-In-Reply-To: <467FEF6E.9050908@redhat.com>
+	Mon, 25 Jun 2007 19:17:30 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:40196 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751939AbXFYXR2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 19:17:28 -0400
+Date: Tue, 26 Jun 2007 01:17:50 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Hannu Savolainen <hannu@opensound.com>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
+       Tomasz =?utf-8?Q?K=C5=82oczko?= <kloczek@rudy.mif.pg.gda.pl>
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Message-ID: <20070625231750.GF1094@stusta.de>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <s5h4pkwi9u0.wl%tiwai@suse.de> <4680310D.6060206@opensound.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200706260120.13940.rjw@sisk.pl>
+In-Reply-To: <4680310D.6060206@opensound.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 25 June 2007 18:38, Chuck Ebbert wrote:
-> On 06/24/2007 04:54 PM, Rafael J. Wysocki wrote:
-> > On Friday, 22 June 2007 19:11, Chuck Ebbert wrote:
-> >> On 06/22/2007 11:00 AM, Rafael J. Wysocki wrote:
-> >>> On Friday, 22 June 2007 00:34, Chuck Ebbert wrote:
-> >>>> On 06/21/2007 06:29 PM, Jesper Juhl wrote:
-> >>>>> I myself have argued that we should be focusing more on stability and
-> >>>>> regression fixing, but I'm not so sure that a 2.6.7 devel branch would
-> >>>>> solve this. In general the 2.6.x.y -stable kernels seem to be doing
-> >>>>> the job pretty good.
-> >>>>>
-> >>>>  
-> >>>> Even the good ones that get lots of fixes aren't all that good. The
-> >>>> biggest problem ATM is that suspend is badly broken and keeps getting
-> >>>> worse...
-> >>> Can you please provide me with any links to suspend-related bug reports from
-> >>> you?
-> >>>
-> >> I get so many suspend/resume bug reports that I've given up trying
-> >> to get them fixed. And there are so many bugs that are even worse,
-> >> like crashes during normal use, data corruption, etc. that suspend
-> >> bugs don't get much attention. But here are the ones for Fedora 6;
-> >> the list would be much longer if I included Fedora 5 and 7:
-> > 
-> > Can you please tell me what's the relationship between Fedora kernel vesions
-> > and the kernel.org kernels?
-> > 
-> 
-> Fedora kernels are as close to upstream as we can get them, but we do add Xen,
-> Roland's utrace and exec-shield. The list of applied patches may be a bit long
-> but most of them are bug fixes that we couldn't get into -stable for one reason
-> or another (some not upstream yet, some judged too big for -stable.)
+On Tue, Jun 26, 2007 at 12:18:05AM +0300, Hannu Savolainen wrote:
+>...
+> What we would like to push is that the old "deprecated" OSS/Free are 
+> removed from the kernel. OSS/Free is based on about years old OSS API 
+> version which was too limited for many applications. Having OSS/Free in the 
+> kernel doesn't serve any purpose.
 
-OK, thanks.
+I am slowly removing all parts of the in-kernel OSS with ALSA drivers 
+for the same hardware.
 
-Still, I know that, for example, the Fedora 2.6.21-1.3193.fc8 kernel is in fact
-2.6.22-rc3 (see http://bugzilla.kernel.org/show_bug.cgi?id=7988#c11).  Is there
-a straightforward way to 'decode' such names? ;-)
+The remaining drivers can roughly be divided into two categories:
+- some ISA cards not supported by ALSA
+- some drivers for unusual hardware (read: not a PC) not supported by ALSA
 
-Greetings,
-Rafael
+As long as we don't have ALSA drivers for them (which might in some 
+cases never happen) I'd prefer to keep them for now.
 
+> Also we would like to stop the silly OSS vs ALSA war. OSS and ALSA are 
+> rather different. Both of them have some good points and bad points. For 
+> ordinary users it doesn't matter which API is used by the applications as 
+> long as they work. Just the application developers can see the real 
+> difference. Some of them prefer OSS while some other prefer ALSA and this 
+> should be their "freedom of choice".
+>...
+
+I'm glad to hear this.  :-)
+
+> Best regards,
+>
+> Hannu
+
+cu
+Adrian
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
