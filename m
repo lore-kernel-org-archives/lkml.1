@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbXFYNtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbXFYNu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbXFYNtx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 09:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbXFYNto
+	id S1756821AbXFYNu4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 09:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbXFYNuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 09:49:44 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44326 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756796AbXFYNtn (ORCPT
+	Mon, 25 Jun 2007 09:50:46 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:52865 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753792AbXFYNup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 09:49:43 -0400
-Message-ID: <467FC71D.2020706@gmail.com>
-Date: Mon, 25 Jun 2007 15:46:05 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: =?UTF-8?B?VG9tYXN6IEvFgm9jemtv?= <kloczek@rudy.mif.pg.gda.pl>
-CC: Takashi Iwai <tiwai@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl> <20070624215724.025a5de5@the-village.bc.nu> <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl> <s5h3b0gi9mp.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl>
-In-Reply-To: <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Mon, 25 Jun 2007 09:50:45 -0400
+Date: Mon, 25 Jun 2007 19:20:51 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Cc: David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: [PATCH 7/7][TAKE5] ext4: support new modes
+Message-ID: <20070625135051.GH1951@amitarora.in.ibm.com>
+References: <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070625132810.GA1951@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/25/2007 01:36 PM, Tomasz Kłoczko wrote:
+Support new values of mode in ext4.
 
-> Please recall history of (for example) esound.
->> From esound README:
-> 
-> "Esound is an audio mixing server that allows multiple
-> applications to output sound to the same audio device."
-> 
-> It was started in time when most cheap sound cards was without hw mixer.
+This patch supports new mode values/flags in ext4. With this patch ext4
+will be able to support FA_ALLOCATE and FA_RESV_SPACE modes. Supporting
+FA_DEALLOCATE and FA_UNRESV_SPACE fallocate modes in ext4 is a work for
+future.
 
-The same situation as today, that is.
+Signed-off-by: Amit Arora <aarora@in.ibm.com>
 
-> And .. when today you use ALSA on sound card without hw mixer still all 
-> this (past ?) problems are actual.
-
-ALSA mixes by default since something like 1.0.10 (november 2005).
-
-> Look on main reasons developing arts ..
-
-Which started at a time there was no ALSA, has been basically dead for 6 
-years now and has at the moment finally been dropped by its last user.
-
-> In documentation many other user space APIs you can find the same or 
-> similar reasons. Look .. I'm talkimg about real facts. Your disagreement
-> completly ommits *reasons* spending some time on preapare this soud
-> APIs.
-
-The "linux audio jungle" picture you posted a link to:
-
-http://blogs.adobe.com/penguin.swf/linuxaudio.png
-
-shows more arrows pointing to OSS than it does to ALSA and with a number of 
-those coming from things that existed before there even was an ALSA and yet 
-somehow you maintain this userspace audio jungle is ALSA's fault?
-
-The Linux userspace audio situation is improving; since software mixing, 
-plain vanilla ALSA is a good, single solution to a majority of uses and 
-something like Phonon which is going to arrive later this year seems poised 
-to provide a nice high level API, including for people who believe that 
-audio is about playing you-got-mail jingles.
-
-The reason we're not there yet is in part _due_ to people maintaining that 
-OSS is somehow a valid choice on Linux. Ie:
-
-> ALSA still does not provides good soud devices virtualization for more 
-> then one application. Each day I'm using bludy words when I'm try to use
-> skype which oppens /dev/mixer after run galeon [ ... ]
-
-/dev/mixer is an OSS device. Recent versions of skype should (as far as I've 
-been told) be able to use native ALSA but if you're using an older version 
-you get what you asked for. Should the ALSA OSS emulation try its damndest 
-to support proprietary, bugridden closed source junk such as skype? Opinions 
-probably vary but I'd say yes. Let's not make it, old versions of it at 
-that, into the reference application though.
-
-Video is a much more significant problem for desktop Linux than audio is and 
-solutions are going to arrive combined as they are both userspace (ie, not 
-kernel, not DRI, not ALSA, not OSS) multimedia problems. I have high hopes 
-especially for the new technologies that went into KDE4. Haven't payed much 
-attention to GNOME though so not sure what they're upto. Non-stellar 
-cooperation between those two large desktop initiatives in the field of 
-multimedia is another reason for things not being there yet. Go bark up 
-those trees instead.
-
-Rene.
-
+Index: linux-2.6.22-rc4/fs/ext4/extents.c
+===================================================================
+--- linux-2.6.22-rc4.orig/fs/ext4/extents.c
++++ linux-2.6.22-rc4/fs/ext4/extents.c
+@@ -2477,7 +2477,8 @@ int ext4_ext_writepage_trans_blocks(stru
+ /*
+  * preallocate space for a file. This implements ext4's fallocate inode
+  * operation, which gets called from sys_fallocate system call.
+- * Currently only FA_ALLOCATE mode is supported on extent based files.
++ * Currently only FA_ALLOCATE  and FA_RESV_SPACE modes are supported on
++ * extent based files.
+  * We may have more modes supported in future - like FA_DEALLOCATE, which
+  * tells fallocate to unallocate previously (pre)allocated blocks.
+  * For block-mapped files, posix_fallocate should fall back to the method
+@@ -2499,7 +2500,8 @@ long ext4_fallocate(struct inode *inode,
+ 	 * currently supporting (pre)allocate mode for extent-based
+ 	 * files _only_
+ 	 */
+-	if (mode != FA_ALLOCATE || !(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
++	if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) ||
++		!(mode == FA_ALLOCATE || mode == FA_RESV_SPACE))
+ 		return -EOPNOTSUPP;
+ 
+ 	/* preallocation to directories is currently not supported */
+@@ -2572,9 +2574,10 @@ retry:
+ 
+ 	/*
+ 	 * Time to update the file size.
+-	 * Update only when preallocation was requested beyond the file size.
++	 * Update only when preallocation was requested beyond the file size
++	 * and when FA_FL_KEEP_SIZE mode is not specified!
+ 	 */
+-	if ((offset + len) > i_size_read(inode)) {
++	if (!(mode & FA_FL_KEEP_SIZE) && (offset + len) > i_size_read(inode)) {
+ 		if (ret > 0) {
+ 			/*
+ 			 * if no error, we assume preallocation succeeded
