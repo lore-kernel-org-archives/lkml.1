@@ -1,94 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXFYVSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbXFYVTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbXFYVSb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 17:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbXFYVSV
+	id S1756066AbXFYVTR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 17:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXFYVS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 17:18:21 -0400
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115]:42867 "EHLO
-	gw01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752287AbXFYVSU (ORCPT
+	Mon, 25 Jun 2007 17:18:59 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:6837 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbXFYVS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 17:18:20 -0400
-Message-ID: <4680310D.6060206@opensound.com>
-Date: Tue, 26 Jun 2007 00:18:05 +0300
-From: Hannu Savolainen <hannu@opensound.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 25 Jun 2007 17:18:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=A3Kj6ZtYNxD9wQ8O47Z/EMnHtY7D13WVLnUtdDm9vjco+KUTOZhGIPkL63gokL5D0rkHQEz+9dVtdZ6BoHHweuezulXfm0tSwja4P1iVzRPWEo2iYETTygIQ7rMy0f6P2CThryq2dJczFtO7Jg8151LGBbRMSexD7m7QM6uPl5Q=
+Date: Mon, 25 Jun 2007 23:18:55 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Jay Cliburn <jacliburn@bellsouth.net>,
+       "Jay L. T. Cornwall" <jay@esuna.co.uk>, linux-kernel@vger.kernel.org,
+       Chris Snook <csnook@redhat.com>, netdev@vger.kernel.org
+Subject: [PATCH] atl1: disable 64bit DMA
+Message-ID: <20070625211855.GA19275@dreamland.darkstar.lan>
+References: <467B12CA.5060405@esuna.co.uk> <467BE118.4090308@redhat.com> <467BE4F1.7040308@esuna.co.uk> <467D0EB0.9030100@esuna.co.uk> <20070624125957.2e27820c@osprey.hogchain.net> <467ED4A8.4080500@esuna.co.uk> <20070624164519.04f215b8@osprey.hogchain.net> <467FB237.2030703@esuna.co.uk> <467FB844.6060702@bellsouth.net>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-CC: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <s5h4pkwi9u0.wl%tiwai@suse.de>
-In-Reply-To: <s5h4pkwi9u0.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <467FB844.6060702@bellsouth.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai kirjoitti:
-> At Sun, 24 Jun 2007 19:51:38 +0200 (CEST),
-> Tomasz K³oczko wrote:
->   
->> Few dayas ago OSS source code was oppened uder CDDL for Solaris and GLPv2 
->> for Linux:
->>
->> http://www.opensound.com/press/2007/oss-gpl-cddl.txt
->>
->> So this source without problems code can be integragrated in Linus tree 
->> and after this Linux can provide much better soud supoport than 
->> with current ALSA.
->>
->> Any plans for doing this ?
->>     
->
-> Did you count the number of devices that tree supports?
-> You'll loose the support of all new laptops and mobos sold in the last
-> year :)
->   
-They are all based on HD audio which is supported by OSS. Ok, our HDA 
-driver driver still needs some work which was one of the reasons why we 
-are moving to the community development model.
-> Honestly, I'm not fully against changing the current code base (or
-> crap, whatever, any childish name).  There are indeed many misdesigns.
-> But, replacing with the above is no option, IMO.  The OSS have also
-> many misdesigns, so the same argument would start again.  One should
-> learn something from history...
->   
-Exactly. Good to know that we are both thinking in the same way.
-> Anyway, if it's going to be more constructive, I'm willing to join in.
->   
-I think it's going to be constructive.
+Il Mon, Jun 25, 2007 at 07:42:44AM -0500, Jay Cliburn ha scritto: 
+> Jay L. T. Cornwall wrote:
+> >Jay Cliburn wrote:
+> >
+> >>For reasons not yet clear to me, it appears the L1 driver has a bug or
+> >>the device itself has trouble with DMA in high memory.  This patch,
+> >>drafted by Luca Tettamanti, is being explored as a workaround.  I'd be
+> >>interested to know if it fixes your problem.
+> >
+> >Yes, it certainly seems to. Now running with this patch and 4GB active,
+> >I've transferred about 15GB with no problem so far. It usually oopses
+> >after a GB or two.
+> >
+> >I guess it's not an ideal solution, architecturally speaking, but it's a
+> >good deal better than an unstable driver. If there's any other patches
+> >you'd like me to test or traces to capture, I'm happy to help out.
+> >Otherwise I'll run with this one for now since it does the job!
+> 
+> Okay Jay, thanks.
+> 
+> Luca, would you please submit your patch to Jeff Garzik and netdev?
 
-We have no intention to push OSS back to the kernel or to replace ALSA. 
-That alternative is not realistic any more. In addition OSS is a 
-cross-platform product and staying more or less outside various kernel 
-trees should provide better flexibility.
+Hi Jeff,
+a couple of users reported hard lockups when using L1 NICs on machines
+with 4GB or more of RAM. We're still waiting official confirmation from
+the vendor, but it seems that L1 has problems doing DMA to/from high
+memory (physical address above the 4GB limit). Passing 32bit DMA mask
+cures the problem.
 
-What we would like to push is that the old "deprecated" OSS/Free are 
-removed from the kernel. OSS/Free is based on about years old OSS API 
-version which was too limited for many applications. Having OSS/Free in 
-the kernel doesn't serve any purpose.
+Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
 
-Also we would like to stop the silly OSS vs ALSA war. OSS and ALSA are 
-rather different. Both of them have some good points and bad points. For 
-ordinary users it doesn't matter which API is used by the applications 
-as long as they work. Just the application developers can see the real 
-difference. Some of them prefer OSS while some other prefer ALSA and 
-this should be their "freedom of choice".
+---
+I think that the patch should be included in 2.6.22.
 
-I think the ideal solution would be that both ALSA and OSS APIs can 
-co-exist by sharing the same low level drivers (which has already been 
-demonstrated). The low level driver interfaces in both systems are 
-practically identical. This means that ALSA's core can work with OSS' 
-drivers and vice versa.
+ drivers/net/atl1/atl1_main.c |   15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
-Today both OSS and ALSA teams have to spend significant amounts of time 
-in emulating the "alien" APIs. Making OSS and ALSA to co-exist will 
-require some work in both sides but that should be nothing when compared 
-to the effort required for emulation.
+diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+index 6862c11..a730f15 100644
+--- a/drivers/net/atl1/atl1_main.c
++++ b/drivers/net/atl1/atl1_main.c
+@@ -2097,21 +2097,16 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+ 	struct net_device *netdev;
+ 	struct atl1_adapter *adapter;
+ 	static int cards_found = 0;
+-	bool pci_using_64 = true;
+ 	int err;
+ 
+ 	err = pci_enable_device(pdev);
+ 	if (err)
+ 		return err;
+ 
+-	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
++	err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+ 	if (err) {
+-		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+-		if (err) {
+-			dev_err(&pdev->dev, "no usable DMA configuration\n");
+-			goto err_dma;
+-		}
+-		pci_using_64 = false;
++		dev_err(&pdev->dev, "no usable DMA configuration\n");
++		goto err_dma;
+ 	}
+ 	/* Mark all PCI regions associated with PCI device
+ 	 * pdev as being reserved by owner atl1_driver_name
+@@ -2176,7 +2171,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+ 
+ 	netdev->ethtool_ops = &atl1_ethtool_ops;
+ 	adapter->bd_number = cards_found;
+-	adapter->pci_using_64 = pci_using_64;
+ 
+ 	/* setup the private structure */
+ 	err = atl1_sw_init(adapter);
+@@ -2193,9 +2187,6 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
+ 	 */
+ 	/* netdev->features |= NETIF_F_TSO; */
+ 
+-	if (pci_using_64)
+-		netdev->features |= NETIF_F_HIGHDMA;
+-
+ 	netdev->features |= NETIF_F_LLTX;
+ 
+ 	/*
 
-Just my 2 cents.
 
-Best regards,
-
-Hannu
+Luca
+-- 
+Non ho ancora capito se il mio cane e` maschio o femmina:
+quando fa la pipi` si chiude in bagno
