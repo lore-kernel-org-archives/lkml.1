@@ -1,407 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbXFYNti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbXFYNtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbXFYNti (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 09:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbXFYNt3
+	id S1756880AbXFYNtx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 09:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbXFYNto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 09:49:29 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:60173 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752615AbXFYNt0 (ORCPT
+	Mon, 25 Jun 2007 09:49:44 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44326 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756796AbXFYNtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 09:49:26 -0400
-Date: Mon, 25 Jun 2007 19:19:29 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Cc: David Chinner <dgc@sgi.com>, Andreas Dilger <adilger@clusterfs.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: [PATCH 6/7][TAKE5] ext4: write support for preallocated blocks
-Message-ID: <20070625134929.GG1951@amitarora.in.ibm.com>
-References: <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070625132810.GA1951@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 25 Jun 2007 09:49:43 -0400
+Message-ID: <467FC71D.2020706@gmail.com>
+Date: Mon, 25 Jun 2007 15:46:05 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: =?UTF-8?B?VG9tYXN6IEvFgm9jemtv?= <kloczek@rudy.mif.pg.gda.pl>
+CC: Takashi Iwai <tiwai@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl> <20070624215724.025a5de5@the-village.bc.nu> <Pine.BSO.4.63.0706251052380.25800@rudy.mif.pg.gda.pl> <s5h3b0gi9mp.wl%tiwai@suse.de> <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl>
+In-Reply-To: <Pine.BSO.4.63.0706251308020.25800@rudy.mif.pg.gda.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds write support to the uninitialized extents that get
-created when a preallocation is done using fallocate(). It takes care of
-splitting the extents into multiple (upto three) extents and merging the
-new split extents with neighbouring ones, if possible.
+On 06/25/2007 01:36 PM, Tomasz Kłoczko wrote:
 
-Changelog:
----------
-Changes from Take3 to Take4:
- - no change -
-Changes from Take2 to Take3:
- 1) Patch now rebased to 2.6.22-rc1 kernel.
-Changes from Take1 to Take2:
- 1) Replaced BUG_ON with WARN_ON & ext4_error.
- 2) Added variable names to the function declaration of
-    ext4_ext_try_to_merge().
- 3) Updated variable declarations to use multiple-definitions-per-line.
- 4) "if((a=foo())).." was broken into "a=foo(); if(a).."
- 5) Removed extra spaces.
+> Please recall history of (for example) esound.
+>> From esound README:
+> 
+> "Esound is an audio mixing server that allows multiple
+> applications to output sound to the same audio device."
+> 
+> It was started in time when most cheap sound cards was without hw mixer.
 
+The same situation as today, that is.
 
-Signed-off-by: Amit Arora <aarora@in.ibm.com>
+> And .. when today you use ALSA on sound card without hw mixer still all 
+> this (past ?) problems are actual.
 
-Index: linux-2.6.22-rc4/fs/ext4/extents.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/extents.c
-+++ linux-2.6.22-rc4/fs/ext4/extents.c
-@@ -1167,6 +1167,53 @@ ext4_can_extents_be_merged(struct inode 
- }
- 
- /*
-+ * This function tries to merge the "ex" extent to the next extent in the tree.
-+ * It always tries to merge towards right. If you want to merge towards
-+ * left, pass "ex - 1" as argument instead of "ex".
-+ * Returns 0 if the extents (ex and ex+1) were _not_ merged and returns
-+ * 1 if they got merged.
-+ */
-+int ext4_ext_try_to_merge(struct inode *inode,
-+			  struct ext4_ext_path *path,
-+			  struct ext4_extent *ex)
-+{
-+	struct ext4_extent_header *eh;
-+	unsigned int depth, len;
-+	int merge_done = 0;
-+	int uninitialized = 0;
-+
-+	depth = ext_depth(inode);
-+	BUG_ON(path[depth].p_hdr == NULL);
-+	eh = path[depth].p_hdr;
-+
-+	while (ex < EXT_LAST_EXTENT(eh)) {
-+		if (!ext4_can_extents_be_merged(inode, ex, ex + 1))
-+			break;
-+		/* merge with next extent! */
-+		if (ext4_ext_is_uninitialized(ex))
-+			uninitialized = 1;
-+		ex->ee_len = cpu_to_le16(ext4_ext_get_actual_len(ex)
-+				+ ext4_ext_get_actual_len(ex + 1));
-+		if (uninitialized)
-+			ext4_ext_mark_uninitialized(ex);
-+
-+		if (ex + 1 < EXT_LAST_EXTENT(eh)) {
-+			len = (EXT_LAST_EXTENT(eh) - ex - 1)
-+				* sizeof(struct ext4_extent);
-+			memmove(ex + 1, ex + 2, len);
-+		}
-+		eh->eh_entries = cpu_to_le16(le16_to_cpu(eh->eh_entries) - 1);
-+		merge_done = 1;
-+		WARN_ON(eh->eh_entries == 0);
-+		if (!eh->eh_entries)
-+			ext4_error(inode->i_sb, "ext4_ext_try_to_merge",
-+			   "inode#%lu, eh->eh_entries = 0!", inode->i_ino);
-+	}
-+
-+	return merge_done;
-+}
-+
-+/*
-  * check if a portion of the "newext" extent overlaps with an
-  * existing extent.
-  *
-@@ -1354,25 +1401,7 @@ has_space:
- 
- merge:
- 	/* try to merge extents to the right */
--	while (nearex < EXT_LAST_EXTENT(eh)) {
--		if (!ext4_can_extents_be_merged(inode, nearex, nearex + 1))
--			break;
--		/* merge with next extent! */
--		if (ext4_ext_is_uninitialized(nearex))
--			uninitialized = 1;
--		nearex->ee_len = cpu_to_le16(ext4_ext_get_actual_len(nearex)
--					+ ext4_ext_get_actual_len(nearex + 1));
--		if (uninitialized)
--			ext4_ext_mark_uninitialized(nearex);
--
--		if (nearex + 1 < EXT_LAST_EXTENT(eh)) {
--			len = (EXT_LAST_EXTENT(eh) - nearex - 1)
--					* sizeof(struct ext4_extent);
--			memmove(nearex + 1, nearex + 2, len);
--		}
--		eh->eh_entries = cpu_to_le16(le16_to_cpu(eh->eh_entries)-1);
--		BUG_ON(eh->eh_entries == 0);
--	}
-+	ext4_ext_try_to_merge(inode, path, nearex);
- 
- 	/* try to merge extents to the left */
- 
-@@ -2035,15 +2064,158 @@ void ext4_ext_release(struct super_block
- #endif
- }
- 
-+/*
-+ * This function is called by ext4_ext_get_blocks() if someone tries to write
-+ * to an uninitialized extent. It may result in splitting the uninitialized
-+ * extent into multiple extents (upto three - one initialized and two
-+ * uninitialized).
-+ * There are three possibilities:
-+ *   a> There is no split required: Entire extent should be initialized
-+ *   b> Splits in two extents: Write is happening at either end of the extent
-+ *   c> Splits in three extents: Somone is writing in middle of the extent
-+ */
-+int ext4_ext_convert_to_initialized(handle_t *handle, struct inode *inode,
-+					struct ext4_ext_path *path,
-+					ext4_fsblk_t iblock,
-+					unsigned long max_blocks)
-+{
-+	struct ext4_extent *ex, newex;
-+	struct ext4_extent *ex1 = NULL;
-+	struct ext4_extent *ex2 = NULL;
-+	struct ext4_extent *ex3 = NULL;
-+	struct ext4_extent_header *eh;
-+	unsigned int allocated, ee_block, ee_len, depth;
-+	ext4_fsblk_t newblock;
-+	int err = 0;
-+	int ret = 0;
-+
-+	depth = ext_depth(inode);
-+	eh = path[depth].p_hdr;
-+	ex = path[depth].p_ext;
-+	ee_block = le32_to_cpu(ex->ee_block);
-+	ee_len = ext4_ext_get_actual_len(ex);
-+	allocated = ee_len - (iblock - ee_block);
-+	newblock = iblock - ee_block + ext_pblock(ex);
-+	ex2 = ex;
-+
-+	/* ex1: ee_block to iblock - 1 : uninitialized */
-+	if (iblock > ee_block) {
-+		ex1 = ex;
-+		ex1->ee_len = cpu_to_le16(iblock - ee_block);
-+		ext4_ext_mark_uninitialized(ex1);
-+		ex2 = &newex;
-+	}
-+	/*
-+	 * for sanity, update the length of the ex2 extent before
-+	 * we insert ex3, if ex1 is NULL. This is to avoid temporary
-+	 * overlap of blocks.
-+	 */
-+	if (!ex1 && allocated > max_blocks)
-+		ex2->ee_len = cpu_to_le16(max_blocks);
-+	/* ex3: to ee_block + ee_len : uninitialised */
-+	if (allocated > max_blocks) {
-+		unsigned int newdepth;
-+		ex3 = &newex;
-+		ex3->ee_block = cpu_to_le32(iblock + max_blocks);
-+		ext4_ext_store_pblock(ex3, newblock + max_blocks);
-+		ex3->ee_len = cpu_to_le16(allocated - max_blocks);
-+		ext4_ext_mark_uninitialized(ex3);
-+		err = ext4_ext_insert_extent(handle, inode, path, ex3);
-+		if (err)
-+			goto out;
-+		/*
-+		 * The depth, and hence eh & ex might change
-+		 * as part of the insert above.
-+		 */
-+		newdepth = ext_depth(inode);
-+		if (newdepth != depth) {
-+			depth = newdepth;
-+			path = ext4_ext_find_extent(inode, iblock, NULL);
-+			if (IS_ERR(path)) {
-+				err = PTR_ERR(path);
-+				path = NULL;
-+				goto out;
-+			}
-+			eh = path[depth].p_hdr;
-+			ex = path[depth].p_ext;
-+			if (ex2 != &newex)
-+				ex2 = ex;
-+		}
-+		allocated = max_blocks;
-+	}
-+	/*
-+	 * If there was a change of depth as part of the
-+	 * insertion of ex3 above, we need to update the length
-+	 * of the ex1 extent again here
-+	 */
-+	if (ex1 && ex1 != ex) {
-+		ex1 = ex;
-+		ex1->ee_len = cpu_to_le16(iblock - ee_block);
-+		ext4_ext_mark_uninitialized(ex1);
-+		ex2 = &newex;
-+	}
-+	/* ex2: iblock to iblock + maxblocks-1 : initialised */
-+	ex2->ee_block = cpu_to_le32(iblock);
-+	ex2->ee_start = cpu_to_le32(newblock);
-+	ext4_ext_store_pblock(ex2, newblock);
-+	ex2->ee_len = cpu_to_le16(allocated);
-+	if (ex2 != ex)
-+		goto insert;
-+	err = ext4_ext_get_access(handle, inode, path + depth);
-+	if (err)
-+		goto out;
-+	/*
-+	 * New (initialized) extent starts from the first block
-+	 * in the current extent. i.e., ex2 == ex
-+	 * We have to see if it can be merged with the extent
-+	 * on the left.
-+	 */
-+	if (ex2 > EXT_FIRST_EXTENT(eh)) {
-+		/*
-+		 * To merge left, pass "ex2 - 1" to try_to_merge(),
-+		 * since it merges towards right _only_.
-+		 */
-+		ret = ext4_ext_try_to_merge(inode, path, ex2 - 1);
-+		if (ret) {
-+			err = ext4_ext_correct_indexes(handle, inode, path);
-+			if (err)
-+				goto out;
-+			depth = ext_depth(inode);
-+			ex2--;
-+		}
-+	}
-+	/*
-+	 * Try to Merge towards right. This might be required
-+	 * only when the whole extent is being written to.
-+	 * i.e. ex2 == ex and ex3 == NULL.
-+	 */
-+	if (!ex3) {
-+		ret = ext4_ext_try_to_merge(inode, path, ex2);
-+		if (ret) {
-+			err = ext4_ext_correct_indexes(handle, inode, path);
-+			if (err)
-+				goto out;
-+		}
-+	}
-+	/* Mark modified extent as dirty */
-+	err = ext4_ext_dirty(handle, inode, path + depth);
-+	goto out;
-+insert:
-+	err = ext4_ext_insert_extent(handle, inode, path, &newex);
-+out:
-+	return err ? err : allocated;
-+}
-+
- int ext4_ext_get_blocks(handle_t *handle, struct inode *inode,
- 			ext4_fsblk_t iblock,
- 			unsigned long max_blocks, struct buffer_head *bh_result,
- 			int create, int extend_disksize)
- {
- 	struct ext4_ext_path *path = NULL;
-+	struct ext4_extent_header *eh;
- 	struct ext4_extent newex, *ex;
- 	ext4_fsblk_t goal, newblock;
--	int err = 0, depth;
-+	int err = 0, depth, ret;
- 	unsigned long allocated = 0;
- 
- 	__clear_bit(BH_New, &bh_result->b_state);
-@@ -2056,8 +2228,10 @@ int ext4_ext_get_blocks(handle_t *handle
- 	if (goal) {
- 		if (goal == EXT4_EXT_CACHE_GAP) {
- 			if (!create) {
--				/* block isn't allocated yet and
--				 * user doesn't want to allocate it */
-+				/*
-+				 * block isn't allocated yet and
-+				 * user doesn't want to allocate it
-+				 */
- 				goto out2;
- 			}
- 			/* we should allocate requested block */
-@@ -2091,6 +2265,7 @@ int ext4_ext_get_blocks(handle_t *handle
- 	 * this is why assert can't be put in ext4_ext_find_extent()
- 	 */
- 	BUG_ON(path[depth].p_ext == NULL && depth != 0);
-+	eh = path[depth].p_hdr;
- 
- 	ex = path[depth].p_ext;
- 	if (ex) {
-@@ -2099,13 +2274,9 @@ int ext4_ext_get_blocks(handle_t *handle
- 		unsigned short ee_len;
- 
- 		/*
--		 * Allow future support for preallocated extents to be added
--		 * as an RO_COMPAT feature:
- 		 * Uninitialized extents are treated as holes, except that
--		 * we avoid (fail) allocating new blocks during a write.
-+		 * we split out initialized portions during a write.
- 		 */
--		if (le16_to_cpu(ex->ee_len) > EXT_MAX_LEN)
--			goto out2;
- 		ee_len = ext4_ext_get_actual_len(ex);
- 		/* if found extent covers block, simply return it */
- 		if (iblock >= ee_block && iblock < ee_block + ee_len) {
-@@ -2114,12 +2285,27 @@ int ext4_ext_get_blocks(handle_t *handle
- 			allocated = ee_len - (iblock - ee_block);
- 			ext_debug("%d fit into %lu:%d -> %llu\n", (int) iblock,
- 					ee_block, ee_len, newblock);
-+
- 			/* Do not put uninitialized extent in the cache */
--			if (!ext4_ext_is_uninitialized(ex))
-+			if (!ext4_ext_is_uninitialized(ex)) {
- 				ext4_ext_put_in_cache(inode, ee_block,
- 							ee_len, ee_start,
- 							EXT4_EXT_CACHE_EXTENT);
--			goto out;
-+				goto out;
-+			}
-+			if (create == EXT4_CREATE_UNINITIALIZED_EXT)
-+				goto out;
-+			if (!create)
-+				goto out2;
-+
-+			ret = ext4_ext_convert_to_initialized(handle, inode,
-+								path, iblock,
-+								max_blocks);
-+			if (ret <= 0)
-+				goto out2;
-+			else
-+				allocated = ret;
-+			goto outnew;
- 		}
- 	}
- 
-@@ -2128,8 +2314,10 @@ int ext4_ext_get_blocks(handle_t *handle
- 	 * we couldn't try to create block if create flag is zero
- 	 */
- 	if (!create) {
--		/* put just found gap into cache to speed up
--		 * subsequent requests */
-+		/*
-+		 * put just found gap into cache to speed up
-+		 * subsequent requests
-+		 */
- 		ext4_ext_put_gap_in_cache(inode, path, iblock);
- 		goto out2;
- 	}
-@@ -2175,6 +2363,7 @@ int ext4_ext_get_blocks(handle_t *handle
- 
- 	/* previous routine could use block we allocated */
- 	newblock = ext_pblock(&newex);
-+outnew:
- 	__set_bit(BH_New, &bh_result->b_state);
- 
- 	/* Cache only when it is _not_ an uninitialized extent */
-@@ -2244,7 +2433,8 @@ void ext4_ext_truncate(struct inode * in
- 	err = ext4_ext_remove_space(inode, last_block);
- 
- 	/* In a multi-transaction truncate, we only make the final
--	 * transaction synchronous. */
-+	 * transaction synchronous.
-+	 */
- 	if (IS_SYNC(inode))
- 		handle->h_sync = 1;
- 
-Index: linux-2.6.22-rc4/include/linux/ext4_fs_extents.h
-===================================================================
---- linux-2.6.22-rc4.orig/include/linux/ext4_fs_extents.h
-+++ linux-2.6.22-rc4/include/linux/ext4_fs_extents.h
-@@ -205,6 +205,9 @@ static inline int ext4_ext_get_actual_le
- 
- extern int ext4_extent_tree_init(handle_t *, struct inode *);
- extern int ext4_ext_calc_credits_for_insert(struct inode *, struct ext4_ext_path *);
-+extern int ext4_ext_try_to_merge(struct inode *inode,
-+				 struct ext4_ext_path *path,
-+				 struct ext4_extent *);
- extern unsigned int ext4_ext_check_overlap(struct inode *, struct ext4_extent *, struct ext4_ext_path *);
- extern int ext4_ext_insert_extent(handle_t *, struct inode *, struct ext4_ext_path *, struct ext4_extent *);
- extern int ext4_ext_walk_space(struct inode *, unsigned long, unsigned long, ext_prepare_callback, void *);
+ALSA mixes by default since something like 1.0.10 (november 2005).
+
+> Look on main reasons developing arts ..
+
+Which started at a time there was no ALSA, has been basically dead for 6 
+years now and has at the moment finally been dropped by its last user.
+
+> In documentation many other user space APIs you can find the same or 
+> similar reasons. Look .. I'm talkimg about real facts. Your disagreement
+> completly ommits *reasons* spending some time on preapare this soud
+> APIs.
+
+The "linux audio jungle" picture you posted a link to:
+
+http://blogs.adobe.com/penguin.swf/linuxaudio.png
+
+shows more arrows pointing to OSS than it does to ALSA and with a number of 
+those coming from things that existed before there even was an ALSA and yet 
+somehow you maintain this userspace audio jungle is ALSA's fault?
+
+The Linux userspace audio situation is improving; since software mixing, 
+plain vanilla ALSA is a good, single solution to a majority of uses and 
+something like Phonon which is going to arrive later this year seems poised 
+to provide a nice high level API, including for people who believe that 
+audio is about playing you-got-mail jingles.
+
+The reason we're not there yet is in part _due_ to people maintaining that 
+OSS is somehow a valid choice on Linux. Ie:
+
+> ALSA still does not provides good soud devices virtualization for more 
+> then one application. Each day I'm using bludy words when I'm try to use
+> skype which oppens /dev/mixer after run galeon [ ... ]
+
+/dev/mixer is an OSS device. Recent versions of skype should (as far as I've 
+been told) be able to use native ALSA but if you're using an older version 
+you get what you asked for. Should the ALSA OSS emulation try its damndest 
+to support proprietary, bugridden closed source junk such as skype? Opinions 
+probably vary but I'd say yes. Let's not make it, old versions of it at 
+that, into the reference application though.
+
+Video is a much more significant problem for desktop Linux than audio is and 
+solutions are going to arrive combined as they are both userspace (ie, not 
+kernel, not DRI, not ALSA, not OSS) multimedia problems. I have high hopes 
+especially for the new technologies that went into KDE4. Haven't payed much 
+attention to GNOME though so not sure what they're upto. Non-stellar 
+cooperation between those two large desktop initiatives in the field of 
+multimedia is another reason for things not being there yet. Go bark up 
+those trees instead.
+
+Rene.
+
