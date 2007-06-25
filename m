@@ -1,41 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbXFYWE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbXFYWF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757106AbXFYWE2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 18:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXFYWES
+	id S1756947AbXFYWF3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 18:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXFYWFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 18:04:18 -0400
-Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:52062 "EHLO
-	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbXFYWER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 18:04:17 -0400
-Date: Mon, 25 Jun 2007 15:04:16 -0700 (PDT)
-From: alan <alan@clueserver.org>
-X-X-Sender: alan@blackbox.fnordora.org
-To: Graeme Sheppard <nodes@rillion.net>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Patent or not patent a new idea
-In-Reply-To: <46803772.7020408@rillion.net>
-Message-ID: <Pine.LNX.4.64.0706251503510.5117@blackbox.fnordora.org>
-References: <46803772.7020408@rillion.net>
+	Mon, 25 Jun 2007 18:05:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48738 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752620AbXFYWFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 18:05:20 -0400
+Message-ID: <46803C1D.2040009@redhat.com>
+Date: Mon, 25 Jun 2007 18:05:17 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Loic Prylli <loic@myri.com>
+CC: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] MTRR: Fix race causing set_mtrr to go into infinite loop
+References: <468035BC.9080008@myri.com>
+In-Reply-To: <468035BC.9080008@myri.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007, Graeme Sheppard wrote:
+On 06/25/2007 05:38 PM, Loic Prylli wrote:
 
-> Dear devs,
->
-> In a moment of serendipity I thought of a concept which may be advantageous
-> if incorporated into the kernel. I was going to offer it to the OIN but
-> they responded they only consider existing patents and I don't have the
-> money to afford one.
+[cc: Andi]
 
-How do you know it is a new idea?
-
--- 
-"ANSI C says access to the padding fields of a struct is undefined.
-ANSI C also says that struct assignment is a memcpy. Therefore struct
-assignment in ANSI C is a violation of ANSI C..."
-                                   - Alan Cox
+> Processors synchronization in set_mtrr requires the .gate field
+> to be set after .count field is properly initialized. Without an explicit
+> barrier, the compiler was reordering those memory stores. That was sometimes
+> causing a processor (in ipi_handler) to see the .gate change and
+> decrement .count before the latter is set by set_mtrr() (which
+> then hangs in a infinite loop with irqs disabled).
+> 
+> Signed-off-by: Loic Prylli <loic@myri.com>
+> ---
+>  arch/i386/kernel/cpu/mtrr/main.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
+> index 55b0051..75dc6d5 100644
+> --- a/arch/i386/kernel/cpu/mtrr/main.c
+> +++ b/arch/i386/kernel/cpu/mtrr/main.c
+> @@ -229,6 +229,8 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+>  	data.smp_size = size;
+>  	data.smp_type = type;
+>  	atomic_set(&data.count, num_booting_cpus() - 1);
+> +	/* make sure data.count is visible before unleashing other CPUs */
+> +	smp_wmb();
+>  	atomic_set(&data.gate,0);
+>  
+>  	/*  Start the ball rolling on other CPUs  */
+> @@ -242,6 +244,7 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+>  
+>  	/* ok, reset count and toggle gate */
+>  	atomic_set(&data.count, num_booting_cpus() - 1);
+> +	smp_wmb();
+>  	atomic_set(&data.gate,1);
+>  
+>  	/* do our MTRR business */
+> @@ -260,6 +263,7 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+>  		cpu_relax();
+>  
+>  	atomic_set(&data.count, num_booting_cpus() - 1);
+> +	smp_wmb();
+>  	atomic_set(&data.gate,0);
+>  
+>  	/*
