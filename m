@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbXFYAYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbXFYAZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbXFYAYT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 24 Jun 2007 20:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXFYAYJ
+	id S1755563AbXFYAZU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 24 Jun 2007 20:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXFYAZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 24 Jun 2007 20:24:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49046 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbXFYAYI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 24 Jun 2007 20:24:08 -0400
-Subject: Re: [PATCH] trivial: the memset operation on a automatic array
-	variable should be optimized out by data initialization
-From: Arjan van de Ven <arjan@infradead.org>
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: Oleg Verych <olecom@flower.upol.cz>, rae l <crquan@gmail.com>,
-       trivial@kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070625001203.GB971@kvack.org>
-References: <467cac85.081b600a.5b88.457f@mx.google.com>
-	 <E1I20Wr-00064i-T0@flower>
-	 <91b13c310706240558p70dbaed2g570b57ab480aa974@mail.gmail.com>
-	 <20070624222518.GA10398@flower.upol.cz>
-	 <1182723318.6819.5.camel@laptopd505.fenrus.org>
-	 <20070624232314.GA971@kvack.org>
-	 <1182730156.6819.8.camel@laptopd505.fenrus.org>
-	 <20070625001203.GB971@kvack.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Sun, 24 Jun 2007 17:23:42 -0700
-Message-Id: <1182731022.6819.10.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 24 Jun 2007 20:25:09 -0400
+Received: from lilly.ping.de ([83.97.42.2]:4983 "HELO lilly.ping.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751226AbXFYAZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 24 Jun 2007 20:25:08 -0400
+Date: Mon, 25 Jun 2007 02:23:15 +0200
+From: Patrick Mau <mau@oscar.ping.de>
+To: Carlo Wood <carlo@alinoe.com>, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Michael Tokarev <mjt@tls.msk.ru>,
+       "Dr. David Alan Gilbert" <linux@treblig.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       Manoj Kasichainula <manoj@io.com>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: SATA RAID5 speed drop of 100 MB/s
+Message-ID: <20070625002315.GA29405@oscar.prima.de>
+References: <20070622214859.GC6970@alinoe.com> <467CC5C5.6040201@garzik.org> <20070623125316.GB26672@alinoe.com> <467DA1F5.2060306@garzik.org> <467E5C5E.6000706@msgid.tls.msk.ru> <20070624125957.GA28067@gallifrey> <Pine.LNX.4.64.0706241021030.12207@p34.internal.lan> <467E9356.1030200@msgid.tls.msk.ru> <Pine.LNX.4.64.0706241257190.12207@p34.internal.lan> <20070624220723.GA21724@alinoe.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070624220723.GA21724@alinoe.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-06-24 at 20:12 -0400, Benjamin LaHaise wrote:
-> On Sun, Jun 24, 2007 at 05:09:16PM -0700, Arjan van de Ven wrote:
-> > if you care about the last cycle, don't specify -Os but -O2.
-> > simple as that... you get what you tell the compiler you want.
+On Mon, Jun 25, 2007 at 12:07:23AM +0200, Carlo Wood wrote:
+> On Sun, Jun 24, 2007 at 12:59:10PM -0400, Justin Piszcz wrote:
+> > Concerning NCQ/no NCQ, without NCQ I get an additional 15-50MB/s in speed 
+> > per various bonnie++ tests.
 > 
-> Certain distros are shipping kernels compiled with -Os.  And it's more 
-> than just a couple of cycles.
+> There is more going on than a bad NCQ implementation of the drive imho.
+> I did a long test over night (and still only got two schedulers done,
+> will do the other two tomorrow), and the difference between a queue depth
+> of 1 and 2 is DRAMATIC.
+> 
+> See http://www.xs4all.nl/~carlo17/noop_queue_depth.png
+> and http://www.xs4all.nl/~carlo17/anticipatory_queue_depth.png
 
-so those distros pick space over some cycles. Who are you to then
-override that choice ? ;-)
+Hi Carlo,
 
-seriously, why are we even talking about overriding a choice the user
-(or distro vendor as user) made here?
+Have you considered using "blktrace" ?
 
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+It enables you to gather data of all seperate requests queues
+and will also show you the mapping of bio request from /dev/mdX
+to the individual physical disk.
+
+You can also identify SYNC and BARRIER flags for requests,
+that might show you why the md driver will sometimes wait
+for completion or even REQUEUE if the queue is full.
+
+Just compile your kernel with CONFIG_BLK_DEV_IO_TRACE
+and pull the "blktrace" (and "blockparse") utility with git.
+
+The git URL is in the Kconfig help text.
+
+You have to mount, debugfs (automatically selected by IO trace).
+I just want to mention, because I did not figure it at first ;)
+
+You should of course use a different location for the output
+files to avoid an endless flood of IO.
+
+Regards,
+Patrick
+
+PS: I know, I talked about blktrace twice already ;)
 
