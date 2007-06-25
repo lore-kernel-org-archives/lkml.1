@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbXFYKCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbXFYKGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753999AbXFYKCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 06:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXFYKCZ
+	id S1754145AbXFYKGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 06:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXFYKGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 06:02:25 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:61514 "EHLO
-	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751284AbXFYKCY (ORCPT
+	Mon, 25 Jun 2007 06:06:12 -0400
+Received: from rudy.mif.pg.gda.pl ([153.19.42.16]:33102 "EHLO
+	rudy.mif.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750781AbXFYKGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 06:02:24 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
-Date: Mon, 25 Jun 2007 12:01:57 +0200
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: "Ioan Ionita" <opslynx@gmail.com>
-cc: discuss@x86-64.org, "LKML" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [discuss] [1/2] 2.6.22-rc6: known regressions
-Message-ID: <20070625100157.GI12212@amd.com>
-References: <467F8B35.4010906@googlemail.com>
- <467F8F78.8090700@googlemail.com>
+	Mon, 25 Jun 2007 06:06:11 -0400
+Date: Mon, 25 Jun 2007 12:06:09 +0200 (CEST)
+From: =?ISO-8859-2?Q?Tomasz_K=B3oczko?= <kloczek@rudy.mif.pg.gda.pl>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+In-Reply-To: <Pine.LNX.4.64.0706242126200.11964@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.BSO.4.63.0706251153060.25800@rudy.mif.pg.gda.pl>
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl>
+ <20070624200837.16e11305@the-village.bc.nu> <Pine.BSO.4.63.0706242113530.25800@rudy.mif.pg.gda.pl>
+ <Pine.LNX.4.64.0706242126200.11964@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-In-Reply-To: <467F8F78.8090700@googlemail.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 25 Jun 2007 10:02:12.0840 (UTC)
- FILETIME=[E6D41680:01C7B70F]
-X-WSS-ID: 6A614D2D23K1267855-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="0-624157032-1182765969=:25800"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 11:48:40AM +0200, Michal Piotrowski wrote:
-> x86-64
-> 
-> Subject    : x86-64 2.6.22-rc2 random segfaults
-> References : http://lkml.org/lkml/2007/5/24/275
-> Submitter  : Ioan Ionita <opslynx@gmail.com>
-> Status     : Unknown
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Ioan,
+--0-624157032-1182765969=:25800
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-do you have any news regarding this regression? Does it still happen
-with the latest 2.6.22-rc5/6 or have you found a way to reproduce this?
+On Sun, 24 Jun 2007, Jan Engelhardt wrote:
 
-Thanks,
+>
+> On Jun 24 2007 21:24, Tomasz K³oczko wrote:
+>> Try to answer on question "ALSA or OSS ?" using *only* technical arguments.
+>
+> Ok: The OSS cs46xx driver did not support the rear 2 channels.
 
-Joerg
+Yes it is true .. OSS (Hannu tree) dos not provide rear 2 channels in
+cs46xx driver because .. in this OSS tree there is no cs46xx driver :>
 
+kloczek
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
-
+-----------------------------------------------------------
+*Ludzie nie maj± problemów, tylko sobie sami je stwarzaj±*
+-----------------------------------------------------------
+Tomasz K³oczko, sys adm @zie.pg.gda.pl|*e-mail: kloczek@rudy.mif.pg.gda.pl*
+--0-624157032-1182765969=:25800--
