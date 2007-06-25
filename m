@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbXFYQES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbXFYQZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbXFYQES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 12:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbXFYQEJ
+	id S1754959AbXFYQZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 12:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbXFYQZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 12:04:09 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:10292 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752259AbXFYQEI (ORCPT
+	Mon, 25 Jun 2007 12:25:17 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:45262 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbXFYQZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 12:04:08 -0400
-Date: Mon, 25 Jun 2007 18:04:12 +0200
-From: Carlo Wood <carlo@alinoe.com>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: SATA Harddisk speed drop of 100 MB/s
-Message-ID: <20070625160412.GB2432@alinoe.com>
-Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
-	Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-References: <20070620224847.GA5488@alinoe.com> <4679B2DE.9090903@garzik.org> <1182397012.2863.0.camel@laptopd505.fenrus.org> <20070622162142.GA603@alinoe.com> <20070622211746.GB21769@khazad-dum.debian.net> <20070622212758.GA6970@alinoe.com> <20070623013132.GA1702@khazad-dum.debian.net> <20070623025906.GA24336@alinoe.com> <20070625151841.GK10008@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070625151841.GK10008@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 25 Jun 2007 12:25:15 -0400
+Subject: Re: [RFC] mm-controller
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: balbir@linux.vnet.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-mm <linux-mm@kvack.org>, Balbir Singh <balbir@in.ibm.com>,
+       Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
+       Kirill Korotaev <dev@sw.ru>, devel@openvz.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
+       Aubrey Li <aubreylee@gmail.com>, riel@redhat
+In-Reply-To: <467BFA47.4050802@linux.vnet.ibm.com>
+References: <1182418364.21117.134.camel@twins>
+	 <467A5B1F.5080204@linux.vnet.ibm.com> <1182433855.21117.160.camel@twins>
+	 <467BFA47.4050802@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 25 Jun 2007 18:22:41 +0200
+Message-Id: <1182788561.6174.70.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 11:18:41AM -0400, Lennart Sorensen wrote:
-> How do you know 165MB/s is correct?
+On Fri, 2007-06-22 at 22:05 +0530, Vaidyanathan Srinivasan wrote:
 
-It is the maximum value I measure. It's also the value that I
-measure consistently with NCQ off, like with 2.6.18. Finally,
-even before I bought this PC, I did some research and the RAID
-with Raptors was recommended by someone with a lot of experience
-with them. He told me that I could count on (N - 1) * 75 MB/s
-(on average) for an array with N disks. I had expected 150 MB/s,
-which is about what I get. The 165 MB/s is on the outside
-of the disk (low partition).
+> Merging both limits will eliminate the issue, however we would need
+> individual limits for pagecache and RSS for better control.  There are
+> use cases for pagecache_limit alone without RSS_limit like the case of
+> database application using direct IO, backup applications and
+> streaming applications that does not make good use of pagecache.
 
--- 
-Carlo Wood <carlo@alinoe.com>
+I'm aware that some people want this. However we rejected adding a
+pagecache limit to the kernel proper on grounds that reclaim should do a
+better job.
+
+And now we're sneaking it in the backdoor.
+
+If we're going to do this, get it in the kernel proper first.
+
