@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbXFYHmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbXFYHma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752376AbXFYHmH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 03:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXFYHl4
+	id S1753233AbXFYHma (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 03:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbXFYHmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 03:41:56 -0400
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:53354 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750718AbXFYHlz (ORCPT
+	Mon, 25 Jun 2007 03:42:05 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:20634 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751882AbXFYHmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 03:41:55 -0400
-In-Reply-To: <Pine.LNX.4.64.0706250013520.6215@asgard.lang.hm>
-References: <1182723318.6819.5.camel@laptopd505.fenrus.org> <20070624232314.GA971@kvack.org> <1182730156.6819.8.camel@laptopd505.fenrus.org> <20070625001203.GB971@kvack.org> <1182731022.6819.10.camel@laptopd505.fenrus.org> <20070625004106.GA1094@stusta.de> <1182733127.6819.13.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0706241801320.10397@asgard.lang.hm> <1182734240.26621.2.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0706241824080.10397@asgard.lang.hm> <20070625050424.GZ943@1wt.eu> <e6d26e7ee86cc527095de2716f285aff@kernel.crashing.org> <Pine.LNX.4.64.0706250013520.6215@asgard.lang.hm>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <513fca4651d60bae8fe6a567c665893c@kernel.crashing.org>
+	Mon, 25 Jun 2007 03:42:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=FxOpVTPX5hPycywpgzAOy72OP+zYnzfdk1yhaWLBj1a7d68GYefg4hMQr7iCBZwREil0g/nIKQBN6F2Js+p/gVTnR0VNhLWk5tkhKomf7Ot4b8L6bOmkL6jyJW08TAV1q9L2jGo0f4u14WzTReblgMOngY8saGSfv8eVDPytAww=  ;
+X-YMail-OSG: g6J._nUVM1nVxQucbkNUAem_ha2iWzVfsvU1IBKlHgXhmQpbibUpRefEMU1asLFSmeSjnLzmKw--
+Message-ID: <467F71C6.6040204@yahoo.com.au>
+Date: Mon, 25 Jun 2007 17:41:58 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Neil Brown <neilb@suse.de>
+CC: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 1/3] add the fsblock layer
+References: <20070624014528.GA17609@wotan.suse.de>	<20070624014613.GB17609@wotan.suse.de> <18046.63436.472085.535177@notabene.brown>
+In-Reply-To: <18046.63436.472085.535177@notabene.brown>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Cc: Benjamin LaHaise <bcrl@kvack.org>, linux-kernel@vger.kernel.org,
-       Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>,
-       Adrian Bunk <bunk@stusta.de>, Oleg Verych <olecom@flower.upol.cz>,
-       rae l <crquan@gmail.com>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: -Os versus -O2
-Date: Mon, 25 Jun 2007 09:41:50 +0200
-To: david@lang.hm
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> -Os is "as fast as you can without bloating the code size",
->> so that is the expected result for CPUs that don't need
->> special hand-holding around certain performance pitfalls.
->
-> this sounds like you are saying that people wanting performance should 
-> pick -Os.
+Neil Brown wrote:
+> On Sunday June 24, npiggin@suse.de wrote:
+> 
+>> 
+>>+#define PG_blocks		20	/* Page has block mappings */
+>>+
+> 
+> 
+> I've only had a very quick look, but this line looks *very* wrong.
+> You should be using PG_private.
+> 
+> There should never be any confusion about whether ->private has
+> buffers or blocks attached as the only routines that ever look in
+> ->private are address_space operations  (or should be.  I think 'NULL'
+> is sometimes special cased, as in try_to_release_page.  It would be
+> good to do some preliminary work and tidy all that up).
 
-That is true on most CPUs.  Some CPUs really really need
-some of things that -Os disables (compared to -O2) for
-decent performance though (branch target alignment...)
-
-> what should people pick who care more about code size then anything 
-> else? (examples being embedded development where you may be willing to 
-> sacrafice speed to avoid having to add additional chips to the design)
-
--Os and tune some options.  There is extensive work being
-done over the last few years to make GCC more suitable for
-embedded targets btw.  But the -O1/-O2/-O3/-Os gives you
-four choices only, it's really not so hard to understand
-I hope that for more specific goals you need to add more
-specific options?
+There is a lot of confusion, actually :)
+But as you see in the patch, I added a couple more aops APIs, and
+am working toward decoupling it as much as possible. It's pretty
+close after the fsblock patch... however:
 
 
-Segher
+> Why do you think you need PG_blocks?
 
+Block device pagecache (buffer cache) has to be able to accept
+attachment of either buffers or blocks for filesystem metadata,
+and call into either buffer.c or fsblock.c based on that.
+
+If the page flag is really important, we can do some awful hack
+like assuming the first long of the private data is flags, and
+those flags will tell us whether the structure is a buffer_head
+or fsblock ;) But for now it is just easier to use a page flag.
+
+-- 
+SUSE Labs, Novell Inc.
