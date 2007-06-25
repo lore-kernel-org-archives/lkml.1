@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbXFZKsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXFZKvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167AbXFZKsG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:48:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbXFZKrz
+	id S1756922AbXFZKvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXFZKvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:47:55 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:59961 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752965AbXFZKry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:47:54 -0400
-Date: Tue, 26 Jun 2007 12:56:02 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Miklos Szeredi <miklos@szeredi.hu>,
-       chris@atlee.ca, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070626105602.GD2691@ff.dom.local>
-References: <20070620093612.GA1626@ff.dom.local> <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org> <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org> <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621202917.a2bfbfc7.dada1@cosmosbay.com> <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org> <4680D162.9050603@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4680D162.9050603@yahoo.com.au>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 26 Jun 2007 06:51:39 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55026 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752317AbXFZKvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 06:51:38 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX18QjQVk98QQPYtqnzqt5ffuPUSqQ4hzhy/5QntDzY
+	KLOhqDX3ZjMnll
+Message-ID: <467F8FCF.4080009@gmx.net>
+Date: Mon, 25 Jun 2007 11:50:07 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.59 and man-pages-2.60 are released
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 06:42:10PM +1000, Nick Piggin wrote:
-...
-> They should also improve performance in heavily contended case due to
-> the nature of how they spin, but I know that's not something you want
-> to hear about. And theoretically there should be no reason why xadd is
-> any slower than dec and look at the status flags, should there? I never
-> implementedit in optimised assembly to test though...
-...
+Gidday,
 
-BTW, could you explain why the below diagnose doesn't relate
-to your solution?
+I just released man-pages-2.59 and man-pages-2.60.
 
-On 06/21/2007 12:08 PM, Ingo Molnar wrote:
-...
-> So it seems the problem was that if a core kept _truly_ modifying a 
-> cacheline via atomics in a high enough frequency, it could artificially 
-> starve the other core. (which would keep waiting for the cacheline to be 
-> released one day, and which kept the first core from ever making any 
-> progress) To me that looks like a real problem on the hardware side - 
-> shouldnt cacheline ownership be arbitrated a bit better than that?
-> 
+These releases are now available for download at:
 
-Thanks & regards,
-Jarek P.
+    http://www.kernel.org/pub/linux/docs/manpages
+    or ftp://ftp.kernel.org/pub/linux/docs/manpages
+
+and soon at:
+
+    ftp://ftp.win.tue.nl/pub/linux-local/manpages
+
+These releases consist primarily of editorial changes, the
+most notable being that man-pages is now standardized on
+American spelling.  Formerly, different pages (and sometimes
+even a single page!) employed American and British spelling
+conventions (best to standardize on one spelling, and
+American English is the standard in Computer Science).
+
+Cheers,
+
+Michael
+(man-pages maintenance is supported by Google, as a Google engineer 20%
+project.)
+
+
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
+
