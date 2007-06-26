@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbXFZKiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbXFZKoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbXFZKiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXFZKiF
+	id S1756147AbXFZKoF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:44:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbXFZKny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:38:05 -0400
-Received: from mail.suse.de ([195.135.220.2]:45677 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbXFZKiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:38:04 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Intel IOMMU 10/10] Iommu floppy workaround
-Date: Tue, 26 Jun 2007 12:37:55 +0200
-User-Agent: KMail/1.9.6
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
-       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
-       davem@davemloft.net, clameter@sgi.com
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070619213809.110034000@askeshav-devel.jf.intel.com> <20070625234222.a1e09a16.akpm@linux-foundation.org>
-In-Reply-To: <20070625234222.a1e09a16.akpm@linux-foundation.org>
+	Tue, 26 Jun 2007 06:43:54 -0400
+Received: from [212.12.190.208] ([212.12.190.208]:33023 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752109AbXFZKnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 06:43:53 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Tue, 26 Jun 2007 13:44:23 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200706172319.22381.a1426z@gawab.com> <200706260717.19677.a1426z@gawab.com> <orzm2n44s8.fsf@oliva.athome.lsd.ic.unicamp.br>
+In-Reply-To: <orzm2n44s8.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200706261237.55649.ak@suse.de>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706261344.23906.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alexandre Oliva wrote:
+> On Jun 26, 2007, Al Boldi <a1426z@gawab.com> wrote:
+> >> Is it in the spirit of GPLv2?
+> >
+> > No, but that's besides the point.
+>
+> Thanks for informing me about the point *I*'m trying to make ;-)
+>
+> > You can only hold people responsible for the letter, lest there be
+> > chaos.
+>
+> That's not *quite* how it works, but that's a general idea, yes.
+>
+> >> How are the sources passed on in this way going to benefit the user or
+> >> the community?
+> >
+> > They still have to provide the source by other GPL means of their
+> > choosing.
+>
+> This is contradictory.  You said the scenario I described was
+> permitted, and the scenario included the vendor's refusal to give
+> customers other copies of the sources.
+>
+> Which is it?
 
-> > Index: linux-2.6.22-rc4-mm2/arch/x86_64/Kconfig
-> > ===================================================================
-> > --- linux-2.6.22-rc4-mm2.orig/arch/x86_64/Kconfig	2007-06-18 15:45:08.000000000 -0700
-> > +++ linux-2.6.22-rc4-mm2/arch/x86_64/Kconfig	2007-06-18 15:45:09.000000000 -0700
-> > @@ -752,6 +752,16 @@
-> >  	 all the OS visible memory. Hence the driver can continue
-> >  	 to use physical addresses for DMA.
-> >  
-> > +config DMAR_FLPY_WA
-> 
-> FLOPPY is spelled "FLOPPY"!
+I read your scenario of the vendor not giving you the source to mean: not 
+directly; i.e.  they could give you a third-party download link.
 
-Also this shouldn't be a user visible config.  The floppy driver should just
-do this transparently when loaded and undo when unloaded.
 
-Otherwise it would be a CONFIG_MAKE_MY_FLOPPY_WORK which is just not very nice.
+Thanks!
 
--Andi
+--
+Al
+
