@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762341AbXFZX0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762453AbXFZX0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762341AbXFZX0j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbXFZXNP
+	id S1762453AbXFZX0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbXFZXNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:13:15 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:33263 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760389AbXFZXNF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:13:05 -0400
-Date: Tue, 26 Jun 2007 16:14:59 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Torsten Duwe <duwe@lst.de>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: EDD build error
-Message-Id: <20070626161459.5f947837.randy.dunlap@oracle.com>
-In-Reply-To: <200706270044.02117.duwe@lst.de>
-References: <20070626132622.3226261a.randy.dunlap@oracle.com>
-	<200706270016.44999.duwe@lst.de>
-	<20070626153336.e7156b7e.randy.dunlap@oracle.com>
-	<200706270044.02117.duwe@lst.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 26 Jun 2007 19:13:23 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53861 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760378AbXFZXNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:13:00 -0400
+Message-Id: <20070626231212.623772996@suse.de>
+References: <20070626230756.519733902@suse.de>
+User-Agent: quilt/0.46-14
+Date: Tue, 26 Jun 2007 16:08:39 -0700
+From: jjohansen@suse.de
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 43/44] Switch to vfs_permission() in sys_fchdir()
+Content-Disposition: inline; filename=sys_fchdir-nameidata.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 00:44:02 +0200 Torsten Duwe wrote:
+Switch from file_permission() to vfs_permission() in sys_fchdir(): this
+avoids calling permission() with a NULL nameidata here.
 
-> On Wednesday 27 June 2007, Randy Dunlap wrote:
-> >
-> > From original email:
-> > (This is in 2.6.22-rc4-mm2 FWIW.)
-> 
-> Sorry. This one should be better.
-> I've moved the edd_info, to avoid the -Wunused.
-
-Yes, that one works fine.  Thanks.
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ fs/open.c |   16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -440,10 +440,8 @@ out:
+ 
+ asmlinkage long sys_fchdir(unsigned int fd)
+ {
++	struct nameidata nd;
+ 	struct file *file;
+-	struct dentry *dentry;
+-	struct inode *inode;
+-	struct vfsmount *mnt;
+ 	int error;
+ 
+ 	error = -EBADF;
+@@ -451,17 +449,17 @@ asmlinkage long sys_fchdir(unsigned int 
+ 	if (!file)
+ 		goto out;
+ 
+-	dentry = file->f_path.dentry;
+-	mnt = file->f_path.mnt;
+-	inode = dentry->d_inode;
++	nd.dentry = file->f_path.dentry;
++	nd.mnt = file->f_path.mnt;
++	nd.flags = 0;
+ 
+ 	error = -ENOTDIR;
+-	if (!S_ISDIR(inode->i_mode))
++	if (!S_ISDIR(nd.dentry->d_inode->i_mode))
+ 		goto out_putf;
+ 
+-	error = file_permission(file, MAY_EXEC);
++	error = vfs_permission(&nd, MAY_EXEC);
+ 	if (!error)
+-		set_fs_pwd(current->fs, mnt, dentry);
++		set_fs_pwd(current->fs, nd.mnt, nd.dentry);
+ out_putf:
+ 	fput(file);
+ out:
+
+-- 
