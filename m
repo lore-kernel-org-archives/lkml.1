@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbXFZKIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXFZKNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbXFZKIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXFZKIG
+	id S1756060AbXFZKNV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXFZKNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:08:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58098 "EHLO mail.dvmed.net"
+	Tue, 26 Jun 2007 06:13:15 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:53851 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752085AbXFZKIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:08:05 -0400
-Message-ID: <4680E57C.9020303@garzik.org>
-Date: Tue, 26 Jun 2007 06:07:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Sivakumar Subramani <Sivakumar.Subramani@neterion.com>,
-       Olaf Hering <olaf@aepfle.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Leonid Grossman <Leonid.Grossman@neterion.com>,
-       Rastapur Santosh <santosh.rastapur@neterion.com>,
-       Ramkrishna Vepa <ram.vepa@neterion.com>,
-       Sriram Rapuru <Sriram.Rapuru@neterion.com>,
-       Sreenivasa Honnur <Sreenivasa.Honnur@neterion.com>
-Subject: Re: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-References: <20070619204110.GA21384@aepfle.de>	<78C9135A3D2ECE4B8162EBDCE82CAD7701C190FF@nekter> <20070626000132.53330065.akpm@linux-foundation.org>
-In-Reply-To: <20070626000132.53330065.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S1752196AbXFZKNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 06:13:14 -0400
+Date: Tue, 26 Jun 2007 12:16:39 +0200
+From: DervishD <lkml@dervishd.net>
+To: Matthieu CASTET <castet.matthieu@free.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3] doc/oops-tracing: add Code: decode info
+Message-ID: <20070626101639.GB20178@DervishD>
+Mail-Followup-To: Matthieu CASTET <castet.matthieu@free.fr>,
+	linux-kernel@vger.kernel.org
+References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706221626.39969.ak@suse.de> <20070622094429.0910c7cb.randy.dunlap@oracle.com> <200706221923.02736.ak@suse.de> <20070622132810.3c758590.randy.dunlap@oracle.com> <E1I2159-0005AH-DS@flower> <20070623104303.a186c5a8.randy.dunlap@oracle.com> <pan.2007.06.23.20.24.29@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <pan.2007.06.23.20.24.29@free.fr>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> This fix is still not present in anyone's tree and is required for
-> 2.6.22.  Where are we up to with it?
+    Hi Matthieu :)
 
+ * Matthieu CASTET <castet.matthieu@free.fr> dixit:
+> On Sat, 23 Jun 2007 10:43:03 -0700, Randy Dunlap wrote:
+> 
+> > OTOH, you also didn't supply a patch.  If you do this, I'll be glad to
+> > consider it.  If I can read it, that is.
+> 
+> "s|/bin/sh|/bin/bash" is so hard to do ?
 
-It's in my mbox queue for 2.6.22 (hopefully today).
+    Given that it happens too with "ldd", it really *is* that hard. I
+don't know why still people think that /bin/sh is always /bin/bash. If
+they want/need bash, that's ok to me, I will have it installed for such
+tasks, but they should call it "#!/bin/bash".
 
-	Jeff
+    It seems easier to say "get a real shell" (as if Bash was the only
+real shell) than fixing that bug...
 
+    Raúl Núñez de Arenas Coronado
 
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
