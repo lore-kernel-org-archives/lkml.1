@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbXFZPeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbXFZPee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758725AbXFZPeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757413AbXFZPeB
+	id S1758816AbXFZPee (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbXFZPeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:34:01 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42013 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755842AbXFZPd7 (ORCPT
+	Tue, 26 Jun 2007 11:34:19 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:55774 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758710AbXFZPeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:33:59 -0400
-Date: Tue, 26 Jun 2007 17:33:58 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
-       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
-Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
-Message-ID: <20070626153358.GA5244@one.firstfloor.org>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org> <200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com> <p73645a675q.fsf@bingen.suse.de> <46812D79.8080306@linux.intel.com>
+	Tue, 26 Jun 2007 11:34:16 -0400
+Date: Tue, 26 Jun 2007 11:34:13 -0400
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070626153413.GC6652@schatzie.adilger.int>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+References: <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46812D79.8080306@linux.intel.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070626103247.GA19870@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 08:15:05AM -0700, Arjan van de Ven wrote:
-> >
-> >Also the user interface for X server case needs more work.
-> >
+On Jun 26, 2007  16:02 +0530, Amit K. Arora wrote:
+> On Mon, Jun 25, 2007 at 03:46:26PM -0600, Andreas Dilger wrote:
+> > Can you clarify - what is the current behaviour when ENOSPC (or some other
+> > error) is hit?  Does it keep the current fallocate() or does it free it?
 > 
-> actually with the mode setting of X moving into the kernel... X won't 
-> use /dev/mem anymore at all
+> Currently it is left on the file system implementation. In ext4, we do
+> not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
+> end up with partial (pre)allocation. This is inline with dd and
+> posix_fallocate, which also do not free the partially allocated space.
 
-We'll see if that happens. It has been talked about forever,
-but results are sparse. 
+Since I believe the XFS allocation ioctls do it the opposite way (free
+preallocated space on error) this should be encoded into the flags.
+Having it "filesystem dependent" just means that nobody will be happy.
 
-> (and I think it mostly already doesn't even without that)
+> > For FA_ZERO_SPACE - I'd think this would (IMHO) be the default - we
+> > don't want to expose uninitialized disk blocks to userspace.  I'm not
+> > sure if this makes sense at all.
+> 
+> I don't think we need to make it default - atleast for filesystems which
+> have a mechanism to distinguish preallocated blocks from "regular" ones.
 
-It uses /sys/bus/pci/* which is not any better as seen from the IOMMU.
+What I mean is that any data read from the file should have the "appearance"
+of being zeroed (whether zeroes are actually written to disk or not).  What
+I _think_ David is proposing is to allow fallocate() to return without
+marking the blocks even "uninitialized" and subsequent reads would return
+the old data from the disk.
 
-Any interface will need to be explicit because user space needs to know which
-DMA addresses to put into the hardware. It's not enough to just transparently
-translate the mappings.
-
--Andi
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
