@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbXFZMaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbXFZMah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbXFZMaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 08:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXFZM3w
+	id S1757274AbXFZMah (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 08:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbXFZMaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 08:29:52 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:57105 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbXFZM3v (ORCPT
+	Tue, 26 Jun 2007 08:30:25 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:64792 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbXFZMaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 08:29:51 -0400
-Date: Tue, 26 Jun 2007 08:26:50 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Neil Brown <neilb@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [patch 1/3] add the fsblock layer
-Message-ID: <20070626122650.GL14224@think.oraclecorp.com>
-References: <20070624014528.GA17609@wotan.suse.de> <20070624014613.GB17609@wotan.suse.de> <18046.63436.472085.535177@notabene.brown> <467F71C6.6040204@yahoo.com.au> <20070625122906.GB12446@think.oraclecorp.com> <46807B32.6050302@yahoo.com.au> <18048.32372.40011.10896@notabene.brown> <468082FF.6090704@yahoo.com.au>
+	Tue, 26 Jun 2007 08:30:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=kkRqb3X//bf/2YDGH2l6Dp94+abc3NzhhozXFUneDWuFcnhcXmyxrseFvIdv8UGAUD6841zsbMm5yjJlnhH7j2503XJOjF+wKb4KK9wSxj1ATZoZX0yz9CW5qcNUeDAb9WYxPHoLUMqzTQUtDHQ7K/yTNrOErm5Ausoc68GdESU=
+Message-ID: <5d5443650706260530x11b6ce8el542eabbe3800b4d6@mail.gmail.com>
+Date: Tue, 26 Jun 2007 18:00:22 +0530
+From: "Trilok Soni" <soni.trilok@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com
+Subject: [PATCH 0/17] Add Texas Instruments OMAP LCD driver-v2
+Cc: "Tony Lindgren" <tony@atomide.com>, imre.deak@solidboot.com,
+       juha.yrjola@solidboot.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <468082FF.6090704@yahoo.com.au>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 01:07:43PM +1000, Nick Piggin wrote:
-> Neil Brown wrote:
-> >On Tuesday June 26, nickpiggin@yahoo.com.au wrote:
-> >
-> >>Chris Mason wrote:
-> >>
-> >>>The block device pagecache isn't special, and certainly isn't that much
-> >>>code.  I would suggest keeping it buffer head specific and making a
-> >>>second variant that does only fsblocks.  This is mostly to keep the
-> >>>semantics of PagePrivate sane, lets not fuzz the line.
-> >>
-> >>That would require a new inode and address_space for the fsblock
-> >>type blockdev pagecache, wouldn't it? I just can't think of a
-> >>better non-intrusive way of allowing a buffer_head filesystem and
-> >>an fsblock filesystem to live on the same blkdev together.
-> >
-> >
-> >I don't think they would ever try to.  Both filesystems would bd_claim
-> >the blkdev, and only one would win.
-> 
-> Hmm OK, I might have confused myself thinking about partitions...
-> 
-> >The issue is more of a filesystem sharing a blockdev with the
-> >block-special device (i.e. open("/dev/sda1"), read) isn't it?
-> >
-> >If a filesystem wants to attach information to the blockdev pagecache
-> >that is different to what blockdev want to attach, then I think "Yes"
-> >- a new inode and address space is what it needs to create.
-> >
-> >Then you get into consistency issues between the metadata and direct
-> >blockdevice access.  Do we care about those?
-> 
-> Yeah that issue is definitely a real one. The problem is not just
-> consistency, but "how do the block device aops even know that the
-> PG_private page they have has buffer heads or fsblocks", so it is
-> an oopsable condition rather than just a plain consistency issue
-> (consistency is already not guaranteed).
+Hi Tony,
 
-Since we're testing new code, I would just leave the blkdev address
-space alone.  If a filesystem wants to use fsblocks, they allocate a new
-inode during mount, stuff it into their private super block (or in the
-generic super), and use that for everything.  Basically ignoring the
-block device address space completely.
+This patch series contains Texas Instruments OMAP LCD framebuffer
+drivers. This driver is divided into
 
-It means there will be some inconsistency between what you get when
-reading the block device file and the filesystem metadata, but we've got
-that already (ext2 dir in page cache).
+* main omapfb driver, which handles most common functions across
+processor series, like platform driver registration, ioctl handling,
+much like fb skeleton.
 
--chris
+This driver then gets through the callback based on the
+internal/external lcd controller and panel registered to it based on
+processor and board. Internal/External LCD controller as per lcd panel
+data registration is being done in separate files and so does patches.
+
+Overall this patches contains framebuffer driver for TI OMAP1
+(OMAP1510/1610/1710) and OMAP2 (OMAP2420/2430) and external
+controllers used in Nokia Internal Tablets (N770/N800).
+
+These drivers were very well tested on OMAP GIT [1] tree from long
+time. Most of the code for this driver is written by Imre Deak
+<imre.deak@solidboot.com>.
+
+Also CCed to LKML for wider review, and this v2 went through checkpatch.pl and
+I have modified the patches to accept most of checkpatch comments.
+
+-- 
+--Trilok Soni
+PS: Sorry, all the patches will be as attachment (not inline one), as
+I can only use gmail webmail interface, NO pop access allowed, where I
+am working.
