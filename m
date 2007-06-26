@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbXFZMdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbXFZMeC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbXFZMdk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 08:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbXFZMdd
+	id S1757193AbXFZMeC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 08:34:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbXFZMdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 08:33:33 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:51992 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752046AbXFZMdc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 08:33:32 -0400
-Message-ID: <4681045D.2080105@aitel.hist.no>
-Date: Tue, 26 Jun 2007 14:19:41 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Alberto Gonzalez <info@gnebu.es>
-CC: Kyle Moffett <mrmacman_g4@mac.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question about fair schedulers
-References: <200706230007.15622.info@gnebu.es> <B6065113-E9C7-42CE-A43D-55E6BF1EE2C0@mac.com> <200706230946.44023.info@gnebu.es>
-In-Reply-To: <200706230946.44023.info@gnebu.es>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jun 2007 08:33:51 -0400
+Received: from mail.screens.ru ([213.234.233.54]:35895 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752046AbXFZMdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 08:33:50 -0400
+Date: Tue, 26 Jun 2007 16:34:24 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] sys_time-speedup-small-cleanup
+Message-ID: <20070626123424.GA259@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alberto Gonzalez wrote:
-> On Saturday 23 June 2007, Kyle Moffett wrote:
->   
->> On Jun 22, 2007, at 18:07:15, Alberto Gonzalez wrote:
->>     
->>> Ok, so what will a fair scheduler do in this case? It is my
->>> understanding that it would give 50% CPU to each task, resulting in
->>> the video dropping frames. Is this correct?
->>>       
->> Yes, that's correct.
->>
->> What this *actually* means is that you want the media player to have
->> higher priority than the DVD ripping program.  Ergo you should run
->> "nice +20 my_dvd_burner" or "nice +20 my_vorbis_encoder" under CFS or
->> other fair schedulers.
->>     
->
-> Ok, that makes sense. The problem is that desktop users don't know about such 
-> things, so the ideal situation would be that the scheduler knows about it and 
-> does it for you.
->   
-Well, the scheduler can't really know that.  But the people who
-write the dvd burning/ripping/encoding/viewing software
-know what is needed, they can write their programs so they set useful 
-priorities.
+on top of sys_time-speedup.patch
 
-Helge Hafting
+Ingo Molnar wrote:
+>
+>  asmlinkage long sys_time(time_t __user * tloc)
+>  {
+> -	time_t i;
+> -	struct timeval tv;
+> +	/*
+> +	 * We read xtime.tv_sec atomically - it's updated
+> +	 * atomically by update_wall_time(), so no need to
+> +	 * even read-lock the xtime seqlock:
+> +	 */
+> +	time_t i = xtime.tv_sec;
+>  
+> -	do_gettimeofday(&tv);
+> -	i = tv.tv_sec;
+> +	smp_rmb(); /* sys_time() results are coherent */
+
+Why do we need this barrier? My guess it is needed to prevent
+the reading of xtime.tv_sec twice, yes? In that case a simple
+barrier() should be enough.
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- t/kernel/time.c~	2007-06-26 16:28:59.000000000 +0400
++++ t/kernel/time.c	2007-06-26 16:32:09.000000000 +0400
+@@ -64,7 +64,7 @@ asmlinkage long sys_time(time_t __user *
+ 	 */
+ 	time_t i = xtime.tv_sec;
+ 
+-	smp_rmb(); /* sys_time() results are coherent */
++	barrier(); /* sys_time() results are coherent */
+ 
+ 	if (tloc) {
+ 		if (put_user(i, tloc))
+
