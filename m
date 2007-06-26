@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbXFZKpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbXFZKri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbXFZKpr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXFZKpi
+	id S1756875AbXFZKri (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXFZKrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:45:38 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:54697 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbXFZKph (ORCPT
+	Tue, 26 Jun 2007 06:47:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:47911 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752653AbXFZKrb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:45:37 -0400
-Date: Tue, 26 Jun 2007 16:15:46 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070626104546.GB19870@amitarora.in.ibm.com>
-References: <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625215239.GK5181@schatzie.adilger.int>
+	Tue, 26 Jun 2007 06:47:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=WcH3yIkNuITIoJNylOom0kCqnG+i/MvZULnqAfiDLdQu6MWgJpGo4t/WMs36KXRN8YeFOHnYHcXyxHE64eLz8xJ5y+l0Z2GBqCD8mA3SqUdPBJnYpynXbhgb3m7VUDaOfJYr4fhwcnTt6KmXORJToGvFOoQ03xEThombmSXI5sE=
+Subject: Re: [patch] Move led attributes out of device name and into sysfs
+	attributes, was Re: LED devices
+From: Richard Hughes <hughsient@gmail.com>
+To: Richard Purdie <rpurdie@openedhand.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       "kay.sievers" <kay.sievers@vrfy.org>,
+       "Bryn M. Reeves" <breeves@redhat.com>, John Lenz <lenz@cs.wisc.edu>
+In-Reply-To: <1182852173.11449.22.camel@localhost.localdomain>
+References: <1180710270.3782.5.camel@localhost.localdomain>
+	 <1180712592.6390.139.camel@localhost.localdomain>
+	 <1180713579.12843.8.camel@localhost.localdomain>
+	 <1180715004.6390.169.camel@localhost.localdomain>
+	 <20070608185710.GB14372@kroah.com>
+	 <1181343748.9506.116.camel@localhost.localdomain>
+	 <20070608234629.GA11723@kroah.com>
+	 <1181381117.24811.35.camel@localhost.localdomain>
+	 <20070625050606.GC30043@kroah.com>
+	 <1182852173.11449.22.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 26 Jun 2007 11:46:38 +0100
+Message-Id: <1182854798.16516.5.camel@work>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070625215239.GK5181@schatzie.adilger.int>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 03:52:39PM -0600, Andreas Dilger wrote:
-> On Jun 25, 2007  19:15 +0530, Amit K. Arora wrote:
-> > +#define FA_FL_DEALLOC	0x01 /* default is allocate */
-> > +#define FA_FL_KEEP_SIZE	0x02 /* default is extend/shrink size */
-> > +#define FA_FL_DEL_DATA	0x04 /* default is keep written data on DEALLOC */
+On Tue, 2007-06-26 at 11:02 +0100, Richard Purdie wrote:
+> There were some other opinions voiced including one from the person
+> who started this discussion.
 > 
-> In XFS one of the (many) ALLOC modes is to zero existing data on allocate.
-> For ext4 all this would mean is calling ext4_ext_mark_uninitialized() on
-> each extent.  For some workloads this would be much faster than truncate
-> and reallocate of all the blocks in a file.
+> So no, the people who write the tools that parse sysfs (like HAL.)
+> don't appreciate this.
+> 
+> People who write tools that parse sysfs like shell scripts don't
+> appreciate it either, as I illustrated.
 
-In ext4, we already mark each extent having preallocated blocks as
-uninitialized. This is done as part of following code (which is part of
-patch 5/7) in ext4_ext_get_blocks() :  
+>From a hal point of view, we don't care if the device name is 'led01' or
+'light_to_dance_the_fandango' and from a shell point of view it's
+probably best for the latter. I think the point Greg tried to make is
+that it shouldn't matter, and HAL shouldn't export (nor parse) the
+device name as anything sensible.
 
-@@ -2122,6 +2160,8 @@ int ext4_ext_get_blocks(handle_t *handle
-        /* try to insert new extent into found leaf and return */
-        ext4_ext_store_pblock(&newex, newblock);
-        newex.ee_len = cpu_to_le16(allocated);
-+       if (create == EXT4_CREATE_UNINITIALIZED_EXT)  /* Mark uninitialized */
-+               ext4_ext_mark_uninitialized(&newex);
-        err = ext4_ext_insert_extent(handle, inode, path, &newex);
-        if (err) {
-                /* free data blocks we just allocated */
+> You've yet to give any technical reason why we can't have meaningful
+> busids rather than random numbers. Your entire argument seems to be
+> that its wrong because its a bit different and nobody else does it...
+
+If it's a trivial name then I think led_thinklight0 is perfectly okay, I
+think Kay was talking more about the attribute vs. name-in-device
+encoding.
+
+Richard.
 
 
-> In that light, please change the comment to /* default is keep existing data */
-> so that it doesn't imply this is only for DEALLOC.
-
-Ok. Will update the comment.
-
-Thanks!
---
-Regards,
-Amit Arora
