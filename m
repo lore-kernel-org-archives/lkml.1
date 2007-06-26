@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbXFZPee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbXFZPhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758816AbXFZPee (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbXFZPeT
+	id S1758752AbXFZPhM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757111AbXFZPhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:34:19 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:55774 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758710AbXFZPeQ (ORCPT
+	Tue, 26 Jun 2007 11:37:00 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54291 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756113AbXFZPhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:34:16 -0400
-Date: Tue, 26 Jun 2007 11:34:13 -0400
-From: Andreas Dilger <adilger@clusterfs.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070626153413.GC6652@schatzie.adilger.int>
-Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-References: <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com>
+	Tue, 26 Jun 2007 11:37:00 -0400
+Date: Tue, 26 Jun 2007 17:36:58 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, davem@davemloft.net,
+       clameter@sgi.com
+Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
+Message-ID: <20070626153658.GB5244@one.firstfloor.org>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org> <200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com> <p73645a675q.fsf@bingen.suse.de> <20070626150940.GC8274@rhun.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070626103247.GA19870@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+In-Reply-To: <20070626150940.GC8274@rhun.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 26, 2007  16:02 +0530, Amit K. Arora wrote:
-> On Mon, Jun 25, 2007 at 03:46:26PM -0600, Andreas Dilger wrote:
-> > Can you clarify - what is the current behaviour when ENOSPC (or some other
-> > error) is hit?  Does it keep the current fallocate() or does it free it?
+On Tue, Jun 26, 2007 at 11:09:40AM -0400, Muli Ben-Yehuda wrote:
+> On Tue, Jun 26, 2007 at 05:56:49PM +0200, Andi Kleen wrote:
 > 
-> Currently it is left on the file system implementation. In ext4, we do
-> not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
-> end up with partial (pre)allocation. This is inline with dd and
-> posix_fallocate, which also do not free the partially allocated space.
-
-Since I believe the XFS allocation ioctls do it the opposite way (free
-preallocated space on error) this should be encoded into the flags.
-Having it "filesystem dependent" just means that nobody will be happy.
-
-> > For FA_ZERO_SPACE - I'd think this would (IMHO) be the default - we
-> > don't want to expose uninitialized disk blocks to userspace.  I'm not
-> > sure if this makes sense at all.
+> > > > - The IOMMU can merge sg lists into a single virtual block. This could
+> > > > potentially speed up SG IO when the device is slow walking SG
+> > > > lists.  [I long ago benchmarked 5% on some block benchmark with
+> > > > an old MPT Fusion; but it probably depends a lot on the HBA]
+> > > 
+> > > But most devices are SG-capable.
+> > 
+> > Your point being?
 > 
-> I don't think we need to make it default - atleast for filesystems which
-> have a mechanism to distinguish preallocated blocks from "regular" ones.
+> That the fact that an IOMMU can do SG for non-SG-capble cards is not
+> interesting from a "reason for inclusion" POV.
 
-What I mean is that any data read from the file should have the "appearance"
-of being zeroed (whether zeroes are actually written to disk or not).  What
-I _think_ David is proposing is to allow fallocate() to return without
-marking the blocks even "uninitialized" and subsequent reads would return
-the old data from the disk.
+You misunderstood me; my point was that some SG capable devices
+can go faster if they get shorter SG lists.
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+But yes for non SG capable devices it is also interesting. I expect
+it will obsolete most users of that ugly external patch to allocate large
+memory areas for IOs. That's a point I didn't mention earlier.
 
+> > Also the user interface for X server case needs more work.
+> 
+> Is anyone working on it?
+
+It's somewhere on the todo list.
+
+
+-Andi
