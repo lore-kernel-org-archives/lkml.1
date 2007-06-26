@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbXFZPJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbXFZPLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758170AbXFZPJy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbXFZPJr
+	id S1758431AbXFZPLo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbXFZPLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:09:47 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:10990 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756197AbXFZPJq (ORCPT
+	Tue, 26 Jun 2007 11:11:32 -0400
+Received: from mail.xandmail.com ([212.155.184.97]:41551 "EHLO
+	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756500AbXFZPLa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:09:46 -0400
-Date: Tue, 26 Jun 2007 11:09:40 -0400
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, ashok.raj@intel.com, davem@davemloft.net,
-       clameter@sgi.com
-Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
-Message-ID: <20070626150940.GC8274@rhun.ibm.com>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org> <200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com> <p73645a675q.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73645a675q.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.11
+	Tue, 26 Jun 2007 11:11:30 -0400
+X-Greylist: delayed 2838 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jun 2007 11:11:29 EDT
+Date: Tue, 26 Jun 2007 16:24:07 +0200
+Message-Id: <JK8YO7$ED15496EC345D64436196D8FF32F355E@xandmail.com>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+MIME-Version: 1.0
+X-Sensitivity: 3
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Cc: "jarkao2" <jarkao2@o2.pl>, "marcin\.slusarz" <marcin.slusarz@gmail.com>,
+       "shemminger" <shemminger@linux-foundation.org>,
+       "linux-net" <linux-net@vger.kernel.org>,
+       "netdev" <netdev@vger.kernel.org>
+X-XaM3-API-Version: 4.2(R3) (B21)
+X-type: 0
+X-SenderIP: 212.155.184.109
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 05:56:49PM +0200, Andi Kleen wrote:
+Hello, i have a very similar problem with 2.6.21 also;
 
-> > > - The IOMMU can merge sg lists into a single virtual block. This could
-> > > potentially speed up SG IO when the device is slow walking SG
-> > > lists.  [I long ago benchmarked 5% on some block benchmark with
-> > > an old MPT Fusion; but it probably depends a lot on the HBA]
-> > 
-> > But most devices are SG-capable.
+2 3com NICs and they are failling randomly.
+
+The kernel is a basic fedora 7 kernel (2.6.21-1.3228.fc7)
+I found a bug report and added details here : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243960
+
+I'm not subcribed on this list, so please cc me if there is any questions.
+
+JB
+
+> On Tue, Jun 26, 2007 at 08:10:17AM +0200, Marcin Ślusarz wrote:
+> ... 
+> > I reproduced it on minimal config:
+> ...
 > 
-> Your point being?
-
-That the fact that an IOMMU can do SG for non-SG-capble cards is not
-interesting from a "reason for inclusion" POV.
-
-> > How much? we have numbers (to be presented at OLS later this week)
-> > that show that on bare-metal an IOMMU can cost as much as 15%-30%
-> > more CPU utilization for an IO intensive workload (netperf). It
-> > will be interesting to see comparable numbers for VT-d.
+> Hm... This method is usable if you can find such minimal config
+> with which the bug cannot be reproduced. Then you can add more
+> until the bug is back. Of course, this takes time...
 > 
-> That is something that needs more work.
+> We know your hardware should be OK - since it was fine with 2.6.20.
+> We don't know how much your configs (kernel & apps) have changed.
+> Sometimes the change of kernel needs some apps to be recompiled too.
+> That's why it could be usable to try 2.6.21 from a live distro to
+> find if it's really kernel's fault.
+> 
+> And, alas, this log doesn't seem to tell nothing new...
+> 
+> Regards,
+> Jarek P.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+> 
 
-Yup. I'm working on it (mostly in the context of Calgary) but also
-looking at improvements to the DMA-API interface and usage.
-
-> We should probably have a switch to use the IOMMU only for specific
-> devices (e.g. for the KVM case) r only when remapping is
-> needed.
-
-Calgary already does this internally (via calgary=disable=<BUSNUM>)
-but that's pretty ugly. It would be better to do it in a generic
-fashion when deciding which dma_ops to call (i.e., a dma_ops per bus
-or device).
-
-> Also the user interface for X server case needs more work.
-
-Is anyone working on it?
-
-Cheers,
-Muli
