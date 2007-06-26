@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbXFZIyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbXFZIzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754170AbXFZIyh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 04:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXFZIy3
+	id S1756085AbXFZIzK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 04:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbXFZIy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 04:54:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55135 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbXFZIy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 04:54:28 -0400
-Date: Tue, 26 Jun 2007 10:52:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de, kernel@kolivas.org,
-       containers@lists.osdl.org, ckrm-tech@lists.sourceforge.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       pwil3058@bigpond.net.au, tong.n.li@intel.com, wli@holomorphy.com,
-       linux-kernel@vger.kernel.org, dmitry.adamushko@gmail.com,
-       balbir@in.ibm.com, dev@sw.ru
-Subject: Re: [PATCH 0/2] Add group awareness to CFS - v2
-Message-ID: <20070626085233.GB1824@elte.hu>
-References: <20070623131545.GA5297@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070623131545.GA5297@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 26 Jun 2007 04:54:57 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:49653 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbXFZIyz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 04:54:55 -0400
+To: ebiederm@xmission.com
+CC: davem@davemloft.net, viro@ftp.linux.org.uk, alan@lxorguk.ukuu.org.uk,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <m1ir9eaahu.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [PATCH] fix race in AF_UNIX
+References: <E1Hvo2m-00038P-00@dorka.pomaz.szeredi.hu>
+	<20070605.224128.104032917.davem@davemloft.net>
+	<E1HvqZB-0003Vc-00@dorka.pomaz.szeredi.hu>
+	<20070607.184731.10907840.davem@davemloft.net>
+	<E1HxgeN-0006Io-00@dorka.pomaz.szeredi.hu>
+	<m17ipxfi9d.fsf@ebiederm.dsl.xmission.com>
+	<E1I21IL-0004LH-00@dorka.pomaz.szeredi.hu> <m1ir9eaahu.fsf@ebiederm.dsl.xmission.com>
+Message-Id: <E1I36oi-0002bb-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 26 Jun 2007 10:54:32 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > Right.  But the devil is in the details, and (as you correctly point
+> > out later) to implement this, the whole locking scheme needs to be
+> > overhauled.  Problems:
+> >
+> >  - Using the queue lock to make the dequeue and the fd detach atomic
+> >    wrt the GC is difficult, if not impossible: they are are far from
+> >    each other with various magic in between.  It would need thorough
+> >    understanding of these functions and _big_ changes to implement.
+> >
+> >  - Sleeping on u->readlock in GC is currently not possible, since that
+> >    could deadlock with unix_dgram_recvmsg().  That function could
+> >    probably be modified to release u->readlock, while waiting for
+> >    data, similarly to unix_stream_recvmsg() at the cost of some added
+> >    complexity.
+> >
+> >  - Sleeping on u->readlock is also impossible, because GC is holding
+> >    unix_table_lock for the whole operation.  We could release
+> >    unix_table_lock, but then would have to cope with sockets coming
+> >    and going, making the current socket iterator unworkable.
+> >
+> > So theoretically it's quite simple, but it needs big changes.  And
+> > this wouldn't even solve all the problems with the GC, like being a
+> > possible DoS vector.
+> 
+> Making the GC fully incremental will solve the DoS vector problem as
+> well.  Basically you do a fixed amount of reclaim in the new socket
+> allocation code.
 
-* Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+And I think incremental GC algorithms are much too complex for this
+task.  What I've realized, is that in fact we don't require a generic
+garbage collection algorithm, just a much more specialized cycle
+collection algorithm, since refcounting in struct file takes care of
+the rest.
 
-> Hi Ingo,
-> 	Here's an update for the group-aware CFS scheduler that I have 
-> been working on.
+This would help with localizing the problem to the problematic sockets
+(which have an in-flight unix socket), instead of having to blindly
+traverse _all_ unix sockets in the system.
 
-thanks. I've carried your patch #1 (core changes) for the past few days 
-and it's looking pretty good so far! This makes the container-scheduling 
-patch (patch #2) a pretty painless add-on.
+I'll look at reimplementing the GC with such an algorithm.
 
-	Ingo
+> It appears clear that since we can't stop the world and garbage
+> collect we need an incremental collector.
+
+Constraining ourselves to stopping unix sockets from going in flight
+or coming out of flight during garbage collection should be OK I
+think.  There's still a possibility of a DoS there, but it would only
+be able to affect _very_ few applications.
+
+Miklos
