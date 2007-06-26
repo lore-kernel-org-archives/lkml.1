@@ -1,292 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761603AbXFZXWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbXFZXWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761603AbXFZXWS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbXFZXMJ
+	id S1761647AbXFZXWe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758372AbXFZXMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:12:09 -0400
-Received: from ns2.suse.de ([195.135.220.15]:53804 "EHLO mx2.suse.de"
+	Tue, 26 Jun 2007 19:12:13 -0400
+Received: from ns1.suse.de ([195.135.220.2]:43025 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759308AbXFZXMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:12:05 -0400
-Message-Id: <20070626231053.095515410@suse.de>
+	id S1760189AbXFZXMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:12:10 -0400
+Message-Id: <20070626231124.098710828@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:25 -0700
+Date: Tue, 26 Jun 2007 16:08:28 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [AppArmor 29/44] Fix __d_path() for lazy unmounts and make it unambiguous
-Content-Disposition: inline; filename=unambiguous-__d_path.diff
+       John Johansen <jjohansen@suse.de>, Miklos Szeredi <mszeredi@suse.cz>
+Subject: [AppArmor 32/44] Enable LSM hooks to distinguish operations on file descriptors from operations on pathnames
+Content-Disposition: inline; filename=file-handle-ops.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First, when __d_path() hits a lazily unmounted mount point, it tries to prepend
-the name of the lazily unmounted dentry to the path name.  It gets this wrong,
-and also overwrites the slash that separates the name from the following
-pathname component. This patch fixes that; if a process was in directory
-/foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
-missing slash), while the new result with this patch is ``foo/bar''.
-
-Second, it isn't always possible to tell from the __d_path() result whether the
-specified root and rootmnt (i.e., the chroot) was reached.  We need an
-unambiguous result for AppArmor at least though, so we make sure that paths
-will only start with a slash if the path leads all the way up to the root.
-
-We also add a @fail_deleted argument, which allows to get rid of some of the
-mess in sys_getcwd().
-
-This patch leaves getcwd() and d_path() as they were before for everything
-except for bind-mounted directories; for them, it reports ``/foo/bar'' instead
-of ``foobar'' in the example described above.
+Struct iattr already contains ia_file since commit cc4e69de from 
+Miklos (which is related to commit befc649c). Use this to pass
+struct file down the setattr hooks. This allows LSMs to distinguish
+operations on file descriptors from operations on paths.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
-Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Miklos Szeredi <mszeredi@suse.cz>
 
 ---
- fs/dcache.c |  169 ++++++++++++++++++++++++++++++++++--------------------------
- 1 file changed, 98 insertions(+), 71 deletions(-)
+ fs/nfsd/vfs.c      |   12 +++++++-----
+ fs/open.c          |   16 +++++++++++-----
+ include/linux/fs.h |    3 +++
+ 3 files changed, 21 insertions(+), 10 deletions(-)
 
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1761,52 +1761,51 @@ shouldnt_be_hashed:
- }
- 
- /**
-- * d_path - return the path of a dentry
-+ * __d_path - return the path of a dentry
-  * @dentry: dentry to report
-  * @vfsmnt: vfsmnt to which the dentry belongs
-  * @root: root dentry
-  * @rootmnt: vfsmnt to which the root dentry belongs
-  * @buffer: buffer to return value in
-  * @buflen: buffer length
-+ * @fail_deleted: what to return for deleted files
-  *
-- * Convert a dentry into an ASCII path name. If the entry has been deleted
-+ * Convert a dentry into an ASCII path name. If the entry has been deleted,
-+ * then if @fail_deleted is true, ERR_PTR(-ENOENT) is returned. Otherwise,
-  * the string " (deleted)" is appended. Note that this is ambiguous.
-  *
-- * Returns the buffer or an error code if the path was too long.
-+ * If @dentry is not connected to @root, the path returned will be relative
-+ * (i.e., it will not start with a slash).
-  *
-- * "buflen" should be positive. Caller holds the dcache_lock.
-+ * Returns the buffer or an error code.
-  */
--static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
--			struct dentry *root, struct vfsmount *rootmnt,
--			char *buffer, int buflen)
--{
--	char * end = buffer+buflen;
--	char * retval;
--	int namelen;
-+static char *__d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-+		      struct dentry *root, struct vfsmount *rootmnt,
-+		      char *buffer, int buflen, int fail_deleted)
-+{
-+	int namelen, is_slash;
-+
-+	if (buflen < 2)
-+		return ERR_PTR(-ENAMETOOLONG);
-+	buffer += --buflen;
-+	*buffer = '\0';
- 
--	*--end = '\0';
--	buflen--;
-+	spin_lock(&dcache_lock);
- 	if (!IS_ROOT(dentry) && d_unhashed(dentry)) {
--		buflen -= 10;
--		end -= 10;
--		if (buflen < 0)
-+		if (fail_deleted) {
-+			buffer = ERR_PTR(-ENOENT);
-+			goto out;
-+		}
-+		if (buflen < 10)
- 			goto Elong;
--		memcpy(end, " (deleted)", 10);
-+		buflen -= 10;
-+		buffer -= 10;
-+		memcpy(buffer, " (deleted)", 10);
- 	}
--
--	if (buflen < 1)
--		goto Elong;
--	/* Get '/' right */
--	retval = end-1;
--	*retval = '/';
--
--	for (;;) {
-+	while (dentry != root || vfsmnt != rootmnt) {
- 		struct dentry * parent;
- 
--		if (dentry == root && vfsmnt == rootmnt)
--			break;
- 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
--			/* Global root? */
- 			spin_lock(&vfsmount_lock);
- 			if (vfsmnt->mnt_parent == vfsmnt) {
- 				spin_unlock(&vfsmount_lock);
-@@ -1820,33 +1819,72 @@ static char * __d_path( struct dentry *d
- 		parent = dentry->d_parent;
- 		prefetch(parent);
- 		namelen = dentry->d_name.len;
--		buflen -= namelen + 1;
--		if (buflen < 0)
-+		if (buflen < namelen + 1)
- 			goto Elong;
--		end -= namelen;
--		memcpy(end, dentry->d_name.name, namelen);
--		*--end = '/';
--		retval = end;
-+		buflen -= namelen + 1;
-+		buffer -= namelen;
-+		memcpy(buffer, dentry->d_name.name, namelen);
-+		*--buffer = '/';
- 		dentry = parent;
- 	}
-+	/* Get '/' right. */
-+	if (*buffer != '/')
-+		*--buffer = '/';
- 
--	return retval;
-+out:
-+	spin_unlock(&dcache_lock);
-+	return buffer;
- 
- global_root:
-+	/*
-+	 * We went past the (vfsmount, dentry) we were looking for and have
-+	 * either hit a root dentry, a lazily unmounted dentry, an
-+	 * unconnected dentry, or the file is on a pseudo filesystem.
-+	 */
- 	namelen = dentry->d_name.len;
--	buflen -= namelen;
--	if (buflen < 0)
-+	is_slash = (namelen == 1 && *dentry->d_name.name == '/');
-+	if (is_slash || (dentry->d_sb->s_flags & MS_NOUSER)) {
-+		/*
-+		 * Make sure we won't return a pathname starting with '/'.
-+		 *
-+		 * Historically, we also glue together the root dentry and
-+		 * remaining name for pseudo filesystems like pipefs, which
-+		 * have the MS_NOUSER flag set. This results in pathnames
-+		 * like "pipe:[439336]".
-+		 */
-+		if (*buffer == '/') {
-+			buffer++;
-+			buflen++;
-+		}
-+		if (is_slash)
-+			goto out;
-+	}
-+	if (buflen < namelen)
- 		goto Elong;
--	retval -= namelen-1;	/* hit the slash */
--	memcpy(retval, dentry->d_name.name, namelen);
--	return retval;
-+	buffer -= namelen;
-+	memcpy(buffer, dentry->d_name.name, namelen);
-+	goto out;
-+
- Elong:
--	return ERR_PTR(-ENAMETOOLONG);
-+	buffer = ERR_PTR(-ENAMETOOLONG);
-+	goto out;
-+}
-+
-+static char *__connect_d_path(char *path, char *buffer)
-+{
-+	if (!IS_ERR(path) && *path != '/') {
-+		/* Pretend that disconnected paths are hanging off the root. */
-+		if (path == buffer)
-+			path = ERR_PTR(-ENAMETOOLONG);
-+		else
-+			*--path = '/';
-+	}
-+	return path;
- }
- 
- /* write full pathname into buffer and return start of pathname */
--char * d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
--				char *buf, int buflen)
-+char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf,
-+	     int buflen)
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -383,7 +383,7 @@ static ssize_t nfsd_getxattr(struct dent
  {
- 	char *res;
- 	struct vfsmount *rootmnt;
-@@ -1866,9 +1904,8 @@ char * d_path(struct dentry *dentry, str
- 	rootmnt = mntget(current->fs->rootmnt);
- 	root = dget(current->fs->root);
- 	read_unlock(&current->fs->lock);
--	spin_lock(&dcache_lock);
--	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen);
--	spin_unlock(&dcache_lock);
-+	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen, 0);
-+	res = __connect_d_path(res, buf);
- 	dput(root);
- 	mntput(rootmnt);
- 	return res;
-@@ -1915,10 +1952,10 @@ char *dynamic_dname(struct dentry *dentr
-  */
- asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
- {
--	int error;
-+	int error, len;
- 	struct vfsmount *pwdmnt, *rootmnt;
- 	struct dentry *pwd, *root;
--	char *page = (char *) __get_free_page(GFP_USER);
-+	char *page = (char *) __get_free_page(GFP_USER), *cwd;
+ 	ssize_t buflen;
  
- 	if (!page)
+-	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0);
++	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0, NULL);
+ 	if (buflen <= 0)
+ 		return buflen;
+ 
+@@ -391,7 +391,7 @@ static ssize_t nfsd_getxattr(struct dent
+ 	if (!*buf)
  		return -ENOMEM;
-@@ -1930,29 +1967,19 @@ asmlinkage long sys_getcwd(char __user *
- 	root = dget(current->fs->root);
- 	read_unlock(&current->fs->lock);
  
--	error = -ENOENT;
--	/* Has the current directory has been unlinked? */
--	spin_lock(&dcache_lock);
--	if (pwd->d_parent == pwd || !d_unhashed(pwd)) {
--		unsigned long len;
--		char * cwd;
--
--		cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE);
--		spin_unlock(&dcache_lock);
--
--		error = PTR_ERR(cwd);
--		if (IS_ERR(cwd))
--			goto out;
--
--		error = -ERANGE;
--		len = PAGE_SIZE + page - cwd;
--		if (len <= size) {
--			error = len;
--			if (copy_to_user(buf, cwd, len))
--				error = -EFAULT;
--		}
--	} else
--		spin_unlock(&dcache_lock);
-+	cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE, 1);
-+	cwd = __connect_d_path(cwd, page);
-+	error = PTR_ERR(cwd);
-+	if (IS_ERR(cwd))
-+		goto out;
-+
-+	error = -ERANGE;
-+	len = PAGE_SIZE + page - cwd;
-+	if (len <= size) {
-+		error = len;
-+		if (copy_to_user(buf, cwd, len))
-+			error = -EFAULT;
-+	}
+-	return vfs_getxattr(dentry, mnt, key, *buf, buflen);
++	return vfs_getxattr(dentry, mnt, key, *buf, buflen, NULL);
+ }
+ #endif
  
+@@ -417,7 +417,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
+ 		goto out;
+ 	}
+ 
+-	error = vfs_setxattr(dentry, mnt, key, buf, len, 0);
++	error = vfs_setxattr(dentry, mnt, key, buf, len, 0, NULL);
  out:
- 	dput(pwd);
+ 	kfree(buf);
+ 	return error;
+@@ -1992,12 +1992,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+ 
+ 	mnt = fhp->fh_export->ex_mnt;
+ 	if (size)
+-		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size,0);
++		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size, 0,
++				     NULL);
+ 	else {
+ 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
+ 			error = 0;
+ 		else {
+-			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
++			error = vfs_removexattr(fhp->fh_dentry, mnt, name,
++						NULL);
+ 			if (error == -ENODATA)
+ 				error = 0;
+ 		}
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -522,6 +522,8 @@ asmlinkage long sys_fchmod(unsigned int 
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
++	newattrs.ia_valid |= ATTR_FILE;
++	newattrs.ia_file = file;
+ 	err = notify_change(dentry, file->f_path.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+@@ -572,7 +574,7 @@ asmlinkage long sys_chmod(const char __u
+ }
+ 
+ static int chown_common(struct dentry * dentry, struct vfsmount *mnt,
+-			uid_t user, gid_t group)
++			uid_t user, gid_t group, struct file *file)
+ {
+ 	struct inode * inode;
+ 	int error;
+@@ -600,6 +602,10 @@ static int chown_common(struct dentry * 
+ 	}
+ 	if (!S_ISDIR(inode->i_mode))
+ 		newattrs.ia_valid |= ATTR_KILL_SUID|ATTR_KILL_SGID;
++	if (file) {
++		newattrs.ia_file = file;
++		newattrs.ia_valid |= ATTR_FILE;
++	}
+ 	mutex_lock(&inode->i_mutex);
+ 	error = notify_change(dentry, mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+@@ -615,7 +621,7 @@ asmlinkage long sys_chown(const char __u
+ 	error = user_path_walk(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -635,7 +641,7 @@ asmlinkage long sys_fchownat(int dfd, co
+ 	error = __user_walk_fd(dfd, filename, follow, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -649,7 +655,7 @@ asmlinkage long sys_lchown(const char __
+ 	error = user_path_walk_link(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -668,7 +674,7 @@ asmlinkage long sys_fchown(unsigned int 
+ 
+ 	dentry = file->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = chown_common(dentry, file->f_path.mnt, user, group);
++	error = chown_common(dentry, file->f_path.mnt, user, group, file);
+ 	fput(file);
+ out:
+ 	return error;
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -351,6 +351,9 @@ struct iattr {
+ 	 * Not an attribute, but an auxilary info for filesystems wanting to
+ 	 * implement an ftruncate() like method.  NOTE: filesystem should
+ 	 * check for (ia_valid & ATTR_FILE), and not for (ia_file != NULL).
++	 *
++	 * The LSM hooks also use this to distinguish operations on a file
++	 * descriptors from operations on pathnames.
+ 	 */
+ 	struct file	*ia_file;
+ };
 
 -- 
