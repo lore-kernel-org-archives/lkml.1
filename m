@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759237AbXFZSUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbXFZSWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759237AbXFZSUa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 14:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757840AbXFZSUL
+	id S1757848AbXFZSWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 14:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbXFZSWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 14:20:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52844 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757282AbXFZSUJ (ORCPT
+	Tue, 26 Jun 2007 14:22:00 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44589 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752379AbXFZSV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 14:20:09 -0400
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070626181319.GB13886@enneenne.com>
-References: <20070626100628.GO24183@enneenne.com>
-	 <1182855427.12109.203.camel@pmac.infradead.org>
-	 <20070626170622.GA13886@enneenne.com>
-	 <1182879520.3263.19.camel@shinybook.infradead.org>
-	 <20070626181319.GB13886@enneenne.com>
-Content-Type: text/plain
-Date: Tue, 26 Jun 2007 19:20:46 +0100
-Message-Id: <1182882046.3263.24.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 26 Jun 2007 14:21:59 -0400
+Date: Tue, 26 Jun 2007 11:21:57 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, suresh.b.siddha@intel.com
+Subject: Re: [patch 15/26] Slab defrag: Support generic defragmentation for
+ inode slab caches
+In-Reply-To: <20070626011836.f4abb4ff.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0706261119420.18010@schroedinger.engr.sgi.com>
+References: <20070618095838.238615343@sgi.com> <20070618095917.005535114@sgi.com>
+ <20070626011836.f4abb4ff.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-26 at 20:13 +0200, Rodolfo Giometti wrote:
-> On Tue, Jun 26, 2007 at 06:38:40PM +0100, David Woodhouse wrote:
+On Tue, 26 Jun 2007, Andrew Morton wrote:
+
+> > Provide generic functionality that can be used by filesystems that have
+> > their own inode caches to also tie into the defragmentation functions
+> > that are made available here.
 > 
-> > That sounds like you're scared of using goto. Don't be :)
-> 
-> But it's not wrong... should I change it or not?
+> Yes, this is tricky stuff.  I have vague ancestral memories that the sort
+> of inode work which you refer to here can cause various deadlocks, lockdep
+> warnings and such nasties when if we attempt to call it from the wrong
+> context (ie: from within fs code).
 
-I would suggest changing it. It makes it more obvious to the casual that
-there are no other callers of the 'internal' functions. It's a matter of
-taste though; if you feel _very_ strongly about it then feel free to
-ignore me.
+Right that is likelyi the reason why Michael did his stress test...
+ 
+> Possibly we could prevent that by skipping all this code if the caller
+> didn't have __GFP_FS.
 
-> Is this right?
-> +unifdef-y += pps.h
+We do. Look at the earlier patch.
 
-Yes, that looks right. As a matter of course you should also run 'make
-headers_check' before submitting your new patch, to make sure everything
-is sane. That'll tell you if your exported pps.h is trying to include
-other header files which aren't also exported.
+> I trust all the code in kick_inodes() was carefuly copied from 
+> prue_icache() and such places - I didn't check it.
 
--- 
-dwmw2
+Yup tried to remain faithful to that. We could increase the usefulness if 
+I could take more liberties with the code in order to actually move an 
+item instead of simply reclaiming. But its better to first have a proven 
+correct solution before doing more work on that.
+
 
