@@ -1,34 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbXFZJCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756936AbXFZJDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbXFZJCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 05:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbXFZJCk
+	id S1756936AbXFZJDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 05:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbXFZJDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 05:02:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42642 "EHLO
+	Tue, 26 Jun 2007 05:03:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39556 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751147AbXFZJCj (ORCPT
+	by vger.kernel.org with ESMTP id S1751147AbXFZJDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 05:02:39 -0400
-Date: Tue, 26 Jun 2007 02:00:47 -0700
+	Tue, 26 Jun 2007 05:03:06 -0400
+Date: Tue, 26 Jun 2007 02:02:56 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?UTF-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v18
-Message-Id: <20070626020047.f019b731.akpm@linux-foundation.org>
-In-Reply-To: <20070626083813.GA16151@elte.hu>
-References: <20070622220202.GA16872@elte.hu>
-	<200706230109.08310.caglar@pardus.org.tr>
-	<200706230116.29615.caglar@pardus.org.tr>
-	<20070622222036.GC27445@elte.hu>
-	<20070625200235.9d24f6cd.akpm@linux-foundation.org>
-	<20070626083813.GA16151@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@kernel-bugs.osdl.org>,
+       linux@solnet.ch
+Subject: Re: [Bugme-new] [Bug 8677] New: booting with initrd fails:
+ request_module: runaway loop modprobe binfmt-0000
+Message-Id: <20070626020256.4a03d6b2.akpm@linux-foundation.org>
+In-Reply-To: <bug-8677-10286@http.bugzilla.kernel.org/>
+References: <bug-8677-10286@http.bugzilla.kernel.org/>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -36,45 +28,40 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 10:38:13 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On Tue, 26 Jun 2007 01:48:51 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
 
+> http://bugzilla.kernel.org/show_bug.cgi?id=8677
 > 
-> > - __exit_signal() does apparently-unlocked 64-bit arith.  Is there 
-> >   some implicit locking here or do we not care about the occasional 
-> >   race-induced inaccuracy?
+>            Summary: booting with initrd fails: request_module: runaway loop
+>                     modprobe binfmt-0000
+>            Product: Other
+>            Version: 2.5
+>      KernelVersion: 2.6.22_rc*
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Other
+>         AssignedTo: other_other@kernel-bugs.osdl.org
+>         ReportedBy: linux@solnet.ch
 > 
-> do you mean the tsk->se.sum_exec_runtime addition, etc? That runs with 
-> interrupts disabled so sum_sched_runtime is protected.
 > 
-> >   (ditto, lots of places, I expect)
+> Most recent kernel where this bug did not occur:2.6.21
+> Distribution: gentoo
+> Hardware Environment: IBM Thinkpad T43
+> Software Environment:
+> Problem Description:
 > 
-> which places do you mean?
-
-I forget ;) There seemed to be rather a lot of 64-bit addition with no
-obvious locking in sight, that's all.
-
-> > ...
-> >   (Gee, there's shitloads of 64-bit stuff in there.  Does it all 
-> >   _really_ need to be 64-bit on 32-bit?)
->
-> yes - CFS is fundamentally designed for 64-bit, with still pretty OK 
-> arithmetics performance for 32-bit.
-
-It may have been designed for 64-bit, but was that the correct design?  The
-cost on 32-bit appears to be pretty high.  Perhaps a round of uninlining
-will help.
-
-> > - overall, CFS takes sched.o from 41157 of .text up to 48781 on x86_64,
-> >   which at 18% is rather a large bloat.  Hopefully a lot of this is 
-> >   the new debug stuff.
+> I can't boot all 2.6.22_rc* kernels with an initrd. When booting I get the
+> following message about 6 times:
 > 
-> > - On i386 sched.o went from 33755 up to 43660 which is 29% growth. 
-> >   Possibly acceptable, but why did it increase a lot more than the x86_64
-> >   version?  All that 64-bit arith, I assume?
+> request_module: runaway loop modprobe binfmt-0000
 > 
-> the main reason is the sched debugging stuff:
+> If I disable the initrd, booting works without problems.
+> 
+> 
 
-That would serve to explain the 18% growth on x86_64.  But why did i386
-grow by much more: 29%?  I'd be suspecting all the new 64-bit arithmetic.
-
-
+I seem to recall having seen reports of this before.  Does anyone recall
+the reason for it?
