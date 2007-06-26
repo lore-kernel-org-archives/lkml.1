@@ -1,108 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbXFZCNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbXFZCQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbXFZCNo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 22:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbXFZCNg
+	id S1755756AbXFZCQv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 22:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbXFZCQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 22:13:36 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:30619 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752085AbXFZCNf (ORCPT
+	Mon, 25 Jun 2007 22:16:45 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60055 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752961AbXFZCQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 22:13:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mCqLT5E7hLwVEjBs2fW++MlNv3Gl8xtFORX49VxREoU2zjV+hd7DPcdr7yTUXMzU9HJ3iq6kobOOXHzJG5zu71P3vqngyCvtQF009PqrF3WIfCLNAIRrluPTO5cjZ00fPY1QqREfZa0HQr/SrSvpUpXqHD1tMt9F2TDLhiAapv0=
-Message-ID: <a781481a0706251913x73a5680ej33a0e2ac61bad418@mail.gmail.com>
-Date: Tue, 26 Jun 2007 07:43:34 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Alexander Wuerstlein" <snalwuer@cip.informatik.uni-erlangen.de>
-Subject: Re: [PATCH] Check files' signatures before doing suid/sgid [2/4]
-Cc: "Alexander Wuerstlein" <arw@arw.name>, linux-kernel@vger.kernel.org,
-       "Johannes Schlumberger" <spjsschl@stud.informatik.uni-erlangen.de>,
-       linux-crypto@vger.kernel.org
-In-Reply-To: <20070626002659.GM9741@cip.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jun 2007 22:16:44 -0400
+Date: Tue, 26 Jun 2007 12:16:17 +1000
+From: David Chinner <dgc@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Johannes Weiner <hannes-kernel@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xfs-masters@oss.sgi.com, David Chinner <dgc@sgi.com>
+Subject: Re: [BUG] Lockdep warning with XFS on 2.6.22-rc6
+Message-ID: <20070626021617.GK989688@sgi.com>
+References: <20070625104956.GA22130@saeurebad.de> <a781481a0706250854p4dad0cb6k20111db0f1c13e55@mail.gmail.com> <20070625210111.GB26725@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070621155516.GA6838@faui01.informatik.uni-erlangen.de>
-	 <1182536729847-git-send-email-arw@arw.name>
-	 <a781481a0706221236t3b399afdkf2e07cb109fba226@mail.gmail.com>
-	 <20070624225809.GI9741@cip.informatik.uni-erlangen.de>
-	 <a781481a0706251653wa2db7e4geb181f3827a10f9d@mail.gmail.com>
-	 <20070626002659.GM9741@cip.informatik.uni-erlangen.de>
+In-Reply-To: <20070625210111.GB26725@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/26/07, Alexander Wuerstlein
-<snalwuer@cip.informatik.uni-erlangen.de> wrote:
-> [...]
-> Nope. I unluckily wrote 'userspace' where I should have said something else:
-> Chain-of-trust is handled in what I would label 'Adminspace' (Where we do the
-> signing as in points 1 and 2). There is a very small number of signatures (in
-> our example one) known to the kernel and only those are trusted, and those are
-> applied to the binaries by the administrator in your point 2. The kernel does
-> and should never rely on userspace to tell it which signatures are trustworthy.
-> Only the administrator may do so by means of the signatures directly compiled
-> into the kernel.
->
-> So in short: Chain-of-trust is handled by the administrator in his secure
-> central location.
+On Mon, Jun 25, 2007 at 11:01:11PM +0200, Ingo Molnar wrote:
+> 
+> * Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> 
+> > [ Ok, so we know that XFS wants to lock inodes in ascending inode 
+> > number order and not strictly the parent-first-child-second order that 
+> > rest of the fs/ code does, so that makes it difficult to teach lockdep 
+> > about this kind of lock ordering ... ]
 
-Ok, so the "trust chain" you're talking about is simply the decision of the
-admin to compile-in the (verified and trusted) public keys of known trusted
-entities into the kernel at build time. That is not really scalable, but I guess
-you might just as well impose such a restriction for sake of simplicity.
+It does both - parent-first/child-second and ascending inode # order,
+which is where the problem is. standing alone, these seem fine, but
+they don't appear to work when the child has a lower inode number
+than the parent.
 
-[ I initially thought a scenario where a given binary is signed by an
-entity whose
-corresponding public key is _not_ present in the kernel, but who does possess
-a signature -- over its name, id and public key -- by another entity whose
-corresponding public key _is_ built into the kernel). Then at the time of
-verification there's really no other alternative to *build* the entire
-chain at the
-_point of verification_ (in-kernel) itself ... but this obviously
-introduces huge and
-ugly complexities that you'd have a hard time bringing into the kernel :-) That
-"signature over name, id and public key" could be a _certificate_ (if you care
-about following standards), and building their chains in-kernel ... well. But if
-you really want to differentiate between kernel and userspace from security
-perspective, and want to give such functionality, I don't see any easy
-way out. ]
+> hm, there's a recent API addition to lockdep that should help with this: 
+> have you looked into the patch below, could it be used to solve the XFS 
+> problem? Basically when you are one step deeper into a recursive locking 
+> scenario you can use lock_set_subclass() on the held lock to reset it 
+> one level higher.
 
-> >> So far for the initial idea. Perhaps it would be useful to have more than
-> >> one
-> >> key or some more complex scheme for obtaining the keys and checking their
-> >> validity.  But as all of this would need to be part of the kernel we
-> >> decided to
-> >> rather keep it as simple as possible, anything complex is better and more
-> >> flexibly done in userspace.
-> >
-> > Well, if you're trusting (privileged) userspace already, I'm suddenly not so
-> > sure as to what new is this patchset bringing to the table in the first place
-> > ...
->
-> We do not trust any userspace application, see above.
->
-> > could you also describe the attack vectors / threats that you had in mind
-> > that get blocked with the proposed scheme?
->
-> We focus on attacks where an attacker may alter some executable file, for
-> example by altering a mounted nfs-share, manipulating disk-content by simply
-> pulling a disk, mounting it and writing to it, etc.
->
-> This relies on the kernel beeing trustworthy of course, so one would need to
-> take special measures to protect the kernel-image from beeing similarly
-> altered. One (somewhat not-so-secure method) would be supplying kernel images
-> by PXE and forbidding local booting, another measure would be using a TPM
-> and an appropriate bootloader to check the kernel for unwanted modifications.
+Peter Zijlstra already pointed me at that patch, Ingo ;). I'm looking
+into it at the moment. Not being a lockdep expert, it's taking me a
+little time to understand exactly what is needed here.
 
-Kernel-userspace differentiation from security perspective is always tricky
-(so this is why I pointed you to the discussions whenever such stuff, such
-as asymmetric crypto and modsign etc are proposed to be merged). It's
-definitely not impossible to compromise a _running_ kernel from privileged
-userspace, if it really wanted to do so ...
+At first I wasn't sure that this would work, but now I've seen the
+patch that used it, I suspect that it can be used. That patch
+(http://lkml.org/lkml/2007/1/28/88) has three cases enumerated
+(prev,cur,next) to match the three node types in the list and that
+the "next" got set back to "cur" via lock_set_subclass() when
+walking the list so that lockdep always sees cur -> next
+transistions when walking the list. Have I read this correctly?
+ 
+Reading this, it seems to me that the xfs_lock_inodes() code needs
+to set the lock subclass of the first inode to "parent" (and lock it
+as a parent) and then as it walks across the remining inodes it sets
+the previous inode to a parent and locks the current inode as a
+child.
 
-Satyam
+It seems that I'd also need to make sure that this is done on the
+normal parent/child lock ordering as well.
+
+Does this make any sense?  lockdep is not something I've paid much
+attention to up to this point (someone else did the current notation
+and now on leave for a couple more months), so I'm trying to pick up
+the pieces as quickly as possible...
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
