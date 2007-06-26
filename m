@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbXFZTLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbXFZTMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760115AbXFZTLP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 15:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758374AbXFZTK6
+	id S1760117AbXFZTMX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758911AbXFZTML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 15:10:58 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37537 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759504AbXFZTK6 (ORCPT
+	Tue, 26 Jun 2007 15:12:11 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:43145 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758647AbXFZTMJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 15:10:58 -0400
-Date: Tue, 26 Jun 2007 12:10:56 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nish Aravamudan <nish.aravamudan@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, Matt Mackall <mpm@selenic.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slob: poor man's NUMA support.
-In-Reply-To: <29495f1d0706261204x5b49511co18546443c78033fd@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706261209170.19878@schroedinger.engr.sgi.com>
-References: <20070619090616.GA23697@linux-sh.org> 
- <20070626002131.ff3518d4.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0706261112380.18010@schroedinger.engr.sgi.com>
- <29495f1d0706261204x5b49511co18546443c78033fd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 26 Jun 2007 15:12:09 -0400
+Date: Wed, 27 Jun 2007 00:42:15 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070626191215.GB13324@amitarora.in.ibm.com>
+References: <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625215239.GK5181@schatzie.adilger.int> <20070626104546.GB19870@amitarora.in.ibm.com> <20070626154250.GD6652@schatzie.adilger.int>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070626154250.GD6652@schatzie.adilger.int>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007, Nish Aravamudan wrote:
+On Tue, Jun 26, 2007 at 11:42:50AM -0400, Andreas Dilger wrote:
+> On Jun 26, 2007  16:15 +0530, Amit K. Arora wrote:
+> > On Mon, Jun 25, 2007 at 03:52:39PM -0600, Andreas Dilger wrote:
+> > > In XFS one of the (many) ALLOC modes is to zero existing data on allocate.
+> > > For ext4 all this would mean is calling ext4_ext_mark_uninitialized() on
+> > > each extent.  For some workloads this would be much faster than truncate
+> > > and reallocate of all the blocks in a file.
+> > 
+> > In ext4, we already mark each extent having preallocated blocks as
+> > uninitialized. This is done as part of following code (which is part of
+> > patch 5/7) in ext4_ext_get_blocks() :  
+> 
+> What I meant is that with XFS_IOC_ALLOCSP the previously-written data
+> is ZEROED OUT, unlike with fallocate() which leaves previously-written
+> data alone and only allocates in holes.
+> 
+> In order to specify this for allocation, FA_FL_DEL_DATA would need to make
+> sense for allocations (as well as the deallocation).  This is farily easy
+> to do - just mark all of the existing extents as unallocated, and their
+> data disappears.
 
-> > No. alloc_pages follows memory policy. alloc_pages_node does not. One of
-> > the reasons that I want a new memory policy layer are these kinds of
-> > strange uses.
-> 
-> What would break by changing, in alloc_pages_node()
-> 
->        if (nid < 0)
->                nid = numa_node_id();
-> 
-> to
-> 
->        if (nid < 0)
->                return alloc_pages_current(gfp_mask, order);
-> 
-> beyond needing to make alloc_pages_current() defined if !NUMA too.
+Ok, agreed. Will add the FA_ZERO_SPACE mode too.
+Thanks!
 
-It would make alloc_pages_node obey memory policies instead of only
-following cpuset constraints. An a memory policy may redirect the 
-allocation from the local node ;-).
-
-
+--
+Regards,
+Amit Arora
