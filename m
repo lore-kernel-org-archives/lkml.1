@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbXFZLyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbXFZMCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756597AbXFZLyU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 07:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbXFZLyK
+	id S1756674AbXFZMCk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 08:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbXFZMCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 07:54:10 -0400
-Received: from mail.screens.ru ([213.234.233.54]:33350 "EHLO mail.screens.ru"
+	Tue, 26 Jun 2007 08:02:31 -0400
+Received: from mail.screens.ru ([213.234.233.54]:37882 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752042AbXFZLyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 07:54:09 -0400
-Date: Tue, 26 Jun 2007 15:54:49 +0400
+	id S1752213AbXFZMCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 08:02:30 -0400
+Date: Tue, 26 Jun 2007 16:02:41 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Jeff Layton <jlayton@redhat.com>, Herbert Xu <herbert@gondor.apana.org.au>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] RFC: have tcp_recvmsg() check kthread_should_stop() and treat it as if it were signalled
-Message-ID: <20070626115449.GA92@tv-sign.ru>
-References: <20070608123527.9b4cdafe.jlayton@redhat.com> <E1HwpmG-0008LW-00@gondolin.me.apana.org.au> <20070609070826.7bd3480c.jlayton@redhat.com> <a781481a0706251241n36126456x7f4b445a86d1a68f@mail.gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks (rev. 2)
+Message-ID: <20070626120241.GA173@tv-sign.ru>
+References: <200706252352.24137.rjw@sisk.pl> <20070625215527.GE2051@elf.ucw.cz> <200706260027.02396.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a781481a0706251241n36126456x7f4b445a86d1a68f@mail.gmail.com>
+In-Reply-To: <200706260027.02396.rjw@sisk.pl>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/26, Satyam Sharma wrote:
+On 06/26, Rafael J. Wysocki wrote:
+>
+> On Monday, 25 June 2007 23:55, Pavel Machek wrote:
+> > 
+> > >  	case PM_HIBERNATION_PREPARE:
+> > >  	case PM_SUSPEND_PREPARE:
+> > >  		usermodehelper_disabled = 1;
+> > > -		return NOTIFY_OK;
+> > > +		smp_mb();
+> > 
+> > usermodehelper_disabled should be atomic variable, too, so we don't
+> > have to play these ugly tricks by hand? This should not be
+> > performance-critical, right?
 > 
-> Yes, why not embed a send_sig(SIGKILL) just before the wake_up_process()
-> in kthread_stop() itself?
-
-Personally, I don't think we should do this.
-
-kthread_stop() doesn't always mean "kill this thread asap". Suppose that
-CPU_DOWN does kthread_stop(workqueue->thread) but doesn't flush the queue
-before that (we did so before 2.6.22 and perhaps we will do again). Now
-work_struct->func() doing tcp_recvmsg() or wait_event_interruptible() fails,
-but this is probably not that we want.
-
-> So could we have signals in _addition_ to kthread_stop_info and change
-> kthread_should_stop() to check for both:
+> Well, I think we'd need to add the barriers anyway.
 > 
-> kthread_stop_info.k == current && signal_pending(current)
+> The problem, as far as I understand it, is that the instructions can get
+> reordered if there are no barriers in there.
 
-No, this can't work in general. Some kthreads do flush_signals/dequeue_signal,
-so TIF_SIGPENDING can be lost anyway.
-
-I personally think Jeff's idea to use force_sig() is right. kthread_create()
-doesn't use CLONE_SIGHAND, so it is safe to change ->sighand->actionp[].
-
-
-(offtopic)
-
-	cifs_mount:
-
-		send_sig(SIGKILL,srvTcp->tsk,1);
-		tsk = srvTcp->tsk;
-		if(tsk)
-			kthread_stop(tsk);
-
-This "if(tsk)" looks wrong to me. Can srvTcp->tsk be NULL? If yes, send_sig()
-is not safe. Can srvTcp->tsk become NULL after send_sig() ? If yes, this
-check is racy, and kthread_stop() is not safe.
+Yes, and it doesn't help if we make usermodehelper_disabled atomic_t.
+atomic_xxx() operations do not imply the memory barrier semantics.
 
 Oleg.
 
