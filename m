@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbXFZW3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbXFZWcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759995AbXFZW3A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 18:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758053AbXFZW23
+	id S1759513AbXFZWcj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 18:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757372AbXFZWcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 18:28:29 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:30602 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757771AbXFZW21 (ORCPT
+	Tue, 26 Jun 2007 18:32:32 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24793 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756771AbXFZWcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 18:28:27 -0400
-Date: Tue, 26 Jun 2007 15:30:13 -0700
+	Tue, 26 Jun 2007 18:32:32 -0400
+Date: Tue, 26 Jun 2007 15:33:36 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, perex@suse.cz
-Subject: [PATCH -mm] ALSA portman2x4 section mismatch
-Message-Id: <20070626153013.264f5a92.randy.dunlap@oracle.com>
+To: Torsten Duwe <duwe@lst.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: EDD build error
+Message-Id: <20070626153336.e7156b7e.randy.dunlap@oracle.com>
+In-Reply-To: <200706270016.44999.duwe@lst.de>
+References: <20070626132622.3226261a.randy.dunlap@oracle.com>
+	<200706270016.44999.duwe@lst.de>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -27,26 +30,32 @@ X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 27 Jun 2007 00:16:44 +0200 Torsten Duwe wrote:
 
-FIx section mismatch when CONFIG_HOTPLUG=n:
+> On Tuesday 26 June 2007, Randy Dunlap wrote:
+> 
+> > ERROR: "pci_get_bus_and_slot" [drivers/firmware/edd.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> >
+> > Should EDD depend on PCI or should some parts of edd.c be stubbed?
+> 
+> I'd suggest to simply stub it, as attached (untested, as my crap-Awarded BIOS
+> only has 2.1). It may not be nice to pull in the PCI defs and then return NULL
+> regardless, but should be safe in your case. Does that work?
 
-WARNING: sound/built-in.o(.exit.text+0x271): Section mismatch: reference to .init.text:snd_p
-ortman_unregister_all (between 'snd_portman_module_exit' and 'alsa_mpu401_uart_exit')
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>From original email:
+(This is in 2.6.22-rc4-mm2 FWIW.)
+
+so quilt+patch says:
+
+Applying patch EDD.diff
+patching file drivers/firmware/edd.c
+Hunk #1 FAILED at 669.
+1 out of 1 hunk FAILED -- rejects in file drivers/firmware/edd.c
+Patch EDD.diff does not apply (enforce with -f)
+
+
 ---
- sound/drivers/portman2x4.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.22-rc4-mm2.orig/sound/drivers/portman2x4.c
-+++ linux-2.6.22-rc4-mm2/sound/drivers/portman2x4.c
-@@ -833,7 +833,7 @@ static struct platform_driver snd_portma
- /*********************************************************************
-  * module init stuff
-  *********************************************************************/
--static void __init_or_module snd_portman_unregister_all(void)
-+static void snd_portman_unregister_all(void)
- {
- 	int i;
- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
