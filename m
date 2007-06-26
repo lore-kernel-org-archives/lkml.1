@@ -1,143 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbXFZXPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760773AbXFZXQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760778AbXFZXPu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759753AbXFZXKg
+	id S1760773AbXFZXQK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759732AbXFZXKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:10:36 -0400
-Received: from ns1.suse.de ([195.135.220.2]:42906 "EHLO mx1.suse.de"
+	Tue, 26 Jun 2007 19:10:40 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53722 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759608AbXFZXKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:10:31 -0400
-Message-Id: <20070626230946.291913530@suse.de>
+	id S1759722AbXFZXKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:10:34 -0400
+Message-Id: <20070626230950.219088288@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:09 -0700
+Date: Tue, 26 Jun 2007 16:08:10 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 13/44] Pass the struct vfsmounts to the inode_link LSM hook
-Content-Disposition: inline; filename=security-link.diff
+Subject: [AppArmor 14/44] Add a struct vfsmount parameter to vfs_rmdir()
+Content-Disposition: inline; filename=vfs-rmdir.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/namei.c               |    3 ++-
- include/linux/security.h |   18 +++++++++++++-----
- security/dummy.c         |    6 ++++--
- security/selinux/hooks.c |    9 +++++++--
- 4 files changed, 26 insertions(+), 10 deletions(-)
+ fs/ecryptfs/inode.c   |    4 +++-
+ fs/namei.c            |    4 ++--
+ fs/nfsd/nfs4recover.c |    2 +-
+ fs/nfsd/vfs.c         |    8 +++++---
+ fs/reiserfs/xattr.c   |    2 +-
+ include/linux/fs.h    |    2 +-
+ 6 files changed, 13 insertions(+), 9 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2293,7 +2293,8 @@ int vfs_link(struct dentry *old_dentry, 
- 	if (S_ISDIR(old_dentry->d_inode->i_mode))
- 		return -EPERM;
- 
--	error = security_inode_link(old_dentry, dir, new_dentry);
-+	error = security_inode_link(old_dentry, old_mnt, dir, new_dentry,
-+				    new_mnt);
- 	if (error)
- 		return error;
- 
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -289,8 +289,10 @@ struct request_sock;
-  * @inode_link:
-  *	Check permission before creating a new hard link to a file.
-  *	@old_dentry contains the dentry structure for an existing link to the file.
-+ *	@old_mnt is the vfsmount corresponding to @old_dentry (may be NULL).
-  *	@dir contains the inode structure of the parent directory of the new link.
-  *	@new_dentry contains the dentry structure for the new link.
-+ *	@new_mnt is the vfsmount corresponding to @new_dentry (may be NULL).
-  *	Return 0 if permission is granted.
-  * @inode_unlink:
-  *	Check the permission to remove a hard link to a file. 
-@@ -1212,8 +1214,9 @@ struct security_operations {
- 				    char **name, void **value, size_t *len);
- 	int (*inode_create) (struct inode *dir, struct dentry *dentry,
- 			     struct vfsmount *mnt, int mode);
--	int (*inode_link) (struct dentry *old_dentry,
--	                   struct inode *dir, struct dentry *new_dentry);
-+	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
-+	                   struct inode *dir, struct dentry *new_dentry,
-+			   struct vfsmount *new_mnt);
- 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
- 	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
- 			      struct vfsmount *mnt, const char *old_name);
-@@ -1628,12 +1631,15 @@ static inline int security_inode_create 
- }
- 
- static inline int security_inode_link (struct dentry *old_dentry,
-+				       struct vfsmount *old_mnt,
- 				       struct inode *dir,
--				       struct dentry *new_dentry)
-+				       struct dentry *new_dentry,
-+				       struct vfsmount *new_mnt)
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -542,14 +542,16 @@ out:
+ static int ecryptfs_rmdir(struct inode *dir, struct dentry *dentry)
  {
- 	if (unlikely (IS_PRIVATE (old_dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_link (old_dentry, dir, new_dentry);
-+	return security_ops->inode_link (old_dentry, old_mnt, dir,
-+					 new_dentry, new_mnt);
- }
- 
- static inline int security_inode_unlink (struct inode *dir,
-@@ -2359,8 +2365,10 @@ static inline int security_inode_create 
- }
- 
- static inline int security_inode_link (struct dentry *old_dentry,
-+				       struct vfsmount *old_mnt,
- 				       struct inode *dir,
--				       struct dentry *new_dentry)
-+				       struct dentry *new_dentry,
-+				       struct vfsmount *new_mnt)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -270,8 +270,10 @@ static int dummy_inode_create (struct in
- 	return 0;
- }
- 
--static int dummy_inode_link (struct dentry *old_dentry, struct inode *inode,
--			     struct dentry *new_dentry)
-+static int dummy_inode_link (struct dentry *old_dentry,
-+			     struct vfsmount *old_mnt, struct inode *inode,
-+			     struct dentry *new_dentry,
-+			     struct vfsmount *new_mnt)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2182,11 +2182,16 @@ static int selinux_inode_create(struct i
- 	return may_create(dir, dentry, SECCLASS_FILE);
- }
- 
--static int selinux_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
-+static int selinux_inode_link(struct dentry *old_dentry,
-+			      struct vfsmount *old_mnt,
-+			      struct inode *dir,
-+			      struct dentry *new_dentry,
-+			      struct vfsmount *new_mnt)
- {
+ 	struct dentry *lower_dentry;
++	struct vfsmount *lower_mnt;
+ 	struct dentry *lower_dir_dentry;
  	int rc;
  
--	rc = secondary_ops->inode_link(old_dentry,dir,new_dentry);
-+	rc = secondary_ops->inode_link(old_dentry, old_mnt, dir, new_dentry,
-+				       new_mnt);
- 	if (rc)
- 		return rc;
- 	return may_link(dir, old_dentry, MAY_LINK);
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	dget(dentry);
+ 	lower_dir_dentry = lock_parent(lower_dentry);
+ 	dget(lower_dentry);
+-	rc = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry);
++	rc = vfs_rmdir(lower_dir_dentry->d_inode, lower_dentry, lower_mnt);
+ 	dput(lower_dentry);
+ 	if (!rc)
+ 		d_delete(lower_dentry);
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2024,7 +2024,7 @@ void dentry_unhash(struct dentry *dentry
+ 	spin_unlock(&dcache_lock);
+ }
+ 
+-int vfs_rmdir(struct inode *dir, struct dentry *dentry)
++int vfs_rmdir(struct inode *dir, struct dentry *dentry,struct vfsmount *mnt)
+ {
+ 	int error = may_delete(dir, dentry, 1);
+ 
+@@ -2088,7 +2088,7 @@ static long do_rmdir(int dfd, const char
+ 	error = PTR_ERR(dentry);
+ 	if (IS_ERR(dentry))
+ 		goto exit2;
+-	error = vfs_rmdir(nd.dentry->d_inode, dentry);
++	error = vfs_rmdir(nd.dentry->d_inode, dentry, nd.mnt);
+ 	dput(dentry);
+ exit2:
+ 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -276,7 +276,7 @@ nfsd4_clear_clid_dir(struct dentry *dir,
+ 	 * a kernel from the future.... */
+ 	nfsd4_list_rec_dir(dentry, nfsd4_remove_clid_file);
+ 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
+-	status = vfs_rmdir(dir->d_inode, dentry);
++	status = vfs_rmdir(dir->d_inode, dentry, rec_dir.mnt);
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ 	return status;
+ }
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1666,6 +1666,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 				char *fname, int flen)
+ {
+ 	struct dentry	*dentry, *rdentry;
++	struct svc_export *exp;
+ 	struct inode	*dirp;
+ 	__be32		err;
+ 	int		host_err;
+@@ -1680,6 +1681,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 	fh_lock_nested(fhp, I_MUTEX_PARENT);
+ 	dentry = fhp->fh_dentry;
+ 	dirp = dentry->d_inode;
++	exp = fhp->fh_export;
+ 
+ 	rdentry = lookup_one_len(fname, dentry, flen);
+ 	host_err = PTR_ERR(rdentry);
+@@ -1697,21 +1699,21 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 
+ 	if (type != S_IFDIR) { /* It's UNLINK */
+ #ifdef MSNFS
+-		if ((fhp->fh_export->ex_flags & NFSEXP_MSNFS) &&
++		if ((exp->ex_flags & NFSEXP_MSNFS) &&
+ 			(atomic_read(&rdentry->d_count) > 1)) {
+ 			host_err = -EPERM;
+ 		} else
+ #endif
+ 		host_err = vfs_unlink(dirp, rdentry);
+ 	} else { /* It's RMDIR */
+-		host_err = vfs_rmdir(dirp, rdentry);
++		host_err = vfs_rmdir(dirp, rdentry, exp->ex_mnt);
+ 	}
+ 
+ 	dput(rdentry);
+ 
+ 	if (host_err)
+ 		goto out_nfserr;
+-	if (EX_ISSYNC(fhp->fh_export))
++	if (EX_ISSYNC(exp))
+ 		host_err = nfsd_sync_dir(dentry);
+ 
+ out_nfserr:
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -775,7 +775,7 @@ int reiserfs_delete_xattrs(struct inode 
+ 	if (dir->d_inode->i_nlink <= 2) {
+ 		root = get_xa_root(inode->i_sb, XATTR_REPLACE);
+ 		reiserfs_write_lock_xattrs(inode->i_sb);
+-		err = vfs_rmdir(root->d_inode, dir);
++		err = vfs_rmdir(root->d_inode, dir, NULL);
+ 		reiserfs_write_unlock_xattrs(inode->i_sb);
+ 		dput(root);
+ 	} else {
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -997,7 +997,7 @@ extern int vfs_mkdir(struct inode *, str
+ extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
+ extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
+ extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
+-extern int vfs_rmdir(struct inode *, struct dentry *);
++extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
+ extern int vfs_unlink(struct inode *, struct dentry *);
+ extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
+ 
 
 -- 
