@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190AbXFZEdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbXFZEdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756190AbXFZEdL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 00:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbXFZEc6
+	id S1756491AbXFZEdy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 00:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXFZEdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 00:32:58 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47870 "EHLO pasmtpA.tele.dk"
+	Tue, 26 Jun 2007 00:33:42 -0400
+Received: from mail.suse.de ([195.135.220.2]:57735 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbXFZEc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 00:32:57 -0400
-Date: Tue, 26 Jun 2007 06:34:02 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, christopher.leech@intel.com,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] IOATDMA: fix section mismatches
-Message-ID: <20070626043402.GA18269@uranus.ravnborg.org>
-References: <20070625145147.c34cbfca.randy.dunlap@oracle.com>
-Mime-Version: 1.0
+	id S1751112AbXFZEdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 00:33:41 -0400
+From: Neil Brown <neilb@suse.de>
+To: Graeme Sheppard <nodes@rillion.net>
+Date: Tue, 26 Jun 2007 14:33:32 +1000
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070625145147.c34cbfca.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+Message-ID: <18048.38684.330100.529424@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Patent or not patent a new idea
+In-Reply-To: message from Graeme Sheppard on Tuesday June 26
+References: <46803772.7020408@rillion.net>
+	<46806CCB.6020708@rillion.net>
+	<18048.30679.872740.744997@notabene.brown>
+	<468085E9.70804@rillion.net>
+	<18048.35410.896207.686311@notabene.brown>
+	<46809495.6000109@rillion.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 02:51:47PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tuesday June 26, nodes@rillion.net wrote:
 > 
-> Rename struct pci_driver data so that false section mismatch
-> warnings won't be produced.
+> Thanks for the brief howto there. I'll install the mdadm suite and
+> experiment. It seems like a userspace driver?
+
+mdadm is a userspace tool for managing the 'md' driver which is in the
+linux kernel.
+
+> > I don't know what you mean by '2'.
 > 
-> Sam, ISTM that depending on variable names is the weakest & worst part of
-> modpost section checking.  Should __init_refok work here?  I got build
-> errors when I tried to use it, probably because the struct pci_driver
-> probe and remove methods are not marked "__init_refok".
+> 2 meant in the way that a driver for a PC raid card is not much use on
+> a Sparc.
 
-Relying on naming is obviously a bad thing but without doing so
-we would have tons of warnings from drivers/
+Ahh... That is one of the great things about Linux.  You code in C,
+and the driver works on every architecture (providing you are
+reasonably careful, and the arch actually supports the hardware). :-)
 
-__init_refok is for functions. For this case __initdata_refok
-could have worked but to be consistent the renaming is much
-better.
-
-	Sam
+NeilBrown
