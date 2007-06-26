@@ -1,70 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbXFZTE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbXFZTFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbXFZTE3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 15:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757777AbXFZTEW
+	id S1759435AbXFZTFV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbXFZTFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 15:04:22 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:62115 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757695AbXFZTEV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 15:04:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=J0kSiU0s9lvQU4owemLOs2/EtdSFPMPU8klVSddpcovni5gk4unpRNa5VMhvybqwDlANEZr0QQ16JTXdPoUUEqq+uj/miVOlF1tufDofS9gU5VTLwLdaD7oLDhw/ielkblWXH8POf1TfzRtUG8YIZGODk2et65OgdloijuLYaXw=
-Message-ID: <29495f1d0706261204x5b49511co18546443c78033fd@mail.gmail.com>
-Date: Tue, 26 Jun 2007 12:04:18 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH] slob: poor man's NUMA support.
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Paul Mundt" <lethal@linux-sh.org>, "Matt Mackall" <mpm@selenic.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0706261112380.18010@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070619090616.GA23697@linux-sh.org>
-	 <20070626002131.ff3518d4.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0706261112380.18010@schroedinger.engr.sgi.com>
+	Tue, 26 Jun 2007 15:05:08 -0400
+Received: from ns1.coraid.com ([65.14.39.133]:25141 "EHLO coraid.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757777AbXFZTFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 15:05:06 -0400
+X-Greylist: delayed 600 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jun 2007 15:05:05 EDT
+Message-Id: <19c0f3f4dad37b55efbf128ce35ced74dee3073d.1182883861.git.ecashin@coraid.com>
+In-Reply-To: <1d8423c28c48a6d26516cdc707dbcdf015a4e347.1182883861.git.ecashin@coraid.com>
+References: <1d8423c28c48a6d26516cdc707dbcdf015a4e347.1182883861.git.ecashin@coraid.com>
+From: "Ed L. Cashin" <ecashin@coraid.com>
+Date: Tue, 26 Jun 2007 14:50:10 -0400
+Subject: [PATCH 03/12] mac_addr: avoid 64-bit arch compiler warnings
+To: linux-kernel@vger.kernel.org
+Cc: Greg K-H <greg@kroah.com>, ecashin@coraid.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/26/07, Christoph Lameter <clameter@sgi.com> wrote:
-> On Tue, 26 Jun 2007, Andrew Morton wrote:
->
-> > > +#ifdef CONFIG_NUMA
-> > > +   if (node != -1)
-> > > +           page = alloc_pages_node(node, gfp, order);
-> > > +   else
-> > > +#endif
-> > > +           page = alloc_pages(gfp, order);
-> >
-> > Isn't the above equivalent to a bare
-> >
-> >       page = alloc_pages_node(node, gfp, order);
-> >
-> > ?
->
-> No. alloc_pages follows memory policy. alloc_pages_node does not. One of
-> the reasons that I want a new memory policy layer are these kinds of
-> strange uses.
+By returning unsigned long long, mac_addr does not generate compiler
+warnings on 64-bit architectures.
 
-What would break by changing, in alloc_pages_node()
+Signed-off-by: Ed L. Cashin <ecashin@coraid.com>
+---
+ drivers/block/aoe/aoe.h    |    2 +-
+ drivers/block/aoe/aoeblk.c |    3 +--
+ drivers/block/aoe/aoecmd.c |   10 +++++-----
+ drivers/block/aoe/aoenet.c |    4 ++--
+ 4 files changed, 9 insertions(+), 10 deletions(-)
 
-        if (nid < 0)
-                nid = numa_node_id();
+diff --git a/drivers/block/aoe/aoe.h b/drivers/block/aoe/aoe.h
+index 069f04c..f085465 100644
+--- a/drivers/block/aoe/aoe.h
++++ b/drivers/block/aoe/aoe.h
+@@ -208,4 +208,4 @@ void aoenet_xmit(struct sk_buff *);
+ int is_aoe_netif(struct net_device *ifp);
+ int set_aoe_iflist(const char __user *str, size_t size);
+ 
+-u64 mac_addr(char addr[6]);
++unsigned long long mac_addr(char addr[6]);
+diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
+index f6773ab..c9cf576 100644
+--- a/drivers/block/aoe/aoeblk.c
++++ b/drivers/block/aoe/aoeblk.c
+@@ -32,8 +32,7 @@ static ssize_t aoedisk_show_mac(struct gendisk * disk, char *page)
+ 
+ 	if (t == NULL)
+ 		return snprintf(page, PAGE_SIZE, "none\n");
+-	return snprintf(page, PAGE_SIZE, "%012llx\n",
+-			(unsigned long long)mac_addr(t->addr));
++	return snprintf(page, PAGE_SIZE, "%012llx\n", mac_addr(t->addr));
+ }
+ static ssize_t aoedisk_show_netif(struct gendisk * disk, char *page)
+ {
+diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+index 8a3a973..62ba58c 100644
+--- a/drivers/block/aoe/aoecmd.c
++++ b/drivers/block/aoe/aoecmd.c
+@@ -305,7 +305,8 @@ resend(struct aoedev *d, struct aoetgt *t, struct frame *f)
+ 	snprintf(buf, sizeof buf,
+ 		"%15s e%ld.%d oldtag=%08x@%08lx newtag=%08x s=%012llx d=%012llx nout=%d\n",
+ 		"retransmit", d->aoemajor, d->aoeminor, f->tag, jiffies, n,
+-		mac_addr(h->src), mac_addr(h->dst), t->nout);
++		mac_addr(h->src),
++		mac_addr(h->dst), t->nout);
+ 	aoechr_error(buf);
+ 
+ 	f->tag = n;
+@@ -616,7 +617,7 @@ ataid_complete(struct aoedev *d, struct aoetgt *t, unsigned char *id)
+ 
+ 	if (d->ssize != ssize)
+ 		printk(KERN_INFO "aoe: %012llx e%lu.%lu v%04x has %llu sectors\n",
+-			(unsigned long long)mac_addr(t->addr),
++			mac_addr(t->addr),
+ 			d->aoemajor, d->aoeminor,
+ 			d->fw_ver, (long long)ssize);
+ 	d->ssize = ssize;
+@@ -710,8 +711,7 @@ aoecmd_ata_rsp(struct sk_buff *skb)
+ 	t = gettgt(d, hin->src);
+ 	if (t == NULL) {
+ 		printk(KERN_INFO "aoe: can't find target e%ld.%d:%012llx\n",
+-			d->aoemajor, d->aoeminor,
+-			(unsigned long long) mac_addr(hin->src));
++			d->aoemajor, d->aoeminor, mac_addr(hin->src));
+ 		spin_unlock_irqrestore(&d->lock, flags);
+ 		return;
+ 	}
+@@ -988,7 +988,7 @@ aoecmd_cfg_rsp(struct sk_buff *skb)
+ 			printk(KERN_INFO
+ 				"aoe: e%ld.%d: setting %d byte data frames on %s:%012llx\n",
+ 				d->aoemajor, d->aoeminor, n, ifp->nd->name,
+-				(unsigned long long) mac_addr(t->addr));
++				mac_addr(t->addr));
+ 			ifp->maxbcnt = n;
+ 		}
+ 	}
+diff --git a/drivers/block/aoe/aoenet.c b/drivers/block/aoe/aoenet.c
+index f335099..d2c1a47 100644
+--- a/drivers/block/aoe/aoenet.c
++++ b/drivers/block/aoe/aoenet.c
+@@ -82,7 +82,7 @@ set_aoe_iflist(const char __user *user_str, size_t size)
+ 	return 0;
+ }
+ 
+-u64
++unsigned long long
+ mac_addr(char addr[6])
+ {
+ 	__be64 n = 0;
+@@ -90,7 +90,7 @@ mac_addr(char addr[6])
+ 
+ 	memcpy(p + 2, addr, 6);	/* (sizeof addr != 6) */
+ 
+-	return __be64_to_cpu(n);
++	return (unsigned long long) __be64_to_cpu(n);
+ }
+ 
+ void
+-- 
+1.5.2.1
 
-to
-
-        if (nid < 0)
-                return alloc_pages_current(gfp_mask, order);
-
-beyond needing to make alloc_pages_current() defined if !NUMA too.
-
-Thanks,
-Nish
