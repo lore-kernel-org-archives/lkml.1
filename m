@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbXFZLWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbXFZLYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756421AbXFZLWm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 07:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbXFZLWf
+	id S1756816AbXFZLYa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 07:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbXFZLYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 07:22:35 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41106 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046AbXFZLWe (ORCPT
+	Tue, 26 Jun 2007 07:24:22 -0400
+Received: from poesci.dolphinics.no ([81.175.23.36]:36924 "EHLO
+	poesci.dolphinics.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbXFZLYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 07:22:34 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4680F6D5.5080406@s5r6.in-berlin.de>
-Date: Tue, 26 Jun 2007 13:21:57 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Tue, 26 Jun 2007 07:24:22 -0400
+X-Greylist: delayed 2033 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jun 2007 07:24:22 EDT
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Oleg Verych <olecom@flower.upol.cz>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>
+Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3] doc/oops-tracing: add Code: decode info
+References: <20070621225108.bb69a93d.randy.dunlap@oracle.com>
+	<200706221626.39969.ak@suse.de>
+	<20070622094429.0910c7cb.randy.dunlap@oracle.com>
+	<200706221923.02736.ak@suse.de>
+	<20070622132810.3c758590.randy.dunlap@oracle.com>
+	<E1I2159-0005AH-DS@flower>
+	<20070623104303.a186c5a8.randy.dunlap@oracle.com>
+From: Arne Georg Gleditsch <argggh@dolphinics.no>
+Date: Tue, 26 Jun 2007 12:50:27 +0200
+In-Reply-To: <20070623104303.a186c5a8.randy.dunlap@oracle.com> (Randy Dunlap's message of "Sat\, 23 Jun 2007 10\:43\:03 -0700")
+Message-ID: <87645bhtvw.fsf@pelargir.dolphinics.no>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH update] Documentation/HOWTO: update URLs of git trees
-References: <tkrat.eee40c572537b7ba@s5r6.in-berlin.de>	<20070619211555.GG3457@sequoia.sous-sol.org>	<tkrat.896aa9f24e1427a2@s5r6.in-berlin.de> <20070625221047.be7a3181.akpm@linux-foundation.org>
-In-Reply-To: <20070625221047.be7a3181.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 19 Jun 2007 23:45:58 +0200 (CEST) Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> -  Other git kernel trees can be found listed at http://kernel.org/git
-> 
-> rofl.  You want git trees?  I got git trees:
+Randy Dunlap <randy.dunlap@oracle.com> writes:
+> OTOH, you also didn't supply a patch.  If you do this, I'll be
+> glad to consider it.  If I can read it, that is.
 
-Well, the HOWTO has a target audience, outlined in its first paragraphs.
-That's why I already deleted one repo URL. :-)
+I like bash as much as the next guy, but (to my surprise) /bin/sh on
+my current workstation is actually dash.  How about just replacing the
+substring-interpolations with:
+
+if [ $marker -ne 0 ]; then
+	beforemark=`echo "$code" | cut -c-$((marker - 1))`
+[..]
+# and fix code at-and-after marker
+	code=`echo "$code" | cut -c$marker-`
+fi
+
+and be done with it?
+
 -- 
-Stefan Richter
--=====-=-=== -==- ==-=-
-http://arcgraph.de/sr/
+								Arne.
