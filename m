@@ -1,122 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbXFZXOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760654AbXFZXOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760327AbXFZXOD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbXFZXKX
+	id S1760654AbXFZXOc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758870AbXFZXKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:10:23 -0400
-Received: from ns1.suse.de ([195.135.220.2]:42893 "EHLO mx1.suse.de"
+	Tue, 26 Jun 2007 19:10:25 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53685 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759356AbXFZXKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:10:10 -0400
-Message-Id: <20070626230920.538876453@suse.de>
+	id S1759232AbXFZXKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:10:09 -0400
+Message-Id: <20070626230924.746171517@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:03 -0700
+Date: Tue, 26 Jun 2007 16:08:04 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 07/44] Add a struct vfsmount parameter to vfs_mknod()
-Content-Disposition: inline; filename=vfs-mknod.diff
+Subject: [AppArmor 08/44] Pass struct vfsmount to the inode_mknod LSM hook
+Content-Disposition: inline; filename=security-mknod.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vfsmount will be passed down to the LSM hook so that LSMs can compute
-pathnames.
+This is needed for computing pathnames in the AppArmor LSM.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/ecryptfs/inode.c |    5 ++++-
- fs/namei.c          |   10 ++++++----
- fs/nfsd/vfs.c       |    3 ++-
- include/linux/fs.h  |    2 +-
- net/unix/af_unix.c  |    2 +-
- 5 files changed, 14 insertions(+), 8 deletions(-)
+ fs/namei.c               |    2 +-
+ include/linux/security.h |    7 +++++--
+ security/dummy.c         |    2 +-
+ security/selinux/hooks.c |    5 +++--
+ 4 files changed, 10 insertions(+), 6 deletions(-)
 
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -560,11 +560,14 @@ ecryptfs_mknod(struct inode *dir, struct
- {
- 	int rc;
- 	struct dentry *lower_dentry;
-+	struct vfsmount *lower_mnt;
- 	struct dentry *lower_dir_dentry;
- 
- 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
-+	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
- 	lower_dir_dentry = lock_parent(lower_dentry);
--	rc = vfs_mknod(lower_dir_dentry->d_inode, lower_dentry, mode, dev);
-+	rc = vfs_mknod(lower_dir_dentry->d_inode, lower_dentry, lower_mnt, mode,
-+		       dev);
- 	if (rc || !lower_dentry->d_inode)
- 		goto out;
- 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1855,7 +1855,8 @@ fail:
- }
- EXPORT_SYMBOL_GPL(lookup_create);
+@@ -1869,7 +1869,7 @@ int vfs_mknod(struct inode *dir, struct 
+ 	if (!dir->i_op || !dir->i_op->mknod)
+ 		return -EPERM;
  
--int vfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
-+int vfs_mknod(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
-+	      int mode, dev_t dev)
+-	error = security_inode_mknod(dir, dentry, mode, dev);
++	error = security_inode_mknod(dir, dentry, mnt, mode, dev);
+ 	if (error)
+ 		return error;
+ 
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -323,6 +323,7 @@ struct request_sock;
+  *	and not this hook.
+  *	@dir contains the inode structure of parent of the new file.
+  *	@dentry contains the dentry structure of the new file.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@mode contains the mode of the new file.
+  *	@dev contains the device number.
+  *	Return 0 if permission is granted.
+@@ -1218,7 +1219,7 @@ struct security_operations {
+ 			    struct vfsmount *mnt, int mode);
+ 	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
+ 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
+-	                    int mode, dev_t dev);
++			    struct vfsmount *mnt, int mode, dev_t dev);
+ 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
+ 	                     struct inode *new_dir, struct dentry *new_dentry);
+ 	int (*inode_readlink) (struct dentry *dentry);
+@@ -1670,11 +1671,12 @@ static inline int security_inode_rmdir (
+ 
+ static inline int security_inode_mknod (struct inode *dir,
+ 					struct dentry *dentry,
++					struct vfsmount *mnt,
+ 					int mode, dev_t dev)
  {
- 	int error = may_create(dir, dentry, NULL);
+ 	if (unlikely (IS_PRIVATE (dir)))
+ 		return 0;
+-	return security_ops->inode_mknod (dir, dentry, mode, dev);
++	return security_ops->inode_mknod (dir, dentry, mnt, mode, dev);
+ }
  
-@@ -1907,11 +1908,12 @@ asmlinkage long sys_mknodat(int dfd, con
- 			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
- 			break;
- 		case S_IFCHR: case S_IFBLK:
--			error = vfs_mknod(nd.dentry->d_inode,dentry,mode,
--					new_decode_dev(dev));
-+			error = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt,
-+					  mode, new_decode_dev(dev));
- 			break;
- 		case S_IFIFO: case S_IFSOCK:
--			error = vfs_mknod(nd.dentry->d_inode,dentry,mode,0);
-+			error = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt,
-+					  mode, 0);
- 			break;
- 		case S_IFDIR:
- 			error = -EPERM;
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1194,7 +1194,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
- 	case S_IFBLK:
- 	case S_IFIFO:
- 	case S_IFSOCK:
--		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
-+		host_err = vfs_mknod(dirp, dchild, exp->ex_mnt, iap->ia_mode,
-+				     rdev);
- 		break;
- 	default:
- 	        printk("nfsd: bad file type %o in nfsd_create\n", type);
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -994,7 +994,7 @@ extern void unlock_super(struct super_bl
- extern int vfs_permission(struct nameidata *, int);
- extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
- extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
--extern int vfs_mknod(struct inode *, struct dentry *, int, dev_t);
-+extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
- extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
- extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
- extern int vfs_rmdir(struct inode *, struct dentry *);
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -807,7 +807,7 @@ static int unix_bind(struct socket *sock
- 		 */
- 		mode = S_IFSOCK |
- 		       (SOCK_INODE(sock)->i_mode & ~current->fs->umask);
--		err = vfs_mknod(nd.dentry->d_inode, dentry, mode, 0);
-+		err = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt, mode, 0);
- 		if (err)
- 			goto out_mknod_dput;
- 		mutex_unlock(&nd.dentry->d_inode->i_mutex);
+ static inline int security_inode_rename (struct inode *old_dir,
+@@ -2388,6 +2390,7 @@ static inline int security_inode_rmdir (
+ 
+ static inline int security_inode_mknod (struct inode *dir,
+ 					struct dentry *dentry,
++					struct vfsmount *mnt,
+ 					int mode, dev_t dev)
+ {
+ 	return 0;
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -299,7 +299,7 @@ static int dummy_inode_rmdir (struct ino
+ }
+ 
+ static int dummy_inode_mknod (struct inode *inode, struct dentry *dentry,
+-			      int mode, dev_t dev)
++			      struct vfsmount *mnt, int mode, dev_t dev)
+ {
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2218,11 +2218,12 @@ static int selinux_inode_rmdir(struct in
+ 	return may_link(dir, dentry, MAY_RMDIR);
+ }
+ 
+-static int selinux_inode_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
++static int selinux_inode_mknod(struct inode *dir, struct dentry *dentry,
++			       struct vfsmount *mnt, int mode, dev_t dev)
+ {
+ 	int rc;
+ 
+-	rc = secondary_ops->inode_mknod(dir, dentry, mode, dev);
++	rc = secondary_ops->inode_mknod(dir, dentry, mnt, mode, dev);
+ 	if (rc)
+ 		return rc;
+ 
 
 -- 
