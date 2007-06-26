@@ -1,108 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbXFZDHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbXFZDH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbXFZDHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 23:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbXFZDGy
+	id S1755800AbXFZDH5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 23:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXFZDHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 23:06:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45619 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751869AbXFZDGw (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 23:06:52 -0400
-Date: Tue, 26 Jun 2007 13:06:40 +1000
-From: David Chinner <dgc@sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Mon, 25 Jun 2007 23:07:50 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:49014 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752293AbXFZDHt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 23:07:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=Oqk22bRRsXfgpvxCOwGKZ439n9rEhNnzmmM+vYikS3hvEf5T2tXvCA+/yLHng9J6IAUlXY9g8Tk6LOhFJEbML0WDoclzUu2oSIGQmmKfBIr6zH5YuBFOb00N+D+ly6FldVevXxjLHtKyiGCEItXfeZNam5jWWzuKeJqkKBvb0WI=  ;
+X-YMail-OSG: soJBOJwVM1m.8iX6JV5kgX0KRGqq.y9KyZ8O7zwmLCrR1105
+Message-ID: <468082FF.6090704@yahoo.com.au>
+Date: Tue, 26 Jun 2007 13:07:43 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Neil Brown <neilb@suse.de>
+CC: Chris Mason <chris.mason@oracle.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Memory Management List <linux-mm@kvack.org>,
        linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC] fsblock
-Message-ID: <20070626030640.GM989688@sgi.com>
-References: <20070624014528.GA17609@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070624014528.GA17609@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+Subject: Re: [patch 1/3] add the fsblock layer
+References: <20070624014528.GA17609@wotan.suse.de>	<20070624014613.GB17609@wotan.suse.de>	<18046.63436.472085.535177@notabene.brown>	<467F71C6.6040204@yahoo.com.au>	<20070625122906.GB12446@think.oraclecorp.com>	<46807B32.6050302@yahoo.com.au> <18048.32372.40011.10896@notabene.brown>
+In-Reply-To: <18048.32372.40011.10896@notabene.brown>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 03:45:28AM +0200, Nick Piggin wrote:
+Neil Brown wrote:
+> On Tuesday June 26, nickpiggin@yahoo.com.au wrote:
 > 
-> I'm announcing "fsblock" now because it is quite intrusive and so I'd
-> like to get some thoughts about significantly changing this core part
-> of the kernel.
+>>Chris Mason wrote:
+>>
+>>>The block device pagecache isn't special, and certainly isn't that much
+>>>code.  I would suggest keeping it buffer head specific and making a
+>>>second variant that does only fsblocks.  This is mostly to keep the
+>>>semantics of PagePrivate sane, lets not fuzz the line.
+>>
+>>That would require a new inode and address_space for the fsblock
+>>type blockdev pagecache, wouldn't it? I just can't think of a
+>>better non-intrusive way of allowing a buffer_head filesystem and
+>>an fsblock filesystem to live on the same blkdev together.
+> 
+> 
+> I don't think they would ever try to.  Both filesystems would bd_claim
+> the blkdev, and only one would win.
 
-Can you rename it to something other than shorthand for
-"filesystem block"? e.g. When you say:
+Hmm OK, I might have confused myself thinking about partitions...
 
-> - In line with the above item, filesystem block allocation is performed
+> The issue is more of a filesystem sharing a blockdev with the
+> block-special device (i.e. open("/dev/sda1"), read) isn't it?
+> 
+> If a filesystem wants to attach information to the blockdev pagecache
+> that is different to what blockdev want to attach, then I think "Yes"
+> - a new inode and address space is what it needs to create.
+> 
+> Then you get into consistency issues between the metadata and direct
+> blockdevice access.  Do we care about those?
 
-What are we actually talking aout here? filesystem block allocation
-is something a filesystem does to allocate blocks on disk, not
-allocate a mapping structure in memory.
+Yeah that issue is definitely a real one. The problem is not just
+consistency, but "how do the block device aops even know that the
+PG_private page they have has buffer heads or fsblocks", so it is
+an oopsable condition rather than just a plain consistency issue
+(consistency is already not guaranteed).
 
-Realistically, this is not about "filesystem blocks", this is
-about file offset to disk blocks. i.e. it's a mapping.
-
->   Probably better would be to
->   move towards offset,length rather than page based fs APIs where everything
->   can be batched up nicely and this sort of non-trivial locking can be more
->   optimal.
-
-If we are going to turn over the API completely like this, can
-we seriously look at moving to this sort of interface at the same
-time?
-
-With a offset/len interface, we can start to track contiguous
-ranges of blocks rather than persisting with a structure per
-filesystem block. If you want to save memory, thet's where
-we need to go.
-
-XFS uses "iomaps" for this purpose - it's basically:
-
-	- start offset into file
-	- start block on disk
-	- length of mapping
-	- state 
-
-With special "disk blocks" for indicating delayed allocation
-blocks (-1) and unwritten extents (-2). Worst case we end up
-with is an iomap per filesystem block.
-
-If we allow iomaps to be split and combined along with range
-locking, we can parallelise read and write access to each
-file on an iomap basis, etc. There's plenty of goodness that
-comes from indexing by range....
-
-FWIW, I really see little point in making all the filesystems
-work with fsblocks if the plan is to change the API again in
-a major way a year down the track. Let's get all the changes
-we think are necessary in one basket first, and then work out
-a coherent plan to implement them ;)
-
-> - Large block support. I can mount and run an 8K block size minix3 fs on
->   my 4K page system and it didn't require anything special in the fs. We
->   can go up to about 32MB blocks now, and gigabyte+ blocks would only
->   require  one more bit in the fsblock flags. fsblock_superpage blocks
->   are > PAGE_CACHE_SIZE, midpage ==, and subpage <.
-
-My 2c worth - this is a damn complex way of introducing large block
-size support. It has all the problems I pointed out that it would
-have (locking issues, vmap overhead, every filesystem needs needs
-major changes and it's not very efficient) and it's going to take
-quite some time to stabilise.
-
-If this is the only real feature that fsblocks are going to give us,
-then I think this is a waste of time. If we are going to replace
-buffer heads, lets do it with something that is completely
-independent of filesystem block size and not introduce something
-that is just a bufferhead on steroids.
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+SUSE Labs, Novell Inc.
