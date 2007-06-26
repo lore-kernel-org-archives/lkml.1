@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbXFZQEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbXFZQGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757941AbXFZQEK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 12:04:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXFZQD6
+	id S1758069AbXFZQGt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 12:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXFZQGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 12:03:58 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36925 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138AbXFZQD5 (ORCPT
+	Tue, 26 Jun 2007 12:06:42 -0400
+Received: from cheetah.fastcat.org ([66.92.74.248]:46660 "EHLO
+	cheetah.fastcat.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753348AbXFZQGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 12:03:57 -0400
-Date: Tue, 26 Jun 2007 09:04:14 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: DervishD <lkml@dervishd.net>
-Cc: Matthieu CASTET <castet.matthieu@free.fr>, linux-kernel@vger.kernel.org
-Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3]
- doc/oops-tracing: add Code: decode info
-Message-Id: <20070626090414.835df520.randy.dunlap@oracle.com>
-In-Reply-To: <20070626153358.GA27438@DervishD>
-References: <20070621225108.bb69a93d.randy.dunlap@oracle.com>
-	<200706221626.39969.ak@suse.de>
-	<20070622094429.0910c7cb.randy.dunlap@oracle.com>
-	<200706221923.02736.ak@suse.de>
-	<20070622132810.3c758590.randy.dunlap@oracle.com>
-	<E1I2159-0005AH-DS@flower>
-	<20070623104303.a186c5a8.randy.dunlap@oracle.com>
-	<pan.2007.06.23.20.24.29@free.fr>
-	<20070626101639.GB20178@DervishD>
-	<20070626102414.GU27862@lug-owl.de>
-	<20070626153358.GA27438@DervishD>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 26 Jun 2007 12:06:42 -0400
+Date: Tue, 26 Jun 2007 12:06:37 -0400 (EDT)
+From: "Matthew \"Cheetah\" Gabeler-Lee" <cheetah-lkmlsata@fastcat.org>
+X-X-Sender: cheetah@cheetah.fastcat.org
+To: Robert Hancock <hancockr@shaw.ca>
+cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
+Subject: Re: Frequent SATA resets with sata_nv (fwd)
+In-Reply-To: <467ECBB8.2030706@shaw.ca>
+Message-ID: <alpine.DEB.0.99.0706251207230.20899@cheetah.fastcat.org>
+References: <fa.Z5bo5y2TvW4efa6slAJpcdPwqAA@ifi.uio.no>
+ <467ECBB8.2030706@shaw.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 17:33:59 +0200 DervishD wrote:
+On Sun, 24 Jun 2007, Robert Hancock wrote:
 
->     Hi Jan :)
-> 
->  * Jan-Benedict Glaw <jbglaw@lug-owl.de> dixit:
-> > On Tue, 2007-06-26 12:16:39 +0200, DervishD <lkml@dervishd.net> wrote:
-> > >     Given that it happens too with "ldd", it really *is* that hard. I
-> > > don't know why still people think that /bin/sh is always /bin/bash. If
-> > > they want/need bash, that's ok to me, I will have it installed for such
-> > > tasks, but they should call it "#!/bin/bash".
+> Matthew "Cheetah" Gabeler-Lee wrote:
+> > (Please cc me on replies)
 > > 
-> > ...or "#!/usr/bin/env bash" for what it's worth...  The same for plain
-> > `sh'.
+> > I have three samsung hdds (/sys/block/sda/device/model says SAMSUNG SP2504C)
+> > in a raid configuration.  My system frequently (2-3x/day) experiences
+> > temporary lockups, which produce messages as below in my dmesg/syslog.  The
+> > system recovers, but the hang is annoying to say the least.
 > 
->     The "env" solution is a bit of a problem, too. Not always "env" is
-> installed in /usr/bin, but in /bin, so it is available even if /usr is
-> not still mounted. But /bin/sh is pretty standard (as it should be
-> /bin/bash, anyway), and it's only two chars shorter than the correct
-> "/bin/bash". No idea why it is not fixed.
+> Does this drive actually support NCQ? I can't tell from this part of the  log.
 
-because nobody sent a patch yet?
+I selected that model in part because it at least claimed to support 
+NCQ.  I'm not sure if it reflects NCQ or not, but I do have 
+/sys/block/sd[abc]/device/queue_{depth,type} which show simple and 31 
+respectively.  Samsung's page for the drive also says it supports NCQ: 
+http://www.samsung.com/Products/HardDiskDrive/SpinPointPSeries/HardDiskDrive_SpinPointPSeries_SP2504C.htm
 
-but I'll get around tuit.
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+	-Cheetah
+"Reality is that which, when you stop believing in it, doesn't go away".
+                -- Philip K. Dick
+GPG pubkey fingerprint: A57F B354 FD30 A502 795B 9637 3EF1 3F22 A85E 2AD1
