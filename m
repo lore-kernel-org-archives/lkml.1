@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbXFZTah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760290AbXFZTav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759988AbXFZTah (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 15:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759789AbXFZT3z
+	id S1760290AbXFZTav (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759205AbXFZTaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 15:29:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:50508 "EHLO mail.goop.org"
+	Tue, 26 Jun 2007 15:30:11 -0400
+Received: from mga09.intel.com ([134.134.136.24]:23987 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759742AbXFZT3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 15:29:52 -0400
-Message-ID: <468168FD.1080200@goop.org>
-Date: Tue, 26 Jun 2007 15:29:01 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Roman Zippel <zippel@linux-m68k.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Arch <linux-arch@vger.kernel.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] cross-architecture ELF clean up
-References: <20070620230854.246399397@goop.org> <20070620230902.387008536@goop.org> <Pine.LNX.4.64.0706251531110.4386@scrub.home>
-In-Reply-To: <Pine.LNX.4.64.0706251531110.4386@scrub.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1758849AbXFZTaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 15:30:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,464,1175497200"; 
+   d="scan'208";a="100373302"
+Date: Tue, 26 Jun 2007 12:25:35 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 10/10] Iommu floppy workaround
+Message-ID: <20070626192535.GF3374@linux-os.sc.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070619213809.110034000@askeshav-devel.jf.intel.com> <20070625234222.a1e09a16.akpm@linux-foundation.org> <200706261237.55649.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706261237.55649.ak@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Zippel wrote:
->> This patch cleans up the ELF headers and their users.  It does several
->> related things:
->>
->> 1. split linux/elf.h into pieces
->>
->> This splits linux/elf.h into several pieces:
->> 	linux/elf.h		- still the common elf header,
->> 				  functionally unchanged
->> 	linux/elf-const.h	- ELF constants, includable by asm code
->>     
->
-> We have the __ASSEMBLY__ define for this, so just for asm code we don't 
-> need a separate header.
->   
+On Tue, Jun 26, 2007 at 12:37:55PM +0200, Andi Kleen wrote:
+> 
+> > > Index: linux-2.6.22-rc4-mm2/arch/x86_64/Kconfig
+> > > ===================================================================
+> > > --- linux-2.6.22-rc4-mm2.orig/arch/x86_64/Kconfig	2007-06-18 15:45:08.000000000 -0700
+> > > +++ linux-2.6.22-rc4-mm2/arch/x86_64/Kconfig	2007-06-18 15:45:09.000000000 -0700
+> > > @@ -752,6 +752,16 @@
+> > >  	 all the OS visible memory. Hence the driver can continue
+> > >  	 to use physical addresses for DMA.
+> > >  
+> > > +config DMAR_FLPY_WA
+> > 
+> > FLOPPY is spelled "FLOPPY"!
+> 
+> Also this shouldn't be a user visible config.  The floppy driver should just
+> do this transparently when loaded and undo when unloaded.
 
-Hm.  The number of __ASSEMBLY__s end up being pretty large, and it just 
-seemed cleaner to put them in separate headers.
+Yup, I agree. 
 
->> 	linux/elf-decl.h	- ELF type declarations, without definitions
->> 	linux/elf-defn.h	- ELF type definitions
->>     
->
-> What's the point in splitting these two?
->   
+Here goes the patch to make it user invisible config option.
 
-Because there are other headers which just need some type 
-forward-declarations, and don't need the whole set of ELF types 
-defined.  In particular, linux/module.h - which is included all over the 
-place in the kernel - needs a couple of ELF types declared, and 
-including it all over the place is just a waste.  Also, there were some 
-nasty cyclic header dependency problems around linux/elf.h, 
-linux/module.h, linux/bug.h and asm/bug.h which ended up leading to some 
-awkward hacks; I need to remind myself what the problems were and see if 
-this elf cleanup helps (pretty sure it should).
+Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+---
+ arch/x86_64/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> After this patch <linux/elf.h> seems to be pretty much empty, I'd rather 
-> suggest to move the function declarations to elfcore.h and leave the basic 
-> elf definitions in elf.h. Many small header files have the disadvantage 
-> that it takes longer to find the needed information.
->   
-linux/elf.h ends up pulling in a really surprising amount of stuff, 
-mostly because it ends up including asm/elf.h.  asm/elf.h, in turn, 
-depending on the architecture, pulls in a wide variety of other 
-headers.  When I cleaned this up, I found quite a few buggy .c files 
-which ended up relying on implicit includes via this chain.
+Index: linux-2.6.22-rc4-mm2/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6.22-rc4-mm2.orig/arch/x86_64/Kconfig	2007-06-26 12:04:42.000000000 -0700
++++ linux-2.6.22-rc4-mm2/arch/x86_64/Kconfig	2007-06-26 12:06:01.000000000 -0700
+@@ -753,7 +753,7 @@
+ 	 to use physical addresses for DMA.
+ 
+ config DMAR_FLOPPY_WA
+-	bool "Support for Floppy disk workaround"
++	bool
+ 	depends on DMAR
+ 	default y
+ 	help
 
-Given that there's been a general push to try and cut down on the number 
-of header dependency entanglements, I thought I could contribute while 
-solving my own immediate problems.
-
-linux/elfcore.h is specifically related to ELF core files, so the two 
-corefile notes-related headers could be moved there.
-
-    J
