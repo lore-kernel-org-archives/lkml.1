@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbXFZGtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbXFZGvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbXFZGtV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 02:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbXFZGtP
+	id S1755449AbXFZGvz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 02:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbXFZGvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 02:49:15 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:34235 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750832AbXFZGtO (ORCPT
+	Tue, 26 Jun 2007 02:51:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49942 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750832AbXFZGvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 02:49:14 -0400
-Date: Mon, 25 Jun 2007 23:43:20 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: [GIT PATCH] USB fixes for 2.6.22-rc6
-Message-ID: <20070626064320.GA19010@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Tue, 26 Jun 2007 02:51:45 -0400
+Date: Mon, 25 Jun 2007 23:51:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: michael@ellerman.id.au
+Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org,
+       linux-arch@vger.kernel.org, anil.s.keshavamurthy@intel.com,
+       ananth@in.ibm.com
+Subject: Re: [PATCH 3/3] Make jprobes a little safer for users
+Message-Id: <20070625235103.2d8dea18.akpm@linux-foundation.org>
+In-Reply-To: <1182837838.6673.17.camel@concordia.ozlabs.ibm.com>
+References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
+	<7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
+	<20070626055347.GB6841@lst.de>
+	<1182837838.6673.17.camel@concordia.ozlabs.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB fixes against your 2.6.22-rc6 tree.
+On Tue, 26 Jun 2007 16:03:58 +1000 Michael Ellerman <michael@ellerman.id.au> wrote:
 
-They fix a pretty serious gadget file_storage bug, some minor bugs in
-other drivers (although the "suck up all kernel memory in the system" is
-pretty nasty...) and adds 2 new device ids.
+> On Tue, 2007-06-26 at 07:53 +0200, Christoph Hellwig wrote:
+> > On Tue, Jun 26, 2007 at 11:48:51AM +1000, Michael Ellerman wrote:
+> > > I realise jprobes are a razor-blades-included type of interface, but
+> > > that doesn't mean we can't try and make them safer to use. This guy I
+> > > know once wrote code like this:
+> > > 
+> > > struct jprobe jp = { .kp.symbol_name = "foo", .entry = "jprobe_foo" };
+> > > 
+> > > And then his kernel exploded. Oops.
+> > > 
+> > > This patch adds an arch hook, arch_deref_entry_point() (I don't like it either)
+> > > which takes the void * in a struct jprobe, and gives back the text address
+> > > that it represents.
+> > > 
+> > > We can then use that in register_jprobe() to check that the entry point
+> > > we're passed is actually in the kernel text, rather than just some random
+> > > value.
+> > 
+> > Please don't add more weak functions, they're utterly horrible for
+> > anyone trying to understand the code.  Otherwise this looks fine to me.
+> 
+> What do you recommend instead? #define ARCH_HAS_FOO_BAR ?
 
-All of these have been in the -mm releases for a while.
+o lord, save us, no.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+> I don't see what's utterly horrible about them.
 
-The full patches will be sent to the linux-usb-devel mailing list, if
-anyone wants to see them.
+Me either.
 
-thanks,
+> The fact that they're
+> weak is fairly reasonable documentation that they're overridden
+> somewhere else. And grep/cscope/ctags will find both the weak and
+> non-weak versions for you?
 
-greg k-h
+yup.
+
+In this case we could just require that each jprobes-supporting
+architecture implement arch_deref_entry_point().
 
 
- drivers/usb/gadget/file_storage.c     |   12 +++++-------
- drivers/usb/misc/iowarrior.c          |    7 ++++---
- drivers/usb/misc/usblcd.c             |   22 ++++++++++++++++++----
- drivers/usb/serial/ftdi_sio.c         |    1 +
- drivers/usb/serial/ftdi_sio.h         |    1 +
- drivers/usb/serial/io_edgeport.c      |    4 ++--
- drivers/usb/serial/option.c           |    6 ++++--
- drivers/usb/serial/ti_usb_3410_5052.c |    8 +++++---
- 8 files changed, 40 insertions(+), 21 deletions(-)
+Or one could do the Linus trick.  In each architecture which implements
+arch_deref_entry_point() do:
 
----------------
+#define arch_deref_entry_point arch_deref_entry_point
 
-Alexander Gattin (1):
-      USB: add new device id to option driver
+in the per-arch header file then, in non-arch code, do
 
-Luiz Fernando N. Capitulino (1):
-      USB: ftdio_sio: New IPlus device ID
+#ifndef arch_deref_entry_point
+static unsigned long arch_deref_entry_point(...)
+{
+	<generic implementation>
+}
+#endif
 
-Oleg Nesterov (1):
-      USB: g_file_storage: call allow_signal()
-
-Oliver Neukum (4):
-      USB: ti serial driver sleeps with spinlock held
-      USB: memory leak in iowarrior.c
-      USB: usblcd doesn't limit memory consumption during write
-      USB: fix race leading to use after free in io_edgeport
-
+That's just the ARCH_HAS_FOO_BAR thing, only less fugly.
