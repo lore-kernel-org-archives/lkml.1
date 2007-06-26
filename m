@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbXFZEdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbXFZEgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756491AbXFZEdy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 00:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXFZEdm
+	id S1756381AbXFZEgP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 00:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXFZEf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 00:33:42 -0400
-Received: from mail.suse.de ([195.135.220.2]:57735 "EHLO mx1.suse.de"
+	Tue, 26 Jun 2007 00:35:59 -0400
+Received: from ozlabs.org ([203.10.76.45]:36731 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbXFZEdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 00:33:41 -0400
-From: Neil Brown <neilb@suse.de>
-To: Graeme Sheppard <nodes@rillion.net>
-Date: Tue, 26 Jun 2007 14:33:32 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18048.38684.330100.529424@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Patent or not patent a new idea
-In-Reply-To: message from Graeme Sheppard on Tuesday June 26
-References: <46803772.7020408@rillion.net>
-	<46806CCB.6020708@rillion.net>
-	<18048.30679.872740.744997@notabene.brown>
-	<468085E9.70804@rillion.net>
-	<18048.35410.896207.686311@notabene.brown>
-	<46809495.6000109@rillion.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	id S1751271AbXFZEf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 00:35:58 -0400
+Subject: Re: [PATCH 1/3] Make struct jprobe.entry a void *
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: ananth@in.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
+       anil.s.keshavamurthy@intel.com
+In-Reply-To: <20070626035946.GA20460@in.ibm.com>
+References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
+	 <20070626035946.GA20460@in.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-C/Og7AIUR51gZzP8MZdc"
+Date: Tue, 26 Jun 2007 14:35:49 +1000
+Message-Id: <1182832549.6673.12.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday June 26, nodes@rillion.net wrote:
-> 
-> Thanks for the brief howto there. I'll install the mdadm suite and
-> experiment. It seems like a userspace driver?
 
-mdadm is a userspace tool for managing the 'md' driver which is in the
-linux kernel.
+--=-C/Og7AIUR51gZzP8MZdc
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > I don't know what you mean by '2'.
-> 
-> 2 meant in the way that a driver for a PC raid card is not much use on
-> a Sparc.
+On Tue, 2007-06-26 at 09:29 +0530, Ananth N Mavinakayanahalli wrote:
+> On Tue, Jun 26, 2007 at 11:48:50AM +1000, Michael Ellerman wrote:
+> > ---
+> >=20
+> > It isn't obvious where kprobes patches should go, is anyone "the" maint=
+ainer?
+> > Instead I've just sent this to everyone who'd touched the code lately, =
+or
+> > might be otherwise interested.
+>=20
+> There isn't a single maintainer for the kprobes infrastructure as it
+> contains quite a bit of low level arch specific code. The working model
+> currently is that the patches are sent to lkml with a cc to the
+> maintainers listed, as you've rightly done.
 
-Ahh... That is one of the great things about Linux.  You code in C,
-and the driver works on every architecture (providing you are
-reasonably careful, and the arch actually supports the hardware). :-)
+OK, no worries. I guess that's a bit messy to put into a MAINTAINERS entry.
 
-NeilBrown
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-C/Og7AIUR51gZzP8MZdc
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGgJeldSjSd0sB4dIRAi1JAJ41iajk775QlaOZrIZPSjZAtmQdBgCeM3Do
+rWeTXVQ4LoPg+2calMyjoQo=
+=w/5W
+-----END PGP SIGNATURE-----
+
+--=-C/Og7AIUR51gZzP8MZdc--
+
