@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbXFZIbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbXFZIgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbXFZIbd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 04:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXFZIb0
+	id S1754714AbXFZIgk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 04:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbXFZIgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 04:31:26 -0400
-Received: from gwu.lbox.cz ([62.245.111.132]:43930 "EHLO gwu.lbox.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751096AbXFZIbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 04:31:25 -0400
-X-Greylist: delayed 1876 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jun 2007 04:31:24 EDT
-Date: Tue, 26 Jun 2007 09:58:17 +0200 (CEST)
-From: Nikola Ciprich <extmaillist@linuxbox.cz>
-To: linux-kernel@vger.kernel.org
-cc: erich@areca.com.tw, ciprich@linuxbox.cz
-Subject: arcmsr + dmcrypt problem
-Message-ID: <Pine.LNX.4.64.0706260931480.14913@databox.linuxbox.cz>
+	Tue, 26 Jun 2007 04:36:32 -0400
+Received: from ihemail3.lucent.com ([135.245.0.37]:52018 "EHLO
+	ihemail3.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456AbXFZIgc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 04:36:32 -0400
+Message-ID: <4680D007.3040007@alcatel-lucent.com>
+Date: Tue, 26 Jun 2007 16:36:23 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Antivirus: on proxybox by NOD32 antivirus, virus signature database version 2353 (20070625)
-X-Antivirus: on linuxbox by Kaspersky antivirus, engine 5.0.5, data 331712 records(26-06-2007)
-X-Spam-Score: N/A (trusted relay)
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: bugs in __schedule()
+References: <4680C6F3.9000504@alcatel-lucent.com>	 <a781481a0706260118o2ef795bj579b3ec86c4fca8a@mail.gmail.com>	 <4680CC51.1050205@alcatel-lucent.com> <a781481a0706260125l76c5848aq85403a4ec94d57da@mail.gmail.com>
+In-Reply-To: <a781481a0706260125l76c5848aq85403a4ec94d57da@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Jun 2007 08:36:05.0765 (UTC) FILETIME=[096CC350:01C7B7CD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
-I've stumbled upon a problem with arcmsr driver: trying to use a dmcrypt 
-encrypted volume on top of areca volume always hangs the card.
-
-Steps to reproduce:
-
-1) create some kind of raid on areca (raid5, or even a passthrough disc)
-2) cryptsetup luksFormat /dev/sda1 (or whatever areca sdX device is)
-3) cryptsetup luksOpen /dev/sda1 cryptotest
-4) mkfs.xfs /dev/mapper/cryptotest
-5) mount /dev/mapper/cryptotest /mnt/cryptotest
-6) copy some data to /mnt/cryptotest
-
-this hangs card and printk's following messages:
-[  288.160614] arcmsr0: isr get an illegal ccb command done acb='0xffff810144758548'ccb='0xffff810020020000' ccbacb='0x50a05ed7588a40c0' startdone = 0xbcda ccboutstandingcount=1 --
-
-I have tested it on:
-1) SMP amd64 machine running 2.6.18 x86_64 kernel with external arcmsr 
-module or 2.6.21.3 - it it always hangs on step 4
-2) SMP xeon machine running 2.6.21 and also 2.6.22-rc6, UP or SMP, with 
-acpi on or off, also tried disabling NCQ - always hangs on step 6
-
-Card information:
-Firmware Version   : V1.43 2007-4-17
-BOOT ROM Version   : V1.43 2007-4-17
-Controller Name    : ARC-1220
-
-Apparently I'm not the first person to encounter this problem:
-http://forums.storagereview.net/index.php?showtopic=25513
-
-Should somebody be willing to hunt down this bug, I'd be more than happy 
-to assist.
-
-best regards
-
-nik.
-
+Satyam Sharma wrote:
+> Hi Gavin,
+>
+> On 6/26/07, gshan <gshan@alcatel-lucent.com> wrote:
+>> Here is the all output I have:
+>>
+>> # ifconfig mgt0 10.0.51.27
+>> BUG: scheduling while atomic: exe/0x00000101/752
+>
+> Yup, you can't sleep in taskets, they're atomic.
+>
+>> caller is schedule+0x4c/0xe4
+>> Call trace:
+>>  [c02dc4dc] __schedule+0x654/0x788
+>>  [c02dc6f4] schedule+0x4c/0xe4
+>>  [c02dbe24] __compat_down+0xc8/0x12c
+>
+> So, you can't use / acquire semaphores in them. Use spinlocks.
+> If the shared data is also accessed from process context, use
+> spin_lock_bh() from the process context code.
+>
+> Satyam
+Thanks, Satyam. So I can replace the tasklet with kernel thread?
