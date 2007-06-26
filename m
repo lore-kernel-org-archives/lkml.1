@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbXFZGwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbXFZHCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbXFZGwQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 02:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbXFZGvw
+	id S1754007AbXFZHCr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 03:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXFZHCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 02:51:52 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:64364 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbXFZGvv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 02:51:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=S0fEImffiUUwanX0LZPs54/cBDF/Lipfu7zB9mFzcg5Ta9WcWQzXgd7/FV2UDYiZdFzDcSDn3OlKaFq59gakyYfqkmKuqvaTx2Vjn+B8PyJ1PCn/L2Vj6FtsPbRXnkb7Jm/2+2fDKEUYA3CD3WImYu0DxVDrdcVMAadSCYqEsBo=
-Message-ID: <cf9d85500706252351k68924882s2c6bc58454d1bb9b@mail.gmail.com>
-Date: Mon, 25 Jun 2007 23:51:51 -0700
-From: "Amitabha Roy" <amitabha.roy@gmail.com>
-To: oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: DIE_NMI_IPI to oprofile ?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Jun 2007 03:02:38 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:52512 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751426AbXFZHCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 03:02:38 -0400
+Date: Tue, 26 Jun 2007 09:02:22 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: bennett78@lpbroadband.net
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, kernel@avr32linux.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] AVR32 fixes
+Message-ID: <20070626090222.2f4abe6e@dhcp-255-175.norway.atmel.com>
+In-Reply-To: <46802222.90104@lpbroadband.net>
+References: <20070623164143.2bba7104@dhcp-255-175.norway.atmel.com>
+	<46802222.90104@lpbroadband.net>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Mon, 25 Jun 2007 14:14:26 -0600
+Frank Bennett <bennett78@lpbroadband.net> wrote:
 
->From looking at the default_do_nmi code in traps.c it seems that (at
-least for the non BSP case, with reason=0) the die notifier chain gets
-called with val=DIE_NMI_IPI.
+> makes fine, but requires :
 
-However in the profile_exceptions_notify_handler we check for DIE_NMI
-(and not DIE_NMI_IPI) to decide if we want to cycle through the
-counters. This seems wrong to me unless I am missing something (which
-must be the case, otherwise this code is broken :).
+Hmm...what do you mean?
 
-Can anyone help me understand this ?
+> export ARCH=avr32
+> export CROSS_COMPILE=avr32-linux-
 
-Thanks
--Amitabha
+Standard cross-compile stuff.
+
+> make defconfig
+> make
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CHK     include/linux/compile.h
+>   MODPOST vmlinux
+>   UIMAGE arch/avr32/boot/images/uImage
+> "mkimage" command not found - U-Boot images will not be built
+
+Seems like you don't have mkimage installed. You can find it under
+"tools" in the u-boot sources.
+
+>   Image arch/avr32/boot/images/uImage is ready
+> make[1]: `arch/avr32/boot/images/vmlinux.elf' is up to date.
+>   Building modules, stage 2.
+>   MODPOST 20 modules
+
+I'm sorry, but I don't understand what's wrong here...
+
+Haavard
