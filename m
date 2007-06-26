@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbXFZDOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXFZDOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbXFZDOH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 23:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbXFZDN4
+	id S1756057AbXFZDOa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 23:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbXFZDN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 25 Jun 2007 23:13:58 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:42563 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752467AbXFZDN4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 25 Jun 2007 23:13:56 -0400
-Received: from waste.org ([66.93.16.53]:52436 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752293AbXFZDN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 23:13:56 -0400
-Date: Mon, 25 Jun 2007 22:13:41 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] hw_random: add quality categories
-Message-ID: <20070626031340.GQ11166@waste.org>
-References: <200706241555.22957.mb@bu3sch.de>
+Message-ID: <4680843B.5010503@freedesktop.org>
+Date: Mon, 25 Jun 2007 20:12:59 -0700
+From: Josh Triplett <josh@freedesktop.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070618)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706241555.22957.mb@bu3sch.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Segher Boessenkool <segher@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070625195511.GG21478@ftp.linux.org.uk>
+In-Reply-To: <20070625195511.GG21478@ftp.linux.org.uk>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig1B5BA729A899237316EB4FF1"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 24, 2007 at 03:55:22PM +0200, Michael Buesch wrote:
-> This adds quality categories for hardware random number generators.
-> 
-...
-> +
-> +/**
-> + * enum hwrng_quality - Quality identifier for RNG hardware
-> + * @HWRNG_QUAL_HIGH:	High quality RNG. Higher quality than
-> + * 			what is found on the usual PC mainboards.
-> + * 			Use that for special dedicated RNG
-> + * 			extension boards.
-> + * @HWRNG_QUAL_NORMAL:	PC-onboard-RNG devices.
-> + * @HWRNG_QUAL_LOW:	Low quality RNG devices. Use this for
-> + * 			devices which gather the entropy from possibly
-> + * 			bad sources, like the network.
-> + * @HWRNG_QUAL_PSEUDO:	Pseudo RNG device. Use this for devices
-> + * 			which are not RNG devices by definition, but
-> + * 			could be used as such. For example various
-> + * 			hardware sensors, like a motion sensor.
-> + */
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig1B5BA729A899237316EB4FF1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I don't think these definitions are very useful.
+Al Viro wrote:
+> On Sun, Jun 24, 2007 at 10:31:06PM -0700, Josh Triplett wrote:
+>> Al Viro wrote:
+>>> Joy.  OK, folks, disregard 16/16 in the current form; everything prio=
+r
+>>> to it stands on its own.
+>> Acknowledged.  The rest of the patches look good to me, so I'll merge =
+1-15
+>> soon, and ignore 16.
+>>
+>> Do you have those patches in public git somewhere, or would you like m=
+e to
+>> just apply the patches from mail?
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/viro/sparse.git/ misc
 
-There are basically three ways of measuring RNG quality:
+No changes to validation output at any point in the series.  Merged.  Tha=
+nks!
 
-a) does it generate a good spectrum based on an unpredictable physical
-process like Schott noise or free-running oscillator beat patterns?
+- Josh Triplett
 
-b) can the end-user trust that the design is implemented as described?
 
-c) does it output lots of bits fast?
 
-Anything that fails (a) belongs in the PSEUDO class. This applies to
-RNGs where the implementation is undocumented too. (There's not much
-excuse for this as it costs negligible silicon to do this right.)
+--------------enig1B5BA729A899237316EB4FF1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Anything that passes (b) is something that the end-user built
-themselves while wearing their tinfoil hat.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Anything that claims to be significantly better than the trivial
-circuit and whitening on a typical PC is probably marketing hype. 
+iD8DBQFGgIQ7GJuZRtD+evsRAuCTAKCm8+NDg5I9ZI9CLnwA3CRHKc5U5wCeLCcF
+E9GtVfce5Evvt3YPmXYH2II=
+=jLNt
+-----END PGP SIGNATURE-----
 
-Which brings us down to (c). And basically all hardware RNGs are
-plenty fast enough.
-
-So that's basically three orthogonal axes: "real", "trusted", and
-"fast". And "trusted" trumps "real", which trumps "fast".
-
--- 
-Mathematics is the supreme nostalgia of our time.
+--------------enig1B5BA729A899237316EB4FF1--
