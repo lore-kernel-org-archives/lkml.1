@@ -1,47 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbXFZXq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbXFZXwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759936AbXFZXq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbXFZXqU
+	id S1759810AbXFZXwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbXFZXwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:46:20 -0400
-Received: from pat.uio.no ([129.240.10.15]:60282 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbXFZXqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:46:18 -0400
-Subject: Re: [RFD 0/4] AppArmor - Don't pass NULL nameidata to
-	vfs_create/lookup/permission IOPs
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
+	Tue, 26 Jun 2007 19:52:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36777 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754191AbXFZXwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:52:12 -0400
+Date: Tue, 26 Jun 2007 16:52:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: jjohansen@suse.de
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070626231510.883881222@suse.de>
-References: <20070626231510.883881222@suse.de>
-Content-Type: text/plain
-Date: Tue, 26 Jun 2007 19:46:15 -0400
-Message-Id: <1182901575.12836.54.camel@heimdal.trondhjem.org>
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+Message-Id: <20070626165202.bfe8e6df.akpm@linux-foundation.org>
+In-Reply-To: <20070626230756.519733902@suse.de>
+References: <20070626230756.519733902@suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.083)
-X-UiO-Scanned: 03BF5014BDACEB15ADC4B8101EAF8D1F0C72DED8
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 236 total 2587344 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-26 at 16:15 -0700, jjohansen@suse.de wrote:
-> To remove conditionally passing of vfsmounts to the LSM, a nameidata
-> struct can be instantiated in the nfsd and mqueue filesystems.  This
-> however results in useless information being passed down, as not
-> all fields in the nameidata struct will be meaingful.  The nameidata
-> struct is split creating struct nameidata2 that contains only the
-> fields
-> that will carry meaningful information.
+On Tue, 26 Jun 2007 16:07:56 -0700
+jjohansen@suse.de wrote:
 
-I don't object to the concept per se, but could you please give it a
-more descriptive name please? "struct vfs_intent" would be a lot more
-accurate than "nameidata2".
+> This post contains patches to include the AppArmor application security
+> framework, with request for inclusion into -mm for wider testing.
 
-Trond
+Patches 24 and 31 didn't come through.
+
+Rolled-up diffstat (excluding 24&31):
+
+ fs/attr.c                            |    7 
+ fs/dcache.c                          |  181 ++-
+ fs/ecryptfs/inode.c                  |   41 
+ fs/exec.c                            |    3 
+ fs/fat/file.c                        |    2 
+ fs/hpfs/namei.c                      |    2 
+ fs/namei.c                           |  115 +-
+ fs/nfsd/nfs4recover.c                |    7 
+ fs/nfsd/nfs4xdr.c                    |    2 
+ fs/nfsd/vfs.c                        |   89 +
+ fs/ntfs/file.c                       |    2 
+ fs/open.c                            |   50 
+ fs/reiserfs/file.c                   |    2 
+ fs/reiserfs/xattr.c                  |    8 
+ fs/splice.c                          |    4 
+ fs/stat.c                            |    2 
+ fs/sysfs/file.c                      |    2 
+ fs/utimes.c                          |   11 
+ fs/xattr.c                           |   75 -
+ fs/xfs/linux-2.6/xfs_lrw.c           |    2 
+ include/linux/audit.h                |   12 
+ include/linux/fs.h                   |   27 
+ include/linux/nfsd/nfsd.h            |    3 
+ include/linux/security.h             |  182 ++-
+ include/linux/sysctl.h               |    2 
+ include/linux/xattr.h                |   11 
+ ipc/mqueue.c                         |    2 
+ kernel/audit.c                       |    6 
+ kernel/sysctl.c                      |   27 
+ mm/filemap.c                         |   12 
+ mm/filemap_xip.c                     |    2 
+ mm/shmem.c                           |    2 
+ mm/tiny-shmem.c                      |    2 
+ net/unix/af_unix.c                   |    2 
+ security/Kconfig                     |    1 
+ security/Makefile                    |    1 
+ security/apparmor/Kconfig            |   10 
+ security/apparmor/Makefile           |   13 
+ security/apparmor/apparmor.h         |  265 +++++
+ security/apparmor/apparmorfs.c       |  252 +++++
+ security/apparmor/inline.h           |  211 ++++
+ security/apparmor/list.c             |   94 +
+ security/apparmor/locking.txt        |   68 +
+ security/apparmor/lsm.c              |  817 ++++++++++++++++
+ security/apparmor/main.c             | 1255 +++++++++++++++++++++++++
+ security/apparmor/match.c            |  248 ++++
+ security/apparmor/match.h            |   83 +
+ security/apparmor/module_interface.c |  589 +++++++++++
+ security/apparmor/procattr.c         |  155 +++
+ security/commoncap.c                 |    7 
+ security/dummy.c                     |   43 
+ security/selinux/hooks.c             |   94 -
+ 52 files changed, 4701 insertions(+), 404 deletions(-)
+
+which seems OK.
+
+
+so...  where do we stand with this?  Fundamental, irreconcilable
+differences over the use of pathname-based security?
+
+Are there any other sticking points?
+
 
