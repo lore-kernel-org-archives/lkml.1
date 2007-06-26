@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbXFZKvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbXFZK5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbXFZKvq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXFZKvj
+	id S1756727AbXFZK5W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXFZK5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:51:39 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55026 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752317AbXFZKvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:51:38 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX18QjQVk98QQPYtqnzqt5ffuPUSqQ4hzhy/5QntDzY
-	KLOhqDX3ZjMnll
-Message-ID: <467F8FCF.4080009@gmx.net>
-Date: Mon, 25 Jun 2007 11:50:07 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: man-pages-2.59 and man-pages-2.60 are released
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 26 Jun 2007 06:57:15 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:59867 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbXFZK5O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 06:57:14 -0400
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070626100628.GO24183@enneenne.com>
+References: <20070626100628.GO24183@enneenne.com>
+Content-Type: text/plain
+Date: Tue, 26 Jun 2007 11:57:07 +0100
+Message-Id: <1182855427.12109.203.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+On Tue, 2007-06-26 at 12:06 +0200, Rodolfo Giometti wrote:
+> Hello,
+> 
+> here my new version of LinuxPPS with a new syscalls API.
+> 
+> Please take a look at this new patch and report any
+> suggestions/modifications so I can prepare a proper patch for kernel
+> inclusion.
 
-I just released man-pages-2.59 and man-pages-2.60.
+Your syscalls blindly dereference userspace pointers instead of using
+copy_{to,from} user.
 
-These releases are now available for download at:
+Why did you split all your syscalls into two functions?
 
-    http://www.kernel.org/pub/linux/docs/manpages
-    or ftp://ftp.kernel.org/pub/linux/docs/manpages
+s/__FUNCTION__/__func__/
 
-and soon at:
+s/antennas/antennae/
 
-    ftp://ftp.win.tue.nl/pub/linux-local/manpages
+You seem to have added debugging messages mentioning 'serial8250' into
+serial_core.h
 
-These releases consist primarily of editorial changes, the
-most notable being that man-pages is now standardized on
-American spelling.  Formerly, different pages (and sometimes
-even a single page!) employed American and British spelling
-conventions (best to standardize on one spelling, and
-American English is the standard in Computer Science).
+You added <linux/pps.h> with #ifdef __KERNEL__ in it, but didn't export
+it to userspace. Why?
 
-Cheers,
+Your structures for userspace communication look OK -- I don't think you
+need special 32/64 compatibility for them. You do need it for the
+'struct timespec' in sys_time_pps_fetch() though.
 
-Michael
-(man-pages maintenance is supported by Google, as a Google engineer 20%
-project.)
-
+Must we have the ioctl-like interface to sys_time_pps_cmd()? If the
+second argument is always 'struct pps_source_data_s *', why does the
+syscall pretend it's 'void *'?
 
 -- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
+dwmw2
 
