@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbXFZUWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759813AbXFZUY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759947AbXFZUWf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 16:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758104AbXFZUW3
+	id S1759813AbXFZUY2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 16:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbXFZUYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 16:22:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:36083 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758040AbXFZUW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 16:22:28 -0400
-Message-ID: <46817551.9040800@goop.org>
-Date: Tue, 26 Jun 2007 16:21:37 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andi Kleen <ak@suse.de>,
-       v12n <virtualization@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Xen-Devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH 03/10] define ELF notes for adding to a boot image
-References: <20070615004818.424726597@goop.org>	<20070615005012.882738673@goop.org>	<4672BC5B.1040502@zytor.com>	<4672C0FF.9080209@goop.org> <20070626131830.9a4d4ae6.akpm@linux-foundation.org>
-In-Reply-To: <20070626131830.9a4d4ae6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Jun 2007 16:24:22 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:34892 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758031AbXFZUYV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 16:24:21 -0400
+Date: Tue, 26 Jun 2007 13:26:22 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Matt_Domsch@dell.com
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: EDD build error
+Message-Id: <20070626132622.3226261a.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Jeremy, I'll duck these patches for now, sorry.  Mainly on
-> i-already-have-enough-x86-stuff grounds.
->   
+Hi,
 
-That's fine.  I think it breaks x86-64 at the moment anyway.  And I 
-haven't got much feedback about it.
+CONFIG_EDD does not depend on PCI, but edd.c uses pci_* interface
+functions, resulting in:
 
-> There's a bit of overlap between this work and git-newsetup, but nothing
-> particularly serious-looking.
->   
+  CC [M]  drivers/firmware/edd.o
+drivers/firmware/edd.c: In function 'edd_get_pci_dev':
+drivers/firmware/edd.c:672: warning: implicit declaration of function 'pci_get_bus_and_slot'
+drivers/firmware/edd.c:673: warning: return makes pointer from integer without a cast
+...
+ERROR: "pci_get_bus_and_slot" [drivers/firmware/edd.ko] undefined!
+make[1]: *** [__modpost] Error 1
 
-Yes, I based it on the newsetup stuff in -mm, so there shouldn't be too 
-much difference.
 
-    J
+Should EDD depend on PCI or should some parts of edd.c be stubbed?
+
+
+(This is in 2.6.22-rc4-mm2 FWIW.)
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
