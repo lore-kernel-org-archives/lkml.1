@@ -1,103 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbXFZOxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbXFZO62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbXFZOxV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 10:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbXFZOxO
+	id S1757529AbXFZO62 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 10:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755887AbXFZO6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 10:53:14 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:46842 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752085AbXFZOxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 10:53:13 -0400
-Date: Tue, 26 Jun 2007 07:53:09 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Uli Luckas <u.luckas@road.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: synchronize_qrcu_timeout()
-Message-ID: <20070626145308.GA8929@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070625104332.GA147@tv-sign.ru> <20070625145851.GB12976@linux.vnet.ibm.com> <20070625152011.GA160@tv-sign.ru> <20070625154957.GA197@tv-sign.ru>
+	Tue, 26 Jun 2007 10:58:17 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:61600 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbXFZO6Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 10:58:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=olDsBmPcc7GEgpVwFmZp3UMA2qQbSMN2TSQMaMp/v0EpXNptkCoUXhTcBO/UXejogjeHq11CvfTdoIRH5bq41BwnEB5oR57ZvMuRAvPDUEhuqCdnFHIjUl8m5wTIUGOJzc/J6rIDWC03zFp6/CUD+CRd3utL36Aflt4Q7dU63uc=
+Message-ID: <7e63f56c0706260758y728ef242o2262d2c1a0c97181@mail.gmail.com>
+Date: Tue, 26 Jun 2007 16:58:15 +0200
+From: "Robert Iakobashvili" <coroberti@gmail.com>
+To: djones@rossove.com
+Subject: Re: Scaling Max IP address limitation
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <7e63f56c0706260756q504bc4c2sa8905fbaeed4308d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070625154957.GA197@tv-sign.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <467EA7C1.4080006@rossove.com>
+	 <7e63f56c0706241259u6e123ed6yc02b76f0260adaa5@mail.gmail.com>
+	 <467F063A.2030805@rossove.com>
+	 <7e63f56c0706250147w508d3aeay5f7aaca8215953c8@mail.gmail.com>
+	 <Pine.LNX.4.64.0706251130320.11964@fbirervta.pbzchgretzou.qr>
+	 <7e63f56c0706250241q19c6cb49yb846a38eb10a53e6@mail.gmail.com>
+	 <Pine.LNX.4.64.0706251437130.3137@fbirervta.pbzchgretzou.qr>
+	 <7e63f56c0706250544u78353454y44f4aab12a9e3fa8@mail.gmail.com>
+	 <467FFAAA.8010103@rossove.com>
+	 <7e63f56c0706260756q504bc4c2sa8905fbaeed4308d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 07:49:57PM +0400, Oleg Nesterov wrote:
-> On 06/25, Oleg Nesterov wrote:
-> >
-> > On 06/25, Paul E. McKenney wrote:
-> > >
-> > > On Mon, Jun 25, 2007 at 02:43:32PM +0400, Oleg Nesterov wrote:
-> > > > 
-> > > > Sadly, you can't use srcu/qrcu because it doesn't handle timeouts.	
-> > > 
-> > > Interesting...  So the thought is to have a synchronize_srcu_timeout()
-> > > or something similar that waited for a grace period to elapse or for
-> > > a timeout to expire, whichever comes first?  It should not be too hard
-> > > to arrange something, if needed.
-> > 
-> > Yes. As for qrcu (see http://marc.info/?t=116484476500001), I think it is easy.
-> > First, we add "int interrupted" into struct qrcu_struct, then something like this
-> 
-> Even simpler, we don't need ->interrupted.
+Hi David,
 
-I have to ask...
+On 6/25/07, David Jones <djones@rossove.com> wrote:
+>  Ok I have tried it on a Pentium-M ( 32 Bit ,) with 512 MB RAM and  Core
+> 2 Duo with 1Gig RAM  ( running SMP kernel , 2 CPUS) with same results.
+> Cant go more than ~4K addresses. I have tried them with vanilla and
+> custom kernels all  2.6.19+ versions.  Results are same on both systems ,
+> so thats the reason I am thinking that there is some limit in kernel
+>
+> >> On Jun 25 2007 12:41, Robert Iakobashvili wrote:
+> >> >> > I am getting after initial successes some errors:
+> >> >> > "rtnl_talk(): RTNETLINK answers: Cannot allocate memory"
+> >> >> > and
+> >> >> > #ip addr | wc-l is 8194.
+>
 
-What sorts of performance characteristics are needed here?  The reason
-that I ask is because putting a straight synchronize_qrcu() into a
-workqueue (or something similar) and then using a timer to provide
-any needed wakeup seems a lot simpler than rearranging the innards of
-synchronize_qrcu().
+Looking into 2.6.20 sources:
 
-(Yes, I am feeling cowardly.  Why do you ask?)
+IPv6 addresses are added via rtnetlink by:
+inet6_rtm_newaddr ()
+inet6_addr_add ()
+ipv6_add_addr (),
+where inet6_ifaddr structure is allocated by kzalloc ()
 
-						Thanx, Paul
+IPv4 addresses are added via rtnetlink by:
+inet_rtm_newaddr () with further __inet_insert_ifa ()
+inet_rtm_newaddr () allocates in_ifaddr structure by kzalloc ()
 
-> 	long synchronize_qrcu_timeout(struct qrcu_struct *qp, long tout)
-> 	{
-> 		int idx, prv;
-> 
-> 		smp_mb();
-> 		mutex_lock(&qp->mutex);
-> 
-> 		idx = qp->completed & 0x1;
-> 		prv = idx ^ 0x1;
-> 
-> 		if (unlikely(atomic_read(qp->ctr + prv))) {
-> 			// the previous call has not succeed,
-> 			// finish the wait
-> 			__wait_event_timeout(qp->wq, !atomic_read(qp->ctr + prv), tout);
-> 			if (unlikely(!tout))
-> 				goto out;
-> 		}
-> 
-> 		if (atomic_read(qp->ctr + idx) == 1)
-> 			goto out;
-> 
-> 		atomic_inc(qp->ctr + prv);
-> 		qp->completed++;
-> 
-> 		atomic_dec(qp->ctr + idx);
-> 		__wait_event_timeout(qp->wq, !atomic_read(qp->ctr + idx), tout);
-> 	out:
-> 		mutex_unlock(&qp->mutex);
-> 		smp_mb();
-> 
-> 		return tout;
-> 	}
-> 
-> Oleg.
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Structure inet6_ifaddr  is ~85-95 bytes (depending on config options,
+arch, etc),
+structure in_ifaddr is ~55-60 bytes (also depending). It looks like
+the case, when
+size does matter.
+:)
+
+When adding secondary IPv4 addresses from /proc/slabinfo is seen, that
+slab "size-64" is used, whereas for IPv6 addresses "size-128" is in use.
+
+There should be a way to make some fine tuning and, most probably, memory
+allocation for the right pool (in your case "size-128").
+I do recall some echo to /proc/slabinfo, but there were some evil details.
+
+Probably, some great people of the netdev list can advise you, how to
+increase memory resources in the right direction.
+Hopefully it explains the facts and directs you.
+
+Take care,
+
+
+Sincerely,
+Robert Iakobashvili,
+coroberti %x40 gmail %x2e com
+...........................................................
+http://curl-loader.sourceforge.net
+A web testing and traffic generation tool.
