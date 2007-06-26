@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbXFZQGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbXFZQH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbXFZQGt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 12:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXFZQGm
+	id S1758250AbXFZQH1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 12:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXFZQHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 12:06:42 -0400
-Received: from cheetah.fastcat.org ([66.92.74.248]:46660 "EHLO
-	cheetah.fastcat.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753348AbXFZQGm (ORCPT
+	Tue, 26 Jun 2007 12:07:16 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57251 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756788AbXFZQHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 12:06:42 -0400
-Date: Tue, 26 Jun 2007 12:06:37 -0400 (EDT)
-From: "Matthew \"Cheetah\" Gabeler-Lee" <cheetah-lkmlsata@fastcat.org>
-X-X-Sender: cheetah@cheetah.fastcat.org
-To: Robert Hancock <hancockr@shaw.ca>
-cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
-Subject: Re: Frequent SATA resets with sata_nv (fwd)
-In-Reply-To: <467ECBB8.2030706@shaw.ca>
-Message-ID: <alpine.DEB.0.99.0706251207230.20899@cheetah.fastcat.org>
-References: <fa.Z5bo5y2TvW4efa6slAJpcdPwqAA@ifi.uio.no>
- <467ECBB8.2030706@shaw.ca>
+	Tue, 26 Jun 2007 12:07:14 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+References: <200706251434.43863.jesse.barnes@intel.com>
+	<20070625233433.GA32306@one.firstfloor.org>
+	<200706251636.53636.jesse.barnes@intel.com>
+	<m1bqf3tu06.fsf@ebiederm.dsl.xmission.com>
+	<20070626153911.GC5244@one.firstfloor.org>
+Date: Tue, 26 Jun 2007 10:06:41 -0600
+In-Reply-To: <20070626153911.GC5244@one.firstfloor.org> (Andi Kleen's message
+	of "Tue, 26 Jun 2007 17:39:11 +0200")
+Message-ID: <m1wsxqsnse.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 24 Jun 2007, Robert Hancock wrote:
+Andi Kleen <andi@firstfloor.org> writes:
 
-> Matthew "Cheetah" Gabeler-Lee wrote:
-> > (Please cc me on replies)
-> > 
-> > I have three samsung hdds (/sys/block/sda/device/model says SAMSUNG SP2504C)
-> > in a raid configuration.  My system frequently (2-3x/day) experiences
-> > temporary lockups, which produce messages as below in my dmesg/syslog.  The
-> > system recovers, but the hang is annoying to say the least.
-> 
-> Does this drive actually support NCQ? I can't tell from this part of the  log.
+>> For the K7 and K8 cores AMD systems are exactly like Intel systems
+>> with respect to MTRRs (although AMD systems also have additional registers)
+>> For the K9 core (i.e. AMD socket F or the K8 with DDR2 support) there
+>
+> It's called K8RevE, not K9
 
-I selected that model in part because it at least claimed to support 
-NCQ.  I'm not sure if it reflects NCQ or not, but I do have 
-/sys/block/sd[abc]/device/queue_{depth,type} which show simple and 31 
-respectively.  Samsung's page for the drive also says it supports NCQ: 
-http://www.samsung.com/Products/HardDiskDrive/SpinPointPSeries/HardDiskDrive_SpinPointPSeries_SP2504C.htm
+revF not revE.  I think AMD was code-naming that K9 before the socket F
+part was released.
 
--- 
-	-Cheetah
-"Reality is that which, when you stop believing in it, doesn't go away".
-                -- Philip K. Dick
-GPG pubkey fingerprint: A57F B354 FD30 A502 795B 9637 3EF1 3F22 A85E 2AD1
+revE was the last DDR rev of the K8 core.
+
+>> is an additional mechanism that makes everything above 4G write-back
+>> cacheable without using any MTRRs.
+>
+> ... but not BIOS use this mechanism (often there are BIOS switches
+> for several MTRR models or it is just the wrong one hardcoded), so Linux 
+> should detect the broken cases.
+
+Yes. They are and I have seen at least two motherboards that fit this
+description.  I almost freaked out looking at a system with 16G and
+only 4G setup to be cached.
+
+The painful bit is I have also seen such a system with not all of the
+lower 4G cached.  Which caused some interesting booting issues.
+
+Eric
