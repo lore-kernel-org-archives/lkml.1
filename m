@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbXFZPLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbXFZPL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758431AbXFZPLo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbXFZPLc
+	id S1758554AbXFZPL4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbXFZPLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:11:32 -0400
-Received: from mail.xandmail.com ([212.155.184.97]:41551 "EHLO
-	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756500AbXFZPLa convert rfc822-to-8bit (ORCPT
+	Tue, 26 Jun 2007 11:11:34 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:46981 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756725AbXFZPLb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:11:30 -0400
-X-Greylist: delayed 2838 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jun 2007 11:11:29 EDT
-Date: Tue, 26 Jun 2007 16:24:07 +0200
-Message-Id: <JK8YO7$ED15496EC345D64436196D8FF32F355E@xandmail.com>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Cc: "jarkao2" <jarkao2@o2.pl>, "marcin\.slusarz" <marcin.slusarz@gmail.com>,
-       "shemminger" <shemminger@linux-foundation.org>,
-       "linux-net" <linux-net@vger.kernel.org>,
-       "netdev" <netdev@vger.kernel.org>
-X-XaM3-API-Version: 4.2(R3) (B21)
-X-type: 0
-X-SenderIP: 212.155.184.109
+	Tue, 26 Jun 2007 11:11:31 -0400
+Date: Tue, 26 Jun 2007 11:11:25 -0400
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
+       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
+Message-ID: <20070626151125.GD8274@rhun.ibm.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org> <200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com> <46812ADF.3060609@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46812ADF.3060609@linux.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, i have a very similar problem with 2.6.21 also;
+On Tue, Jun 26, 2007 at 08:03:59AM -0700, Arjan van de Ven wrote:
+> Muli Ben-Yehuda wrote:
+> >How much? we have numbers (to be presented at OLS later this week)
+> >that show that on bare-metal an IOMMU can cost as much as 15%-30% more
+> >CPU utilization for an IO intensive workload (netperf). It will be
+> >interesting to see comparable numbers for VT-d.
+> 
+> for VT-d it is a LOT less. I'll let anil give you his data :)
 
-2 3com NICs and they are failling randomly.
+Looking forward to it. Note that this is on a large SMP machine with
+Gigabit ethernet, with netperf TCP stream. Comparing numbers for other
+benchmarks on other machines is ... less than useful, but the numbers
+themeselves are interesting.
 
-The kernel is a basic fedora 7 kernel (2.6.21-1.3228.fc7)
-I found a bug report and added details here : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243960
-
-I'm not subcribed on this list, so please cc me if there is any questions.
-
-JB
-
-> On Tue, Jun 26, 2007 at 08:10:17AM +0200, Marcin Ślusarz wrote:
-> ... 
-> > I reproduced it on minimal config:
-> ...
-> 
-> Hm... This method is usable if you can find such minimal config
-> with which the bug cannot be reproduced. Then you can add more
-> until the bug is back. Of course, this takes time...
-> 
-> We know your hardware should be OK - since it was fine with 2.6.20.
-> We don't know how much your configs (kernel & apps) have changed.
-> Sometimes the change of kernel needs some apps to be recompiled too.
-> That's why it could be usable to try 2.6.21 from a live distro to
-> find if it's really kernel's fault.
-> 
-> And, alas, this log doesn't seem to tell nothing new...
-> 
-> Regards,
-> Jarek P.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
+Cheers,
+Muli
 
