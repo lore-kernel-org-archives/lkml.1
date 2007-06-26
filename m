@@ -1,78 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbXFZEgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbXFZErS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756381AbXFZEgP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 00:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXFZEf7
+	id S1756105AbXFZErS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 00:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbXFZErJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 00:35:59 -0400
-Received: from ozlabs.org ([203.10.76.45]:36731 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751271AbXFZEf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 00:35:58 -0400
-Subject: Re: [PATCH 1/3] Make struct jprobe.entry a void *
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: ananth@in.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
-       anil.s.keshavamurthy@intel.com
-In-Reply-To: <20070626035946.GA20460@in.ibm.com>
-References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
-	 <20070626035946.GA20460@in.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-C/Og7AIUR51gZzP8MZdc"
-Date: Tue, 26 Jun 2007 14:35:49 +1000
-Message-Id: <1182832549.6673.12.camel@concordia.ozlabs.ibm.com>
+	Tue, 26 Jun 2007 00:47:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47825 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751487AbXFZErI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 00:47:08 -0400
+Date: Mon, 25 Jun 2007 21:46:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+       rtc-linux@googlegroups.com, ab@mycable.de, mgreer@mvista.com,
+       khali@linux-fr.org, david-b@pacbell.net
+Subject: Re: [PATCH 1/2] rtc: add rtc-m41t80 driver
+Message-Id: <20070625214620.6a48a02a.akpm@linux-foundation.org>
+In-Reply-To: <20070621.020934.59464708.anemo@mba.ocn.ne.jp>
+References: <20070621.020934.59464708.anemo@mba.ocn.ne.jp>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 21 Jun 2007 02:09:34 +0900 (JST) Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
---=-C/Og7AIUR51gZzP8MZdc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> This is a new-style i2c driver for ST M41T80 series RTC chip, derived
+> from works by Alexander Bigga <ab@mycable.de> who wrote the original
+> rtc-m41txx.c based on drivers/i2c/chips/m41t00.c driver.
+> 
+> This driver supports M41T8[0-4] and M41ST8[457].  The old m41t00
+> driver supports M41T00, M41T81 and M41T85(M41ST85).  While the M41T00
+> chip is now supported by rtc-ds1307 driver, this driver does not
+> include support for the chip.
+> 
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> Signed-off-by: Alexander Bigga <ab@mycable.de>
+> Acked-by: Mark A. Greer <mgreer@mvista.com>
+>
+> ...
+>
+> +static int m41t80_probe(struct i2c_client *client)
+> +{
+> +	int i, rc = 0;
+> +	struct rtc_device *rtc = NULL;
+> +	struct rtc_time tm;
+> +	struct m41t80_platform_data *pdata = client->dev.platform_data;
+> +	const static struct m41t80_chip_info *chip;
 
-On Tue, 2007-06-26 at 09:29 +0530, Ananth N Mavinakayanahalli wrote:
-> On Tue, Jun 26, 2007 at 11:48:50AM +1000, Michael Ellerman wrote:
-> > ---
-> >=20
-> > It isn't obvious where kprobes patches should go, is anyone "the" maint=
-ainer?
-> > Instead I've just sent this to everyone who'd touched the code lately, =
-or
-> > might be otherwise interested.
->=20
-> There isn't a single maintainer for the kprobes infrastructure as it
-> contains quite a bit of low level arch specific code. The working model
-> currently is that the patches are sent to lkml with a cc to the
-> maintainers listed, as you've rightly done.
+It's a bit weird that `chip' has static storage class here.  Was that
+deliberate?
 
-OK, no worries. I guess that's a bit messy to put into a MAINTAINERS entry.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-C/Og7AIUR51gZzP8MZdc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGgJeldSjSd0sB4dIRAi1JAJ41iajk775QlaOZrIZPSjZAtmQdBgCeM3Do
-rWeTXVQ4LoPg+2calMyjoQo=
-=w/5W
------END PGP SIGNATURE-----
-
---=-C/Og7AIUR51gZzP8MZdc--
+> +	struct m41t80_data *clientdata = NULL;
+> +
+> +	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C
+> +				     | I2C_FUNC_SMBUS_BYTE_DATA)) {
+> +		rc = -ENODEV;
+> +		goto exit;
+> +	}
+> +
+> +	dev_info(&client->dev,
+> +		 "chip found, driver version " DRV_VERSION "\n");
+> +
+> +	chip = NULL;
+> +	for (i = 0; i < ARRAY_SIZE(m41t80_chip_info_tbl); i++) {
+> +		if (!strcmp(m41t80_chip_info_tbl[i].name, client->name)) {
+> +			chip = &m41t80_chip_info_tbl[i];
+> +			break;
+> +		}
+> +	}
+> +	if (!chip) {
+> +		dev_err(&client->dev, "%s is not supported\n", client->name);
+> +		rc = -ENODEV;
+> +		goto exit;
+> +	}
+> +
+> +	clientdata = kzalloc(sizeof(*clientdata), GFP_KERNEL);
+> +	if (!clientdata) {
+> +		rc = -ENOMEM;
+> +		goto exit;
+> +	}
+> +
+> +	rtc = rtc_device_register(client->name, &client->dev,
+> +				  &m41t80_rtc_ops, THIS_MODULE);
+> +	if (IS_ERR(rtc)) {
+> +		rc = PTR_ERR(rtc);
+> +		rtc = NULL;
+> +		goto exit;
+> +	}
+> +
+> +	clientdata->rtc = rtc;
+> +	clientdata->chip = chip;
+> +	i2c_set_clientdata(client, clientdata);
+> +
+> +	/* If asked, disable SQW, set SQW frequency & re-enable */
+> +	if (pdata && pdata->sqw_freq) {
+> +		rc = i2c_smbus_read_byte_data(client, M41T80_REG_ALARM_MON);
+> +		if (rc < 0)
+> +			goto sqw_err;
+> +		if (i2c_smbus_write_byte_data(client, M41T80_REG_ALARM_MON,
+> +					      rc & ~0x40) < 0 ||
+> +		    i2c_smbus_write_byte_data(client, M41T80_REG_SQW,
+> +					      pdata->sqw_freq) < 0 ||
+> +		    i2c_smbus_write_byte_data(client, M41T80_REG_ALARM_MON,
+> +					      rc | 0x40) < 0)
+> +			goto sqw_err;
+> +	}
+> +
+> +	/* Make sure HT (Halt Update) bit is cleared */
+> +	rc = i2c_smbus_read_byte_data(client, M41T80_REG_ALARM_HOUR);
+> +	if (rc < 0)
+> +		goto ht_err;
+> +
+> +	if (rc & M41T80_ALHOUR_HT) {
+> +		if (chip->features & M41T80_FEATURE_HT) {
+> +			m41t80_get_datetime(client, &tm);
+> +			dev_info(&client->dev, "HT bit was set!\n");
+> +			dev_info(&client->dev,
+> +				 "Power Down at "
+> +				 "%04i-%02i-%02i %02i:%02i:%02i\n",
+> +				 tm.tm_year + 1900,
+> +				 tm.tm_mon + 1, tm.tm_mday, tm.tm_hour,
+> +				 tm.tm_min, tm.tm_sec);
+> +		}
+> +		if (i2c_smbus_write_byte_data(client,
+> +					      M41T80_REG_ALARM_HOUR,
+> +					      rc & ~M41T80_ALHOUR_HT) < 0)
+> +			goto ht_err;
+> +	}
+> +
+> +	/* Make sure ST (stop) bit is cleared */
+> +	rc = i2c_smbus_read_byte_data(client, M41T80_REG_SEC);
+> +	if (rc < 0)
+> +		goto st_err;
+> +
+> +	if (rc & M41T80_SEC_ST) {
+> +		if (i2c_smbus_write_byte_data(client, M41T80_REG_SEC,
+> +					      rc & ~M41T80_SEC_ST) < 0)
+> +			goto st_err;
+> +	}
+> +
+> +	rc = m41t80_sysfs_register(&client->dev);
+> +	if (rc)
+> +		goto exit;
+> +
+> +	return 0;
+> +
+> +st_err:
+> +	rc = -EIO;
+> +	dev_err(&client->dev, "Can't clear ST bit\n");
+> +	goto exit;
+> +ht_err:
+> +	rc = -EIO;
+> +	dev_err(&client->dev, "Can't clear HT bit\n");
+> +	goto exit;
+> +sqw_err:
+> +	rc = -EIO;
+> +	dev_err(&client->dev, "Can't set SQW Frequency\n");
+> +
+> +exit:
+> +	if (rtc)
+> +		rtc_device_unregister(rtc);
+> +	kfree(clientdata);
+> +	return rc;
+> +}
 
