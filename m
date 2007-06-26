@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbXFZRHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbXFZRIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758650AbXFZRHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 13:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757072AbXFZRH0
+	id S1758809AbXFZRIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 13:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbXFZRIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 13:07:26 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:55719 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756714AbXFZRHZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 13:07:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dDxXDVS4FVwWPLH9ESMToGTGfzVnIaHqTAw6587xUSSpoSdXtKs90RRp51NIRBRxkPaqaMGiU2Ah1/Ry44u+RBG1Hfw8imS+QrnEhLYylSVfjgjK85vmQbfpKYXyvVRZ2E6IPsGL2ougwJ1qiyi/KVk5/DTrN9OjmIaiHN/ocJs=
-Message-ID: <6934efce0706261007x5e402eebvc528d2d39abd03a3@mail.gmail.com>
-Date: Tue, 26 Jun 2007 10:07:24 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Jared Hulbert" <jaredeh@gmail.com>, "Nick Piggin" <npiggin@suse.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linux Memory Management List" <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: vm/fs meetup in september?
-In-Reply-To: <20070626060528.GA15134@infradead.org>
+	Tue, 26 Jun 2007 13:08:13 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:2265 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757167AbXFZRIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 13:08:12 -0400
+Date: Tue, 26 Jun 2007 19:08:27 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch, v2.6.22-rc6] sys_time() speedup
+In-Reply-To: <20070626161857.GA7178@elte.hu>
+Message-ID: <Pine.LNX.4.64.0706261858350.1817@scrub.home>
+References: <20070625200601.GA18980@elte.hu> <200706252309.47467.zippel@linux-m68k.org>
+ <9a8748490706251417v10b3f24bwdf7ebd44093eaddf@mail.gmail.com>
+ <Pine.LNX.4.64.0706252356400.1817@scrub.home>
+ <9a8748490706251520g24ff7a9dk716d73e7dbfd9ec3@mail.gmail.com>
+ <20070626161857.GA7178@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070624042345.GB20033@wotan.suse.de>
-	 <6934efce0706251708h7ab8d7dal6682def601a82073@mail.gmail.com>
-	 <20070626060528.GA15134@infradead.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/25/07, Christoph Hellwig <hch@infradead.org> wrote:
-> On Mon, Jun 25, 2007 at 05:08:02PM -0700, Jared Hulbert wrote:
-> > -memory mappable swap file (I'm not sure if this one is appropriate
-> > for the proposed meeting)
->
-> Please explain what this is supposed to mean.
+Hi,
 
-If you have a large array of a non-volatile semi-writeable memory such
-as a highspeed NOR Flash or some of the similar emerging technologies
-in a system.  It would be useful to use that memory as an extension of
-RAM.  One of the ways you could do that is allow pages to be swapped
-out to this memory.  Once there these pages could be read directly,
-but would require a COW procedure on a write access.  The reason why I
-think this may be a vm/fs topic is that the hardware makes writing to
-this memory efficiently a non-trivial operation that requires
-management just like a filesystem.  Also it seems to me that there are
-probably overlaps between this topic and the recent filemap_xip.c
-discussions.
+On Tue, 26 Jun 2007, Ingo Molnar wrote:
+
+Another BTW before someone takes this seriously:
+
+> ( whether there is any correlation between a decade long fundamental
+>   suckage and stagnation of the Linux time and NTP subsystem and Roman's
+>   decade long negative feedback presence in that area of code is left up
+>   to the reader. :)
+
+That's complete bullshit.
+
+> This current ... interesting piece of Roman about a _single_ trivial 
+> unlikely() branch in do_gettimeofday() borders on the ridiculous. My 
+> patch might be wrong for various reasons, but that single
+> 'if (unlikely())' statement is not one of those reasons =B-)
+
+That's even more nonsense, that wasn't what my mail was about and Andrew 
+understood me correctly, so you could have too.
+
+Ingo, I at least know that I'm difficult to deal with and try to take this 
+into account, which is hard for me, but you don't even seem to know what 
+kind of ass you are towards people who don't suck up to you (I guess you 
+simply get away with it far too often).
+
+bye, Roman
