@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbXFZKNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXFZKTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbXFZKNV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXFZKNP
+	id S1755308AbXFZKTl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbXFZKTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:13:15 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:53851 "EHLO smtp01.cdmon.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752196AbXFZKNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:13:14 -0400
-Date: Tue, 26 Jun 2007 12:16:39 +0200
-From: DervishD <lkml@dervishd.net>
-To: Matthieu CASTET <castet.matthieu@free.fr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3] doc/oops-tracing: add Code: decode info
-Message-ID: <20070626101639.GB20178@DervishD>
-Mail-Followup-To: Matthieu CASTET <castet.matthieu@free.fr>,
-	linux-kernel@vger.kernel.org
-References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706221626.39969.ak@suse.de> <20070622094429.0910c7cb.randy.dunlap@oracle.com> <200706221923.02736.ak@suse.de> <20070622132810.3c758590.randy.dunlap@oracle.com> <E1I2159-0005AH-DS@flower> <20070623104303.a186c5a8.randy.dunlap@oracle.com> <pan.2007.06.23.20.24.29@free.fr>
-Mime-Version: 1.0
+	Tue, 26 Jun 2007 06:19:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41253 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751655AbXFZKTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 06:19:33 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1+Uw0Jh7seUC8oo/+VI9d9NDxoytoI1l0Abe+Nx6s
+	2QtTJxfS0rNtmo
+Date: Tue, 26 Jun 2007 12:20:26 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Amitabha Roy <amitabha.roy@gmail.com>
+Cc: oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: DIE_NMI_IPI to oprofile ?
+Message-ID: <20070626102026.GA19408@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Amitabha Roy <amitabha.roy@gmail.com>,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <cf9d85500706252351k68924882s2c6bc58454d1bb9b@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <pan.2007.06.23.20.24.29@free.fr>
-User-Agent: Mutt/1.4.2.3i
-Organization: DervishD
+In-Reply-To: <cf9d85500706252351k68924882s2c6bc58454d1bb9b@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Matthieu :)
-
- * Matthieu CASTET <castet.matthieu@free.fr> dixit:
-> On Sat, 23 Jun 2007 10:43:03 -0700, Randy Dunlap wrote:
+On 2007.06.25 23:51:51 -0700, Amitabha Roy wrote:
+> Hi
 > 
-> > OTOH, you also didn't supply a patch.  If you do this, I'll be glad to
-> > consider it.  If I can read it, that is.
+> >From looking at the default_do_nmi code in traps.c it seems that (at
+> least for the non BSP case, with reason=0) the die notifier chain gets
+> called with val=DIE_NMI_IPI.
 > 
-> "s|/bin/sh|/bin/bash" is so hard to do ?
+> However in the profile_exceptions_notify_handler we check for DIE_NMI
+> (and not DIE_NMI_IPI) to decide if we want to cycle through the
+> counters. This seems wrong to me unless I am missing something (which
+> must be the case, otherwise this code is broken :).
+> 
+> Can anyone help me understand this ?
 
-    Given that it happens too with "ldd", it really *is* that hard. I
-don't know why still people think that /bin/sh is always /bin/bash. If
-they want/need bash, that's ok to me, I will have it installed for such
-tasks, but they should call it "#!/bin/bash".
+notify_die(DIE_NMI, ...) is also called from nmi_watchdog_tick. So
+depending on "reason" you call:
 
-    It seems easier to say "get a real shell" (as if Bash was the only
-real shell) than fixing that bug...
+notify_die(DIE_NMI_IPI, ...)
+nmi_watchdog_tick(...)
+---> notify_die(DIE_NMI, ...)
 
-    Raúl Núñez de Arenas Coronado
+or just
 
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+notify_die(DIE_NMI, ...)
+
+HTH
+Björn
