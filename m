@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbXFZVMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbXFZVY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759325AbXFZVMz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 17:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbXFZVMq
+	id S1759117AbXFZVY2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 17:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757767AbXFZVYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 17:12:46 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:20545 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752379AbXFZVMp (ORCPT
+	Tue, 26 Jun 2007 17:24:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40906 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752379AbXFZVYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 17:12:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZQW5W6JUNDRGsR+2IsVtc6HXJ/ueKTY2a1XQe2ljPKXxvh0ol+s/IBaok4Ul7xzYcnvfUcckPvQ81PJ1PKOUJglbDu2hcTz7K6Ezu25L4Pil0Db9DVzj0TvzSmHMt1dYn5ELcSEaJPxyaLt/oG27xjzpwjv77j0HGXJa1WZ9Vco=
-Message-ID: <68676e00706261412q3ed671bdg4246d6702d70abde@mail.gmail.com>
-Date: Tue, 26 Jun 2007 23:12:44 +0200
-From: Luca <kronos.it@gmail.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Subject: Re: [PATCH] atl1: disable 64bit DMA
-Cc: "Jay Cliburn" <jacliburn@bellsouth.net>, "Chris Snook" <csnook@redhat.com>,
-       "Jay L. T. Cornwall" <jay@esuna.co.uk>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <46804CFC.4000702@pobox.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 26 Jun 2007 17:24:20 -0400
+Date: Tue, 26 Jun 2007 14:23:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] remove nobh_{prepare,commit}_write()
+Message-Id: <20070626142320.9336df5b.akpm@linux-foundation.org>
+In-Reply-To: <1182890938.11569.27.camel@kleikamp.austin.ibm.com>
+References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
+	<20070614221555.GY3588@stusta.de>
+	<20070626133203.d1aa5383.akpm@linux-foundation.org>
+	<1182890938.11569.27.camel@kleikamp.austin.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <467B12CA.5060405@esuna.co.uk>
-	 <20070624164519.04f215b8@osprey.hogchain.net>
-	 <467FB237.2030703@esuna.co.uk> <467FB844.6060702@bellsouth.net>
-	 <20070625211855.GA19275@dreamland.darkstar.lan>
-	 <46803557.50805@redhat.com> <468038FC.6090302@esuna.co.uk>
-	 <46803A40.4070009@redhat.com>
-	 <20070625180039.4f083846@osprey.hogchain.net>
-	 <46804CFC.4000702@pobox.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/26/07, Jeff Garzik <jgarzik@pobox.com> wrote:
-> Jay Cliburn wrote:
-> > On Mon, 25 Jun 2007 17:57:20 -0400
-> > Chris Snook <csnook@redhat.com> wrote:
-> >
-> >> Jay L. T. Cornwall wrote:
-> >>> Chris Snook wrote:
-> >>>
-> >>>> What boards have we seen this on?  It's quite possible this is:
-> >>> I can reproduce on an Asus P5K with a Core 2 Duo E6600.
-> >>>
-> >>> lspci identifies the controller as:
-> >>>   02:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit
-> >>>   Ethernet Adapter (rev b0)
-> >>>
-> >>> dmesg notes the PCI-DMA mapping implementation:
-> >>>   PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-> >>>
-> >> I had a hunch this was on Intel.  I'd rather just disable this when
-> >> swiotlb is in use, unless we get more complaints.  It's probably
-> >> ultimately a BIOS quirk anyway.
-> >
-> > So far we have reports from both camps:
-> >
-> > Asus M2N8-VMX (AM2):  1 report of lockup
-> > http://sourceforge.net/mailarchive/forum.php?thread_name=46780384.063603.26165%40m12-15.163.com&forum_name=atl1-devel
-> >
-> > Asus P5K (LGA775):    2 reports of lockups
-> > http://sourceforge.net/mailarchive/forum.php?thread_name=467E7E34.4010603%40gmail.com&forum_name=atl1-devel
-> > http://lkml.org/lkml/2007/6/25/107
-> >
-> > The common denominator in these reports is 4GB RAM.
->
-> Although its possible this device doesn't really support 64-bit, it's
-> more likely that this is a platform problem of some sort, or a driver
-> bug of some sort.  In the driver, maybe it has a problem when you
-> -cross- a 4GB boundary, which is not uncommon.
+On Tue, 26 Jun 2007 15:48:58 -0500
+Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
 
-I don't follow you :| What kind "common" mistakes should we check for
-in the driver?
+> On Tue, 2007-06-26 at 13:32 -0700, Andrew Morton wrote:
+> > On Fri, 15 Jun 2007 00:15:55 +0200
+> > Adrian Bunk <bunk@stusta.de> wrote:
+> > 
+> > > nobh_{prepare,commit}_write() are no longer used.
+> > 
+> > wth?  What happened to ext2 and ext3 nobh mode?  They seem to
+> > have magically and unchangeloggedly disappeared?
+> 
+> They were removed with Nick's new aops patches.
+           ^secretly
+> 
 
-Luca
+That much I worked out for myself.  It's kinda staggering that a fairly
+major feature in two fairly major filesystems got removed without even a
+mention in the changelog.  I don't recall having seen it discussed in email
+but I obviously missed that bit.
+
+Look, I'm one micron from just dropping the whole lot.  These changes
+simply have not received the amount of energy, effort, care, attention and
+testing which a change of this magnitude requires.
+
