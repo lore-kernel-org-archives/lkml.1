@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763048AbXFZXbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763234AbXFZXb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763048AbXFZXbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762417AbXFZX1T
+	id S1763234AbXFZXb5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762560AbXFZXat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:27:19 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57443 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762507AbXFZX1Q (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:27:16 -0400
-Date: Wed, 27 Jun 2007 09:26:49 +1000
-From: David Chinner <dgc@sgi.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, suparna@in.ibm.com, cmm@us.ibm.com,
-       xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070626232649.GR31489@sgi.com>
-References: <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625215239.GK5181@schatzie.adilger.int>
-Mime-Version: 1.0
+	Tue, 26 Jun 2007 19:30:49 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:48456 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1762927AbXFZXas (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:30:48 -0400
+To: david@lang.hm
+Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706172319.22381.a1426z@gawab.com>
+	<200706260717.19677.a1426z@gawab.com>
+	<orzm2n44s8.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706261344.23906.a1426z@gawab.com>
+	<or8xa64p4h.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706261013230.23285@asgard.lang.hm>
+	<orr6ny33hu.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706261307310.23285@asgard.lang.hm>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Tue, 26 Jun 2007 20:30:24 -0300
+In-Reply-To: <Pine.LNX.4.64.0706261307310.23285@asgard.lang.hm> (david@lang.hm's message of "Tue\, 26 Jun 2007 13\:08\:52 -0700 \(PDT\)")
+Message-ID: <orbqf21egf.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070625215239.GK5181@schatzie.adilger.int>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 03:52:39PM -0600, Andreas Dilger wrote:
-> On Jun 25, 2007  19:15 +0530, Amit K. Arora wrote:
-> > +#define FA_FL_DEALLOC	0x01 /* default is allocate */
-> > +#define FA_FL_KEEP_SIZE	0x02 /* default is extend/shrink size */
-> > +#define FA_FL_DEL_DATA	0x04 /* default is keep written data on DEALLOC */
-> 
-> In XFS one of the (many) ALLOC modes is to zero existing data on allocate.
+On Jun 26, 2007, david@lang.hm wrote:
 
-No, none of the XFS allocation modes do that.
+>> However, if the site takes the sources out, you're still responsible
+>> for providing sources to those who received the sources from you from
+>> that point on.  Or something like that, IANAL ;-)
 
-XFS_IOC_ALLOCSP, which does write zeros to disk, only allocates and
-writes zeros in the range between the old file size and the new file size.
-XFS_IOC_RESVSP, which alocates unwritten extents, only allocates
-where extents do not currently exist. It does not zero existing
-extents.
+> this sounds like a step backwards, you may not have the sources at
+> that point if you were relying on the other site to host them.
 
-IOWs, you can't overwrite existing data with XFS preallocation.
+You should have them.  This provision is not an excuse from your
+obligations, it's just a pragmatic concession.
 
-Cheers,
+> and by the way, internet access never was a barrier that could stop
+> someone from obtaining them
 
-Dave.
+Back when GPLv2 was written, it really was.
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
