@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbXFZAw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbXFZA4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbXFZAw4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 20:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXFZAwt
+	id S1753578AbXFZA4L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 20:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbXFZAz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 20:52:49 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:46759 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbXFZAwt (ORCPT
+	Mon, 25 Jun 2007 20:55:58 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52803 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbXFZAz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 20:52:49 -0400
-Subject: Re: [RFC PATCH 0/6] Convert all tasklets to workqueues
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Hellwig <hch@infradead.org>,
-       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, matthew.wilcox@hp.com,
-       kuznet@ms2.inr.ac.ru, Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <10203.1182816012@lwn.net>
-References: <10203.1182816012@lwn.net>
-Content-Type: text/plain
-Date: Mon, 25 Jun 2007 20:52:34 -0400
-Message-Id: <1182819154.5493.234.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 25 Jun 2007 20:55:57 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+References: <200706251434.43863.jesse.barnes@intel.com>
+	<20070625233433.GA32306@one.firstfloor.org>
+	<200706251636.53636.jesse.barnes@intel.com>
+Date: Mon, 25 Jun 2007 18:54:49 -0600
+In-Reply-To: <200706251636.53636.jesse.barnes@intel.com> (Jesse Barnes's
+	message of "Mon, 25 Jun 2007 16:36:52 -0700")
+Message-ID: <m1bqf3tu06.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-25 at 18:00 -0600, Jonathan Corbet wrote:
-> A couple of days ago I said:
-> 
-> > The cafe_ccic (OLPC) camera driver uses a tasklet to move frames out of
-> > the DMA buffers in the streaming I/O path....
-> > 
-> > Obviously some testing is called for here.  I will make an attempt to do
-> > that testing
-> 
-> I've done that testing - I have an OLPC B3 unit running V2 of the
-> tasklet->workqueue patch, and all seems well.  30 FPS to the display and
-> no dropped frames.  The tasklets/0 process is running 3-5% CPU, in case
-> that's interesting.  For whatever reason, I see about 3% *more* idle
-> time when running just mplayer than I did without the patch.
-> 
-> Consider my minor qualms withdrawn, there doesn't seem to be any trouble
-> in this area.
+Jesse Barnes <jesse.barnes@intel.com> writes:
 
-Jon, thanks a lot!
+> On Monday, June 25, 2007 4:34:33 Andi Kleen wrote:
+>> > This patch fixes a bug in the last patch that caused the code to
+>> > run on non-Intel machines (AMD machines apparently don't need it
+>>
+>> Actually the problem can happen on AMD too, but the symptoms can
+>> be different and there can be more wrong than just the MTRRs.
+>
+> I should have been more specific in the changelog.  My understanding is 
+> that AMD systems don't need it for memory above 4G, and since the code 
+> doesn't handle holes (no test systems, nor any real reports that I've 
+> seen), it's not that useful for finding problems below 4G.  We can 
+> always change that later if needed though.
 
-This is great news. I wonder if converting tasklets to work queues also
-helps with other softirqs.  Before, softirqs could not preempt a
-tasklet, since tasklets run as a softirq. With tasklets as work queues,
-what's left as a softirq can now preempt tasklets. Perhaps this can even
-help with performance.
+For the K7 and K8 cores AMD systems are exactly like Intel systems
+with respect to MTRRs (although AMD systems also have additional registers)
+For the K9 core (i.e. AMD socket F or the K8 with DDR2 support) there
+is an additional mechanism that makes everything above 4G write-back
+cacheable without using any MTRRs.
 
--- Steve
-  
+So only on the very latest AMD cpus would this code not be applicable.
 
+Eric
