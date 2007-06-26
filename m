@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbXFZONS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbXFZOU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbXFZONS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 10:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbXFZONI
+	id S1757396AbXFZOU2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 10:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbXFZOUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 10:13:08 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:47096
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750827AbXFZONH (ORCPT
+	Tue, 26 Jun 2007 10:20:16 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:22990 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752236AbXFZOUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 10:13:07 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH] hw_random: add quality categories
-Date: Tue, 26 Jun 2007 16:12:26 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200706241555.22957.mb@bu3sch.de> <20070626031340.GQ11166@waste.org>
-In-Reply-To: <20070626031340.GQ11166@waste.org>
+	Tue, 26 Jun 2007 10:20:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=rqMi0PZLVSSQx1w1H5sJjYnK5Tnq+nE8ncvRAhmY0rNwAf59n4sm66zrfkcHJFI+JB8rLsjorUDeUt8iLv6/VSfWkK9RdeYZRaHuUWuFjLaW7XUQL5VxAf4YaL6iBSNJdFz9tnQR1Yf/ZvH7HG4wiH/C9q+JHLufQIVmNEXohSQ=
+Message-ID: <20f65d530706260720w797861fuc4e10bbbe2a489d2@mail.gmail.com>
+Date: Wed, 27 Jun 2007 02:20:12 +1200
+From: "Keith Chew" <keith.chew@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: usb_fill_bulk_urb() broken for USB1.1?
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706261612.27184.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 June 2007 05:13:41 Matt Mackall wrote:
-> On Sun, Jun 24, 2007 at 03:55:22PM +0200, Michael Buesch wrote:
-> > This adds quality categories for hardware random number generators.
-> > 
-> ...
-> > +
-> > +/**
-> > + * enum hwrng_quality - Quality identifier for RNG hardware
-> > + * @HWRNG_QUAL_HIGH:	High quality RNG. Higher quality than
-> > + * 			what is found on the usual PC mainboards.
-> > + * 			Use that for special dedicated RNG
-> > + * 			extension boards.
-> > + * @HWRNG_QUAL_NORMAL:	PC-onboard-RNG devices.
-> > + * @HWRNG_QUAL_LOW:	Low quality RNG devices. Use this for
-> > + * 			devices which gather the entropy from possibly
-> > + * 			bad sources, like the network.
-> > + * @HWRNG_QUAL_PSEUDO:	Pseudo RNG device. Use this for devices
-> > + * 			which are not RNG devices by definition, but
-> > + * 			could be used as such. For example various
-> > + * 			hardware sensors, like a motion sensor.
-> > + */
-> 
-> I don't think these definitions are very useful.
-...
+Hi
 
-No wait. You are missing the whole point of this
-quality category.
-The whole point of it is to prevent defaulting to a bad RNG, if
-there's a bad and a good one in a machine.
-Well, what's bad.
-It's easy. HWRNGs like the one in bcm43xx are bad.
-It's proprietary and nobody knows what it does (I guess
-it gathers the entropy from the network or something
-and hashes that in hardware).
-So such a device would be QUAL_LOW.
-_All_ HWRNGs that are shipped onboard in machines are
-QUAL_NORMAL. There's no point in prefering an intel RNG
-over and AMD RNG, although there might be differences.
-These quality categories are only a _rough_ estimation
-of how good the device is.
-The reference frame for this estimation are the normal
-onboard (or on-CPU) RNGs that are shipped.
+We have been using a Zydas based WIFI drivers under kernel 2.6.16.18
+with great success. Recently, when we upgraded to 2.6.20.1 (also
+tested on 2.6.21.5), we found that during initialisation, these calls
+works with USB2.0 but stopped working on USB1.1:
 
-This is _not_ a test to rule out your RNG extender board
-for 10,000USD against the one which costs 100,000USD. They
-would _both_ get QUAL_HIGH. So it's up to the user which
-one of the devices he uses. But the important thing is that
-this quality categories prevent the kernel from _defaulting_
-to the in-CPU RNG, while a 10,000USD extender card is installed.
+usb_fill_bulk_urb();
+usb_submit_urb();
 
-QUAL_LOW and QUAL_PSEUDO are _not_ to be used for real
-HWRNGs. These categories are only for devices that can be used
-to get entropy, _if_ there's nothing better in the machine.
+The error code returned is -22 (-EINVAL). In 2.6.16.18, it works for
+both USB2.0 and 1.1.
 
-Of would you like to generate your keys from entropy gathered
-by your wireless-card, while you have a perfectly fine RNG in
-your shiny CPU? This patch prevents that.
-And you can still switch to your crappy wireless-card, if you
-like that, in sysfs.
+When we change to use usb_fill_int_urb(), it then works for USB1.1,
+but takes up to 15 seconds (usually less than 5 seconds) for the
+driver to initialise. Also, usb_fill_int_urb() does not work for
+USB2.0 (kernel panic).
 
--- 
-Greetings Michael.
+Can anyone point us to the right direction on how to get
+usb_fill_bulk_urb() working on USB1.1? We need this as not all of the
+deployed machines have USB2.0 enabled.
+
+Regards
+Keith
