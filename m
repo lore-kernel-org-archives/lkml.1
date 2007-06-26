@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbXFZQXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbXFZQZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbXFZQXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 12:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXFZQXr
+	id S1758416AbXFZQZt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 12:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbXFZQZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 12:23:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33406 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752356AbXFZQXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 12:23:46 -0400
-Message-ID: <46813D1C.9080107@redhat.com>
-Date: Tue, 26 Jun 2007 12:21:48 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Tue, 26 Jun 2007 12:25:43 -0400
+Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:44532 "EHLO
+	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356AbXFZQZm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 12:25:42 -0400
+Date: Tue, 26 Jun 2007 12:25:41 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Message-ID: <20070626162541.GA5464@delft.aura.cs.cmu.edu>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622013417.GT21478@ftp.linux.org.uk> <20070622041949.GA15625@thunk.org> <orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br> <20070625132853.GH10008@csclub.uwaterloo.ca> <orhcov7qsz.fsf@oliva.athome.lsd.ic.unicamp.br> <20070626041013.GG24745@delft.aura.cs.cmu.edu> <orvedb4433.fsf@oliva.athome.lsd.ic.unicamp.br> <ormyyn40o9.fsf@oliva.athome.lsd.ic.unicamp.br>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Ingo Molnar <mingo@elte.hu>, John Stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sys_time-speedup-small-cleanup
-References: <20070626123424.GA259@tv-sign.ru>
-In-Reply-To: <20070626123424.GA259@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ormyyn40o9.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Jan Harkes <jaharkes@cs.cmu.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> on top of sys_time-speedup.patch
+On Tue, Jun 26, 2007 at 04:47:34AM -0300, Alexandre Oliva wrote:
+> On Jun 26, 2007, Alexandre Oliva <oliva@lsd.ic.unicamp.br> wrote:
+> > On Jun 26, 2007, Jan Harkes <jaharkes@cs.cmu.edu> wrote:
+> >> You could argue that they do not restrict copying, distribution
+> >> and modification of the sources in general, only of the specific copy
+> >> they distribute.
 > 
-> Ingo Molnar wrote:
->>  asmlinkage long sys_time(time_t __user * tloc)
->>  {
->> -	time_t i;
->> -	struct timeval tv;
->> +	/*
->> +	 * We read xtime.tv_sec atomically - it's updated
->> +	 * atomically by update_wall_time(), so no need to
->> +	 * even read-lock the xtime seqlock:
->> +	 */
->> +	time_t i = xtime.tv_sec;
->>  
->> -	do_gettimeofday(&tv);
->> -	i = tv.tv_sec;
->> +	smp_rmb(); /* sys_time() results are coherent */
+> > "We don't oppose that you do any of these things, once you get the
+> > source code.  We just make it difficult (hopefully impossible) that
+> > you'll get to the source code in the first place."
 > 
-> Why do we need this barrier? My guess it is needed to prevent
-> the reading of xtime.tv_sec twice, yes? In that case a simple
-> barrier() should be enough.
+> Actually, they could even claim you don't need the source code to make
+> modifications.  The license even says the source code is the most
+> convenient form to make modifications, not the only form.  Now, that
+> the others suck rocks is not their fault, is it? ;-)
 
-Without the smp_rmb, you can potentially have a situation where one CPU is still 
-reading an old value from cache while another has the new value.  It's generally 
-a rather small race window on most architectures, but very bad things can happen 
-if time ever goes backwards, so it's worth the overhead of maintaining coherence 
-on smp.
+GPLv2 section 3.
+    The source code for a work means the preferred form of the work for
+    making modifications to it.
 
-	-- Chris
+I believe this states that the source code has to be in the preferred
+form for making modifications and not some other form that sucks rocks.
 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> 
-> --- t/kernel/time.c~	2007-06-26 16:28:59.000000000 +0400
-> +++ t/kernel/time.c	2007-06-26 16:32:09.000000000 +0400
-> @@ -64,7 +64,7 @@ asmlinkage long sys_time(time_t __user *
->  	 */
->  	time_t i = xtime.tv_sec;
->  
-> -	smp_rmb(); /* sys_time() results are coherent */
-> +	barrier(); /* sys_time() results are coherent */
->  
->  	if (tloc) {
->  		if (put_user(i, tloc))
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+As far as your argument that making it difficult or impossible to obtain
+the source code could be in compliance. I don't see how (intentionally)
+making something difficult could not be interpreted as a restriction so
+it still violates section 6 of the GPLv2.
+
+And yes, I do realize that you intentionally tried to come up with your
+example to somehow bring tivoization to the source code. However
+although the GPLv2 doesn't address the freedom to use (and specifically
+does not grants the user a right to run a modified version of the
+program on some specific piece of hardware), it does (try) to address
+the recipients rights to copy, distribute and modify.
+
+Jan
 
