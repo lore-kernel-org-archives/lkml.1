@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbXFZPde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbXFZPeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbXFZPde (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbXFZPd1
+	id S1758725AbXFZPeT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757413AbXFZPeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:33:27 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:63893 "EHLO smtp01.cdmon.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755842AbXFZPd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:33:26 -0400
-Date: Tue, 26 Jun 2007 17:36:56 +0200
-From: DervishD <lkml@dervishd.net>
-To: Arne Georg Gleditsch <argggh@dolphinics.no>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Oleg Verych <olecom@flower.upol.cz>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3] doc/oops-tracing: add Code: decode info
-Message-ID: <20070626153656.GB27438@DervishD>
-Mail-Followup-To: Arne Georg Gleditsch <argggh@dolphinics.no>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Oleg Verych <olecom@flower.upol.cz>, Andi Kleen <ak@suse.de>,
-	lkml <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org
-References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706221626.39969.ak@suse.de> <20070622094429.0910c7cb.randy.dunlap@oracle.com> <200706221923.02736.ak@suse.de> <20070622132810.3c758590.randy.dunlap@oracle.com> <E1I2159-0005AH-DS@flower> <20070623104303.a186c5a8.randy.dunlap@oracle.com> <87645bhtvw.fsf@pelargir.dolphinics.no>
+	Tue, 26 Jun 2007 11:34:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42013 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755842AbXFZPd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 11:33:59 -0400
+Date: Tue, 26 Jun 2007 17:33:58 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
+       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
+Message-ID: <20070626153358.GA5244@one.firstfloor.org>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org> <200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com> <p73645a675q.fsf@bingen.suse.de> <46812D79.8080306@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87645bhtvw.fsf@pelargir.dolphinics.no>
-User-Agent: Mutt/1.4.2.3i
-Organization: DervishD
+In-Reply-To: <46812D79.8080306@linux.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Arne :)
-
- * Arne Georg Gleditsch <argggh@dolphinics.no> dixit:
-> Randy Dunlap <randy.dunlap@oracle.com> writes:
-> > OTOH, you also didn't supply a patch.  If you do this, I'll be
-> > glad to consider it.  If I can read it, that is.
+On Tue, Jun 26, 2007 at 08:15:05AM -0700, Arjan van de Ven wrote:
+> >
+> >Also the user interface for X server case needs more work.
+> >
 > 
-> I like bash as much as the next guy, but (to my surprise) /bin/sh on
-> my current workstation is actually dash.
+> actually with the mode setting of X moving into the kernel... X won't 
+> use /dev/mem anymore at all
 
-    You're probably using Ubuntu, am I right? I have a do-it-yourself
-Linux box and my /bin/sh is dash. It is POSIX compliant, small and
-lightning fast. I use as a reference shell. I have installed zsh and
-bash, too, and sometimes I have to relink /bin/sh to point to /bin/bash
-so certain scripts work...
+We'll see if that happens. It has been talked about forever,
+but results are sparse. 
 
-    Raúl Núñez de Arenas Coronado
+> (and I think it mostly already doesn't even without that)
 
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+It uses /sys/bus/pci/* which is not any better as seen from the IOMMU.
+
+Any interface will need to be explicit because user space needs to know which
+DMA addresses to put into the hardware. It's not enough to just transparently
+translate the mappings.
+
+-Andi
+
