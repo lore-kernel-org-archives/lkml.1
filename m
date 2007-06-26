@@ -1,55 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbXFZI5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbXFZI7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbXFZI5g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 04:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbXFZI52
+	id S1756408AbXFZI7g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 04:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbXFZI7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 04:57:28 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:21891 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbXFZI50 (ORCPT
+	Tue, 26 Jun 2007 04:59:30 -0400
+Received: from web63506.mail.re1.yahoo.com ([69.147.97.61]:25992 "HELO
+	web63506.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751748AbXFZI73 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 04:57:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Z7mFqgKIqVj29cfTcljjztmG05aaghIMEmcj6xNc/Xxs8sYyqK3UpYW1tom935GzszMBFexviW6ld+OBYkJIcIGB4y6K2aWzG8WVT+ght0FqCIbsdF6UOc6sOey4Repw6N3gVvUTLBfUy9K3dYa+EO6tqCKhuXXmjYOs3Q+N8E0=
-Subject: Re: Add INPUT support to toshiba_acpi
-From: Richard Hughes <hughsient@gmail.com>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Cc: John Belmonte <john@neggie.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Bastien Nocera <hadess@hadess.net>
-In-Reply-To: <200706260703.22994.eike-kernel@sf-tec.de>
-References: <1180614979.2693.26.camel@localhost.localdomain>
-	 <200706231656.39597.eike-kernel@sf-tec.de> <1182765156.2519.0.camel@work>
-	 <200706260703.22994.eike-kernel@sf-tec.de>
-Content-Type: text/plain
-Date: Tue, 26 Jun 2007 09:56:35 +0100
-Message-Id: <1182848195.2335.0.camel@work>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jun 2007 04:59:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=zVFLX9nI1xtqeETaKLIDa+8vv5cWA1tsHwkzVps5i4JpPoyUKcBpfDIqADUdbV4AUp5KSxURE6V4huuh9ltlgwg713kF/EGBMQOVvsXNjtbc3mI2/+X8jGhkbqEJYhDGju744qkBaInOp+1PdBj3LYCQxXTo1uBm911eY8MQxaQ=;
+X-YMail-OSG: z9OAcJsVM1mnqC27Bmhz0wSF5JuHwEGYeGm8viRKQ_7udbqoWwl1Ik94zlrifhYgNLQKEQNev8J2mdQoDYEQMJp55kBOD_luuFcVCviJRyxJhCN9Iwy9tpXHcaAqMw--
+Date: Tue, 26 Jun 2007 01:59:28 -0700 (PDT)
+From: Ioannis Barkas <risc4all@yahoo.com>
+Subject: [PATCH] gadget_serial.txt: Documentation clarifications and new windows driver!
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="0-1674708561-1182848368=:94413"
+Content-Transfer-Encoding: 8bit
+Message-ID: <188708.94413.qm@web63506.mail.re1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-26 at 07:03 +0200, Rolf Eike Beer wrote:
-> Richard Hughes wrote:
-> > On Sat, 2007-06-23 at 16:56 +0200, Rolf Eike Beer wrote:
-> > > None of the above keys generated a key event. Neither does
-> "Brightness
-> > > down", but it still works. "Brightness up" generates an event and
-> works.
-> > > Kpowersave tells me it can't do brightness switching in software
-> (which
-> > > works in WinXtraPain).
-> Yes, I need a special process running for this. Would it be of some
-> use if I take a look with IRPtracker on it or is that all you need to
-> know?
+--0-1674708561-1182848368=:94413
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Content-Id: 
+Content-Disposition: inline
 
-Yes, although this is out of my area or expertise, sorry.
+Fixes errors and supports multiple
+architectures.Corrected errors and warnings are:
 
-Richard.
+Errors:
+(E22.1.1003) Section [SourceDisksNames] not defined. 
+(E22.1.1017) Primary revision number must be greater
+than 0. 
+(E22.1.1110) File "usbser.sys" is not listed in the
+[SourceDisksFiles]. 
+
+Warnings:
+(W22.1.2111) [SourceDisksFiles] section not defined -
+full CopyFiles checking not done. 
+(W22.1.2034) No destination dir was defined for this
+section. Your driver is being
+copied to the DefaultDestDir location specified
+(10,System32\Drivers). 
 
 
+
+
+Hello we are Ioannis Barkas (risc4all@yahoo.com) and
+Nikos Barkas (doubl3nuts@yahoo.com).
+
+
+There are some errors in
+linux-2.6.21/Documentation/usb/gadget_serial.txt.
+After fixing the errors, we thought to add support in
+it for newer ms OSes.
+
+We were ...surprised on the first place to see .inf
+files inside the Linux kernel!
+
+The original text file contains a windows information
+file which is not correct. 
+Moreover the .inf file in it has 4 errors and 2
+warnings while ours has one
+error(the .cat which is commented as the driver is not
+digitally signed) and no warning.
+We also modified a documentation section referring to
+windows 98 as the usbser.sys is not
+included in any driver**.cab as the text suggests in
+contrast to win Me where it is
+supplied. Furthermore, the original .inf was outdated
+for AMD64 and IA64 systems as it
+was limited to work on 32 bit architectures while our
+new one works in three architectures
+[supposing that ms supplies usbser.sys in IA64
+media-we do not have such media or system
+for verification].The driver is suitable for Windows
+98,Me,2000,XP,2003,Vista.
+
+    Cc: Al Borchers <alborchers@steinerpoint.com>
+
+We sent the patch from diff -u as an attachment
+because damn yahoo...can't even format an inline patch!
+
+
+       
+____________________________________________________________________________________
+Need a vacation? Get great deals
+to amazing places on Yahoo! Travel.
+http://travel.yahoo.com/
+--0-1674708561-1182848368=:94413
+Content-Type: application/octet-stream; name="diff0.log"
+Content-Transfer-Encoding: base64
+Content-Description: 899990148-diff0.log
+Content-Disposition: attachment; filename="diff0.log"
+
+LS0tIC9saW51eC0yLjYuMjEvRG9jdW1lbnRhdGlvbi91c2IvZ2FkZ2V0X3Nl
+cmlhbC50eHQJMjAwNy0wNC0yNiAwNDowODozMi4wMDAwMDAwMDAgKzAzMDAK
+KysrIC9saW51eC9Eb2N1bWVudGF0aW9uL3VzYi9nYWRnZXRfc2VyaWFsLnR4
+dAkyMDA3LTA2LTEyIDEzOjIwOjEyLjAwMDAwMDAwMCArMDMwMApAQCAtMSw2
+ICsxLDYgQEAKIAotICAgICAgICAgICAgICAgICBMaW51eCBHYWRnZXQgU2Vy
+aWFsIERyaXZlciB2Mi4wCi0gICAgICAgICAgICAgICAgICAgICAgICAgICAx
+MS8yMC8yMDA0CisgICAgICAgICAgICAgICAgIExpbnV4IEdhZGdldCBTZXJp
+YWwgRHJpdmVyIHYzLjEKKyAgICAgICAgICAgICAgICAgICAgICAgICAgIDA2
+LzExLzIwMDcKIAogCiBMaWNlbnNlIGFuZCBEaXNjbGFpbWVyCkBAIC0zNyw4
+ICszNyw4IEBACiBUaGlzIGRvY3VtZW50IGFzc3VtZXMgdGhhdCB5b3UgYXJl
+IGZhbWlsaWFyIHdpdGggTGludXggYW5kCiBXaW5kb3dzIGFuZCBrbm93IGhv
+dyB0byBjb25maWd1cmUgYW5kIGJ1aWxkIExpbnV4IGtlcm5lbHMsIHJ1bgog
+c3RhbmRhcmQgdXRpbGl0aWVzLCB1c2UgbWluaWNvbSBhbmQgSHlwZXJUZXJt
+aW5hbCwgYW5kIHdvcmsgd2l0aAotVVNCIGFuZCBzZXJpYWwgZGV2aWNlcy4g
+IEl0IGFsc28gYXNzdW1lcyB5b3UgY29uZmlndXJlIHRoZSBMaW51eAotZ2Fk
+Z2V0IGFuZCB1c2IgZHJpdmVycyBhcyBtb2R1bGVzLgorVVNCIGFuZCBzZXJp
+YWwgZGV2aWNlcy4gIEl0IGFsc28gYXNzdW1lcyB0aGF0IHlvdSBjYW4gY29u
+ZmlndXJlCit0aGUgTGludXggZ2FkZ2V0IGFuZCB1c2IgZHJpdmVycyBhcyBt
+b2R1bGVzLgogCiAKIE92ZXJ2aWV3CkBAIC0xMDAsNyArMTAwLDcgQEAKIFRv
+IHVzZSB0aGUgZ2FkZ2V0IHNlcmlhbCBkcml2ZXIgeW91IG11c3QgY29uZmln
+dXJlIHRoZSBMaW51eCBnYWRnZXQKIHNpZGUga2VybmVsIGZvciAiU3VwcG9y
+dCBmb3IgVVNCIEdhZGdldHMiLCBmb3IgYSAiVVNCIFBlcmlwaGVyYWwKIENv
+bnRyb2xsZXIiIChmb3IgZXhhbXBsZSwgbmV0MjI4MCksIGFuZCBmb3IgdGhl
+ICJTZXJpYWwgR2FkZ2V0IgotZHJpdmVyLiAgQWxsIHRoaXMgYXJlIGxpc3Rl
+ZCB1bmRlciAiVVNCIEdhZGdldCBTdXBwb3J0IiB3aGVuCitkcml2ZXIuICBB
+bGwgdGhlc2UgYXJlIGxpc3RlZCB1bmRlciAiVVNCIEdhZGdldCBTdXBwb3J0
+IiB3aGVuCiBjb25maWd1cmluZyB0aGUga2VybmVsLiAgVGhlbiByZWJ1aWxk
+IGFuZCBpbnN0YWxsIHRoZSBrZXJuZWwgb3IKIG1vZHVsZXMuCiAKQEAgLTEz
+NywyNSArMTM3LDM5IEBACiBUbyB1c2UgdGhlIFdpbmRvd3MgQUNNIGRyaXZl
+ciB5b3UgbXVzdCBoYXZlIHRoZSBmaWxlcyAiZ3NlcmlhbC5pbmYiCiBhbmQg
+InVzYnNlci5zeXMiIHRvZ2V0aGVyIGluIGEgZm9sZGVyIG9uIHRoZSBXaW5k
+b3dzIG1hY2hpbmUuCiAKLVRoZSAiZ3NlcmlhbC5pbmYiIGZpbGUgaXMgZ2l2
+ZW4gaGVyZS4KK1RoZSAiZ3NlcmlhbC5pbmYiIGZpbGUgZm9yIHdpbmRvd3Mg
+OTgsTWUsMjAwMCxYUCwyMDAzLFZpc3RhIGlzIGdpdmVuCitiZWxvdyBhbmQg
+aGFzIHBhc3NlZCBjaGtpbmYgMi41IHRlc3RzLiAgSXQgc3VwcG9ydHMgeDg2
+LCBBTUQ2NCwgSUE2NAorc3lzdGVtcyBub3chICBJdCBoYXMgMSBub24gaW1w
+b3J0YW50IGVycm9yIGFib3V0IG1pc3NpbmcgV0hRTCBkaWdpdGFsCitzaWdu
+YXR1cmUgY2F0YWxvZyAoLmNhdCkgZmlsZSBkaXJlY3RpdmUuICBJZiBhbnlv
+bmUgd2FudHMgdG8gcGF5IG1zCitmb3IgZGlnaXRhbCBzaWduYXR1cmUsIHJl
+bW92ZSB0aGUgIjsiIGluIGZyb250IG9mIHRoZSBDYXRhbG9nRmlsZS4KIAog
+LS0tLS0tLS0tLS0tLS0tLS0tLS0gQ1VUIEhFUkUgLS0tLS0tLS0tLS0tLS0t
+LS0tLS0KIFtWZXJzaW9uXQotU2lnbmF0dXJlPSIkV2luZG93cyBOVCQiCi1D
+bGFzcz1Qb3J0cwotQ2xhc3NHdWlkPXs0RDM2RTk3OC1FMzI1LTExQ0UtQkZD
+MS0wODAwMkJFMTAzMTh9Ci1Qcm92aWRlcj0lTElOVVglCi1Ecml2ZXJWZXI9
+MDgvMTcvMjAwNCwwLjAuMi4wCitTaWduYXR1cmUgICAgPSAiJENoaWNhZ28k
+IgorQ2xhc3MgICAgICAgID0gUG9ydHMKK0NsYXNzR3VpZCAgICA9IHs0RDM2
+RTk3OC1FMzI1LTExQ0UtQkZDMS0wODAwMkJFMTAzMTh9CitQcm92aWRlciAg
+ICAgPSAlVFVYJQorRHJpdmVyVmVyICAgID0gMDYvMTEvMjAwNywzLjEuMC4w
+Cis7Q2F0YWxvZ0ZpbGUgID0gR3NlcmlhbC5jYXQKKwogOyBDb3B5cmlnaHQg
+KEMpIDIwMDQgQWwgQm9yY2hlcnMgKGFsYm9yY2hlcnNAc3RlaW5lcnBvaW50
+LmNvbSkKKzsgQ29weXJpZ2h0IChDKSAyMDA3IElvYW5uaXMgQmFya2FzIChy
+aXNjNGFsbEB5YWhvby5jb20pCis7IENvcHlyaWdodCAoQykgMjAwNyBOaWtv
+cyBCYXJrYXMgKGRvdWJsM251dHNAeWFob28uY29tKQogCiBbTWFudWZhY3R1
+cmVyXQotJUxJTlVYJT1HU2VyaWFsRGV2aWNlTGlzdAorJVRVWCU9R1Nlcmlh
+bERldmljZUxpc3QsIE5UeDg2LCBOVGFtZDY0LCBOVGlhNjQKIAogW0dTZXJp
+YWxEZXZpY2VMaXN0XQogJUdTRVJJQUwlPUdTZXJpYWxJbnN0YWxsLCBVU0Jc
+VklEXzA1MjUmUElEX0E0QTcKIAotW0Rlc3RpbmF0aW9uRGlyc10KLURlZmF1
+bHREZXN0RGlyPTEwLFN5c3RlbTMyXERyaXZlcnMKK1tHU2VyaWFsRGV2aWNl
+TGlzdC5OVHg4Nl0KKyVHU0VSSUFMJT1HU2VyaWFsSW5zdGFsbCwgVVNCXFZJ
+RF8wNTI1JlBJRF9BNEE3CisKK1tHU2VyaWFsRGV2aWNlTGlzdC5OVGFtZDY0
+XQorJUdTRVJJQUwlPUdTZXJpYWxJbnN0YWxsLCBVU0JcVklEXzA1MjUmUElE
+X0E0QTcKKworW0dTZXJpYWxEZXZpY2VMaXN0Lk5UaWE2NF0KKyVHU0VSSUFM
+JT1HU2VyaWFsSW5zdGFsbCwgVVNCXFZJRF8wNTI1JlBJRF9BNEE3CiAKIFtH
+U2VyaWFsSW5zdGFsbF0KIENvcHlGaWxlcz1HU2VyaWFsQ29weUZpbGVzCkBA
+IC0xNjQsNiArMTc4LDE2IEBACiBbR1NlcmlhbENvcHlGaWxlc10KIHVzYnNl
+ci5zeXMKIAorW1NvdXJjZURpc2tzRmlsZXNdCit1c2JzZXIuc3lzPTEKKwor
+W1NvdXJjZURpc2tzTmFtZXNdCisxPSVMaW51eF9HYWRnZXRfUm9ja3MlLCws
+CisKK1tEZXN0aW5hdGlvbkRpcnNdCitEZWZhdWx0RGVzdERpciAgICAgICAg
+ICAgPSAxMAorR1NlcmlhbENvcHlGaWxlcyAgICAgICAgID0gMTIKKwogW0dT
+ZXJpYWxBZGRSZWddCiBIS1IsLERldkxvYWRlciwsKm50a2VybgogSEtSLCxO
+VE1QRHJpdmVyLCx1c2JzZXIuc3lzCkBAIC0xODEsOSArMjA1LDEwIEBACiBM
+b2FkT3JkZXJHcm91cCA9IEJhc2UKIAogW1N0cmluZ3NdCi1MSU5VWCA9ICJM
+aW51eCIKLUdTRVJJQUwgPSAiR2FkZ2V0IFNlcmlhbCIKK1RVWCAgICAgICAg
+ICAgICAgICAgID0gIkxpbnV4IgorR1NFUklBTCAgICAgICAgICAgICAgPSAi
+R2FkZ2V0IFNlcmlhbCIKIEdTRVJJQUxfRElTUExBWV9OQU1FID0gIlVTQiBH
+YWRnZXQgU2VyaWFsIERyaXZlciIKK0xJTlVYX0dBREdFVF9ST0NLUyAgID0g
+IkxpbnV4IFVTQiBHYWRnZXQgU2VyaWFsIERyaXZlciIKIC0tLS0tLS0tLS0t
+LS0tLS0tLS0tIENVVCBIRVJFIC0tLS0tLS0tLS0tLS0tLS0tLS0tCiAKIFRo
+ZSAidXNic2VyLnN5cyIgZmlsZSBjb21lcyB3aXRoIHZhcmlvdXMgdmVyc2lv
+bnMgb2YgV2luZG93cy4KQEAgLTE5MSw4ICsyMTYsOCBAQAogCiAgIEM6XFdJ
+TkRPV1NcRHJpdmVyIENhY2hlXGkzODZcZHJpdmVyLmNhYgogCi1PciBpdCBj
+YW4gYmUgZm91bmQgb24gdGhlIFdpbmRvd3MgOThTRSBDRCBpbiB0aGUgIndp
+bjk4IiBmb2xkZXIKLWluIHRoZSAiRFJJVkVSMTEuQ0FCIiB0aHJvdWdoICJE
+UklWRVIyMC5DQUIiIGNhYiBmaWxlcy4gIFlvdSB3aWxsCitPciBpdCBjYW4g
+YmUgZm91bmQgb24gdGhlIFdpbmRvd3MgTWUgQ0QgaW4gdGhlICJ3aW45eCIg
+Zm9sZGVyCitpbiB0aGUgIkRSSVZFUjUuQ0FCIiB0aHJvdWdoICJEUklWRVI3
+LkNBQiIgY2FiIGZpbGVzLiAgWW91IHdpbGwKIG5lZWQgdGhlIERPUyAiZXhw
+YW5kIiBwcm9ncmFtLCB0aGUgQ3lnd2luICJjYWJleHRyYWN0IiBwcm9ncmFt
+LCBvcgogYSBzaW1pbGFyIHByb2dyYW0gdG8gdW5wYWNrIHRoZXNlIGNhYiBm
+aWxlcyBhbmQgZXh0cmFjdCAidXNic2VyLnN5cyIuCiAKQEAgLTIwMywxMCAr
+MjI4LDExIEBACiAKIChUaGFua3MgdG8gTmlzaGFudCBLYW1hdCBmb3IgcG9p
+bnRpbmcgb3V0IHRoaXMgRE9TIGNvbW1hbmQuKQogCi1XaGVuIHRoZSBnYWRn
+ZXQgc2VyaWFsIGRyaXZlciBpcyBsb2FkZWQgYW5kIHRoZSBVU0IgZGV2aWNl
+IGNvbm5lY3RlZAotdG8gdGhlIFdpbmRvd3MgaG9zdCB3aXRoIGEgVVNCIGNh
+YmxlLCBXaW5kb3dzIHNob3VsZCByZWNvZ25pemUgdGhlCi1nYWRnZXQgc2Vy
+aWFsIGRldmljZSBhbmQgYXNrIGZvciBhIGRyaXZlci4gIFRlbGwgV2luZG93
+cyB0byBmaW5kIHRoZQotZHJpdmVyIGluIHRoZSBmb2xkZXIgdGhhdCBjb250
+YWlucyAiZ3NlcmlhbC5pbmYiIGFuZCAidXNic2VyLnN5cyIuCitXaGVuIHRo
+ZSBnYWRnZXQgc2VyaWFsIGRyaXZlciBpcyBsb2FkZWQgYW5kIHRoZSBVU0Ig
+ZGV2aWNlIGlzCitjb25uZWN0ZWQgdG8gdGhlIFdpbmRvd3MgaG9zdCB3aXRo
+IGEgVVNCIGNhYmxlLCBXaW5kb3dzIHNob3VsZAorcmVjb2duaXplIHRoZSBn
+YWRnZXQgc2VyaWFsIGRldmljZSBhbmQgYXNrIGZvciBhIGRyaXZlci4gIFRl
+bGwKK1dpbmRvd3MgdG8gZmluZCB0aGUgZHJpdmVyIGluIHRoZSBmb2xkZXIg
+dGhhdCBjb250YWlucyAiZ3NlcmlhbC5pbmYiCithbmQgInVzYnNlci5zeXMi
+LgogCiBGb3IgZXhhbXBsZSwgb24gV2luZG93cyBYUCwgd2hlbiB0aGUgZ2Fk
+Z2V0IHNlcmlhbCBkZXZpY2UgaXMgZmlyc3QKIHBsdWdnZWQgaW4sIHRoZSAi
+Rm91bmQgTmV3IEhhcmR3YXJlIFdpemFyZCIgc3RhcnRzIHVwLiAgU2VsZWN0
+Cg==
+
+--0-1674708561-1182848368=:94413--
