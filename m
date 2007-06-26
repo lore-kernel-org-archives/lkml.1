@@ -1,40 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbXFZK6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbXFZLNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757179AbXFZK6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXFZK6m
+	id S1755935AbXFZLNM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 07:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXFZLNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:58:42 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:33873 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109AbXFZK6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:58:41 -0400
-Date: Tue, 26 Jun 2007 12:35:01 +0200 (MEST)
-Message-Id: <200706261035.l5QAZ1gb018736@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: eranian@hpl.hp.com, mikpe@it.uu.se
-Subject: Re: [PATCH 1/2] Always probe the NMI watchdog
-Cc: B.Steinbrink@gmx.de, ak@suse.de, ingo@elte.hu, levon@movementarian.org,
-       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       perfmon@napali.hpl.hp.com, wcohen@redhat.com
+	Tue, 26 Jun 2007 07:13:01 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:45925 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752653AbXFZLNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 07:13:01 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 8677] New: booting with initrd fails: request_module: runaway loop modprobe binfmt-0000
+Date: Tue, 26 Jun 2007 14:12:16 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@kernel-bugs.osdl.org>,
+       linux@solnet.ch
+References: <bug-8677-10286@http.bugzilla.kernel.org/> <20070626020256.4a03d6b2.akpm@linux-foundation.org>
+In-Reply-To: <20070626020256.4a03d6b2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2581649.GZf9DHVdhO";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200706261412.16601.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 02:57:55 -0700, Mikael Pettersson wrote:
-> > Keeping parts of the PMU HW permanently reserved whether or not
-> > the watchdog is enabled would be a BUG.
-> > 
-> True. But the upside is that you guarantee the activation of the NMI
-> watchdog will always succeed which may be a valuable property given the
-> goal of the NMI watchdog. Otherwise, if Oprofile or perfmon are active,
-> the NMI will fail to grab a single counter.
+--nextPart2581649.GZf9DHVdhO
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-That relates more to policy than mechanism. I for one don't
-consider the watchdog "sacred".
+26 Haz 2007 Sal tarihinde, Andrew Morton =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9F=
+t=C4=B1:=20
+> > I can't boot all 2.6.22_rc* kernels with an initrd. When booting I get
+> > the following message about 6 times:
+> >
+> > request_module: runaway loop modprobe binfmt-0000
+> >
+> > If I disable the initrd, booting works without problems.
+>
+> I seem to recall having seen reports of this before.  Does anyone recall
+> the reason for it?
 
-I think it's entirely reasonable that if the watchdog is disabled
-(echo 0 > /proc/sys/kernel/nmi_watchdog) in order to give the
-_full_ PMU HW to something else, then that something else needs
-to be disabled (or otherwise instructed to give up the HW) before
-the watchdog can be reenabled. If you don't want to risk not
-being able to restart the watchdog, don't disable it.
+I've hit that before, first was the misc. compiliation issue which solved b=
+y=20
+recompilation and other was related to "Load Custom Dsdt Table" [1] patch=20
+which seems the case here (boots without initramfs/initrd) if that kernel h=
+as=20
+that kind of out-of-tree patch.
+
+[1] http://gaugusch.at/kernel.shtml
+
+Cheers
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart2581649.GZf9DHVdhO
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
+
+iD8DBQBGgPSQy7E6i0LKo6YRAontAJ9TCRWhJy7ftrGqLQpK2JNmMrAo3QCfXRJ7
+jH4BfrOTrLgSxUSLBio9ekU=
+=hktV
+-----END PGP SIGNATURE-----
+
+--nextPart2581649.GZf9DHVdhO--
