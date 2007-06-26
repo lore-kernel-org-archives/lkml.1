@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbXFZR7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbXFZSJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758367AbXFZR7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 13:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbXFZR7K
+	id S1757997AbXFZSJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 14:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbXFZSJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 13:59:10 -0400
-Received: from www.tammen.de ([62.206.99.154]:57061 "EHLO mail.tammen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757235AbXFZR7J convert rfc822-to-8bit (ORCPT
+	Tue, 26 Jun 2007 14:09:51 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43244 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752379AbXFZSJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 13:59:09 -0400
-X-Greylist: delayed 2000 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jun 2007 13:59:09 EDT
-From: Heinz Ulrich Stille <hus@design-d.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Frequent SATA resets with sata_nv (fwd)
-User-Agent: KMail/1.9.7
-Cc: ide <linux-ide@vger.kernel.org>
-References: <fa.Z5bo5y2TvW4efa6slAJpcdPwqAA@ifi.uio.no> <467ECBB8.2030706@shaw.ca> <alpine.DEB.0.99.0706251207230.20899@cheetah.fastcat.org>
-In-Reply-To: <alpine.DEB.0.99.0706251207230.20899@cheetah.fastcat.org>
-X-Face: 4mP]9aFSZN&|I]TOVXU]ip[QEBP^RNKxLkj?@0A{KRjs9>QuA{bW
+	Tue, 26 Jun 2007 14:09:51 -0400
+Date: Tue, 26 Jun 2007 11:09:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <andrew@sanpeople.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Oops in a driver while using SLUB as a SLAB allocator
+In-Reply-To: <Pine.LNX.4.64.0706251953530.15624@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706261107520.18010@schroedinger.engr.sgi.com>
+References: <467A4532.40301@rfo.atmel.com> <Pine.LNX.4.64.0706220539050.11131@blonde.wat.veritas.com>
+ <alpine.LFD.0.98.0706220937271.3593@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0706221040310.17139@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706221931370.4699@blonde.wat.veritas.com>
+ <20070624083849.GA19079@flint.arm.linux.org.uk>
+ <Pine.LNX.4.64.0706241122030.27778@blonde.wat.veritas.com>
+ <20070624105152.GB14099@flint.arm.linux.org.uk>
+ <Pine.LNX.4.64.0706250120560.28286@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706250607260.5191@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706251729250.4911@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706250952490.8320@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706251804420.7592@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706251108180.8907@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706251933540.13382@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0706251147400.9332@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0706251953530.15624@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1903
-Date: Tue, 26 Jun 2007 19:29:34 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200706261929.34303.hus@design-d.de>
-X-DSPAM-Result: Whitelisted
-X-DSPAM-Processed: Tue Jun 26 19:29:47 2007
-X-DSPAM-Confidence: 0.9910
-X-DSPAM-Improbability: 1 in 11063 chance of being spam
-X-DSPAM-Probability: 0.0000
-X-DSPAM-Signature: 46814d0b207861255019845
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 26 June 2007, Matthew "Cheetah" Gabeler-Lee wrote:
-> On Sun, 24 Jun 2007, Robert Hancock wrote:
-> I selected that model in part because it at least claimed to support
-> NCQ.  I'm not sure if it reflects NCQ or not, but I do have
-> /sys/block/sd[abc]/device/queue_{depth,type} which show simple and 31
-> respectively.  Samsung's page for the drive also says it supports NCQ:
+On Mon, 25 Jun 2007, Hugh Dickins wrote:
 
-I seem to have the same problem, just not as frequent: four drives of this
-type, connected to an SiI 3132 and an nVidia MCP55; resets occur on both
-controllers, and only with this drive type, not with several Maxtor 6B200M0.
-I never thought to check, but all drives on the nv controller have NCQ
-disabled according to /sys/block. So maybe it's not (directly) NCQ related?
+> Please reread mails of the last 20 hours.  Your "ARM fix" may or may not
+> be a good thing, I don't know.  But it had nothing to do with this oops,
+> which (we believe) came from a kmalloc in drivers/mmc/core/sd.c.  There
+> are likely to be many other drivers which pass down kmalloc'ed buffers
+> to routines which handle both kmalloc'ed buffers and page buffers.
+> Though very few of those needing to flush_dcache_page.
 
-MfG, Ulrich
-
--- 
-Heinz Ulrich Stille / Tel.: +49-541-9400473 / Fax: +49-541-9400450
-design_d gmbh / Wilhelmstr. 16 / 49076 Osnabrück / www.design-d.de
-Osnabrück HRB 19116 / Geschäftsführer: Günter Tammen, Rolf Tammen
+If that is so then those functions may want to check PageSlab before 
+calling flush_dcache_page.
 
