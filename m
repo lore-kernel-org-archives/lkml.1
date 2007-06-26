@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbXFZPL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbXFZPPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758554AbXFZPL4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbXFZPLe
+	id S1758357AbXFZPPZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbXFZPPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:11:34 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:46981 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756725AbXFZPLb (ORCPT
+	Tue, 26 Jun 2007 11:15:11 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:11246 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753111AbXFZPPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:11:31 -0400
-Date: Tue, 26 Jun 2007 11:11:25 -0400
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
-       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
-Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
-Message-ID: <20070626151125.GD8274@rhun.ibm.com>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org> <200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com> <46812ADF.3060609@linux.intel.com>
-Mime-Version: 1.0
+	Tue, 26 Jun 2007 11:15:09 -0400
+Date: Tue, 26 Jun 2007 17:15:05 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Andreas Dilger <adilger@clusterfs.com>, suparna@in.ibm.com,
+       cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 2/7][TAKE5] fallocate() on s390(x)
+Message-ID: <20070626151505.GA15160@osiris.boeblingen.de.ibm.com>
+References: <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134255.GC1951@amitarora.in.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46812ADF.3060609@linux.intel.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070625134255.GC1951@amitarora.in.ibm.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 08:03:59AM -0700, Arjan van de Ven wrote:
-> Muli Ben-Yehuda wrote:
-> >How much? we have numbers (to be presented at OLS later this week)
-> >that show that on bare-metal an IOMMU can cost as much as 15%-30% more
-> >CPU utilization for an IO intensive workload (netperf). It will be
-> >interesting to see comparable numbers for VT-d.
-> 
-> for VT-d it is a LOT less. I'll let anil give you his data :)
+> Index: linux-2.6.22-rc4/arch/s390/kernel/syscalls.S
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/arch/s390/kernel/syscalls.S	2007-06-11 16:16:01.000000000 -0700
+> +++ linux-2.6.22-rc4/arch/s390/kernel/syscalls.S	2007-06-11 16:27:29.000000000 -0700
+> @@ -322,6 +322,7 @@
+>  SYSCALL(sys_getcpu,sys_getcpu,sys_getcpu_wrapper)
+>  SYSCALL(sys_epoll_pwait,sys_epoll_pwait,compat_sys_epoll_pwait_wrapper)
+>  SYSCALL(sys_utimes,sys_utimes,compat_sys_utimes_wrapper)
+> +SYSCALL(s390_fallocate,sys_fallocate,sys_fallocate_wrapper)
+>  NI_SYSCALL							/* 314 sys_fallocate */
 
-Looking forward to it. Note that this is on a large SMP machine with
-Gigabit ethernet, with netperf TCP stream. Comparing numbers for other
-benchmarks on other machines is ... less than useful, but the numbers
-themeselves are interesting.
+You need to remove the NI_SYSCALL line. Otherwise all following entries
+will be wrong.
 
-Cheers,
-Muli
+>  SYSCALL(sys_utimensat,sys_utimensat,compat_sys_utimensat_wrapper)	/* 315 */
+>  SYSCALL(sys_signalfd,sys_signalfd,compat_sys_signalfd_wrapper)
+> Index: linux-2.6.22-rc4/include/asm-s390/unistd.h
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/include/asm-s390/unistd.h	2007-06-11 16:16:01.000000000 -0700
+> +++ linux-2.6.22-rc4/include/asm-s390/unistd.h	2007-06-11 16:27:29.000000000 -0700
+> @@ -256,7 +256,8 @@
+>  #define __NR_signalfd		316
+>  #define __NR_timerfd		317
+>  #define __NR_eventfd		318
+> -#define NR_syscalls 319
+> +#define __NR_fallocate		319
+> +#define NR_syscalls 320
 
+Erm... no. You use slot 314 in the syscall table but assign number 319.
+That won't work. Please use 314 for both.
+I assume this got broken when updating to newer kernel versions.
