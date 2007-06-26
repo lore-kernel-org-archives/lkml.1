@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbXFZJBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbXFZJCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbXFZJBy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 05:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbXFZJBr
+	id S1756805AbXFZJCq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 05:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbXFZJCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 05:01:47 -0400
-Received: from web63511.mail.re1.yahoo.com ([69.147.97.66]:48963 "HELO
-	web63511.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751147AbXFZJBr (ORCPT
+	Tue, 26 Jun 2007 05:02:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42642 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751147AbXFZJCj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 05:01:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=SdhJcYW/a3xspvdjhyUBKZ/JX+aFRx0srLTQMmjmy1RcZs0CPITSgzTJ6mljf12M8LmRYrCxy9Vs5nT1P3MF8GVL5FpjP0w0rhAhs+jTjg4yVD4vLFEunh35DkinTfxVgmH5m06XRT9kXsk16LGJXADYQ/QVFFjbT2asLqSx1Xk=;
-X-YMail-OSG: kUDUhtEVM1lhYFynyScodAK8EBmPI2RNbEjQQamIxD.No_VOTRd.NEsIHuMwfzZDL90kzFzS6cocgEw0irH9y5iCuRrPx4ir3Z.Xysc3_P33n9E1pw4hJX15xMLM
-Date: Tue, 26 Jun 2007 02:01:46 -0700 (PDT)
-From: Ioannis Barkas <risc4all@yahoo.com>
-Subject: [PATCH] VGA-softcursor.txt: Point at the correct directory of vgacon.c
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-157303694-1182848506=:94232"
-Content-Transfer-Encoding: 8bit
-Message-ID: <465873.94232.qm@web63511.mail.re1.yahoo.com>
+	Tue, 26 Jun 2007 05:02:39 -0400
+Date: Tue, 26 Jun 2007 02:00:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?UTF-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [patch] CFS scheduler, -v18
+Message-Id: <20070626020047.f019b731.akpm@linux-foundation.org>
+In-Reply-To: <20070626083813.GA16151@elte.hu>
+References: <20070622220202.GA16872@elte.hu>
+	<200706230109.08310.caglar@pardus.org.tr>
+	<200706230116.29615.caglar@pardus.org.tr>
+	<20070622222036.GC27445@elte.hu>
+	<20070625200235.9d24f6cd.akpm@linux-foundation.org>
+	<20070626083813.GA16151@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0-157303694-1182848506=:94232
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Content-Id: 
-Content-Disposition: inline
+On Tue, 26 Jun 2007 10:38:13 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-Fixes wrong, outdated path of vgacon.c
+> 
+> > - __exit_signal() does apparently-unlocked 64-bit arith.  Is there 
+> >   some implicit locking here or do we not care about the occasional 
+> >   race-induced inaccuracy?
+> 
+> do you mean the tsk->se.sum_exec_runtime addition, etc? That runs with 
+> interrupts disabled so sum_sched_runtime is protected.
+> 
+> >   (ditto, lots of places, I expect)
+> 
+> which places do you mean?
 
-Hello we are Ioannis Barkas (risc4all@yahoo.com) and
-Nikos Barkas (doubl3nuts@yahoo.com).
+I forget ;) There seemed to be rather a lot of 64-bit addition with no
+obvious locking in sight, that's all.
 
-VGA-softcursor.txt points to vgacon.c at a wrong
-directory so we fix it.
+> > ...
+> >   (Gee, there's shitloads of 64-bit stuff in there.  Does it all 
+> >   _really_ need to be 64-bit on 32-bit?)
+>
+> yes - CFS is fundamentally designed for 64-bit, with still pretty OK 
+> arithmetics performance for 32-bit.
 
-We sent the patch from diff -u as an attachment
-because damn yahoo...can't even format an inline
-patch!Many thanks to "Randy Dunlap"
-<randy.dunlap@oracle.com> and sorry for the
-inconvenience.
+It may have been designed for 64-bit, but was that the correct design?  The
+cost on 32-bit appears to be pretty high.  Perhaps a round of uninlining
+will help.
+
+> > - overall, CFS takes sched.o from 41157 of .text up to 48781 on x86_64,
+> >   which at 18% is rather a large bloat.  Hopefully a lot of this is 
+> >   the new debug stuff.
+> 
+> > - On i386 sched.o went from 33755 up to 43660 which is 29% growth. 
+> >   Possibly acceptable, but why did it increase a lot more than the x86_64
+> >   version?  All that 64-bit arith, I assume?
+> 
+> the main reason is the sched debugging stuff:
+
+That would serve to explain the 18% growth on x86_64.  But why did i386
+grow by much more: 29%?  I'd be suspecting all the new 64-bit arithmetic.
 
 
-
-
- 
-____________________________________________________________________________________
-Need Mail bonding?
-Go to the Yahoo! Mail Q&A for great tips from Yahoo! Answers users.
-http://answers.yahoo.com/dir/?link=list&sid=396546091
---0-157303694-1182848506=:94232
-Content-Type: application/octet-stream; name="diff1.log"
-Content-Transfer-Encoding: base64
-Content-Description: 2640900726-diff1.log
-Content-Disposition: attachment; filename="diff1.log"
-
-LS0tIC9saW51eC0yLjYuMjEvRG9jdW1lbnRhdGlvbi9WR0Etc29mdGN1cnNv
-ci50eHQJMjAwNy0wNC0yNiAwNDowODozMi4wMDAwMDAwMDAgLTA0MDAKKysr
-IC9saW51eC9Eb2N1bWVudGF0aW9uL1ZHQS1zb2Z0Y3Vyc29yLnR4dAkyMDA3
-LTA2LTI1IDAyOjIxOjIzLjAwMDAwMDAwMCAtMDQwMApAQCAtNCwxMSArNCwx
-MSBAQAogICAgTGludXggbm93IGhhcyBzb21lIGFiaWxpdHkgdG8gbWFuaXB1
-bGF0ZSBjdXJzb3IgYXBwZWFyYW5jZS4gTm9ybWFsbHksIHlvdQogY2FuIHNl
-dCB0aGUgc2l6ZSBvZiBoYXJkd2FyZSBjdXJzb3IgKGFuZCBhbHNvIHdvcmsg
-YXJvdW5kIHNvbWUgdWdseSBidWdzIGluCiB0aG9zZSBtaXNlcmFibGUgVHJp
-ZGVudCBjYXJkcy0tc2VlICNkZWZpbmUgVFJJREVOVF9HTElUQ0ggaW4gZHJp
-dmVycy92aWRlby8KLXZnYWNvbi5jKS4gWW91IGNhbiBub3cgcGxheSBhIGZl
-dyBuZXcgdHJpY2tzOiAgeW91IGNhbiBtYWtlIHlvdXIgY3Vyc29yIGxvb2sK
-LWxpa2UgYSBub24tYmxpbmtpbmcgcmVkIGJsb2NrLCBtYWtlIGl0IGludmVy
-c2UgYmFja2dyb3VuZCBvZiB0aGUgY2hhcmFjdGVyIGl0J3MKLW92ZXIgb3Ig
-dG8gaGlnaGxpZ2h0IHRoYXQgY2hhcmFjdGVyIGFuZCBzdGlsbCBjaG9vc2Ug
-d2hldGhlciB0aGUgb3JpZ2luYWwKLWhhcmR3YXJlIGN1cnNvciBzaG91bGQg
-cmVtYWluIHZpc2libGUgb3Igbm90LiAgVGhlcmUgbWF5IGJlIG90aGVyIHRo
-aW5ncyBJIGhhdmUKLW5ldmVyIHRob3VnaHQgb2YuCitjb25zb2xlL3ZnYWNv
-bi5jKS4gWW91IGNhbiBub3cgcGxheSBhIGZldyBuZXcgdHJpY2tzOiAgeW91
-IGNhbiBtYWtlIHlvdXIKK2N1cnNvciBsb29rIGxpa2UgYSBub24tYmxpbmtp
-bmcgcmVkIGJsb2NrLCBtYWtlIGl0IGludmVyc2UgYmFja2dyb3VuZCBvZiB0
-aGUKK2NoYXJhY3RlciBpdCdzIG92ZXIgb3IgdG8gaGlnaGxpZ2h0IHRoYXQg
-Y2hhcmFjdGVyIGFuZCBzdGlsbCBjaG9vc2Ugd2hldGhlcgordGhlIG9yaWdp
-bmFsIGhhcmR3YXJlIGN1cnNvciBzaG91bGQgcmVtYWluIHZpc2libGUgb3Ig
-bm90LiAgVGhlcmUgbWF5IGJlIG90aGVyCit0aGluZ3MgSSBoYXZlIG5ldmVy
-IHRob3VnaHQgb2YuCiAKICAgIFRoZSBjdXJzb3IgYXBwZWFyYW5jZSBpcyBj
-b250cm9sbGVkIGJ5IGEgIjxFU0M+Wz8xOzI7M2MiIGVzY2FwZSBzZXF1ZW5j
-ZQogd2hlcmUgMSwgMiBhbmQgMyBhcmUgcGFyYW1ldGVycyBkZXNjcmliZWQg
-YmVsb3cuIElmIHlvdSBvbWl0IGFueSBvZiB0aGVtLAo=
-
---0-157303694-1182848506=:94232--
