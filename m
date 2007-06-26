@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbXFZKa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbXFZKcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbXFZKa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXFZKaU
+	id S1756510AbXFZKcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbXFZKcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:30:20 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36226 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751984AbXFZKaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:30:18 -0400
-X-Authenticated: #1474915
-X-Provags-ID: V01U2FsdGVkX1/eBOwHrPjeSGuss1mCfMKgjhAxQDSdPEh6BKmzCM
-	+8pPV6s9unoLQR
-Message-ID: <4680EAB8.10703@gmx.de>
-Date: Tue, 26 Jun 2007 12:30:16 +0200
-From: Thomas Sattler <tsattler@gmx.de>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: BUG: held lock freed!
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Tue, 26 Jun 2007 06:32:42 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:53617 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752373AbXFZKck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 06:32:40 -0400
+Date: Tue, 26 Jun 2007 16:02:47 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Andreas Dilger <adilger@clusterfs.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070626103247.GA19870@amitarora.in.ibm.com>
+References: <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070625214626.GJ5181@schatzie.adilger.int>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there ...
+On Mon, Jun 25, 2007 at 03:46:26PM -0600, Andreas Dilger wrote:
+> On Jun 25, 2007  20:33 +0530, Amit K. Arora wrote:
+> > I have not implemented FA_FL_FREE_ENOSPC and FA_ZERO_SPACE flags yet, as
+> > *suggested* by Andreas in http://lkml.org/lkml/2007/6/14/323  post.
+> > If it is decided that these flags are also needed, I will update this
+> > patch. Thanks!
+> 
+> Can you clarify - what is the current behaviour when ENOSPC (or some other
+> error) is hit?  Does it keep the current fallocate() or does it free it?
 
-I removed xfs from my system. The first reboot after replacing xfs with
-ext3 brought be
+Currently it is left on the file system implementation. In ext4, we do
+not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
+end up with partial (pre)allocation. This is inline with dd and
+posix_fallocate, which also do not free the partially allocated space.
+ 
+> For FA_ZERO_SPACE - I'd think this would (IMHO) be the default - we
+> don't want to expose uninitialized disk blocks to userspace.  I'm not
+> sure if this makes sense at all.
 
-Jun 26 08:43:17 pearl =========================
-Jun 26 08:43:17 pearl [ BUG: held lock freed! ]
-Jun 26 08:43:17 pearl -------------------------
-Jun 26 08:43:17 pearl udevd/3064 is freeing memory c16fbe40-c16fbe7f,
-with a lock still held there!
-Jun 26 08:43:17 pearl (&sbinfo->stat_lock){--..}, at: [<c0157eb1>]
-shmem_delete_inode+0xc1/0xda
-Jun 26 08:43:17 pearl 1 lock held by udevd/3064:
-Jun 26 08:43:17 pearl #0:  (&sbinfo->stat_lock){--..}, at: [<c0157eb1>]
-shmem_delete_inode+0xc1/0xda
-Jun 26 08:43:17 pearl
-Jun 26 08:43:17 pearl stack backtrace:
-Jun 26 08:43:17 pearl [<c0135331>] debug_check_no_locks_freed+0xe7/0x11a
-Jun 26 08:43:17 pearl [<c0158649>] kfree+0x45/0x7f
-Jun 26 08:43:17 pearl [<c016c3d2>] free_fdtable_rcu+0x3a/0x70
-Jun 26 08:43:17 pearl [<c012a95f>] __rcu_process_callbacks+0xfd/0x165
-Jun 26 08:43:17 pearl [<c012a9d6>] rcu_process_callbacks+0xf/0x1e
-Jun 26 08:43:17 pearl [<c0120c69>] tasklet_action+0x3d/0x68
-Jun 26 08:43:17 pearl [<c0120b9e>] __do_softirq+0x41/0x92
-Jun 26 08:43:17 pearl [<c0120c16>] do_softirq+0x27/0x3d
-Jun 26 08:43:17 pearl [<c0120fae>] irq_exit+0x35/0x64
-Jun 26 08:43:17 pearl [<c0106108>] do_IRQ+0x7e/0x92
-Jun 26 08:43:17 pearl [<c0104634>] common_interrupt+0x24/0x34
-Jun 26 08:43:17 pearl [<c010463e>] common_interrupt+0x2e/0x34
-Jun 26 08:43:17 pearl [<c0136513>] lock_acquire+0x68/0x6e
-Jun 26 08:43:17 pearl [<c0157eb1>] shmem_delete_inode+0xc1/0xda
-Jun 26 08:43:17 pearl [<c02e4daa>] _spin_lock+0x29/0x34
-Jun 26 08:43:17 pearl [<c0157eb1>] shmem_delete_inode+0xc1/0xda
-Jun 26 08:43:17 pearl [<c0157eb1>] shmem_delete_inode+0xc1/0xda
-Jun 26 08:43:17 pearl [<c0157df0>] shmem_delete_inode+0x0/0xda
-Jun 26 08:43:17 pearl [<c016b2a8>] generic_delete_inode+0x8c/0xf4
-Jun 26 08:43:17 pearl [<c016aa33>] iput+0x60/0x62
-Jun 26 08:43:17 pearl [<c01636d7>] do_unlinkat+0xbe/0x132
-Jun 26 08:43:17 pearl [<c0103bfa>] sysenter_past_esp+0x8f/0x99
-Jun 26 08:43:17 pearl [<c0135227>] trace_hardirqs_on+0x11e/0x141
-Jun 26 08:43:17 pearl [<c0103bca>] sysenter_past_esp+0x5f/0x99
-Jun 26 08:43:17 pearl =======================
+I don't think we need to make it default - atleast for filesystems which
+have a mechanism to distinguish preallocated blocks from "regular" ones.
+In ext4, for example, we will have a way to mark uninitialized extents.
+All the preallocated blocks will be part of these uninitialized extents.
+And any read on these extents will treat them as a hole, returning
+zeroes to user land. Thus any existing data on uninitialized blocks will
+not be exposed to the userspace.
 
-But it only came once, several reboots after that were ok. I changed my
-kernel config today: e1000 is now "=y" (was "=m"), I removed PCMCIA as I
-do not use it and some other modules complained about it, and I added
-CONFIG_HIGHMEM4G=y (was CONFIG_NOHIGHMEM=y)
-
-The running kernel is 2.6.22.5 +cfs +squashfs. My distribution is gentoo
-(x86), quite up to date, udev is 104-r12.
-
-Please CC me as I'm not subscribed to the list.
-
-Thomas
-
--- 
-keep mailinglists in english, feel free to send PM in german
+--
+Regards,
+Amit Arora 
