@@ -1,90 +1,411 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbXFZXKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXFZXKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbXFZXKM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757206AbXFZXJu
+	id S1759935AbXFZXKq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbXFZXJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:09:50 -0400
-Received: from cantor.suse.de ([195.135.220.2]:42873 "EHLO mx1.suse.de"
+	Tue, 26 Jun 2007 19:09:57 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53670 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754974AbXFZXJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:09:49 -0400
-Message-Id: <20070626230756.519733902@suse.de>
+	id S1757660AbXFZXJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:09:52 -0400
+Message-Id: <20070626230902.730126140@suse.de>
+References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:07:56 -0700
+Date: Tue, 26 Jun 2007 16:07:59 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [AppArmor 00/44] AppArmor security module overview
+       linux-fsdevel@vger.kernel.org, Tony Jones <tonyj@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 03/44] Add a vfsmount parameter to notify_change()
+Content-Disposition: inline; filename=vfs-notify_change.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This post contains patches to include the AppArmor application security
-framework, with request for inclusion into -mm for wider testing.
+The vfsmount parameter must be set appropriately for files visibile
+outside the kernel. Files that are only used in a filesystem (e.g.,
+reiserfs xattr files) will have a NULL vfsmount.
 
-These patches are currently against lkml but we will gladly rebase them
-against -mm so that they will apply cleanly.
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
-Any comments and feedback to improve implementation are appreciated.
+---
+ fs/attr.c           |    3 ++-
+ fs/ecryptfs/inode.c |    4 +++-
+ fs/exec.c           |    3 ++-
+ fs/fat/file.c       |    2 +-
+ fs/hpfs/namei.c     |    2 +-
+ fs/namei.c          |    3 ++-
+ fs/nfsd/vfs.c       |    8 ++++----
+ fs/open.c           |   28 +++++++++++++++-------------
+ fs/reiserfs/xattr.c |    6 +++---
+ fs/sysfs/file.c     |    2 +-
+ fs/utimes.c         |   11 ++++++-----
+ include/linux/fs.h  |    6 +++---
+ mm/filemap.c        |    2 +-
+ mm/tiny-shmem.c     |    2 +-
+ 14 files changed, 45 insertions(+), 37 deletions(-)
 
-A second post dealing with the issue of passing NULL nameidata, will be
-posted to lkml for discussion.
-
-Changes since previous post:
-- remove custom pathname mangling
-- rework apparmor auditing to cleanup message formating and better
-  use audit framework
-- change permission consistency checks from runtime to once at policy load
-- add change_profile feature and cleanup change_hat to use change_profile
-
-The patch series consists of five areas:
-
- (1) Pass struct vfsmount through to LSM hooks.
-
- (2) Fixes and improvements to __d_path():
-
-     (a) make it unambiguous and exclude unreachable paths from
-         /proc/mounts,
-
-     (b) make its result consistent in the face of remounts,
-
-     (c) introduce d_namespace_path(), a variant of d_path that goes up
-         to the namespace root instead of the chroot.
-
-     (d) the behavior of d_path() and getcwd() remain unchanged, and
-     there is no hidding of unreachable paths in /proc/mounts.  The
-     patches addressing these have been seperated from the AppArmor
-     submission and will be introduced at a later date.
+--- a/fs/attr.c
++++ b/fs/attr.c
+@@ -100,7 +100,8 @@ int inode_setattr(struct inode * inode, 
+ }
+ EXPORT_SYMBOL(inode_setattr);
  
-     Part (a) has been in the -mm tree for a while; this series includes
-     an updated copy of the -mm patch. Parts (b) and (c) shouldn't be too
-     controversial.
+-int notify_change(struct dentry * dentry, struct iattr * attr)
++int notify_change(struct dentry *dentry, struct vfsmount *mnt,
++		  struct iattr *attr)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	mode_t mode;
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -870,12 +870,14 @@ static int ecryptfs_setattr(struct dentr
+ {
+ 	int rc = 0;
+ 	struct dentry *lower_dentry;
++	struct vfsmount *lower_mnt;
+ 	struct inode *inode;
+ 	struct inode *lower_inode;
+ 	struct ecryptfs_crypt_stat *crypt_stat;
+ 
+ 	crypt_stat = &ecryptfs_inode_to_private(dentry->d_inode)->crypt_stat;
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	inode = dentry->d_inode;
+ 	lower_inode = ecryptfs_inode_to_lower(inode);
+ 	if (ia->ia_valid & ATTR_SIZE) {
+@@ -890,7 +892,7 @@ static int ecryptfs_setattr(struct dentr
+ 		if (rc < 0)
+ 			goto out;
+ 	}
+-	rc = notify_change(lower_dentry, ia);
++	rc = notify_change(lower_dentry, lower_mnt, ia);
+ out:
+ 	fsstack_copy_attr_all(inode, lower_inode, NULL);
+ 	return rc;
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1565,7 +1565,8 @@ int do_coredump(long signr, int exit_cod
+ 		goto close_fail;
+ 	if (!file->f_op->write)
+ 		goto close_fail;
+-	if (!ispipe && do_truncate(file->f_path.dentry, 0, 0, file) != 0)
++	if (!ispipe &&
++	    do_truncate(file->f_path.dentry, file->f_path.mnt, 0, 0, file) != 0)
+ 		goto close_fail;
+ 
+ 	retval = binfmt->core_dump(signr, regs, file);
+--- a/fs/fat/file.c
++++ b/fs/fat/file.c
+@@ -92,7 +92,7 @@ int fat_generic_ioctl(struct inode *inod
+ 		}
+ 
+ 		/* This MUST be done before doing anything irreversible... */
+-		err = notify_change(filp->f_path.dentry, &ia);
++		err = notify_change(filp->f_path.dentry, filp->f_path.mnt, &ia);
+ 		if (err)
+ 			goto up;
+ 
+--- a/fs/hpfs/namei.c
++++ b/fs/hpfs/namei.c
+@@ -426,7 +426,7 @@ again:
+ 			/*printk("HPFS: truncating file before delete.\n");*/
+ 			newattrs.ia_size = 0;
+ 			newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
+-			err = notify_change(dentry, &newattrs);
++			err = notify_change(dentry, NULL, &newattrs);
+ 			put_write_access(inode);
+ 			if (!err)
+ 				goto again;
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1598,7 +1598,8 @@ int may_open(struct nameidata *nd, int a
+ 		if (!error) {
+ 			DQUOT_INIT(inode);
+ 			
+-			error = do_truncate(dentry, 0, ATTR_MTIME|ATTR_CTIME, NULL);
++			error = do_truncate(dentry, nd->mnt, 0,
++					    ATTR_MTIME|ATTR_CTIME, NULL);
+ 		}
+ 		put_write_access(inode);
+ 		if (error)
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -358,7 +358,7 @@ nfsd_setattr(struct svc_rqst *rqstp, str
+ 	err = nfserr_notsync;
+ 	if (!check_guard || guardtime == inode->i_ctime.tv_sec) {
+ 		fh_lock(fhp);
+-		host_err = notify_change(dentry, iap);
++		host_err = notify_change(dentry, fhp->fh_export->ex_mnt, iap);
+ 		err = nfserrno(host_err);
+ 		fh_unlock(fhp);
+ 	}
+@@ -893,13 +893,13 @@ out:
+ 	return err;
+ }
+ 
+-static void kill_suid(struct dentry *dentry)
++static void kill_suid(struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	struct iattr	ia;
+ 	ia.ia_valid = ATTR_KILL_SUID | ATTR_KILL_SGID;
+ 
+ 	mutex_lock(&dentry->d_inode->i_mutex);
+-	notify_change(dentry, &ia);
++	notify_change(dentry, mnt, &ia);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ }
+ 
+@@ -958,7 +958,7 @@ nfsd_vfs_write(struct svc_rqst *rqstp, s
+ 
+ 	/* clear setuid/setgid flag after write */
+ 	if (host_err >= 0 && (inode->i_mode & (S_ISUID | S_ISGID)))
+-		kill_suid(dentry);
++		kill_suid(dentry, exp->ex_mnt);
+ 
+ 	if (host_err >= 0 && stable) {
+ 		static ino_t	last_ino;
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -193,8 +193,8 @@ out:
+ 	return error;
+ }
+ 
+-int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
+-	struct file *filp)
++int do_truncate(struct dentry *dentry, struct vfsmount *mnt, loff_t length,
++		unsigned int time_attrs, struct file *filp)
+ {
+ 	int err;
+ 	struct iattr newattrs;
+@@ -214,7 +214,7 @@ int do_truncate(struct dentry *dentry, l
+ 	newattrs.ia_valid |= should_remove_suid(dentry);
+ 
+ 	mutex_lock(&dentry->d_inode->i_mutex);
+-	err = notify_change(dentry, &newattrs);
++	err = notify_change(dentry, mnt, &newattrs);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ 	return err;
+ }
+@@ -269,7 +269,7 @@ static long do_sys_truncate(const char _
+ 	error = locks_verify_truncate(inode, NULL, length);
+ 	if (!error) {
+ 		DQUOT_INIT(inode);
+-		error = do_truncate(nd.dentry, length, 0, NULL);
++		error = do_truncate(nd.dentry, nd.mnt, length, 0, NULL);
+ 	}
+ 	put_write_access(inode);
+ 
+@@ -321,7 +321,8 @@ static long do_sys_ftruncate(unsigned in
+ 
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
+-		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
++		error = do_truncate(dentry, file->f_path.mnt, length,
++				    ATTR_MTIME|ATTR_CTIME, file);
+ out_putf:
+ 	fput(file);
+ out:
+@@ -521,7 +522,7 @@ asmlinkage long sys_fchmod(unsigned int 
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	err = notify_change(dentry, &newattrs);
++	err = notify_change(dentry, file->f_path.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ out_putf:
+@@ -556,7 +557,7 @@ asmlinkage long sys_fchmodat(int dfd, co
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	error = notify_change(nd.dentry, &newattrs);
++	error = notify_change(nd.dentry, nd.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ dput_and_out:
+@@ -570,7 +571,8 @@ asmlinkage long sys_chmod(const char __u
+ 	return sys_fchmodat(AT_FDCWD, filename, mode);
+ }
+ 
+-static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
++static int chown_common(struct dentry * dentry, struct vfsmount *mnt,
++			uid_t user, gid_t group)
+ {
+ 	struct inode * inode;
+ 	int error;
+@@ -599,7 +601,7 @@ static int chown_common(struct dentry * 
+ 	if (!S_ISDIR(inode->i_mode))
+ 		newattrs.ia_valid |= ATTR_KILL_SUID|ATTR_KILL_SGID;
+ 	mutex_lock(&inode->i_mutex);
+-	error = notify_change(dentry, &newattrs);
++	error = notify_change(dentry, mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ out:
+ 	return error;
+@@ -613,7 +615,7 @@ asmlinkage long sys_chown(const char __u
+ 	error = user_path_walk(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -633,7 +635,7 @@ asmlinkage long sys_fchownat(int dfd, co
+ 	error = __user_walk_fd(dfd, filename, follow, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -647,7 +649,7 @@ asmlinkage long sys_lchown(const char __
+ 	error = user_path_walk_link(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -666,7 +668,7 @@ asmlinkage long sys_fchown(unsigned int 
+ 
+ 	dentry = file->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = chown_common(dentry, user, group);
++	error = chown_common(dentry, file->f_path.mnt, user, group);
+ 	fput(file);
+ out:
+ 	return error;
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -479,7 +479,7 @@ reiserfs_xattr_set(struct inode *inode, 
+ 	newattrs.ia_size = buffer_size;
+ 	newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
+ 	mutex_lock(&xinode->i_mutex);
+-	err = notify_change(fp->f_path.dentry, &newattrs);
++	err = notify_change(fp->f_path.dentry, NULL, &newattrs);
+ 	if (err)
+ 		goto out_filp;
+ 
+@@ -819,7 +819,7 @@ reiserfs_chown_xattrs_filler(void *buf, 
+ 	}
+ 
+ 	if (!S_ISDIR(xafile->d_inode->i_mode))
+-		err = notify_change(xafile, attrs);
++		err = notify_change(xafile, NULL, attrs);
+ 	dput(xafile);
+ 
+ 	return err;
+@@ -871,7 +871,7 @@ int reiserfs_chown_xattrs(struct inode *
+ 		goto out_dir;
+ 	}
+ 
+-	err = notify_change(dir, attrs);
++	err = notify_change(dir, NULL, attrs);
+ 	unlock_kernel();
+ 
+       out_dir:
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -554,7 +554,7 @@ int sysfs_chmod_file(struct kobject *kob
+ 			newattrs.ia_mode = (mode & S_IALLUGO) |
+ 						(inode->i_mode & ~S_IALLUGO);
+ 			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-			res = notify_change(victim, &newattrs);
++			res = notify_change(victim, NULL, &newattrs);
+ 			mutex_unlock(&inode->i_mutex);
+ 		}
+ 		dput(victim);
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -46,7 +46,7 @@ long do_utimes(int dfd, char __user *fil
+ {
+ 	int error;
+ 	struct nameidata nd;
+-	struct dentry *dentry;
++	struct path path;
+ 	struct inode *inode;
+ 	struct iattr newattrs;
+ 	struct file *f = NULL;
+@@ -64,16 +64,17 @@ long do_utimes(int dfd, char __user *fil
+ 		f = fget(dfd);
+ 		if (!f)
+ 			goto out;
+-		dentry = f->f_path.dentry;
++		path = f->f_path;
+ 	} else {
+ 		error = __user_walk_fd(dfd, filename, (flags & AT_SYMLINK_NOFOLLOW) ? 0 : LOOKUP_FOLLOW, &nd);
+ 		if (error)
+ 			goto out;
+ 
+-		dentry = nd.dentry;
++		path.dentry = nd.dentry;
++		path.mnt = nd.mnt;
+ 	}
+ 
+-	inode = dentry->d_inode;
++	inode = path.dentry->d_inode;
+ 
+ 	error = -EROFS;
+ 	if (IS_RDONLY(inode))
+@@ -111,7 +112,7 @@ long do_utimes(int dfd, char __user *fil
+ 			goto dput_and_out;
+ 	}
+ 	mutex_lock(&inode->i_mutex);
+-	error = notify_change(dentry, &newattrs);
++	error = notify_change(path.dentry, path.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ dput_and_out:
+ 	if (f)
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1498,8 +1498,8 @@ static inline int break_lease(struct ino
+ 
+ /* fs/open.c */
+ 
+-extern int do_truncate(struct dentry *, loff_t start, unsigned int time_attrs,
+-		       struct file *filp);
++extern int do_truncate(struct dentry *, struct vfsmount *, loff_t start,
++		       unsigned int time_attrs, struct file *filp);
+ extern long do_sys_open(int fdf, const char __user *filename, int flags,
+ 			int mode);
+ extern struct file *filp_open(const char *, int, int);
+@@ -1652,7 +1652,7 @@ extern int do_remount_sb(struct super_bl
+ #ifdef CONFIG_BLOCK
+ extern sector_t bmap(struct inode *, sector_t);
+ #endif
+-extern int notify_change(struct dentry *, struct iattr *);
++extern int notify_change(struct dentry *, struct vfsmount *, struct iattr *);
+ extern int permission(struct inode *, int, struct nameidata *);
+ extern int generic_permission(struct inode *, int,
+ 		int (*check_acl)(struct inode *, int));
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1911,7 +1911,7 @@ int __remove_suid(struct path *path, int
+ 	struct iattr newattrs;
+ 
+ 	newattrs.ia_valid = ATTR_FORCE | kill;
+-	return notify_change(path->dentry, &newattrs);
++	return notify_change(path->dentry, path->mnt, &newattrs);
+ }
+ 
+ int remove_suid(struct path *path)
+--- a/mm/tiny-shmem.c
++++ b/mm/tiny-shmem.c
+@@ -86,7 +86,7 @@ struct file *shmem_file_setup(char *name
+ 	file->f_mode = FMODE_WRITE | FMODE_READ;
+ 
+ 	/* notify everyone as to the change of file size */
+-	error = do_truncate(dentry, size, 0, file);
++	error = do_truncate(dentry, file->f_path.mnt, size, 0, file);
+ 	if (error < 0)
+ 		goto close_file;
+ 
 
- (3) Be able to distinguish file descriptor access from access by name
-     in LSM hooks.
-
-     Applications expect different behavior from file descriptor
-     accesses and accesses by name in some cases. We need to pass this
-     information down the LSM hooks to allow AppArmor to tell which is
-     which.
-
- (4) Convert the selinux sysctl pathname computation code into a standalone
-     function.
-
- (5) The AppArmor LSM itself.
-
-     (See below.)
-
-A tarball of the kernel patches, base user-space utilities, example
-profiles, and technical documentation (including a walk-through) are
-available at:
-
-  http://forgeftp.novell.com//apparmor/LKML_Submission-June-07/
-
-Explaining the AppArmor design in detail would take by far too much
-space here, so let me refer you to the technical documentation for that.
-Included is a low-level walk-through of the system and basic tools, and
-some examples.  The manual pages included in the apparmor-parser package
-are worth a read as well.
 -- 
