@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbXFZQH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbXFZQOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbXFZQH1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 12:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXFZQHQ
+	id S1758050AbXFZQOU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 12:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXFZQOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 12:07:16 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57251 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756788AbXFZQHO (ORCPT
+	Tue, 26 Jun 2007 12:14:07 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:33032 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752920AbXFZQOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 12:07:14 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-References: <200706251434.43863.jesse.barnes@intel.com>
-	<20070625233433.GA32306@one.firstfloor.org>
-	<200706251636.53636.jesse.barnes@intel.com>
-	<m1bqf3tu06.fsf@ebiederm.dsl.xmission.com>
-	<20070626153911.GC5244@one.firstfloor.org>
-Date: Tue, 26 Jun 2007 10:06:41 -0600
-In-Reply-To: <20070626153911.GC5244@one.firstfloor.org> (Andi Kleen's message
-	of "Tue, 26 Jun 2007 17:39:11 +0200")
-Message-ID: <m1wsxqsnse.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 26 Jun 2007 12:14:04 -0400
+Date: Tue, 26 Jun 2007 12:14:00 -0400
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 7/7][TAKE5] ext4: support new modes
+Message-ID: <20070626161400.GE6652@schatzie.adilger.int>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+References: <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625135051.GH1951@amitarora.in.ibm.com> <20070625215625.GL5181@schatzie.adilger.int> <20070626120751.GC19870@amitarora.in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070626120751.GC19870@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
+On Jun 26, 2007  17:37 +0530, Amit K. Arora wrote:
+> Hmm.. I am thinking of a scenario when the file system supports some
+> individual flags, but does not support a particular combination of them.
+> Just for example sake, assume we have FA_ZERO_SPACE mode also. Now, if a
+> file system supports FA_ZERO_SPACE, FA_ALLOCATE, FA_DEALLOCATE and
+> FA_RESV_SPACE; and no other mode (i.e. FA_UNRESV_SPACE is not supported
+> for some reason). This means that although we support FA_FL_DEALLOC,
+> FA_FL_KEEP_SIZE and FA_FL_DEL_DATA flags, but we do not support the
+> combination of all these flags (which is nothing but FA_UNRESV_SPACE).
 
->> For the K7 and K8 cores AMD systems are exactly like Intel systems
->> with respect to MTRRs (although AMD systems also have additional registers)
->> For the K9 core (i.e. AMD socket F or the K8 with DDR2 support) there
->
-> It's called K8RevE, not K9
+That is up to the filesystem to determine then.  I just thought it should
+be clear to return an error for flags (or as you say combinations thereof)
+that the filesystem doesn't understand.
 
-revF not revE.  I think AMD was code-naming that K9 before the socket F
-part was released.
+That said, I'd think in most cases the flags are orthogonal, so if you
+support some combination of the flags (e.g. FA_FL_DEL_DATA, FA_FL_DEALLOC)
+then you will also support other combinations of those flags just from
+the way it is coded.
 
-revE was the last DDR rev of the K8 core.
+> > I also thought another proposed flag was to determine whether mtime (and
+> > maybe ctime) is changed when doing prealloc/dealloc space?  Default should
+> > probably be to change mtime/ctime, and have FA_FL_NO_MTIME.  Someone else
+> > should decide if we want to allow changing the file w/o changing ctime, if
+> > that is required even though the file is not visibly changing.  Maybe the
+> > ctime update should be implicit if the size or mtime are changing?
+> 
+> Is it really required ? I mean, why should we allow users not to update
+> ctime/mtime even if the file metadata/data gets updated ? It sounds
+> a bit "unnatural" to me.
+> Is there any application scenario in your mind, when you suggest of
+> giving this flexibility to userspace ?
 
->> is an additional mechanism that makes everything above 4G write-back
->> cacheable without using any MTRRs.
->
-> ... but not BIOS use this mechanism (often there are BIOS switches
-> for several MTRR models or it is just the wrong one hardcoded), so Linux 
-> should detect the broken cases.
+One reason is that XFS does NOT update the mtime/ctime when doing the
+XFS_IOC_* allocation ioctls.
 
-Yes. They are and I have seen at least two motherboards that fit this
-description.  I almost freaked out looking at a system with 16G and
-only 4G setup to be cached.
+> I think, modifying ctime/mtime should be dependent on the other flags.
+> E.g., if we do not zero out data blocks on allocation/deallocation,
+> update only ctime. Otherwise, update ctime and mtime both.
 
-The painful bit is I have also seen such a system with not all of the
-lower 4G cached.  Which caused some interesting booting issues.
+I'm only being the advocate for requirements David Chinner has put
+forward due to existing behaviour in XFS.  This is one of the reasons
+why I think the "flags" mechanism we now have - we can encode the
+various different behaviours in any way we want and leave it to the
+caller.
 
-Eric
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
