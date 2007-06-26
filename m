@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbXFZXer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbXFZXq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbXFZXer (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757843AbXFZXeg
+	id S1759936AbXFZXq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbXFZXqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:34:36 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:59994 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758138AbXFZXef (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:34:35 -0400
-Date: Tue, 26 Jun 2007 17:33:28 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
-In-reply-to: <fa.RLNIoDXtVxFnlYMPJh2Q2+yDDOk@ifi.uio.no>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-id: <4681A248.6070109@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.KzVWiacZsGdGiMxLldFOOPOdIEw@ifi.uio.no>
- <fa.TdDfr0FpGG8OjqtqWj6RNRusuU0@ifi.uio.no>
- <fa.qT2j8q7/hQ2xVpeJCg7VGv+FvpI@ifi.uio.no>
- <fa.RLNIoDXtVxFnlYMPJh2Q2+yDDOk@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+	Tue, 26 Jun 2007 19:46:20 -0400
+Received: from pat.uio.no ([129.240.10.15]:60282 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752187AbXFZXqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:46:18 -0400
+Subject: Re: [RFD 0/4] AppArmor - Don't pass NULL nameidata to
+	vfs_create/lookup/permission IOPs
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: jjohansen@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20070626231510.883881222@suse.de>
+References: <20070626231510.883881222@suse.de>
+Content-Type: text/plain
+Date: Tue, 26 Jun 2007 19:46:15 -0400
+Message-Id: <1182901575.12836.54.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.083)
+X-UiO-Scanned: 03BF5014BDACEB15ADC4B8101EAF8D1F0C72DED8
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 236 total 2587344 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Tue, 2007-06-26 at 19:06 +0200, Rodolfo Giometti wrote:
->> On Tue, Jun 26, 2007 at 11:57:07AM +0100, David Woodhouse wrote:
->>> Your syscalls blindly dereference userspace pointers instead of using
->>> copy_{to,from} user.
->> I use access_ok() to test userspace addresses. It should be ok,
->> shouldn't it?
-> 
-> No; it's racy. You must use copy_from_user() and copy_to_user().
+On Tue, 2007-06-26 at 16:15 -0700, jjohansen@suse.de wrote:
+> To remove conditionally passing of vfsmounts to the LSM, a nameidata
+> struct can be instantiated in the nfsd and mqueue filesystems.  This
+> however results in useless information being passed down, as not
+> all fields in the nameidata struct will be meaingful.  The nameidata
+> struct is split creating struct nameidata2 that contains only the
+> fields
+> that will carry meaningful information.
 
-Not only is it racy, but it doesn't even do all of the checks that 
-copy_to/from_user does. access_ok only validates that the region given 
-is potentially valid, not that it actually is. Using access_ok only 
-allows you to use __copy_to/from_user instead, which skips the same 
-checks that access_ok does - not worth it unless you do repeated copies 
-to/from the same region of memory.
+I don't object to the concept per se, but could you please give it a
+more descriptive name please? "struct vfs_intent" would be a lot more
+accurate than "nameidata2".
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Trond
 
