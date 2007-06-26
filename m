@@ -1,38 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbXFZX1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762614AbXFZX16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760875AbXFZX1W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760594AbXFZXNv
+	id S1762614AbXFZX16 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760677AbXFZXPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:13:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60480 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760468AbXFZXNu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:13:50 -0400
-Date: Tue, 26 Jun 2007 16:13:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, josh@freedesktop.org,
-       dipankar@in.ibm.com
-Subject: Re: [PATCH] Force rcutorture tasks to spread over CPUs
-Message-Id: <20070626161317.767d5ec0.akpm@linux-foundation.org>
-In-Reply-To: <20070613042804.GA6132@linux.vnet.ibm.com>
-References: <20070613042804.GA6132@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 26 Jun 2007 19:15:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56457 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760748AbXFZXPA (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:15:00 -0400
+Date: Wed, 27 Jun 2007 09:14:31 +1000
+From: David Chinner <dgc@sgi.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, suparna@in.ibm.com, cmm@us.ibm.com,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070626231431.GO31489@sgi.com>
+References: <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070625214626.GJ5181@schatzie.adilger.int>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jun 2007 21:28:04 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Mon, Jun 25, 2007 at 03:46:26PM -0600, Andreas Dilger wrote:
+> On Jun 25, 2007  20:33 +0530, Amit K. Arora wrote:
+> > I have not implemented FA_FL_FREE_ENOSPC and FA_ZERO_SPACE flags yet, as
+> > *suggested* by Andreas in http://lkml.org/lkml/2007/6/14/323  post.
+> > If it is decided that these flags are also needed, I will update this
+> > patch. Thanks!
+> 
+> Can you clarify - what is the current behaviour when ENOSPC (or some other
+> error) is hit?  Does it keep the current fallocate() or does it free it?
+> 
+> For FA_ZERO_SPACE - I'd think this would (IMHO) be the default - we
+> don't want to expose uninitialized disk blocks to userspace.  I'm not
+> sure if this makes sense at all.
 
-> +	while (!startwriters)
-> +		barrier();	/* Force scheduler to spread over CPUs. */
+Someone on the XFs list had an interesting request - preallocated
+swap files. You can't use unwritten extents for this because
+of sys_swapon()s use of bmap() (XFS returns holes for reading
+unwritten extents), so we need a method of preallocating that does
+not zero or mark the extent unread. i.e. FA_MKSWAP.
 
-one wonders whether a cpu_relax() would be a bit nicer here.  That implicitly
-does a barrier().
+I thinkthis would be:
 
-This patch doesn't make much sense for non-SMP builds?
+#define FA_FL_NO_ZERO_SPACE	0x08	/* default is to zero space */
+
+#define FA_MKSWAP 	(FA_ALLOCATE | FA_FL_NO_ZERO_SPACE)
+
+That way we can allocate large swap files that don't need zeroing
+in a single, fast operation, and hence potentially bring new
+swap space online without needed very much memory at all (i.e.
+should succeed in most near-OOM conditions).
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
