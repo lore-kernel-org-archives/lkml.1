@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbXFZXXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761945AbXFZXXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761767AbXFZXXe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760141AbXFZXMc
+	id S1761945AbXFZXXv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbXFZXMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:12:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53812 "EHLO mx2.suse.de"
+	Tue, 26 Jun 2007 19:12:35 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53816 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760084AbXFZXMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:12:22 -0400
-Message-Id: <20070626231136.985740185@suse.de>
+	id S1760171AbXFZXM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:12:28 -0400
+Message-Id: <20070626231140.588039272@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:31 -0700
+Date: Tue, 26 Jun 2007 16:08:32 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 35/44] Allow permission functions to tell between parent and leaf checks
-Content-Disposition: inline; filename=parent-permission.diff
+Subject: [AppArmor 36/44] Export audit subsystem for use by modules
+Content-Disposition: inline; filename=apparmor-audit.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set the LOOKUP_CONTINUE flag when checking parent permissions. This allows
-permission functions to tell between parent and leaf checks.
+Update kenel audit range comments to show AppArmor's registered range of
+1500-1599.  This range used to be reserved for LSPP but LSPP uses the
+SE Linux range and the range was given to AppArmor.
+Adds necessary export symbols for audit subsystem routines.
+Changes audit_log_vformat to be externally visible (analagous to vprintf)
+Patch is not in mainline -- pending AppArmor code submission to lkml
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/namei.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ include/linux/audit.h |   12 +++++++++++-
+ kernel/audit.c        |    6 ++++--
+ 2 files changed, 15 insertions(+), 3 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1409,6 +1409,10 @@ static int may_delete(struct inode *dir,
- 	BUG_ON(victim->d_parent->d_inode != dir);
- 	audit_inode_child(victim->d_name.name, victim->d_inode, dir);
+--- a/include/linux/audit.h
++++ b/include/linux/audit.h
+@@ -33,7 +33,7 @@
+  * 1200 - 1299 messages internal to the audit daemon
+  * 1300 - 1399 audit event messages
+  * 1400 - 1499 SE Linux use
+- * 1500 - 1599 kernel LSPP events
++ * 1500 - 1599 AppArmor use
+  * 1600 - 1699 kernel crypto events
+  * 1700 - 1799 kernel anomaly records
+  * 1800 - 1999 future kernel use (maybe integrity labels and related events)
+@@ -109,6 +109,13 @@
+ #define AUDIT_MAC_IPSEC_ADDSPD	1413	/* Add a XFRM policy */
+ #define AUDIT_MAC_IPSEC_DELSPD	1414	/* Delete a XFRM policy */
  
-+#if 0
-+	if (nd)
-+		nd->flags |= LOOKUP_CONTINUE;
-+#endif
- 	error = permission(dir,MAY_WRITE | MAY_EXEC, NULL);
- 	if (error)
- 		return error;
-@@ -1446,6 +1450,8 @@ static inline int may_create(struct inod
- 		return -EEXIST;
- 	if (IS_DEADDIR(dir))
- 		return -ENOENT;
-+	if (nd)
-+		nd->flags |= LOOKUP_CONTINUE;
- 	return permission(dir,MAY_WRITE | MAY_EXEC, nd);
- }
++#define AUDIT_APPARMOR_AUDIT	1501	/* AppArmor audited grants */
++#define AUDIT_APPARMOR_ALLOWED	1502	/* Allowed Access for learning */
++#define AUDIT_APPARMOR_DENIED	1503
++#define AUDIT_APPARMOR_HINT	1504	/* Process Tracking information */
++#define AUDIT_APPARMOR_STATUS	1505	/* Changes in config */
++#define AUDIT_APPARMOR_ERROR	1506	/* Internal AppArmor Errors */
++
+ #define AUDIT_FIRST_KERN_ANOM_MSG   1700
+ #define AUDIT_LAST_KERN_ANOM_MSG    1799
+ #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
+@@ -499,6 +506,9 @@ extern void		    audit_log(struct audit_
+ 				      __attribute__((format(printf,4,5)));
  
+ extern struct audit_buffer *audit_log_start(struct audit_context *ctx, gfp_t gfp_mask, int type);
++extern void		    audit_log_vformat(struct audit_buffer *ab,
++					      const char *fmt, va_list args)
++			    __attribute__((format(printf,2,0)));
+ extern void		    audit_log_format(struct audit_buffer *ab,
+ 					     const char *fmt, ...)
+ 			    __attribute__((format(printf,2,3)));
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -1054,8 +1054,7 @@ static inline int audit_expand(struct au
+  * will be called a second time.  Currently, we assume that a printk
+  * can't format message larger than 1024 bytes, so we don't either.
+  */
+-static void audit_log_vformat(struct audit_buffer *ab, const char *fmt,
+-			      va_list args)
++void audit_log_vformat(struct audit_buffer *ab, const char *fmt, va_list args)
+ {
+ 	int len, avail;
+ 	struct sk_buff *skb;
+@@ -1311,3 +1310,6 @@ EXPORT_SYMBOL(audit_log_start);
+ EXPORT_SYMBOL(audit_log_end);
+ EXPORT_SYMBOL(audit_log_format);
+ EXPORT_SYMBOL(audit_log);
++EXPORT_SYMBOL_GPL(audit_log_vformat);
++EXPORT_SYMBOL_GPL(audit_log_untrustedstring);
++EXPORT_SYMBOL_GPL(audit_log_d_path);
 
 -- 
