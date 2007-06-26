@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbXFZJ6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbXFZKDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754191AbXFZJ6U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 05:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXFZJ6L
+	id S1754664AbXFZKDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXFZKDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 05:58:11 -0400
-Received: from ccerelbas03.cce.hp.com ([161.114.21.106]:50670 "EHLO
-	ccerelbas03.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbXFZJ6K (ORCPT
+	Tue, 26 Jun 2007 06:03:11 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:54458 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751987AbXFZKDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 05:58:10 -0400
-Date: Tue, 26 Jun 2007 02:57:55 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: B.Steinbrink@gmx.de, ak@suse.de, ingo@elte.hu, levon@movementarian.org,
-       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       perfmon@napali.hpl.hp.com, wcohen@redhat.com
-Subject: Re: [PATCH 1/2] Always probe the NMI watchdog
-Message-ID: <20070626095755.GA13085@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <200706260804.l5Q84F2D017936@harpo.it.uu.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 26 Jun 2007 06:03:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Cy3OWZVLZ82ekRuXkzifXjgXN5G2ax+fb85HjV4o0a4gxP3lcgHX2feuGZMGjj081p/WS2cGxey4YDIKcWuEgI3brt0QTo/bzsP3N+Q9QYWhsoK7tugKGaZlNEHvT4GVUfL/linTjbGkk5aJ40z2lGXBwHF8+8k598ihJzgqKUA=
+Message-ID: <e9e943910706260303l14f8a5e9n63ba0e9f7067b7f9@mail.gmail.com>
+Date: Tue, 26 Jun 2007 11:03:09 +0100
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Roman Zippel" <zippel@linux-m68k.org>
+Subject: Re: [patch 1/2] HFS+: Refactor ASCII to unicode conversion routine for later reuse
+Cc: linux-kernel@vger.kernel.org, didier <did447@gmail.com>,
+       "Solra Bizna" <sbizna@tejat.net>, "Daniel Drake" <dsd@gentoo.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0706251407320.1817@scrub.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200706260804.l5Q84F2D017936@harpo.it.uu.se>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
+References: <20070620000644.891099313@dastardly.home.dghda.com>
+	 <20070620000646.186114175@dastardly.home.dghda.com>
+	 <Pine.LNX.4.64.0706251407320.1817@scrub.home>
+X-Google-Sender-Auth: f857095ad1be0ee1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael,
+On 25/06/07, Roman Zippel <zippel@linux-m68k.org> wrote:
+>
+> I like the idea of this, but not that it generates larger code, so I
+> reformatted it a little to get rid of the decomposed_uc struct which
+> required an unnecessary data copy, so now the it even generates slightly
+> smaller code. :)
 
-On Tue, Jun 26, 2007 at 10:04:15AM +0200, Mikael Pettersson wrote:
-> On Mon, 25 Jun 2007 23:04:25 +0200, B.Steinbrink@gmx.de wrote:
-> > > I think the tricky part is that we do want to reserve perfctr1 even
-> > > though the NMI watchdog is not active. This comes from the fact that
-> > > the NMI watchdog knows about only one counter and if it can't get that
-> > > one, it probably fails.  By reserving it from the start, we ensure NMI
-> > > watchdog will work when eventually activated.
-> > 
-> > Can you enable it later on at all? It failed for me when I tried,
-> > because it didn't know which hardware to use. Had to pass the kernel
-> > parameter to make the proc files do anything. Seems like it has to be
-> > enable at boot to work at all.
-> > 
-> > And AFAICT we never unconditionally reserved a perfctr for the watchdog.
-> 
-> Yes you can dynamically enable/disable the NMI watchdog,
-> at least if you booted with it enabled.
-> 
-> > In 2.6.21 the nmi watchdog, if enabled, just reserved its perfctrs and
-> > everything else had to deal with it. Since the cleanup, the watchdog
-> > will release its perfctr when disabled, so another subsystem can grab
-> > it. But that also means that that other subsystem must release it again
-> > before you can reenable the watchdog.
-> 
-> Which is the obvious and correct way to handle a shared resource.
-> 
-Agreed.
+Ah, nice one! Returning the pointer into the table is a much nicer way
+of doing things.
 
-> Keeping parts of the PMU HW permanently reserved whether or not
-> the watchdog is enabled would be a BUG.
-> 
-True. But the upside is that you guarantee the activation of the NMI
-watchdog will always succeed which may be a valuable property given the
-goal of the NMI watchdog. Otherwise, if Oprofile or perfmon are active,
-the NMI will fail to grab a single counter.
+> +               if (decompose && (dstr = decompose_unichar(c, &dsize))) {
+> +                       if (outlen + dsize > HFSPLUS_MAX_STRLEN)
+>                                 break;
+>                         do {
+> -                               ustr->unicode[outlen++] = cpu_to_be16(hfsplus_decompose_table[off++]);
+> -                       } while (--size > 0);
+> -                       continue;
+> -               }
+> -       done:
+> -               ustr->unicode[outlen++] = cpu_to_be16(c);
+> +                               ustr->unicode[outlen++] = cpu_to_be16(*dstr++);
+> +                       } while (--dsize > 0);
+
+Andrew's comments about the loop in the second patch apply here too, I
+think. The original code did have a check for this condition, so I
+guess it is a potential problem. How about this (on top of your
+version of the patches):
+
+Index: linux-2.6.21.5/fs/hfsplus/unicode.c
+===================================================================
+--- linux-2.6.21.5.orig/fs/hfsplus/unicode.c
++++ linux-2.6.21.5/fs/hfsplus/unicode.c
+@@ -280,7 +280,9 @@ static inline u16 *decompose_unichar(wch
+                return NULL;
+
+        off = hfsplus_decompose_table[off + (uc & 0xf)];
+-       *size = off & 3;
++       if ((*size = off & 3) == 0)
++               return NULL;
++
+        return hfsplus_decompose_table + (off / 4);
+ }
+
+I'm using gmail to send this, so it will mess up the tabs I'm afraid :(
+
+> bye, Roman
+
+Cheers,
+Duane.
 
 -- 
-
--Stephane
+"I never could learn to drink that blood and call it wine" - Bob Dylan
