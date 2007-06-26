@@ -1,108 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbXFZF6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbXFZGES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbXFZF6N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 01:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbXFZF57
+	id S1756066AbXFZGES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 02:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbXFZGEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 01:57:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43043 "EHLO hera.kernel.org"
+	Tue, 26 Jun 2007 02:04:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:45731 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbXFZF56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 01:57:58 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.22-rc4-mm1 -- x86_64 ACPI panic
-Date: Tue, 26 Jun 2007 02:00:32 -0400
-User-Agent: KMail/1.9.5
-Cc: "Luming Yu" <luming.yu@gmail.com>, "Andy Whitcroft" <apw@shadowen.org>,
-       linux-kernel@vger.kernel.org, "Yu, Luming" <luming.yu@intel.com>,
-       "Alexey Starikovskiy" <alexey.y.starikovskiy@intel.com>,
-       linux-acpi@vger.kernel.org
-References: <20070606020737.4663d686.akpm@linux-foundation.org> <3877989d0706080215x22f35292g8cb999f8720cd87c@mail.gmail.com> <20070608111215.5c492330.akpm@linux-foundation.org>
-In-Reply-To: <20070608111215.5c492330.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200706260200.32665.lenb@kernel.org>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1751271AbXFZGEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 02:04:01 -0400
+Subject: Re: [PATCH 3/3] Make jprobes a little safer for users
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, anil.s.keshavamurthy@intel.com,
+       ananth@in.ibm.com
+In-Reply-To: <20070626055347.GB6841@lst.de>
+References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
+	 <7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
+	 <20070626055347.GB6841@lst.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+e4huUY0AJAXVWIIpGA0"
+Date: Tue, 26 Jun 2007 16:03:58 +1000
+Message-Id: <1182837838.6673.17.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied.
-thanks,
--Len
 
-On Friday 08 June 2007 14:12, Andrew Morton wrote:
-> On Fri, 8 Jun 2007 17:15:45 +0800
-> "Luming Yu" <luming.yu@gmail.com> wrote:
-> 
-> > The only problem known as to the acpi throttling changes in the mm tree
-> > is a typo ,and the patch to fix it is available here.  Please test and
-> > get results back to me. BTW,the log shows that the acpi-cpufreq.ko has
-> > problem. Would please also try not to load acpi-cpufreq.
-> > 
-> > http://www.ussg.iu.edu/hypermail/linux/kernel/0706.0/2509.html
-> 
-> Sigh.  Is this some sort of contest to see how many things we can
-> do wrong in a single patch?
-> 
-> - Include a changelog
-> 
-> - Include Signed-off-by:
-> 
-> - Don't use attachments
-> 
-> - If you _must_ use attachments, use text/plain, not application/octet-stream
-> 
-> - Format code to remain within 80 columns.
-> 
-> - Don't do "if(".  Do "if ("
-> 
-> Oh well.  Good to hear that the oops got fixed, thanks.
-> 
-> 
-> From: "Luming Yu" <luming.yu@gmail.com>
-> 
-> Cc: Len Brown <lenb@kernel.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/acpi/processor_throttling.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff -puN drivers/acpi/processor_throttling.c~acpi-fix-oops-in-acpi_processor_throttling_seq_show drivers/acpi/processor_throttling.c
-> --- a/drivers/acpi/processor_throttling.c~acpi-fix-oops-in-acpi_processor_throttling_seq_show
-> +++ a/drivers/acpi/processor_throttling.c
-> @@ -656,18 +656,20 @@ static int acpi_processor_throttling_seq
->  		   pr->throttling.state_count - 1);
->  
->  	seq_puts(seq, "states:\n");
-> -	if (acpi_processor_get_throttling == acpi_processor_get_throttling_fadt)
-> +	if (pr->throttling.acpi_processor_get_throttling ==
-> +			acpi_processor_get_throttling_fadt) {
->  		for (i = 0; i < pr->throttling.state_count; i++)
->  			seq_printf(seq, "   %cT%d:                  %02d%%\n",
->  				   (i == pr->throttling.state ? '*' : ' '), i,
->  				   (pr->throttling.states[i].performance ? pr->
->  				    throttling.states[i].performance / 10 : 0));
-> -	else
-> +	} else {
->  		for (i = 0; i < pr->throttling.state_count; i++)
->  			seq_printf(seq, "   %cT%d:                  %02d%%\n",
->  				   (i == pr->throttling.state ? '*' : ' '), i,
->  				   (int)pr->throttling.states_tss[i].
->  				   freqpercentage);
-> +	}
->  
->        end:
->  	return 0;
-> _
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+--=-+e4huUY0AJAXVWIIpGA0
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2007-06-26 at 07:53 +0200, Christoph Hellwig wrote:
+> On Tue, Jun 26, 2007 at 11:48:51AM +1000, Michael Ellerman wrote:
+> > I realise jprobes are a razor-blades-included type of interface, but
+> > that doesn't mean we can't try and make them safer to use. This guy I
+> > know once wrote code like this:
+> >=20
+> > struct jprobe jp =3D { .kp.symbol_name =3D "foo", .entry =3D "jprobe_fo=
+o" };
+> >=20
+> > And then his kernel exploded. Oops.
+> >=20
+> > This patch adds an arch hook, arch_deref_entry_point() (I don't like it=
+ either)
+> > which takes the void * in a struct jprobe, and gives back the text addr=
+ess
+> > that it represents.
+> >=20
+> > We can then use that in register_jprobe() to check that the entry point
+> > we're passed is actually in the kernel text, rather than just some rand=
+om
+> > value.
+>=20
+> Please don't add more weak functions, they're utterly horrible for
+> anyone trying to understand the code.  Otherwise this looks fine to me.
+
+What do you recommend instead? #define ARCH_HAS_FOO_BAR ?
+
+I don't see what's utterly horrible about them. The fact that they're
+weak is fairly reasonable documentation that they're overridden
+somewhere else. And grep/cscope/ctags will find both the weak and
+non-weak versions for you?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-+e4huUY0AJAXVWIIpGA0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGgKxOdSjSd0sB4dIRAifTAJ9LmFQ+hmx8v2ZFSncWC+fhZSUWdwCfXBuR
++jFxgT6VxkHsDVqF3+LAvdY=
+=V1LP
+-----END PGP SIGNATURE-----
+
+--=-+e4huUY0AJAXVWIIpGA0--
+
