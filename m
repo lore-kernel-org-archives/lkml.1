@@ -1,143 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbXFZHDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754179AbXFZHNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbXFZHDL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 03:03:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbXFZHCx
+	id S1754179AbXFZHNO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 03:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbXFZHND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 03:02:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43927 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752597AbXFZHCn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 03:02:43 -0400
-Date: Tue, 26 Jun 2007 00:01:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Sivakumar Subramani" <Sivakumar.Subramani@neterion.com>
-Cc: "Olaf Hering" <olaf@aepfle.de>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       "Leonid Grossman" <Leonid.Grossman@neterion.com>,
-       "Rastapur Santosh" <santosh.rastapur@neterion.com>,
-       "Ramkrishna Vepa" <ram.vepa@neterion.com>,
-       "Sriram Rapuru" <Sriram.Rapuru@neterion.com>,
-       "Sreenivasa Honnur" <Sreenivasa.Honnur@neterion.com>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-Message-Id: <20070626000132.53330065.akpm@linux-foundation.org>
-In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD7701C190FF@nekter>
-References: <20070619204110.GA21384@aepfle.de>
-	<78C9135A3D2ECE4B8162EBDCE82CAD7701C190FF@nekter>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Jun 2007 03:13:03 -0400
+Received: from mx2.suse.de ([195.135.220.15]:57679 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750797AbXFZHNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 03:13:00 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
+Date: Tue, 26 Jun 2007 09:12:45 +0200
+User-Agent: KMail/1.9.6
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, muli@il.ibm.com,
+       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org>
+In-Reply-To: <20070625234550.058635cb.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706260912.45838.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Jun 2007 05:55:13 -0400 "Sivakumar Subramani" <Sivakumar.Subramani@neterion.com> wrote:
-
-> -----Original Message-----
-> > From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org]
-> > On Behalf Of Olaf Hering
-> > Sent: Wednesday, June 20, 2007 2:11 AM
-> > To: Stephen Hemminger
-> > Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org
-> > Subject: Re: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-> > 
-> > On Tue, Jun 19, Stephen Hemminger wrote:
-> > 
-> > > On Tue, 19 Jun 2007 21:02:53 +0200
-> > > Olaf Hering <olaf@aepfle.de> wrote:
-> > > 
-> > > > 
-> > > > What happend to __ucmpdi2 from David Woodhouse?
-> > > > google has a few hits about stuff like this on 32bit powerpc with
-> > gcc 4.1.2:
-> > > > 
-> > > > ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
-> > > > 
-> > > > using the drivers/net/s2io* files from 2.6.21 with 2.6.22-rc5 fixes 
-> > > > the compile.
-> > > > 
-> > > > 25805dcf9d83098cf5492117ad2669cd14cc9b24 adds two u64 >>= 48 
-> > > > followed by a switch statement (line 2889 and 6816).
-> > > 
-> > > Probably the "switch(err) {" needs a cast to a smaller type (like u8).
-> > 
-> > This change removes the calls to __ucmpdi2.
-
-(fixes quoting, fixes top-posting.  Please don't top-post).
-
-> Hi,
+On Tuesday 26 June 2007 08:45:50 Andrew Morton wrote:
+> On Tue, 19 Jun 2007 14:37:01 -0700 "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
 > 
-> We will include this fix in next set of patch submission. Thanks for the
-> fix.
->
-> ---
-> >  drivers/net/s2io.c |   16 +++++++++-------
-> >  1 file changed, 9 insertions(+), 7 deletions(-)
-> > 
-> > --- a/drivers/net/s2io.c
-> > +++ b/drivers/net/s2io.c
-> > @@ -2868,6 +2868,7 @@ static void tx_intr_handler(struct fifo_
-> >  	struct tx_curr_get_info get_info, put_info;
-> >  	struct sk_buff *skb;
-> >  	struct TxD *txdlp;
-> > +	u8 err_mask;
-> >  
-> >  	get_info = fifo_data->tx_curr_get_info;
-> >  	memcpy(&put_info, &fifo_data->tx_curr_put_info,
-> > sizeof(put_info)); @@ -2886,8 +2887,8 @@ static void
-> > tx_intr_handler(struct fifo_
-> >  			}
-> >  
-> >  			/* update t_code statistics */
-> > -			err >>= 48;
-> > -			switch(err) {
-> > +			err_mask = err >> 48;
-> > +			switch(err_mask) {
-> >  				case 2:
-> >  
-> > nic->mac_control.stats_info->sw_stat.
-> >  
-> > tx_buf_abort_cnt++;
-> > @@ -6805,6 +6806,7 @@ static int rx_osm_handler(struct ring_in
-> >  	u16 l3_csum, l4_csum;
-> >  	unsigned long long err = rxdp->Control_1 & RXD_T_CODE;
-> >  	struct lro *lro;
-> > +	u8 err_mask;
-> >  
-> >  	skb->dev = dev;
-> >  
-> > @@ -6813,8 +6815,8 @@ static int rx_osm_handler(struct ring_in
-> >  		if (err & 0x1) {
-> >  
-> > sp->mac_control.stats_info->sw_stat.parity_err_cnt++;
-> >  		}
-> > -		err >>= 48;
-> > -		switch(err) {
-> > +		err_mask = err >> 48;
-> > +		switch(err_mask) {
-> >  			case 1:
-> >  				sp->mac_control.stats_info->sw_stat.
-> >  				rx_parity_err_cnt++;
-> > @@ -6867,9 +6869,9 @@ static int rx_osm_handler(struct ring_in
-> >  		* Note that in this case, since checksum will be
-> > incorrect,
-> >  		* stack will validate the same.
-> >  		*/
-> > -		if (err != 0x5) {
-> > -			DBG_PRINT(ERR_DBG, "%s: Rx error Value:
-> > 0x%llx\n",
-> > -				dev->name, err);
-> > +		if (err_mask != 0x5) {
-> > +			DBG_PRINT(ERR_DBG, "%s: Rx error Value: 0x%x\n",
-> > +				dev->name, err_mask);
-> >  			sp->stats.rx_crc_errors++;
-> >  			sp->mac_control.stats_info->sw_stat.mem_freed 
-> >  				+= skb->truesize;
+> > 	This patch supports the upcomming Intel IOMMU hardware
+> > a.k.a. Intel(R) Virtualization Technology for Directed I/O 
+> > Architecture
 > 
+> So...  what's all this code for?
+> 
+> I assume that the intent here is to speed things up under Xen, etc? 
 
-This fix is still not present in anyone's tree and is required for
-2.6.22.  Where are we up to with it?
+Yes in some cases, but not this code. That would be the Xen version
+of this code that could potentially assign whole devices to guests.
+I expect this to be only useful in some special cases though because
+most hardware is not virtualizable and you typically want an own
+instance for each guest.
+
+Ok at some point KVM might implement this too; i likely would
+use this code for this.
+
+> Do we 
+> have any benchmark results to help us to decide whether a merge would be
+> justified?
+
+The main advantage for doing it in the normal kernel is not performance, but 
+more safety. Broken devices won't be able to corrupt memory by doing
+random DMA.
+
+Unfortunately that doesn't work for graphics yet, for that need
+user space interfaces for the X server are needed.
+
+There are some potential performance benefits too:
+- When you have a device that cannot address the complete address range
+an IOMMU can remap its memory instead of bounce buffering. Remapping
+is likely cheaper than copying. 
+- The IOMMU can merge sg lists into a single virtual block. This could
+potentially speed up SG IO when the device is slow walking SG lists.
+[I long ago benchmarked 5% on some block benchmark with an old
+MPT Fusion; but it probably depends a lot on the HBA]
+
+And you get better driver debugging because unexpected memory accesses
+from the devices will cause an trapable event.
+
+> 
+> Does it slow anything down?
+
+It adds more overhead to each IO so yes.
+
+-Andi
 
