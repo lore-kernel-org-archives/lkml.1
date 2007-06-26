@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbXFZGTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbXFZGZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbXFZGTp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 02:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbXFZGTg
+	id S1752874AbXFZGZp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 02:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbXFZGZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 02:19:36 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:14015 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751114AbXFZGTe (ORCPT
+	Tue, 26 Jun 2007 02:25:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52564 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751147AbXFZGZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 02:19:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lkB9qNHKegPBRxr3TsewRZm6v//YU/LUkgLeC5115FIep41kyXcWbvgBvtTE7G/oHDS7PkpiUclzfmIqQeycaX1x/t/2AVJ0ijDMj88UZ9lOHFaIyvh4AEqhL0Tm7elBPDy60wSrPaBW884Ujqkz1A6ZzoGf8GGzMijzJXe9m6Y=
-Message-ID: <863e9df20706252319j239eaf44wee7a46ad742c9585@mail.gmail.com>
-Date: Tue, 26 Jun 2007 11:49:33 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Michael Ellerman" <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/3] Make jprobes a little safer for users
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
-       "Andrew Morton" <akpm@osdl.org>, "Christoph Hellwig" <hch@lst.de>,
-       anil.s.keshavamurthy@intel.com, ananth@in.ibm.com
-In-Reply-To: <7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Jun 2007 02:25:37 -0400
+Date: Mon, 25 Jun 2007 23:25:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
+       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 05/10] Intel IOMMU driver
+Message-Id: <20070625232511.3fc07f8f.akpm@linux-foundation.org>
+In-Reply-To: <20070619213808.716432000@askeshav-devel.jf.intel.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
+	<20070619213808.716432000@askeshav-devel.jf.intel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
-	 <7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/26/07, Michael Ellerman <michael@ellerman.id.au> wrote:
+On Tue, 19 Jun 2007 14:37:06 -0700 "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
 
-> We can then use that in register_jprobe() to check that the entry point
-> we're passed is actually in the kernel text, rather than just some random
-> value.
-
-A similar cleanup is possible even for return probes then. I wonder if
-there are any kprobe related scenarios where the executable code may
-be located outside the core kernel text region (e.g, ITCM?). In that
-case would it also be wrong to assume that the jprobe handler may be
-situated outside the kernel core text / module  region? Would it then
-make sense to move this check from register_jprobe() to the arch
-dependent code?
-
->  int __kprobes register_jprobe(struct jprobe *jp)
->  {
-> +       unsigned long addr = arch_deref_entry_point(jp->entry);
+> +/*
+> + * Decoding Capability Register
+> + */
+> +#define cap_read_drain(c)	(((c) >> 55) & 1)
+> +#define cap_write_drain(c)	(((c) >> 54) & 1)
+> +#define cap_max_amask_val(c)	(((c) >> 48) & 0x3f)
+> +#define cap_num_fault_regs(c)	((((c) >> 40) & 0xff) + 1)
+> +#define cap_pgsel_inv(c)	(((c) >> 39) & 1)
 > +
-> +       if (!kernel_text_address(addr))
-> +               return -EINVAL;
+> +#define cap_super_page_val(c)	(((c) >> 34) & 0xf)
+> +#define cap_super_offset(c)	(((find_first_bit(&cap_super_page_val(c), 4)) \
+> +					* OFFSET_STRIDE) + 21)
+> +
+> +#define cap_fault_reg_offset(c)	((((c) >> 24) & 0x3ff) * 16)
+> +#define cap_max_fault_reg_offset(c) \
+> +	(cap_fault_reg_offset(c) + cap_num_fault_regs(c) * 16)
+> +
+> +#define cap_zlr(c)		(((c) >> 22) & 1)
+> +#define cap_isoch(c)		(((c) >> 23) & 1)
+> +#define cap_mgaw(c)		((((c) >> 16) & 0x3f) + 1)
+> +#define cap_sagaw(c)		(((c) >> 8) & 0x1f)
+> +#define cap_caching_mode(c)	(((c) >> 7) & 1)
+> +#define cap_phmr(c)		(((c) >> 6) & 1)
+> +#define cap_plmr(c)		(((c) >> 5) & 1)
+> +#define cap_rwbf(c)		(((c) >> 4) & 1)
+> +#define cap_afl(c)		(((c) >> 3) & 1)
+> +#define cap_ndoms(c)		(((unsigned long)1) << (4 + 2 * ((c) & 0x7)))
+> +/*
+> + * Extended Capability Register
+> + */
+> +
+> +#define ecap_niotlb_iunits(e)	((((e) >> 24) & 0xff) + 1)
+> +#define ecap_iotlb_offset(e) 	((((e) >> 8) & 0x3ff) * 16)
+> +#define ecap_max_iotlb_offset(e) \
+> +	(ecap_iotlb_offset(e) + ecap_niotlb_iunits(e) * 16)
+> +#define ecap_coherent(e)	((e) & 0x1)
 
-Seems like you're checking for the jprobe handler to be within
-kernel/module range. Why not narrow this down to just module range
-(!module_text_address(addr), say)? Core kernel functions would not be
-ending with a 'jprobe_return()' anyway.
+None of these actually _need_ to be macros and it would be better to 
+implement them in C.  That way things are more self-documenting, more
+pleasant to read, more likely to get commented and you'll fix the
+two bugs wherein the argument to a macro is evaluated more than once.
 
---
-Abhishek Sagar
-
--
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
