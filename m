@@ -1,56 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbXFZTox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759344AbXFZTuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759408AbXFZTox (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 15:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbXFZToq
+	id S1759344AbXFZTuI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbXFZTt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 15:44:46 -0400
-Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:59972 "EHLO
-	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757289AbXFZTop (ORCPT
+	Tue, 26 Jun 2007 15:49:56 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:27392 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757453AbXFZTt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 15:44:45 -0400
-To: david@lang.hm
-Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <200706172319.22381.a1426z@gawab.com>
-	<200706260717.19677.a1426z@gawab.com>
-	<orzm2n44s8.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706261344.23906.a1426z@gawab.com>
-	<or8xa64p4h.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706261013230.23285@asgard.lang.hm>
-From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Date: Tue, 26 Jun 2007 16:44:13 -0300
-In-Reply-To: <Pine.LNX.4.64.0706261013230.23285@asgard.lang.hm> (david@lang.hm's message of "Tue\, 26 Jun 2007 10\:17\:23 -0700 \(PDT\)")
-Message-ID: <orr6ny33hu.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 26 Jun 2007 15:49:56 -0400
+Date: Tue, 26 Jun 2007 12:51:07 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Ed L. Cashin" <ecashin@coraid.com>
+Cc: linux-kernel@vger.kernel.org, Greg K-H <greg@kroah.com>
+Subject: Re: [PATCH 12/12] the aoeminor doesn't need a long format
+Message-Id: <20070626125107.ce2b4325.randy.dunlap@oracle.com>
+In-Reply-To: <e4b5ee94f03480b4801b4a1ddce2d5b71073e258.1182883861.git.ecashin@coraid.com>
+References: <1d8423c28c48a6d26516cdc707dbcdf015a4e347.1182883861.git.ecashin@coraid.com>
+	<e4b5ee94f03480b4801b4a1ddce2d5b71073e258.1182883861.git.ecashin@coraid.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 26, 2007, david@lang.hm wrote:
+On Tue, 26 Jun 2007 14:50:12 -0400 Ed L. Cashin wrote:
 
-> unless you are saying that the GPLv3 is saying that a third party link
-> now _is_ sufficiant.
+> The aoedev aoeminor member doesn't need a long format.
 
-Yup.  The improvement in GPLv3 is to relax the requirement of
-providing source code in physical medium if you choose to not
-distribute it along with the binaries.  It's recognizing that internet
-access is no longer a barrier that could stop someone from obtaining
-the sources they're entitled to.  Even someone who doesn't have
-regular or fast internet access can hire a third party who does to
-perform the download and record it.
+Was there a patch that changed aoeminor to an int?
+Last I see is:
+	ulong aoeminor;
+in linux-2.6.22-rc6/drivers/block/aoe/aoe.h.
 
-I.e., with GPLv3, you *can* point at the sources you used, even in a
-site that you don't control.
+If it's still ulong, you shouldn't change the printk format.
 
-However, if the site takes the sources out, you're still responsible
-for providing sources to those who received the sources from you from
-that point on.  Or something like that, IANAL ;-)
+> Signed-off-by: Ed L. Cashin <ecashin@coraid.com>
+> ---
+>  drivers/block/aoe/aoeblk.c |    6 +++---
+>  drivers/block/aoe/aoecmd.c |    4 ++--
+>  2 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
+> index ccadd9a..e216fe0 100644
+> --- a/drivers/block/aoe/aoeblk.c
+> +++ b/drivers/block/aoe/aoeblk.c
+> @@ -203,7 +203,7 @@ aoeblk_make_request(request_queue_t *q, struct bio *bio)
+>  	spin_lock_irqsave(&d->lock, flags);
+>  
+>  	if ((d->flags & DEVFL_UP) == 0) {
+> -		printk(KERN_INFO "aoe: device %ld.%ld is not up\n",
+> +		printk(KERN_INFO "aoe: device %ld.%d is not up\n",
+>  			d->aoemajor, d->aoeminor);
+>  		spin_unlock_irqrestore(&d->lock, flags);
+>  		mempool_free(buf, d->bufpool);
+> @@ -256,7 +256,7 @@ aoeblk_gdalloc(void *vp)
+>  
+>  	gd = alloc_disk(AOE_PARTITIONS);
+>  	if (gd == NULL) {
+> -		printk(KERN_ERR "aoe: cannot allocate disk structure for %ld.%ld\n",
+> +		printk(KERN_ERR "aoe: cannot allocate disk structure for %ld.%d\n",
+>  			d->aoemajor, d->aoeminor);
+>  		spin_lock_irqsave(&d->lock, flags);
+>  		d->flags &= ~DEVFL_GDALLOC;
+> @@ -266,7 +266,7 @@ aoeblk_gdalloc(void *vp)
+>  
+>  	d->bufpool = mempool_create_slab_pool(MIN_BUFS, buf_pool_cache);
+>  	if (d->bufpool == NULL) {
+> -		printk(KERN_ERR "aoe: cannot allocate bufpool for %ld.%ld\n",
+> +		printk(KERN_ERR "aoe: cannot allocate bufpool for %ld.%d\n",
+>  			d->aoemajor, d->aoeminor);
+>  		put_disk(gd);
+>  		spin_lock_irqsave(&d->lock, flags);
+> diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+> index 9de0024..dfb1184 100644
+> --- a/drivers/block/aoe/aoecmd.c
+> +++ b/drivers/block/aoe/aoecmd.c
+> @@ -680,7 +680,7 @@ ataid_complete(struct aoedev *d, struct aoetgt *t, unsigned char *id)
+>  	}
+>  
+>  	if (d->ssize != ssize)
+> -		printk(KERN_INFO "aoe: %012llx e%lu.%lu v%04x has %llu sectors\n",
+> +		printk(KERN_INFO "aoe: %012llx e%ld.%d v%04x has %llu sectors\n",
+>  			mac_addr(t->addr),
+>  			d->aoemajor, d->aoeminor,
+>  			d->fw_ver, (long long)ssize);
+> @@ -805,7 +805,7 @@ aoecmd_ata_rsp(struct sk_buff *skb)
+>  
+>  	if (ahin->cmdstat & 0xa9) {	/* these bits cleared on success */
+>  		printk(KERN_ERR
+> -			"aoe: ata error cmd=%2.2Xh stat=%2.2Xh from e%ld.%ld\n",
+> +			"aoe: ata error cmd=%2.2Xh stat=%2.2Xh from e%ld.%d\n",
+>  			ahout->cmdstat, ahin->cmdstat,
+>  			d->aoemajor, d->aoeminor);
+>  		if (buf)
+> -- 
 
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
