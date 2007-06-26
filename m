@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbXFZQje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbXFZQtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758219AbXFZQje (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 12:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbXFZQj1
+	id S1757529AbXFZQtQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 12:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756423AbXFZQtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 12:39:27 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1889 "EHLO scrub.xs4all.nl"
+	Tue, 26 Jun 2007 12:49:00 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49040 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752920AbXFZQj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 12:39:27 -0400
-Date: Tue, 26 Jun 2007 18:39:40 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch, v2.6.22-rc6] sys_time() speedup
-In-Reply-To: <20070626161857.GA7178@elte.hu>
-Message-ID: <Pine.LNX.4.64.0706261834020.1817@scrub.home>
-References: <20070625200601.GA18980@elte.hu> <200706252309.47467.zippel@linux-m68k.org>
- <9a8748490706251417v10b3f24bwdf7ebd44093eaddf@mail.gmail.com>
- <Pine.LNX.4.64.0706252356400.1817@scrub.home>
- <9a8748490706251520g24ff7a9dk716d73e7dbfd9ec3@mail.gmail.com>
- <20070626161857.GA7178@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1756382AbXFZQtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 12:49:00 -0400
+Date: Tue, 26 Jun 2007 18:50:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       akpm@linux-foundation.org, Tony Lindgren <tony@atomide.com>,
+       imre.deak@solidboot.com, juha.yrjola@solidboot.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/17] OMAP: Add TI OMAP framebuffer driver
+Message-ID: <20070626165003.GA22389@uranus.ravnborg.org>
+References: <5d5443650706260533r218c05b1u5d4336015c4a4a9b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5d5443650706260533r218c05b1u5d4336015c4a4a9b@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
+new file mode 100644
+index 0000000..5aa7175
+--- /dev/null
++++ b/drivers/video/omap/Makefile
+@@ -0,0 +1,10 @@
++#
++# Makefile for the new OMAP framebuffer device driver
++#
++
++obj-$(CONFIG_FB_OMAP) += omapfb.o
++
++objs-yy := omapfb_main.o
++
++omapfb-objs := $(objs-yy)
++
 
-On Tue, 26 Jun 2007, Ingo Molnar wrote:
+This looks strangs.
+Please use:
+obj-$(CONFIG_FB_OMAP) += omapfb.o
 
-> if you are curious why Roman's reaction to this patch was so negative: 
+omapfb-y := omapfb_main.o
 
-Instead of answering all the open questions, pretty much the second thing 
-you do is to discredit me personally. :-(
-BTW there is a difference between critical and negative...
+Or even better rename your .c file to omapfb.c then
+you only need to use:
+obj-$(CONFIG_FB_OMAP) += omapfb.o
 
-bye, Roman
+	Sam
