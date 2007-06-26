@@ -1,84 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbXFZOte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbXFZOxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757970AbXFZOte (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 10:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbXFZOt1
+	id S1757921AbXFZOxV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 10:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbXFZOxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 10:49:27 -0400
-Received: from mga03.intel.com ([143.182.124.21]:26733 "EHLO mga03.intel.com"
+	Tue, 26 Jun 2007 10:53:14 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:46842 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753111AbXFZOt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 10:49:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,463,1175497200"; 
-   d="scan'208";a="243513748"
-Date: Tue, 26 Jun 2007 07:44:53 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de,
-       muli@il.ibm.com, suresh.b.siddha@intel.com, arjan@linux.intel.com,
-       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
-Subject: Re: [Intel IOMMU 02/10] PCI generic helper function
-Message-ID: <20070626144453.GA31186@linux-os.sc.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070619213808.504997000@askeshav-devel.jf.intel.com> <20070625224937.502d46a0.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	id S1752085AbXFZOxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 10:53:13 -0400
+Date: Tue, 26 Jun 2007 07:53:09 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Uli Luckas <u.luckas@road.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: synchronize_qrcu_timeout()
+Message-ID: <20070626145308.GA8929@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070625104332.GA147@tv-sign.ru> <20070625145851.GB12976@linux.vnet.ibm.com> <20070625152011.GA160@tv-sign.ru> <20070625154957.GA197@tv-sign.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070625224937.502d46a0.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070625154957.GA197@tv-sign.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 10:49:37PM -0700, Andrew Morton wrote:
-> On Tue, 19 Jun 2007 14:37:03 -0700 "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+On Mon, Jun 25, 2007 at 07:49:57PM +0400, Oleg Nesterov wrote:
+> On 06/25, Oleg Nesterov wrote:
+> >
+> > On 06/25, Paul E. McKenney wrote:
+> > >
+> > > On Mon, Jun 25, 2007 at 02:43:32PM +0400, Oleg Nesterov wrote:
+> > > > 
+> > > > Sadly, you can't use srcu/qrcu because it doesn't handle timeouts.	
+> > > 
+> > > Interesting...  So the thought is to have a synchronize_srcu_timeout()
+> > > or something similar that waited for a grace period to elapse or for
+> > > a timeout to expire, whichever comes first?  It should not be too hard
+> > > to arrange something, if needed.
+> > 
+> > Yes. As for qrcu (see http://marc.info/?t=116484476500001), I think it is easy.
+> > First, we add "int interrupted" into struct qrcu_struct, then something like this
 > 
-> > +struct pci_dev *
-> > +pci_find_upstream_pcie_bridge(struct pci_dev *pdev)
-> 
-> You didn't need a newline there, but that's what the rest of that file
-> does.  Hu hum.
-> 
-> > +{
-> > +	struct pci_dev *tmp = NULL;
-> > +
-> > +	if (pdev->is_pcie)
-> > +		return NULL;
-> > +	while (1) {
-> > +		if (!pdev->bus->self)
-> > +			break;
-> > +		pdev = pdev->bus->self;
-> > +		/* a p2p bridge */
-> > +		if (!pdev->is_pcie) {
-> > +			tmp = pdev;
-> > +			continue;
-> > +		}
-> > +		/* PCI device should connect to a PCIE bridge */
-> > +		BUG_ON(pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE);
-> 
-> I assume that if this bug triggers, we've found some broken hardware?
-> 
-> Going BUG seems like a pretty rude reaction to this, especially when it
-> would be so easy to drop a warning and then recover.
-> 
-> 
-> How's about this?
-Looks good, thanks.
+> Even simpler, we don't need ->interrupted.
 
+I have to ask...
+
+What sorts of performance characteristics are needed here?  The reason
+that I ask is because putting a straight synchronize_qrcu() into a
+workqueue (or something similar) and then using a timer to provide
+any needed wakeup seems a lot simpler than rearranging the innards of
+synchronize_qrcu().
+
+(Yes, I am feeling cowardly.  Why do you ask?)
+
+						Thanx, Paul
+
+> 	long synchronize_qrcu_timeout(struct qrcu_struct *qp, long tout)
+> 	{
+> 		int idx, prv;
 > 
-> --- a/drivers/pci/search.c~intel-iommu-pci-generic-helper-function-fix
-> +++ a/drivers/pci/search.c
-> @@ -38,7 +38,11 @@ pci_find_upstream_pcie_bridge(struct pci
->  			continue;
->  		}
->  		/* PCI device should connect to a PCIE bridge */
-> -		BUG_ON(pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE);
-> +		if (pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE) {
-> +			/* Busted hardware? */
-> +			WARN_ON_ONCE(1);
-> +			return NULL;
-> +		}
->  		return pdev;
->  	}
->  
+> 		smp_mb();
+> 		mutex_lock(&qp->mutex);
+> 
+> 		idx = qp->completed & 0x1;
+> 		prv = idx ^ 0x1;
+> 
+> 		if (unlikely(atomic_read(qp->ctr + prv))) {
+> 			// the previous call has not succeed,
+> 			// finish the wait
+> 			__wait_event_timeout(qp->wq, !atomic_read(qp->ctr + prv), tout);
+> 			if (unlikely(!tout))
+> 				goto out;
+> 		}
+> 
+> 		if (atomic_read(qp->ctr + idx) == 1)
+> 			goto out;
+> 
+> 		atomic_inc(qp->ctr + prv);
+> 		qp->completed++;
+> 
+> 		atomic_dec(qp->ctr + idx);
+> 		__wait_event_timeout(qp->wq, !atomic_read(qp->ctr + idx), tout);
+> 	out:
+> 		mutex_unlock(&qp->mutex);
+> 		smp_mb();
+> 
+> 		return tout;
+> 	}
+> 
+> Oleg.
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
