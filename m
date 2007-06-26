@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbXFZALS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbXFZALz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbXFZALS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 20:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXFZALH
+	id S1754894AbXFZALz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 20:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXFZALs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 20:11:07 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:51914 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbXFZALF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 20:11:05 -0400
-In-Reply-To: <9362.218.101.54.21.1182811032.squirrel@218.101.54.21>
-To: manningc2@actrix.co.nz
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Graeme Sheppard" <nodes@rillion.net>
-MIME-Version: 1.0
-Subject: Re: Patent or not patent a new idea
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF0DF659CF.168A4C26-ON88257306.00008A0E-88257306.0001006D@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Mon, 25 Jun 2007 17:11:00 -0700
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V80_M5_05202007|May 20, 2007) at
- 06/25/2007 20:11:02,
-	Serialize complete at 06/25/2007 20:11:02
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 25 Jun 2007 20:11:48 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43307 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751272AbXFZALr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 20:11:47 -0400
+Date: Mon, 25 Jun 2007 17:11:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       John Stultz <johnstul@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch -mm 09/28] Tick management: spread timer interrupt
+Message-Id: <20070625171115.73a42e93.akpm@linux-foundation.org>
+In-Reply-To: <20070623124030.531042944@inhelltoy.tec.linutronix.de>
+References: <20070623124005.931747831@inhelltoy.tec.linutronix.de>
+	<20070623124030.531042944@inhelltoy.tec.linutronix.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->If your only purpose is to try generate a defensive patent, then just
->dumping the idea in the public domain serves the same purpose, probably
->better.
->
->I have a few patents, some of which are defensive. That has not prevented
->the USPTO issuing quite a few patents that are in clear violation of 
-mine.
+On Sat, 23 Jun 2007 13:32:34 -0000
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-That's not what a defensive patent is.  Indeed, patenting something just 
-so someone else can't patent it is ridiculous, because publishing is so 
-much easier.
+> From: john stultz <johnstul@us.ibm.com>
+> 
+> After discussing w/ Thomas over IRC, it seems the issue is the sched
+> tick fires on every cpu at the same time, causing extra lock contention.
+> 
+> This smaller change, adds an extra offset per cpu so the ticks don't
+> line up. This patch also drops the idle latency from 40us down to under
+> 20us.
+> 
+> Signed-off-by: john stultz <johnstul@us.ibm.com>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> ---
+>  kernel/time/tick-sched.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.22-rc4-mm/kernel/time/tick-sched.c
+> ===================================================================
+> --- linux-2.6.22-rc4-mm.orig/kernel/time/tick-sched.c	2007-06-23 14:38:56.000000000 +0200
+> +++ linux-2.6.22-rc4-mm/kernel/time/tick-sched.c	2007-06-23 14:38:58.000000000 +0200
+> @@ -573,6 +573,7 @@ void tick_setup_sched_timer(void)
+>  {
+>  	struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
+>  	ktime_t now = ktime_get();
+> +	u64 offset;
+>  
+>  	/*
+>  	 * Emulate tick processing via per-CPU hrtimers:
+> @@ -581,8 +582,12 @@ void tick_setup_sched_timer(void)
+>  	ts->sched_timer.function = tick_sched_timer;
+>  	ts->sched_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
+>  
+> -	/* Get the next period */
+> +	/* Get the next period (per cpu) */
+>  	ts->sched_timer.expires = tick_init_jiffy_update();
+> +	offset = ktime_to_ns(tick_period) >> 1;
+> +	do_div(offset, NR_CPUS);
 
-A defensive patent is one you file so that you can trade rights to it for 
-rights to other patents that you need.
+With CONFIG_NR_CPUS=128 on a 2-way this'll be a pretty lumpy spreading? 
+Perhaps it woud be better to use num_possible_cpus() here?
 
 
+> +	offset *= smp_processor_id();
+> +	ts->sched_timer.expires = ktime_add_ns(ts->sched_timer.expires, offset);
+>  
+>  	for (;;) {
+>  		hrtimer_forward(&ts->sched_timer, now, tick_period);
+> 
+> -- 
