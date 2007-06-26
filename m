@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbXFZEKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbXFZENQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755543AbXFZEKy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 00:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXFZEKq
+	id S1755260AbXFZENQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 00:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXFZEND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 00:10:46 -0400
-Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:34147 "EHLO
-	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750832AbXFZEKq (ORCPT
+	Tue, 26 Jun 2007 00:13:03 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45974 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750832AbXFZENB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 00:10:46 -0400
-Date: Tue, 26 Jun 2007 00:10:13 -0400
-To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
-Message-ID: <20070626041013.GG24745@delft.aura.cs.cmu.edu>
-Mail-Followup-To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>,
-	linux-kernel@vger.kernel.org
-References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622013417.GT21478@ftp.linux.org.uk> <20070622041949.GA15625@thunk.org> <orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br> <20070625132853.GH10008@csclub.uwaterloo.ca> <orhcov7qsz.fsf@oliva.athome.lsd.ic.unicamp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <orhcov7qsz.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Jan Harkes <jaharkes@cs.cmu.edu>
+	Tue, 26 Jun 2007 00:13:01 -0400
+Date: Mon, 25 Jun 2007 21:12:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Bob Picco" <bob.picco@hp.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+Subject: Re: mm snapshot broken-out-2007-06-20-10-12.tar.gz uploaded
+Message-Id: <20070625211243.84a53d27.akpm@linux-foundation.org>
+In-Reply-To: <20070621011422.GF10927@localhost>
+References: <200706201714.l5KHEYh6010297@imap1.linux-foundation.org>
+	<20070621005122.GD10927@localhost>
+	<20070620180711.1d4d6b6e.randy.dunlap@oracle.com>
+	<20070621011422.GF10927@localhost>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 25, 2007 at 04:54:52PM -0300, Alexandre Oliva wrote:
-> Consider this scenario: vendor tivoizes Linux in the device, and
-> includes the corresponding sources only in a partition that is
-> theoretically accessible using the shipped kernel, but that nothing in
-> the software available in the machine will let you get to.  Further,
-> sources (like everything else on disk) are encrypted, and you can only
+On Wed, 20 Jun 2007 21:14:22 -0400 "Bob Picco" <bob.picco@hp.com> wrote:
 
-Interesting scenario, it seems to comply with GPLv2 on the surface.
+> Randy Dunlap wrote:	[Wed Jun 20 2007, 09:07:11PM EDT]
+> > On Wed, 20 Jun 2007 20:51:22 -0400 Bob Picco wrote:
+> > 
+> > > akpm@linux-foundation.org wrote:	[Wed Jun 20 2007, 01:14:34PM EDT]
+> > > [snip]
+> > > 
+> > > Build breakage. pci_mmcfg_late_init is for i386.
+> > 
+> > then you want CONFIG_X86_32 instead of CONFIG_X86.
+> > CONFIG_X86 is set/true for both X86_32 and X86_64.
+> Then what I stated within the patch description is incorrect. pci.h which is the
+> required include for the declaration is conditionally for CONFIG_X86. So it is
+> both I guess?
 
-If that kernel doesn't actually allow access and wipes the source
-partition to use it as swap on first boot, then no machine is actually
-capable of reading the source. So it isn't really machine readable.
-Another gripe is that encrypted media are not customarily used for
-software interchange. So that's 2 (minor) strikes where this method of
-distribution doesn't seem to match the language of section 3a.
+(reads code and config files, works out that the breakage must have been ia64)
 
-You also cannot interpret the encrypted partition as source code because
-a bit further down in section 3, it defines source code as,
-  "The source code for a work means the preferred form of the work for
-  making modifications to it."
+Really the header file should take care of this, and conditional inclusion
+is evil.
 
-So now we get to section 6. The recipient receives a license to copy,
-distribute or modify. You may not impose further restrictions on
-these rights granted herein.
+So let's give this a whizz?
 
-You could argue that they do not restrict copying, distribution
-and modification of the sources in general, only of the specific copy
-they distribute. However here we go back to section 2 which states that
-their modified copy is a derived work which must be licensed under the
-GPLv2, so that would make it specific enough that recipients have in
-fact been granted the right to copy, distribute and modify the copy of
-the source of that corresponds to the distributed binaries, which is
-restricted because of the encryption which prevents the user to copy,
-distribute or modify the source code.
 
-> Does anyone think this is permitted by the letter of GPLv2?
+From: Andrew Morton <akpm@linux-foundation.org>
 
-No.
+drivers/acpi/bus.c: In function `acpi_init':
+drivers/acpi/bus.c:760: warning: implicit declaration of function `pci_mmcfg_late_init'
 
-> How are the sources passed on in this way going to benefit the user or
-> the community?
+Fix this by always including pci.h in drivers/acpi/bus.c.
 
-Not a really interesting question if the method of distribution violates
-the letter of the GPLv2, is it? They get sued for copyright infringement
-because they are not in compliance with section 3 and the sources are
-released as a result.
+Also remove unneeded inclusion of asm/pci.h (linux/pci.h did that)
 
-Jan
+Cc: Andi Kleen <ak@suse.de>
+Cc: Greg KH <greg@kroah.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rajesh Shah <rajesh.shah@intel.com>
+Cc: Robert Hancock <hancockr@shaw.ca>
+Cc: Len Brown <lenb@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/acpi/bus.c |    3 +--
+ linux/pci.h        |    0 
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff -puN drivers/acpi/bus.c~mmconfig-validate-against-acpi-motherboard-resources-fix-2-3 drivers/acpi/bus.c
+--- a/drivers/acpi/bus.c~mmconfig-validate-against-acpi-motherboard-resources-fix-2-3
++++ a/drivers/acpi/bus.c
+@@ -34,9 +34,8 @@
+ #include <linux/proc_fs.h>
+ #ifdef CONFIG_X86
+ #include <asm/mpspec.h>
+-#include <linux/pci.h>
+-#include <asm/pci.h>
+ #endif
++#include <linux/pci.h>
+ #include <acpi/acpi_bus.h>
+ #include <acpi/acpi_drivers.h>
+ 
+_
 
