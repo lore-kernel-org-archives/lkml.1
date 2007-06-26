@@ -1,67 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbXFZSi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758969AbXFZSlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbXFZSi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 14:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757580AbXFZSis
+	id S1758969AbXFZSlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 14:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbXFZSlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 14:38:48 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45848 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757507AbXFZSir (ORCPT
+	Tue, 26 Jun 2007 14:41:08 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:50365 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756075AbXFZSlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 14:38:47 -0400
-Date: Tue, 26 Jun 2007 11:38:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, suresh.b.siddha@intel.com
-Subject: Re: [patch 12/26] SLUB: Slab defragmentation core
-Message-Id: <20070626113823.d78d8c0c.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706261114320.18010@schroedinger.engr.sgi.com>
-References: <20070618095838.238615343@sgi.com>
-	<20070618095916.297690463@sgi.com>
-	<20070626011831.181d7a6a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706261114320.18010@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jun 2007 14:41:06 -0400
+Date: Tue, 26 Jun 2007 13:40:48 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Adrian Bunk <bunk@stusta.de>,
+       "Serge E. Hallyn" <serge@hallyn.com>, James Morris <jmorris@namei.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       linux-security-module@vger.kernel.org, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
+Message-ID: <20070626184048.GA12109@sergelap.austin.ibm.com>
+References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain> <200706252237.59226.agruen@suse.de> <Line.LNX.4.64.0706251712570.24003@localhost.localdomain> <20070626035731.GA16313@vino.hallyn.com> <20070626131519.GH1094@stusta.de> <20070626140644.GB8615@sergelap.austin.ibm.com> <20070626181823.GA5602@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070626181823.GA5602@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 11:19:26 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
->  
-> > But slab_lock() isn't taken for slabs whose objects are larger than 
-> > PAGE_SIZE. How's that handled?
+Quoting Greg KH (greg@kroah.com):
+> On Tue, Jun 26, 2007 at 09:06:44AM -0500, Serge E. Hallyn wrote:
+> > Quoting Adrian Bunk (bunk@stusta.de):
+> > > On Mon, Jun 25, 2007 at 10:57:31PM -0500, Serge E. Hallyn wrote:
+> > > > Quoting James Morris (jmorris@namei.org):
+> > > > > On Mon, 25 Jun 2007, Andreas Gruenbacher wrote:
+> > > > > 
+> > > > > > It's useful for some LSMs to be modular, and LSMs which are y/n options won't 
+> > > > > > have any security architecture issues with unloading at all. 
+> > > > > 
+> > > > > Which LSMs?  Upstream, there are SELinux and capabilty, and they're not 
+> > > > > safe as loadable modules.
+> > > > > 
+> > > > > > The mere fact 
+> > > > > > that SELinux cannot be built as a module is a rather weak argument for 
+> > > > > > disabling LSM modules as a whole, so  please don't.
+> > > > > 
+> > > > > That's not the argument.  Please review the thread.
+> > > > 
+> > > > The argument is 'abuse', right?
+> > > > 
+> > > > Abuse is defined as using the LSM hooks for non-security applications,
+> > > > right?
+> > > > 
+> > > > It seems to me that the community is doing a good job of discouraging
+> > > > such abuse - by redirecting the "wrong-doers" to implement proper
+> > > > upstream solutions, i.e. taskstats, the audit subsystem, etc.
+> > > > 
+> > > > Such encouragement seems a far better response than taking away freedoms
+> > > > and flexibility from everyone.
+> > > 
+> > > We are not living in a world where everyone had good intentions...
+> > 
+> > Oh no, i took a wrong turn somewhere  :)
+> > 
+> > > For _some_ "wrong-doers" your approach works.
+> > > 
+> > > But how do you convince the "wrong-doers" who do things like putting 
+> > > MODULE_LICENSE("GPL") into their binary-only modules and who ignore you 
+> > > and get away because noone sues them?
+> > 
+> > Do these really exist?
 > 
-> slab lock is always taken. How did you get that idea?
-
-Damned if I know.  Perhaps by reading slob.c instead of slub.c.  When can
-we start deleting some slab implementations?
-
-> > How much testing has been done on this code, and of what form, and with
-> > what results?
+> Yes they do.
 > 
-> I posted them in the intro of the last full post and then Michael 
-> Piotrowski did some stress tests.
+> > Maybe noone sues them because noone knows who they are...
 > 
-> See http://marc.info/?l=linux-mm&m=118125373320855&w=2
+> Maybe no one knows because the people doing the legal action against
+> them are trying to be nice and do it quietly.
 
-hm, OK, thin.
+So they're being nice to the violaters, and then clamping down on
+everyone...
 
-I think we'll need to come up with a better-than-usual test plan for this
-change.  One starting point might be to ask what in-the-field problem
-you're trying to address here, and what the results were.
+> And legal action takes time, it is quite slow going unfortunatly.
+> 
+> Heck, I've seen code that is even properly licensed under the GPL abuse
+> this security layer for things it was not ment to do at all, and that
+> stuff comes from _very_ big companies that really should know better...
 
+But that's back to the other type of 'abuse' which i was originally
+talking about, and which IMO is being well addressed through education.
 
-Also, what are the risks of meltdowns in this code?  For example, it
-reaches the magical 30% ratio, tries to do defrag, but the defrag is for
-some reason unsuccessful and it then tries to run defrag again, etc.
+As for the others, I have no better suggestions.  I wish I did.
 
-And that was "for example"!  Are there other such potential problems in
-there?  There usually are, with memory reclaim.
+> So I agree that we should unexport it.  It will make people who want to
+> abuse the interface at least think twice about it.
 
+And those who don't abuse it too.
 
-(Should slab_defrag_ratio be per-slab rather than global?)
+> thanks,
+> 
+> greg "I want to mark structures read-only" k-h
+
+And I know I'm not the one who's going to stop you...
+
+-serge
