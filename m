@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbXFZPp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbXFZPwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758339AbXFZPp5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbXFZPpv
+	id S1757647AbXFZPwq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbXFZPwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:45:51 -0400
-Received: from www.osadl.org ([213.239.205.134]:53869 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753231AbXFZPpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:45:50 -0400
-Subject: Re: Dynamic ticks make system jerking
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20070626150015.GA20233@informatik.uni-freiburg.de>
-References: <20070626150015.GA20233@informatik.uni-freiburg.de>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 26 Jun 2007 17:45:49 +0200
-Message-Id: <1182872749.11854.27.camel@chaos>
+	Tue, 26 Jun 2007 11:52:37 -0400
+Received: from mga09.intel.com ([134.134.136.24]:37175 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754748AbXFZPwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 11:52:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,464,1175497200"; 
+   d="scan'208";a="100296018"
+Date: Tue, 26 Jun 2007 08:48:04 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
+       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
+Message-ID: <20070626154803.GA3374@linux-os.sc.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org> <200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com> <46812ADF.3060609@linux.intel.com> <20070626151125.GD8274@rhun.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070626151125.GD8274@rhun.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-26 at 17:00 +0200, Uwe Kleine-König wrote:
-> If I enable NO_HZ, the system jerks (I hope this is an understandable
-> term ...).   E.g. 
+On Tue, Jun 26, 2007 at 11:11:25AM -0400, Muli Ben-Yehuda wrote:
+> On Tue, Jun 26, 2007 at 08:03:59AM -0700, Arjan van de Ven wrote:
+> > Muli Ben-Yehuda wrote:
+> > >How much? we have numbers (to be presented at OLS later this week)
+> > >that show that on bare-metal an IOMMU can cost as much as 15%-30% more
+> > >CPU utilization for an IO intensive workload (netperf). It will be
+> > >interesting to see comparable numbers for VT-d.
+> > 
+> > for VT-d it is a LOT less. I'll let anil give you his data :)
 > 
-> 	# time find /sys
-> 	...
-> 	real    1m 19.52s
-> 	user    0m 0.18s
-> 	sys     0m 0.15s
-> 
-> on a freshly booted machine.  The output comes in several hunks with
-> pausing between them.  With no_hz=off, I get approx. the same.
+> Looking forward to it. Note that this is on a large SMP machine with
+> Gigabit ethernet, with netperf TCP stream. Comparing numbers for other
+> benchmarks on other machines is ... less than useful, but the numbers
+> themeselves are interesting.
+Our initial benchmark results showed we had around 3% extra CPU 
+utilization overhead when compared to native(i.e without IOMMU).
+Again, our benchmark was on small SMP machine and we used
+iperf and a 1G ethernet cards.
 
-it's nohz=off not no_hz=off
+Going forward we will do more benchmark tests and will share the
+results.
 
-> If I have NO_HZ disabled however, I get
-> 
-> 	# time find /sys
-> 	...
-> 	real    0m 1.53s
-> 	user    0m 0.15s
-> 	sys     0m 0.18s
-
-Well, you run in periodic mode then.
-
-> Another thing is, if I press Enter once, the next prompt appears in a
-> reasonable time.  If I press twice in a row the 2nd prompt needs
-> perceptible longer.
-> 
-> Does someone have a hint for me how to debug (or even solve) this problem?
-> 
-> First I wondered why set_next_event is called twice between two timer
-> interrupts most of the time.  I found out that the timer is programed
-> for the next tick in any case and if nothing needs the next tick, the
-> interval is enlarged.  I didn't spend time yet to check if it is
-> easier/faster to only program the timer once.
-
-We optimize for the non-idle path, i.e. we keep the timer running as
-long as we are not idle. Once we go idle we reprogram it.
-
-I looked at the patch and as far as I can understand it, there is
-nothing obviously wrong about it.
-
-One remark: why did you expand the clocksource to be 64 bit? The generic
-code handles the 32 bit wrap already, so the expansion in your read
-routine is adding overhead. The counter will wrap every 24 seconds, so
-there is nothing to worry about.
-
-The behavior you are describing is might be related to some problem with
-the clocksource readout, as the reprogramming values are calculated from
-there. 
-
-	tglx
-
-
-
-
+-Anil
