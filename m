@@ -1,134 +1,542 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbXFZXWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761630AbXFZXXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761755AbXFZXWv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760170AbXFZXMX
+	id S1761630AbXFZXXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759891AbXFZXM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:12:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43034 "EHLO mx1.suse.de"
+	Tue, 26 Jun 2007 19:12:28 -0400
+Received: from mail.suse.de ([195.135.220.2]:43040 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760175AbXFZXMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:12:18 -0400
-Message-Id: <20070626231132.703797254@suse.de>
+	id S1759485AbXFZXMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:12:19 -0400
+Message-Id: <20070626231128.455456953@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:30 -0700
+Date: Tue, 26 Jun 2007 16:08:29 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 34/44] Factor out sysctl pathname code
-Content-Disposition: inline; filename=sysctl-pathname.diff
+Subject: [AppArmor 33/44] Pass struct file down the inode_*xattr security LSM hooks
+Content-Disposition: inline; filename=security-xattr-file.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert the selinux sysctl pathname computation code into a standalone
-function.
+This allows LSMs to also distinguish between file descriptor and path
+access for the xattr operations. (The other relevant operations are
+covered by the setattr hook.)
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- include/linux/sysctl.h   |    2 ++
- kernel/sysctl.c          |   27 +++++++++++++++++++++++++++
- security/selinux/hooks.c |   35 +++++------------------------------
- 3 files changed, 34 insertions(+), 30 deletions(-)
+ fs/xattr.c               |   58 ++++++++++++++++++++++++-----------------------
+ include/linux/security.h |   53 +++++++++++++++++++++++++-----------------
+ include/linux/xattr.h    |    8 +++---
+ security/commoncap.c     |    4 +--
+ security/dummy.c         |   10 ++++----
+ security/selinux/hooks.c |   10 ++++----
+ 6 files changed, 80 insertions(+), 63 deletions(-)
 
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -963,6 +963,8 @@ extern int proc_doulongvec_minmax(ctl_ta
- extern int proc_doulongvec_ms_jiffies_minmax(ctl_table *table, int,
- 				      struct file *, void __user *, size_t *, loff_t *);
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -70,7 +70,7 @@ xattr_permission(struct inode *inode, co
  
-+extern char *sysctl_pathname(ctl_table *, char *, int);
-+
- extern int do_sysctl (int __user *name, int nlen,
- 		      void __user *oldval, size_t __user *oldlenp,
- 		      void __user *newval, size_t newlen);
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1110,6 +1110,33 @@ struct ctl_table_header *sysctl_head_nex
- 	return NULL;
+ int
+ vfs_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
+-	     void *value, size_t size, int flags)
++	     void *value, size_t size, int flags, struct file *file)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -80,7 +80,7 @@ vfs_setxattr(struct dentry *dentry, stru
+ 		return error;
+ 
+ 	mutex_lock(&inode->i_mutex);
+-	error = security_inode_setxattr(dentry, mnt, name, value, size, flags);
++	error = security_inode_setxattr(dentry, mnt, name, value, size, flags,						file);
+ 	if (error)
+ 		goto out;
+ 	error = -EOPNOTSUPP;
+@@ -107,7 +107,7 @@ EXPORT_SYMBOL_GPL(vfs_setxattr);
+ 
+ ssize_t
+ vfs_getxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
+-	     void *value, size_t size)
++	     void *value, size_t size, struct file *file)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -116,7 +116,7 @@ vfs_getxattr(struct dentry *dentry, stru
+ 	if (error)
+ 		return error;
+ 
+-	error = security_inode_getxattr(dentry, mnt, name);
++	error = security_inode_getxattr(dentry, mnt, name, file);
+ 	if (error)
+ 		return error;
+ 
+@@ -144,12 +144,12 @@ EXPORT_SYMBOL_GPL(vfs_getxattr);
+ 
+ ssize_t
+ vfs_listxattr(struct dentry *dentry, struct vfsmount *mnt, char *list,
+-	      size_t size)
++	      size_t size, struct file *file)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	ssize_t error;
+ 
+-	error = security_inode_listxattr(dentry, mnt);
++	error = security_inode_listxattr(dentry, mnt, file);
+ 	if (error)
+ 		return error;
+ 	error = -EOPNOTSUPP;
+@@ -165,7 +165,8 @@ vfs_listxattr(struct dentry *dentry, str
+ EXPORT_SYMBOL_GPL(vfs_listxattr);
+ 
+ int
+-vfs_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name)
++vfs_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
++		struct file *file)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -177,7 +178,7 @@ vfs_removexattr(struct dentry *dentry, s
+ 	if (error)
+ 		return error;
+ 
+-	error = security_inode_removexattr(dentry, mnt, name);
++	error = security_inode_removexattr(dentry, mnt, name, file);
+ 	if (error)
+ 		return error;
+ 
+@@ -197,7 +198,7 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
+  */
+ static long
+ setxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
+-	 void __user *value, size_t size, int flags)
++	 void __user *value, size_t size, int flags, struct file *file)
+ {
+ 	int error;
+ 	void *kvalue = NULL;
+@@ -224,7 +225,7 @@ setxattr(struct dentry *dentry, struct v
+ 		}
+ 	}
+ 
+-	error = vfs_setxattr(dentry, mnt, kname, kvalue, size, flags);
++	error = vfs_setxattr(dentry, mnt, kname, kvalue, size, flags, file);
+ 	kfree(kvalue);
+ 	return error;
+ }
+@@ -239,7 +240,7 @@ sys_setxattr(char __user *path, char __u
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags);
++	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags, NULL);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -254,7 +255,7 @@ sys_lsetxattr(char __user *path, char __
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags);
++	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags, NULL);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -272,7 +273,7 @@ sys_fsetxattr(int fd, char __user *name,
+ 		return error;
+ 	dentry = f->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = setxattr(dentry, f->f_vfsmnt, name, value, size, flags);
++	error = setxattr(dentry, f->f_vfsmnt, name, value, size, flags, f);
+ 	fput(f);
+ 	return error;
+ }
+@@ -282,7 +283,7 @@ sys_fsetxattr(int fd, char __user *name,
+  */
+ static ssize_t
+ getxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
+-	 void __user *value, size_t size)
++	 void __user *value, size_t size, struct file *file)
+ {
+ 	ssize_t error;
+ 	void *kvalue = NULL;
+@@ -302,7 +303,7 @@ getxattr(struct dentry *dentry, struct v
+ 			return -ENOMEM;
+ 	}
+ 
+-	error = vfs_getxattr(dentry, mnt, kname, kvalue, size);
++	error = vfs_getxattr(dentry, mnt, kname, kvalue, size, file);
+ 	if (error > 0) {
+ 		if (size && copy_to_user(value, kvalue, error))
+ 			error = -EFAULT;
+@@ -325,7 +326,7 @@ sys_getxattr(char __user *path, char __u
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = getxattr(nd.dentry, nd.mnt, name, value, size);
++	error = getxattr(nd.dentry, nd.mnt, name, value, size, NULL);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -340,7 +341,7 @@ sys_lgetxattr(char __user *path, char __
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = getxattr(nd.dentry, nd.mnt, name, value, size);
++	error = getxattr(nd.dentry, nd.mnt, name, value, size, NULL);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -355,7 +356,7 @@ sys_fgetxattr(int fd, char __user *name,
+ 	if (!f)
+ 		return error;
+ 	audit_inode(NULL, f->f_path.dentry->d_inode);
+-	error = getxattr(f->f_path.dentry, f->f_path.mnt, name, value, size);
++	error = getxattr(f->f_path.dentry, f->f_path.mnt, name, value, size, f);
+ 	fput(f);
+ 	return error;
+ }
+@@ -365,7 +366,7 @@ sys_fgetxattr(int fd, char __user *name,
+  */
+ static ssize_t
+ listxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *list,
+-	  size_t size)
++	  size_t size, struct file *file)
+ {
+ 	ssize_t error;
+ 	char *klist = NULL;
+@@ -378,7 +379,7 @@ listxattr(struct dentry *dentry, struct 
+ 			return -ENOMEM;
+ 	}
+ 
+-	error = vfs_listxattr(dentry, mnt, klist, size);
++	error = vfs_listxattr(dentry, mnt, klist, size, file);
+ 	if (error > 0) {
+ 		if (size && copy_to_user(list, klist, error))
+ 			error = -EFAULT;
+@@ -400,7 +401,7 @@ sys_listxattr(char __user *path, char __
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = listxattr(nd.dentry, nd.mnt, list, size);
++	error = listxattr(nd.dentry, nd.mnt, list, size, NULL);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -414,7 +415,7 @@ sys_llistxattr(char __user *path, char _
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = listxattr(nd.dentry, nd.mnt, list, size);
++	error = listxattr(nd.dentry, nd.mnt, list, size, NULL);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -429,7 +430,7 @@ sys_flistxattr(int fd, char __user *list
+ 	if (!f)
+ 		return error;
+ 	audit_inode(NULL, f->f_path.dentry->d_inode);
+-	error = listxattr(f->f_path.dentry, f->f_path.mnt, list, size);
++	error = listxattr(f->f_path.dentry, f->f_path.mnt, list, size, f);
+ 	fput(f);
+ 	return error;
+ }
+@@ -438,7 +439,8 @@ sys_flistxattr(int fd, char __user *list
+  * Extended attribute REMOVE operations
+  */
+ static long
+-removexattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name)
++removexattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
++	    struct file *file)
+ {
+ 	int error;
+ 	char kname[XATTR_NAME_MAX + 1];
+@@ -449,7 +451,7 @@ removexattr(struct dentry *dentry, struc
+ 	if (error < 0)
+ 		return error;
+ 
+-	return vfs_removexattr(dentry, mnt, kname);
++	return vfs_removexattr(dentry, mnt, kname, file);
  }
  
-+char *sysctl_pathname(ctl_table *table, char *buffer, int buflen)
-+{
-+	if (buflen < 1)
-+		return NULL;
-+	buffer += --buflen;
-+	*buffer = '\0';
-+
-+	while (table) {
-+		int namelen = strlen(table->procname);
-+
-+		if (buflen < namelen + 1)
-+			return NULL;
-+		buflen -= namelen + 1;
-+		buffer -= namelen;
-+		memcpy(buffer, table->procname, namelen);
-+		*--buffer = '/';
-+		table = table->parent;
-+	}
-+	if (buflen < 4)
-+		return NULL;
-+	buffer -= 4;
-+	memcpy(buffer, "/sys", 4);
-+
-+	return buffer;
-+}
-+EXPORT_SYMBOL(sysctl_pathname);
-+
- #ifdef CONFIG_SYSCTL_SYSCALL
- int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
- 	       void __user *newval, size_t newlen)
+ asmlinkage long
+@@ -461,7 +463,7 @@ sys_removexattr(char __user *path, char 
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = removexattr(nd.dentry, nd.mnt, name);
++	error = removexattr(nd.dentry, nd.mnt, name, NULL);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -475,7 +477,7 @@ sys_lremovexattr(char __user *path, char
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = removexattr(nd.dentry, nd.mnt, name);
++	error = removexattr(nd.dentry, nd.mnt, name, NULL);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -492,7 +494,7 @@ sys_fremovexattr(int fd, char __user *na
+ 		return error;
+ 	dentry = f->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = removexattr(dentry, f->f_path.mnt, name);
++	error = removexattr(dentry, f->f_path.mnt, name, f);
+ 	fput(f);
+ 	return error;
+ }
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -49,8 +49,8 @@ extern void cap_capset_set (struct task_
+ extern int cap_bprm_set_security (struct linux_binprm *bprm);
+ extern void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe);
+ extern int cap_bprm_secureexec(struct linux_binprm *bprm);
+-extern int cap_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name, void *value, size_t size, int flags);
+-extern int cap_inode_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name);
++extern int cap_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name, void *value, size_t size, int flags, struct file *file);
++extern int cap_inode_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name, struct file *file);
+ extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
+ extern void cap_task_reparent_to_init (struct task_struct *p);
+ extern int cap_syslog (int type);
+@@ -1243,16 +1243,18 @@ struct security_operations {
+ 	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
+         void (*inode_delete) (struct inode *inode);
+ 	int (*inode_setxattr) (struct dentry *dentry, struct vfsmount *mnt,
+-			       char *name, void *value, size_t size, int flags);
++			       char *name, void *value, size_t size, int flags,
++			       struct file *file);
+ 	void (*inode_post_setxattr) (struct dentry *dentry,
+ 				     struct vfsmount *mnt,
+ 				     char *name, void *value,
+ 				     size_t size, int flags);
+ 	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
+-			       char *name);
+-	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt);
++			       char *name, struct file *file);
++	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt,
++				struct file *file);
+ 	int (*inode_removexattr) (struct dentry *dentry, struct vfsmount *mnt,
+-				  char *name);
++				  char *name, struct file *file);
+ 	const char *(*inode_xattr_getsuffix) (void);
+   	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
+   	int (*inode_setsecurity)(struct inode *inode, const char *name, const void *value, size_t size, int flags);
+@@ -1766,12 +1768,13 @@ static inline void security_inode_delete
+ 
+ static inline int security_inode_setxattr (struct dentry *dentry,
+ 					   struct vfsmount *mnt, char *name,
+-					   void *value, size_t size, int flags)
++					   void *value, size_t size, int flags,
++					   struct file *file)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+ 	return security_ops->inode_setxattr (dentry, mnt, name, value, size,
+-					     flags);
++					     flags, file);
+ }
+ 
+ static inline void security_inode_post_setxattr (struct dentry *dentry,
+@@ -1781,31 +1784,35 @@ static inline void security_inode_post_s
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return;
+-	security_ops->inode_post_setxattr (dentry, mnt, name, value, size, flags);
++	security_ops->inode_post_setxattr (dentry, mnt, name, value, size,
++					   flags);
+ }
+ 
+ static inline int security_inode_getxattr (struct dentry *dentry,
+-					    struct vfsmount *mnt, char *name)
++					   struct vfsmount *mnt, char *name,
++					   struct file *file)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_getxattr (dentry, mnt, name);
++	return security_ops->inode_getxattr (dentry, mnt, name, file);
+ }
+ 
+ static inline int security_inode_listxattr (struct dentry *dentry,
+-					    struct vfsmount *mnt)
++					    struct vfsmount *mnt,
++					    struct file *file)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_listxattr (dentry, mnt);
++	return security_ops->inode_listxattr (dentry, mnt, file);
+ }
+ 
+ static inline int security_inode_removexattr (struct dentry *dentry,
+-					      struct vfsmount *mnt, char *name)
++					      struct vfsmount *mnt, char *name,
++					      struct file *file)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_removexattr (dentry, mnt, name);
++	return security_ops->inode_removexattr (dentry, mnt, name, file);
+ }
+ 
+ static inline const char *security_inode_xattr_getsuffix(void)
+@@ -2480,9 +2487,10 @@ static inline void security_inode_delete
+ 
+ static inline int security_inode_setxattr (struct dentry *dentry,
+ 					   struct vfsmount *mnt, char *name,
+-					   void *value, size_t size, int flags)
++					   void *value, size_t size, int flags,
++					   struct file *file)
+ {
+-	return cap_inode_setxattr(dentry, mnt, name, value, size, flags);
++	return cap_inode_setxattr(dentry, mnt, name, value, size, flags, file);
+ }
+ 
+ static inline void security_inode_post_setxattr (struct dentry *dentry,
+@@ -2493,21 +2501,24 @@ static inline void security_inode_post_s
+ { }
+ 
+ static inline int security_inode_getxattr (struct dentry *dentry,
+-					    struct vfsmount *mnt, char *name)
++					    struct vfsmount *mnt, char *name,
++					    struct file *file)
+ {
+ 	return 0;
+ }
+ 
+ static inline int security_inode_listxattr (struct dentry *dentry,
+-					    struct vfsmount *mnt)
++					    struct vfsmount *mnt,
++					    struct file *file)
+ {
+ 	return 0;
+ }
+ 
+ static inline int security_inode_removexattr (struct dentry *dentry,
+-					      struct vfsmount *mnt, char *name)
++					      struct vfsmount *mnt, char *name,
++					      struct file *file)
+ {
+-	return cap_inode_removexattr(dentry, mnt, name);
++	return cap_inode_removexattr(dentry, mnt, name, file);
+ }
+ 
+ static inline const char *security_inode_xattr_getsuffix (void)
+--- a/include/linux/xattr.h
++++ b/include/linux/xattr.h
+@@ -47,12 +47,12 @@ struct xattr_handler {
+ };
+ 
+ ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
+-		     size_t);
++		     size_t, struct file *);
+ ssize_t vfs_listxattr(struct dentry *d, struct vfsmount *, char *list,
+-		      size_t size);
++		      size_t size, struct file *);
+ int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
+-		 int);
+-int vfs_removexattr(struct dentry *, struct vfsmount *, char *);
++		 int, struct file *);
++int vfs_removexattr(struct dentry *, struct vfsmount *, char *, struct file *);
+ 
+ ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+ ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -191,7 +191,7 @@ int cap_bprm_secureexec (struct linux_bi
+ }
+ 
+ int cap_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
+-		       void *value, size_t size, int flags)
++		       void *value, size_t size, int flags, struct file *file)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+@@ -201,7 +201,7 @@ int cap_inode_setxattr(struct dentry *de
+ }
+ 
+ int cap_inode_removexattr(struct dentry *dentry, struct vfsmount *mnt,
+-			  char *name)
++			  char *name, struct file *file)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -352,7 +352,7 @@ static void dummy_inode_delete (struct i
+ 
+ static int dummy_inode_setxattr (struct dentry *dentry, struct vfsmount *mnt,
+ 				 char *name, void *value, size_t size,
+-				 int flags)
++				 int flags, struct file *file)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+@@ -369,18 +369,20 @@ static void dummy_inode_post_setxattr (s
+ }
+ 
+ static int dummy_inode_getxattr (struct dentry *dentry,
+-			          struct vfsmount *mnt, char *name)
++			          struct vfsmount *mnt, char *name,
++				  struct file *file)
+ {
+ 	return 0;
+ }
+ 
+-static int dummy_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
++static int dummy_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt,
++				  struct file *file)
+ {
+ 	return 0;
+ }
+ 
+ static int dummy_inode_removexattr (struct dentry *dentry, struct vfsmount *mnt,
+-				    char *name)
++				    char *name, struct file *file)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -1427,40 +1427,15 @@ static int selinux_capable(struct task_s
+@@ -2307,7 +2307,7 @@ static int selinux_inode_getattr(struct 
  
- static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
+ static int selinux_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt,
+ 				  char *name, void *value, size_t size,
+-				  int flags)
++				  int flags, struct file *file)
  {
--	int buflen, rc;
--	char *buffer, *path, *end;
-+	char *buffer, *path;
-+	int rc = -ENOMEM;
+ 	struct task_security_struct *tsec = current->security;
+ 	struct inode *inode = dentry->d_inode;
+@@ -2394,18 +2394,20 @@ static void selinux_inode_post_setxattr(
+ }
  
--	rc = -ENOMEM;
- 	buffer = (char*)__get_free_page(GFP_KERNEL);
- 	if (!buffer)
- 		goto out;
--
--	buflen = PAGE_SIZE;
--	end = buffer+buflen;
--	*--end = '\0';
--	buflen--;
--	path = end-1;
--	*path = '/';
--	while (table) {
--		const char *name = table->procname;
--		size_t namelen = strlen(name);
--		buflen -= namelen + 1;
--		if (buflen < 0)
--			goto out_free;
--		end -= namelen;
--		memcpy(end, name, namelen);
--		*--end = '/';
--		path = end;
--		table = table->parent;
--	}
--	buflen -= 4;
--	if (buflen < 0)
--		goto out_free;
--	end -= 4;
--	memcpy(end, "/sys", 4);
--	path = end;
--	rc = security_genfs_sid("proc", path, tclass, sid);
--out_free:
-+	path = sysctl_pathname(table, buffer, PAGE_SIZE);
-+	if (path)
-+		rc = security_genfs_sid("proc", path, tclass, sid);
- 	free_page((unsigned long)buffer);
- out:
- 	return rc;
+ static int selinux_inode_getxattr (struct dentry *dentry, struct vfsmount *mnt,
+-				   char *name)
++				   char *name, struct file *file)
+ {
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
+ 
+-static int selinux_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
++static int selinux_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt,
++				    struct file *file)
+ {
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
+ 
+ static int selinux_inode_removexattr (struct dentry *dentry,
+-				      struct vfsmount *mnt, char *name)
++				      struct vfsmount *mnt, char *name,
++				      struct file *file)
+ {
+ 	if (strcmp(name, XATTR_NAME_SELINUX)) {
+ 		if (!strncmp(name, XATTR_SECURITY_PREFIX,
 
 -- 
