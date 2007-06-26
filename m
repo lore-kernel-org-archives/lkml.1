@@ -1,77 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbXFZKYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbXFZKa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbXFZKYX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbXFZKYR
+	id S1755638AbXFZKa3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXFZKaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:24:17 -0400
-Received: from lug-owl.de ([195.71.106.12]:38211 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752258AbXFZKYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:24:16 -0400
-Date: Tue, 26 Jun 2007 12:24:15 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Matthieu CASTET <castet.matthieu@free.fr>, linux-kernel@vger.kernel.org
-Subject: Re: NAK (bashizm in the /bin/sh script): [PATCH v3] doc/oops-tracing: add Code: decode info
-Message-ID: <20070626102414.GU27862@lug-owl.de>
-Mail-Followup-To: Matthieu CASTET <castet.matthieu@free.fr>,
-	linux-kernel@vger.kernel.org
-References: <20070621225108.bb69a93d.randy.dunlap@oracle.com> <200706221626.39969.ak@suse.de> <20070622094429.0910c7cb.randy.dunlap@oracle.com> <200706221923.02736.ak@suse.de> <20070622132810.3c758590.randy.dunlap@oracle.com> <E1I2159-0005AH-DS@flower> <20070623104303.a186c5a8.randy.dunlap@oracle.com> <pan.2007.06.23.20.24.29@free.fr> <20070626101639.GB20178@DervishD>
+	Tue, 26 Jun 2007 06:30:20 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36226 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751984AbXFZKaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 06:30:18 -0400
+X-Authenticated: #1474915
+X-Provags-ID: V01U2FsdGVkX1/eBOwHrPjeSGuss1mCfMKgjhAxQDSdPEh6BKmzCM
+	+8pPV6s9unoLQR
+Message-ID: <4680EAB8.10703@gmx.de>
+Date: Tue, 26 Jun 2007 12:30:16 +0200
+From: Thomas Sattler <tsattler@gmx.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="EyuBRJR0MsVMWKTf"
-Content-Disposition: inline
-In-Reply-To: <20070626101639.GB20178@DervishD>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Subject: BUG: held lock freed!
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi there ...
 
---EyuBRJR0MsVMWKTf
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I removed xfs from my system. The first reboot after replacing xfs with
+ext3 brought be
 
-On Tue, 2007-06-26 12:16:39 +0200, DervishD <lkml@dervishd.net> wrote:
->  * Matthieu CASTET <castet.matthieu@free.fr> dixit:
-> > On Sat, 23 Jun 2007 10:43:03 -0700, Randy Dunlap wrote:
-> >=20
-> > > OTOH, you also didn't supply a patch.  If you do this, I'll be glad to
-> > > consider it.  If I can read it, that is.
-> >=20
-> > "s|/bin/sh|/bin/bash" is so hard to do ?
->=20
->     Given that it happens too with "ldd", it really *is* that hard. I
-> don't know why still people think that /bin/sh is always /bin/bash. If
-> they want/need bash, that's ok to me, I will have it installed for such
-> tasks, but they should call it "#!/bin/bash".
+Jun 26 08:43:17 pearl =========================
+Jun 26 08:43:17 pearl [ BUG: held lock freed! ]
+Jun 26 08:43:17 pearl -------------------------
+Jun 26 08:43:17 pearl udevd/3064 is freeing memory c16fbe40-c16fbe7f,
+with a lock still held there!
+Jun 26 08:43:17 pearl (&sbinfo->stat_lock){--..}, at: [<c0157eb1>]
+shmem_delete_inode+0xc1/0xda
+Jun 26 08:43:17 pearl 1 lock held by udevd/3064:
+Jun 26 08:43:17 pearl #0:  (&sbinfo->stat_lock){--..}, at: [<c0157eb1>]
+shmem_delete_inode+0xc1/0xda
+Jun 26 08:43:17 pearl
+Jun 26 08:43:17 pearl stack backtrace:
+Jun 26 08:43:17 pearl [<c0135331>] debug_check_no_locks_freed+0xe7/0x11a
+Jun 26 08:43:17 pearl [<c0158649>] kfree+0x45/0x7f
+Jun 26 08:43:17 pearl [<c016c3d2>] free_fdtable_rcu+0x3a/0x70
+Jun 26 08:43:17 pearl [<c012a95f>] __rcu_process_callbacks+0xfd/0x165
+Jun 26 08:43:17 pearl [<c012a9d6>] rcu_process_callbacks+0xf/0x1e
+Jun 26 08:43:17 pearl [<c0120c69>] tasklet_action+0x3d/0x68
+Jun 26 08:43:17 pearl [<c0120b9e>] __do_softirq+0x41/0x92
+Jun 26 08:43:17 pearl [<c0120c16>] do_softirq+0x27/0x3d
+Jun 26 08:43:17 pearl [<c0120fae>] irq_exit+0x35/0x64
+Jun 26 08:43:17 pearl [<c0106108>] do_IRQ+0x7e/0x92
+Jun 26 08:43:17 pearl [<c0104634>] common_interrupt+0x24/0x34
+Jun 26 08:43:17 pearl [<c010463e>] common_interrupt+0x2e/0x34
+Jun 26 08:43:17 pearl [<c0136513>] lock_acquire+0x68/0x6e
+Jun 26 08:43:17 pearl [<c0157eb1>] shmem_delete_inode+0xc1/0xda
+Jun 26 08:43:17 pearl [<c02e4daa>] _spin_lock+0x29/0x34
+Jun 26 08:43:17 pearl [<c0157eb1>] shmem_delete_inode+0xc1/0xda
+Jun 26 08:43:17 pearl [<c0157eb1>] shmem_delete_inode+0xc1/0xda
+Jun 26 08:43:17 pearl [<c0157df0>] shmem_delete_inode+0x0/0xda
+Jun 26 08:43:17 pearl [<c016b2a8>] generic_delete_inode+0x8c/0xf4
+Jun 26 08:43:17 pearl [<c016aa33>] iput+0x60/0x62
+Jun 26 08:43:17 pearl [<c01636d7>] do_unlinkat+0xbe/0x132
+Jun 26 08:43:17 pearl [<c0103bfa>] sysenter_past_esp+0x8f/0x99
+Jun 26 08:43:17 pearl [<c0135227>] trace_hardirqs_on+0x11e/0x141
+Jun 26 08:43:17 pearl [<c0103bca>] sysenter_past_esp+0x5f/0x99
+Jun 26 08:43:17 pearl =======================
 
-=2E..or "#!/usr/bin/env bash" for what it's worth...  The same for plain
-`sh'.
+But it only came once, several reboots after that were ok. I changed my
+kernel config today: e1000 is now "=y" (was "=m"), I removed PCMCIA as I
+do not use it and some other modules complained about it, and I added
+CONFIG_HIGHMEM4G=y (was CONFIG_NOHIGHMEM=y)
 
-MfG, JBG
+The running kernel is 2.6.22.5 +cfs +squashfs. My distribution is gentoo
+(x86), quite up to date, udev is 104-r12.
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
- Signature of:                      http://perl.plover.com/Questions.html
- the second  :
+Please CC me as I'm not subscribed to the list.
 
---EyuBRJR0MsVMWKTf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Thomas
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGgOlOHb1edYOZ4bsRAhRZAJ9KvRaQYvFub8hflGbf/Lzxfm3jZACfRbTw
-isrKPJKifhrCPpylb8XAKjM=
-=b7xy
------END PGP SIGNATURE-----
-
---EyuBRJR0MsVMWKTf--
+-- 
+keep mailinglists in english, feel free to send PM in german
