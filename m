@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759710AbXFZThq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbXFZTjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759710AbXFZThq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 15:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758994AbXFZTh3
+	id S1759612AbXFZTjV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbXFZTjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 15:37:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52810 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758766AbXFZTh2 (ORCPT
+	Tue, 26 Jun 2007 15:39:12 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:26113 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757337AbXFZTjK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 15:37:28 -0400
-Date: Tue, 26 Jun 2007 12:37:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, suresh.b.siddha@intel.com
-Subject: Re: [patch 15/26] Slab defrag: Support generic defragmentation for
- inode slab caches
-Message-Id: <20070626123709.211c67c4.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0706261223110.20457@schroedinger.engr.sgi.com>
-References: <20070618095838.238615343@sgi.com>
-	<20070618095917.005535114@sgi.com>
-	<20070626011836.f4abb4ff.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0706261223110.20457@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jun 2007 15:39:10 -0400
+Date: Tue, 26 Jun 2007 21:38:55 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       Andreas Dilger <adilger@clusterfs.com>, suparna@in.ibm.com,
+       cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 1/7][TAKE5] fallocate() implementation on i386, x86_64 and powerpc
+Message-ID: <20070626193855.GA13727@osiris.ibm.com>
+References: <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com> <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134012.GB1951@amitarora.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070625134012.GB1951@amitarora.in.ibm.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 12:28:50 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Tue, 26 Jun 2007, Andrew Morton wrote:
-> 
-> > Yes, this is tricky stuff.  I have vague ancestral memories that the sort
-> > of inode work which you refer to here can cause various deadlocks, lockdep
-> > warnings and such nasties when if we attempt to call it from the wrong
-> > context (ie: from within fs code).
-> 
-> Right. Michael's test flushed one such issue out.
-> 
-> > Possibly we could prevent that by skipping all this code if the caller
-> > didn't have __GFP_FS.
-> 
-> There is no check in vmscan.c as I thought earlier.
-> 
-> 
-> Slab defragmentation: Only perform slab defrag if __GFP_FS is clear
-> 
-> Avoids slab defragmentation be triggered from filesystem operations.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  mm/vmscan.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.22-rc4-mm2/mm/vmscan.c
+> Index: linux-2.6.22-rc4/arch/powerpc/kernel/sys_ppc32.c
 > ===================================================================
-> --- linux-2.6.22-rc4-mm2.orig/mm/vmscan.c	2007-06-26 12:25:28.000000000 -0700
-> +++ linux-2.6.22-rc4-mm2/mm/vmscan.c	2007-06-26 12:26:18.000000000 -0700
-> @@ -233,8 +233,9 @@ unsigned long shrink_slab(unsigned long 
->  		shrinker->nr += total_scan;
->  	}
->  	up_read(&shrinker_rwsem);
-> -	kmem_cache_defrag(sysctl_slab_defrag_ratio,
-> -		zone ? zone_to_nid(zone) : -1);
-> +	if (!(gfp_mask & __GFP_FS))
-> +		kmem_cache_defrag(sysctl_slab_defrag_ratio,
-> +			zone ? zone_to_nid(zone) : -1);
->  	return ret;
+> --- linux-2.6.22-rc4.orig/arch/powerpc/kernel/sys_ppc32.c
+> +++ linux-2.6.22-rc4/arch/powerpc/kernel/sys_ppc32.c
+> @@ -773,6 +773,13 @@ asmlinkage int compat_sys_truncate64(con
+>  	return sys_truncate(path, (high << 32) | low);
 >  }
+> 
+> +asmlinkage long compat_sys_fallocate(int fd, int mode, u32 offhi, u32 offlo,
+> +				     u32 lenhi, u32 lenlo)
+> +{
+> +	return sys_fallocate(fd, mode, ((loff_t)offhi << 32) | offlo,
+> +			     ((loff_t)lenhi << 32) | lenlo);
+> +}
+> +
+>  asmlinkage int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long high,
+>  				 unsigned long low)
+>  {
+> Index: linux-2.6.22-rc4/arch/x86_64/ia32/ia32entry.S
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/arch/x86_64/ia32/ia32entry.S
+> +++ linux-2.6.22-rc4/arch/x86_64/ia32/ia32entry.S
+> @@ -719,4 +719,5 @@ ia32_sys_call_table:
+>  	.quad compat_sys_signalfd
+>  	.quad compat_sys_timerfd
+>  	.quad sys_eventfd
+> +	.quad sys_fallocate
+>  ia32_syscall_end:
 
-This is inverted: __GFP_FS is set if we may perform fs operations.
+Btw. this is also (still?) broken. x86_64 needs a compat syscall here.
