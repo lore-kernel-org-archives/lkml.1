@@ -1,61 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbXFZHCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbXFZHDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbXFZHCr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 03:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbXFZHCi
+	id S1752728AbXFZHDL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 03:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbXFZHCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 03:02:38 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:52512 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751426AbXFZHCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 03:02:38 -0400
-Date: Tue, 26 Jun 2007 09:02:22 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: bennett78@lpbroadband.net
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, kernel@avr32linux.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] AVR32 fixes
-Message-ID: <20070626090222.2f4abe6e@dhcp-255-175.norway.atmel.com>
-In-Reply-To: <46802222.90104@lpbroadband.net>
-References: <20070623164143.2bba7104@dhcp-255-175.norway.atmel.com>
-	<46802222.90104@lpbroadband.net>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+	Tue, 26 Jun 2007 03:02:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43927 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752597AbXFZHCn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 03:02:43 -0400
+Date: Tue, 26 Jun 2007 00:01:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Sivakumar Subramani" <Sivakumar.Subramani@neterion.com>
+Cc: "Olaf Hering" <olaf@aepfle.de>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       "Leonid Grossman" <Leonid.Grossman@neterion.com>,
+       "Rastapur Santosh" <santosh.rastapur@neterion.com>,
+       "Ramkrishna Vepa" <ram.vepa@neterion.com>,
+       "Sriram Rapuru" <Sriram.Rapuru@neterion.com>,
+       "Sreenivasa Honnur" <Sreenivasa.Honnur@neterion.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
+Message-Id: <20070626000132.53330065.akpm@linux-foundation.org>
+In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD7701C190FF@nekter>
+References: <20070619204110.GA21384@aepfle.de>
+	<78C9135A3D2ECE4B8162EBDCE82CAD7701C190FF@nekter>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jun 2007 14:14:26 -0600
-Frank Bennett <bennett78@lpbroadband.net> wrote:
+On Thu, 21 Jun 2007 05:55:13 -0400 "Sivakumar Subramani" <Sivakumar.Subramani@neterion.com> wrote:
 
-> makes fine, but requires :
+> -----Original Message-----
+> > From: netdev-owner@vger.kernel.org [mailto:netdev-owner@vger.kernel.org]
+> > On Behalf Of Olaf Hering
+> > Sent: Wednesday, June 20, 2007 2:11 AM
+> > To: Stephen Hemminger
+> > Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org
+> > Subject: Re: 2.6.22: ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
+> > 
+> > On Tue, Jun 19, Stephen Hemminger wrote:
+> > 
+> > > On Tue, 19 Jun 2007 21:02:53 +0200
+> > > Olaf Hering <olaf@aepfle.de> wrote:
+> > > 
+> > > > 
+> > > > What happend to __ucmpdi2 from David Woodhouse?
+> > > > google has a few hits about stuff like this on 32bit powerpc with
+> > gcc 4.1.2:
+> > > > 
+> > > > ERROR: "__ucmpdi2" [drivers/net/s2io.ko] undefined!
+> > > > 
+> > > > using the drivers/net/s2io* files from 2.6.21 with 2.6.22-rc5 fixes 
+> > > > the compile.
+> > > > 
+> > > > 25805dcf9d83098cf5492117ad2669cd14cc9b24 adds two u64 >>= 48 
+> > > > followed by a switch statement (line 2889 and 6816).
+> > > 
+> > > Probably the "switch(err) {" needs a cast to a smaller type (like u8).
+> > 
+> > This change removes the calls to __ucmpdi2.
 
-Hmm...what do you mean?
+(fixes quoting, fixes top-posting.  Please don't top-post).
 
-> export ARCH=avr32
-> export CROSS_COMPILE=avr32-linux-
+> Hi,
+> 
+> We will include this fix in next set of patch submission. Thanks for the
+> fix.
+>
+> ---
+> >  drivers/net/s2io.c |   16 +++++++++-------
+> >  1 file changed, 9 insertions(+), 7 deletions(-)
+> > 
+> > --- a/drivers/net/s2io.c
+> > +++ b/drivers/net/s2io.c
+> > @@ -2868,6 +2868,7 @@ static void tx_intr_handler(struct fifo_
+> >  	struct tx_curr_get_info get_info, put_info;
+> >  	struct sk_buff *skb;
+> >  	struct TxD *txdlp;
+> > +	u8 err_mask;
+> >  
+> >  	get_info = fifo_data->tx_curr_get_info;
+> >  	memcpy(&put_info, &fifo_data->tx_curr_put_info,
+> > sizeof(put_info)); @@ -2886,8 +2887,8 @@ static void
+> > tx_intr_handler(struct fifo_
+> >  			}
+> >  
+> >  			/* update t_code statistics */
+> > -			err >>= 48;
+> > -			switch(err) {
+> > +			err_mask = err >> 48;
+> > +			switch(err_mask) {
+> >  				case 2:
+> >  
+> > nic->mac_control.stats_info->sw_stat.
+> >  
+> > tx_buf_abort_cnt++;
+> > @@ -6805,6 +6806,7 @@ static int rx_osm_handler(struct ring_in
+> >  	u16 l3_csum, l4_csum;
+> >  	unsigned long long err = rxdp->Control_1 & RXD_T_CODE;
+> >  	struct lro *lro;
+> > +	u8 err_mask;
+> >  
+> >  	skb->dev = dev;
+> >  
+> > @@ -6813,8 +6815,8 @@ static int rx_osm_handler(struct ring_in
+> >  		if (err & 0x1) {
+> >  
+> > sp->mac_control.stats_info->sw_stat.parity_err_cnt++;
+> >  		}
+> > -		err >>= 48;
+> > -		switch(err) {
+> > +		err_mask = err >> 48;
+> > +		switch(err_mask) {
+> >  			case 1:
+> >  				sp->mac_control.stats_info->sw_stat.
+> >  				rx_parity_err_cnt++;
+> > @@ -6867,9 +6869,9 @@ static int rx_osm_handler(struct ring_in
+> >  		* Note that in this case, since checksum will be
+> > incorrect,
+> >  		* stack will validate the same.
+> >  		*/
+> > -		if (err != 0x5) {
+> > -			DBG_PRINT(ERR_DBG, "%s: Rx error Value:
+> > 0x%llx\n",
+> > -				dev->name, err);
+> > +		if (err_mask != 0x5) {
+> > +			DBG_PRINT(ERR_DBG, "%s: Rx error Value: 0x%x\n",
+> > +				dev->name, err_mask);
+> >  			sp->stats.rx_crc_errors++;
+> >  			sp->mac_control.stats_info->sw_stat.mem_freed 
+> >  				+= skb->truesize;
+> 
 
-Standard cross-compile stuff.
+This fix is still not present in anyone's tree and is required for
+2.6.22.  Where are we up to with it?
 
-> make defconfig
-> make
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CHK     include/linux/compile.h
->   MODPOST vmlinux
->   UIMAGE arch/avr32/boot/images/uImage
-> "mkimage" command not found - U-Boot images will not be built
-
-Seems like you don't have mkimage installed. You can find it under
-"tools" in the u-boot sources.
-
->   Image arch/avr32/boot/images/uImage is ready
-> make[1]: `arch/avr32/boot/images/vmlinux.elf' is up to date.
->   Building modules, stage 2.
->   MODPOST 20 modules
-
-I'm sorry, but I don't understand what's wrong here...
-
-Haavard
