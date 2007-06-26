@@ -1,171 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760226AbXFZXLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758552AbXFZXM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760226AbXFZXLr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759121AbXFZXKE
+	id S1758552AbXFZXM1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:12:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbXFZXKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:10:04 -0400
-Received: from mx1.suse.de ([195.135.220.2]:42878 "EHLO mx1.suse.de"
+	Tue, 26 Jun 2007 19:10:08 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53672 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757971AbXFZXJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:09:55 -0400
-Message-Id: <20070626230856.959632188@suse.de>
+	id S1758205AbXFZXJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:09:57 -0400
+Message-Id: <20070626230912.309981496@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:07:58 -0700
+Date: Tue, 26 Jun 2007 16:08:01 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 02/44] Pass struct path down to remove_suid and children
-Content-Disposition: inline; filename=remove_suid.diff
+Subject: [AppArmor 05/44] Add struct vfsmount parameter to vfs_mkdir()
+Content-Disposition: inline; filename=vfs-mkdir.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Required by a later patch that adds a struct vfsmount parameter to
-notify_change().
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/ntfs/file.c             |    2 +-
- fs/reiserfs/file.c         |    2 +-
- fs/splice.c                |    4 ++--
- fs/xfs/linux-2.6/xfs_lrw.c |    2 +-
- include/linux/fs.h         |    4 ++--
- mm/filemap.c               |   12 ++++++------
- mm/filemap_xip.c           |    2 +-
- mm/shmem.c                 |    2 +-
- 8 files changed, 15 insertions(+), 15 deletions(-)
+ fs/ecryptfs/inode.c   |    5 ++++-
+ fs/namei.c            |    5 +++--
+ fs/nfsd/nfs4recover.c |    3 ++-
+ fs/nfsd/vfs.c         |    8 +++++---
+ include/linux/fs.h    |    2 +-
+ 5 files changed, 15 insertions(+), 8 deletions(-)
 
---- a/fs/ntfs/file.c
-+++ b/fs/ntfs/file.c
-@@ -2122,7 +2122,7 @@ static ssize_t ntfs_file_aio_write_noloc
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -509,11 +509,14 @@ static int ecryptfs_mkdir(struct inode *
+ {
+ 	int rc;
+ 	struct dentry *lower_dentry;
++	struct vfsmount *lower_mnt;
+ 	struct dentry *lower_dir_dentry;
+ 
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	lower_dir_dentry = lock_parent(lower_dentry);
+-	rc = vfs_mkdir(lower_dir_dentry->d_inode, lower_dentry, mode);
++	rc = vfs_mkdir(lower_dir_dentry->d_inode, lower_dentry, lower_mnt,
++		       mode);
+ 	if (rc || !lower_dentry->d_inode)
  		goto out;
- 	if (!count)
- 		goto out;
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
- 	file_update_time(file);
---- a/fs/reiserfs/file.c
-+++ b/fs/reiserfs/file.c
-@@ -1335,7 +1335,7 @@ static ssize_t reiserfs_file_write(struc
- 	if (count == 0)
+ 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1934,7 +1934,8 @@ asmlinkage long sys_mknod(const char __u
+ 	return sys_mknodat(AT_FDCWD, filename, mode, dev);
+ }
+ 
+-int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++int vfs_mkdir(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
++	      int mode)
+ {
+ 	int error = may_create(dir, dentry, NULL);
+ 
+@@ -1978,7 +1979,7 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 
+ 	if (!IS_POSIXACL(nd.dentry->d_inode))
+ 		mode &= ~current->fs->umask;
+-	error = vfs_mkdir(nd.dentry->d_inode, dentry, mode);
++	error = vfs_mkdir(nd.dentry->d_inode, dentry, nd.mnt, mode);
+ 	dput(dentry);
+ out_unlock:
+ 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
+--- a/fs/nfsd/nfs4recover.c
++++ b/fs/nfsd/nfs4recover.c
+@@ -156,7 +156,8 @@ nfsd4_create_clid_dir(struct nfs4_client
+ 		dprintk("NFSD: nfsd4_create_clid_dir: DIRECTORY EXISTS\n");
+ 		goto out_put;
+ 	}
+-	status = vfs_mkdir(rec_dir.dentry->d_inode, dentry, S_IRWXU);
++	status = vfs_mkdir(rec_dir.dentry->d_inode, dentry, rec_dir.mnt,
++			   S_IRWXU);
+ out_put:
+ 	dput(dentry);
+ out_unlock:
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1115,6 +1115,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		int type, dev_t rdev, struct svc_fh *resfhp)
+ {
+ 	struct dentry	*dentry, *dchild = NULL;
++	struct svc_export *exp;
+ 	struct inode	*dirp;
+ 	__be32		err;
+ 	int		host_err;
+@@ -1131,6 +1132,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
  		goto out;
  
--	res = remove_suid(file->f_path.dentry);
-+	res = remove_suid(&file->f_path);
- 	if (res)
- 		goto out;
+ 	dentry = fhp->fh_dentry;
++	exp = fhp->fh_export;
+ 	dirp = dentry->d_inode;
  
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -807,7 +807,7 @@ generic_file_splice_write_nolock(struct 
- 	ssize_t ret;
- 	int err;
- 
--	err = remove_suid(out->f_path.dentry);
-+	err = remove_suid(&out->f_path);
- 	if (unlikely(err))
- 		return err;
- 
-@@ -860,7 +860,7 @@ generic_file_splice_write(struct pipe_in
- 	err = should_remove_suid(out->f_path.dentry);
- 	if (unlikely(err)) {
- 		mutex_lock(&inode->i_mutex);
--		err = __remove_suid(out->f_path.dentry, err);
-+		err = __remove_suid(&out->f_path, err);
- 		mutex_unlock(&inode->i_mutex);
+ 	err = nfserr_notdir;
+@@ -1147,7 +1149,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		host_err = PTR_ERR(dchild);
+ 		if (IS_ERR(dchild))
+ 			goto out_nfserr;
+-		err = fh_compose(resfhp, fhp->fh_export, dchild, fhp);
++		err = fh_compose(resfhp, exp, dchild, fhp);
  		if (err)
- 			return err;
---- a/fs/xfs/linux-2.6/xfs_lrw.c
-+++ b/fs/xfs/linux-2.6/xfs_lrw.c
-@@ -798,7 +798,7 @@ start:
- 	     !capable(CAP_FSETID)) {
- 		error = xfs_write_clear_setuid(xip);
- 		if (likely(!error))
--			error = -remove_suid(file->f_path.dentry);
-+			error = -remove_suid(&file->f_path);
- 		if (unlikely(error)) {
- 			goto out_unlock_internal;
- 		}
+ 			goto out;
+ 	} else {
+@@ -1186,7 +1188,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
+ 		break;
+ 	case S_IFDIR:
+-		host_err = vfs_mkdir(dirp, dchild, iap->ia_mode);
++		host_err = vfs_mkdir(dirp, dchild, exp->ex_mnt, iap->ia_mode);
+ 		break;
+ 	case S_IFCHR:
+ 	case S_IFBLK:
+@@ -1201,7 +1203,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	if (host_err < 0)
+ 		goto out_nfserr;
+ 
+-	if (EX_ISSYNC(fhp->fh_export)) {
++	if (EX_ISSYNC(exp)) {
+ 		err = nfserrno(nfsd_sync_dir(dentry));
+ 		write_inode_now(dchild->d_inode, 1);
+ 	}
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -1725,9 +1725,9 @@ extern void __iget(struct inode * inode)
- extern void clear_inode(struct inode *);
- extern void destroy_inode(struct inode *);
- extern struct inode *new_inode(struct super_block *);
--extern int __remove_suid(struct dentry *, int);
-+extern int __remove_suid(struct path *, int);
- extern int should_remove_suid(struct dentry *);
--extern int remove_suid(struct dentry *);
-+extern int remove_suid(struct path *);
- 
- extern void __insert_inode_hash(struct inode *, unsigned long hashval);
- extern void remove_inode_hash(struct inode *);
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1906,20 +1906,20 @@ int should_remove_suid(struct dentry *de
- }
- EXPORT_SYMBOL(should_remove_suid);
- 
--int __remove_suid(struct dentry *dentry, int kill)
-+int __remove_suid(struct path *path, int kill)
- {
- 	struct iattr newattrs;
- 
- 	newattrs.ia_valid = ATTR_FORCE | kill;
--	return notify_change(dentry, &newattrs);
-+	return notify_change(path->dentry, &newattrs);
- }
- 
--int remove_suid(struct dentry *dentry)
-+int remove_suid(struct path *path)
- {
--	int kill = should_remove_suid(dentry);
-+	int kill = should_remove_suid(path->dentry);
- 
- 	if (unlikely(kill))
--		return __remove_suid(dentry, kill);
-+		return __remove_suid(path, kill);
- 
- 	return 0;
- }
-@@ -2270,7 +2270,7 @@ __generic_file_aio_write_nolock(struct k
- 	if (count == 0)
- 		goto out;
- 
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
- 
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -406,7 +406,7 @@ xip_file_write(struct file *filp, const 
- 	if (count == 0)
- 		goto out_backing;
- 
--	ret = remove_suid(filp->f_path.dentry);
-+	ret = remove_suid(&filp->f_path);
- 	if (ret)
- 		goto out_backing;
- 
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1518,7 +1518,7 @@ shmem_file_write(struct file *file, cons
- 	if (err || !count)
- 		goto out;
- 
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
- 
+@@ -993,7 +993,7 @@ extern void unlock_super(struct super_bl
+  */
+ extern int vfs_permission(struct nameidata *, int);
+ extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
+-extern int vfs_mkdir(struct inode *, struct dentry *, int);
++extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
+ extern int vfs_mknod(struct inode *, struct dentry *, int, dev_t);
+ extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
+ extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
 
 -- 
