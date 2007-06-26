@@ -1,129 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbXFZOGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbXFZOG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757724AbXFZOGq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 10:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbXFZOGi
+	id S1757993AbXFZOG7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 10:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757770AbXFZOGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 10:06:38 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:36407 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752877AbXFZOGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 10:06:37 -0400
-X-Sasl-enc: 9LCejyMAbPCUPtBxXaSyYGSi4VANi6HTcthYV9lfF9eS 1182866796
-Date: Tue, 26 Jun 2007 11:06:25 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Michael Buesch <mb@bu3sch.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] hw_random: add quality categories
-Message-ID: <20070626140624.GC30655@khazad-dum.debian.net>
-References: <200706241555.22957.mb@bu3sch.de> <20070626031340.GQ11166@waste.org>
+	Tue, 26 Jun 2007 10:06:47 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:59149 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757640AbXFZOGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 10:06:45 -0400
+Date: Tue, 26 Jun 2007 09:06:44 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, James Morris <jmorris@namei.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       linux-security-module@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
+Message-ID: <20070626140644.GB8615@sergelap.austin.ibm.com>
+References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain> <200706252237.59226.agruen@suse.de> <Line.LNX.4.64.0706251712570.24003@localhost.localdomain> <20070626035731.GA16313@vino.hallyn.com> <20070626131519.GH1094@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070626031340.GQ11166@waste.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+In-Reply-To: <20070626131519.GH1094@stusta.de>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jun 2007, Matt Mackall wrote:
-> On Sun, Jun 24, 2007 at 03:55:22PM +0200, Michael Buesch wrote:
-> > This adds quality categories for hardware random number generators.
-> > + * enum hwrng_quality - Quality identifier for RNG hardware
-> > + * @HWRNG_QUAL_HIGH:	High quality RNG. Higher quality than
-> > + * 			what is found on the usual PC mainboards.
-> > + * 			Use that for special dedicated RNG
-> > + * 			extension boards.
-> > + * @HWRNG_QUAL_NORMAL:	PC-onboard-RNG devices.
-> > + * @HWRNG_QUAL_LOW:	Low quality RNG devices. Use this for
-> > + * 			devices which gather the entropy from possibly
-> > + * 			bad sources, like the network.
-> > + * @HWRNG_QUAL_PSEUDO:	Pseudo RNG device. Use this for devices
-> > + * 			which are not RNG devices by definition, but
-> > + * 			could be used as such. For example various
-> > + * 			hardware sensors, like a motion sensor.
+Quoting Adrian Bunk (bunk@stusta.de):
+> On Mon, Jun 25, 2007 at 10:57:31PM -0500, Serge E. Hallyn wrote:
+> > Quoting James Morris (jmorris@namei.org):
+> > > On Mon, 25 Jun 2007, Andreas Gruenbacher wrote:
+> > > 
+> > > > It's useful for some LSMs to be modular, and LSMs which are y/n options won't 
+> > > > have any security architecture issues with unloading at all. 
+> > > 
+> > > Which LSMs?  Upstream, there are SELinux and capabilty, and they're not 
+> > > safe as loadable modules.
+> > > 
+> > > > The mere fact 
+> > > > that SELinux cannot be built as a module is a rather weak argument for 
+> > > > disabling LSM modules as a whole, so  please don't.
+> > > 
+> > > That's not the argument.  Please review the thread.
+> > 
+> > The argument is 'abuse', right?
+> > 
+> > Abuse is defined as using the LSM hooks for non-security applications,
+> > right?
+> > 
+> > It seems to me that the community is doing a good job of discouraging
+> > such abuse - by redirecting the "wrong-doers" to implement proper
+> > upstream solutions, i.e. taskstats, the audit subsystem, etc.
+> > 
+> > Such encouragement seems a far better response than taking away freedoms
+> > and flexibility from everyone.
 > 
-> I don't think these definitions are very useful.
+> We are not living in a world where everyone had good intentions...
 
-Agreed. They are horrible.
+Oh no, i took a wrong turn somewhere  :)
 
-> There are basically three ways of measuring RNG quality:
+> For _some_ "wrong-doers" your approach works.
 > 
-> a) does it generate a good spectrum based on an unpredictable physical
-> process like Schott noise or free-running oscillator beat patterns?
+> But how do you convince the "wrong-doers" who do things like putting 
+> MODULE_LICENSE("GPL") into their binary-only modules and who ignore you 
+> and get away because noone sues them?
 
-Which, AFAIK, we can quantify as the minimum expected entropy in the output.
+Do these really exist?  Maybe noone sues them because noone knows who
+they are...
 
-You can get output with the minimum expected entropy quite close to 1 from
-good HRNGs.  Note that the same HRNGs might be configurable to disable the
-whitener and output more bits, dropping to an expected minimum entropy of
-0.75 for example (say hello, VIA Padlock!).
+But - note that you've changed completely the meaning of 'abuse'.
+So mine was wrong?
 
-So quality is a property of (HRNG implementation, HRNG configuration when
-the data was generated).
+> The spirit of the GPLv2 is to defend the freedom of the software 
+> (different from the spirit of the BSD licence), and considering that 
+> there aren't many people defending the GPLv2 copyright of the Linux 
+> kernel at court against abusers, making it harder for people to do the 
+> abuse might not be the worst choice...
 
-AFAIK, what really matters on a RNG is:
+Well, but you seem to be saying that the license means squat, and
+resorting to making things inconvenient rather than illegal.
 
-	0. trust on the design and implementation
-	1. quality (minimum entropy expected on output)
-	2. speed (minimum and average bits-per-second expected on output)
-	3. whether it is implemented on software, or not.
+Now I guess if it really is accepted that that's the way it should be,
+then this patch will go in.
 
-Anything else is just *useless*.  And which RNG you should use (if you have
-more than one available), based on the four attributes above, depends on
-what you want to do.
-
-> b) can the end-user trust that the design is implemented as described?
-
-Heh, that's a hard one :-)  But I'd say HRNGs without at least a peer review
-and open design are not to be trusted at all (which doesn't mean that those
-which do have a peer review and open design can be trusted...).
-
-> c) does it output lots of bits fast?
-
-Yeah, you can go from a few bit/s, to some kbits/s, to megabits/s, it is a
-damn important thing to know.
-
-> Anything that fails (a) belongs in the PSEUDO class. This applies to
-> RNGs where the implementation is undocumented too. (There's not much
-> excuse for this as it costs negligible silicon to do this right.)
-
-I'd say RNGs where the implementation is undocumented should not even be
-supported at all...  but they certainly cannot be considered anything but
-pseudo-random.
-
-> Anything that passes (b) is something that the end-user built
-> themselves while wearing their tinfoil hat.
-
-Yes. Leave the user to decide whether they trust it or not.  And if the
-kernel needs to know this, default to untrusted and let the user set a trust
-level through some parameter.
-
-> Anything that claims to be significantly better than the trivial
-> circuit and whitening on a typical PC is probably marketing hype. 
-
-Sort of.  But IMHO, such claims, when not backed by some hard paper analysis
-the RNG design and output by third-parties, really are a reason to
-*blacklist* the RNG and not use it at all.
-
-> Which brings us down to (c). And basically all hardware RNGs are
-> plenty fast enough.
-
-Err... not really.  Intel's 82802AB or 82802AC-builtin RNG gives only ~24 *
-10^3 bit/s, which is not much depending on what you are doing, for example.
-While a VIA Padlock dual-HRNG CPU can easily output 1 * 10^6 bits/s of data
-in its highest quality setting.  With such a bit amplitude of speeds
-available, I really doubt you can say that all HRNGs are plenty fast enough.
-
-> So that's basically three orthogonal axes: "real", "trusted", and
-> "fast". And "trusted" trumps "real", which trumps "fast".
-
-Heh. Indeed.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+-serge
