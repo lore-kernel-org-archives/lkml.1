@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbXFZWqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbXFZWte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbXFZWqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 18:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbXFZWqM
+	id S1759050AbXFZWte (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 18:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbXFZWt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 18:46:12 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2872 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbXFZWqL (ORCPT
+	Tue, 26 Jun 2007 18:49:26 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:54379 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752358AbXFZWtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 18:46:11 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-Date: Tue, 26 Jun 2007 15:45:28 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEEIEOAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Tue, 26 Jun 2007 18:49:25 -0400
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+In-Reply-To: <20070626221040.GI21478@ftp.linux.org.uk>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk>
+	 <20070624174732.GZ21478@ftp.linux.org.uk>
+	 <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org>
+	 <20070624183547.GA21478@ftp.linux.org.uk>
+	 <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
+	 <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org>
+	 <20070624203837.GE21478@ftp.linux.org.uk>
+	 <467F531A.3030702@freedesktop.org>
+	 <20070626221040.GI21478@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Tue, 26 Jun 2007 15:49:23 -0700
+Message-Id: <1182898163.3191.7.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <Pine.LNX.4.64.0706261307310.23285@asgard.lang.hm>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Tue, 26 Jun 2007 15:45:46 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Tue, 26 Jun 2007 15:45:48 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-06-26 at 23:10 +0100, Al Viro wrote:
+> On Sun, Jun 24, 2007 at 10:31:06PM -0700, Josh Triplett wrote:
+> > Al Viro wrote:
+> > > Joy.  OK, folks, disregard 16/16 in the current form; everything prior
+> > > to it stands on its own.
+> > 
+> > Acknowledged.  The rest of the patches look good to me, so I'll merge 1-15
+> > soon, and ignore 16.
+> 
+> OK, here's the replacement.  First the handling of __builtin_offsetof()
+> (below in this mail), then integer constant expressions (in followup).
+> They can be pulled from
+> git://git.kernel.org/pub/scm/linux/kernel/git/viro/sparse.git/ integer-constant
 
-david@lang.hm wrote:
+Both patches looked good to me in review, and neither changes the
+validation output.  Merged.  Thanks!
 
-> this sounds like a step backwards, you may not have the sources at that
-> point if you were relying on the other site to host them.
-
-You would then be violating the GPL, under any version. The GPL is quite
-clear that being unable to comply with it means you do not get the benefits
-it offers rather than excusing you from meeting its requirements.
-
-You *MUST* have the source code in order to distribute it on request. You
-cannot ship GPL'd works without offering source code just by arranging it
-(deliberately or accidentally) so that you don't have the source code.
-
-> and by the way, internet access never was a barrier that could stop
-> someone from obtaining them, the only issue was you hosting the source vs
-> someone else hosting the source.
-
-The GPLv2 never specified one way or the other.
-
-If you do allow someone else to host them, you are responsible for making
-sure they remain available for at least three years from the last time you
-used them as an offer. Should they stop distributing, you would be violating
-the GPL. Nothing in the GPL says you can't rely on third parties for your
-GPL compliance. Of course, this could be a very risky thing to do. However,
-there is no GPL violation so long as they do in fact remain operational for
-three years from the last time you distributed.
-
-In fact, a third party is no more risky than any other setup. Any company
-can go out of business within the three-year period after distribution.
-There are many real-world cases where a third party having the source is
-actually more likely to result in actual GPL compliance than the
-distributor. (Consider a fly-by-night company selling Fedora binary
-distributions burnt to CDROM on the stop for $1 on a street corner.)
-
-One way to avoid this problem is to maintain your own web page that links to
-the third party's download. You would have to host the sources yourself if
-you couldn't make other arrangements at any point during the three year
-period.
-
-This is no different from any other case where the offer is not honored. If
-the offer is not honored in a case where the GPL requires that it be, the
-GPL is being violated.
-
-DS
+- Josh Triplett
 
 
