@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbXFZK5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbXFZK6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756727AbXFZK5W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 06:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXFZK5P
+	id S1757179AbXFZK6s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 06:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXFZK6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 06:57:15 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:59867 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752109AbXFZK5O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 06:57:14 -0400
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070626100628.GO24183@enneenne.com>
-References: <20070626100628.GO24183@enneenne.com>
-Content-Type: text/plain
-Date: Tue, 26 Jun 2007 11:57:07 +0100
-Message-Id: <1182855427.12109.203.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 26 Jun 2007 06:58:42 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:33873 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752109AbXFZK6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 06:58:41 -0400
+Date: Tue, 26 Jun 2007 12:35:01 +0200 (MEST)
+Message-Id: <200706261035.l5QAZ1gb018736@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: eranian@hpl.hp.com, mikpe@it.uu.se
+Subject: Re: [PATCH 1/2] Always probe the NMI watchdog
+Cc: B.Steinbrink@gmx.de, ak@suse.de, ingo@elte.hu, levon@movementarian.org,
+       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
+       perfmon@napali.hpl.hp.com, wcohen@redhat.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-06-26 at 12:06 +0200, Rodolfo Giometti wrote:
-> Hello,
-> 
-> here my new version of LinuxPPS with a new syscalls API.
-> 
-> Please take a look at this new patch and report any
-> suggestions/modifications so I can prepare a proper patch for kernel
-> inclusion.
+On Tue, 26 Jun 2007 02:57:55 -0700, Mikael Pettersson wrote:
+> > Keeping parts of the PMU HW permanently reserved whether or not
+> > the watchdog is enabled would be a BUG.
+> > 
+> True. But the upside is that you guarantee the activation of the NMI
+> watchdog will always succeed which may be a valuable property given the
+> goal of the NMI watchdog. Otherwise, if Oprofile or perfmon are active,
+> the NMI will fail to grab a single counter.
 
-Your syscalls blindly dereference userspace pointers instead of using
-copy_{to,from} user.
+That relates more to policy than mechanism. I for one don't
+consider the watchdog "sacred".
 
-Why did you split all your syscalls into two functions?
-
-s/__FUNCTION__/__func__/
-
-s/antennas/antennae/
-
-You seem to have added debugging messages mentioning 'serial8250' into
-serial_core.h
-
-You added <linux/pps.h> with #ifdef __KERNEL__ in it, but didn't export
-it to userspace. Why?
-
-Your structures for userspace communication look OK -- I don't think you
-need special 32/64 compatibility for them. You do need it for the
-'struct timespec' in sys_time_pps_fetch() though.
-
-Must we have the ioctl-like interface to sys_time_pps_cmd()? If the
-second argument is always 'struct pps_source_data_s *', why does the
-syscall pretend it's 'void *'?
-
--- 
-dwmw2
-
+I think it's entirely reasonable that if the watchdog is disabled
+(echo 0 > /proc/sys/kernel/nmi_watchdog) in order to give the
+_full_ PMU HW to something else, then that something else needs
+to be disabled (or otherwise instructed to give up the HW) before
+the watchdog can be reenabled. If you don't want to risk not
+being able to restart the watchdog, don't disable it.
