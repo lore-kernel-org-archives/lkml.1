@@ -1,58 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbXFZO7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbXFZO7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758145AbXFZO7d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 10:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757685AbXFZO7S
+	id S1758038AbXFZO7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 10:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbXFZO7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 10:59:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51077 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756978AbXFZO7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 10:59:17 -0400
-Date: Tue, 26 Jun 2007 16:58:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark Lord <lkml@rtr.ca>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch, v2.6.22-rc6] sys_time() speedup
-Message-ID: <20070626145825.GA31076@elte.hu>
-References: <20070625200601.GA18980@elte.hu> <46805C4F.1050200@rtr.ca>
+	Tue, 26 Jun 2007 10:59:10 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:40781 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755887AbXFZO7J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 10:59:09 -0400
+Date: Tue, 26 Jun 2007 16:59:29 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, James Morris <jmorris@namei.org>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       linux-security-module@vger.kernel.org, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
+Message-ID: <20070626145929.GI1094@stusta.de>
+References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain> <200706252237.59226.agruen@suse.de> <Line.LNX.4.64.0706251712570.24003@localhost.localdomain> <20070626035731.GA16313@vino.hallyn.com> <20070626131519.GH1094@stusta.de> <20070626140644.GB8615@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <46805C4F.1050200@rtr.ca>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070626140644.GB8615@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mark Lord <lkml@rtr.ca> wrote:
-
-> Ingo Molnar wrote:
-> >Subject: [patch] sys_time() speedup
-> >From: Ingo Molnar <mingo@elte.hu>
-> >
-> >improve performance of sys_time(). sys_time() returns time in seconds, 
-> >but it does so by calling do_gettimeofday() and then returning the 
-> >tv_sec portion of the GTOD time. But the data structure "xtime", which 
-> >is updated by every timer/scheduler tick, already offers HZ granularity 
-> >time.
+On Tue, Jun 26, 2007 at 09:06:44AM -0500, Serge E. Hallyn wrote:
+> Quoting Adrian Bunk (bunk@stusta.de):
+> > On Mon, Jun 25, 2007 at 10:57:31PM -0500, Serge E. Hallyn wrote:
+> > > Quoting James Morris (jmorris@namei.org):
+> > > > On Mon, 25 Jun 2007, Andreas Gruenbacher wrote:
+> > > > 
+> > > > > It's useful for some LSMs to be modular, and LSMs which are y/n options won't 
+> > > > > have any security architecture issues with unloading at all. 
+> > > > 
+> > > > Which LSMs?  Upstream, there are SELinux and capabilty, and they're not 
+> > > > safe as loadable modules.
+> > > > 
+> > > > > The mere fact 
+> > > > > that SELinux cannot be built as a module is a rather weak argument for 
+> > > > > disabling LSM modules as a whole, so  please don't.
+> > > > 
+> > > > That's not the argument.  Please review the thread.
+> > > 
+> > > The argument is 'abuse', right?
+> > > 
+> > > Abuse is defined as using the LSM hooks for non-security applications,
+> > > right?
+> > > 
+> > > It seems to me that the community is doing a good job of discouraging
+> > > such abuse - by redirecting the "wrong-doers" to implement proper
+> > > upstream solutions, i.e. taskstats, the audit subsystem, etc.
+> > > 
+> > > Such encouragement seems a far better response than taking away freedoms
+> > > and flexibility from everyone.
+> > 
+> > We are not living in a world where everyone had good intentions...
 > 
-> How well synchronized is xtime with real-time ?
+> Oh no, i took a wrong turn somewhere  :)
+> 
+> > For _some_ "wrong-doers" your approach works.
+> > 
+> > But how do you convince the "wrong-doers" who do things like putting 
+> > MODULE_LICENSE("GPL") into their binary-only modules and who ignore you 
+> > and get away because noone sues them?
+> 
+> Do these really exist?  Maybe noone sues them because noone knows who
+> they are...
 
-it's updated by every jiffy.
+   http://lwn.net/Articles/82306/
 
-> Programs invoking sys_time() do expect it to be as accurate as 
-> gettimeofday(), even if only at 1-second boundaries.
+> But - note that you've changed completely the meaning of 'abuse'.
+> So mine was wrong?
 
-yes.
+Technical and legal abuse are related.
 
-	Ingo
+For GPL'ed modules you might assume good faith and get the authors to do 
+things in a proper way. Authors of legally questionable modules that 
+cheat in many ways are quite a different issue.
+
+> > The spirit of the GPLv2 is to defend the freedom of the software 
+> > (different from the spirit of the BSD licence), and considering that 
+> > there aren't many people defending the GPLv2 copyright of the Linux 
+> > kernel at court against abusers, making it harder for people to do the 
+> > abuse might not be the worst choice...
+> 
+> Well, but you seem to be saying that the license means squat, and
+> resorting to making things inconvenient rather than illegal.
+
+No, the point is that there's no reason for making illegal things 
+convenient.
+
+I'm not talking about removing things that are used inside the kernel, 
+but what you call "freedom" can also be called "hooks for possible abuse".
+
+Additionally, it both makes the kernel bigger for everyone and requires 
+proper handling of loading/unloading in the security architecture.
+
+> Now I guess if it really is accepted that that's the way it should be,
+> then this patch will go in.
+> 
+> -serge
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
