@@ -1,98 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbXFZGe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbXFZGmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbXFZGe6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 02:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXFZGes
+	id S1754150AbXFZGmr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 02:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbXFZGmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 02:34:48 -0400
-Received: from ozlabs.org ([203.10.76.45]:46723 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbXFZGeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 02:34:46 -0400
-Subject: Re: [PATCH 3/3] Make jprobes a little safer for users
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
-       anil.s.keshavamurthy@intel.com, ananth@in.ibm.com
-In-Reply-To: <863e9df20706252319j239eaf44wee7a46ad742c9585@mail.gmail.com>
-References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
-	 <7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
-	 <863e9df20706252319j239eaf44wee7a46ad742c9585@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7sXp+LJveeT4iXK22RD/"
-Date: Tue, 26 Jun 2007 16:34:43 +1000
-Message-Id: <1182839683.6673.22.camel@concordia.ozlabs.ibm.com>
+	Tue, 26 Jun 2007 02:42:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52565 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750797AbXFZGmj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 02:42:39 -0400
+Date: Mon, 25 Jun 2007 23:42:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
+       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
+       davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 10/10] Iommu floppy workaround
+Message-Id: <20070625234222.a1e09a16.akpm@linux-foundation.org>
+In-Reply-To: <20070619213809.110034000@askeshav-devel.jf.intel.com>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
+	<20070619213809.110034000@askeshav-devel.jf.intel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 19 Jun 2007 14:37:11 -0700 "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
 
---=-7sXp+LJveeT4iXK22RD/
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> 	This config option (DMAR_FLPY_WA) sets up 1:1 mapping for the
+> floppy device so that the floppy device which does not use
+> DMA api's will continue to work. 
+> 
+> Once the floppy driver starts using DMA api's this config option
+> can be turn off or this patch can be yanked out of kernel at that
+> time.
+> 
+> 
+> Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+> ---
+>  arch/x86_64/Kconfig       |   10 ++++++++++
+>  drivers/pci/intel-iommu.c |   22 ++++++++++++++++++++++
+>  drivers/pci/intel-iommu.h |    7 +++++++
+>  3 files changed, 39 insertions(+)
+> 
+> Index: linux-2.6.22-rc4-mm2/arch/x86_64/Kconfig
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/arch/x86_64/Kconfig	2007-06-18 15:45:08.000000000 -0700
+> +++ linux-2.6.22-rc4-mm2/arch/x86_64/Kconfig	2007-06-18 15:45:09.000000000 -0700
+> @@ -752,6 +752,16 @@
+>  	 all the OS visible memory. Hence the driver can continue
+>  	 to use physical addresses for DMA.
+>  
+> +config DMAR_FLPY_WA
 
-On Tue, 2007-06-26 at 11:49 +0530, Abhishek Sagar wrote:
-> On 6/26/07, Michael Ellerman <michael@ellerman.id.au> wrote:
->=20
-> > We can then use that in register_jprobe() to check that the entry point
-> > we're passed is actually in the kernel text, rather than just some rand=
-om
-> > value.
->=20
-> A similar cleanup is possible even for return probes then. I wonder if
-> there are any kprobe related scenarios where the executable code may
-> be located outside the core kernel text region (e.g, ITCM?). In that
-> case would it also be wrong to assume that the jprobe handler may be
-> situated outside the kernel core text / module  region? Would it then
-> make sense to move this check from register_jprobe() to the arch
-> dependent code?
+FLOPPY is spelled "FLOPPY"!
 
-It did occur to me that someone might be doing something crazy like
-branching to code that's not in the kernel/module text - but I was
-hoping that wouldn't be the case. I'm not sure what ITCM is?
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/drivers/pci/intel-iommu.c	2007-06-18 15:45:08.000000000 -0700
+> +++ linux-2.6.22-rc4-mm2/drivers/pci/intel-iommu.c	2007-06-18 15:45:09.000000000 -0700
+> @@ -1631,6 +1631,26 @@
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_DMAR_FLPY_WA
+> +static inline void iommu_prepare_isa(void)
+> +{
+> +	struct pci_dev *pdev = NULL;
+> +	int ret;
+> +
+> +	pdev = pci_get_class (PCI_CLASS_BRIDGE_ISA << 8, NULL);
+> +	if (!pdev)
+> +		return;
+> +
+> +	printk (KERN_INFO "IOMMU: Prepare 0-16M unity mapping for LPC\n");
+> +	ret = iommu_prepare_identity_map(pdev, 0, 16*1024*1024);
+> +
+> +	if (ret)
+> +		printk ("IOMMU: Failed to create 0-64M identity map, \
+> +			Floppy might not work\n");
+> +
+> +}
+> +#endif
+> +
+>  int __init init_dmars(void)
+>  {
+>  	struct dmar_drhd_unit *drhd;
+> @@ -1696,6 +1716,8 @@
+>  
+>  	iommu_prepare_gfx_mapping();
+>  
+> +	iommu_prepare_isa();
+> +
+>  	/*
+>  	 * for each drhd
+>  	 *   enable fault log
+> Index: linux-2.6.22-rc4-mm2/drivers/pci/intel-iommu.h
+> ===================================================================
+> --- linux-2.6.22-rc4-mm2.orig/drivers/pci/intel-iommu.h	2007-06-18 15:45:08.000000000 -0700
+> +++ linux-2.6.22-rc4-mm2/drivers/pci/intel-iommu.h	2007-06-18 15:45:09.000000000 -0700
+> @@ -322,4 +322,11 @@
+>  }
+>  #endif /* !CONFIG_DMAR_GFX_WA */
+>  
+> +#ifndef CONFIG_DMAR_FLPY_WA
+> +static inline void iommu_prepare_isa(void)
+> +{
+> +	return;
+> +}
+> +#endif /* !CONFIG_DMAR_FLPY_WA */
+
+Bit weird that this was implemented in the header like that.
+
+How about this?  (Also contains rather a lot of obvious style fixes)
 
 
-> >  int __kprobes register_jprobe(struct jprobe *jp)
-> >  {
-> > +       unsigned long addr =3D arch_deref_entry_point(jp->entry);
-> > +
-> > +       if (!kernel_text_address(addr))
-> > +               return -EINVAL;
->=20
-> Seems like you're checking for the jprobe handler to be within
-> kernel/module range. Why not narrow this down to just module range
-> (!module_text_address(addr), say)? Core kernel functions would not be
-> ending with a 'jprobe_return()' anyway.
+ arch/x86_64/Kconfig       |    2 +-
+ drivers/pci/intel-iommu.c |   19 ++++++++++++-------
+ drivers/pci/intel-iommu.h |    7 -------
+ 3 files changed, 13 insertions(+), 15 deletions(-)
 
-There's jprobe code in net/ipv4/tcp_probe.c and net/dccp/probe.c that
-can be builtin or modular, so I think kernel_text_address() is right.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-7sXp+LJveeT4iXK22RD/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGgLODdSjSd0sB4dIRAj+KAJ9J5aHP0M3+RIXR6GhgJ1LLVLWyKACgn3nQ
-Kfwu91i8BrTrR082hxzola0=
-=rkvM
------END PGP SIGNATURE-----
-
---=-7sXp+LJveeT4iXK22RD/--
+diff -puN arch/x86_64/Kconfig~intel-iommu-iommu-floppy-workaround-fix arch/x86_64/Kconfig
+--- a/arch/x86_64/Kconfig~intel-iommu-iommu-floppy-workaround-fix
++++ a/arch/x86_64/Kconfig
+@@ -770,7 +770,7 @@ config DMAR_GFX_WA
+ 	 all the OS visible memory. Hence the driver can continue
+ 	 to use physical addresses for DMA.
+ 
+-config DMAR_FLPY_WA
++config DMAR_FLOPPY_WA
+ 	bool "Support for Floppy disk workaround"
+ 	depends on DMAR
+ 	default y
+diff -puN drivers/pci/intel-iommu.c~intel-iommu-iommu-floppy-workaround-fix drivers/pci/intel-iommu.c
+--- a/drivers/pci/intel-iommu.c~intel-iommu-iommu-floppy-workaround-fix
++++ a/drivers/pci/intel-iommu.c
+@@ -1631,25 +1631,30 @@ error:
+ }
+ #endif
+ 
+-#ifdef CONFIG_DMAR_FLPY_WA
++#ifdef CONFIG_DMAR_FLOPPY_WA
+ static inline void iommu_prepare_isa(void)
+ {
+-	struct pci_dev *pdev = NULL;
++	struct pci_dev *pdev;
+ 	int ret;
+ 
+-	pdev = pci_get_class (PCI_CLASS_BRIDGE_ISA << 8, NULL);
++	pdev = pci_get_class(PCI_CLASS_BRIDGE_ISA << 8, NULL);
+ 	if (!pdev)
+ 		return;
+ 
+-	printk (KERN_INFO "IOMMU: Prepare 0-16M unity mapping for LPC\n");
++	printk(KERN_INFO "IOMMU: Prepare 0-16M unity mapping for LPC\n");
+ 	ret = iommu_prepare_identity_map(pdev, 0, 16*1024*1024);
+ 
+ 	if (ret)
+-		printk ("IOMMU: Failed to create 0-64M identity map, \
+-			Floppy might not work\n");
++		printk("IOMMU: Failed to create 0-64M identity map, "
++			"floppy might not work\n");
+ 
+ }
+-#endif
++#else
++static inline void iommu_prepare_isa(void)
++{
++	return;
++}
++#endif /* !CONFIG_DMAR_FLPY_WA */
+ 
+ int __init init_dmars(void)
+ {
+diff -puN drivers/pci/intel-iommu.h~intel-iommu-iommu-floppy-workaround-fix drivers/pci/intel-iommu.h
+--- a/drivers/pci/intel-iommu.h~intel-iommu-iommu-floppy-workaround-fix
++++ a/drivers/pci/intel-iommu.h
+@@ -322,11 +322,4 @@ static inline void iommu_prepare_gfx_map
+ }
+ #endif /* !CONFIG_DMAR_GFX_WA */
+ 
+-#ifndef CONFIG_DMAR_FLPY_WA
+-static inline void iommu_prepare_isa(void)
+-{
+-	return;
+-}
+-#endif /* !CONFIG_DMAR_FLPY_WA */
+-
+ #endif
+_
 
