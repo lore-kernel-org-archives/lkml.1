@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbXFZR0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXFZRcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758901AbXFZR0y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 13:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbXFZR0r
+	id S1758266AbXFZRcN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 13:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbXFZRcC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 13:26:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59529 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756978AbXFZR0q (ORCPT
+	Tue, 26 Jun 2007 13:32:02 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45771 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756382AbXFZRcA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 13:26:46 -0400
-Date: Tue, 26 Jun 2007 10:23:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
-       Miklos Szeredi <miklos@szeredi.hu>, chris@atlee.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-In-Reply-To: <4680D162.9050603@yahoo.com.au>
-Message-ID: <alpine.LFD.0.98.0706261016200.8675@woody.linux-foundation.org>
-References: <20070620093612.GA1626@ff.dom.local>
- <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
- <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
- <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
- <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
- <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
- <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
- <4680D162.9050603@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 26 Jun 2007 13:32:00 -0400
+Date: Tue, 26 Jun 2007 19:31:57 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Muli Ben-Yehuda <muli@il.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
+       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
+Message-ID: <20070626173157.GD5244@one.firstfloor.org>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com> <20070625234550.058635cb.akpm@linux-foundation.org> <200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com> <p73645a675q.fsf@bingen.suse.de> <46812D79.8080306@linux.intel.com> <20070626153358.GA5244@one.firstfloor.org> <46813E0F.1060806@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46813E0F.1060806@linux.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 26 Jun 2007, Nick Piggin wrote:
+> >>(and I think it mostly already doesn't even without that)
+> >
+> >It uses /sys/bus/pci/* which is not any better as seen from the IOMMU.
+> >
+> >Any interface will need to be explicit because user space needs to know 
+> >which
+> >DMA addresses to put into the hardware. It's not enough to just 
+> >transparently
+> >translate the mappings.
 > 
-> Hmm, not that I have a strong opinion one way or the other, but I
-> don't know that they would encourage bad code. They are not going to
-> reduce latency under a locked section, but will improve determinism
-> in the contended case.
+> that's what DRM is used for nowadays...
 
-xadd really generally *is* slower than an add. One is often microcoded, 
-the other is not.
+But DRM does support much less hardware than the X server?
 
-But the real problem is that your "unlock" sequence is now about two 
-orders of magnitude slower than it used to be. So it used to be that a 
-spinlocked sequence only had a single synchronization point, now it has 
-two. *That* is really bad, and I guarantee that it makes your spinlocks 
-effectively twice as slow for the non-contended parts.
+Perhaps we just need an ioctl where an X server can switch this.
 
-But your xadd thing might be worth looking at, just to see how expensive 
-it is. As an _alternative_ to spinlocks, it's certainly viable.
+-Andi
 
-(Side note: why make it a word? Word operations are slower on many x86 
-implementations, because they add yet another prefix. You only need a 
-byte)
-
-			Linus
