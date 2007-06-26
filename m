@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbXFZEKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbXFZEKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754378AbXFZEKI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 00:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbXFZEJ6
+	id S1755543AbXFZEKy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 00:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXFZEKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 00:09:58 -0400
-Received: from smtpout.mac.com ([17.250.248.175]:62283 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750865AbXFZEJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 00:09:57 -0400
-In-Reply-To: <200706252237.59226.agruen@suse.de>
-References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain> <200706252237.59226.agruen@suse.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <11C35822-4E11-4365-BADE-C1AE41F15B50@mac.com>
-Cc: James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
-       linux-security-module@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
-Date: Tue, 26 Jun 2007 00:09:24 -0400
-To: Andreas Gruenbacher <agruen@suse.de>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Tue, 26 Jun 2007 00:10:46 -0400
+Received: from DELFT.AURA.CS.CMU.EDU ([128.2.206.88]:34147 "EHLO
+	delft.aura.cs.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbXFZEKq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 00:10:46 -0400
+Date: Tue, 26 Jun 2007 00:10:13 -0400
+To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Message-ID: <20070626041013.GG24745@delft.aura.cs.cmu.edu>
+Mail-Followup-To: Alexandre Oliva <oliva@lsd.ic.unicamp.br>,
+	linux-kernel@vger.kernel.org
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com> <or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br> <20070622013417.GT21478@ftp.linux.org.uk> <20070622041949.GA15625@thunk.org> <orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br> <20070625132853.GH10008@csclub.uwaterloo.ca> <orhcov7qsz.fsf@oliva.athome.lsd.ic.unicamp.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <orhcov7qsz.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Jan Harkes <jaharkes@cs.cmu.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 25, 2007, at 16:37:58, Andreas Gruenbacher wrote:
-> On Monday 25 June 2007 06:33, James Morris wrote:
->> Convert LSM into a static interface, as the ability to unload a  
->> security module is not required by in-tree users and potentially  
->> complicates the overall security architecture.
->
-> It's useful for some LSMs to be modular, and LSMs which are y/n  
-> options won't have any security architecture issues with unloading  
-> at all. The mere fact that SELinux cannot be built as a module is a  
-> rather weak argument for disabling LSM modules as a whole, so   
-> please don't.
+On Mon, Jun 25, 2007 at 04:54:52PM -0300, Alexandre Oliva wrote:
+> Consider this scenario: vendor tivoizes Linux in the device, and
+> includes the corresponding sources only in a partition that is
+> theoretically accessible using the shipped kernel, but that nothing in
+> the software available in the machine will let you get to.  Further,
+> sources (like everything else on disk) are encrypted, and you can only
 
-Here are a few questions for you:
+Interesting scenario, it seems to comply with GPLv2 on the surface.
 
-   1)  What do you expect to happen to all the megs of security data  
-when you "rmmod selinux"?  Do you maintain a massive linked list of  
-security data (with all the locking and performance problems) so that  
-you can iterate over it calling kfree()? What synchronization  
-primitive do we have right now which could safely stop all CPUs  
-outside of security calls while we NULL out and free security data  
-and disable security operations?  Don't say "software suspend" and  
-"process freezer", since those have whole order-of-magnitude- 
-complexity problems of their own (and don't always work right either).
+If that kernel doesn't actually allow access and wipes the source
+partition to use it as swap on first boot, then no machine is actually
+capable of reading the source. So it isn't really machine readable.
+Another gripe is that encrypted media are not customarily used for
+software interchange. So that's 2 (minor) strikes where this method of
+distribution doesn't seem to match the language of section 3a.
 
-   2)  When you "modprobe my_custom_security_module", how exactly do  
-you expect that all the processes, files, shared memory segments,  
-file descriptors, sockets, SYSV mutexes, packets, etc will get  
-appropriate security pointers?  This isn't even solvable the same way  
-the "rmmod" problem is, since most of that isn't even accessible  
-without iterating over the ENTIRE dcache, icache, every process,  
-every process' file-descriptors, every socket, every unix socket,  
-every anonymous socket, every SYSV shm object, every currently-in- 
-process packet.
+You also cannot interpret the encrypted partition as source code because
+a bit further down in section 3, it defines source code as,
+  "The source code for a work means the preferred form of the work for
+  making modifications to it."
 
-   3)  This sounds suspiciously like "The mere fact that the  
-Linux-2.6-VM cannot be built as a module is a rather weak argument  
-for disabling VFS modules as a whole".  We don't do "pluggable  
-fundamental infrastructure" in Linux.  If it's fundamental  
-infrastructure then you eliminate as many differences as possible and  
-leave the rest to CONFIG options (or delete it entirely).
+So now we get to section 6. The recipient receives a license to copy,
+distribute or modify. You may not impose further restrictions on
+these rights granted herein.
 
+You could argue that they do not restrict copying, distribution
+and modification of the sources in general, only of the specific copy
+they distribute. However here we go back to section 2 which states that
+their modified copy is a derived work which must be licensed under the
+GPLv2, so that would make it specific enough that recipients have in
+fact been granted the right to copy, distribute and modify the copy of
+the source of that corresponds to the distributed binaries, which is
+restricted because of the encryption which prevents the user to copy,
+distribute or modify the source code.
 
-So... Do you have a proposal for solving those rather fundamental  
-design gotchas?  If so, I'm sure everybody here would love to see  
-your patch; though maybe not if it's a 32MB patch-zilla-of-doom (AKPM  
-beware, the merge-conflict-from-hell is on its way).  On the other  
-hand, if you accept that these problems basically can't be solved and  
-we make things static and rip out a bunch of code, we can probably  
-improve our performance under larger security models (like SELinux/ 
-AppArmor/TOMOYO/MagicSecurityFlavorOfTheWeek(TM)) by a percent or two.
+> Does anyone think this is permitted by the letter of GPLv2?
 
-Cheers,
-Kyle Moffett
+No.
+
+> How are the sources passed on in this way going to benefit the user or
+> the community?
+
+Not a really interesting question if the method of distribution violates
+the letter of the GPLv2, is it? They get sued for copyright infringement
+because they are not in compliance with section 3 and the sources are
+released as a result.
+
+Jan
 
