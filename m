@@ -1,55 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbXFZTMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbXFZTN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760117AbXFZTMX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 15:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758911AbXFZTML
+	id S1759878AbXFZTN4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbXFZTNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 15:12:11 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43145 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758647AbXFZTMJ (ORCPT
+	Tue, 26 Jun 2007 15:13:49 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:13523 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758426AbXFZTNs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 15:12:09 -0400
-Date: Wed, 27 Jun 2007 00:42:15 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070626191215.GB13324@amitarora.in.ibm.com>
-References: <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625215239.GK5181@schatzie.adilger.int> <20070626104546.GB19870@amitarora.in.ibm.com> <20070626154250.GD6652@schatzie.adilger.int>
+	Tue, 26 Jun 2007 15:13:48 -0400
+Date: Tue, 26 Jun 2007 12:14:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: david@lang.hm
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: long-term regression
+Message-Id: <20070626121425.e92ba2e5.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0706251555330.20356@asgard.lang.hm>
+References: <Pine.LNX.4.64.0706171052240.28371@asgard.lang.hm>
+	<20070621052807.cc64605d.akpm@linux-foundation.org>
+	<20070621083659.dabf3a22.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0706242157570.6215@asgard.lang.hm>
+	<4680445C.8000703@oracle.com>
+	<Pine.LNX.4.64.0706251555330.20356@asgard.lang.hm>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070626154250.GD6652@schatzie.adilger.int>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 11:42:50AM -0400, Andreas Dilger wrote:
-> On Jun 26, 2007  16:15 +0530, Amit K. Arora wrote:
-> > On Mon, Jun 25, 2007 at 03:52:39PM -0600, Andreas Dilger wrote:
-> > > In XFS one of the (many) ALLOC modes is to zero existing data on allocate.
-> > > For ext4 all this would mean is calling ext4_ext_mark_uninitialized() on
-> > > each extent.  For some workloads this would be much faster than truncate
-> > > and reallocate of all the blocks in a file.
+On Mon, 25 Jun 2007 15:56:17 -0700 (PDT) david@lang.hm wrote:
+
+> due to the size the files are posted at http://linux.lang.hm/linux
+> 
+> let me know what else I can send to help.
+> 
+> David Lang
+
+
+I suggest that you test 2.6.22-rcN using one or both of these
+boot options:
+
+noisapnp
+pnpacpi=off
+
+Somewhere between 2.6.18 and 2.6.22-development, the ACPI config
+symbol also starting enabling (selecting) PNP.  That's one of many
+differences....
+
+
+I would also disable CONFIG_USB_USS720, at least for testing.
+
+
+> On Mon, 25 Jun 2007, Randy Dunlap wrote:
+> 
+> > Date: Mon, 25 Jun 2007 15:40:28 -0700
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > To: david@lang.hm
+> > Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+> >     linux-usb-devel@lists.sourceforge.net
+> > Subject: Re: long-term regression
 > > 
-> > In ext4, we already mark each extent having preallocated blocks as
-> > uninitialized. This is done as part of following code (which is part of
-> > patch 5/7) in ext4_ext_get_blocks() :  
-> 
-> What I meant is that with XFS_IOC_ALLOCSP the previously-written data
-> is ZEROED OUT, unlike with fallocate() which leaves previously-written
-> data alone and only allocates in holes.
-> 
-> In order to specify this for allocation, FA_FL_DEL_DATA would need to make
-> sense for allocations (as well as the deallocation).  This is farily easy
-> to do - just mark all of the existing extents as unallocated, and their
-> data disappears.
+> > david@lang.hm wrote:
+> >>  On Thu, 21 Jun 2007, Randy Dunlap wrote:
+> >> 
+> >> >  Date: Thu, 21 Jun 2007 08:36:59 -0700
+> >> >  From: Randy Dunlap <randy.dunlap@oracle.com>
+> >> >  To: Andrew Morton <akpm@linux-foundation.org>
+> >> >  Cc: david@lang.hm, linux-kernel@vger.kernel.org,
+> >> >      linux-usb-devel@lists.sourceforge.net
+> >> >  Subject: Re: long-term regression
+> >> > 
+> >> >  On Thu, 21 Jun 2007 05:28:07 -0700 Andrew Morton wrote:
+> >> > 
+> >> > > >  On Sun, 17 Jun 2007 10:57:55 -0700 (PDT) david@lang.hm wrote:
+> >> > > >  I haven't had time to bisect this, but I'm having a problem on a 
+> >> > > >  AMD64
+> >> > > >  gentoo system where the printer doesn't work with recent kernels.
+> >> > > > 
+> >> > > >  2.6.18-rc3 worked
+> >> > > >  2.6.21.1 doesn't
+> >> > > >  2.6.22-rc4 doesn't
+> >> > > > 
+> >> > > >  unfortunantly the system is gooted on 2.6.18 at the moment and I'm 
+> >> > > >  out of
+> >> > > >  town so my ability to test is limited I can provide the 2.6.22-rc4
+> >> > > >  (attached) and 2.6.18-rc3 configs.
+> >> > > > 
+> >> > > >  dmesg appears to show the port being detected, but writes to the 
+> >> > > >  port
+> >> > > >  under newer kernels appear to complete, but no data gets to the 
+> >> > > >  printer.
+> >> > > > 
+> >> > > >  any suggestions other then doing the large bisect?
+> >> > > 
+> >> > >  That would be good, thanks.  Please be sure to cc linux-usb-devel on
+> >> > >  the results.
+> >> > 
+> >> >  OK, I'm curious about how someone deduced that this is a problem
+> >> >  with a USB printer vs. parallel port printer since the config file has:
+> >> > 
+> >> >  CONFIG_PRINTER=y
+> >> >  CONFIG_USB_PRINTER=y
+> >> > 
+> >> >  The kernel boot log should probably be posted also.
+> >>
+> >>  here is the dmesg from 2.6.22-rc4 and kern.log showing 2.6.22.-rc4 and
+> >>  2.6.180rc3
+> >>
+> >>  the printer not working is the parallel port.
+> >
+> > This email didn't show up on lkml or linux-usb-devel due to size limits (it 
+> > was 900+ KB).
+> >
+> > David, please send your working 2.6.18 config file.
+> >
+> > Can you post the kernel log files on the web somewhere?
 
-Ok, agreed. Will add the FA_ZERO_SPACE mode too.
-Thanks!
-
---
-Regards,
-Amit Arora
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
