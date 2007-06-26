@@ -1,167 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbXFZXWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbXFZXWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761647AbXFZXWe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758372AbXFZXMN
+	id S1761755AbXFZXWv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760170AbXFZXMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:12:13 -0400
-Received: from ns1.suse.de ([195.135.220.2]:43025 "EHLO mx1.suse.de"
+	Tue, 26 Jun 2007 19:12:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43034 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760189AbXFZXMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:12:10 -0400
-Message-Id: <20070626231124.098710828@suse.de>
+	id S1760175AbXFZXMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:12:18 -0400
+Message-Id: <20070626231132.703797254@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:28 -0700
+Date: Tue, 26 Jun 2007 16:08:30 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>, Miklos Szeredi <mszeredi@suse.cz>
-Subject: [AppArmor 32/44] Enable LSM hooks to distinguish operations on file descriptors from operations on pathnames
-Content-Disposition: inline; filename=file-handle-ops.diff
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 34/44] Factor out sysctl pathname code
+Content-Disposition: inline; filename=sysctl-pathname.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Struct iattr already contains ia_file since commit cc4e69de from 
-Miklos (which is related to commit befc649c). Use this to pass
-struct file down the setattr hooks. This allows LSMs to distinguish
-operations on file descriptors from operations on paths.
+Convert the selinux sysctl pathname computation code into a standalone
+function.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
-Cc: Miklos Szeredi <mszeredi@suse.cz>
 
 ---
- fs/nfsd/vfs.c      |   12 +++++++-----
- fs/open.c          |   16 +++++++++++-----
- include/linux/fs.h |    3 +++
- 3 files changed, 21 insertions(+), 10 deletions(-)
+ include/linux/sysctl.h   |    2 ++
+ kernel/sysctl.c          |   27 +++++++++++++++++++++++++++
+ security/selinux/hooks.c |   35 +++++------------------------------
+ 3 files changed, 34 insertions(+), 30 deletions(-)
 
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -383,7 +383,7 @@ static ssize_t nfsd_getxattr(struct dent
- {
- 	ssize_t buflen;
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -963,6 +963,8 @@ extern int proc_doulongvec_minmax(ctl_ta
+ extern int proc_doulongvec_ms_jiffies_minmax(ctl_table *table, int,
+ 				      struct file *, void __user *, size_t *, loff_t *);
  
--	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0);
-+	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0, NULL);
- 	if (buflen <= 0)
- 		return buflen;
- 
-@@ -391,7 +391,7 @@ static ssize_t nfsd_getxattr(struct dent
- 	if (!*buf)
- 		return -ENOMEM;
- 
--	return vfs_getxattr(dentry, mnt, key, *buf, buflen);
-+	return vfs_getxattr(dentry, mnt, key, *buf, buflen, NULL);
- }
- #endif
- 
-@@ -417,7 +417,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
- 		goto out;
- 	}
- 
--	error = vfs_setxattr(dentry, mnt, key, buf, len, 0);
-+	error = vfs_setxattr(dentry, mnt, key, buf, len, 0, NULL);
- out:
- 	kfree(buf);
- 	return error;
-@@ -1992,12 +1992,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
- 
- 	mnt = fhp->fh_export->ex_mnt;
- 	if (size)
--		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size,0);
-+		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size, 0,
-+				     NULL);
- 	else {
- 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
- 			error = 0;
- 		else {
--			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
-+			error = vfs_removexattr(fhp->fh_dentry, mnt, name,
-+						NULL);
- 			if (error == -ENODATA)
- 				error = 0;
- 		}
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -522,6 +522,8 @@ asmlinkage long sys_fchmod(unsigned int 
- 		mode = inode->i_mode;
- 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
- 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-+	newattrs.ia_valid |= ATTR_FILE;
-+	newattrs.ia_file = file;
- 	err = notify_change(dentry, file->f_path.mnt, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
- 
-@@ -572,7 +574,7 @@ asmlinkage long sys_chmod(const char __u
++extern char *sysctl_pathname(ctl_table *, char *, int);
++
+ extern int do_sysctl (int __user *name, int nlen,
+ 		      void __user *oldval, size_t __user *oldlenp,
+ 		      void __user *newval, size_t newlen);
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1110,6 +1110,33 @@ struct ctl_table_header *sysctl_head_nex
+ 	return NULL;
  }
  
- static int chown_common(struct dentry * dentry, struct vfsmount *mnt,
--			uid_t user, gid_t group)
-+			uid_t user, gid_t group, struct file *file)
- {
- 	struct inode * inode;
- 	int error;
-@@ -600,6 +602,10 @@ static int chown_common(struct dentry * 
- 	}
- 	if (!S_ISDIR(inode->i_mode))
- 		newattrs.ia_valid |= ATTR_KILL_SUID|ATTR_KILL_SGID;
-+	if (file) {
-+		newattrs.ia_file = file;
-+		newattrs.ia_valid |= ATTR_FILE;
++char *sysctl_pathname(ctl_table *table, char *buffer, int buflen)
++{
++	if (buflen < 1)
++		return NULL;
++	buffer += --buflen;
++	*buffer = '\0';
++
++	while (table) {
++		int namelen = strlen(table->procname);
++
++		if (buflen < namelen + 1)
++			return NULL;
++		buflen -= namelen + 1;
++		buffer -= namelen;
++		memcpy(buffer, table->procname, namelen);
++		*--buffer = '/';
++		table = table->parent;
 +	}
- 	mutex_lock(&inode->i_mutex);
- 	error = notify_change(dentry, mnt, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
-@@ -615,7 +621,7 @@ asmlinkage long sys_chown(const char __u
- 	error = user_path_walk(filename, &nd);
- 	if (error)
- 		goto out;
--	error = chown_common(nd.dentry, nd.mnt, user, group);
-+	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
- 	path_release(&nd);
- out:
- 	return error;
-@@ -635,7 +641,7 @@ asmlinkage long sys_fchownat(int dfd, co
- 	error = __user_walk_fd(dfd, filename, follow, &nd);
- 	if (error)
- 		goto out;
--	error = chown_common(nd.dentry, nd.mnt, user, group);
-+	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
- 	path_release(&nd);
- out:
- 	return error;
-@@ -649,7 +655,7 @@ asmlinkage long sys_lchown(const char __
- 	error = user_path_walk_link(filename, &nd);
- 	if (error)
- 		goto out;
--	error = chown_common(nd.dentry, nd.mnt, user, group);
-+	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
- 	path_release(&nd);
- out:
- 	return error;
-@@ -668,7 +674,7 @@ asmlinkage long sys_fchown(unsigned int 
++	if (buflen < 4)
++		return NULL;
++	buffer -= 4;
++	memcpy(buffer, "/sys", 4);
++
++	return buffer;
++}
++EXPORT_SYMBOL(sysctl_pathname);
++
+ #ifdef CONFIG_SYSCTL_SYSCALL
+ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
+ 	       void __user *newval, size_t newlen)
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -1427,40 +1427,15 @@ static int selinux_capable(struct task_s
  
- 	dentry = file->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
--	error = chown_common(dentry, file->f_path.mnt, user, group);
-+	error = chown_common(dentry, file->f_path.mnt, user, group, file);
- 	fput(file);
+ static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
+ {
+-	int buflen, rc;
+-	char *buffer, *path, *end;
++	char *buffer, *path;
++	int rc = -ENOMEM;
+ 
+-	rc = -ENOMEM;
+ 	buffer = (char*)__get_free_page(GFP_KERNEL);
+ 	if (!buffer)
+ 		goto out;
+-
+-	buflen = PAGE_SIZE;
+-	end = buffer+buflen;
+-	*--end = '\0';
+-	buflen--;
+-	path = end-1;
+-	*path = '/';
+-	while (table) {
+-		const char *name = table->procname;
+-		size_t namelen = strlen(name);
+-		buflen -= namelen + 1;
+-		if (buflen < 0)
+-			goto out_free;
+-		end -= namelen;
+-		memcpy(end, name, namelen);
+-		*--end = '/';
+-		path = end;
+-		table = table->parent;
+-	}
+-	buflen -= 4;
+-	if (buflen < 0)
+-		goto out_free;
+-	end -= 4;
+-	memcpy(end, "/sys", 4);
+-	path = end;
+-	rc = security_genfs_sid("proc", path, tclass, sid);
+-out_free:
++	path = sysctl_pathname(table, buffer, PAGE_SIZE);
++	if (path)
++		rc = security_genfs_sid("proc", path, tclass, sid);
+ 	free_page((unsigned long)buffer);
  out:
- 	return error;
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -351,6 +351,9 @@ struct iattr {
- 	 * Not an attribute, but an auxilary info for filesystems wanting to
- 	 * implement an ftruncate() like method.  NOTE: filesystem should
- 	 * check for (ia_valid & ATTR_FILE), and not for (ia_file != NULL).
-+	 *
-+	 * The LSM hooks also use this to distinguish operations on a file
-+	 * descriptors from operations on pathnames.
- 	 */
- 	struct file	*ia_file;
- };
+ 	return rc;
 
 -- 
