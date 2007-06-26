@@ -1,103 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbXFZFYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbXFZFf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbXFZFYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 01:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXFZFYc
+	id S1756601AbXFZFf2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 01:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbXFZFfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 01:24:32 -0400
-Received: from waste.org ([66.93.16.53]:48180 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbXFZFYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 01:24:31 -0400
-Date: Tue, 26 Jun 2007 00:24:19 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SLOB allocator imcompatible SLAB
-Message-ID: <20070626052419.GD11115@waste.org>
-References: <m2tzt01kew.wl%ysato@users.sourceforge.jp> <20070622145635.GX11115@waste.org> <m2ejk05y7c.wl%ysato@users.sourceforge.jp> <468090B7.2080200@yahoo.com.au> <20070626045635.GC11115@waste.org> <46809D88.2080208@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46809D88.2080208@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 26 Jun 2007 01:35:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40530 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751271AbXFZFfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 01:35:17 -0400
+Date: Mon, 25 Jun 2007 22:34:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de,
+       muli@il.ibm.com, suresh.b.siddha@intel.com, arjan@linux.intel.com,
+       ashok.raj@intel.com, davem@davemloft.net, clameter@sgi.com
+Subject: Re: [Intel IOMMU 06/10] Avoid memory allocation failures in dma map
+ api calls
+Message-Id: <20070625223456.b78f1784.akpm@linux-foundation.org>
+In-Reply-To: <1182326799.21117.19.camel@twins>
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
+	<20070619213808.798646000@askeshav-devel.jf.intel.com>
+	<1182326799.21117.19.camel@twins>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 03:00:56PM +1000, Nick Piggin wrote:
-> Matt Mackall wrote:
-> >On Tue, Jun 26, 2007 at 02:06:15PM +1000, Nick Piggin wrote:
-> >
-> >>Yoshinori Sato wrote:
-> >>
-> >>>At Fri, 22 Jun 2007 09:56:35 -0500,
-> >>>Matt Mackall wrote:
-> >>>
-> >>>
-> >>>>On Fri, Jun 22, 2007 at 05:08:07PM +0900, Yoshinori Sato wrote:
-> >>>>
-> >>>>
-> >>>>>Because the page which SLOB allocator got does not have PG_slab,
-> >>>>
-> >>>>This is for a NOMMU system?
-> >>>
-> >>>
-> >>>Yes.
-> >>>
-> >>>
-> >>>
-> >>>>You're using an old kernel with an old version of SLOB. SLOB in newer
-> >>>>kernels actually sets per-page flags. Nick, can you see any reason not
-> >>>>to s/PG_active/PG_slab/ in the current code?
-> >>
-> >>The problem with this is that PG_private is used only for the SLOB
-> >>part of the allocator and not the bigblock part.
-> >
-> >
-> >That's fine, at least for the purposes of kobjsize. We only mark
-> >actual SLOB-managed pages, kobjsize assumes the rest are alloc_pages
-> >and that's indeed what they are.
+On Wed, 20 Jun 2007 10:06:39 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Tue, 2007-06-19 at 14:37 -0700, Keshavamurthy, Anil S wrote:
+> > plain text document attachment (intel_iommu_pf_memalloc.patch)
+> > Intel IOMMU driver needs memory during DMA map calls to setup its internal
+> > page tables and for other data structures. As we all know that these DMA 
+> > map calls are mostly called in the interrupt context or with the spinlock 
+> > held by the upper level drivers(network/storage drivers), so in order to 
+> > avoid any memory allocation failure due to low memory issues,
+> > this patch makes memory allocation by temporarily setting PF_MEMALLOC
+> > flags for the current task before making memory allocation calls.
+> > 
+> > We evaluated mempools as a backup when kmem_cache_alloc() fails
+> > and found that mempools are really not useful here because
+> >  1) We don;t know for sure how much to reserve in advance
 > 
-> OK, but that only makes it work in this case. I think we should
-> either call PG_slab part of the kmem/kmalloc API and implement
-> that, or say it isn't and make nommu do something else?
->
-> >>We _could_ just bite the bullet and have SLOB set PG_slab, however
-> >>that would encouarage more users of this flag which we should hope
-> >>to get rid of one day.
-> >>
-> >>The real problem is that nommu wants to get the size of either
-> >>kmalloc or alloc_pages objects and it needs to differentiate
-> >>between them. So I would rather nommu to take its own page flag
-> >>(could overload PG_swapcache, perhaps?), and set that flag on
-> >>pages it allocates directly, then uses that to determine whether
-> >>to call ksize or not.
-> >
-> >
-> >I think we already established on the last go-round that the kobjsize
-> >scheme was rather hopelessly broken anyway. 
+> So you just unleashed an unbounded allocation context on PF_MEMALLOC?
+> seems like a really really bad idea.
 > 
-> I can't remember, but that would be another good reason to confine
-> it to nommu.c wouldn't it?
+> >  2) And mempools are not useful for GFP_ATOMIC case (as we call 
+> >     memory alloc functions with GFP_ATOMIC)
+> 
+> Mempools work as intended with GFP_ATOMIC, it gets filled up to the
+> specified number of elements using GFP_KERNEL (at creation time). This
+> gives GFP_ATOMIC allocations nr_elements extra items once it would start
+> failing.
 
-(jogs brain)
+Yup.  Changelog is buggy.
 
-When I last looked, we could tell statically whether pointers passed
-to kobjsize were to alloc_pages or kmalloc or kmem_cache_alloc just
-based on context.
+> > With PF_MEMALLOC flag set in the current->flags, the VM subsystem avoids
+> > any watermark checks before allocating memory thus guarantee'ing the 
+> > memory till the last free page.
+> 
+> PF_MEMALLOC as is, is meant to salvage the VM from the typical VM
+> deadlock. Using it as you do now is not something a driver should ever
+> do, and I'm afraid I will have to strongly oppose this patch.
+> 
+> You really really want to calculate an upper bound on your memory
+> consumption and reserve this.
+> 
+> So, I'm afraid I'll have to..
+> 
+> NACK!
 
-But in some cases, we could actually pass in pointers to static data
-structures (eg bits of init_task) and things that were in ROM and
-being used for XIP or things that lived outside of the kernel's
-address space. SLAB would deal with this kind of affront by checking
-page flags and saying "sorry, not mine".
+err, PF_MEMALLOC doesn't actually do anything if in_interrupt(), so your
+reason-for-nacking isn't legitimate.  And neither is Anil's patch ;)
 
-Beating some sense into nommu here is doable, but non-trivial.
+So I'm thinking that if this patch passed all his testing, a patch which
+didn't play these PF_MEMALLOC games would pass the same tests.
 
-Since we're actually fiddling with page flags at this point and
-hijacking an arguably less-appropriate bit, I'm strongly tempted to
-just use the SLAB bit.
-
--- 
-Mathematics is the supreme nostalgia of our time.
