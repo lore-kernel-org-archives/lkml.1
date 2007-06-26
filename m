@@ -1,56 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbXFZVY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbXFZVdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbXFZVY2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 17:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757767AbXFZVYV
+	id S1759177AbXFZVdF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 17:33:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757843AbXFZVcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 17:24:21 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40906 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752379AbXFZVYU (ORCPT
+	Tue, 26 Jun 2007 17:32:54 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:31979 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757413AbXFZVcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 17:24:20 -0400
-Date: Tue, 26 Jun 2007 14:23:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] remove nobh_{prepare,commit}_write()
-Message-Id: <20070626142320.9336df5b.akpm@linux-foundation.org>
-In-Reply-To: <1182890938.11569.27.camel@kleikamp.austin.ibm.com>
-References: <20070606220313.8f7c1fab.akpm@linux-foundation.org>
-	<20070614221555.GY3588@stusta.de>
-	<20070626133203.d1aa5383.akpm@linux-foundation.org>
-	<1182890938.11569.27.camel@kleikamp.austin.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 26 Jun 2007 17:32:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=APisFgZT2gQo8zWiBgT/Mz5D8siiGwnfCB3FHrSEjnx7BlpQJO5hL4FoyrUxNuC9tfILEGTNsNQVD6ZmxIstP9VQCg4sE+1rRIILxX5fA0gM+9NRriog348gF6KseFdA0J6Fn+bj1eeZO1pNXKvkOzbrlc8FPw8SEf7SsfJzXeI=
+Message-ID: <a781481a0706261432g52b0e73ep1ebcd3c099a36048@mail.gmail.com>
+Date: Wed, 27 Jun 2007 03:02:51 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [Bug 8679] New: Section mismatch: reference to .init.text
+Cc: bugme-daemon@bugzilla.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       wbrana@gmail.com, "Sam Ravnborg" <sam@ravnborg.org>
+In-Reply-To: <20070626120134.17aa6143.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <bug-8679-10286@http.bugzilla.kernel.org/>
+	 <20070626120134.17aa6143.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 15:48:58 -0500
-Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
+On 6/27/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > [...]
+> > Software Environment:
+> > gcc 3.4.6, binutils 2.17
+> >
+> > Problem Description:
+> > Warnings appeared while building kernel:
+> >
+> > WARNING: kernel/built-in.o(.text+0x15f84): Section mismatch: reference to
+> > .init.text: (between 'kthreadd' and 'init_waitqueue_head')
+> [...]
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> kthreadd_setup() is in an __init section, but we know that it's
+> safe to be called from kthreadd() since the latter is only called
+> at kernel init time, so mark kthreadd_setup() __init_refok so
+> that modpost won't complain about what text section it is in.
 
-> On Tue, 2007-06-26 at 13:32 -0700, Andrew Morton wrote:
-> > On Fri, 15 Jun 2007 00:15:55 +0200
-> > Adrian Bunk <bunk@stusta.de> wrote:
-> > 
-> > > nobh_{prepare,commit}_write() are no longer used.
-> > 
-> > wth?  What happened to ext2 and ext3 nobh mode?  They seem to
-> > have magically and unchangeloggedly disappeared?
-> 
-> They were removed with Nick's new aops patches.
-           ^secretly
-> 
+Hi Randy,
 
-That much I worked out for myself.  It's kinda staggering that a fairly
-major feature in two fairly major filesystems got removed without even a
-mention in the changelog.  I don't recall having seen it discussed in email
-but I obviously missed that bit.
+__init_refok is for callers, so we should actually be marking kthreadd()
+as __init_refok. But I feel kthreadd_setup() doesn't want to be a separate
+function at all. This is for 2.6.22-rc6, so kindly apply.
 
-Look, I'm one micron from just dropping the whole lot.  These changes
-simply have not received the amount of energy, effort, care, attention and
-testing which a change of this magnitude requires.
+---
 
+From: Satyam Sharma <satyam.sharma@gmail.com>
+
+> > WARNING: kernel/built-in.o(.text+0x15f84): Section mismatch: reference to
+> > .init.text: (between 'kthreadd' and 'init_waitqueue_head')
+
+is because kernel/kthread.c:kthreadd() is not __init but calls kthreadd_setup()
+which is __init. But this is ok, because kthreadd_setup() is only ever called at
+init time, and then kthreadd() proceeds into its "for (;;)" loop.
+
+We could mark kthreadd() __init_refok, but I feel kthreadd_setup() with just one
+call site and 4 lines in it shouldn't be a separate function at all.
+So let's lose it
+and code it explicitly in kthreadd() itself.
+
+Signed-off-by: Satyam Sharma <satyam.sharma@gmail.com>
+
+---
+
+ kernel/kthread.c |   12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
+
+---
+
+diff -ruNp a/kernel/kthread.c b/kernel/kthread.c
+--- a/kernel/kthread.c	2007-06-26 06:33:08.000000000 +0530
++++ b/kernel/kthread.c	2007-06-27 02:57:46.000000000 +0530
+@@ -214,23 +214,15 @@ int kthread_stop(struct task_struct *k)
+ }
+ EXPORT_SYMBOL(kthread_stop);
+
+-
+-static __init void kthreadd_setup(void)
++int kthreadd(void *unused)
+ {
+ 	struct task_struct *tsk = current;
+
++	/* Setup a clean context for our children to inherit. */
+ 	set_task_comm(tsk, "kthreadd");
+-
+ 	ignore_signals(tsk);
+-
+ 	set_user_nice(tsk, -5);
+ 	set_cpus_allowed(tsk, CPU_MASK_ALL);
+-}
+-
+-int kthreadd(void *unused)
+-{
+-	/* Setup a clean context for our children to inherit. */
+-	kthreadd_setup();
+
+ 	current->flags |= PF_NOFREEZE;
