@@ -1,114 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbXFZXVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761571AbXFZXVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761536AbXFZXVg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760258AbXFZXL6
+	id S1761571AbXFZXVy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760259AbXFZXMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:11:58 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53711 "EHLO mx2.suse.de"
+	Tue, 26 Jun 2007 19:12:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53802 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759485AbXFZXK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:10:26 -0400
-Message-Id: <20070626230941.961049251@suse.de>
+	id S1759596AbXFZXME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:12:04 -0400
+Message-Id: <20070626231118.237785286@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:08 -0700
+Date: Tue, 26 Jun 2007 16:08:26 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Tony Jones <tonyj@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 12/44] Add struct vfsmount parameters to vfs_link()
-Content-Disposition: inline; filename=vfs-link.diff
+       linux-fsdevel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 30/44] Make d_path() consistent across mount operations
+Content-Disposition: inline; filename=mount-consistent-__d_path.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vfsmount will be passed down to the LSM hook so that LSMs can compute
-pathnames.
+The path that __d_path() computes can become slightly inconsistent when it
+races with mount operations: it grabs the vfsmount_lock when traversing mount
+points but immediately drops it again, only to re-grab it when it reaches the
+next mount point.  The result is that the filename computed is not always
+consisent, and the file may never have had that name. (This is unlikely, but
+still possible.)
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
+Fix this by grabbing the vfsmount_lock when the first mount point is reached,
+and holding onto it until the d_cache lookup is completed.
+
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/ecryptfs/inode.c |    9 +++++++--
- fs/namei.c          |    5 +++--
- fs/nfsd/vfs.c       |    3 ++-
- include/linux/fs.h  |    2 +-
- 4 files changed, 13 insertions(+), 6 deletions(-)
+ fs/dcache.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -411,19 +411,24 @@ static int ecryptfs_link(struct dentry *
- 			 struct dentry *new_dentry)
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1783,7 +1783,7 @@ static char *__d_path(struct dentry *den
+ 		      struct dentry *root, struct vfsmount *rootmnt,
+ 		      char *buffer, int buflen, int fail_deleted)
  {
- 	struct dentry *lower_old_dentry;
-+	struct vfsmount *lower_old_mnt;
- 	struct dentry *lower_new_dentry;
-+	struct vfsmount *lower_new_mnt;
- 	struct dentry *lower_dir_dentry;
- 	u64 file_size_save;
- 	int rc;
+-	int namelen, is_slash;
++	int namelen, is_slash, vfsmount_locked = 0;
  
- 	file_size_save = i_size_read(old_dentry->d_inode);
- 	lower_old_dentry = ecryptfs_dentry_to_lower(old_dentry);
-+	lower_old_mnt = ecryptfs_dentry_to_lower_mnt(old_dentry);
- 	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
-+	lower_new_mnt = ecryptfs_dentry_to_lower_mnt(new_dentry);
- 	dget(lower_old_dentry);
- 	dget(lower_new_dentry);
- 	lower_dir_dentry = lock_parent(lower_new_dentry);
--	rc = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
--		      lower_new_dentry);
-+	rc = vfs_link(lower_old_dentry, lower_old_mnt,
-+		      lower_dir_dentry->d_inode, lower_new_dentry,
-+		      lower_new_mnt);
- 	if (rc || !lower_new_dentry->d_inode)
- 		goto out_lock;
- 	rc = ecryptfs_interpose(lower_new_dentry, new_dentry, dir->i_sb, 0);
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2268,7 +2268,7 @@ asmlinkage long sys_symlink(const char _
- 	return sys_symlinkat(oldname, AT_FDCWD, newname);
- }
+ 	if (buflen < 2)
+ 		return ERR_PTR(-ENAMETOOLONG);
+@@ -1806,14 +1806,14 @@ static char *__d_path(struct dentry *den
+ 		struct dentry * parent;
  
--int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
-+int vfs_link(struct dentry *old_dentry, struct vfsmount *old_mnt, struct inode *dir, struct dentry *new_dentry, struct vfsmount *new_mnt)
- {
- 	struct inode *inode = old_dentry->d_inode;
- 	int error;
-@@ -2346,7 +2346,8 @@ asmlinkage long sys_linkat(int olddfd, c
- 	error = PTR_ERR(new_dentry);
- 	if (IS_ERR(new_dentry))
- 		goto out_unlock;
--	error = vfs_link(old_nd.dentry, nd.dentry->d_inode, new_dentry);
-+	error = vfs_link(old_nd.dentry, old_nd.mnt, nd.dentry->d_inode,
-+			 new_dentry, nd.mnt);
- 	dput(new_dentry);
- out_unlock:
- 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1536,7 +1536,8 @@ nfsd_link(struct svc_rqst *rqstp, struct
- 	dold = tfhp->fh_dentry;
- 	dest = dold->d_inode;
+ 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+-			spin_lock(&vfsmount_lock);
+-			if (vfsmnt->mnt_parent == vfsmnt) {
+-				spin_unlock(&vfsmount_lock);
+-				goto global_root;
++			if (!vfsmount_locked) {
++				spin_lock(&vfsmount_lock);
++				vfsmount_locked = 1;
+ 			}
++			if (vfsmnt->mnt_parent == vfsmnt)
++				goto global_root;
+ 			dentry = vfsmnt->mnt_mountpoint;
+ 			vfsmnt = vfsmnt->mnt_parent;
+-			spin_unlock(&vfsmount_lock);
+ 			continue;
+ 		}
+ 		parent = dentry->d_parent;
+@@ -1832,6 +1832,8 @@ static char *__d_path(struct dentry *den
+ 		*--buffer = '/';
  
--	host_err = vfs_link(dold, dirp, dnew);
-+	host_err = vfs_link(dold, tfhp->fh_export->ex_mnt, dirp,
-+			    dnew, ffhp->fh_export->ex_mnt);
- 	if (!host_err) {
- 		if (EX_ISSYNC(ffhp->fh_export)) {
- 			err = nfserrno(nfsd_sync_dir(ddir));
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -996,7 +996,7 @@ extern int vfs_create(struct inode *, st
- extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
- extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
- extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
--extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
-+extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
- extern int vfs_rmdir(struct inode *, struct dentry *);
- extern int vfs_unlink(struct inode *, struct dentry *);
- extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
+ out:
++	if (vfsmount_locked)
++		spin_unlock(&vfsmount_lock);
+ 	spin_unlock(&dcache_lock);
+ 	return buffer;
+ 
 
 -- 
