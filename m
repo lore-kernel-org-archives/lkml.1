@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbXFZWWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759326AbXFZW0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbXFZWWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 18:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbXFZWWY
+	id S1759326AbXFZW0R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 18:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbXFZW0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 18:22:24 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:40754 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759380AbXFZWWX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 18:22:23 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:in-reply-to:
-	references:x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=M5HvsC3LTkbBEasihAusT9vwfufB11Z0U/DObK6wKiKRcNLwle+xtdQdugsZjzPC3
-	noE6R2u/C54fiKaJMjfgA==
-Date: Tue, 26 Jun 2007 15:22:04 -0700
-From: Andrew Morton <akpm@google.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ethan Solomita <solo@google.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-Subject: Re: [RFC 1/7] cpuset write dirty map
-Message-Id: <20070626152204.b6b4bc3f.akpm@google.com>
-In-Reply-To: <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
-References: <465FB6CF.4090801@google.com>
-	<Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>
-	<46646A33.6090107@google.com>
-	<Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>
-	<468023CA.2090401@google.com>
-	<Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jun 2007 18:26:08 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53719 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757372AbXFZW0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 18:26:06 -0400
+Date: Tue, 26 Jun 2007 10:48:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] PM: Prevent frozen user mode helpers from failing the freezing of tasks (rev. 2)
+Message-ID: <20070626084854.GA4594@elf.ucw.cz>
+References: <200706252352.24137.rjw@sisk.pl> <20070625215527.GE2051@elf.ucw.cz> <200706260027.02396.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706260027.02396.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 12:16:50 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+Hi!
 
-> On Mon, 25 Jun 2007, Ethan Solomita wrote:
-> 
-> > 	The effect of this patchset is straightforward. Without it there are
-> > long hangs between appearances of the date. With it the dates are all 5
-> > (or sometimes 6) seconds apart.
+> > > [I hope the ACKs still apply.]
 > > 
-> > 	I also added printks to the kernel to verify that, without these
-> > patches, the tee was being throttled (along with lots of other things),
-> > and with the patch only pdflush is being throttled.
+> > Uhuh, not 100% sure.
+> > 
+> > > +static int usermodehelper_disabled;
+> > > +
+> > 
+> > 
+> > ...
+> > 
+> > >  	case PM_HIBERNATION_PREPARE:
+> > >  	case PM_SUSPEND_PREPARE:
+> > >  		usermodehelper_disabled = 1;
+> > > -		return NOTIFY_OK;
+> > > +		smp_mb();
+> > 
+> > usermodehelper_disabled should be atomic variable, too, so we don't
+> > have to play these ugly tricks by hand? This should not be
+> > performance-critical, right?
 > 
-> That sounds good. Andrew: Any chance that we can get this patchset merged?
+> Well, I think we'd need to add the barriers anyway.
 > 
+> The problem, as far as I understand it, is that the instructions can get
+> reordered if there are no barriers in there.
 
-Is in my queue somewhere.  Could be that by the time I get to it it will
-need refreshing (again), we'll see.
+Are you sure?  I thought atomic variables have barrirers built-in.
 
-One open question is the interaction between these changes and with Peter's
-per-device-dirty-throttling changes.  They also are in my queue somewhere. 
-Having a 100:1 coder:reviewer ratio doesn't exactly make for swift
-progress.
-
-
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
