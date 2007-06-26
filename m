@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXFZTJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbXFZTKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759960AbXFZTJy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 15:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758647AbXFZTJn
+	id S1760050AbXFZTKo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759067AbXFZTKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 15:09:43 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:47844 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757823AbXFZTJl (ORCPT
+	Tue, 26 Jun 2007 15:10:35 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4059 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758294AbXFZTKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 15:09:41 -0400
-Date: Wed, 27 Jun 2007 00:39:44 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
-       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
-Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
-Message-ID: <20070626190944.GA13324@amitarora.in.ibm.com>
-References: <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625150320.GA8686@amitarora.in.ibm.com> <20070625214626.GJ5181@schatzie.adilger.int> <20070626103247.GA19870@amitarora.in.ibm.com> <20070626153413.GC6652@schatzie.adilger.int>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070626153413.GC6652@schatzie.adilger.int>
-User-Agent: Mutt/1.4.1i
+	Tue, 26 Jun 2007 15:10:34 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Tue, 26 Jun 2007 12:10:16 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKEDGEOAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <or8xa64p4h.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 26 Jun 2007 12:10:23 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 26 Jun 2007 12:10:23 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 11:34:13AM -0400, Andreas Dilger wrote:
-> On Jun 26, 2007  16:02 +0530, Amit K. Arora wrote:
-> > On Mon, Jun 25, 2007 at 03:46:26PM -0600, Andreas Dilger wrote:
-> > > Can you clarify - what is the current behaviour when ENOSPC (or some other
-> > > error) is hit?  Does it keep the current fallocate() or does it free it?
-> > 
-> > Currently it is left on the file system implementation. In ext4, we do
-> > not undo preallocation if some error (say, ENOSPC) is hit. Hence it may
-> > end up with partial (pre)allocation. This is inline with dd and
-> > posix_fallocate, which also do not free the partially allocated space.
-> 
-> Since I believe the XFS allocation ioctls do it the opposite way (free
-> preallocated space on error) this should be encoded into the flags.
-> Having it "filesystem dependent" just means that nobody will be happy.
 
-Ok, got your point. Maybe we can have a flag for this, as you suggested.
-But, default behavior IMHO should be _not_ to undo partial allocation
-(thus the file system will have the option of supporting this flag or
-not and it will be inline with posix_fallocate; XFS will obviously
-like to support this flag, inline with its existing behavior).
+Alexandre Oliva:
 
-> > > For FA_ZERO_SPACE - I'd think this would (IMHO) be the default - we
-> > > don't want to expose uninitialized disk blocks to userspace.  I'm not
-> > > sure if this makes sense at all.
-> > 
-> > I don't think we need to make it default - atleast for filesystems which
-> > have a mechanism to distinguish preallocated blocks from "regular" ones.
-> 
-> What I mean is that any data read from the file should have the "appearance"
-> of being zeroed (whether zeroes are actually written to disk or not).  What
-> I _think_ David is proposing is to allow fallocate() to return without
-> marking the blocks even "uninitialized" and subsequent reads would return
-> the old data from the disk.
+> On Jun 26, 2007, Al Boldi <a1426z@gawab.com> wrote:
+>
+> > I read your scenario of the vendor not giving you the source to
+> > mean: not
+> > directly; i.e.  they could give you a third-party download link.
+>
+> This has never been enough to comply with GPLv2.
 
-I can't think of a good reason for this (i.e. returning stale data from
-preallocated blocks). It is infact a security issue to me.
-Anyhow, this may though be beneficial for file systems which have
-noticable overhead in marking the blocks "uninitialized/preallocated".
-Can you or David please throw some light on how this option might really
-be helpful ? Thanks!
+A lot of people seem to say this, but I don't think it's true. Section 3b
+says:
 
---
-Regards,
-Amit Arora
+    Accompany it with a written offer, valid for at least three
+    years, to give any third party, for a charge no more than your
+    cost of physically performing source distribution, a complete
+    machine-readable copy of the corresponding source code, to be
+    distributed under the terms of Sections 1 and 2 above on a medium
+    customarily used for software interchange; or,
+
+A web page with a download URL is just such an offer. The Internet is a
+medium customarily used for software interchange. I do not see why the
+following statement doesn't meet the requirements above:
+
+"The source code for this product is available under the terms of the GPL
+from the following web page http://www.mycompanyname.com/gpl"
+
+This assumes that no special steps are needed to obtain the software from
+that web page.
+
+DS
+
+
