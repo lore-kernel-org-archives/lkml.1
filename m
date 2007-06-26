@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbXFZPik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbXFZPjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758942AbXFZPik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758197AbXFZPiX
+	id S1758950AbXFZPjW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbXFZPjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:38:23 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:57396 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758034AbXFZPiW (ORCPT
+	Tue, 26 Jun 2007 11:39:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54301 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757646AbXFZPjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:38:22 -0400
-Message-ID: <46813020.1010103@zytor.com>
-Date: Tue, 26 Jun 2007 11:26:24 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: David Woodhouse <dwmw2@infradead.org>,
-       Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>, david@lang.hm,
-       schilling@fokus.fraunhofer.de, linux-kernel@vger.kernel.org
-Subject: Re: Linux Kernel include files
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de> <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm> <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de> <1182483527.10524.31.camel@shinybook.infradead.org> <20070622150038.GN23017@stusta.de>
-In-Reply-To: <20070622150038.GN23017@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jun 2007 11:39:12 -0400
+Date: Tue, 26 Jun 2007 17:39:11 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Message-ID: <20070626153911.GC5244@one.firstfloor.org>
+References: <200706251434.43863.jesse.barnes@intel.com> <20070625233433.GA32306@one.firstfloor.org> <200706251636.53636.jesse.barnes@intel.com> <m1bqf3tu06.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1bqf3tu06.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> 
-> It would certainly help if Joerg would tell what exactly breaks, but I 
-> spot one likely problem in include/asm-i386/types.h:
-> 
-> #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-> typedef __signed__ long long __s64;
-> typedef unsigned long long __u64;
-> #endif
-> 
-> It might make sense to remove the #if and simply require that
-> a C compiler under Linux must know about the C99 "long long"?
-> 
+> For the K7 and K8 cores AMD systems are exactly like Intel systems
+> with respect to MTRRs (although AMD systems also have additional registers)
+> For the K9 core (i.e. AMD socket F or the K8 with DDR2 support) there
 
-Yes.
+It's called K8RevE, not K9
 
-	-hpa
+> is an additional mechanism that makes everything above 4G write-back
+> cacheable without using any MTRRs.
 
+... but not BIOS use this mechanism (often there are BIOS switches
+for several MTRR models or it is just the wrong one hardcoded), so Linux 
+should detect the broken cases.
+
+-Andi
