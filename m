@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759310AbXFZSXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbXFZSXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759310AbXFZSXl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 14:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbXFZSXb
+	id S1759385AbXFZSXx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 14:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759015AbXFZSXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 14:23:31 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44831 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752379AbXFZSXb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 14:23:31 -0400
-Date: Tue, 26 Jun 2007 11:23:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, suresh.b.siddha@intel.com
-Subject: Re: [patch 21/26] Slab defragmentation: support dentry defragmentation
-In-Reply-To: <20070626011845.bfd4efe0.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706261122130.18010@schroedinger.engr.sgi.com>
-References: <20070618095838.238615343@sgi.com> <20070618095918.404020641@sgi.com>
- <20070626011845.bfd4efe0.akpm@linux-foundation.org>
+	Tue, 26 Jun 2007 14:23:35 -0400
+Received: from h155.mvista.com ([63.81.120.155]:41268 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758661AbXFZSXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 14:23:34 -0400
+Message-ID: <46815A0E.3030403@ru.mvista.com>
+Date: Tue, 26 Jun 2007 22:25:18 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] via82cxxx: backport short cables support from pata_via.c
+References: <200706101558.39306.bzolnier@gmail.com>
+In-Reply-To: <200706101558.39306.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007, Andrew Morton wrote:
+Hello.
 
-> > +			 * objects.
-> > +			 */
-> > +			abort = 1;
+Bartlomiej Zolnierkiewicz wrote:
+> Backport short cables support from pata_via.c.
 > 
-> It's unobvious why the entire shrink effort is abandoned if one busy dentry
-> is encountered.  Please flesh the comment out explaining this.
+> This patch should allow UDMA > 2 modes on Acer Ferrari 3400.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-If one item is busy then we cannot reclaim the slab. So what would be the 
-use of continuing efforts. I thought I put that into the description? I 
-can put that into the code too.
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
+MBR, Sergei
