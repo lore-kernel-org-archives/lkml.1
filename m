@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbXFZBss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbXFZBtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbXFZBss (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 21:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbXFZBsm
+	id S1755065AbXFZBtP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 21:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbXFZBsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 21:48:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:58389 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbXFZBsl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 21:48:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=ccehEeLYlU0QQCybXAUpVOGG6qyicqWhNdGM7YIzykbKfM3LeNWcjlj9TMm8n9StVl5Sh/623cLbVXeOF/O4rH7D7QAo30j3KRCaQhdvTuJSrfVWVEYWVJO53os0hNFHSaxsV+kPvqAIZ98i1LVnlIonXe6+qOfHlwre/TtN4yA=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: Limiting load of certain processes
-Date: Tue, 26 Jun 2007 04:44:35 +0300
-User-Agent: KMail/1.9.4
-Cc: Jan Kandziora <jjj@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200706211950.40825.jjj@gmx.de> <200706212100.28381.jjj@gmx.de> <Pine.LNX.4.64.0706212110440.26568@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706212110440.26568@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200706260444.35818.maximlevitsky@gmail.com>
+	Mon, 25 Jun 2007 21:48:53 -0400
+Received: from ozlabs.org ([203.10.76.45]:40593 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754588AbXFZBsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 21:48:51 -0400
+To: <linux-kernel@vger.kernel.org>
+Cc: <linuxppc-dev@ozlabs.org>, <linux-ia64@vger.kernel.org>,
+       <linux-arch@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Christoph Hellwig <hch@lst.de>, <anil.s.keshavamurthy@intel.com>,
+       <ananth@in.ibm.com>
+Message-Id: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/3] Make struct jprobe.entry a void *
+Date: Tue, 26 Jun 2007 11:48:50 +1000 (EST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 June 2007 22:11, Jan Engelhardt wrote:
-> On Jun 21 2007 21:00, Jan Kandziora wrote:
-> >I know it's a crude idea for everyday Linux processes, but for
-> >dosemu driven applications, which behave badly in a multitasking OS
-> >*and* for which source code isn't available, it may be worth to
-> >discuss.
->
-> Would dosbox do? (it does busy-loops too, but at least, it's got
-> source)
->
->
-> 	Jan
+Currently jprobe.entry is a kprobe_opcode_t *, but that's a lie. On some
+platforms it doesn't point to an opcode at all, it points to a function
+descriptor.
 
-Hi.
+It's really a pointer to something that the arch code can turn into a
+function entry point. And that's what actually happens, none of the
+generic code ever looks at jprobe.entry, it's only ever dereferenced
+by arch code.
 
-Try  to set $_hogthreshold = (1) in dosemu.conf
+So just make it a void *.
 
-This helps a lot for me.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-Regards,
-	Maxim Levitsky
+It isn't obvious where kprobes patches should go, is anyone "the" maintainer?
+Instead I've just sent this to everyone who'd touched the code lately, or
+might be otherwise interested.
+
+
+ include/linux/kprobes.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index 23adf60..f4e53b7 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -116,7 +116,7 @@ struct kprobe {
+  */
+ struct jprobe {
+ 	struct kprobe kp;
+-	kprobe_opcode_t *entry;	/* probe handling code to jump to */
++	void *entry;	/* probe handling code to jump to */
+ };
+ 
+ DECLARE_PER_CPU(struct kprobe *, current_kprobe);
+-- 
+1.5.1.3.g7a33b
+
