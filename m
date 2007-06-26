@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbXFZIVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbXFZIWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbXFZIVv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 04:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXFZIVn
+	id S1755916AbXFZIWI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 04:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbXFZIVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 04:21:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49004 "EHLO
+	Tue, 26 Jun 2007 04:21:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33009 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751250AbXFZIVm (ORCPT
+	by vger.kernel.org with ESMTP id S1751289AbXFZIVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 04:21:42 -0400
-Date: Tue, 26 Jun 2007 01:18:31 -0700
+	Tue, 26 Jun 2007 04:21:43 -0400
+Date: Tue, 26 Jun 2007 01:18:36 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: clameter@sgi.com
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Pekka Enberg <penberg@cs.helsinki.fi>, suresh.b.siddha@intel.com
-Subject: Re: [patch 12/26] SLUB: Slab defragmentation core
-Message-Id: <20070626011831.181d7a6a.akpm@linux-foundation.org>
-In-Reply-To: <20070618095916.297690463@sgi.com>
+Subject: Re: [patch 15/26] Slab defrag: Support generic defragmentation for
+ inode slab caches
+Message-Id: <20070626011836.f4abb4ff.akpm@linux-foundation.org>
+In-Reply-To: <20070618095917.005535114@sgi.com>
 References: <20070618095838.238615343@sgi.com>
-	<20070618095916.297690463@sgi.com>
+	<20070618095917.005535114@sgi.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,118 +28,26 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Jun 2007 02:58:50 -0700 clameter@sgi.com wrote:
+On Mon, 18 Jun 2007 02:58:53 -0700 clameter@sgi.com wrote:
 
-> Slab defragmentation occurs either
+> This implements the ability to remove inodes in a particular slab
+> from inode cache. In order to remove an inode we may have to write out
+> the pages of an inode, the inode itself and remove the dentries referring
+> to the node.
 > 
-> 1. Unconditionally when kmem_cache_shrink is called on slab by the kernel
->    calling kmem_cache_shrink or slabinfo triggering slab shrinking. This
->    form performs defragmentation on all nodes of a NUMA system.
-> 
-> 2. Conditionally when kmem_cache_defrag(<percentage>, <node>) is called.
-> 
->    The defragmentation is only performed if the fragmentation of the slab
->    is higher then the specified percentage. Fragmentation ratios are measured
->    by calculating the percentage of objects in use compared to the total
->    number of objects that the slab cache could hold.
-> 
->    kmem_cache_defrag takes a node parameter. This can either be -1 if
->    defragmentation should be performed on all nodes, or a node number.
->    If a node number was specified then defragmentation is only performed
->    on a specific node.
-> 
->    Slab defragmentation is a memory intensive operation that can be
->    sped up in a NUMA system if mostly node local memory is accessed. That
->    is the case if we just have reclaimed reclaim on a node.
-> 
-> For defragmentation SLUB first generates a sorted list of partial slabs.
-> Sorting is performed according to the number of objects allocated.
-> Thus the slabs with the least objects will be at the end.
-> 
-> We extract slabs off the tail of that list until we have either reached a
-> mininum number of slabs or until we encounter a slab that has more than a
-> quarter of its objects allocated. Then we attempt to remove the objects
-> from each of the slabs taken.
-> 
-> In order for a slabcache to support defragmentation a couple of functions
-> must be defined via kmem_cache_ops. These are
-> 
-> void *get(struct kmem_cache *s, int nr, void **objects)
-> 
-> 	Must obtain a reference to the listed objects. SLUB guarantees that
-> 	the objects are still allocated. However, other threads may be blocked
-> 	in slab_free attempting to free objects in the slab. These may succeed
-> 	as soon as get() returns to the slab allocator. The function must
-> 	be able to detect the situation and void the attempts to handle such
-> 	objects (by for example voiding the corresponding entry in the objects
-> 	array).
-> 
-> 	No slab operations may be performed in get_reference(). Interrupts
+> Provide generic functionality that can be used by filesystems that have
+> their own inode caches to also tie into the defragmentation functions
+> that are made available here.
 
-s/get_reference/get/, yes?
+Yes, this is tricky stuff.  I have vague ancestral memories that the sort
+of inode work which you refer to here can cause various deadlocks, lockdep
+warnings and such nasties when if we attempt to call it from the wrong
+context (ie: from within fs code).
 
-> 	are disabled. What can be done is very limited. The slab lock
-> 	for the page with the object is taken. Any attempt to perform a slab
-> 	operation may lead to a deadlock.
-> 
-> 	get() returns a private pointer that is passed to kick. Should we
-> 	be unable to obtain all references then that pointer may indicate
-> 	to the kick() function that it should not attempt any object removal
-> 	or move but simply remove the reference counts.
-> 
-> void kick(struct kmem_cache *, int nr, void **objects, void *get_result)
-> 
-> 	After SLUB has established references to the objects in a
-> 	slab it will drop all locks and then use kick() to move objects out
-> 	of the slab. The existence of the object is guaranteed by virtue of
-> 	the earlier obtained references via get(). The callback may perform
-> 	any slab operation since no locks are held at the time of call.
-> 
-> 	The callback should remove the object from the slab in some way. This
-> 	may be accomplished by reclaiming the object and then running
-> 	kmem_cache_free() or reallocating it and then running
-> 	kmem_cache_free(). Reallocation is advantageous because the partial
-> 	slabs were just sorted to have the partial slabs with the most objects
-> 	first. Reallocation is likely to result in filling up a slab in
-> 	addition to freeing up one slab so that it also can be removed from
-> 	the partial list.
-> 
-> 	Kick() does not return a result. SLUB will check the number of
-> 	remaining objects in the slab. If all objects were removed then
-> 	we know that the operation was successful.
-> 
-
-Nice changelog ;)
-
-> +static int __kmem_cache_vacate(struct kmem_cache *s,
-> +		struct page *page, unsigned long flags, void *scratch)
-> +{
-> +	void **vector = scratch;
-> +	void *p;
-> +	void *addr = page_address(page);
-> +	DECLARE_BITMAP(map, s->objects);
-
-A variable-sized local.  We have a few of these in-kernel.
-
-What's the worst-case here?  With 4k pages and 4-byte slab it's 128 bytes
-of stack?  Seems acceptable.
-
-(What's the smallest sized object slub will create?  4 bytes?)
+Possibly we could prevent that by skipping all this code if the caller
+didn't have __GFP_FS.
 
 
-
-To hold off a concurrent free while defragging, the code relies upon
-slab_lock() on the current page, yes?
-
-But slab_lock() isn't taken for slabs whose objects are larger than PAGE_SIZE. 
-How's that handled?
-
-
-
-Overall: looks good.  It'd be nice to get a buffer_head shrinker in place,
-see how that goes from a proof-of-concept POV.
-
-
-How much testing has been done on this code, and of what form, and with
-what results?
+I trust all the code in kick_inodes() was carefuly copied from
+prue_icache() and such places - I didn't check it.
 
