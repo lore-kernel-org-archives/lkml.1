@@ -1,121 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758038AbXFZO7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbXFZPAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758038AbXFZO7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 10:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbXFZO7K
+	id S1758100AbXFZPAb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbXFZPAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 10:59:10 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:40781 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755887AbXFZO7J (ORCPT
+	Tue, 26 Jun 2007 11:00:22 -0400
+Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:48058 "EHLO
+	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754352AbXFZPAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 10:59:09 -0400
-Date: Tue, 26 Jun 2007 16:59:29 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, James Morris <jmorris@namei.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       linux-security-module@vger.kernel.org, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
-Message-ID: <20070626145929.GI1094@stusta.de>
-References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain> <200706252237.59226.agruen@suse.de> <Line.LNX.4.64.0706251712570.24003@localhost.localdomain> <20070626035731.GA16313@vino.hallyn.com> <20070626131519.GH1094@stusta.de> <20070626140644.GB8615@sergelap.austin.ibm.com>
+	Tue, 26 Jun 2007 11:00:21 -0400
+Date: Tue, 26 Jun 2007 17:00:15 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<ukleinek@informatik.uni-freiburg.de>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Dynamic ticks make system jerking
+Message-ID: <20070626150015.GA20233@informatik.uni-freiburg.de>
+Mail-Followup-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@informatik.uni-freiburg.de>,
+	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070626140644.GB8615@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
+Organization: Universitaet Freiburg, Institut f. Informatik
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 09:06:44AM -0500, Serge E. Hallyn wrote:
-> Quoting Adrian Bunk (bunk@stusta.de):
-> > On Mon, Jun 25, 2007 at 10:57:31PM -0500, Serge E. Hallyn wrote:
-> > > Quoting James Morris (jmorris@namei.org):
-> > > > On Mon, 25 Jun 2007, Andreas Gruenbacher wrote:
-> > > > 
-> > > > > It's useful for some LSMs to be modular, and LSMs which are y/n options won't 
-> > > > > have any security architecture issues with unloading at all. 
-> > > > 
-> > > > Which LSMs?  Upstream, there are SELinux and capabilty, and they're not 
-> > > > safe as loadable modules.
-> > > > 
-> > > > > The mere fact 
-> > > > > that SELinux cannot be built as a module is a rather weak argument for 
-> > > > > disabling LSM modules as a whole, so  please don't.
-> > > > 
-> > > > That's not the argument.  Please review the thread.
-> > > 
-> > > The argument is 'abuse', right?
-> > > 
-> > > Abuse is defined as using the LSM hooks for non-security applications,
-> > > right?
-> > > 
-> > > It seems to me that the community is doing a good job of discouraging
-> > > such abuse - by redirecting the "wrong-doers" to implement proper
-> > > upstream solutions, i.e. taskstats, the audit subsystem, etc.
-> > > 
-> > > Such encouragement seems a far better response than taking away freedoms
-> > > and flexibility from everyone.
-> > 
-> > We are not living in a world where everyone had good intentions...
-> 
-> Oh no, i took a wrong turn somewhere  :)
-> 
-> > For _some_ "wrong-doers" your approach works.
-> > 
-> > But how do you convince the "wrong-doers" who do things like putting 
-> > MODULE_LICENSE("GPL") into their binary-only modules and who ignore you 
-> > and get away because noone sues them?
-> 
-> Do these really exist?  Maybe noone sues them because noone knows who
-> they are...
+Hello,
 
-   http://lwn.net/Articles/82306/
+I implemented GENERIC_TIME and GENERIC_CLOCKEVENTS for
+arch-arm/mach-ns9xxx (patches available at
 
-> But - note that you've changed completely the meaning of 'abuse'.
-> So mine was wrong?
+	http://www.modarm9.com/git?p=people/ukleinek/linux-2.6.git;a=shortlog;h=clock
 
-Technical and legal abuse are related.
+or
 
-For GPL'ed modules you might assume good faith and get the authors to do 
-things in a proper way. Authors of legally questionable modules that 
-cheat in many ways are quite a different issue.
+	git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git
 
-> > The spirit of the GPLv2 is to defend the freedom of the software 
-> > (different from the spirit of the BSD licence), and considering that 
-> > there aren't many people defending the GPLv2 copyright of the Linux 
-> > kernel at court against abusers, making it harder for people to do the 
-> > abuse might not be the worst choice...
-> 
-> Well, but you seem to be saying that the license means squat, and
-> resorting to making things inconvenient rather than illegal.
+in the clock branch
 
-No, the point is that there's no reason for making illegal things 
-convenient.
+). 
 
-I'm not talking about removing things that are used inside the kernel, 
-but what you call "freedom" can also be called "hooks for possible abuse".
+If I enable NO_HZ, the system jerks (I hope this is an understandable
+term ...).   E.g. 
 
-Additionally, it both makes the kernel bigger for everyone and requires 
-proper handling of loading/unloading in the security architecture.
+	# time find /sys
+	...
+	real    1m 19.52s
+	user    0m 0.18s
+	sys     0m 0.15s
 
-> Now I guess if it really is accepted that that's the way it should be,
-> then this patch will go in.
-> 
-> -serge
+on a freshly booted machine.  The output comes in several hunks with
+pausing between them.  With no_hz=off, I get approx. the same.
 
-cu
-Adrian
+If I have NO_HZ disabled however, I get
+
+	# time find /sys
+	...
+	real    0m 1.53s
+	user    0m 0.15s
+	sys     0m 0.18s
+
+Another thing is, if I press Enter once, the next prompt appears in a
+reasonable time.  If I press twice in a row the 2nd prompt needs
+perceptible longer.
+
+Does someone have a hint for me how to debug (or even solve) this problem?
+
+First I wondered why set_next_event is called twice between two timer
+interrupts most of the time.  I found out that the timer is programed
+for the next tick in any case and if nothing needs the next tick, the
+interval is enlarged.  I didn't spend time yet to check if it is
+easier/faster to only program the timer once.
+
+Best regards
+Uwe
+
+Some addional data:
+
+- ns9xxx_cpuclock() returns 176947200 = 0xa8c0000 for that machine.
+
+- SYS_TR is a read-only register indicating the current timer value.
+
+- SYS_TRC is the start value (and the reload value for auto-reloading
+  timers)
+
+- My console is an 8250 clone.
+
+- /proc/timer_list 
+	Timer List Version: v0.3
+	HRTIMER_MAX_CLOCK_BASES: 2
+	now at 15091350847 nsecs
+
+	cpu: 0
+	 clock 0:
+	  .index:      0
+	  .resolution: 1 nsecs
+	  .get_time:   ktime_get_real
+	  .offset:     0 nsecs
+	active timers:
+	 clock 1:
+	  .index:      1
+	  .resolution: 1 nsecs
+	  .get_time:   ktime_get
+	  .offset:     0 nsecs
+	active timers:
+	 #0: <c02e5ea0>, tick_sched_timer, S:01
+	 # expires at 15100000000 nsecs [in 8649153 nsecs]
+	  .expires_next   : 15100000000 nsecs
+	  .hres_active    : 1
+	  .nr_events      : 424
+	  .nohz_mode      : 2
+	  .idle_tick      : 14320000000 nsecs
+	  .tick_stopped   : 0
+	  .idle_jiffies   : 4294938728
+	  .idle_calls     : 104
+	  .idle_sleeps    : 88
+	  .idle_entrytime : 15052376577 nsecs
+	  .idle_sleeptime : 10627230732 nsecs
+	  .last_jiffies   : 4294938801
+	  .next_jiffies   : 4294938802
+	  .idle_expires   : 15060000000 nsecs
+	jiffies: 4294938805
+
+
+	Tick Device: mode:     1
+	Clock Event Device: ns9xxx-timer2
+	 max_delta_ns:   2147483647
+	 min_delta_ns:   1000
+	 mult:           185542
+	 shift:          20
+	 mode:           3
+	 next_event:     15100000000 nsecs
+	 set_next_event: ns9xxx_clockevent_setnextevent
+	 set_mode:       ns9xxx_clockevent_setmode
+	 event_handler:  hrtimer_interrupt
 
 -- 
+Uwe Kleine-König
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+http://www.google.com/search?q=e+%5E+%28i+pi%29
