@@ -1,117 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbXFZHWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbXFZHr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752260AbXFZHWq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 03:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbXFZHWh
+	id S1752258AbXFZHr4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 03:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbXFZHrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 03:22:37 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53713 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751145AbXFZHWf (ORCPT
+	Tue, 26 Jun 2007 03:47:47 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:33420 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751217AbXFZHrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 03:22:35 -0400
-Date: Tue, 26 Jun 2007 00:21:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Matt Mackall <mpm@selenic.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slob: poor man's NUMA support.
-Message-Id: <20070626002131.ff3518d4.akpm@linux-foundation.org>
-In-Reply-To: <20070619090616.GA23697@linux-sh.org>
-References: <20070619090616.GA23697@linux-sh.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 26 Jun 2007 03:47:46 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Re: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+References: <MDEHLPKNGKAHNMBLJOLKCEKCEMAC.davids@webmaster.com>
+	<or4pl0iz15.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070622013417.GT21478@ftp.linux.org.uk>
+	<20070622041949.GA15625@thunk.org>
+	<orejk4edfl.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070625132853.GH10008@csclub.uwaterloo.ca>
+	<orhcov7qsz.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<20070626041013.GG24745@delft.aura.cs.cmu.edu>
+	<orvedb4433.fsf@oliva.athome.lsd.ic.unicamp.br>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Tue, 26 Jun 2007 04:47:34 -0300
+In-Reply-To: <orvedb4433.fsf@oliva.athome.lsd.ic.unicamp.br> (Alexandre Oliva's message of "Tue\, 26 Jun 2007 03\:33\:52 -0300")
+Message-ID: <ormyyn40o9.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007 18:06:16 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
+On Jun 26, 2007, Alexandre Oliva <oliva@lsd.ic.unicamp.br> wrote:
 
-> This adds preliminary NUMA support to SLOB, primarily aimed at systems
-> with small nodes (tested all the way down to a 128kB SRAM block), whether
-> asymmetric or otherwise.
-> 
-> We follow the same conventions as SLAB/SLUB, preferring current node
-> placement for new pages, or with explicit placement, if a node has been
-> specified. Presently on UP NUMA this has the side-effect of preferring
-> node#0 allocations (since numa_node_id() == 0, though this could be
-> reworked if we could hand off a pfn to determine node placement), so
-> single-CPU NUMA systems will want to place smaller nodes further out in
-> terms of node id. Once a page has been bound to a node (via explicit
-> node id typing), we only do block allocations from partial free pages
-> that have a matching node id in the page flags.
-> 
-> The current implementation does have some scalability problems, in that
-> all partial free pages are tracked in the global freelist (with
-> contention due to the single spinlock). However, these are things that
-> are being reworked for SMP scalability first, while things like per-node
-> freelists can easily be built on top of this sort of functionality once
-> it's been added.
-> 
-> More background can be found in:
-> 
-> 	http://marc.info/?l=linux-mm&m=118117916022379&w=2
-> 	http://marc.info/?l=linux-mm&m=118170446306199&w=2
-> 	http://marc.info/?l=linux-mm&m=118187859420048&w=2
-> 
-> and subsequent threads.
-> 
-> ...
->  
-> +static void *slob_new_page(gfp_t gfp, int order, int node)
-> +{
-> +	void *page;
-> +
-> +#ifdef CONFIG_NUMA
-> +	if (node != -1)
-> +		page = alloc_pages_node(node, gfp, order);
-> +	else
-> +#endif
-> +		page = alloc_pages(gfp, order);
+> On Jun 26, 2007, Jan Harkes <jaharkes@cs.cmu.edu> wrote:
+>> You could argue that they do not restrict copying, distribution
+>> and modification of the sources in general, only of the specific copy
+>> they distribute.
 
-Isn't the above equivalent to a bare
+> "We don't oppose that you do any of these things, once you get the
+> source code.  We just make it difficult (hopefully impossible) that
+> you'll get to the source code in the first place."
 
-	page = alloc_pages_node(node, gfp, order);
+Actually, they could even claim you don't need the source code to make
+modifications.  The license even says the source code is the most
+convenient form to make modifications, not the only form.  Now, that
+the others suck rocks is not their fault, is it? ;-)
 
-?
-
-> +	if (!page)
-> +		return NULL;
-> +
-> +	return page_address(page);
-> +}
-> +
->  /*
->   * Allocate a slob block within a given slob_page sp.
->   */
-> @@ -258,7 +290,7 @@ static void *slob_page_alloc(struct slob_page *sp, size_t size, int align)
->  /*
->   * slob_alloc: entry point into the slob allocator.
->   */
-> -static void *slob_alloc(size_t size, gfp_t gfp, int align)
-> +static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
->  {
->  	struct slob_page *sp;
->  	slob_t *b = NULL;
-> @@ -267,6 +299,15 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align)
->  	spin_lock_irqsave(&slob_lock, flags);
->  	/* Iterate through each partially free page, try to find room */
->  	list_for_each_entry(sp, &free_slob_pages, list) {
-> +#ifdef CONFIG_NUMA
-> +		/*
-> +		 * If there's a node specification, search for a partial
-> +		 * page with a matching node id in the freelist.
-> +		 */
-> +		if (node != -1 && page_to_nid(&sp->page) != node)
-
-Other code does
-
-	if (node < 0
-
-rather than comparing with -1 exactly.
-
-On many CPUs it'll save a few bytes of code.
-
-
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
