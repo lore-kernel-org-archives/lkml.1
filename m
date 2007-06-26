@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763234AbXFZXb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763053AbXFZXch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763234AbXFZXb5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762560AbXFZXat
+	id S1763053AbXFZXch (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbXFZXc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:30:49 -0400
-Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:48456 "EHLO
-	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1762927AbXFZXas (ORCPT
+	Tue, 26 Jun 2007 19:32:27 -0400
+Received: from v035086.ppp.asahi-net.or.jp ([124.155.35.86]:7509 "HELO
+	daikokuya.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1759232AbXFZXcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:30:48 -0400
-To: david@lang.hm
-Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
-References: <200706172319.22381.a1426z@gawab.com>
-	<200706260717.19677.a1426z@gawab.com>
-	<orzm2n44s8.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<200706261344.23906.a1426z@gawab.com>
-	<or8xa64p4h.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706261013230.23285@asgard.lang.hm>
-	<orr6ny33hu.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<Pine.LNX.4.64.0706261307310.23285@asgard.lang.hm>
-From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
-Date: Tue, 26 Jun 2007 20:30:24 -0300
-In-Reply-To: <Pine.LNX.4.64.0706261307310.23285@asgard.lang.hm> (david@lang.hm's message of "Tue\, 26 Jun 2007 13\:08\:52 -0700 \(PDT\)")
-Message-ID: <orbqf21egf.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
+	Tue, 26 Jun 2007 19:32:25 -0400
+Date: Wed, 27 Jun 2007 08:32:26 +0900
+From: Neil Booth <neil@daikokuya.co.uk>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070626233226.GO7590@daikokuya.co.uk>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070626221134.GA21350@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 26, 2007, david@lang.hm wrote:
+Al Viro wrote:-
 
->> However, if the site takes the sources out, you're still responsible
->> for providing sources to those who received the sources from you from
->> that point on.  Or something like that, IANAL ;-)
+> Hopefully correct handling of integer constant expressions.  Please, review.
 
-> this sounds like a step backwards, you may not have the sources at
-> that point if you were relying on the other site to host them.
+Am I invoking sparse wrongly?  ./sparse -W -Wall doesn't diagnose
+the following TU, for example.
 
-You should have them.  This provision is not an excuse from your
-obligations, it's just a pragmatic concession.
+extern int a;
+extern int as1[(a = 2)];
 
-> and by the way, internet access never was a barrier that could stop
-> someone from obtaining them
-
-Back when GPLv2 was written, it really was.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-FSF Latin America Board Member         http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+Neil.
