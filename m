@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbXFZI1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbXFZIbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbXFZI1v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 04:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXFZI1o
+	id S1754150AbXFZIbd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 04:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXFZIb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 04:27:44 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:65052 "EHLO aun.it.uu.se"
+	Tue, 26 Jun 2007 04:31:26 -0400
+Received: from gwu.lbox.cz ([62.245.111.132]:43930 "EHLO gwu.lbox.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751152AbXFZI1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 04:27:43 -0400
-Date: Tue, 26 Jun 2007 10:04:15 +0200 (MEST)
-Message-Id: <200706260804.l5Q84F2D017936@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: B.Steinbrink@gmx.de, eranian@hpl.hp.com
-Subject: Re: [PATCH 1/2] Always probe the NMI watchdog
-Cc: ak@suse.de, ingo@elte.hu, levon@movementarian.org,
-       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       perfmon@napali.hpl.hp.com, wcohen@redhat.com
+	id S1751096AbXFZIbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 04:31:25 -0400
+X-Greylist: delayed 1876 seconds by postgrey-1.27 at vger.kernel.org; Tue, 26 Jun 2007 04:31:24 EDT
+Date: Tue, 26 Jun 2007 09:58:17 +0200 (CEST)
+From: Nikola Ciprich <extmaillist@linuxbox.cz>
+To: linux-kernel@vger.kernel.org
+cc: erich@areca.com.tw, ciprich@linuxbox.cz
+Subject: arcmsr + dmcrypt problem
+Message-ID: <Pine.LNX.4.64.0706260931480.14913@databox.linuxbox.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Antivirus: on proxybox by NOD32 antivirus, virus signature database version 2353 (20070625)
+X-Antivirus: on linuxbox by Kaspersky antivirus, engine 5.0.5, data 331712 records(26-06-2007)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 25 Jun 2007 23:04:25 +0200, B.Steinbrink@gmx.de wrote:
-> > I think the tricky part is that we do want to reserve perfctr1 even
-> > though the NMI watchdog is not active. This comes from the fact that
-> > the NMI watchdog knows about only one counter and if it can't get that
-> > one, it probably fails.  By reserving it from the start, we ensure NMI
-> > watchdog will work when eventually activated.
-> 
-> Can you enable it later on at all? It failed for me when I tried,
-> because it didn't know which hardware to use. Had to pass the kernel
-> parameter to make the proc files do anything. Seems like it has to be
-> enable at boot to work at all.
-> 
-> And AFAICT we never unconditionally reserved a perfctr for the watchdog.
+Hello everybody,
+I've stumbled upon a problem with arcmsr driver: trying to use a dmcrypt 
+encrypted volume on top of areca volume always hangs the card.
 
-Yes you can dynamically enable/disable the NMI watchdog,
-at least if you booted with it enabled.
+Steps to reproduce:
 
-> In 2.6.21 the nmi watchdog, if enabled, just reserved its perfctrs and
-> everything else had to deal with it. Since the cleanup, the watchdog
-> will release its perfctr when disabled, so another subsystem can grab
-> it. But that also means that that other subsystem must release it again
-> before you can reenable the watchdog.
+1) create some kind of raid on areca (raid5, or even a passthrough disc)
+2) cryptsetup luksFormat /dev/sda1 (or whatever areca sdX device is)
+3) cryptsetup luksOpen /dev/sda1 cryptotest
+4) mkfs.xfs /dev/mapper/cryptotest
+5) mount /dev/mapper/cryptotest /mnt/cryptotest
+6) copy some data to /mnt/cryptotest
 
-Which is the obvious and correct way to handle a shared resource.
+this hangs card and printk's following messages:
+[  288.160614] arcmsr0: isr get an illegal ccb command done acb='0xffff810144758548'ccb='0xffff810020020000' ccbacb='0x50a05ed7588a40c0' startdone = 0xbcda ccboutstandingcount=1 --
 
-Keeping parts of the PMU HW permanently reserved whether or not
-the watchdog is enabled would be a BUG.
+I have tested it on:
+1) SMP amd64 machine running 2.6.18 x86_64 kernel with external arcmsr 
+module or 2.6.21.3 - it it always hangs on step 4
+2) SMP xeon machine running 2.6.21 and also 2.6.22-rc6, UP or SMP, with 
+acpi on or off, also tried disabling NCQ - always hangs on step 6
 
-/Mikael
+Card information:
+Firmware Version   : V1.43 2007-4-17
+BOOT ROM Version   : V1.43 2007-4-17
+Controller Name    : ARC-1220
+
+Apparently I'm not the first person to encounter this problem:
+http://forums.storagereview.net/index.php?showtopic=25513
+
+Should somebody be willing to hunt down this bug, I'd be more than happy 
+to assist.
+
+best regards
+
+nik.
+
