@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760694AbXFZXTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761219AbXFZXUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760694AbXFZXTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760135AbXFZXL2
+	id S1761219AbXFZXUb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760146AbXFZXLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:11:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53774 "EHLO mx2.suse.de"
+	Tue, 26 Jun 2007 19:11:34 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53781 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760106AbXFZXLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:11:19 -0400
-Message-Id: <20070626231035.645550632@suse.de>
+	id S1759448AbXFZXLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:11:31 -0400
+Message-Id: <20070626231044.534664935@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:21 -0700
+Date: Tue, 26 Jun 2007 16:08:23 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 25/44] Add a struct vfsmount parameter to vfs_listxattr()
-Content-Disposition: inline; filename=vfs-listxattr.diff
+Subject: [AppArmor 27/44] Add a struct vfsmount parameter to vfs_removexattr()
+Content-Disposition: inline; filename=vfs-removexattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -31,96 +31,105 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/xattr.c            |   25 ++++++++++++++-----------
- include/linux/xattr.h |    3 ++-
- 2 files changed, 16 insertions(+), 12 deletions(-)
+ fs/nfsd/vfs.c         |    7 ++++---
+ fs/xattr.c            |   12 ++++++------
+ include/linux/xattr.h |    2 +-
+ 3 files changed, 11 insertions(+), 10 deletions(-)
 
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1957,6 +1957,7 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+ int
+ nfsd_set_posix_acl(struct svc_fh *fhp, int type, struct posix_acl *acl)
+ {
++	struct vfsmount *mnt;
+ 	struct inode *inode = fhp->fh_dentry->d_inode;
+ 	char *name;
+ 	void *value = NULL;
+@@ -1989,14 +1990,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+ 	} else
+ 		size = 0;
+ 
++	mnt = fhp->fh_export->ex_mnt;
+ 	if (size)
+-		error = vfs_setxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt,
+-				     name, value, size,0);
++		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size,0);
+ 	else {
+ 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
+ 			error = 0;
+ 		else {
+-			error = vfs_removexattr(fhp->fh_dentry, name);
++			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
+ 			if (error == -ENODATA)
+ 				error = 0;
+ 		}
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -143,18 +143,20 @@ vfs_getxattr(struct dentry *dentry, stru
- EXPORT_SYMBOL_GPL(vfs_getxattr);
+@@ -165,7 +165,7 @@ vfs_listxattr(struct dentry *dentry, str
+ EXPORT_SYMBOL_GPL(vfs_listxattr);
  
- ssize_t
--vfs_listxattr(struct dentry *d, char *list, size_t size)
-+vfs_listxattr(struct dentry *dentry, struct vfsmount *mnt, char *list,
-+	      size_t size)
+ int
+-vfs_removexattr(struct dentry *dentry, char *name)
++vfs_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name)
  {
-+	struct inode *inode = dentry->d_inode;
- 	ssize_t error;
- 
--	error = security_inode_listxattr(d);
-+	error = security_inode_listxattr(dentry);
- 	if (error)
- 		return error;
- 	error = -EOPNOTSUPP;
--	if (d->d_inode->i_op && d->d_inode->i_op->listxattr) {
--		error = d->d_inode->i_op->listxattr(d, list, size);
--	} else {
--		error = security_inode_listsecurity(d->d_inode, list, size);
-+	if (inode->i_op && inode->i_op->listxattr)
-+		error = inode->i_op->listxattr(dentry, list, size);
-+	else {
-+		error = security_inode_listsecurity(inode, list, size);
- 		if (size && error > size)
- 			error = -ERANGE;
- 	}
-@@ -362,7 +364,8 @@ sys_fgetxattr(int fd, char __user *name,
-  * Extended attribute LIST operations
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -438,7 +438,7 @@ sys_flistxattr(int fd, char __user *list
+  * Extended attribute REMOVE operations
   */
- static ssize_t
--listxattr(struct dentry *d, char __user *list, size_t size)
-+listxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *list,
-+	  size_t size)
+ static long
+-removexattr(struct dentry *d, char __user *name)
++removexattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name)
  {
- 	ssize_t error;
- 	char *klist = NULL;
-@@ -375,7 +378,7 @@ listxattr(struct dentry *d, char __user 
- 			return -ENOMEM;
- 	}
+ 	int error;
+ 	char kname[XATTR_NAME_MAX + 1];
+@@ -449,7 +449,7 @@ removexattr(struct dentry *d, char __use
+ 	if (error < 0)
+ 		return error;
  
--	error = vfs_listxattr(d, klist, size);
-+	error = vfs_listxattr(dentry, mnt, klist, size);
- 	if (error > 0) {
- 		if (size && copy_to_user(list, klist, error))
- 			error = -EFAULT;
-@@ -397,7 +400,7 @@ sys_listxattr(char __user *path, char __
+-	return vfs_removexattr(d, kname);
++	return vfs_removexattr(dentry, mnt, kname);
+ }
+ 
+ asmlinkage long
+@@ -461,7 +461,7 @@ sys_removexattr(char __user *path, char 
  	error = user_path_walk(path, &nd);
  	if (error)
  		return error;
--	error = listxattr(nd.dentry, list, size);
-+	error = listxattr(nd.dentry, nd.mnt, list, size);
+-	error = removexattr(nd.dentry, name);
++	error = removexattr(nd.dentry, nd.mnt, name);
  	path_release(&nd);
  	return error;
  }
-@@ -411,7 +414,7 @@ sys_llistxattr(char __user *path, char _
+@@ -475,7 +475,7 @@ sys_lremovexattr(char __user *path, char
  	error = user_path_walk_link(path, &nd);
  	if (error)
  		return error;
--	error = listxattr(nd.dentry, list, size);
-+	error = listxattr(nd.dentry, nd.mnt, list, size);
+-	error = removexattr(nd.dentry, name);
++	error = removexattr(nd.dentry, nd.mnt, name);
  	path_release(&nd);
  	return error;
  }
-@@ -426,7 +429,7 @@ sys_flistxattr(int fd, char __user *list
- 	if (!f)
+@@ -492,7 +492,7 @@ sys_fremovexattr(int fd, char __user *na
  		return error;
- 	audit_inode(NULL, f->f_path.dentry->d_inode);
--	error = listxattr(f->f_path.dentry, list, size);
-+	error = listxattr(f->f_path.dentry, f->f_path.mnt, list, size);
+ 	dentry = f->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = removexattr(dentry, name);
++	error = removexattr(dentry, f->f_path.mnt, name);
  	fput(f);
  	return error;
  }
 --- a/include/linux/xattr.h
 +++ b/include/linux/xattr.h
-@@ -48,7 +48,8 @@ struct xattr_handler {
- 
- ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
- 		     size_t);
--ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
-+ssize_t vfs_listxattr(struct dentry *d, struct vfsmount *, char *list,
-+		      size_t size);
+@@ -52,7 +52,7 @@ ssize_t vfs_listxattr(struct dentry *d, 
+ 		      size_t size);
  int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
  		 int);
- int vfs_removexattr(struct dentry *, char *);
+-int vfs_removexattr(struct dentry *, char *);
++int vfs_removexattr(struct dentry *, struct vfsmount *, char *);
+ 
+ ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+ ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
 
 -- 
