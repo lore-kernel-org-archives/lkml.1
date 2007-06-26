@@ -1,193 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbXFZBta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbXFZBtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbXFZBta (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 21:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbXFZBsz
+	id S1755883AbXFZBtp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 21:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXFZBs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 21:48:55 -0400
-Received: from ozlabs.org ([203.10.76.45]:40599 "EHLO ozlabs.org"
+	Mon, 25 Jun 2007 21:48:57 -0400
+Received: from ozlabs.org ([203.10.76.45]:40604 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440AbXFZBsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 21:48:52 -0400
+	id S1754592AbXFZBsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 25 Jun 2007 21:48:53 -0400
 To: <linux-kernel@vger.kernel.org>
 Cc: <linuxppc-dev@ozlabs.org>, <linux-ia64@vger.kernel.org>,
        <linux-arch@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
        Christoph Hellwig <hch@lst.de>, <anil.s.keshavamurthy@intel.com>,
        <ananth@in.ibm.com>
-Message-Id: <98c8ff25191ced991066092ffd4899526097da1e.1182822366.git.michael@ellerman.id.au>
+Message-Id: <7a070581b2fe53ea65216e86c86abc4f40464341.1182822366.git.michael@ellerman.id.au>
 In-Reply-To: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
 References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 2/3] Remove JPROBE_ENTRY()
+Subject: [PATCH 3/3] Make jprobes a little safer for users
 Date: Tue, 26 Jun 2007 11:48:51 +1000 (EST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AFAICT now that jprobe.entry is a void *, JPROBE_ENTRY doesn't do
-anything useful - so remove it ..
+I realise jprobes are a razor-blades-included type of interface, but
+that doesn't mean we can't try and make them safer to use. This guy I
+know once wrote code like this:
 
-I've left a do-nothing version so that out-of-tree jprobes code will still
-compile without modifications.
+struct jprobe jp = { .kp.symbol_name = "foo", .entry = "jprobe_foo" };
+
+And then his kernel exploded. Oops.
+
+This patch adds an arch hook, arch_deref_entry_point() (I don't like it either)
+which takes the void * in a struct jprobe, and gives back the text address
+that it represents.
+
+We can then use that in register_jprobe() to check that the entry point
+we're passed is actually in the kernel text, rather than just some random
+value.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- Documentation/kprobes.txt     |    8 +-------
- include/asm-i386/kprobes.h    |    1 -
- include/asm-ia64/kprobes.h    |    2 --
- include/asm-powerpc/kprobes.h |    2 --
- include/asm-s390/kprobes.h    |    2 --
- include/asm-sparc64/kprobes.h |    1 -
- include/asm-x86_64/kprobes.h  |    1 -
- include/linux/kprobes.h       |    3 +++
- net/dccp/probe.c              |    2 +-
- net/ipv4/tcp_probe.c          |    2 +-
- 10 files changed, 6 insertions(+), 18 deletions(-)
+ arch/ia64/kernel/kprobes.c    |    7 ++++++-
+ arch/powerpc/kernel/kprobes.c |   11 ++++++++---
+ kernel/kprobes.c              |    9 +++++++++
+ 3 files changed, 23 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/kprobes.txt b/Documentation/kprobes.txt
-index da5404a..cb12ae1 100644
---- a/Documentation/kprobes.txt
-+++ b/Documentation/kprobes.txt
-@@ -247,12 +247,6 @@ control to Kprobes.)  If the probed function is declared asmlinkage,
- fastcall, or anything else that affects how args are passed, the
- handler's declaration must match.
- 
--NOTE: A macro JPROBE_ENTRY is provided to handle architecture-specific
--aliasing of jp->entry. In the interest of portability, it is advised
--to use:
--
--	jp->entry = JPROBE_ENTRY(handler);
--
- register_jprobe() returns 0 on success, or a negative errno otherwise.
- 
- 4.3 register_kretprobe
-@@ -518,7 +512,7 @@ long jdo_fork(unsigned long clone_flags, unsigned long stack_start,
+diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
+index 5bc46f1..5dc98b5 100644
+--- a/arch/ia64/kernel/kprobes.c
++++ b/arch/ia64/kernel/kprobes.c
+@@ -936,10 +936,15 @@ static void ia64_get_bsp_cfm(struct unw_frame_info *info, void *arg)
+ 	return;
  }
  
- static struct jprobe my_jprobe = {
--	.entry = JPROBE_ENTRY(jdo_fork)
-+	.entry = jdo_fork
- };
- 
- static int __init jprobe_init(void)
-diff --git a/include/asm-i386/kprobes.h b/include/asm-i386/kprobes.h
-index 8774d06..06f7303 100644
---- a/include/asm-i386/kprobes.h
-+++ b/include/asm-i386/kprobes.h
-@@ -42,7 +42,6 @@ typedef u8 kprobe_opcode_t;
- 	? (MAX_STACK_SIZE) \
- 	: (((unsigned long)current_thread_info()) + THREAD_SIZE - (ADDR)))
- 
--#define JPROBE_ENTRY(pentry)	(kprobe_opcode_t *)pentry
- #define ARCH_SUPPORTS_KRETPROBES
- #define  ARCH_INACTIVE_KPROBE_COUNT 0
- #define flush_insn_slot(p)	do { } while (0)
-diff --git a/include/asm-ia64/kprobes.h b/include/asm-ia64/kprobes.h
-index 6382e52..067d9de 100644
---- a/include/asm-ia64/kprobes.h
-+++ b/include/asm-ia64/kprobes.h
-@@ -82,8 +82,6 @@ struct kprobe_ctlblk {
- 	struct prev_kprobe prev_kprobe[ARCH_PREV_KPROBE_SZ];
- };
- 
--#define JPROBE_ENTRY(pentry)	(kprobe_opcode_t *)pentry
--
- #define ARCH_SUPPORTS_KRETPROBES
- #define  ARCH_INACTIVE_KPROBE_COUNT 1
- 
-diff --git a/include/asm-powerpc/kprobes.h b/include/asm-powerpc/kprobes.h
-index b0e40ff..3481ade 100644
---- a/include/asm-powerpc/kprobes.h
-+++ b/include/asm-powerpc/kprobes.h
-@@ -73,12 +73,10 @@ typedef unsigned int kprobe_opcode_t;
- 	}								\
++unsigned long arch_deref_entry_point(void *entry)
++{
++	return ((struct fnptr *)entry)->ip;
++}
++
+ int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+ {
+ 	struct jprobe *jp = container_of(p, struct jprobe, kp);
+-	unsigned long addr = ((struct fnptr *)(jp->entry))->ip;
++	unsigned long addr = arch_deref_entry_point(jp->entry);
+ 	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+ 	struct param_bsp_cfm pa;
+ 	int bytes;
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 0c96611..440f5a8 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -492,6 +492,13 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
+ 	return ret;
  }
  
--#define JPROBE_ENTRY(pentry)	(kprobe_opcode_t *)((func_descr_t *)pentry)
- #define is_trap(instr)	(IS_TW(instr) || IS_TD(instr) || \
- 			IS_TWI(instr) || IS_TDI(instr))
- #else
- /* Use stock kprobe_lookup_name since ppc32 doesn't use function descriptors */
--#define JPROBE_ENTRY(pentry)	(kprobe_opcode_t *)(pentry)
- #define is_trap(instr)	(IS_TW(instr) || IS_TWI(instr))
++#ifdef CONFIG_PPC64
++unsigned long arch_deref_entry_point(void *entry)
++{
++	return (unsigned long)(((func_descr_t *)entry)->entry);
++}
++#endif
++
+ int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+ {
+ 	struct jprobe *jp = container_of(p, struct jprobe, kp);
+@@ -500,11 +507,9 @@ int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+ 	memcpy(&kcb->jprobe_saved_regs, regs, sizeof(struct pt_regs));
+ 
+ 	/* setup return addr to the jprobe handler routine */
++	regs->nip = arch_deref_entry_point(jp->entry);
+ #ifdef CONFIG_PPC64
+-	regs->nip = (unsigned long)(((func_descr_t *)jp->entry)->entry);
+ 	regs->gpr[2] = (unsigned long)(((func_descr_t *)jp->entry)->toc);
+-#else
+-	regs->nip = (unsigned long)jp->entry;
  #endif
  
-diff --git a/include/asm-s390/kprobes.h b/include/asm-s390/kprobes.h
-index 830fe4c..340ba10 100644
---- a/include/asm-s390/kprobes.h
-+++ b/include/asm-s390/kprobes.h
-@@ -46,8 +46,6 @@ typedef u16 kprobe_opcode_t;
- 	? (MAX_STACK_SIZE) \
- 	: (((unsigned long)current_thread_info()) + THREAD_SIZE - (ADDR)))
- 
--#define JPROBE_ENTRY(pentry) (kprobe_opcode_t *)(pentry)
--
- #define ARCH_SUPPORTS_KRETPROBES
- #define ARCH_INACTIVE_KPROBE_COUNT 0
- 
-diff --git a/include/asm-sparc64/kprobes.h b/include/asm-sparc64/kprobes.h
-index a331b7b..7f6774d 100644
---- a/include/asm-sparc64/kprobes.h
-+++ b/include/asm-sparc64/kprobes.h
-@@ -10,7 +10,6 @@ typedef u32 kprobe_opcode_t;
- #define BREAKPOINT_INSTRUCTION_2 0x91d02071 /* ta 0x71 */
- #define MAX_INSN_SIZE 2
- 
--#define JPROBE_ENTRY(pentry)	(kprobe_opcode_t *)pentry
- #define arch_remove_kprobe(p)	do {} while (0)
- #define  ARCH_INACTIVE_KPROBE_COUNT 0
- 
-diff --git a/include/asm-x86_64/kprobes.h b/include/asm-x86_64/kprobes.h
-index cf53178..7db8254 100644
---- a/include/asm-x86_64/kprobes.h
-+++ b/include/asm-x86_64/kprobes.h
-@@ -41,7 +41,6 @@ typedef u8 kprobe_opcode_t;
- 	? (MAX_STACK_SIZE) \
- 	: (((unsigned long)current_thread_info()) + THREAD_SIZE - (ADDR)))
- 
--#define JPROBE_ENTRY(pentry)	(kprobe_opcode_t *)pentry
- #define ARCH_SUPPORTS_KRETPROBES
- #define  ARCH_INACTIVE_KPROBE_COUNT 1
- 
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index f4e53b7..bd89285 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -119,6 +119,9 @@ struct jprobe {
- 	void *entry;	/* probe handling code to jump to */
+ 	return 1;
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 9e47d8c..3e9f513 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -675,9 +675,18 @@ static struct notifier_block kprobe_exceptions_nb = {
+ 	.priority = 0x7fffffff /* we need to be notified first */
  };
  
-+/* For backward compatibility with old code using JPROBE_ENTRY() */
-+#define JPROBE_ENTRY(handler)	(handler)
++unsigned long __weak arch_deref_entry_point(void *entry)
++{
++	return (unsigned long)entry;
++}
+ 
+ int __kprobes register_jprobe(struct jprobe *jp)
+ {
++	unsigned long addr = arch_deref_entry_point(jp->entry);
 +
- DECLARE_PER_CPU(struct kprobe *, current_kprobe);
- DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
- 
-diff --git a/net/dccp/probe.c b/net/dccp/probe.c
-index 43a3adb..bae10b0 100644
---- a/net/dccp/probe.c
-+++ b/net/dccp/probe.c
-@@ -112,7 +112,7 @@ static struct jprobe dccp_send_probe = {
- 	.kp	= {
- 		.symbol_name = "dccp_sendmsg",
- 	},
--	.entry	= JPROBE_ENTRY(jdccp_sendmsg),
-+	.entry	= jdccp_sendmsg,
- };
- 
- static int dccpprobe_open(struct inode *inode, struct file *file)
-diff --git a/net/ipv4/tcp_probe.c b/net/ipv4/tcp_probe.c
-index d9323df..4a7ef10 100644
---- a/net/ipv4/tcp_probe.c
-+++ b/net/ipv4/tcp_probe.c
-@@ -115,7 +115,7 @@ static struct jprobe tcp_probe = {
- 	.kp = {
- 		.symbol_name	= "tcp_rcv_established",
- 	},
--	.entry	= JPROBE_ENTRY(jtcp_rcv_established),
-+	.entry	= jtcp_rcv_established,
- };
- 
- 
++	if (!kernel_text_address(addr))
++		return -EINVAL;
++
+ 	/* Todo: Verify probepoint is a function entry point */
+ 	jp->kp.pre_handler = setjmp_pre_handler;
+ 	jp->kp.break_handler = longjmp_break_handler;
 -- 
 1.5.1.3.g7a33b
 
