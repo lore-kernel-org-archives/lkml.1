@@ -1,110 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758969AbXFZSlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbXFZStY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758969AbXFZSlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 14:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbXFZSlI
+	id S1758629AbXFZStY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 14:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbXFZStN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 14:41:08 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:50365 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756075AbXFZSlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 14:41:06 -0400
-Date: Tue, 26 Jun 2007 13:40:48 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Adrian Bunk <bunk@stusta.de>,
-       "Serge E. Hallyn" <serge@hallyn.com>, James Morris <jmorris@namei.org>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       linux-security-module@vger.kernel.org, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
-Message-ID: <20070626184048.GA12109@sergelap.austin.ibm.com>
-References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain> <200706252237.59226.agruen@suse.de> <Line.LNX.4.64.0706251712570.24003@localhost.localdomain> <20070626035731.GA16313@vino.hallyn.com> <20070626131519.GH1094@stusta.de> <20070626140644.GB8615@sergelap.austin.ibm.com> <20070626181823.GA5602@kroah.com>
+	Tue, 26 Jun 2007 14:49:13 -0400
+Received: from h155.mvista.com ([63.81.120.155]:41389 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757224AbXFZStM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 14:49:12 -0400
+Message-ID: <46816011.70000@ru.mvista.com>
+Date: Tue, 26 Jun 2007 22:50:57 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070626181823.GA5602@kroah.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] sis5513: backport short cables support from pata_sis.c
+References: <200706101558.33636.bzolnier@gmail.com>
+In-Reply-To: <200706101558.33636.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg KH (greg@kroah.com):
-> On Tue, Jun 26, 2007 at 09:06:44AM -0500, Serge E. Hallyn wrote:
-> > Quoting Adrian Bunk (bunk@stusta.de):
-> > > On Mon, Jun 25, 2007 at 10:57:31PM -0500, Serge E. Hallyn wrote:
-> > > > Quoting James Morris (jmorris@namei.org):
-> > > > > On Mon, 25 Jun 2007, Andreas Gruenbacher wrote:
-> > > > > 
-> > > > > > It's useful for some LSMs to be modular, and LSMs which are y/n options won't 
-> > > > > > have any security architecture issues with unloading at all. 
-> > > > > 
-> > > > > Which LSMs?  Upstream, there are SELinux and capabilty, and they're not 
-> > > > > safe as loadable modules.
-> > > > > 
-> > > > > > The mere fact 
-> > > > > > that SELinux cannot be built as a module is a rather weak argument for 
-> > > > > > disabling LSM modules as a whole, so  please don't.
-> > > > > 
-> > > > > That's not the argument.  Please review the thread.
-> > > > 
-> > > > The argument is 'abuse', right?
-> > > > 
-> > > > Abuse is defined as using the LSM hooks for non-security applications,
-> > > > right?
-> > > > 
-> > > > It seems to me that the community is doing a good job of discouraging
-> > > > such abuse - by redirecting the "wrong-doers" to implement proper
-> > > > upstream solutions, i.e. taskstats, the audit subsystem, etc.
-> > > > 
-> > > > Such encouragement seems a far better response than taking away freedoms
-> > > > and flexibility from everyone.
-> > > 
-> > > We are not living in a world where everyone had good intentions...
-> > 
-> > Oh no, i took a wrong turn somewhere  :)
-> > 
-> > > For _some_ "wrong-doers" your approach works.
-> > > 
-> > > But how do you convince the "wrong-doers" who do things like putting 
-> > > MODULE_LICENSE("GPL") into their binary-only modules and who ignore you 
-> > > and get away because noone sues them?
-> > 
-> > Do these really exist?
-> 
-> Yes they do.
-> 
-> > Maybe noone sues them because noone knows who they are...
-> 
-> Maybe no one knows because the people doing the legal action against
-> them are trying to be nice and do it quietly.
+Bartlomiej Zolnierkiewicz wrote:
 
-So they're being nice to the violaters, and then clamping down on
-everyone...
+> Backport short cables support from pata_sis.c.
 
-> And legal action takes time, it is quite slow going unfortunatly.
-> 
-> Heck, I've seen code that is even properly licensed under the GPL abuse
-> this security layer for things it was not ment to do at all, and that
-> stuff comes from _very_ big companies that really should know better...
+> This patch should allow UDMA > 2 modes on ASUS A6K.
 
-But that's back to the other type of 'abuse' which i was originally
-talking about, and which IMO is being well addressed through education.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-As for the others, I have no better suggestions.  I wish I did.
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-> So I agree that we should unexport it.  It will make people who want to
-> abuse the interface at least think twice about it.
+> Index: b/drivers/ide/pci/sis5513.c
+> ===================================================================
+> --- a/drivers/ide/pci/sis5513.c
+> +++ b/drivers/ide/pci/sis5513.c
+[...]
+> @@ -796,10 +796,33 @@ static unsigned int __devinit init_chips
+>  	return 0;
+>  }
+>  
+> +struct sis_laptop {
+> +	u16 device;
+> +	u16 subvendor;
+> +	u16 subdevice;
+> +};
+> +
+> +static const struct sis_laptop sis_laptop[] = {
+> +	/* devid, subvendor, subdev */
+> +	{ 0x5513, 0x1043, 0x1107 },	/* ASUS A6K */
+> +	/* end marker */
+> +	{ 0, }
+> +};
+> +
+>  static u8 __devinit ata66_sis5513(ide_hwif_t *hwif)
+>  {
+> +	struct pci_dev *pdev = hwif->pci_dev;
+> +	const struct sis_laptop *lap = &sis_laptop[0];
+>  	u8 ata66 = 0;
+>  
+> +	while (lap->device) {
+> +		if (lap->device == pdev->device &&
+> +		    lap->subvendor == pdev->subsystem_vendor &&
+> +		    lap->subdevice == pdev->subsystem_device)
+> +			return ATA_CBL_PATA40_SHORT;
+> +		lap++;
+> +	}
+> +
 
-And those who don't abuse it too.
+   The code even starts looking generic enough to be put into helper...
 
-> thanks,
-> 
-> greg "I want to mark structures read-only" k-h
+>  	if (chipset_family >= ATA_133) {
+>  		u16 regw = 0;
+>  		u16 reg_addr = hwif->channel ? 0x52: 0x50;
 
-And I know I'm not the one who's going to stop you...
-
--serge
+MBR, Sergei
