@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbXFZWpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbXFZWqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758751AbXFZWpp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 18:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbXFZWpi
+	id S1759351AbXFZWqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 18:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbXFZWqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 18:45:38 -0400
-Received: from waste.org ([66.93.16.53]:33344 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752170AbXFZWph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 18:45:37 -0400
-Date: Tue, 26 Jun 2007 17:45:18 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC #2] hwrng: Add type categories
-Message-ID: <20070626224517.GG11115@waste.org>
-References: <200706262021.51410.mb@bu3sch.de>
+	Tue, 26 Jun 2007 18:46:12 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2872 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbXFZWqL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 18:46:11 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+Date: Tue, 26 Jun 2007 15:45:28 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKOEEIEOAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706262021.51410.mb@bu3sch.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <Pine.LNX.4.64.0706261307310.23285@asgard.lang.hm>
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 26 Jun 2007 15:45:46 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 26 Jun 2007 15:45:48 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 08:21:51PM +0200, Michael Buesch wrote:
-> Don't use the word "quality", as people seem to think of
-> the entropy quality when hearing that word.
 
-Why do I so often feel compelled to respond with "did you read what I
-wrote?" on this list?
+david@lang.hm wrote:
 
-I object to your MEANINGLESS CATEGORIES.
+> this sounds like a step backwards, you may not have the sources at that
+> point if you were relying on the other site to host them.
 
-> This uses the word "type", which is probably better for
-> understanding what the value really means.
+You would then be violating the GPL, under any version. The GPL is quite
+clear that being unable to comply with it means you do not get the benefits
+it offers rather than excusing you from meeting its requirements.
 
-Please explain:
+You *MUST* have the source code in order to distribute it on request. You
+cannot ship GPL'd works without offering source code just by arranging it
+(deliberately or accidentally) so that you don't have the source code.
 
-a) how is bad different from pseudo?
-b) how is onboard different than dedicated?
+> and by the way, internet access never was a barrier that could stop
+> someone from obtaining them, the only issue was you hosting the source vs
+> someone else hosting the source.
 
-I maintain that there are exactly two categories on this axis: real
-and fake. And I'd rather stomp all over this notion of other
-categories you've invented now before people actually start trying to
-use them.
+The GPLv2 never specified one way or the other.
 
-There are also two other axes that this approach neglects. Trusted
-(another boolean) and bitrate (a scalar).
+If you do allow someone else to host them, you are responsible for making
+sure they remain available for at least three years from the last time you
+used them as an offer. Should they stop distributing, you would be violating
+the GPL. Nothing in the GPL says you can't rely on third parties for your
+GPL compliance. Of course, this could be a very risky thing to do. However,
+there is no GPL violation so long as they do in fact remain operational for
+three years from the last time you distributed.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+In fact, a third party is no more risky than any other setup. Any company
+can go out of business within the three-year period after distribution.
+There are many real-world cases where a third party having the source is
+actually more likely to result in actual GPL compliance than the
+distributor. (Consider a fly-by-night company selling Fedora binary
+distributions burnt to CDROM on the stop for $1 on a street corner.)
+
+One way to avoid this problem is to maintain your own web page that links to
+the third party's download. You would have to host the sources yourself if
+you couldn't make other arrangements at any point during the three year
+period.
+
+This is no different from any other case where the offer is not honored. If
+the offer is not honored in a case where the GPL requires that it be, the
+GPL is being violated.
+
+DS
+
+
