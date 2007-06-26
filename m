@@ -1,145 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbXFZPAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbXFZPBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbXFZPAb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbXFZPAW
+	id S1758202AbXFZPBT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbXFZPBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:00:22 -0400
-Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:48058 "EHLO
-	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754352AbXFZPAV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:00:21 -0400
-Date: Tue, 26 Jun 2007 17:00:15 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Dynamic ticks make system jerking
-Message-ID: <20070626150015.GA20233@informatik.uni-freiburg.de>
-Mail-Followup-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@informatik.uni-freiburg.de>,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
+	Tue, 26 Jun 2007 11:01:12 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53439 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756254AbXFZPBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 11:01:10 -0400
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, ashok.raj@intel.com, davem@davemloft.net,
+       clameter@sgi.com
+Subject: Re: [Intel IOMMU 00/10] Intel IOMMU support, take #2
+References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
+	<20070625234550.058635cb.akpm@linux-foundation.org>
+	<200706260912.45838.ak@suse.de> <20070626111324.GB4320@rhun.ibm.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 26 Jun 2007 17:56:49 +0200
+In-Reply-To: <20070626111324.GB4320@rhun.ibm.com>
+Message-ID: <p73645a675q.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
-Organization: Universitaet Freiburg, Institut f. Informatik
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Muli Ben-Yehuda <muli@il.ibm.com> writes:
 
-I implemented GENERIC_TIME and GENERIC_CLOCKEVENTS for
-arch-arm/mach-ns9xxx (patches available at
+> On Tue, Jun 26, 2007 at 09:12:45AM +0200, Andi Kleen wrote:
+> 
+> > There are some potential performance benefits too:
+> > - When you have a device that cannot address the complete address range
+> > an IOMMU can remap its memory instead of bounce buffering. Remapping
+> > is likely cheaper than copying. 
+> 
+> But those devices aren't likely to be found on modern systems.
 
-	http://www.modarm9.com/git?p=people/ukleinek/linux-2.6.git;a=shortlog;h=clock
+Not true. I don't see anybody designing DAC capable USB or firewire
+or sound or TV cards. And there are plenty of non AHCI SATA interfaces too
+(often the BIOS defaults are this way because XP doesn't deal
+well with AHCI). And video cards generally don't support it 
+(although they don't like IOMMUs either). Just these devices all might 
+not be performance relevant (except for the video cards) 
 
-or
+> > - The IOMMU can merge sg lists into a single virtual block. This could
+> > potentially speed up SG IO when the device is slow walking SG lists.
+> > [I long ago benchmarked 5% on some block benchmark with an old
+> > MPT Fusion; but it probably depends a lot on the HBA]
+> 
+> But most devices are SG-capable.
 
-	git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git
+Your point being? It depends on if the SG hardware is slow
+enough that it makes a difference. I found one case where that
+was true, but it's unknown how common that is.
 
-in the clock branch
+Only benchmarks can tell.
 
-). 
+Also my results were on a pretty slow IOMMU implementation
+so with a fast one it might be different too.
 
-If I enable NO_HZ, the system jerks (I hope this is an understandable
-term ...).   E.g. 
+> How much? we have numbers (to be presented at OLS later this week)
+> that show that on bare-metal an IOMMU can cost as much as 15%-30% more
+> CPU utilization for an IO intensive workload (netperf). It will be
+> interesting to see comparable numbers for VT-d.
 
-	# time find /sys
-	...
-	real    1m 19.52s
-	user    0m 0.18s
-	sys     0m 0.15s
+That is something that needs more work.
 
-on a freshly booted machine.  The output comes in several hunks with
-pausing between them.  With no_hz=off, I get approx. the same.
+We should probably have a switch to use the IOMMU only for specific
+devices (e.g. for the KVM case) r only when remapping is needed. Only
+boot options for this is probably not good enough. But that is something
+that can be worked on once everything is in tree.
 
-If I have NO_HZ disabled however, I get
+Also the user interface for X server case needs more work.
 
-	# time find /sys
-	...
-	real    0m 1.53s
-	user    0m 0.15s
-	sys     0m 0.18s
-
-Another thing is, if I press Enter once, the next prompt appears in a
-reasonable time.  If I press twice in a row the 2nd prompt needs
-perceptible longer.
-
-Does someone have a hint for me how to debug (or even solve) this problem?
-
-First I wondered why set_next_event is called twice between two timer
-interrupts most of the time.  I found out that the timer is programed
-for the next tick in any case and if nothing needs the next tick, the
-interval is enlarged.  I didn't spend time yet to check if it is
-easier/faster to only program the timer once.
-
-Best regards
-Uwe
-
-Some addional data:
-
-- ns9xxx_cpuclock() returns 176947200 = 0xa8c0000 for that machine.
-
-- SYS_TR is a read-only register indicating the current timer value.
-
-- SYS_TRC is the start value (and the reload value for auto-reloading
-  timers)
-
-- My console is an 8250 clone.
-
-- /proc/timer_list 
-	Timer List Version: v0.3
-	HRTIMER_MAX_CLOCK_BASES: 2
-	now at 15091350847 nsecs
-
-	cpu: 0
-	 clock 0:
-	  .index:      0
-	  .resolution: 1 nsecs
-	  .get_time:   ktime_get_real
-	  .offset:     0 nsecs
-	active timers:
-	 clock 1:
-	  .index:      1
-	  .resolution: 1 nsecs
-	  .get_time:   ktime_get
-	  .offset:     0 nsecs
-	active timers:
-	 #0: <c02e5ea0>, tick_sched_timer, S:01
-	 # expires at 15100000000 nsecs [in 8649153 nsecs]
-	  .expires_next   : 15100000000 nsecs
-	  .hres_active    : 1
-	  .nr_events      : 424
-	  .nohz_mode      : 2
-	  .idle_tick      : 14320000000 nsecs
-	  .tick_stopped   : 0
-	  .idle_jiffies   : 4294938728
-	  .idle_calls     : 104
-	  .idle_sleeps    : 88
-	  .idle_entrytime : 15052376577 nsecs
-	  .idle_sleeptime : 10627230732 nsecs
-	  .last_jiffies   : 4294938801
-	  .next_jiffies   : 4294938802
-	  .idle_expires   : 15060000000 nsecs
-	jiffies: 4294938805
-
-
-	Tick Device: mode:     1
-	Clock Event Device: ns9xxx-timer2
-	 max_delta_ns:   2147483647
-	 min_delta_ns:   1000
-	 mult:           185542
-	 shift:          20
-	 mode:           3
-	 next_event:     15100000000 nsecs
-	 set_next_event: ns9xxx_clockevent_setnextevent
-	 set_mode:       ns9xxx_clockevent_setmode
-	 event_handler:  hrtimer_interrupt
-
--- 
-Uwe Kleine-König
-
-http://www.google.com/search?q=e+%5E+%28i+pi%29
+-Andi
