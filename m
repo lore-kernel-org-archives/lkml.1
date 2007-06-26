@@ -1,173 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbXFZA1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbXFZA2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbXFZA1R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 25 Jun 2007 20:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbXFZA1E
+	id S1755257AbXFZA2Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 25 Jun 2007 20:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbXFZA2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 25 Jun 2007 20:27:04 -0400
-Received: from faui03.informatik.uni-erlangen.de ([131.188.30.103]:46905 "EHLO
-	faui03.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752051AbXFZA1B (ORCPT
+	Mon, 25 Jun 2007 20:28:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46749 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752051AbXFZA2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 25 Jun 2007 20:27:01 -0400
-Date: Tue, 26 Jun 2007 02:27:00 +0200
-From: Alexander Wuerstlein <snalwuer@cip.informatik.uni-erlangen.de>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Alexander Wuerstlein <arw@arw.name>, linux-kernel@vger.kernel.org,
-       Johannes Schlumberger <spjsschl@stud.informatik.uni-erlangen.de>,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] Check files' signatures before doing suid/sgid [2/4]
-Message-ID: <20070626002659.GM9741@cip.informatik.uni-erlangen.de>
-References: <20070621155516.GA6838@faui01.informatik.uni-erlangen.de> <1182536729847-git-send-email-arw@arw.name> <a781481a0706221236t3b399afdkf2e07cb109fba226@mail.gmail.com> <20070624225809.GI9741@cip.informatik.uni-erlangen.de> <a781481a0706251653wa2db7e4geb181f3827a10f9d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gm5TwAJMO0F2iVRz"
-Content-Disposition: inline
-In-Reply-To: <a781481a0706251653wa2db7e4geb181f3827a10f9d@mail.gmail.com>
-X-Echelon-Scan: plutonium bomb dirty irak allah satan bush victory c4
-	cocaine saddam wtc holy war believe god cia nsa
-X-Echelon-Result: Terrorist
-User-Agent: Mutt/1.5.15 (2007-05-02)
+	Mon, 25 Jun 2007 20:28:18 -0400
+Date: Mon, 25 Jun 2007 17:27:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       John Stultz <johnstul@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch -mm 22/28] x86_64: Convert to cleckevents
+Message-Id: <20070625172751.3b8cf548.akpm@linux-foundation.org>
+In-Reply-To: <20070623124031.119498199@inhelltoy.tec.linutronix.de>
+References: <20070623124005.931747831@inhelltoy.tec.linutronix.de>
+	<20070623124031.119498199@inhelltoy.tec.linutronix.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 23 Jun 2007 13:32:47 -0000
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
---gm5TwAJMO0F2iVRz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Convert x86_64 to the clockevents code. Share code with i386 for
+> hpet and PIT.
+> 
+> Build and whitespace fixups from:
+>  Venki Pallipadi <venkatesh.pallipadi@intel.com>
+> and
+>  Chris Wright <chrisw@sous-sol.org>
 
-On 070626 01:56, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> On 6/25/07, Alexander Wuerstlein
-> <snalwuer@cip.informatik.uni-erlangen.de> wrote:
->> On 070622 21:40, Satyam Sharma <satyam.sharma@gmail.com> wrote:
->> > [...]
->> We decided against
->> altering the file itself for that and some other reasons.
->> The limitation to suid/sgid was only due to a limited amount of time we=
-=20
->> had for
->> implementing our patch. For the future we are planning further uses like
->> setting capabilities only for signed binaries.
->
-> Ok, effectively what you have there is a signature on an entire file stor=
-ed
-> in one of its extended attributes, so I suspect you could think of few ot=
-her
-> applications for something like this too.
+semi-fixes.
 
-Yes, for example one could sign Java's classfiles and employ a special trus=
-ted
-Java VM which checks the signatures before execution. Also, this is a more
-general case of signing kernel modules (as you mentioned below). There are
-really numerous applications one could imagine, we just don't really know w=
-hich
-ones are practical. We definitely appreciate further ideas on this.
+>         if (no_ctr_free) {
+> -               i = 3;
+> -               rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
+> -               wrmsrl(MSR_K7_EVNTSEL3, 0);
+> -               rdmsrl(MSR_K7_PERFCTR3, pmc3);
+> +	       i = 3;
+> +	       rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
+> +	       wrmsrl(MSR_K7_EVNTSEL3, 0);
+> +	       rdmsrl(MSR_K7_PERFCTR3, pmc3);
+>         } else {
+> -               reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i);
+> -               reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+> +	       reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i);
+> +	       reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+>         }
+>         local_irq_save(flags);
+>         /* start meauring cycles, incrementing from 0 */
+> @@ -275,119 +236,38 @@ static unsigned int __init tsc_calibrate
+>         wrmsrl(MSR_K7_EVNTSEL0 + i, 1 << 22 | 3 << 16 | 0x76);
+>         rdtscl(tsc_start);
+>         do {
+> -               rdmsrl(MSR_K7_PERFCTR0 + i, pmc_now);
+> -               tsc_now = get_cycles_sync();
+> +	       rdmsrl(MSR_K7_PERFCTR0 + i, pmc_now);
+> +	       tsc_now = get_cycles_sync();
+>         } while ((tsc_now - tsc_start) < TICK_COUNT);
+>  
+>         local_irq_restore(flags);
+>         if (no_ctr_free) {
+> -               wrmsrl(MSR_K7_EVNTSEL3, 0);
+> -               wrmsrl(MSR_K7_PERFCTR3, pmc3);
+> -               wrmsrl(MSR_K7_EVNTSEL3, evntsel3);
+> +	       wrmsrl(MSR_K7_EVNTSEL3, 0);
+> +	       wrmsrl(MSR_K7_PERFCTR3, pmc3);
+> +	       wrmsrl(MSR_K7_EVNTSEL3, evntsel3);
+>         } else {
+> -               release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
+> -               release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+> +	       release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
+> +	       release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+>         }
 
-Also the signature-in-ELF can be used complementary to our approach: for
-example NFS is currently unable to handle real extended attributes (nfs does
-only posix acls). So for binaries delivered over NFS our approach wouldn't
-work.
+There's still bulk whitespace bustage in here.
 
-> Ok, so:
->
-> 1. Admin is trusted. [ This need not mean the same as: "superuser
-> _account_ is trusted", but let's stay in the real world in for now. ]
-> 2. Signing happens at some central, assumed-to-be-secure location (and say
-> the private key never leaves that central secure location). And let's say=
- the
-> admin *repackages* the packages, this time such that the signed files get=
- the
-> signature-carrying-extended-attributes with them, so the installation
-> automatically copies them correctly. =3D> nothing wrong with this assumpt=
-ion.
-> 3. Kernel verifies signatures at runtime. =3D> kernel is trusted.
-> 4. Public key needs to be *compiled into* the kernel ... so this is not=
-=20
-> getting into mainline, but fair enough as something site administrators w=
-ould
-> patch in and build.
+(However checkpatch only says
 
-Correct up to here.
+Use #include <linux/hpet.h> instead of <asm/hpet.h>
+#1913: FILE: arch/x86_64/kernel/tsc.c:11:
++#include <asm/hpet.h>
+)
 
-> 5. Chain-of-trust handled in userspace. =3D> userspace is trusted.
-
-Nope. I unluckily wrote 'userspace' where I should have said something else:
-Chain-of-trust is handled in what I would label 'Adminspace' (Where we do t=
-he
-signing as in points 1 and 2). There is a very small number of signatures (=
-in
-our example one) known to the kernel and only those are trusted, and those =
-are
-applied to the binaries by the administrator in your point 2. The kernel do=
-es
-and should never rely on userspace to tell it which signatures are trustwor=
-thy.
-Only the administrator may do so by means of the signatures directly compil=
-ed
-into the kernel.
-
-So in short: Chain-of-trust is handled by the administrator in his secure
-central location.
-
->> So far for the initial idea. Perhaps it would be useful to have more tha=
-n=20
->> one
->> key or some more complex scheme for obtaining the keys and checking their
->> validity.  But as all of this would need to be part of the kernel we=20
->> decided to
->> rather keep it as simple as possible, anything complex is better and more
->> flexibly done in userspace.
->
-> Well, if you're trusting (privileged) userspace already, I'm suddenly not=
- so
-> sure as to what new is this patchset bringing to the table in the first p=
-lace
-> ...
-
-We do not trust any userspace application, see above.
-
-> could you also describe the attack vectors / threats that you had in mind
-> that get blocked with the proposed scheme?
-
-We focus on attacks where an attacker may alter some executable file, for
-example by altering a mounted nfs-share, manipulating disk-content by simply
-pulling a disk, mounting it and writing to it, etc.
-
-This relies on the kernel beeing trustworthy of course, so one would need to
-take special measures to protect the kernel-image from beeing similarly
-altered. One (somewhat not-so-secure method) would be supplying kernel imag=
-es
-by PXE and forbidding local booting, another measure would be using a TPM
-and an appropriate bootloader to check the kernel for unwanted modification=
-s.
-
-> Have a look at modsign (signed kernel modules) project too (just the key
-> management part, specifically the asymmetric crypto and DSA implementation
-> that they've already ported to the kernel). You could also go through the=
-=20
-> lkml archives for whenever that was proposed for inclusion in mainline ...
-
-We already thought about that. Using some existing code is definitely prefe=
-rable
-to inventing DSA again :)
-
-
-
-Ciao,
-
-Alexander Wuerstlein.
-
---gm5TwAJMO0F2iVRz
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (SunOS)
-
-iD8DBQFGgF1TdGSO9ttqk/IRAvlOAKChgE0FCIXToxNePB8jDH8pWsoEuACfYGK3
-OD7czeGJ6D3HVsK3oDL/pZs=
-=aYoa
------END PGP SIGNATURE-----
-
---gm5TwAJMO0F2iVRz--
+<edits the diff, fixes it>
