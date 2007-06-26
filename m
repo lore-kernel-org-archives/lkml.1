@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760654AbXFZXOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbXFZXOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760654AbXFZXOc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 19:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758870AbXFZXKZ
+	id S1760486AbXFZXOr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 19:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759567AbXFZXK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 19:10:25 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53685 "EHLO mx2.suse.de"
+	Tue, 26 Jun 2007 19:10:29 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42901 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759232AbXFZXKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 19:10:09 -0400
-Message-Id: <20070626230924.746171517@suse.de>
+	id S1759434AbXFZXKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 19:10:21 -0400
+Message-Id: <20070626230933.218623074@suse.de>
 References: <20070626230756.519733902@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 26 Jun 2007 16:08:04 -0700
+Date: Tue, 26 Jun 2007 16:08:06 -0700
 From: jjohansen@suse.de
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, Tony Jones <tonyj@suse.de>,
        Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 08/44] Pass struct vfsmount to the inode_mknod LSM hook
-Content-Disposition: inline; filename=security-mknod.diff
+Subject: [AppArmor 10/44] Pass struct vfsmount to the inode_symlink LSM hook
+Content-Disposition: inline; filename=security-symlink.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -31,90 +31,87 @@ Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
  fs/namei.c               |    2 +-
- include/linux/security.h |    7 +++++--
+ include/linux/security.h |    9 ++++++---
  security/dummy.c         |    2 +-
- security/selinux/hooks.c |    5 +++--
+ security/selinux/hooks.c |    3 ++-
  4 files changed, 10 insertions(+), 6 deletions(-)
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -1869,7 +1869,7 @@ int vfs_mknod(struct inode *dir, struct 
- 	if (!dir->i_op || !dir->i_op->mknod)
+@@ -2214,7 +2214,7 @@ int vfs_symlink(struct inode *dir, struc
+ 	if (!dir->i_op || !dir->i_op->symlink)
  		return -EPERM;
  
--	error = security_inode_mknod(dir, dentry, mode, dev);
-+	error = security_inode_mknod(dir, dentry, mnt, mode, dev);
+-	error = security_inode_symlink(dir, dentry, oldname);
++	error = security_inode_symlink(dir, dentry, mnt, oldname);
  	if (error)
  		return error;
  
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -323,6 +323,7 @@ struct request_sock;
-  *	and not this hook.
-  *	@dir contains the inode structure of parent of the new file.
-  *	@dentry contains the dentry structure of the new file.
+@@ -301,6 +301,7 @@ struct request_sock;
+  *	Check the permission to create a symbolic link to a file.
+  *	@dir contains the inode structure of parent directory of the symbolic link.
+  *	@dentry contains the dentry structure of the symbolic link.
 + *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
-  *	@mode contains the mode of the new file.
-  *	@dev contains the device number.
+  *	@old_name contains the pathname of file.
   *	Return 0 if permission is granted.
-@@ -1218,7 +1219,7 @@ struct security_operations {
+  * @inode_mkdir:
+@@ -1213,8 +1214,8 @@ struct security_operations {
+ 	int (*inode_link) (struct dentry *old_dentry,
+ 	                   struct inode *dir, struct dentry *new_dentry);
+ 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
+-	int (*inode_symlink) (struct inode *dir,
+-	                      struct dentry *dentry, const char *old_name);
++	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
++			      struct vfsmount *mnt, const char *old_name);
+ 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
  			    struct vfsmount *mnt, int mode);
  	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
- 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
--	                    int mode, dev_t dev);
-+			    struct vfsmount *mnt, int mode, dev_t dev);
- 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
- 	                     struct inode *new_dir, struct dentry *new_dentry);
- 	int (*inode_readlink) (struct dentry *dentry);
-@@ -1670,11 +1671,12 @@ static inline int security_inode_rmdir (
+@@ -1644,11 +1645,12 @@ static inline int security_inode_unlink 
  
- static inline int security_inode_mknod (struct inode *dir,
- 					struct dentry *dentry,
-+					struct vfsmount *mnt,
- 					int mode, dev_t dev)
+ static inline int security_inode_symlink (struct inode *dir,
+ 					  struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  const char *old_name)
  {
  	if (unlikely (IS_PRIVATE (dir)))
  		return 0;
--	return security_ops->inode_mknod (dir, dentry, mode, dev);
-+	return security_ops->inode_mknod (dir, dentry, mnt, mode, dev);
+-	return security_ops->inode_symlink (dir, dentry, old_name);
++	return security_ops->inode_symlink (dir, dentry, mnt, old_name);
  }
  
- static inline int security_inode_rename (struct inode *old_dir,
-@@ -2388,6 +2390,7 @@ static inline int security_inode_rmdir (
+ static inline int security_inode_mkdir (struct inode *dir,
+@@ -2369,6 +2371,7 @@ static inline int security_inode_unlink 
  
- static inline int security_inode_mknod (struct inode *dir,
- 					struct dentry *dentry,
-+					struct vfsmount *mnt,
- 					int mode, dev_t dev)
+ static inline int security_inode_symlink (struct inode *dir,
+ 					  struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  const char *old_name)
  {
  	return 0;
 --- a/security/dummy.c
 +++ b/security/dummy.c
-@@ -299,7 +299,7 @@ static int dummy_inode_rmdir (struct ino
+@@ -282,7 +282,7 @@ static int dummy_inode_unlink (struct in
  }
  
- static int dummy_inode_mknod (struct inode *inode, struct dentry *dentry,
--			      int mode, dev_t dev)
-+			      struct vfsmount *mnt, int mode, dev_t dev)
+ static int dummy_inode_symlink (struct inode *inode, struct dentry *dentry,
+-				const char *name)
++				struct vfsmount *mnt, const char *name)
  {
  	return 0;
  }
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2218,11 +2218,12 @@ static int selinux_inode_rmdir(struct in
- 	return may_link(dir, dentry, MAY_RMDIR);
+@@ -2202,7 +2202,8 @@ static int selinux_inode_unlink(struct i
+ 	return may_link(dir, dentry, MAY_UNLINK);
  }
  
--static int selinux_inode_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
-+static int selinux_inode_mknod(struct inode *dir, struct dentry *dentry,
-+			       struct vfsmount *mnt, int mode, dev_t dev)
+-static int selinux_inode_symlink(struct inode *dir, struct dentry *dentry, const char *name)
++static int selinux_inode_symlink(struct inode *dir, struct dentry *dentry,
++				 struct vfsmount *mnt, const char *name)
  {
- 	int rc;
- 
--	rc = secondary_ops->inode_mknod(dir, dentry, mode, dev);
-+	rc = secondary_ops->inode_mknod(dir, dentry, mnt, mode, dev);
- 	if (rc)
- 		return rc;
- 
+ 	return may_create(dir, dentry, SECCLASS_LNK_FILE);
+ }
 
 -- 
