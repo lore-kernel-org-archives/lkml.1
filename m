@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbXFZTmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbXFZTox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbXFZTmF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 15:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbXFZTlz
+	id S1759408AbXFZTox (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbXFZToq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 15:41:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40439 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756254AbXFZTlz (ORCPT
+	Tue, 26 Jun 2007 15:44:46 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:59972 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757289AbXFZTop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 15:41:55 -0400
-Date: Tue, 26 Jun 2007 12:41:54 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, suresh.b.siddha@intel.com
-Subject: Re: [patch 15/26] Slab defrag: Support generic defragmentation for
- inode slab caches
-In-Reply-To: <20070626123709.211c67c4.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0706261241130.20744@schroedinger.engr.sgi.com>
-References: <20070618095838.238615343@sgi.com> <20070618095917.005535114@sgi.com>
- <20070626011836.f4abb4ff.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0706261223110.20457@schroedinger.engr.sgi.com>
- <20070626123709.211c67c4.akpm@linux-foundation.org>
+	Tue, 26 Jun 2007 15:44:45 -0400
+To: david@lang.hm
+Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: Dual-Licensing Linux Kernel with GPL V2 and GPL V3
+References: <200706172319.22381.a1426z@gawab.com>
+	<200706260717.19677.a1426z@gawab.com>
+	<orzm2n44s8.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200706261344.23906.a1426z@gawab.com>
+	<or8xa64p4h.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<Pine.LNX.4.64.0706261013230.23285@asgard.lang.hm>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Tue, 26 Jun 2007 16:44:13 -0300
+In-Reply-To: <Pine.LNX.4.64.0706261013230.23285@asgard.lang.hm> (david@lang.hm's message of "Tue\, 26 Jun 2007 10\:17\:23 -0700 \(PDT\)")
+Message-ID: <orr6ny33hu.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.990 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007, Andrew Morton wrote:
+On Jun 26, 2007, david@lang.hm wrote:
 
-> This is inverted: __GFP_FS is set if we may perform fs operations.
+> unless you are saying that the GPLv3 is saying that a third party link
+> now _is_ sufficiant.
 
-Sigh. 
+Yup.  The improvement in GPLv3 is to relax the requirement of
+providing source code in physical medium if you choose to not
+distribute it along with the binaries.  It's recognizing that internet
+access is no longer a barrier that could stop someone from obtaining
+the sources they're entitled to.  Even someone who doesn't have
+regular or fast internet access can hire a third party who does to
+perform the download and record it.
 
+I.e., with GPLv3, you *can* point at the sources you used, even in a
+site that you don't control.
 
+However, if the site takes the sources out, you're still responsible
+for providing sources to those who received the sources from you from
+that point on.  Or something like that, IANAL ;-)
 
-Slab defragmentation: Only perform slab defrag if __GFP_FS is clear
-
-Avoids slab defragmentation be triggered from filesystem operations.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/vmscan.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.22-rc4-mm2/mm/vmscan.c
-===================================================================
---- linux-2.6.22-rc4-mm2.orig/mm/vmscan.c	2007-06-26 12:25:28.000000000 -0700
-+++ linux-2.6.22-rc4-mm2/mm/vmscan.c	2007-06-26 12:40:44.000000000 -0700
-@@ -233,8 +233,9 @@ unsigned long shrink_slab(unsigned long 
- 		shrinker->nr += total_scan;
- 	}
- 	up_read(&shrinker_rwsem);
--	kmem_cache_defrag(sysctl_slab_defrag_ratio,
--		zone ? zone_to_nid(zone) : -1);
-+	if (gfp_mask & __GFP_FS)
-+		kmem_cache_defrag(sysctl_slab_defrag_ratio,
-+			zone ? zone_to_nid(zone) : -1);
- 	return ret;
- }
- 
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+FSF Latin America Board Member         http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
