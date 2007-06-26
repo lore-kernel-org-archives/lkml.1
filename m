@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbXFZPjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbXFZPnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbXFZPjW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 11:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbXFZPjN
+	id S1758154AbXFZPnJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 11:43:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbXFZPmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 11:39:13 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54301 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757646AbXFZPjM (ORCPT
+	Tue, 26 Jun 2007 11:42:54 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:51462 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085AbXFZPmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 11:39:12 -0400
-Date: Tue, 26 Jun 2007 17:39:11 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Message-ID: <20070626153911.GC5244@one.firstfloor.org>
-References: <200706251434.43863.jesse.barnes@intel.com> <20070625233433.GA32306@one.firstfloor.org> <200706251636.53636.jesse.barnes@intel.com> <m1bqf3tu06.fsf@ebiederm.dsl.xmission.com>
+	Tue, 26 Jun 2007 11:42:52 -0400
+Date: Tue, 26 Jun 2007 11:42:50 -0400
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+       suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+Subject: Re: [PATCH 4/7][TAKE5] support new modes in fallocate
+Message-ID: <20070626154250.GD6652@schatzie.adilger.int>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, David Chinner <dgc@sgi.com>,
+	suparna@in.ibm.com, cmm@us.ibm.com, xfs@oss.sgi.com
+References: <20070512080157.GF85884050@sgi.com> <20070612061652.GA6320@amitarora.in.ibm.com> <20070613235217.GS86004887@sgi.com> <20070614091458.GH5181@schatzie.adilger.int> <20070614120413.GD86004887@sgi.com> <20070614193347.GN5181@schatzie.adilger.int> <20070625132810.GA1951@amitarora.in.ibm.com> <20070625134500.GE1951@amitarora.in.ibm.com> <20070625215239.GK5181@schatzie.adilger.int> <20070626104546.GB19870@amitarora.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1bqf3tu06.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070626104546.GB19870@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> For the K7 and K8 cores AMD systems are exactly like Intel systems
-> with respect to MTRRs (although AMD systems also have additional registers)
-> For the K9 core (i.e. AMD socket F or the K8 with DDR2 support) there
+On Jun 26, 2007  16:15 +0530, Amit K. Arora wrote:
+> On Mon, Jun 25, 2007 at 03:52:39PM -0600, Andreas Dilger wrote:
+> > In XFS one of the (many) ALLOC modes is to zero existing data on allocate.
+> > For ext4 all this would mean is calling ext4_ext_mark_uninitialized() on
+> > each extent.  For some workloads this would be much faster than truncate
+> > and reallocate of all the blocks in a file.
+> 
+> In ext4, we already mark each extent having preallocated blocks as
+> uninitialized. This is done as part of following code (which is part of
+> patch 5/7) in ext4_ext_get_blocks() :  
 
-It's called K8RevE, not K9
+What I meant is that with XFS_IOC_ALLOCSP the previously-written data
+is ZEROED OUT, unlike with fallocate() which leaves previously-written
+data alone and only allocates in holes.
 
-> is an additional mechanism that makes everything above 4G write-back
-> cacheable without using any MTRRs.
+So, if you had a sparse file with some data in it:
 
-... but not BIOS use this mechanism (often there are BIOS switches
-for several MTRR models or it is just the wrong one hardcoded), so Linux 
-should detect the broken cases.
+     AAAAA         BBBBBB
 
--Andi
+fallocate() would allocate the holes:
+
+00000AAAAA000000000BBBBBB00000000
+
+XFS_IOC_ALLOCSP would overwrite everything:
+
+000000000000000000000000000000000
+
+In order to specify this for allocation, FA_FL_DEL_DATA would need to make
+sense for allocations (as well as the deallocation).  This is farily easy
+to do - just mark all of the existing extents as unallocated, and their
+data disappears.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
