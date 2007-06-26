@@ -1,79 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbXFZFuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbXFZFxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756721AbXFZFuF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 01:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbXFZFty
+	id S1756919AbXFZFxY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 01:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbXFZFxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 01:49:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59854 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751271AbXFZFtx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 01:49:53 -0400
-Date: Mon, 25 Jun 2007 22:49:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
-       suresh.b.siddha@intel.com, arjan@linux.intel.com, ashok.raj@intel.com,
-       davem@davemloft.net, clameter@sgi.com
-Subject: Re: [Intel IOMMU 02/10] PCI generic helper function
-Message-Id: <20070625224937.502d46a0.akpm@linux-foundation.org>
-In-Reply-To: <20070619213808.504997000@askeshav-devel.jf.intel.com>
-References: <20070619213701.219910000@askeshav-devel.jf.intel.com>
-	<20070619213808.504997000@askeshav-devel.jf.intel.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 26 Jun 2007 01:53:16 -0400
+Received: from verein.lst.de ([213.95.11.210]:39822 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753324AbXFZFxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 01:53:15 -0400
+Date: Tue, 26 Jun 2007 07:52:36 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-ia64@vger.kernel.org, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
+       anil.s.keshavamurthy@intel.com, ananth@in.ibm.com
+Subject: Re: [PATCH 2/3] Remove JPROBE_ENTRY()
+Message-ID: <20070626055236.GA6841@lst.de>
+References: <78935473b1f70c863ab0be7d6cf4bcb04922b20b.1182822366.git.michael@ellerman.id.au> <98c8ff25191ced991066092ffd4899526097da1e.1182822366.git.michael@ellerman.id.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <98c8ff25191ced991066092ffd4899526097da1e.1182822366.git.michael@ellerman.id.au>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Jun 2007 14:37:03 -0700 "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+On Tue, Jun 26, 2007 at 11:48:51AM +1000, Michael Ellerman wrote:
+> AFAICT now that jprobe.entry is a void *, JPROBE_ENTRY doesn't do
+> anything useful - so remove it ..
+> 
+> I've left a do-nothing version so that out-of-tree jprobes code will still
+> compile without modifications.
 
-> +struct pci_dev *
-> +pci_find_upstream_pcie_bridge(struct pci_dev *pdev)
-
-You didn't need a newline there, but that's what the rest of that file
-does.  Hu hum.
-
-> +{
-> +	struct pci_dev *tmp = NULL;
-> +
-> +	if (pdev->is_pcie)
-> +		return NULL;
-> +	while (1) {
-> +		if (!pdev->bus->self)
-> +			break;
-> +		pdev = pdev->bus->self;
-> +		/* a p2p bridge */
-> +		if (!pdev->is_pcie) {
-> +			tmp = pdev;
-> +			continue;
-> +		}
-> +		/* PCI device should connect to a PCIE bridge */
-> +		BUG_ON(pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE);
-
-I assume that if this bug triggers, we've found some broken hardware?
-
-Going BUG seems like a pretty rude reaction to this, especially when it
-would be so easy to drop a warning and then recover.
-
-
-How's about this?
-
---- a/drivers/pci/search.c~intel-iommu-pci-generic-helper-function-fix
-+++ a/drivers/pci/search.c
-@@ -38,7 +38,11 @@ pci_find_upstream_pcie_bridge(struct pci
- 			continue;
- 		}
- 		/* PCI device should connect to a PCIE bridge */
--		BUG_ON(pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE);
-+		if (pdev->pcie_type != PCI_EXP_TYPE_PCI_BRIDGE) {
-+			/* Busted hardware? */
-+			WARN_ON_ONCE(1);
-+			return NULL;
-+		}
- 		return pdev;
- 	}
- 
+Please kill the definition.  We don't want to keep unused crap around
+just to let code compile.  And I have some plans for even deeper change
+in this area, so they'll have to change anyway.
 
