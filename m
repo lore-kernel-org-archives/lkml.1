@@ -1,47 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbXFZSzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbXFZTBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759378AbXFZSzx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 14:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbXFZSzp
+	id S1758793AbXFZTBa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 15:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbXFZTBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 14:55:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:30141 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757277AbXFZSzo (ORCPT
+	Tue, 26 Jun 2007 15:01:23 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:47568 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756852AbXFZTBW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 14:55:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GdYvevdh0uNSnlzqy0KehFo6EmOW/lgWTOGcOEXMITeagEuchqdV51uIgj/8+4dtr6vOM8cywNohlCOwar/1ZlU3M0tA1isbkYdwX4mk7SooVHqfBTaw5B4oUlAHILck/pcjW5X1ClOTU5KuGH2QmkhOcclEffPW4qNInDmScJY=
-Message-ID: <86802c440706261155y7339f87fp7acddae54bb0258@mail.gmail.com>
-Date: Tue, 26 Jun 2007 11:55:43 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "Justin Piszcz" <jpiszcz@lucidpixels.com>
-In-Reply-To: <20070626173806.GE5244@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Jun 2007 15:01:22 -0400
+Date: Tue, 26 Jun 2007 12:01:34 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bugme-daemon@bugzilla.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Cc: wbrana@gmail.com
+Subject: Re: [Bug 8679] New: Section mismatch: reference to .init.text
+Message-Id: <20070626120134.17aa6143.randy.dunlap@oracle.com>
+In-Reply-To: <bug-8679-10286@http.bugzilla.kernel.org/>
+References: <bug-8679-10286@http.bugzilla.kernel.org/>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706251434.43863.jesse.barnes@intel.com>
-	 <20070625233433.GA32306@one.firstfloor.org>
-	 <200706251636.53636.jesse.barnes@intel.com>
-	 <m1bqf3tu06.fsf@ebiederm.dsl.xmission.com>
-	 <20070626153911.GC5244@one.firstfloor.org>
-	 <m1wsxqsnse.fsf@ebiederm.dsl.xmission.com>
-	 <20070626173806.GE5244@one.firstfloor.org>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/26/07, Andi Kleen <andi@firstfloor.org> wrote:
-> RevE had a new memory remapping scheme (memory hoisting) at least, which
-> I think you refered to earlier.  There might have been more changes in F.
+On Tue, 26 Jun 2007 10:46:36 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
 
-yes, REV E has hardware memory remapping.
-Rev F you don't need to use mtrr to set MEM to WE above 4G.
+> http://bugzilla.kernel.org/show_bug.cgi?id=8679
+> 
+>            Summary: Section mismatch: reference to .init.text
+>            Product: Other
+>            Version: 2.5
+>      KernelVersion: 2.6.22-rc6
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Configuration
+>         AssignedTo: zippel@linux-m68k.org
+>         ReportedBy: wbrana@gmail.com
+> 
+> 
+> Software Environment:
+> gcc 3.4.6, binutils 2.17
+> 
+> Problem Description:
+> Warnings appeared while building kernel:
+> 
+> WARNING: arch/i386/kernel/built-in.o(.data+0x2148): Section mismatch: reference
+> to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mtrr_mutex')
+> WARNING: kernel/built-in.o(.text+0x15f84): Section mismatch: reference to
+> .init.text: (between 'kthreadd' and 'init_waitqueue_head')
 
-YH
+
+I don't see the kernel/built-in.o warning when I build this (I have
+binutils 2.16++).  Can you test the patch below to verify that it
+fixes the warning?
+
+On the other warning ('thermal_throttle_cpu_notifier'), we have:
+
+static struct notifier_block thermal_throttle_cpu_notifier =
+{
+	.notifier_call = thermal_throttle_cpu_callback,
+};
+
+where CONFIG_CPU_HOTPLUG=n, so __cpuinit == __init in:
+
+static __cpuinit int thermal_throttle_cpu_callback(struct notifier_block *nfb,
+						   unsigned long action,
+						   void *hcpu)
+
+
+so CPU hotplug actions should never happen here.  Still, we have
+a registered notifier that is in __init space and has been discarded... :(
+Any suggestions out there?
+
+
+
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+kthreadd_setup() is in an __init section, but we know that it's
+safe to be called from kthreadd() since the latter is only called
+at kernel init time, so mark kthreadd_setup() __init_refok so
+that modpost won't complain about what text section it is in.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ kernel/kthread.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.22-rc6.orig/kernel/kthread.c
++++ linux-2.6.22-rc6/kernel/kthread.c
+@@ -215,7 +215,7 @@ int kthread_stop(struct task_struct *k)
+ EXPORT_SYMBOL(kthread_stop);
+ 
+ 
+-static __init void kthreadd_setup(void)
++static __init_refok void kthreadd_setup(void)
+ {
+ 	struct task_struct *tsk = current;
+ 
