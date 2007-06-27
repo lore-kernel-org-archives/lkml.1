@@ -1,110 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761259AbXF0RP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762105AbXF0RRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761259AbXF0RP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbXF0RPQ
+	id S1762105AbXF0RRR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbXF0RRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:15:16 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:35291 "EHLO e3.ny.us.ibm.com"
+	Wed, 27 Jun 2007 13:17:09 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:36746 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752158AbXF0RPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:15:14 -0400
-Date: Wed, 27 Jun 2007 12:15:06 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>, James Morris <jmorris@namei.org>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1] file capabilities: introduce cap_setfcap
-Message-ID: <20070627171506.GA16764@sergelap.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757520AbXF0RRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 13:17:08 -0400
+Date: Wed, 27 Jun 2007 19:18:12 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
+Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
+       schilling@fokus.fraunhofer.de
+Subject: Re: Linux Kernel include files
+Message-ID: <20070627171812.GA31705@uranus.ravnborg.org>
+References: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's the first patch (of several or many to come) to address some of
-Andrew's comments.
+On Wed, Jun 27, 2007 at 03:58:43PM +0200, Joerg Schilling wrote:
+> Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > On Mon, Jun 25, 2007 at 04:53:55PM +0200, Joerg Schilling wrote:
+> > > 
+> > > star needs "ext2_fs.h". This file is not usable at all on many Linux 
+> > > distributions, even with GCC.
+> >
+> > I was curious so I did:
+> >
+> > $ mkdir ~/foo
+> > $ cd ~/kernel/linux-2.6
+> > $ make INSTALL_HDR_PATH=~/foo
+> > $ cd ~/foo
+> > $ cat j.c
+> > #include <stdio.h>
+> > #include "etx2_fs.h"
+> >
+> > main()
+> > {
+> > 	printf("helloo\n");
+> > }
+> >
+> > $ gcc -o j j.c
+> > => No warning, no errors
+> >
+> 
+> On Suse Linux 10.0, I get e.g.:
+> 
+> cat t.c
+> #include <stdio.h>
+> #include <linux/ext2_fs.h>
+> 
+> gcc -c t.c
+> In file included from /usr/include/linux/ext2_fs.h:20,
+>                  from t.c:2:
+> /usr/include/linux/ext2_fs_sb.h:40: error: syntax error before âuid_tâ
+> /usr/include/linux/ext2_fs_sb.h:49: error: syntax error before âs_next_generationâ
+> /usr/include/linux/ext2_fs_sb.h:51: error: syntax error before â*â token
+> /usr/include/linux/ext2_fs_sb.h:56: error: syntax error before â}â token
 
-Kaigai, IIUC cap_names.h will eventually be automatically updated?  (I
-had to manually tweak it for testing as the new kernel sources were not
-located on the test system)
+Hi Jörg.
 
-thanks,
--serge
+For my test I used latest -git of the Linux kernel.
+In this version the include of ext2_fs_bh.h is guarded
+by __KERNEL__ like this:
 
->From fefcd341e478bd9e490d34abe9efd3c3c4f0b8a0 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Wed, 27 Jun 2007 13:09:20 -0400
-Subject: [PATCH 1/1] file capabilities: introduce cap_setfcap
+#ifdef __KERNEL__
+#include <linux/ext2_fs_sb.h>
+static inline struct ext2_sb_info *EXT2_SB(struct super_block *sb)
+{
+        return sb->s_fs_info;
+}
 
-Setting file capabilities previously required the
-cap_sys_admin capability, since they are stored as
-extended attributes in the security.* namespace.
+And therefore the include statement is removed in the exported set of kernel
+include files.
+So this particular issue is solved with the latest kernel and using the headers
+prepared for export.
 
-Introduce CAP_SETFCAP (to mirror CAP_SETPCAP), and
-require it for setting file capabilities instead of
-CAP_SYS_ADMIN.
+This tells me that we are on the right track with exporting the headers and sanitize them.
 
-Quoting Andrew Morgan,
-
-"CAP_SYS_ADMIN is way too overloaded and this
-functionality is special."
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- include/linux/capability.h |    4 +++-
- security/commoncap.c       |   12 ++++++++++--
- 2 files changed, 13 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/capability.h b/include/linux/capability.h
-index 89125df..cdfaa10 100644
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -324,7 +324,9 @@ typedef __u32 kernel_cap_t;
- 
- #define CAP_AUDIT_CONTROL    30
- 
--#define CAP_NUMCAPS	     31
-+#define CAP_SETFCAP	     31
-+
-+#define CAP_NUMCAPS	     32
- 
- #ifdef __KERNEL__
- /* 
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 4e9ff02..24de4fa 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -290,7 +290,11 @@ int cap_bprm_secureexec (struct linux_binprm *bprm)
- int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
- 		       size_t size, int flags)
- {
--	if (!strncmp(name, XATTR_SECURITY_PREFIX,
-+	if (!strcmp(name, XATTR_NAME_CAPS)) {
-+		if (!capable(CAP_SETFCAP))
-+			return -EPERM;
-+		return 0;
-+	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
- 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
- 	    !capable(CAP_SYS_ADMIN))
- 		return -EPERM;
-@@ -299,7 +303,11 @@ int cap_inode_setxattr(struct dentry *dentry, char *name, void *value,
- 
- int cap_inode_removexattr(struct dentry *dentry, char *name)
- {
--	if (!strncmp(name, XATTR_SECURITY_PREFIX,
-+	if (!strcmp(name, XATTR_NAME_CAPS)) {
-+		if (!capable(CAP_SETFCAP))
-+			return -EPERM;
-+		return 0;
-+	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
- 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
- 	    !capable(CAP_SYS_ADMIN))
- 		return -EPERM;
--- 
-1.5.1.1.GIT
-
+	Sam
