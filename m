@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762742AbXF0TDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbXF0TJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762742AbXF0TDY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757872AbXF0TDQ
+	id S1762115AbXF0TJm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757872AbXF0TJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:03:16 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:53116 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753666AbXF0TDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:03:16 -0400
-Date: Wed, 27 Jun 2007 20:02:41 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Casey Leedom <casey_leedom@yahoo.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: ZERO_PAGE() vs. loadable modules in Redhat 4.4 i386 kernels ...
-In-Reply-To: <20070627181208.98426.qmail@web30504.mail.mud.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0706271956430.30942@blonde.wat.veritas.com>
-References: <20070627181208.98426.qmail@web30504.mail.mud.yahoo.com>
+	Wed, 27 Jun 2007 15:09:27 -0400
+Received: from mga02.intel.com ([134.134.136.20]:29485 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757259AbXF0TJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 15:09:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,467,1175497200"; 
+   d="scan'208";a="259588733"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [RFC PATCH 0/2] An evolutionary change to the raid456 queuing model
+To: neilb@suse.de, raziebe@gmail.com
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Wed, 27 Jun 2007 12:09:23 -0700
+Message-ID: <20070627190534.5685.34447.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAAmluYm94AGNhc2V5X2xlZWRvbUB5YWhvby5jb20AbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwA=
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Casey Leedom wrote:
-> 
->   I'm working on a driver that does a get_user_pages() for a DMA write.  We
-> have a timeout on the DMA completion where we mark the pages as COW and return
-> to the application so it can potentially generate more data in order to
-> increase throughput, etc.  The problem is that when we traverse the
-> PGT/PUD/PMD/PTE hierarchy to mark the pages, we sometime fault out when the PUD
-> covering [0x80000000, 0xc0000000) comes out as zero when that entire region is
-> covered by a single large malloc()'ed buffer.  This happens because
-> get_user_pages() returns a reference to empty_zero_page without passing through
-> the fault path when a page is backed by anonymous memory.  I put a check this
-> in my driver using ZERO_PAGE() and everything is great.  Except that it doesn't
-> work on 32-bit i386 Redhat 4.4 kernels because the symbol for empty_zero_page
-> is not only not exported via EXPORT_SYMBOL() but has also somehow been stripped
-> from the kallsyms table.  This means that I can't check for the ZERO_PAGE() in
-> a module.
-> 
->  Can someone suggest a better way of doing this?  Either by some subterfuge to
-> get empty_zero_page or perhaps by asking the kernel to instantiate the
-> PGT/PUD/PMD/PTE hierarchy for a page?  I'm sort of stuck here.  Thanks for any
-> help and/or advice you can offer.
+Raz's stripe-deadline patch illuminated the fact that the current
+queuing model leaves write performance on the table in some cases.  The
+following patches introduce a new queuing model which attempts to
+recover this performance.
 
-I can't speak for Red Hat 4.4; but in general, you should be passing the
-write flag to get_user_pages if you're going to modify the content of
-those pages, which will then allocate the hierarchy needed and break
-COW where necessary.  If that doesn't suit you (e.g. it's supposed to
-be a readonly area in userspace), then you proably shouldn't be using
-get_user_pages at all, but letting userspace mmap your driver pages
-into its space instead.  Definitely don't play empty_zero_page games.
+On an ARM based iop13xx platform I see an averaged %14.7 increase in
+throughput as reported by the following simple test:
 
-Hugh
+	for i in `seq 1 10`; do dd if=/dev/zero of=/dev/md0 bs=1024k count=512; done
+
+This was performed on a default configured 4-disk SATA array (chunksize=64k
+stripe_cache_size=256)
+
+However, a test with an ext2 filesystem and tiobench showed negligible
+changes.  My suspicion is that the new queuing model, as it currently stands,
+can extract some more performance when full stripe writes are present, but in
+the tiobench case there is not enough to take advantage of the queue's preread
+prevention logic (improving this case is the goal of releasing this version of
+the patches).
+
+These patches are on top of the md-accel series.  I will spin a complete
+set based on 2.6.22 once it goes final (2.6.22-iop1 to be released on
+SourceForge).  Until then the complete series is available via git:
+
+	git://lost.foo-projects.org/~dwillia2/git/iop md-accel+experimental
+
+Not to be confused with the acceleration patch set released yesterday which is
+targetted at 2.6.23.  These queuing changes need some more time to cook.
+
+-- 
+Dan
