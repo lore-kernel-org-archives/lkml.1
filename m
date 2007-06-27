@@ -1,52 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbXF0Al1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754982AbXF0Art@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbXF0Al1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 20:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbXF0AlT
+	id S1754982AbXF0Art (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 20:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbXF0Arj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 20:41:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38382 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbXF0AlS (ORCPT
+	Tue, 26 Jun 2007 20:47:39 -0400
+Received: from mail.windriver.com ([147.11.1.11]:55783 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752079AbXF0Ari convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 20:41:18 -0400
-Date: Wed, 27 Jun 2007 01:41:16 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Derek M Jones <derek@knosof.co.uk>
-Cc: Neil Booth <neil@daikokuya.co.uk>, Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627004116.GL21478@ftp.linux.org.uk>
-References: <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070626233226.GO7590@daikokuya.co.uk> <20070627001803.GJ21478@ftp.linux.org.uk> <4681AF87.3000301@knosof.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4681AF87.3000301@knosof.co.uk>
-User-Agent: Mutt/1.4.1i
+	Tue, 26 Jun 2007 20:47:38 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
+Date: Tue, 26 Jun 2007 17:46:13 -0700
+Message-ID: <7ED098B05D69FE41B380586BF1474DBA441F47@ala-mail08.corp.ad.wrs.com>
+In-Reply-To: <20070626160753.f86d8803.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
+Thread-Index: Ace4Rvsp4rIinW+TQZiZwfqEGyAOPgADURlA
+From: "Wessel, Jason" <jason.wessel@windriver.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jarek Poplawski" <jarkao2@o2.pl>
+Cc: "Folkert van Heusden" <folkert@vanheusden.com>,
+       <linux-kernel@vger.kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
+       <stable@kernel.org>, <netdev@vger.kernel.org>
+X-OriginalArrivalTime: 27 Jun 2007 00:46:13.0802 (UTC) FILETIME=[901E58A0:01C7B854]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 01:29:59AM +0100, Derek M Jones wrote:
-> Al Viro wrote:
-> 
-> >>>Hopefully correct handling of integer constant expressions.  Please, 
-> >>>review.
-> >>Am I invoking sparse wrongly?  ./sparse -W -Wall doesn't diagnose
-> >>the following TU, for example.
-> >>
-> >>extern int a;
-> >>extern int as1[(a = 2)];
-> >
-> >sparse simply doesn't check that.  We don't have anything resembling
-> >support of VLA.
-> 
-> If it did support VLAs it would point out that this is
-> a constraint violation.  VLAs must have block or function
-> prototype scope.
 
-I know.  It's just that "let's do something about array size checks"
-triggers "yeah, but the poor sod who does that will have to sort
-VLAs *and* gcc extensions around VLAs out", which is not a nice thought
-and so far nobody had touched that area at all.
+
+> -----Original Message-----
+> From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+> > 
+> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+> > 
+> > ---
+> > 
+> > diff -Nurp 2.6.21-/net/core/netpoll.c 2.6.21/net/core/netpoll.c
+> > --- 2.6.21-/net/core/netpoll.c	2007-04-26 
+> 15:08:32.000000000 +0200
+> > +++ 2.6.21/net/core/netpoll.c	2007-06-12 
+> 21:05:23.000000000 +0200
+> > @@ -73,7 +73,8 @@ static void queue_process(struct work_st
+> >  			netif_tx_unlock(dev);
+> >  			local_irq_restore(flags);
+> >  
+> > -			schedule_delayed_work(&npinfo->tx_work, HZ/10);
+> > +			if (atomic_read(&npinfo->refcnt))
+> > +				
+> schedule_delayed_work(&npinfo->tx_work, HZ/10);
+> >  			return;
+> >  		}
+> >  		netif_tx_unlock(dev);
+> > @@ -780,9 +781,15 @@ void netpoll_cleanup(struct netpoll *np)
+> >  			if (atomic_dec_and_test(&npinfo->refcnt)) {
+> >  				skb_queue_purge(&npinfo->arp_tx);
+> >  				skb_queue_purge(&npinfo->txq);
+> > -				
+> cancel_rearming_delayed_work(&npinfo->tx_work);
+> > +				cancel_delayed_work(&npinfo->tx_work);
+> >  				flush_scheduled_work();
+> >  
+> > +				/* clean after last, unfinished work */
+> > +				if (!skb_queue_empty(&npinfo->txq)) {
+> > +					struct sk_buff *skb;
+> > +					skb = 
+> __skb_dequeue(&npinfo->txq);
+> > +					kfree_skb(skb);
+> > +				}
+> >  				kfree(npinfo);
+> >  			}
+> >  		}
+> 
+> Everything went quiet?
+> 
+> If this patch has been tested and fixes the bug, can you 
+> please send a version which is ready for merging?  (ie: add a 
+> suitable description of what it does).
+> 
+> 
+
+I mailed Jarek separately.
+
+I had tested the patch with netconsole and kgdb and it does in fact fix
+the problem that was reported.
+
+Jason. 
