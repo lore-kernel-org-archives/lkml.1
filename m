@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761269AbXF0PKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761921AbXF0PLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761269AbXF0PKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbXF0PKn
+	id S1761921AbXF0PLT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761280AbXF0PKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:10:43 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:50105 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751883AbXF0PKm (ORCPT
+	Wed, 27 Jun 2007 11:10:55 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42103 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760833AbXF0PKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:10:42 -0400
-Subject: Re: Documentation of kernel messages (Summary)
-From: Michael Holzheu <holzheu@linux.vnet.ibm.com>
-Reply-To: holzheu@linux.vnet.ibm.com
-To: Rob Landley <rob@landley.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lf_kernel_messages@linux-foundation.org, mtk-manpages@gmx.net,
-       jack@suse.cz, randy.dunlap@oracle.com, gregkh@suse.de, pavel@ucw.cz,
-       kunai@linux-foundation.jp, tim.bird@am.sony.com, gh@us.ibm.com,
-       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
-       hpa@zytor.com, joe@perches.com, auke-jan.h.kok@intel.com,
-       hansendc@us.ibm.com, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
-       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-In-Reply-To: <200706251144.48658.rob@landley.net>
-References: <1181747217.29512.9.camel@localhost.localdomain>
-	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>
-	 <1182779321.7142.15.camel@localhost.localdomain>
-	 <200706251144.48658.rob@landley.net>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 27 Jun 2007 17:11:19 +0200
-Message-Id: <1182957079.6643.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 11:10:52 -0400
+Date: Wed, 27 Jun 2007 17:11:14 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+Message-ID: <20070627151114.GM1094@stusta.de>
+References: <20070626230756.519733902@suse.de> <20070626165202.bfe8e6df.akpm@linux-foundation.org> <20070627022403.GB14656@suse.de> <20070626194700.5b0ff477.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070626194700.5b0ff477.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-06-25 at 11:44 -0400, Rob Landley wrote:
-> On Monday 25 June 2007 09:48:41 Michael Holzheu wrote:
-> > Hi all,
-> >
-> > Any idea, how to proceed with this topic? Do you think that any of the
-> > suggested solutions for documentation / translation of kernel messages
-> > will have a chance to be included in the kernel?
+On Tue, Jun 26, 2007 at 07:47:00PM -0700, Andrew Morton wrote:
+> On Tue, 26 Jun 2007 19:24:03 -0700 John Johansen <jjohansen@suse.de> wrote:
 > 
-> Personally?  No to the second question, which renders the first "do it 
-> yourself outside of the tree".
+> > > 
+> > > so...  where do we stand with this?  Fundamental, irreconcilable
+> > > differences over the use of pathname-based security?
+> > > 
+> > There certainly seems to be some differences of opinion over the use
+> > of pathname-based-security.
+> 
+> I was refreshed to have not been cc'ed on a lkml thread for once.  I guess
+> it couldn't last.
+> 
+> Do you agree with the "irreconcilable" part?  I think I do.
+> 
+> I suspect that we're at the stage of having to decide between
+> 
+> a) set aside the technical issues and grudgingly merge this stuff as a
+>    service to Suse and to their users (both of which entities are very
+>    important to us) and leave it all as an object lesson in
+>    how-not-to-develop-kernel-features.
+> 
+>    Minimisation of the impact on the rest of the kernel is of course
+>    very important here.
+> 
+> versus
+> 
+> b) leave it out and require that Suse wear the permanent cost and
+>    quality impact of maintaining it out-of-tree.  It will still be an
+>    object lesson in how-not-to-develop-kernel-features.
+>...
 
-If that is the opinion of the majority here, fine. If there is no hard
-rule on how to define printk macros, one option for us would be to
-define some new s390 specific printk macros for our device drivers.
-Similar to hundreds of other driver specific printk macros in the
-kernel.
+versus
 
-> Just a guess, and I don't speak for anyone else here, but I think most of us 
-> are waiting to see how long it takes you to lose interest.
+c) if [1] AppArmor is considered to be something that wouldn't 
+   be merged if it wasn't already widely deployed by Suse: leave it out, 
+   work on an ideal solution [2], and let Suse wear the one-time cost
+   of migrating their users to the ideal solution
 
-:-) Work is not always fun. Sometimes it is just a duty.
+One important point is that if AppArmor gets merged there will be much 
+more distribution support for it, and many people on !Suse will start 
+using it.
 
-Michael
+I'm not claiming to understand the technical details, but from both 
+slightly reading over the previous discussions and the "What are the 
+advantages of AppArmor over SELinux?" section in the AppArmor FAQ [3] my 
+impression is that a main advantage of AppArmor are more user friendly 
+userspace tools. Therefore, if [1] AppArmor is considered technically 
+inferior to SELinux, it might still become more popular than SELinux 
+simply because it's easier to use - and although it's technically 
+inferior.
 
+cu
+Adrian
+
+[1] note the "if"
+[2] could be, but not necessarily, SELinux
+[3] http://developer.novell.com/wiki/index.php/Apparmor_FAQ
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
