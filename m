@@ -1,76 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbXF0E7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbXF0FAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbXF0E7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 00:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbXF0E7h
+	id S1758868AbXF0FAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 01:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbXF0FAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 00:59:37 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:10291 "EHLO
-	asav05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbXF0E7h (ORCPT
+	Wed, 27 Jun 2007 01:00:19 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:45116 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752921AbXF0FAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 00:59:37 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AoQrAKyLgUZKhRO4R2dsb2JhbACBT4Vdh3MBARsNBhEB
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] atkbd: cleanup only once
-Date: Wed, 27 Jun 2007 00:59:32 -0400
-User-Agent: KMail/1.9.3
-Cc: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org
-References: <20070627105907.GA1802@darkstar.te-china.tietoenator.com> <200706270034.09802.dtor@insightbb.com> <20070627042820.GC13513@suse.de>
-In-Reply-To: <20070627042820.GC13513@suse.de>
+	Wed, 27 Jun 2007 01:00:16 -0400
+Message-ID: <4681EED8.6050005@kernel.org>
+Date: Tue, 26 Jun 2007 22:00:08 -0700
+From: Andrew Morgan <morgan@kernel.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070531)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Serge E. Hallyn" <serge@hallyn.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: implement-file-posix-capabilities.patch
+References: <20070611123714.GA2063@sergelap.austin.ibm.com> <878322.98602.qm@web36606.mail.mud.yahoo.com> <afff21250706110926l244ddc28i44289cb08a6721e2@mail.gmail.com> <20070617135239.GA17689@sergelap> <4676007F.7060503@kernel.org> <20070618044017.GW3723@sequoia.sous-sol.org> <20070620171037.GA28670@sergelap.ibm.com> <20070620174613.GF3723@sequoia.sous-sol.org> <20070621160011.GB9913@sergelap.austin.ibm.com> <467CD63B.4000703@kernel.org> <20070624155100.GA5167@vino.hallyn.com>
+In-Reply-To: <20070624155100.GA5167@vino.hallyn.com>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706270059.33550.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 June 2007 00:28, Greg KH wrote:
-> On Wed, Jun 27, 2007 at 12:34:09AM -0400, Dmitry Torokhov wrote:
-> > Hi Dave,
-> > 
-> > On Wednesday 27 June 2007 06:59, Dave Young wrote:
-> > > Hi,
-> > > 
-> > > If you press ctrl+alt+del several times as kernel booting (before user level bootin), the kernel will oops. I found the ps2_command is called more than once, then the ps2dev->serio maybe NULL pointer.
-> > > 
-> > > 2.6.22-rc5 and 2.6.22-rc6 have same result.
-> > > 
-> > > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> > > ---
-> > > diff -upr linux/drivers/input/keyboard/atkbd.c linux.new/drivers/input/keyboard/atkbd.c
-> > > --- linux/drivers/input/keyboard/atkbd.c	2007-06-27 10:38:37.000000000 +0000
-> > > +++ linux.new/drivers/input/keyboard/atkbd.c	2007-06-27 10:37:39.000000000 +0000
-> > > @@ -795,6 +795,11 @@ static int atkbd_activate(struct atkbd *
-> > >  
-> > >  static void atkbd_cleanup(struct serio *serio)
-> > >  {
-> > > +	static int flag;
-> > > +
-> > > +	if(flag)
-> > > +		return;
-> > > +	flag = 1;
-> > 
-> > Unfortunately this will prevent atkbd from resetting keyboard on 2nd
-> > suspend attempt. It will also not work if you have an active MUX and
-> > have a couple of keyboards connected.
-> > 
-> > Greg, now that you removed rwsem from subsystem (and subsystem itself
-> > for that matter) there is nothing as far as I can see that stops
-> > several threads from running device_shutdown() simultaneously. I also
-> > do not see what would isolate device probing and shutting them down
-> > at the same time. Am I missing something?
-> 
-> There was never anything stopping that from happening before.  No driver
-> core code was using that rwsem, so it wasn't protecting anything,
-> despite people trying to use it as if it was :)
-> 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-It did protect device_shutdown() from itself, didn't it?
+Serge E. Hallyn wrote:
+> 
+>> I don't particularly mind, but can you point out any case where
+>> it is an advantage to have the one bit for f'E rather than just
+>> drop f'E altogether?  Instead of having
+> 
+>> 	f'I=something
+>> 	f'P=something
+>> 	f'E=off
+> 
+>> we can always just remove the security.capability xattr.  Right?
 
--- 
-Dmitry
+No. Bear in mind that capabilities are all about trusting specific
+applications with privilege as opposed to trusting the superuser to not
+run dangerous applications.
+
+There are three situations, we'll take them in turn:
+
+  - no capabilities (fP=fI=fE=0): this is for applications that are not
+intended to operate with privilege. Because of the way the capability
+convolution rules work, such a program can't execute with privilege. Period.
+
+  - with capabilities (fP and/or fI != 0), but fE=0 (off): this is for
+applications that are intended to operate with privilege, but they were
+designed to know about capabilities and they manipulate (raise and
+lower) capabilities as needed to do the things they do.
+
+  - with capabilities, but fE=1 (on): this is a class of applications
+loosely called 'legacy'. They can use privilege to operate, but don't
+strictly need to know about it. For example, /bin/chown . Such a program
+will have fP=0,fI=CAP_CHOWN. Since the administrator sets
+fP=0,fI=CAP_CHOWN,fE=1 on the /bin/chown file, any process with
+CAP_CHOWN in its inheritable set (pI) can "exec /bin/chown" and have it
+do the thing historically reserved for the superuser...
+
+In some future world, the legacy fE bit may become unnecessary because
+every application will be rewritten to be careful about exercising
+privilege explicitly. In the meantime, the fE bit can be used to drop
+the setuid-0 bits from things like ping and traceroute.
+
+>> If there's a case where that does not suffice, then I have no objection
+>> to doing it this way.
+
+Does that explain it?
+
+> 2) Allocate capability bit-31 for CAP_SETFCAP, and use it to gate
+> whether the user can set this xattr on a file or not. CAP_SYS_ADMIN is
+> way too overloaded and this functionality is special.
+> 
+>> The functionality is special, but someone with CAP_SYS_ADMIN can always
+>> unload the capability module and create the security.capability xattr
+>> using the dummy module.
+
+This argument leads down a rat hole. (As appears to have happened with
+the non-modularization LSM thread elsewhere...)
+
+The simple fact is that CAP_SYS_ADMIN is equivalent to every other
+capability in the system if it can be used to load any flavor of kernel
+module. Arguing that you don't need a capability for something because
+you can do it with CAP_SYS_ADMIN is very close to admitting that you
+prefer the superuser (uid=0) model.
+
+>> If we do add this cap, do we want to make it apply to all security.*
+>> xattrs?
+
+I recommend limiting it to just capabilities.
+
+For now, you can leave the other security attributes with the
+CAP_SYS_ADMIN ("misc") capability. In the original 'POSIX' drafts, there
+is a separate notion of advisory and mandatory access control;
+leveraging different capabilities to override.
+
+> 3) The cap_from_disk() interface checking needs some work.... Most
+> notably, size must be greater than sizeof(u32) or the very first line
+> will do something nasty... I'd recommend you use code like this:
+> 
+> [...] cap_from_disk(...)
+> {
+>    if (size != sizeof(struct vfs_cap_data)) {
+[...]
+> mistake at least once... The future is uncertain, so don't trust it will
+> look the way you want it to. ;-)
+> 
+>> Ok, so you're saying that when we do switch to 64-bit caps or some other
+>> evolution, we switch to completely separate logic based on the
+>> VFS_CAP_REVISION?
+
+Yes.
+
+>> That seems sane to me.
+
+You might also want to verify that unallocated bits hold the value
+'zero'. Its funny what people do when they realize they can silently
+store bits in obscure places like this. That really messes up allocating
+bits in the future. Add a check that is something like:
+
+  if (version & ~(VFS_CAP_REVISION_MASK|VFS_CAP_FLAGS_EFFECTIVE)) {
+      return -EINVAL;
+  }
+
+> 7) This one is subtle, and to my mind not well appreciated. In
+> cap_bprm_apply_creds(), the wart of the global 'cap_bset' masking
+> permitted bits can lead to problems like the one we saw a few years back
+> with sendmail and capabilities. There is an assumption in setting
+> permitted (they are called 'forced' in some documents) capabilities on a
+> file that the file will execute with at least these. The inheritable
+> ones are optional.
+> 
+>> Hmm, changing the behavior of the cap_bset is something that seems to
+>> belong in 8), though I see what you're saying, it does affect the
+>> behavior of vfs caps.
+
+I'm not really changing the behavior of cap_bset. I'm specifying the
+behavior of fP. ;-)
+
+[Your comments on cap_bset and CAP_SETPCAP are exactly where my
+ax^H^H^Hscalpel will fall after all this VFS support is stable. But
+*that* is a subject for a different thread... aka item 8.]
+
+>> So yeah, I think you're right - but the question is whose word do we
+>> take here?  The admin who set the vfs caps on the binary, or the admin
+>> who set cap_bset through sysctl?
+
+The former.
+
+Cheers
+
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFGge7WQheEq9QabfIRAo5oAJwLmR40gW/McHxGTFukm/PCRyLvegCgglpD
+tf7NgFcQvFNnMVDhNfslBGY=
+=2tDD
+-----END PGP SIGNATURE-----
