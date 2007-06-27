@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbXF0FCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbXF0FDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759993AbXF0FCz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 01:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbXF0FCf
+	id S1760055AbXF0FDe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 01:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXF0FD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 01:02:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:43475 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753178AbXF0FCe (ORCPT
+	Wed, 27 Jun 2007 01:03:27 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:24670 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178AbXF0FD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 01:02:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NGPqoH+DnhaOK6JiOAV9bu59VcuiRgQH+79M9HAZKzuwaMnfkGFCvrixA7kdyCUdpzh3jAUgtfuyiU+JY/ZWee8oKaJl9m3Dg10vzDxYmSar6/zGraaWQW01BGv6QFMyZqcjWNWxf8KYm1dkZ71jQJjenBg+s+j7pn8i3sthZ64=
-Message-ID: <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com>
-Date: Tue, 26 Jun 2007 22:02:33 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 27 Jun 2007 01:03:26 -0400
+Date: Tue, 26 Jun 2007 22:05:20 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Shan, Guo Wen (Gavin)" <gshan@alcatel-lucent.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6 Linux for PowerPC supports kdb?
+Message-Id: <20070626220520.380c1798.randy.dunlap@oracle.com>
+In-Reply-To: <4681D39B.2000604@alcatel-lucent.com>
+References: <4681D39B.2000604@alcatel-lucent.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2>
-	 <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com>
-	 <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/26/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> I acutally have the code for it, but I never posted it since it did not
-> receive a too warm review (and the only user was the fdmap thingy).
+On Tue, 26 Jun 2007 23:03:55 -0400 Shan, Guo Wen (Gavin) wrote:
 
-Only user of sys_indirect?  There will be quite a few right away.
-Every syscall that returns a file descriptor needs O_CLOEXEC support
-(socket, pipe, epoll_create, ...)
+> Does anybody knew if 2.6 linux for PowerPC supports kdb?
 
+PowerPC isn't listed AFAICT:
+ftp://oss.sgi.com/www/projects/kdb/download/v4.4/README
 
-> OTOH glibc could implement __morecore using mmap(MAP_NOZERO), and hence
-> brk2() would not be needed, no?
+I.e., all that I see are i386, x86_64, and ia64.
 
-No.  mmap calls create individual VMAs which gets expensive.  There
-are also some hardware drivers which get more expensive the more VMAs
-there are.  I want to go away as much as possible from mmap for
-malloc.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
