@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbXF0B3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbXF0BdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbXF0B3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 21:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbXF0B3h
+	id S1756292AbXF0BdO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 21:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbXF0BdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 21:29:37 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:8741 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751875AbXF0B3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 21:29:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=htSvLEMya/O+4jk/TeLeFEE1zIv1qiY+Zy4HnkVvFcQS0EJ+VUZPbMMtqYnh2Ns9nIF+h36+TeW7KE3/b9ixpLK3eNvvuHg1Chx7xJ3JBbWy7Bo/FIIfK182OzP9tbUYn/yrLvtj+qezUwr9VQ9jiAvs3u4w7L7/fLUBQHTsxv0=
-Message-ID: <a781481a0706261829l4a5c19cey7e1e75157fb74ce2@mail.gmail.com>
-Date: Wed, 27 Jun 2007 06:59:35 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Oleg Nesterov" <oleg@tv-sign.ru>
-Subject: Re: [PATCH] RFC: have tcp_recvmsg() check kthread_should_stop() and treat it as if it were signalled
-Cc: "Jeff Layton" <jlayton@redhat.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>, netdev@vger.kernel.org,
-       linux-cifs-client@lists.samba.org
-In-Reply-To: <a781481a0706261553i1e65e620o884708d0b068b0f8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 26 Jun 2007 21:33:00 -0400
+Received: from smtpout.mac.com ([17.250.248.178]:53377 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752285AbXF0Bc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 21:32:59 -0400
+In-Reply-To: <20070622150038.GN23017@stusta.de>
+References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de> <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm> <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de> <1182483527.10524.31.camel@shinybook.infradead.org> <20070622150038.GN23017@stusta.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>, david@lang.hm,
+       LKML Kernel <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070608123527.9b4cdafe.jlayton@redhat.com>
-	 <E1HwpmG-0008LW-00@gondolin.me.apana.org.au>
-	 <20070609070826.7bd3480c.jlayton@redhat.com>
-	 <a781481a0706251241n36126456x7f4b445a86d1a68f@mail.gmail.com>
-	 <20070626115449.GA92@tv-sign.ru>
-	 <a781481a0706261553i1e65e620o884708d0b068b0f8@mail.gmail.com>
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Linux Kernel include files
+Date: Tue, 26 Jun 2007 21:32:39 -0400
+To: Adrian Bunk <bunk@stusta.de>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/27/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> [...]
-> On 6/26/07, Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> > On 06/26, Satyam Sharma wrote:
-> [...]
-> > > So could we have signals in _addition_ to kthread_stop_info and change
-> > > kthread_should_stop() to check for both:
-> > >
-> > > kthread_stop_info.k == current && signal_pending(current)
-> >
-> > No, this can't work in general. Some kthreads do flush_signals/dequeue_signal,
-> > so TIF_SIGPENDING can be lost anyway.
+On Jun 22, 2007, at 11:00:38, Adrian Bunk wrote:
+> It would certainly help if Joerg would tell what exactly breaks,  
+> but I spot one likely problem in include/asm-i386/types.h:
 >
-> Yup, I had thought of precisely this issue yesterday as well. The mental note
-> I made to myself was that the force_sig(SIGKILL) and wake_up_process() in
-> kthread_stop() must be atomic so that the following race is not possible:
+> #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+> typedef __signed__ long long __s64;
+> typedef unsigned long long __u64;
+> #endif
+>
+> It might make sense to remove the #if and simply require that a C  
+> compiler under Linux must know about the C99 "long long"?
 
-Hmm, the issue seems to have more to do with the ordering of
-flush_signals() w.r.t. checking kthread_should_stop() in the kthread's
-code. I thought about how to tackle this, but there's no easy way to make
-the stuff atomic like I thought earlier. The problem, like you mentioned,
-is if the target kthread proactively flushes its signals by hand *before*
-checking kthread_should_stop().
+Gah, this particular topic and a few other similar header- 
+compatibility ones show up once a month on LKML; I should probably  
+just make a patch to fix all the types.h files and be done with it.   
+The proper solution is this:
 
-The only way out seems to be to simply outlaw flush_signals() in kthreads
-(or anything to do with signals), but that would be impossible to enforce ...
+# if __STDC_VERSION__ >= 19901L
+typedef   signed long long __s64;
+typedef unsigned long long __u64;
+# elif defined(__GNUC__)
+__extension__ typedef   signed long long __s64;
+__extension__ typedef unsigned long long __u64;
+# else
+#  error "Your compiler doesn't support long long (IOW: It sucks).   
+Please get a new one"
+# endif
 
-Satyam
+That way if you have any kind of vaguely-long-long-compatible  
+compiler then it will work, and otherwise you'll get a nice useful  
+error message.  It also makes sure that GCC doesn't spew warnings/ 
+errors when in c89-pedantic mode.  The "__extension__" keyword is  
+designed for use in implementation header files which want to use GCC- 
+isms unconditionally.
+
+Cheers,
+Kyle Moffett
+
