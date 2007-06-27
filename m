@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbXF0DfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbXF0Dpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759451AbXF0DfJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 23:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXF0De6
+	id S1758163AbXF0Dpi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 23:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbXF0Dpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 23:34:58 -0400
-Received: from web52504.mail.re2.yahoo.com ([206.190.48.187]:41335 "HELO
-	web52504.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753107AbXF0De5 (ORCPT
+	Tue, 26 Jun 2007 23:45:30 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:28949 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbXF0Dp3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 23:34:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Ml0a9V7J/WpEPQl5F+3/mabx7amb+B/9FKRBY9d80RbcHsHiq/zhXi8QuJPF8KBIKLKN7hejCdzjN4fwWp4Gnvv6XtEBjbkUHtS/o6/BoEd/3yVJYwmkpwI7U4sEhbGc5H2RLXT8SIy3HBGRlPxd/uW4r5aE+KLmoffMuHdoB7o=;
-X-YMail-OSG: OLoTMJ0VM1k55nepOX8Y18WYVFwI0Zsin4nQ1HMWFbSTYHKXNUvJulZJ4heKg7fX.PPMHAqOBRIird9SSgzuQ41fFPCKL2vHNB73fHOD9P3eVsvAastkJnwILRP3_w--
-Date: Tue, 26 Jun 2007 20:34:56 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: NVidia Driver Support - 1680x1050 mode
-To: linux-kernel@vger.kernel.org
+	Tue, 26 Jun 2007 23:45:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bAa2F0qyarAjDTnxwmhZV+9t/sl5WGmHdAcpdaDZ1epiqGga3wnUJlrJ74QjZtdGcAIis2zBd7r+AVdQppmjh0z9eCfiGcoVcnreObRmCtD53cJ+jJzxFaMmz00AGXkbK8kieUG5cMO2p5s6QjmL2JNDe/uQO8u0uWP7/+DqsZ8=
+Message-ID: <a36005b50706262045g79c4accak21fea740fdc1bffd@mail.gmail.com>
+Date: Tue, 26 Jun 2007 20:45:28 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
+Cc: "Davide Libenzi" <davidel@xmailserver.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4681D45F.7080309@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <815294.60672.qm@web52504.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <send-serie.davidel@xmailserver.org.29496.1182912260.2>
+	 <4681D45F.7080309@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to get my Asus M2NPV-VM motherboard and my
-Samsung SyncMaster 215tw Digital to work in 1680x1050
-mode but 1280x1024 is the most I can get. Chip Set is
-GeForce 6150.
+On 6/26/07, Rik van Riel <riel@redhat.com> wrote:
+> Since programs can get back free()d memory after a malloc(),
+> with the old contents of the memory intact, surely your
+> MAP_NONZERO behavior could be the default for programs that
+> can get away with it?
+>
+> Maybe we could use some magic ELF header, similar to the
+> way non-executable stack is handled?
 
-Looking in Xorg.0.log it ssems to think that the panel
-size is 1280x1024 in spite of my setting telling it
-differently.
-
-Sorry if this is off topic but I thought that the
-smart people would be here. In Windows I just plug it
-in and it works. So I figure Linux should work too. :)
-
-
-
-       
-____________________________________________________________________________________
-Moody friends. Drama queens. Your life? Nope! - their life, your story. Play Sims Stories at Yahoo! Games.
-http://sims.yahoo.com/  
+No.  This is an implementation detail of the libc version.  The malloc
+as compiled today is expecting brk-ed memory to be zeroed.  This
+default can of course be changed (it's a simple define) but you cannot
+make this the default behavior for brk.
