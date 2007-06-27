@@ -1,112 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761933AbXF0TuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbXF0Tz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761933AbXF0TuG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbXF0Tt4
+	id S1760816AbXF0Tz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbXF0TzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:49:56 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39729 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752891AbXF0Ttz (ORCPT
+	Wed, 27 Jun 2007 15:55:13 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:43158 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752891AbXF0TzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:49:55 -0400
-Date: Wed, 27 Jun 2007 12:47:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
-       Miklos Szeredi <miklos@szeredi.hu>, chris@atlee.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-In-Reply-To: <alpine.LFD.0.98.0706262249590.8675@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.98.0706271233300.8675@woody.linux-foundation.org>
-References: <20070620093612.GA1626@ff.dom.local>
- <alpine.LFD.0.98.0706201018290.3593@woody.linux-foundation.org>
- <20070621073031.GA683@elte.hu> <alpine.LFD.0.98.0706210845090.3593@woody.linux-foundation.org>
- <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com>
- <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org>
- <20070621202917.a2bfbfc7.dada1@cosmosbay.com>
- <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org>
- <4680D162.9050603@yahoo.com.au> <alpine.LFD.0.98.0706261016200.8675@woody.linux-foundation.org>
- <4681F448.3040201@yahoo.com.au>
- <alpine.LFD.0.98.0706262249590.8675@woody.linux-foundation.org>
+	Wed, 27 Jun 2007 15:55:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=K5e5hsi5r7dz40XCsXM42Pc14cChv7plnGKjYg1N+BotNd8MuQIBr6E4Q4dZVfbI2LVoJ0OfcX2SHVgr2DajQnOQ/gXrwaPmn3Zj/lb4AGaQu/hycax/rqp53c+e0IWE9GAvS+HnE3gnT37sHtUyB+y/Oy1O7louc1AUAykOCX4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2/5] piix: backport short cables support from ata_piix.c
+Date: Wed, 27 Jun 2007 21:13:33 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200706101558.14511.bzolnier@gmail.com> <46815B44.1040609@ru.mvista.com>
+In-Reply-To: <46815B44.1040609@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200706272113.33261.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Nick,
- call me a worry-wart, but I slept on this, and started worrying..
-
-On Tue, 26 Jun 2007, Linus Torvalds wrote:
+On Tuesday 26 June 2007, Sergei Shtylyov wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> > Backport short cables support from ata_piix.c.
 > 
-> So try it with just a byte counter, and test some stupid micro-benchmark 
-> on both a P4 and a Core 2 Duo, and if it's in the noise, maybe we can make 
-> it the normal spinlock sequence just because it isn't noticeably slower.
+> > This patch should allow UDMA > 2 modes on:
+> > - Acer 5602WLMi
+> > - Acer 3682WLMi
+> > - Asus W5F
+> > - Acer Aspire 2023WLMi
+> 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-So I thought about this a bit more, and I like your sequence counter 
-approach, but it still worried me.
+Added (as well as ACKs for patches #3-5 of this series).
 
-In the current spinlock code, we have a very simple setup for a 
-successful grab of the spinlock:
+>     Minor nit here:
+> 
+> > Index: b/drivers/ide/pci/piix.c
+> > ===================================================================
+> > --- a/drivers/ide/pci/piix.c
+> > +++ b/drivers/ide/pci/piix.c
+> > @@ -394,12 +394,43 @@ static void piix_dma_clear_irq(ide_drive
+> [...]
+> >  static u8 __devinit piix_cable_detect(ide_hwif_t *hwif)
+> >  {
+> > -	struct pci_dev *dev = hwif->pci_dev;
+> > +	struct pci_dev *pdev = hwif->pci_dev;
+> 
+>     Unnecessary rename.
+> 
+> > +	const struct ich_laptop *lap = &ich_laptop[0];
+> 
+>     ... and & and [0] are superfluous with arrays -- they behave like pointers 
+> in expression.
 
-	CPU#0					CPU#1
+I was blinded by libata code... ;)
 
-	A (= code before the spinlock)
-						lock release
-
-	lock decb mem	(serializing instruction)
-
-	B (= code after the spinlock)
-
-and there is no question that memory operations in B cannot leak into A.
-
-With the sequence counters, the situation is more complex:
-
-	CPU #0					CPU #1
-
-	A (= code before the spinlock)
-
-	lock xadd mem	(serializing instruction)
-
-	B (= code afte xadd, but not inside lock)
-
-						lock release
-
-	cmp head, tail
-
-	C (= code inside the lock)
-
-Now, B is basically the empty set, but that's not the issue I worry about. 
-The thing is, I can guarantee by the Intel memory ordering rules that 
-neither B nor C will ever have memops that leak past the "xadd", but I'm 
-not at all as sure that we cannot have memops in C that leak into B!
-
-And B really isn't protected by the lock - it may run while another CPU 
-still holds the lock, and we know the other CPU released it only as part 
-of the compare. But that compare isn't a serializing instruction!
-
-IOW, I could imagine a load inside C being speculated, and being moved 
-*ahead* of the load that compares the spinlock head with the tail! IOW, 
-the load that is _inside_ the spinlock has effectively moved to outside 
-the protected region, and the spinlock isn't really a reliable mutual 
-exclusion barrier any more!
-
-(Yes, there is a data-dependency on the compare, but it is only used for a 
-conditional branch, and conditional branches are control dependencies and 
-can be speculated, so CPU speculation can easily break that apparent 
-dependency chain and do later loads *before* the spinlock load completes!)
-
-Now, I have good reason to believe that all Intel and AMD CPU's have a 
-stricter-than-documented memory ordering, and that your spinlock may 
-actually work perfectly well. But it still worries me. As far as I can 
-tell, there's a theoretical problem with your spinlock implementation.
-
-So I'd like you to ask around some CPU people, and get people from both 
-Intel and AMD to sign off on your spinlocks as safe. I suspect you already 
-have the required contacts, but if you don't, I can send things off to the 
-appropriate people at least inside Intel.
-
-			Linus
+Bart
