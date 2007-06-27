@@ -1,223 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762015AbXF0VER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763336AbXF0VEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762015AbXF0VER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 17:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXF0VEI
+	id S1763336AbXF0VEb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 17:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbXF0VEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 17:04:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51377 "EHLO ogre.sisk.pl"
+	Wed, 27 Jun 2007 17:04:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57028 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbXF0VEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 17:04:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@suse.de>
-Subject: [RFC][PATCH -mm] PM: Do not use saved_state from struct dev_pm_info on ARM (was: Re: patch pm-remove-saved_state-from-struct-dev_pm_info.patch added to gregkh-2.6 tree)
-Date: Wed, 27 Jun 2007 23:11:03 +0200
-User-Agent: KMail/1.9.5
-Cc: akpm@linux-foundation.org, david-b@pacbell.net, greg@kroah.com,
-       pavel@ucw.cz, stern@rowland.harvard.edu, rmk@arm.linux.org.uk,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1181861863@kroah.com> <200706262300.08543.rjw@sisk.pl> <20070626210311.GC7814@suse.de>
-In-Reply-To: <20070626210311.GC7814@suse.de>
+	id S1752289AbXF0VEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 17:04:21 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706272311.04256.rjw@sisk.pl>
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/utrace
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: Alan Stern's message of  Tuesday, 26 June 2007 23:26:37 -0400 <Pine.LNX.4.44L0.0706262244100.23864-100000@netrider.rowland.org>
+Emacs: the prosecution rests its case.
+Message-Id: <20070627210417.879DC4D05E6@magilla.localdomain>
+Date: Wed, 27 Jun 2007 14:04:17 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 26 June 2007 23:03, Greg KH wrote:
-> On Tue, Jun 26, 2007 at 11:00:06PM +0200, Rafael J. Wysocki wrote:
-> > On Friday, 15 June 2007 00:57, gregkh@suse.de wrote:
-> > > 
-> > > This is a note to let you know that I've just added the patch titled
-> > > 
-> > >      Subject: PM: Remove saved_state from struct dev_pm_info
-> > > 
-> > > to my gregkh-2.6 tree.  Its filename is
-> > > 
-> > >      pm-remove-saved_state-from-struct-dev_pm_info.patch
-> > > 
-> > > This tree can be found at 
-> > >     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-> > > 
-> > > 
-> > > From rjw@sisk.pl  Thu Jun 14 15:47:15 2007
-> > > From: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > > To: Andrew Morton <akpm@linux-foundation.org>
-> > > Subject: PM: Remove saved_state from struct dev_pm_info
-> > > Date: Wed, 13 Jun 2007 15:55:34 +0200
-> > > Cc: Alan Stern <stern@rowland.harvard.edu>, David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>, Pavel Machek <pavel@ucw.cz>
-> > > Content-Disposition: inline
-> > > Message-Id: <200706131555.37277.rjw@sisk.pl>
-> > > 
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > The saved_state member of struct dev_pm_info, defined in include/linux/pm.h, is
-> > > not used anywhere, so it can be removed.
-> > 
-> > Unfortunately this is wrong, as I've just found three drivers in the ARM tree
-> > that use it.  I don't know why I didn't see them when I was creating the patch,
-> > though. :-(
+> So far this work has all been based on the vanilla kernel.  Should I 
+> switch over to basing it on -mm?
+
+It doesn't much matter at the moment.  Sticking with vanilla is the easiest
+for you and me testing it right now.
+
+> > Calling send_sigtrap twice during the same exception does happen to be
+> > harmless, but I don't think it should be presumed to be.  It is just not
+> > the right way to go about things that you send a signal twice when there
+> > is one signal you want to generate.
 > 
-> Why not just fix up the ARM drivers instead?
+> What happens when there are two ptrace exceptions at different points
+> during the same system call?  Won't we end up sending the signal twice
+> no matter what?
 
-OK, let's try. :-)
+Well then that is two signals for good reason, so that is a different
+story.  It winds up indistinguishable from only sending the second, but as
+far as the organization of the code and thinking about the semantics, twice
+is right in this case and once is right in the simpler case.
 
-The following patch has only been compilation tested.
+> In theory we should get an exception with both DR_STEP and DR_TRAPn 
+> set, meaning that neither notifier will return NOTIFY_STOP.  But if the 
+> kprobes handler clears DR_STEP in the DR6 image passed to the 
+> hw_breakpoint handler, it should work out better.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+It's since occurred to me that kprobes can and should do:
 
-The saved_state member of 'struct dev_pm_info' that's going to be removed is
-used in arch/arm/common/locomo.c, arch/arm/common/sa1111.c and
-arch/arm/mach-sa1100/neponset.c.  Change the code in there to use local
-variables for saving the state of devices during suspend.
+	args->err &= ~(unsigned long) DR_STEP;
+	if (args->err == 0)
+		return NOTIFY_STOP;
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/arm/common/locomo.c        |   17 +++--------------
- arch/arm/common/sa1111.c        |   12 +++++++-----
- arch/arm/mach-sa1100/neponset.c |   15 ++++-----------
- 3 files changed, 14 insertions(+), 30 deletions(-)
+This doesn't affect do_debug directly, but it will change the value seen by
+the next notifier.  So if hw_breakpoint_handler is responsible for setting
+vdr6 based on its args->err value, we should win.
 
-Index: linux-2.6.22-rc6/arch/arm/common/locomo.c
-===================================================================
---- linux-2.6.22-rc6.orig/arch/arm/common/locomo.c	2007-04-26 05:08:32.000000000 +0200
-+++ linux-2.6.22-rc6/arch/arm/common/locomo.c	2007-06-27 21:48:15.000000000 +0200
-@@ -553,20 +553,14 @@ struct locomo_save_data {
- 	u16	LCM_GPE;
- 	u16	LCM_ASD;
- 	u16	LCM_SPIMD;
--};
-+} locomo_saved_state;
- 
- static int locomo_suspend(struct platform_device *dev, pm_message_t state)
- {
- 	struct locomo *lchip = platform_get_drvdata(dev);
--	struct locomo_save_data *save;
-+	struct locomo_save_data *save = &locomo_saved_state;
- 	unsigned long flags;
- 
--	save = kmalloc(sizeof(struct locomo_save_data), GFP_KERNEL);
--	if (!save)
--		return -ENOMEM;
--
--	dev->dev.power.saved_state = (void *) save;
--
- 	spin_lock_irqsave(&lchip->lock, flags);
- 
- 	save->LCM_GPO     = locomo_readl(lchip->base + LOCOMO_GPO);	/* GPIO */
-@@ -602,13 +596,9 @@ static int locomo_suspend(struct platfor
- static int locomo_resume(struct platform_device *dev)
- {
- 	struct locomo *lchip = platform_get_drvdata(dev);
--	struct locomo_save_data *save;
-+	struct locomo_save_data *save = &locomo_saved_state;
- 	unsigned long r;
- 	unsigned long flags;
--	
--	save = (struct locomo_save_data *) dev->dev.power.saved_state;
--	if (!save)
--		return 0;
- 
- 	spin_lock_irqsave(&lchip->lock, flags);
- 
-@@ -628,7 +618,6 @@ static int locomo_resume(struct platform
- 	locomo_writel(0x1, lchip->base + LOCOMO_KEYBOARD + LOCOMO_KCMD);
- 
- 	spin_unlock_irqrestore(&lchip->lock, flags);
--	kfree(save);
- 
- 	return 0;
- }
-Index: linux-2.6.22-rc6/arch/arm/common/sa1111.c
-===================================================================
---- linux-2.6.22-rc6.orig/arch/arm/common/sa1111.c	2007-06-25 21:07:24.000000000 +0200
-+++ linux-2.6.22-rc6/arch/arm/common/sa1111.c	2007-06-27 21:43:50.000000000 +0200
-@@ -811,6 +811,8 @@ struct sa1111_save_data {
- 
- #ifdef CONFIG_PM
- 
-+static struct sa1111_save_data *sa1111_saved_state;
-+
- static int sa1111_suspend(struct platform_device *dev, pm_message_t state)
- {
- 	struct sa1111 *sachip = platform_get_drvdata(dev);
-@@ -822,7 +824,7 @@ static int sa1111_suspend(struct platfor
- 	save = kmalloc(sizeof(struct sa1111_save_data), GFP_KERNEL);
- 	if (!save)
- 		return -ENOMEM;
--	dev->dev.power.saved_state = save;
-+	sa1111_saved_state = save;
- 
- 	spin_lock_irqsave(&sachip->lock, flags);
- 
-@@ -878,7 +880,7 @@ static int sa1111_resume(struct platform
- 	unsigned long flags, id;
- 	void __iomem *base;
- 
--	save = (struct sa1111_save_data *)dev->dev.power.saved_state;
-+	save = sa1111_saved_state;
- 	if (!save)
- 		return 0;
- 
-@@ -923,7 +925,7 @@ static int sa1111_resume(struct platform
- 
- 	spin_unlock_irqrestore(&sachip->lock, flags);
- 
--	dev->dev.power.saved_state = NULL;
-+	sa1111_saved_state = NULL;
- 	kfree(save);
- 
- 	return 0;
-@@ -958,8 +960,8 @@ static int sa1111_remove(struct platform
- 		platform_set_drvdata(pdev, NULL);
- 
- #ifdef CONFIG_PM
--		kfree(pdev->dev.power.saved_state);
--		pdev->dev.power.saved_state = NULL;
-+		kfree(sa1111_saved_state);
-+		sa1111_saved_state = NULL;
- #endif
- 	}
- 
-Index: linux-2.6.22-rc6/arch/arm/mach-sa1100/neponset.c
-===================================================================
---- linux-2.6.22-rc6.orig/arch/arm/mach-sa1100/neponset.c	2007-06-25 21:07:25.000000000 +0200
-+++ linux-2.6.22-rc6/arch/arm/mach-sa1100/neponset.c	2007-06-27 21:43:50.000000000 +0200
-@@ -185,28 +185,21 @@ static int __devinit neponset_probe(stru
- /*
-  * LDM power management.
-  */
-+static unsigned int neponset_saved_state;
-+
- static int neponset_suspend(struct platform_device *dev, pm_message_t state)
- {
- 	/*
- 	 * Save state.
- 	 */
--	if (!dev->dev.power.saved_state)
--		dev->dev.power.saved_state = kmalloc(sizeof(unsigned int), GFP_KERNEL);
--	if (!dev->dev.power.saved_state)
--		return -ENOMEM;
--
--	*(unsigned int *)dev->dev.power.saved_state = NCR_0;
-+	neponset_saved_state = NCR_0;
- 
- 	return 0;
- }
- 
- static int neponset_resume(struct platform_device *dev)
- {
--	if (dev->dev.power.saved_state) {
--		NCR_0 = *(unsigned int *)dev->dev.power.saved_state;
--		kfree(dev->dev.power.saved_state);
--		dev->dev.power.saved_state = NULL;
--	}
-+	NCR_0 = neponset_saved_state;
- 
- 	return 0;
- }
+> > vdr6 belongs wholly to hw_breakpoint, no other code refers to it
+> > directly.  hw_breakpoint's notifier sets vdr6 with non-DR_TRAPn bits,
+> > if it's a user-mode exception.  If it's a ptrace exception it also
+> > sets the mapped DR_TRAPn bits.  If it's not a ptrace exception and
+> > only DR_TRAPn bits were newly set, then it returns NOTIFY_STOP.  If
+> > it's a spurious exception from lazy db7 setting, hw_breakpoint just
+> > returns NOTIFY_STOP early.
+> 
+> That sounds not quite right.  To a user-space debugger, a system call
+> should appear as an atomic operation.  If multiple ptrace exceptions
+> occur during a system call, all the relevant DR_TRAPn bits should be
+> set in vdr6 together and all the other ones reset.  How can we arrange
+> that?
+
+That would be nice.  But it's more than the old code did.  I don't feel any
+strong need to improve the situation when using ptrace.  The old code
+disabled breakpoints after the first hit, so userland would only see the
+first DR_TRAPn bit.  (Even if it didn't, with the blind copying of the
+hardware %db6 value, we now know it would only see one DR_TRAPn bit still
+set after a second exception.)  With my suggestion above, userland would
+only see the last DR_TRAPn bit.  So it's not worse.
+
+In the ptrace case, we know it's always going to wind up with a signal
+before it finishes and returns to user mode.  So one approach would be in
+e.g. do_notify_resume, do:
+
+	if (thread_info_flags & _TIF_DEBUG)
+		current->thread.hw_breakpoint_info->someflag = 0;
+
+Then ptrace_triggered could set someflag, and know from it still being set
+on entry that it's a second trigger without getting back to user mode yet
+(and so accumulate bits instead reset old ones).
+
+But I just would not bother improving ptrace beyond the status quo for a
+corner case noone has cared about in practice so far.  In sensible
+mechanisms of the future, nothing will examine db6 values directly.
+
+> There's also the question of whether to send the SIGTRAP.  If
+> extraneous bits are set in DR6 (e.g., because the CPU always sets some
+> extra bits) then we will never get NOTIFY_STOP.  Nevertheless, the
+> signal should not always be sent.
+
+Yeah.  The current Intel manual describes all the unspecified DR6 bits as
+explicitly reserved and set to 1 (except 0x1000 reserved and 0).  If new
+meanings are assigned in future chips, presumably those will only be
+enabled by some new explicit cr/msr setting.  Those might be enabled by
+some extra module or something, but there is only so much we can do to
+accomodate.  I think the best plan is that notifiers should do:
+
+	args->err &= ~bits_i_recognize_as_mine;
+	if (!(args->err & known_bits))
+		return NOTIFY_STOP;
+
+known_bits are the ones we use, plus 0x8000 (DR_SWITCH/BS) and 0x2000 (BD).
+(Those two should be impossible without some strange new kernel bug.)
+Probably should write it as ~DR_STATUS_RESERVED, to parallel existing macros.
+
+Then we only possibly interfere with a newfangled debug exception flavor
+that occurs in the same one debug exception for an instruction also
+triggering for hw_breakpoint or step.  In the more likely cases of a new
+flavor of exception happening by itself, or the aforementioned strange new
+kernel bugs, we will get to the bottom of do_debug and do the SIGTRAP.
+
+For this plan, hw_breakpoint_handler also needs not to return NOTIFY_STOP
+as a special case for a ptrace trigger.
+
+> I disagree.  kfree() is documented to return harmlessly when passed a
+> NULL pointer, and lots of places in the kernel have been changed to
+> remove useless tests for NULL before calls to kfree().  This is just
+> another example.
+
+Ok.  I have no special opinions about that.  I just tend to avoid folding
+miscellaneous changes into a patch adding new code.  It would be better
+form to send first the trivial cleanup patch removing that second condition.
+
+
+Thanks,
+Roland
