@@ -1,116 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbXF0AZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbXF0Afy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760391AbXF0AZz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 20:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758329AbXF0AZd
+	id S1755115AbXF0Afy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 20:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXF0Afp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 20:25:33 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45149 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754808AbXF0AZb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 20:25:31 -0400
-Date: Tue, 26 Jun 2007 17:25:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Trilok Soni" <soni.trilok@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-       "Tony Lindgren" <tony@atomide.com>, imre.deak@solidboot.com,
-       juha.yrjola@solidboot.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/17] Add Texas Instruments OMAP LCD driver-v2
-Message-Id: <20070626172512.c6894d07.akpm@linux-foundation.org>
-In-Reply-To: <5d5443650706260530x11b6ce8el542eabbe3800b4d6@mail.gmail.com>
-References: <5d5443650706260530x11b6ce8el542eabbe3800b4d6@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 26 Jun 2007 20:35:45 -0400
+Received: from smtp.ono.com ([62.42.230.12]:35725 "EHLO resmaa01.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752894AbXF0Afo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 20:35:44 -0400
+Date: Wed, 27 Jun 2007 02:35:27 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Problems with fb console [was Re: 2.6.12-rc4-mm2]
+Message-ID: <20070627023527.5e643e32@werewolf-wl>
+In-Reply-To: <20050516021302.13bd285a.akpm@osdl.org>
+References: <20050516021302.13bd285a.akpm@osdl.org>
+X-Mailer: Claws Mail 2.9.2cvs70 (GTK+ 2.11.4; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 18:00:22 +0530
-"Trilok Soni" <soni.trilok@gmail.com> wrote:
+On Mon, 16 May 2005 02:13:02 -0700, Andrew Morton <akpm@osdl.org> wrote:
 
-> This patch series contains Texas Instruments OMAP LCD framebuffer
-> drivers. This driver is divided into
 > 
-> * main omapfb driver, which handles most common functions across
-> processor series, like platform driver registration, ioctl handling,
-> much like fb skeleton.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.12-rc4/2.6.12-rc4-mm2/
 > 
-> This driver then gets through the callback based on the
-> internal/external lcd controller and panel registered to it based on
-> processor and board. Internal/External LCD controller as per lcd panel
-> data registration is being done in separate files and so does patches.
 > 
-> Overall this patches contains framebuffer driver for TI OMAP1
-> (OMAP1510/1610/1710) and OMAP2 (OMAP2420/2430) and external
-> controllers used in Nokia Internal Tablets (N770/N800).
-> 
-> These drivers were very well tested on OMAP GIT [1] tree from long
-> time. Most of the code for this driver is written by Imre Deak
-> <imre.deak@solidboot.com>.
 
-It seems churlish to complain about the 10-15 minutes spent reassembling
-the mime mess when so much effort has gone into this work.  But for the
-long-term, pleeeeeeeeze do have a talk with your email setup so that you no
-longer need to send patches as attachments, OK?
+Hi...
 
-> Also CCed to LKML for wider review, and this v2 went through checkpatch.pl and
-> I have modified the patches to accept most of checkpatch comments.
+I have a (stupid, I suppose) problem with framebuffer console.
+I have builtin VESAFB in this kernel, so:
 
-Maybe you had an old version of checkpatch:
+werewolf:/boot# grep _FB config-2.6.21-jam09 | grep =y
+CONFIG_FB=y
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+CONFIG_FB_DEFERRED_IO=y
+CONFIG_FB_MODE_HELPERS=y
+CONFIG_FB_VESA=y
+werewolf:/boot# grep CONSO config-2.6.21-jam09
+# CONFIG_NETCONSOLE is not set
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
+CONFIG_VGA_CONSOLE=y
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=y
+# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
 
-trailing statements should be on next line
-#520: FILE: drivers/video/omap/omapfb_main.c:402:
-+	else switch (var->bits_per_pixel) {
+I put this line in grub's menu.lst:
 
-line over 80 characters
-#1136: FILE: drivers/video/omap/omapfb_main.c:1018:
-+static enum omapfb_update_mode omapfb_get_update_mode(struct omapfb_device *fbdev)
+kernel /boot/vmlinuz video=vesafb:mtrr,ywrap vga=0x31A ro root=/dev/sdc1
 
-do not use assignment in if condition
-#1251: FILE: drivers/video/omap/omapfb_main.c:1133:
-+		if ((r = omapfb_query_plane(fbi, &p.plane_info)) < 0)
+(tried both with hex and decimal).
 
-do not use assignment in if condition
-#1265: FILE: drivers/video/omap/omapfb_main.c:1147:
-+		if ((r = omapfb_query_mem(fbi, &p.mem_info)) < 0)
+but grub keeps telling me it can't set that video mode, and I have no
+/dev/fb0 device to try with fbset. I have a '29 fb' line in /proc/devices.
 
-do not use assignment in if condition
-#1279: FILE: drivers/video/omap/omapfb_main.c:1161:
-+		if ((r = omapfb_get_color_key(fbdev, &p.color_key)) < 0)
+Any ideas about why the device is missing ? udev is 113...
+I have followed al the info I could get (linux/Documentation/fb/, Google ;) )
+and all say that what I'm doing should work. What am I doing wrong ?
 
-do not use assignment in if condition
-#1535: FILE: drivers/video/omap/omapfb_main.c:1417:
-+	if ((r = device_create_file(fbdev->dev, &dev_attr_caps_num)))
+TIA
 
-do not use assignment in if condition
-#1538: FILE: drivers/video/omap/omapfb_main.c:1420:
-+	if ((r = device_create_file(fbdev->dev, &dev_attr_caps_text)))
-
-do not use assignment in if condition
-#1541: FILE: drivers/video/omap/omapfb_main.c:1423:
-+	if ((r = sysfs_create_group(&fbdev->dev->kobj, &panel_attr_grp)))
-
-do not use assignment in if condition
-#1544: FILE: drivers/video/omap/omapfb_main.c:1426:
-+	if ((r = sysfs_create_group(&fbdev->dev->kobj, &ctrl_attr_grp)))
-
-do not use assignment in if condition
-#1646: FILE: drivers/video/omap/omapfb_main.c:1528:
-+		if ((r = fbinfo_init(fbdev, fbi)) < 0) {
-
-else should follow close brace
-#2001: FILE: drivers/video/omap/omapfb_main.c:1883:
-+		}
-+		else if (!strncmp(this_opt, "vxres:", 6))
-
-Your patch has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-
-Plus there are quite a large number of extern declarations in C files,
-which is poor practice, which checkpatch failed to detect (maintainer has
-been notified).
-
-
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.0 (Cooker) for i586
+Linux 2.6.21-jam09 (gcc 4.1.2 20070302 (4.1.2-1mdv2007.1)) SMP PREEMPT
+09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
