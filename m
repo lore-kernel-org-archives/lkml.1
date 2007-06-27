@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbXF0N3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbXF0Nfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760581AbXF0N3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 09:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbXF0N3J
+	id S1756687AbXF0Nfq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 09:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXF0Nfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 09:29:09 -0400
-Received: from stinky.trash.net ([213.144.137.162]:56977 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758042AbXF0N3I (ORCPT
+	Wed, 27 Jun 2007 09:35:37 -0400
+Received: from v035086.ppp.asahi-net.or.jp ([124.155.35.86]:7430 "HELO
+	daikokuya.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1751330AbXF0Nfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 09:29:08 -0400
-Message-ID: <46826607.4060201@trash.net>
-Date: Wed, 27 Jun 2007 15:28:39 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Wed, 27 Jun 2007 09:35:37 -0400
+Date: Wed, 27 Jun 2007 22:35:46 +0900
+From: Neil Booth <neil@daikokuya.co.uk>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070627133546.GC16758@daikokuya.co.uk>
+References: <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk> <20070627123031.GO21478@ftp.linux.org.uk> <20070627125958.GA16758@daikokuya.co.uk> <20070627131823.GR21478@ftp.linux.org.uk>
 MIME-Version: 1.0
-To: Vasily Averin <vvs@sw.ru>
-CC: netfilter-devel@lists.netfilter.org, rusty@rustcorp.com.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       "David S. Miller" <davem@davemloft.net>, devel@openvz.org
-Subject: Re: [NETFILTER] early_drop() imrovement (v4)
-References: <4615FE1D.80206@sw.ru>	<20070406102433.d3a670a5.dada1@cosmosbay.com>	<4616203A.80203@sw.ru> <4616626C.9020100@trash.net>	<4617845F.7080203@sw.ru> <461789CF.8000106@cosmosbay.com>	<46187770.1070106@sw.ru> <46417137.5080501@sw.ru>	<467FC8D2.5070102@trash.net> <46811292.1010501@sw.ru>	<468223D0.90305@sw.ru> <46822540.2010004@trash.net> <4682523F.6000002@trash.net> <4682582D.7080501@sw.ru> <46825D63.3060500@trash.net> <46825FE0.7060306@sw.ru> <4682638F.40507@trash.net> <46826566.2060304@sw.ru>
-In-Reply-To: <46826566.2060304@sw.ru>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070627131823.GR21478@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vasily Averin wrote:
-> Patrick McHardy wrote:
-> 
->>+	for (i = 0; i < nf_conntrack_htable_size; i++) {
->>+		hlist_for_each_entry(h, n, &nf_conntrack_hash[hash], hnode) {
->>+			tmp = nf_ct_tuplehash_to_ctrack(h);
->>+			if (!test_bit(IPS_ASSURED_BIT, &tmp->status))
->>+				ct = tmp;
-> 
-> 
-> It is incorrect: you should break nested loop here too.
+Al Viro wrote:-
 
+> 
+> Son of a...  expand_comma() cannibalizes the node, should restore ->flags
+> to 0 (same as other similar suckers).
+> 
+> > struct c { unsigned int c1: 1 ? 2: a++; };
+> 
+> Ditto for expand_conditional, but there we should preserve the original
+> ->flags instead - might be non-zero and we ought to do that after
+> expanding the taken branch...
+> 
+> From: Al Viro <viro@zeniv.linux.org.uk>
+> Date: Wed, 27 Jun 2007 09:10:54 -0400
+> Subject: [PATCH] fix the missed cannibalizing simplifications
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-No, as I said, we want the last entry of the chain.
+Now I think I only see one class of issues; the following is valid
+C99 (I believe that's what you intend to follow) but being rejected:
+
+   struct a { int comma: 1 ? 2: (2, 3); };
+
+It's invalid C90.
+
+Neil.
