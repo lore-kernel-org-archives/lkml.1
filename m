@@ -1,94 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763698AbXF0W7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbXF0XF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763698AbXF0W7E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 18:59:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761824AbXF0W6y
+	id S1763642AbXF0XF3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 19:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbXF0XFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 18:58:54 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:45970 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276AbXF0W6x (ORCPT
+	Wed, 27 Jun 2007 19:05:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42113
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751433AbXF0XFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 18:58:53 -0400
-Date: Wed, 27 Jun 2007 15:57:15 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Adrian Bunk <bunk@stusta.de>, LKML Kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, david@lang.hm,
-       linux-arch@vger.kernel.org
-Subject: Re: Userspace compiler support of "long long"
-Message-Id: <20070627155715.60ebc48f.randy.dunlap@oracle.com>
-In-Reply-To: <B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
-	<Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
-	<467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
-	<1182483527.10524.31.camel@shinybook.infradead.org>
-	<20070622150038.GN23017@stusta.de>
-	<E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com>
-	<20070627154046.GN1094@stusta.de>
-	<468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de>
-	<20070627173240.GR1094@stusta.de>
-	<B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 27 Jun 2007 19:05:16 -0400
+Date: Wed, 27 Jun 2007 16:05:35 -0700 (PDT)
+Message-Id: <20070627.160535.71552808.davem@davemloft.net>
+To: crispin@novell.com
+Cc: seanlkml@sympatico.ca, bunk@stusta.de, akpm@linux-foundation.org,
+       jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4682E8E1.6090701@novell.com>
+References: <4682D13C.6060107@novell.com>
+	<20070627172940.1cabd5c4.seanlkml@sympatico.ca>
+	<4682E8E1.6090701@novell.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 18:30:52 -0400 Kyle Moffett wrote:
+From: Crispin Cowan <crispin@novell.com>
+Date: Wed, 27 Jun 2007 15:46:57 -0700
 
-> On Jun 27, 2007, at 13:32:40, Adrian Bunk wrote:
-> > AFAIR the Intel compiler claims to be gcc.
-> >
-> > But these are by far not the only C compilers under Linux, and the  
-> > more important points are:
-> >
-> > Is there any userspace Linux compiler that does not support "long  
-> > long"?
-> 
-> Don't know, but I'd guess not.
-> 
-> 
-> > If yes, is there any other way to tell that something is a 64bit  
-> > int on 32bit architectures?
-> 
-> Not that I know of.  Probably the straight #else conditional is OK.   
-> We should also merge up the types since *EVERY* linux architecture  
-> has these same types:
-> 
-> typedef   signed char      __s8;
-> typedef unsigned char      __u8;
-> typedef   signed short     __s16;
-> typedef unsigned short     __u16;
-> typedef   signed int       __s32;
-> typedef unsigned int       __u32;
-> 
-> Then all 64-bit archs have:
-> typedef   signed long      __s64;
-> typedef unsigned long      __u64;
-> 
-> While all 32-bit archs have:
-> typedef   signed long long __s64;
-> typedef unsigned long long __u64;
-> 
-> The only trick is if you care about building 32-bit compat code using  
-> 64-bit linux kernel headers.  In that case we should probably just  
-> make all archs use "long long" for their 64-bit integers, unless  
-> there's some platform I'm not remembering where "long long" is 128- 
-> bits or bigger.  The other benefit is that people could then just use  
-> the printf format "%llu" for 64-bit integers instead of having to  
-> conditionalize it all over the place.
-> 
-> I'm working on a patch now.
+> But we do not want to prevent other people from using SELinux if it
+> suits them. Linux is about choice, and that is especially vital in
+> security. As Linus himself observed when LSM was started, there are a
+> lot of security models, they have various strengths and weaknesses, and
+> often are not compatible with each other. That is why it is important
+> that LSM persist, that SELinux not be the only in-tree user of LSM, and
+> why we think AppArmor should be included upstream, so that non-SUSE
+> users can also use AppArmor if it suits them.
 
-LDD3 ch. 11 says that long on Sparc64 is 32 bits.
-Same for "ppc" (don't know which power* arch. they mean by that).
+Anyone can apply the apparmour patch to their tree, they get the
+choice that way.  Nobody is currently prevented from using apparmour
+if they want to, any such suggestion is pure rubbish.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+It is even more incredulious to imply that just by having apparmour
+in the upstream kernel all the userland bits will magically appear
+on every user's distribution.
+
+Give me a break.
+
+What you get by the code going into the upstream kernel tree is that
+it a) adds some pseudo legitimacy to AppArmour (which I don't
+personally think is warranted) and b) gets the work of keeping
+apparmour working with upstream largely off of your back and in the
+hands of the upstream community.
+
+Neither of those are reasons why something should go into the tree.
+
+Frankly I think AppArmour is a joke, and all of this integration with
+LSM business is just a face saving effort, nothing more.  And saving
+face is not, and has never been, a reason for something to be put into
+the upstream tree.
+
