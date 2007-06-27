@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761469AbXF0OlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbXF0Oud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761469AbXF0OlB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 10:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbXF0Oky
+	id S1761313AbXF0Oud (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbXF0OuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 10:40:54 -0400
-Received: from hosting.zipcon.net ([209.221.136.3]:54320 "EHLO
-	hosting.zipcon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757694AbXF0Okx convert rfc822-to-8bit (ORCPT
+	Wed, 27 Jun 2007 10:50:24 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:37726 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755779AbXF0OuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 10:40:53 -0400
-X-Greylist: delayed 1548 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 10:40:53 EDT
-From: Bill Waddington <william.waddington@beezmo.com>
-To: linux-kernel@vger.kernel.org
-Cc: Al Boldi <a1426z@gawab.com>
-Subject: Re: Please release a stable kernel Linux 3.0
-Date: Wed, 27 Jun 2007 07:15:00 -0700
-Message-ID: <oor483d2nqn6ae728com1v7v56g0ksotov@4ax.com>
-References: <fa.ZV8hYZHQHqzfx1dgOFeEVFRogSg@ifi.uio.no>
-In-Reply-To: <fa.ZV8hYZHQHqzfx1dgOFeEVFRogSg@ifi.uio.no>
-X-Mailer: Forte Agent 3.3/32.846
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - hosting.zipcon.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - beezmo.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 27 Jun 2007 10:50:23 -0400
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Neil Booth <neil@daikokuya.co.uk>, Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+In-Reply-To: <20070627131823.GR21478@ftp.linux.org.uk>
+References: <20070624183547.GA21478@ftp.linux.org.uk>
+	 <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
+	 <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org>
+	 <20070624203837.GE21478@ftp.linux.org.uk>
+	 <467F531A.3030702@freedesktop.org>
+	 <20070626221040.GI21478@ftp.linux.org.uk>
+	 <20070626221134.GA21350@ftp.linux.org.uk>
+	 <20070627121021.GQ7590@daikokuya.co.uk>
+	 <20070627123031.GO21478@ftp.linux.org.uk>
+	 <20070627125958.GA16758@daikokuya.co.uk>
+	 <20070627131823.GR21478@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Wed, 27 Jun 2007 07:50:18 -0700
+Message-Id: <1182955818.8970.28.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 13:53:32 UTC, in fa.linux.kernel you wrote:
+On Wed, 2007-06-27 at 14:18 +0100, Al Viro wrote:
+> --- a/expand.c
+> +++ b/expand.c
+[...]
+> @@ -488,12 +490,15 @@ static int expand_conditional(struct expression *expr)
+> 
+>  	cond_cost = expand_expression(cond);
+>  	if (cond->type == EXPR_VALUE) {
+> +		unsigned flags = expr->flags;
+>  		if (!cond->value)
+>  			true = false;
+>  		if (!true)
+>  			true = cond;
+> +		cost = expand_expression(*true);
+>  		*expr = *true;
+> -		return expand_expression(expr);
+> +		expr->flags = flags;
+> +		return cost;
 
->Al Viro wrote:
->> On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
->> > And as I understand it, this is (was ?) the whole point of
->> > stable/development kernels. "We" can trust a newer stable
->> > kernel to be a drop-in replacement for an older stable
->> > kernel (from the same series), while development kernels
->> > need time to stabilise with the new whizz-bang-pfouit stuff
->> > that you all so nicely add.
->>
->> "Drop-in" in which sense?  That out-of-tree modules keep working?
->> Not really...
->
->Al, be reasonable.  There are many out-of-tree GPL modules that won't be 
->accepted into mainline, never mind those that shouldn't be accepted.  But 
->these modules do have a right to not be obsoleted by constant API changes.
->
->You are effectively inhibiting the development of an out-of-tree GPL module 
->pool, by constantly pulling the rug under that community.
->
->Do you think this is fair?
->
->
->Thanks!
+This passes an incorrect type to expand_expression; it wants a struct
+expression *, but *true has type struct expression; did you want to pass
+true rather than *true?
 
-No, thank *you*!  Here I thought I was the only one...
+- Josh Triplett
 
-As a low-life out-of-tree maintainer, I would like to plead for at
-least a mitigation of the pain of constantly changing kernel/module
-APIs.  I realize that an interface freeze is out of the question, but
-how about a more formal and regularized way of flagging changes.  The
-nasty mess of version checking works (I guess) but it would sure be
-nice to have change flags that were actually tied to the changes
-themselves.  Consistently.
 
-(And taking my drivers main-line isn't an option.  It would be fine
-with me, but there is *zero* chance that my funky code would be
-welcomed into the tree.)
-
-Thanks,
-Bill (donning asbestos shorts...)
--- 
-William D Waddington
-william.waddington@beezmo.com
-"Even bugs...are unexpected signposts on
-the long road of creativity..." - Ken Burtch
