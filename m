@@ -1,110 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbXF0HQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbXF0HQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756316AbXF0HQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 03:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbXF0HQJ
+	id S1753760AbXF0HQe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 03:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbXF0HQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 03:16:09 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:45017 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751973AbXF0HQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 03:16:07 -0400
-Date: Wed, 27 Jun 2007 09:24:15 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Wessel\, Jason" <jason.wessel@windriver.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       stable@kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
-Message-ID: <20070627072415.GA1899@ff.dom.local>
-References: <20070626160753.f86d8803.akpm@linux-foundation.org> <7ED098B05D69FE41B380586BF1474DBA441F47@ala-mail08.corp.ad.wrs.com> <20070626180000.5974e942.akpm@linux-foundation.org>
+	Wed, 27 Jun 2007 03:16:24 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:50403 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756603AbXF0HQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 03:16:22 -0400
+Date: Wed, 27 Jun 2007 09:20:03 +0200
+From: DervishD <lkml@dervishd.net>
+To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: Problems with fb console [was Re: 2.6.12-rc4-mm2]
+Message-ID: <20070627072003.GC14083@DervishD>
+Mail-Followup-To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>,
+	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+References: <20050516021302.13bd285a.akpm@osdl.org> <20070627023527.5e643e32@werewolf-wl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070626180000.5974e942.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070627023527.5e643e32@werewolf-wl>
+User-Agent: Mutt/1.4.2.3i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 06:00:00PM -0700, Andrew Morton wrote:
-> On Tue, 26 Jun 2007 17:46:13 -0700 "Wessel, Jason" <jason.wessel@windriver.com> wrote:
-...
-> > > Everything went quiet?
-> > > 
-> > > If this patch has been tested and fixes the bug, can you 
-> > > please send a version which is ready for merging?  (ie: add a 
-> > > suitable description of what it does).
-> > > 
-> > > 
-> > 
-> > I mailed Jarek separately.
-> > 
-> > I had tested the patch with netconsole and kgdb and it does in fact fix
-> > the problem that was reported.
+    Hi J.A. :)
+
+ * J.A. Magallón <jamagallon@ono.com> dixit:
+> kernel /boot/vmlinuz video=vesafb:mtrr,ywrap vga=0x31A ro root=/dev/sdc1
 > 
-> OK, thanks.  Please don't mail people separately!
-> 
-> I queued this up with a null changelog for now.
-> 
+> (tried both with hex and decimal).
 
-I pasted here this queued version - only the changelog is added.
+    Try "vga=0x031A". I vaguely remember I had a similar problem and
+IIRC that's how I solved it. Anyway, you can always try vga=ask and try
+to enter the number by hand, just to see which modes work.
 
-Regards,
-Jarek P.
+    Raúl Núñez de Arenas Coronado
 
-------------------------------------------------------
-Subject: netconsole: fix soft lockup (2.6.21) and memory leak when removing module
-From: Jarek Poplawski <jarkao2@o2.pl>
-
-#1
-Until kernel ver. 2.6.21 (including) cancel_rearming_delayed_work()
-required a work function should always (unconditionally) rearm with
-delay > 0 - otherwise it would endlessly loop. This patch replaces
-this function with cancel_delayed_work(). Later kernel versions don't
-require this, so here it's only for uniformity.
-
-#2
-After deleting a timer in cancel_[rearming_]delayed_work() there could
-stay a last skb queued in npinfo->txq causing a memory leak after
-kfree(npinfo).
-
-Initial patch & testing by: Jason Wessel <jason.wessel@windriver.com>
-
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- net/core/netpoll.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff -puN net/core/netpoll.c~netconsole-fix-soft-lockup-when-removing-module net/core/netpoll.c
---- a/net/core/netpoll.c~netconsole-fix-soft-lockup-when-removing-module
-+++ a/net/core/netpoll.c
-@@ -72,7 +72,8 @@ static void queue_process(struct work_st
- 			netif_tx_unlock(dev);
- 			local_irq_restore(flags);
- 
--			schedule_delayed_work(&npinfo->tx_work, HZ/10);
-+			if (atomic_read(&npinfo->refcnt))
-+				schedule_delayed_work(&npinfo->tx_work, HZ/10);
- 			return;
- 		}
- 		netif_tx_unlock(dev);
-@@ -785,9 +786,15 @@ void netpoll_cleanup(struct netpoll *np)
- 			if (atomic_dec_and_test(&npinfo->refcnt)) {
- 				skb_queue_purge(&npinfo->arp_tx);
- 				skb_queue_purge(&npinfo->txq);
--				cancel_rearming_delayed_work(&npinfo->tx_work);
-+				cancel_delayed_work(&npinfo->tx_work);
- 				flush_scheduled_work();
- 
-+				/* clean after last, unfinished work */
-+				if (!skb_queue_empty(&npinfo->txq)) {
-+					struct sk_buff *skb;
-+					skb = __skb_dequeue(&npinfo->txq);
-+					kfree_skb(skb);
-+				}
- 				kfree(npinfo);
- 			}
- 		}
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
