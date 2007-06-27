@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbXF0KJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbXF0KNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756308AbXF0KJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 06:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbXF0KJe
+	id S1756810AbXF0KNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 06:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbXF0KN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 06:09:34 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:53233 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752020AbXF0KJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 06:09:32 -0400
-Date: Wed, 27 Jun 2007 12:17:42 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070627101742.GB1899@ff.dom.local>
-References: <JK8YO7$ED15496EC345D64436196D8FF32F355E@xandmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	Wed, 27 Jun 2007 06:13:28 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:55128 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbXF0KN1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 06:13:27 -0400
+Date: Wed, 27 Jun 2007 12:14:49 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070627101449.GH13886@enneenne.com>
+References: <20070626100628.GO24183@enneenne.com> <1182855427.12109.203.camel@pmac.infradead.org> <20070626170622.GA13886@enneenne.com> <1182879520.3263.19.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <JK8YO7$ED15496EC345D64436196D8FF32F355E@xandmail.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <1182879520.3263.19.camel@shinybook.infradead.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 04:24:07PM +0200, Jean-Baptiste Vignaud wrote:
-> Hello, i have a very similar problem with 2.6.21 also;
+On Tue, Jun 26, 2007 at 06:38:40PM +0100, David Woodhouse wrote:
 > 
-> 2 3com NICs and they are failling randomly.
+> 64-bit kernels can run 32-bit userspace programs. But some structures
+> come out _differently_ between 32-bit and 64-bit compilation, so the
+> system call needs a special 'compat' handler instead of just running the
+> normal 64-bit system call.
 > 
-> The kernel is a basic fedora 7 kernel (2.6.21-1.3228.fc7)
-> I found a bug report and added details here : https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243960
-> 
-> I'm not subcribed on this list, so please cc me if there is any questions.
-> 
-> JB
-> 
-> > On Tue, Jun 26, 2007 at 08:10:17AM +0200, Marcin ¦lusarz wrote:
-> > ...
-> > > I reproduced it on minimal config:
-...
-> > We know your hardware should be OK - since it was fine with 2.6.20.
-...
+> The 'struct timespec' is one structure which is sometimes different for
+> 32-bit vs. 64-bit, so any system call taking a 'struct timespec' must
+> have a separate compat_sys_xxxx() to handle that. See something like
+> compat_sys_clock_settime() in kernel/compat.c for an example (but don't
+> use set_fs() like it does; just see how it handles the compat_timespec).
 
-It looks like there is something common in the air...
+Did you mean something like this?
 
-Marcin: ne2k_pci with 8390, Jean: 3com, and now I see
-similar problem with 8139cp too (plus some ideas):
+diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
+index befe292..3e401e5 100644
+--- a/drivers/pps/pps.c
++++ b/drivers/pps/pps.c
+@@ -26,6 +26,7 @@
+ #include <linux/init.h>
+ #include <linux/linkage.h>
+ #include <linux/sched.h>
++#include <linux/compat.h>
+ #include <linux/pps.h>
+ #include <asm/uaccess.h>
+ 
+@@ -284,9 +285,15 @@ sys_time_pps_getcap_exit:
+        return ret;
+ }
+ 
++#ifdef CONFIG_COMPAT
+ asmlinkage long sys_time_pps_fetch(int source, const int tsformat,
+-                                       struct pps_info __user *info, 
+-                                       const struct timespec __user *timeout)
++                               struct pps_info __user *info, 
++                               const struct compat_timespec __user *timeout)
++#else
++asmlinkage long sys_time_pps_fetch(int source, const int tsformat,
++                               struct pps_info __user *info, 
++                               const struct timespec __user *timeout)
++#endif
+ {
+        unsigned long ticks;
+        struct pps_info pi;
+@@ -318,7 +325,11 @@ asmlinkage long sys_time_pps_fetch(int source, const int ts 
+        /* Manage the timeout */
+        if (timeout) {
++#ifdef CONFIG_COMPAT
++               ret = get_compat_timespec(&to, timeout);
++#else
+                ret = copy_from_user(&to, timeout, sizeof(struct timespec));
++#endif
+                if (ret)
+                        goto sys_time_pps_fetch_exit;
+                if (to.tv_sec != -1) {
 
-http://marc.info/?l=linux-netdev&m=118293314109648&w=2
+Ciao,
 
-So, you probably should wait a little & look for new patches here.
+Rodolfo
 
-Cheers,
-Jarek P.
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
