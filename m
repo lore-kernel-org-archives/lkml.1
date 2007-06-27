@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbXF0Spo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761707AbXF0Svi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbXF0Spo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 14:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbXF0Spg
+	id S1761707AbXF0Svi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 14:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbXF0Sva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 14:45:36 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1035 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753806AbXF0Spg (ORCPT
+	Wed, 27 Jun 2007 14:51:30 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:54327 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752335AbXF0Sv3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 14:45:36 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 27 Jun 2007 11:45:33 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Ulrich Drepper <drepper@gmail.com>, blaisorblade@yahoo.it,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-In-Reply-To: <Pine.LNX.4.64.0706271921280.29060@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0706271135560.32731@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
- <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
- <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
- <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
- <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
- <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
- <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706271111040.32731@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0706271921280.29060@blonde.wat.veritas.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 27 Jun 2007 14:51:29 -0400
+Date: Wed, 27 Jun 2007 13:51:25 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: James Morris <jmorris@namei.org>, Kyle Moffett <mrmacman_g4@mac.com>,
+       Andreas Gruenbacher <agruen@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       linux-security-module@vger.kernel.org, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
+Message-ID: <20070627185125.GA17059@sergelap.austin.ibm.com>
+References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain> <200706252237.59226.agruen@suse.de> <11C35822-4E11-4365-BADE-C1AE41F15B50@mac.com> <20070626134712.GA8615@sergelap.austin.ibm.com> <B189F69D-B63E-4EE3-8580-39C8AFA97E5A@mac.com> <20070627134149.GB2679@sergelap> <Line.LNX.4.64.0706271031220.5258@localhost.localdomain> <20070627172102.GB16764@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070627172102.GB16764@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Hugh Dickins wrote:
-
-> On Wed, 27 Jun 2007, Davide Libenzi wrote:
-> > On Wed, 27 Jun 2007, Hugh Dickins wrote:
+Quoting Serge E. Hallyn (serue@us.ibm.com):
+> Quoting James Morris (jmorris@namei.org):
+> > On Wed, 27 Jun 2007, Serge E. Hallyn wrote:
 > > 
-> > > In honesty, I should add that I dislike and distrust Davide's
-> > > MAP_NOZERO very much indeed!  Would much rather leave my cpus
-> > > spending a little time in clear_page().  A uid in struct page
-> > > (though I'm sure we could find somewhere to tuck it away) -
-> > > the horror, the horror!  But I've so far failed to find a killer
-> > > argument against it, and am hoping for someone else to do so.
+> > > Quoting Kyle Moffett (mrmacman_g4@mac.com):
+> > > > This whole discussion boils down to 2 points:
+> > > 
+> > > Yes it can, but not the two you list.
+> > > 
+> > > >   1) As currently implemented, no LSM may be safely rmmod-ed
+> > > 
+> > > That's not the rationale for the patch, it's just some talking point you
+> > > picked up.  The rationale for the patch is to prevent abuse.
 > > 
-> > Little time? Please, do not trust me. Start oprofile and run a kernel 
-> > build. Look, I'm not even talking about som micro benchmark explicitly 
-> > built to exploit the thing. A kernel build.
-> > You will find clear_page to be the *1st* kernel entry after cc1 and as.
-> > That is bad for two reasons. The time it spends in there, and the cache it 
-> > blows.
+> > This is not correct.  Reducing API abuse is simply a bonus.
+> > 
+> > The rationale for the patch is to remove unneeded infrastructure which 
+> > complicates security by introducing the idea that the security module can 
+> > be removed at all.
+> > 
+> > It was in response to your very own posting about the new capabilities 
+> > code which would need to take this into account.
 > 
-> I don't doubt that it shows real benefits; but dangerously cutting
-> corners usually shows benefits too.  Relying on a uid at this level
-> feels very wrong to me - but as I said, I've not found a killer
-> argument against it.
+> It's (IMO) by far not the optimal "solution"  :)  If it is felt a
+> solution is really needed, re-introduction of a
+> security_ops->module_exit hook and introduction of CAP_SYS_CAPDISABLE
+> would be better.
+> 
+> But I'm well aware there are far too many (separate and not so separate)
+> agendas driving this, and have no expectations of being able to stop it.
+> 
+> James, FWIW, I'm sorry I haven't had a chance to actually test the
+> patch.  I'll try to get around to that today or at least this week.
 
-The reason why I posted is exactly so other ppl can look at it and find 
-possible flaws in the way pages and retired. If an effective UID was able 
-to see (or it generated) the data on that page, it should be able to get 
-that page back uncleared (when VM_NOZERO is set).
->From a performance POV, a 2-3% boost on a non-micro-bench test like a 
-kernel build is not exaclty peanuts. And for more heavy malloc/anon-mmap 
-appliations, the boost goes up to 10-15%. That is not exactly what I 
-call "little time" ;)
+Patch tests fine for me for expected capability behavior with lsm=n,
+lsm=y, lsm=y+capability=y, lsm=y+selinux=y, and lsm=y+caps=y+selinux=y.
 
+So while I'm opposed to the patch, it appears to be safe.
 
-
-- Davide
-
-
+thanks,
+-serge
