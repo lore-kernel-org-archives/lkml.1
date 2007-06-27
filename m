@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762116AbXF0Px3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762192AbXF0Pxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762116AbXF0Px3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761423AbXF0Pvv
+	id S1762192AbXF0Pxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762017AbXF0Pwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:51:51 -0400
-Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:39367 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756024AbXF0Pvu (ORCPT
+	Wed, 27 Jun 2007 11:52:34 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42173 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761162AbXF0Pwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:51:50 -0400
-From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 6/6] iw_cxgb3: Don't abort after failures sending the mpa reply.
-Date: Wed, 27 Jun 2007 10:51:50 -0500
-To: rdreier@cisco.com
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, divy@chelsio.com
-Message-Id: <20070627155150.24944.36124.stgit@dell3.ogc.int>
-In-Reply-To: <20070627155119.24944.44172.stgit@dell3.ogc.int>
-References: <20070627155119.24944.44172.stgit@dell3.ogc.int>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.10
+	Wed, 27 Jun 2007 11:52:31 -0400
+Date: Wed, 27 Jun 2007 17:52:54 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Please release a stable kernel Linux 3.0
+Message-ID: <20070627155254.GO1094@stusta.de>
+References: <200706271653.58870.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200706271653.58870.a1426z@gawab.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 27, 2007 at 04:53:58PM +0300, Al Boldi wrote:
+> Al Viro wrote:
+> > On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
+> > > And as I understand it, this is (was ?) the whole point of
+> > > stable/development kernels. "We" can trust a newer stable
+> > > kernel to be a drop-in replacement for an older stable
+> > > kernel (from the same series), while development kernels
+> > > need time to stabilise with the new whizz-bang-pfouit stuff
+> > > that you all so nicely add.
+> >
+> > "Drop-in" in which sense?  That out-of-tree modules keep working?
+> > Not really...
+> 
+> Al, be reasonable.  There are many out-of-tree GPL modules that won't be 
+> accepted into mainline, never mind those that shouldn't be accepted.  But 
+> these modules do have a right to not be obsoleted by constant API changes.
 
-iw_cxgb3: Don't abort after failures sending the mpa reply.
+"have a right" are strong words.
+Who is granting them this right?
 
-This bug results in an abort request being sent down _after_ the tid
-has been released.  If the tid happens to have been reused, then the
-subsequent generation of the tid gets incorrectly aborted.
+> You are effectively inhibiting the development of an out-of-tree GPL module 
+> pool, by constantly pulling the rug under that community.
+> 
+> Do you think this is fair?
 
-The thread running iwch_accecpt_cr() must not abort a connection if an
-error is returned after being awakened.  If any errors did occur while
-iwch_accept_cr() is blocked, then the connection has already been aborted
-on the thread processing the error.
+Why are these modules not submitted for inclusion into the kernel?
 
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
+> Thanks!
+> Al
 
- drivers/infiniband/hw/cxgb3/iwch_cm.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+cu
+Adrian
 
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-index 228721f..3b41dc0 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-@@ -1781,7 +1781,6 @@ err:
- 	ep->com.cm_id = NULL;
- 	ep->com.qp = NULL;
- 	cm_id->rem_ref(cm_id);
--	abort_connection(ep, NULL, GFP_KERNEL);
- 	put_ep(&ep->com);
- 	return err;
- }
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
