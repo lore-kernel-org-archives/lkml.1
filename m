@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762461AbXF0RRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbXF0RTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762461AbXF0RRg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbXF0RR2
+	id S1762213AbXF0RTk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757520AbXF0RTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:17:28 -0400
-Received: from mondriaan.macroscoop.nl ([82.94.9.2]:2674 "EHLO
-	mondriaan.macroscoop.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758218AbXF0RR1 (ORCPT
+	Wed, 27 Jun 2007 13:19:32 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55145 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751600AbXF0RTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:17:27 -0400
-Message-ID: <46829B8E.3010000@macroscoop.nl>
-Date: Wed, 27 Jun 2007 19:17:02 +0200
-From: Pim Zandbergen <P.Zandbergen@macroscoop.nl>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Jesse Barnes <jesse.barnes@intel.com>
-CC: Mauro Giachero <mauro.giachero@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Andi Kleen <andi@firstfloor.org>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-References: <200706251434.43863.jesse.barnes@intel.com> <200706270922.05801.jesse.barnes@intel.com> <4682982B.8060200@macroscoop.nl> <200706271006.16956.jesse.barnes@intel.com>
-In-Reply-To: <200706271006.16956.jesse.barnes@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 27 Jun 2007 13:19:32 -0400
+Date: Wed, 27 Jun 2007 18:25:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Matt Domsch <Matt_Domsch@dell.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: pci.h stubs
+Message-ID: <20070627182518.50423241@the-village.bc.nu>
+In-Reply-To: <20070627165429.GY22063@parisc-linux.org>
+References: <20070626132622.3226261a.randy.dunlap@oracle.com>
+	<20070627024505.GA30197@humbolt.us.dell.com>
+	<20070627113048.GU22063@parisc-linux.org>
+	<20070627145500.2e66fd49@the-village.bc.nu>
+	<46829345.1000607@zytor.com>
+	<20070627165429.GY22063@parisc-linux.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
+On Wed, 27 Jun 2007 10:54:30 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
 
-> Yeah, that's what I needed.  end_pfn looks ok, but I guess my test is a 
-> little too precise.  It should be if ((highest_addr >> PAGE_SHIFT) < 
-> end_pfn) rather than !=. 
+> On Wed, Jun 27, 2007 at 12:41:41PM -0400, H. Peter Anvin wrote:
+> > Note that EDD has no way of referencing anything but the zero domain 
+> > (which is presumably the one which is addressed by I/O ports CF8/CFC on 
+> > the BSP.)  So in this particular case I would say pci_get_bus_and_slot() 
+> > is fine.
+> 
+> Except that you're not guaranteed to get the bus that's in domain zero.
 
-Right. That made the message disappear. Nice to know my BIOS is really 
-fixed.
-
-Thanks,
-Pim
+Which is trivial to fix
