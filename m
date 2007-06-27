@@ -1,104 +1,483 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbXF0JPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbXF0JPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756617AbXF0JPJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 05:15:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXF0JO5
+	id S1757290AbXF0JPf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 05:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbXF0JPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 05:14:57 -0400
-Received: from mesiob.obspm.fr ([145.238.2.2]:46343 "EHLO mesiob.obspm.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752174AbXF0JO4 convert rfc822-to-8bit (ORCPT
+	Wed, 27 Jun 2007 05:15:24 -0400
+Received: from hqemgate01.nvidia.com ([216.228.112.170]:16336 "EHLO
+	HQEMGATE01.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752174AbXF0JPW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 05:14:56 -0400
-From: =?iso-8859-15?q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Please release a stable kernel Linux 3.0
-Date: Wed, 27 Jun 2007 11:18:36 +0200
-User-Agent: KMail/1.8
-References: <200706212349.54983.zoltan.hubert@zzaero.com> <200706261637.22820.zoltan.hubert@zzaero.com> <6FD45914-1793-45D5-B0A1-F5D32ED38017@e18.physik.tu-muenchen.de>
-In-Reply-To: <6FD45914-1793-45D5-B0A1-F5D32ED38017@e18.physik.tu-muenchen.de>
+	Wed, 27 Jun 2007 05:15:22 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 05:15:21 EDT
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200706271118.36985.zoltan.hubert@zzaero.com>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0.2 (mesiob.obspm.fr [145.238.2.2]); Wed, 27 Jun 2007 11:14:53 +0200 (CEST)
+Subject: RE: [PATCH] ata: Add the SW NCQ support to sata_nv for MCP51/MCP55/MCP61
+Date: Wed, 27 Jun 2007 17:09:29 +0800
+Message-ID: <15F501D1A78BD343BE8F4D8DB854566B059FE157@hkemmail01.nvidia.com>
+In-Reply-To: <20070626222655.0270c7b7.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ata: Add the SW NCQ support to sata_nv for MCP51/MCP55/MCP61
+Thread-Index: Ace4e9JQl6gpELhnRw2hHi5DR55AwQAF/V9g
+References: <53f198c00706262004v27c80134m892dcf89d6c48e00@mail.gmail.com> <20070626222655.0270c7b7.akpm@linux-foundation.org>
+From: "Kuan Luo" <kluo@nvidia.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, <jeff@garzik.org>,
+       "Peer Chen" <pchen@nvidia.com>
+X-OriginalArrivalTime: 27 Jun 2007 09:09:29.0840 (UTC) FILETIME=[DE5C1700:01C7B89A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Roland,
+> +static void nv_swncq_qc_to_dq(struct ata_port *ap, struct
+ata_queued_cmd *qc)
+> +{
+> +	struct nv_swncq_port_priv *pp = ap->private_data;
+> +	defer_queue_t	*dq = &pp->defer_queue;
+> +	
+> +	/* queue is full */
+> +	WARN_ON((dq->rear + 1) % (ATA_MAX_QUEUE + 1) == dq->front);
 
-On Tuesday 26 June 2007 21:03, Roland Kuhn wrote:
-> On 26 Jun 2007, at 16:37, Zoltán HUBERT wrote:
-> > Whatever "stable" means.
+>This is peculiar.  The array is sized ATA_MAX_QUEUE+1 (ie: 33) and the
+code
+>uses ATA_MAX_QUEUE+1 everywhere.
+
+>It looks to me like the ata code was designed to queue up to 32
+elements
+>and all this code has taken that to 33.  What exactly is going on here?
+
+
+The code is designed to contain 32 elements. But the position of rear
+doesn't point to
+a valid element to check whether the queue is full or null. If front ==
+rear , queue is null.
+ if (rear + 1) % (ATA_MAX_QUEUE + 1) == front, queue is full.
+So the value of the array is 32 + 1.
+
+
+> +static void nv_swncq_fill_sg(struct ata_queued_cmd *qc)
+> +{
+> +	struct ata_port *ap = qc->ap;
+> +	struct scatterlist *sg;
+> +	unsigned int idx;
+> +	
+> +	struct nv_swncq_port_priv *pp = ap->private_data;
+> +	
+> +	struct ata_prd *prd;
+> +
+> +	WARN_ON(qc->__sg == NULL);
+> +	WARN_ON(qc->n_elem == 0 && qc->pad_len == 0);
+> +	
+> +	prd = (void*)pp->prd + (ATA_PRD_TBL_SZ * qc->tag);
+
+>Are you sure that should have been ATA_PRD_TBL_SZ and not ATA_PRD_SZ?
+
+>Can this expression be done in a more type-friendly way?
+Yes, i am sure. 
+I allocated prdt memory of 32 commands.
+pp->prd = dmam_alloc_coherent(dev, ATA_PRD_TBL_SZ * ATA_MAX_QUEUE,
+				&pp->prd_dma, GFP_KERNEL);
+
+Maybe below way is more type-friendly.
+prd = pp->prd + ATA_MAX_PRD * qc->tag;
+
+Best Regards,
+Kuan Luo
+
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+Sent: Wednesday, June 27, 2007 1:27 PM
+To: kuan luo
+Cc: linux-kernel@vger.kernel.org; jeff@garzik.org; Peer Chen; Kuan Luo
+Subject: Re: [PATCH] ata: Add the SW NCQ support to sata_nv for
+MCP51/MCP55/MCP61
+
+On Wed, 27 Jun 2007 11:04:44 +0800 "kuan luo" <kuanluo@gmail.com> wrote:
+
+> Add the Software NCQ support to sata_nv.c for MCP51/MCP55/MCP61 SATA
+controller.
+> NCQ function is disable by default, you can enable it with 'swncq=1'
+> 
+
+This patch adds a large amount of new trailing whitespace.
+
+> ---
+> diff -Nurp a/sata_nv.c b/sata_nv.c
+> --- a/sata_nv.c	2007-06-13 10:15:07.000000000 -0400
+> +++ b/sata_nv.c	2007-06-26 12:52:27.000000000 -0400
+
+Please prepare patches in `pathc -p1' form.
+
+> +typedef struct {
+> + 	u32		defer_bits;
+> + 	u8		front;
+> +	u8		rear;
+> +	unsigned int	tag[ATA_MAX_QUEUE + 1];
+> +}defer_queue_t;
+
+Avoid adding typedefs.
+
+> +static int swncq_enabled = 0;
+
+Don't initialise static storage to zero: it needlessly increases the
+vmlinux size.
+
+>  			   nv_hardreset, ata_std_postreset);
+>  }
+> 
+> +static void nv_swncq_qc_to_dq(struct ata_port *ap, struct
+ata_queued_cmd *qc)
+> +{
+> +	struct nv_swncq_port_priv *pp = ap->private_data;
+> +	defer_queue_t	*dq = &pp->defer_queue;
+> +	
+> +	/* queue is full */
+> +	WARN_ON((dq->rear + 1) % (ATA_MAX_QUEUE + 1) == dq->front);
+
+This is peculiar.  The array is sized ATA_MAX_QUEUE+1 (ie: 33) and the
+code
+uses ATA_MAX_QUEUE+1 everywhere.
+
+It looks to me like the ata code was designed to queue up to 32 elements
+and all this code has taken that to 33.  What exactly is going on here?
+
+
+> +
+> +	dq->defer_bits |= (1 << qc->tag);
+> +	
+> +	dq->tag[dq->rear] = qc->tag;
+> +	dq->rear = (dq->rear + 1) % (ATA_MAX_QUEUE + 1);
+> +	
+> +}
+> +
+> +static struct ata_queued_cmd *nv_swncq_qc_from_dq(struct ata_port
+*ap)
+> +{
+> +	struct nv_swncq_port_priv *pp = ap->private_data;
+> +	defer_queue_t	*dq = &pp->defer_queue;
+> +	unsigned int tag;
+> +	
+> +	if (dq->front == dq->rear) /* null queue */
+> +		return NULL;
+> +			
+> +	tag = dq->tag[dq->front];
+> +	dq->tag[dq->front] = ATA_TAG_POISON;
+> +	dq->front = (dq->front + 1) % (ATA_MAX_QUEUE + 1);
+
+etc.
+
+> +	WARN_ON(!(dq->defer_bits & (1 << tag)));
+> +	dq->defer_bits &= ~(1 << tag);
+> +
+> +	return ata_qc_from_tag(ap, tag);
+> +}
+> +
+> +	dq->front = dq->rear = 0;
+> +	dq->defer_bits = 0;
+> +	pp->qc_active = 0;
+> +	pp->last_issue_tag = ATA_TAG_POISON;
+> +	nv_swncq_fis_reinit(ap);
+> +}
+> +
+> +static void nv_swncq_irq_clear(struct ata_port *ap, u32 val)
+> +{
+> +	void __iomem *mmio = ap->host->iomap[NV_MMIO_BAR];
+> +	u32  flags = (val << (ap->port_no * NV_INT_PORT_SHIFT_MCP55));
+
+I hope we'll never need to support more than two ports...
+
+> +	writel(flags, mmio + NV_INT_STATUS_MCP55);
+> +}
+> +
+> +static void nv_swncq_ncq_stop(struct ata_port *ap)
+> +{
+> +	struct nv_swncq_port_priv *pp = ap->private_data;
+> +	unsigned int i;				
+> +	u32 sactive;
+> +	u32 done_mask;
+> +
+> +	ata_port_printk(ap, KERN_ERR,
+> +		"EH in SWNCQ mode,QC:qc_active 0x%X sactive 0x%X\n",
+> +		ap->qc_active, ap->sactive);
+> +	ata_port_printk(ap, KERN_ERR,
+> +		"SWNCQ:qc_active 0x%X defer_bits 0x%X last_issue_tag
+0x%x\n  "
+> +		 "dhfis 0x%X dmafis 0x%X sdbfis 0x%X\n",
+> +		pp->qc_active, pp->defer_queue.defer_bits,
+pp->last_issue_tag,
+> +		pp->dhfis_bits, pp->dmafis_bits,
+> +		pp->sdbfis_bits);
+> +	
+> +	ata_port_printk(ap, KERN_ERR, "ATA_REG 0x%X ERR_REG 0x%X\n",
+> +		ap->ops->check_status(ap),
+ioread8(ap->ioaddr.error_addr));
+> +	
+> +	sactive = readl(pp->sactive_block);
+> +	done_mask = pp->qc_active ^ sactive;
+> +	
+> +	ata_port_printk(ap, KERN_ERR, "tag : dhfis dmafis sdbfis
+sacitve\n");
+> +	for (i=0; i < ATA_MAX_QUEUE; i++) {
+
+Missing spaces around the "=".
+
+We have a script in scripts/checkpatch.pl which will inform you about
+many
+of these little things.  Please familiarise yourself with it.
+
+> +		u8 err = 0;
+> +		if (pp->qc_active & (1 << i))
+> +			err = 0;
+> +		else if (done_mask & (1 << i))
+> +			err = 1;
+> +		else
+> +			continue;
+> +			
+> +		ata_port_printk(ap, KERN_ERR,
+> +		"tag 0x%x: %01x %01x %01x %01x %s\n", i,
+> +		(pp->dhfis_bits >> i) & 0x1,
+> +		(pp->dmafis_bits >> i) & 0x1 , (pp->sdbfis_bits >> i) &
+0x1,
+> +		(sactive >> i) & 0x1,
+> +		(err ? "error!tag doesn't exit, but sactive bit is set"
+: " "));
+> +	}
+> +
+> +	nv_swncq_pp_reinit(ap);
+> +	ap->ops->irq_clear(ap);
+> +	nv_swncq_bmdma_stop(ap);
+> +	nv_swncq_irq_clear(ap, 0xffff);
+> +}
 >
-> What you mean by "stable" pretty much excludes any
-> serious development, without which the Linux kernel would
-> very soon be obsolete. If you want a stable system, then
-> don't change it. 
+> ...
+>
+> +
+> +static void nv_swncq_fill_sg(struct ata_queued_cmd *qc)
+> +{
+> +	struct ata_port *ap = qc->ap;
+> +	struct scatterlist *sg;
+> +	unsigned int idx;
+> +	
+> +	struct nv_swncq_port_priv *pp = ap->private_data;
+> +	
+> +	struct ata_prd *prd;
+> +
+> +	WARN_ON(qc->__sg == NULL);
+> +	WARN_ON(qc->n_elem == 0 && qc->pad_len == 0);
+> +	
+> +	prd = (void*)pp->prd + (ATA_PRD_TBL_SZ * qc->tag);
 
-This is a problem. Do you remember that kernel vulnerability 
-in 2.4 that made the Debian servers be attacked ? And 
-mplayerhq.hu too if I remember right ? So what are we 
-supposed to do with a perfect and optimised system, running 
-smoothly, with an older kernel where some nasty bug is 
-discovered ?
+Are you sure that should have been ATA_PRD_TBL_SZ and not ATA_PRD_SZ?
 
-In MacOS X, you click "System Update" and you're done. 
+Can this expression be done in a more type-friendly way?
 
-In Linux, I expect "download the newest stable kernel, 
-configure, compile, install, reboot". 
+> +	idx = 0;
+> +	ata_for_each_sg(sg, qc) {
+> +		u32 addr, offset;
+> +		u32 sg_len, len;
+> +
+> +		addr = (u32) sg_dma_address(sg);
+> +		sg_len = sg_dma_len(sg);
+> +
+> +		while (sg_len) {
+> +			offset = addr & 0xffff;
+> +			len = sg_len;
+> +			if ((offset + sg_len) > 0x10000)
+> +				len = 0x10000 - offset;
+> +
+> +			prd[idx].addr = cpu_to_le32(addr);
+> +			prd[idx].flags_len = cpu_to_le32(len & 0xffff);
+> +
+> +			idx++;
+> +			sg_len -= len;
+> +			addr += len;
+> +		}
+> +	}
+> +
+> +	if (idx)
+> +		prd[idx - 1].flags_len |= cpu_to_le32(ATA_PRD_EOT);
+> +}
+> +
 
-If I have to rely on the distribution to help me it spoils 
-the whole benefit of open source. I don't trust Novell or 
-RedHat or Google more than Microsoft or Apple. You "kernel 
-developpers" are the keepers of the flame.
+Various fixlets:
 
-> If you update to a kernel which is 2.5 
-> years newer, you simply cannot have stability, because
-> that would mean stagnation, aka "death".
+From: Andrew Morton <akpm@linux-foundation.org>
 
-PostScript is a very old language yet we all still use it 
-every day. HTML is a very old "thing" and we use it 
-every-day, and it's still compatible with newer and older 
-stuff.
+- remove new typedef
 
-I'm a system engineer, and a "stable" system is one where 
-the interfaces are stable. Individual components can 
-change, and do change, but if you change fundamental 
-interfaces it is not the same system. Of course I 
-understand that "sometimes" fundamental things have to 
-change, but here "sometimes" is the keyword. If its 
-"anytime" it simply is no stable system. And yes, designing 
-and maintaining interfaces is a very difficult job.
+- use bss: it's already initialised to zero
 
-I don't remember how it was during 2.4 and before, but I 
-find it very suspicious that SuSE and RedHat only provide 
-2.6.10 and 2.6.9 for their OS. It looks as if THEY didn't 
-trust 2.6.x to be a replacement to 2.6.y
+- cleanups
 
-And as I understand it, this is (was ?) the whole point of 
-stable/development kernels. "We" can trust a newer stable 
-kernel to be a drop-in replacement for an older stable 
-kernel (from the same series), while development kernels 
-need time to stabilise with the new whizz-bang-pfouit stuff 
-that you all so nicely add. 
+Cc: Kuan Luo <kluo@nvidia.com>
+Cc: Peer Chen <pchen@nvidia.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-Are the good ol' days lost in nostalgia ?
+ drivers/ata/sata_nv.c |   30 ++++++++++++++----------------
+ 1 file changed, 14 insertions(+), 16 deletions(-)
 
-bye
-
-Zoltán
-
-
-
-
--- 
+diff -puN
+drivers/ata/sata_nv.c~ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-mc
+p55-mcp61-fix drivers/ata/sata_nv.c
+---
+a/drivers/ata/sata_nv.c~ata-add-the-sw-ncq-support-to-sata_nv-for-mcp51-
+mcp55-mcp61-fix
++++ a/drivers/ata/sata_nv.c
+@@ -255,12 +255,12 @@ struct nv_host_priv {
+ 	unsigned long		type;
+ };
  
-________________________
-
-Zoltan
-________________________
-
+-typedef struct {
++struct defer_queue {
+  	u32		defer_bits;
+  	u8		front;
+ 	u8		rear;
+ 	unsigned int	tag[ATA_MAX_QUEUE + 1];
+-}defer_queue_t;
++};
  
+ struct nv_swncq_port_priv {
+ 	struct ata_prd	*prd;	 /* our SG list */
+@@ -270,7 +270,7 @@ struct nv_swncq_port_priv {
+ 	unsigned int	last_issue_tag;
+  	spinlock_t	lock;
+  	/* fifo loop queue  to store deferral command */
+-	defer_queue_t	defer_queue;
++	struct defer_queue defer_queue;
+ 
+  	/* for NCQ interrupt analysis */
+ 	u32		dhfis_bits;
+@@ -637,7 +637,7 @@ MODULE_DEVICE_TABLE(pci, nv_pci_tbl);
+ MODULE_VERSION(DRV_VERSION);
+ 
+ static int adma_enabled = 1;
+-static int swncq_enabled = 0;
++static int swncq_enabled;
+ 
+ static void nv_adma_register_mode(struct ata_port *ap)
+ {
+@@ -1705,7 +1705,7 @@ static void nv_adma_error_handler(struct
+ static void nv_swncq_qc_to_dq(struct ata_port *ap, struct
+ata_queued_cmd *qc)
+ {
+ 	struct nv_swncq_port_priv *pp = ap->private_data;
+-	defer_queue_t	*dq = &pp->defer_queue;
++	struct defer_queue *dq = &pp->defer_queue;
+ 
+ 	/* queue is full */
+ 	WARN_ON((dq->rear + 1) % (ATA_MAX_QUEUE + 1) == dq->front);
+@@ -1720,7 +1720,7 @@ static void nv_swncq_qc_to_dq(struct ata
+ static struct ata_queued_cmd *nv_swncq_qc_from_dq(struct ata_port *ap)
+ {
+ 	struct nv_swncq_port_priv *pp = ap->private_data;
+-	defer_queue_t	*dq = &pp->defer_queue;
++	struct defer_queue *dq = &pp->defer_queue;
+ 	unsigned int tag;
+ 
+ 	if (dq->front == dq->rear) /* null queue */
+@@ -1760,7 +1760,7 @@ static void nv_swncq_fis_reinit(struct a
+ static void nv_swncq_pp_reinit(struct ata_port *ap)
+ {
+ 	struct nv_swncq_port_priv *pp = ap->private_data;
+-	defer_queue_t		*dq = &pp->defer_queue;
++	struct defer_queue *dq = &pp->defer_queue;
+ 
+ 	dq->front = dq->rear = 0;
+ 	dq->defer_bits = 0;
+@@ -1801,7 +1801,7 @@ static void nv_swncq_ncq_stop(struct ata
+ 	done_mask = pp->qc_active ^ sactive;
+ 
+ 	ata_port_printk(ap, KERN_ERR, "tag : dhfis dmafis sdbfis
+sacitve\n");
+-	for (i=0; i < ATA_MAX_QUEUE; i++) {
++	for (i = 0; i < ATA_MAX_QUEUE; i++) {
+ 		u8 err = 0;
+ 		if (pp->qc_active & (1 << i))
+ 			err = 0;
+@@ -1912,7 +1912,7 @@ static void nv_swncq_host_init(struct at
+ 	writel(~0x0, mmio + NV_INT_STATUS_MCP55);
+ }
+ 
+-static int  nv_swncq_port_start(struct ata_port *ap)
++static int nv_swncq_port_start(struct ata_port *ap)
+ {
+ 	struct device *dev = ap->host->dev;
+ 	void __iomem *mmio = ap->host->iomap[NV_MMIO_BAR];
+@@ -1957,9 +1957,7 @@ static void nv_swncq_fill_sg(struct ata_
+ 	struct ata_port *ap = qc->ap;
+ 	struct scatterlist *sg;
+ 	unsigned int idx;
+-
+ 	struct nv_swncq_port_priv *pp = ap->private_data;
+-
+ 	struct ata_prd *prd;
+ 
+ 	WARN_ON(qc->__sg == NULL);
+@@ -1972,7 +1970,7 @@ static void nv_swncq_fill_sg(struct ata_
+ 		u32 addr, offset;
+ 		u32 sg_len, len;
+ 
+-		addr = (u32) sg_dma_address(sg);
++		addr = (u32)sg_dma_address(sg);
+ 		sg_len = sg_dma_len(sg);
+ 
+ 		while (sg_len) {
+@@ -2051,7 +2049,6 @@ static void nv_swncq_hotplug(struct ata_
+ 	/* analyze @irq_stat */
+ 	if (fis & NV_SWNCQ_IRQ_ADDED)
+ 		ata_ehi_push_desc(ehi, "hot plug");
+-
+ 	else if (fis & NV_SWNCQ_IRQ_REMOVED)
+ 		ata_ehi_push_desc(ehi, "hot unplug");
+ 
+@@ -2122,7 +2119,7 @@ static int nv_swncq_sdbfis(struct ata_po
+ 	}
+ 
+ 	if (pp->qc_active & pp->dhfis_bits)
+-			return nr_done;
++		return nr_done;
+ 
+ 	if (pp->ncq_saw_backout || (pp->qc_active ^pp->dhfis_bits))
+ 		 /* if the controller cann't get a device to host
+register FIS,
+@@ -2181,7 +2178,7 @@ static int nv_swncq_dmafis(struct ata_po
+ 	if (unlikely(!qc))
+ 		return 0;
+ 
+-	rw  =  ((qc->tf.flags) & ATA_TFLAG_WRITE);
++	rw = qc->tf.flags & ATA_TFLAG_WRITE;
+ 
+ 	/* load PRD table addr. */
+ 	iowrite32(pp->prd_dma + ATA_PRD_TBL_SZ * qc->tag,
+@@ -2189,7 +2186,7 @@ static int nv_swncq_dmafis(struct ata_po
+ 
+ 	/* specify data direction, triple-check start bit is clear */
+ 	dmactl = ioread8(ap->ioaddr.bmdma_addr + ATA_DMA_CMD);
+-	dmactl &= ~(ATA_DMA_WR);
++	dmactl &= ~ATA_DMA_WR;
+ 	if (!rw)
+ 		dmactl |= ATA_DMA_WR;
+ 
+@@ -2305,6 +2302,7 @@ static irqreturn_t nv_swncq_interrupt(in
+ 	unsigned int handled = 0;
+ 	unsigned long flags;
+ 	u32 irq_stat;
++
+ 	spin_lock_irqsave(&host->lock, flags);
+ 
+ 	irq_stat = readl(host->iomap[NV_MMIO_BAR] +
+NV_INT_STATUS_MCP55);
+_
+
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
