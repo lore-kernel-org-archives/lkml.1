@@ -1,112 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbXF0GMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760510AbXF0GP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760379AbXF0GMv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 02:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbXF0GMm
+	id S1760510AbXF0GP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 02:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757314AbXF0GPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 02:12:42 -0400
-Received: from web52508.mail.re2.yahoo.com ([206.190.48.191]:29460 "HELO
-	web52508.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754391AbXF0GMl (ORCPT
+	Wed, 27 Jun 2007 02:15:20 -0400
+Received: from ihemail1.lucent.com ([135.245.0.33]:45655 "EHLO
+	ihemail1.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756928AbXF0GPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 02:12:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=PU6DQiilGYrmZ58mnGM9EJrFi+qzo5mWjcDqXYGVLmEbOAiJU9TpU2Q7Sl0oCBF47Mm8FtAUBGgFzqkHwLUaxOetvWRhZ2n8vDGgA7tIyJgI1n5LxTUXPeMrK/3OsOnjWcPMv/lQdShybSbi23whrCEJ+hooTF1GJfI4SxW2Wnw=;
-X-YMail-OSG: XFowtLcVM1kTJ1GdiNR9KTIwWdmC6BcCPXfu2toafaICzdCnSV5fFGP_IteQNG6z8QNUtguDwVzZgh_PoggZv1EQkSRN3xDtYs7YCH2kZEEfM4_bby0lLeEQOrRgmA--
-Date: Tue, 26 Jun 2007 23:12:40 -0700 (PDT)
-From: Marc Perkel <mperkel@yahoo.com>
-Subject: Re: NVidia Driver Support - 1680x1050 mode
-To: Michael Lothian <mike@fireburn.co.uk>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <fc94aae90706262226p417ed77ex97dd20f9bec46e25@mail.gmail.com>
+	Wed, 27 Jun 2007 02:15:18 -0400
+Message-ID: <4682007F.2080504@alcatel-lucent.com>
+Date: Wed, 27 Jun 2007 14:15:27 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <972843.17877.qm@web52508.mail.re2.yahoo.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6 Linux for PowerPC supports kdb?
+References: <4681D39B.2000604@alcatel-lucent.com> <20070626220520.380c1798.randy.dunlap@oracle.com>
+In-Reply-To: <20070626220520.380c1798.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Jun 2007 06:15:08.0570 (UTC) FILETIME=[82F4F7A0:01C7B882]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks - I'll try looking there.
-
-
---- Michael Lothian <mike@fireburn.co.uk> wrote:
-
-> OK where to start?
-> 
-> Firstly this is really the wrong list your writing
-> to. Chances are
-> you'll be wanting to ask your question at
+Randy Dunlap wrote:
+> On Tue, 26 Jun 2007 23:03:55 -0400 Shan, Guo Wen (Gavin) wrote:
 >
-http://www.nvnews.net/vbulletin/forumdisplay.php?s=&forumid=14
-> if your
-> using the Nvidia Blob otherwise if your using the 2D
-> only NV driver
-> then you should really aim your question at the Xorg
-> guys and gals
-> 
-> Secondly how exactly did you tell it differently?
-> 
-> Chances are your /etc/conf.d/xorg.conf is wrong if
-> you were using the
-> latest X server with the latest binary blob (nvidia
-> driver) chances
-> are it would detect the highest resolution and set
-> it for you. The
-> program nvidia-xconfig should fix the file for you.
-> 
-> Oh and thirdly do you really think it just works on
-> windows is a good
-> incentive to get people to help you? Yes it should
-> work out the box
-> but unfortunately the world of Linux 3D drivers is
-> mostly dominated
-> with company's that prefers keeping their drivers in
-> a black box and
-> hopefully in the not too distant future the neuveau
-> project might
-> remedy this.
-> 
-> Any way I hope this e-mail both helps with your
-> problems and adds to
-> your understanding of how things work. The kernel
-> mailing list is for
-> kernel issues (which include rivafb and nvidiafb but
-> not nv and nvidia
-> 3d issues) so if you ever plug in a hard drive and
-> it's not working at
-> full speed or something along those lines that's
-> when you should call.
-> 
-> Cheers
-> 
-> Mike
-> 
-> On 27/06/07, Marc Perkel <mperkel@yahoo.com> wrote:
-> > Trying to get my Asus M2NPV-VM motherboard and my
-> > Samsung SyncMaster 215tw Digital to work in
-> 1680x1050
-> > mode but 1280x1024 is the most I can get. Chip Set
-> is
-> > GeForce 6150.
-> >
-> > Looking in Xorg.0.log it ssems to think that the
-> panel
-> > size is 1280x1024 in spite of my setting telling
-> it
-> > differently.
-> >
-> > Sorry if this is off topic but I thought that the
-> > smart people would be here. In Windows I just plug
-> it
-> > in and it works. So I figure Linux should work
-> too. :)
-> 
-
-
-
-       
-____________________________________________________________________________________
-Pinpoint customers who are looking for what you sell. 
-http://searchmarketing.yahoo.com/
+>   
+>> Does anybody knew if 2.6 linux for PowerPC supports kdb?
+>>     
+>
+> PowerPC isn't listed AFAICT:
+> ftp://oss.sgi.com/www/projects/kdb/download/v4.4/README
+>
+> I.e., all that I see are i386, x86_64, and ia64.
+>
+> ---
+> ~Randy
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>   
+Thanks, Randy. So the kgdb is the only tool I could use to debug the 
+kernel right now?
