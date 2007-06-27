@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbXF0EeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbXF0EsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbXF0EeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 00:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXF0EeK
+	id S1756310AbXF0EsF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 00:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbXF0Erz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 00:34:10 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:45003 "EHLO
-	asav19.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbXF0EeJ (ORCPT
+	Wed, 27 Jun 2007 00:47:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41607 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbXF0Ery (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 00:34:09 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AoQrAM+FgUZKhRO4R2dsb2JhbACBT4Vdh3MBARsNBhEB
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Dave Young <hidave.darkstar@gmail.com>, Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] atkbd: cleanup only once
-Date: Wed, 27 Jun 2007 00:34:09 -0400
-User-Agent: KMail/1.9.3
+	Wed, 27 Jun 2007 00:47:54 -0400
+Subject: Re: scheduling while atomic and DEBUG_SPINLOCK_SLEEP
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jon Ringle <JRingle@vertical.com>
 Cc: linux-kernel@vger.kernel.org
-References: <20070627105907.GA1802@darkstar.te-china.tietoenator.com>
-In-Reply-To: <20070627105907.GA1802@darkstar.te-china.tietoenator.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <4DD3AF7ECBBC43409BA36508938D01851B0E7E@CVAEX1.VERTICAL.COM>
+References: <4DD3AF7ECBBC43409BA36508938D01851B0E7E@CVAEX1.VERTICAL.COM>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Tue, 26 Jun 2007 21:46:49 -0700
+Message-Id: <1182919609.3201.2.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706270034.09802.dtor@insightbb.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
-
-On Wednesday 27 June 2007 06:59, Dave Young wrote:
-> Hi,
+On Tue, 2007-06-26 at 22:55 -0400, Jon Ringle wrote:
+> Hello,
+> Out of these two, the first one that is showing "in_atomic():1" seems
+> more likely to me to be a potential cause of the "scheduling while
+> atomic" dump.
 > 
-> If you press ctrl+alt+del several times as kernel booting (before user level bootin), the kernel will oops. I found the ps2_command is called more than once, then the ps2dev->serio maybe NULL pointer.
-> 
-> 2.6.22-rc5 and 2.6.22-rc6 have same result.
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> ---
-> diff -upr linux/drivers/input/keyboard/atkbd.c linux.new/drivers/input/keyboard/atkbd.c
-> --- linux/drivers/input/keyboard/atkbd.c	2007-06-27 10:38:37.000000000 +0000
-> +++ linux.new/drivers/input/keyboard/atkbd.c	2007-06-27 10:37:39.000000000 +0000
-> @@ -795,6 +795,11 @@ static int atkbd_activate(struct atkbd *
->  
->  static void atkbd_cleanup(struct serio *serio)
->  {
-> +	static int flag;
-> +
-> +	if(flag)
-> +		return;
-> +	flag = 1;
+> Does this logic seem reasonable? Are there other debugging techniques I
+> can use to narrow down the cause for the "scheduling while atomic"?
 
-Unfortunately this will prevent atkbd from resetting keyboard on 2nd
-suspend attempt. It will also not work if you have an active MUX and
-have a couple of keyboards connected.
 
-Greg, now that you removed rwsem from subsystem (and subsystem itself
-for that matter) there is nothing as far as I can see that stops
-several threads from running device_shutdown() simultaneously. I also
-do not see what would isolate device probing and shutting them down
-at the same time. Am I missing something?
+you could start by giving us pointers to the sources of the two
+drivers... without that... how can we look and help?
 
--- 
-Dmitry
