@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbXF0WgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763776AbXF0Wgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759283AbXF0WgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 18:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760254AbXF0WgJ
+	id S1763776AbXF0Wgh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 18:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761070AbXF0Wg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 18:36:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33415 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759341AbXF0WgH (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 18:36:07 -0400
-Date: Thu, 28 Jun 2007 08:35:48 +1000
-From: David Chinner <dgc@sgi.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Nick Piggin <npiggin@suse.de>, David Chinner <dgc@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC] fsblock
-Message-ID: <20070627223548.GS989688@sgi.com>
-References: <20070624014528.GA17609@wotan.suse.de> <20070626030640.GM989688@sgi.com> <46808E1F.1000509@yahoo.com.au> <20070626092309.GF31489@sgi.com> <20070626123449.GM14224@think.oraclecorp.com> <20070627053245.GA6033@wotan.suse.de> <20070627115056.GW14224@think.oraclecorp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070627115056.GW14224@think.oraclecorp.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 27 Jun 2007 18:36:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:58331 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760254AbXF0Wg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 18:36:27 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Linux Kernel include files
+To: Arjan van de Ven <arjan@infradead.org>,
+       Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>, bunk@stusta.de,
+       schilling@fokus.fraunhofer.de, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Thu, 28 Jun 2007 00:35:34 +0200
+References: <8AGnE-33a-15@gated-at.bofh.it> <8AISu-6Qn-31@gated-at.bofh.it> <8AISu-6Qn-29@gated-at.bofh.it> <8AKUp-1wx-41@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1I3g6o-00012P-Hn@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/4cjdkefMPUKw1mdObQwg9UqqGqaFTIlP0Yw3
+ tglHaR1NKbXibjJVnP8r+2IeBD7GImMSsQxNlsG6US/hrzTHZ3
+ l6zYOiM6hJMGwO4upzpbg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 07:50:56AM -0400, Chris Mason wrote:
-> On Wed, Jun 27, 2007 at 07:32:45AM +0200, Nick Piggin wrote:
-> > On Tue, Jun 26, 2007 at 08:34:49AM -0400, Chris Mason wrote:
-> > > On Tue, Jun 26, 2007 at 07:23:09PM +1000, David Chinner wrote:
-> > > > On Tue, Jun 26, 2007 at 01:55:11PM +1000, Nick Piggin wrote:
-> > > 
-> > > [ ... fsblocks vs extent range mapping ]
-> > > 
-> > > > iomaps can double as range locks simply because iomaps are
-> > > > expressions of ranges within the file.  Seeing as you can only
-> > > > access a given range exclusively to modify it, inserting an empty
-> > > > mapping into the tree as a range lock gives an effective method of
-> > > > allowing safe parallel reads, writes and allocation into the file.
-> > > > 
-> > > > The fsblocks and the vm page cache interface cannot be used to
-> > > > facilitate this because a radix tree is the wrong type of tree to
-> > > > store this information in. A sparse, range based tree (e.g. btree)
-> > > > is the right way to do this and it matches very well with
-> > > > a range based API.
-> > > 
-> > > I'm really not against the extent based page cache idea, but I kind of
-> > > assumed it would be too big a change for this kind of generic setup.  At
-> > > any rate, if we'd like to do it, it may be best to ditch the idea of
-> > > "attach mapping information to a page", and switch to "lookup mapping
-> > > information and range locking for a page".
-> > 
-> > Well the get_block equivalent API is extent based one now, and I'll
-> > look at what is required in making map_fsblock a more generic call
-> > that could be used for an extent-based scheme.
-> > 
-> > An extent based thing IMO really isn't appropriate as the main generic
-> > layer here though. If it is really useful and popular, then it could
-> > be turned into generic code and sit along side fsblock or underneath
-> > fsblock...
+Arjan van de Ven <arjan@infradead.org> wrote:
+> On Wed, 2007-06-27 at 18:41 +0200, Joerg Schilling wrote:
+
+>> Well, I did report these kind of problems many years ago and as it has not
+>> been fixed after some years, I was asuming that it is still the way I see it
+>> on Suse 10.0.
 > 
-> Lets look at a typical example of how IO actually gets done today,
-> starting with sys_write():
+> I'd suggest reporting SuSE bugs to SuSE; that's more effective ;)
+> (although I don't know how they will deal with bugreports against older
+> versions)
 > 
-> sys_write(file, buffer, 1MB)
-> for each page:
->     prepare_write()
-> 	allocate contiguous chunks of disk
->         attach buffers
->     copy_from_user()
->     commit_write()
->         dirty buffers
-> 
-> pdflush:
->     writepages()
->         find pages with contiguous chunks of disk
-> 	build and submit large bios
-> 
-> So, we replace prepare_write and commit_write with an extent based api,
-> but we keep the dirty each buffer part.  writepages has to turn that
-> back into extents (bio sized), and the result is completely full of dark
-> dark corner cases.
+> your bug looks certainly valid.. just you're not using the "proper"
+> header set that the kernel developers suggest ;)
 
-Yup - I've been on the painful end of those dark corner cases several
-times in the last few months.
+Even though you put the smiley there, it does not seem fair to expect people
+to know the latest bits of kernel developement and deployment procedures
+unless hanging around on lkml is a requirement for linux users. I'm just
+browsing that list, filtering and ignoring a lot. If I didn't do that, I
+would not even suspect something like make headers_install to exist, nor
+would I try to search for it.
 
-It's also worth pointing out that mpage_readpages() already works on
-an extent basis - it overloads bufferheads to provide a "map_bh" that
-can point to a range of blocks in the same state. The code then iterates
-the map_bh range a page at a time building bios (i.e. not even using
-buffer heads) from that map......
-
-> I do think fsblocks is a nice cleanup on its own, but Dave has a good
-> point that it makes sense to look for ways generalize things even more.
-
-*nod*
-
-Cheers,
-
-Dave.
+@Jörg: The responsibility to maintain clean headers shifted only recently,
+and there is possibly still a lot to do. If you can point out errors, they
+can and probably will be fixed. But as you know, having a precise error
+message or description does help.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+W.I.N.D.O.W.S.:
+ Wireless Intelligent Neohuman Designed for Observation and Worldwide Sabotage
+        -- http://www.brunching.com/toys/toy-cyborger.html (down)
+Friß, Spammer: IQ@7eggert.dyndns.org kgrQit6@p.7eggert.dyndns.org
