@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbXF0HQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbXF0HbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753760AbXF0HQe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 03:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbXF0HQY
+	id S1758375AbXF0HbJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 03:31:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbXF0Ha4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 03:16:24 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:50403 "EHLO smtp01.cdmon.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756603AbXF0HQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 03:16:22 -0400
-Date: Wed, 27 Jun 2007 09:20:03 +0200
-From: DervishD <lkml@dervishd.net>
-To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: Problems with fb console [was Re: 2.6.12-rc4-mm2]
-Message-ID: <20070627072003.GC14083@DervishD>
-Mail-Followup-To: =?iso-8859-1?Q?J=2EA=2E_Magall=F3n?= <jamagallon@ono.com>,
-	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-References: <20050516021302.13bd285a.akpm@osdl.org> <20070627023527.5e643e32@werewolf-wl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 27 Jun 2007 03:30:56 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:31644 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbXF0Haz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 03:30:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ttv6QelKDQO1xQ0bLNmNYx5gHKAidTo7mGvPRgcTtL7/USLU55+FNasfkqLkiYx2bn5y/86WHK8NvAsWGnnnFC48NMXLby+U+AqQG+FWmSlrGmHZduPBHvXXwaoUwn2W6phAD8PuwEG63INTZikUECjrIfoABWYVmJB5vz7kqZc=
+Message-ID: <20f65d530706270030y5650e302yc5136adc0ac8dd46@mail.gmail.com>
+Date: Wed, 27 Jun 2007 19:30:53 +1200
+From: "Keith Chew" <keith.chew@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: [linux-usb-devel] usb_fill_bulk_urb() broken for USB1.1?
+Cc: linux-usb-devel@lists.sourceforge.net, "Chuck Ebbert" <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200706270827.50698.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070627023527.5e643e32@werewolf-wl>
-User-Agent: Mutt/1.4.2.3i
-Organization: DervishD
+References: <20f65d530706260720w797861fuc4e10bbbe2a489d2@mail.gmail.com>
+	 <46815269.8060507@redhat.com> <200706270827.50698.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi J.A. :)
+Hi Oliver
 
- * J.A. Magallón <jamagallon@ono.com> dixit:
-> kernel /boot/vmlinuz video=vesafb:mtrr,ywrap vga=0x31A ro root=/dev/sdc1
-> 
-> (tried both with hex and decimal).
+>
+> What do you use as arguments for usb_fill_bulk_urb() ? One of the sanity tests
+> in usb_submit_urb() is triggered.
+>
 
-    Try "vga=0x031A". I vaguely remember I had a similar problem and
-IIRC that's how I solved it. Anyway, you can always try vga=ask and try
-to enter the number by hand, just to see which modes work.
+Usage:
 
-    Raúl Núñez de Arenas Coronado
+	usb_fill_bulk_urb(macp->intr_urb, macp->usb,
+		usb_rcvbulkpipe(macp->usb, EP_INT_IN),
+		macp->IntEPBuffer, MAX_EPINT_BUFFER,
+		zd1211_intr_cb, macp);
 
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+where
+
+#define EP_INT_IN			0x03
+#define MAX_EPINT_BUFFER	64
+
+Here are the relevant structure definitions:
+
+	struct usb_device	*usb;
+	struct urb		*intr_urb;
+	u8			*IntEPBuffer;
+
+I can post the full structure if required.
+
+Regards
+Keith
