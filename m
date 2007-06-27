@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761965AbXF0RcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762676AbXF0RdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761965AbXF0RcZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbXF0RcS
+	id S1762676AbXF0RdZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758427AbXF0RdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:32:18 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42343 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752279AbXF0RcR (ORCPT
+	Wed, 27 Jun 2007 13:33:18 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:39060 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757872AbXF0RdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:32:17 -0400
-Date: Wed, 27 Jun 2007 19:32:40 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
-Cc: mrmacman_g4@mac.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       david@lang.hm
-Subject: Userspace compiler support of "long long"
-Message-ID: <20070627173240.GR1094@stusta.de>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de> <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm> <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de> <1182483527.10524.31.camel@shinybook.infradead.org> <20070622150038.GN23017@stusta.de> <E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com> <20070627154046.GN1094@stusta.de> <468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de>
+	Wed, 27 Jun 2007 13:33:18 -0400
+Message-ID: <46829E82.6080804@gmail.com>
+Date: Wed, 27 Jun 2007 19:29:38 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Andreas Hartmetz <ahartmetz@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+References: <200706271825.17459.ahartmetz@gmail.com>
+In-Reply-To: <200706271825.17459.ahartmetz@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 05:52:08PM +0200, Joerg Schilling wrote:
-> Adrian Bunk <bunk@stusta.de> wrote:
-> 
-> > That's a good point I missed.
-> >
-> > What about:
-> >
-> > #if defined(__GNUC__) && __STDC_VERSION__ < 19901L
-> > __extension__ typedef   signed long long __s64;
-> > __extension__ typedef unsigned long long __u64;
-> > #else
-> > typedef   signed long long __s64;
-> > typedef unsigned long long __u64;
-> > #endif
-> 
-> What about using:
-> 
-> #if (defined(__GNUC__) || defined(__SUNPRO_C)) && !defined(__STRICT_ANSI__) 
+On 06/27/2007 06:25 PM, Andreas Hartmetz wrote:
 
-AFAIR __extension__ was gcc specific.
+> I don't like random applications blocking my sound card.
 
-Does the Sun cc provide options for strict C90 checking?
-And if yes, what is it's syntax for disabling this checking for a line 
-of code?
+So don't use random applications.
 
-> Well, there seems to be one other compiler (the one from Intel).
-> It may be that if this compiler does not claim to be GCC, another
-> definituion needs to be added.
+> You are concerned about your precious audio quality? Me too. Most people, 
+> however, are using god-awful plastic speakers for twenty euros and shitty 
+> onboard sound chips. Sad but true.
 
-AFAIR the Intel compiler claims to be gcc.
+Exactly, which is why mixing has been default for some time now for most 
+cards. Are you only ranting about how it should've been earlier?
 
-But these are by far not the only C compilers under Linux, and the more 
-important points are:
+> ALSA appeared in 1999, KDE 2 with aRtsd (another catastrophic failure of 
+> technology) was released in october 2000.
 
-Is there any userspace Linux compiler that does not support "long long"?
-If yes, is there any other way to tell that something is a
-64bit int on 32bit architectures?
+http://www.arts-project.org/gen/newsarchive/news_1998.html
 
-> Jörg
+>>  That sounds like a minor glitch that should be easily remedied if you
+>>  file a proper bug report. Have you tried?
+>>
+> No, I kinda gave up on ALSA after reading its API (rather "functions 
+> that happen to be exported") documentation and kinda hoped it would go away 
+> ASAP.
 
-cu
-Adrian
+You give up reporting small hardware problems that bother you because the 
+application developer documentation for something is not in great shape? 
+What an odd thing to do. And what a shame that this thread apparently was 
+unable to outlive it's originator troll and turn useful...
 
--- 
+[ ... ]
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> hacking (i.e. more features faster). Latency is an issue? - Well you can't 
+> play sound without userspace creating it so you're not adding any new 
+> problems.
+
+Capture.
+
+Rene.
 
