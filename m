@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758948AbXF0LoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbXF0Lwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758948AbXF0LoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 07:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbXF0LoK
+	id S1758588AbXF0Lwv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 07:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbXF0Lwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 07:44:10 -0400
-Received: from lucidpixels.com ([75.144.35.66]:55514 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751029AbXF0LoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 07:44:10 -0400
-Date: Wed, 27 Jun 2007 07:44:08 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Pim Zandbergen <P.Zandbergen@macroscoop.nl>
-cc: Andi Kleen <andi@firstfloor.org>, Jesse Barnes <jesse.barnes@intel.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-In-Reply-To: <46824CA5.2020908@macroscoop.nl>
-Message-ID: <Pine.LNX.4.64.0706270743560.25629@p34.internal.lan>
-References: <200706251434.43863.jesse.barnes@intel.com> <46823F71.6060200@macroscoop.nl>
- <20070627112216.GA31708@one.firstfloor.org> <46824CA5.2020908@macroscoop.nl>
+	Wed, 27 Jun 2007 07:52:41 -0400
+Received: from v035086.ppp.asahi-net.or.jp ([124.155.35.86]:7568 "HELO
+	daikokuya.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1751029AbXF0Lwk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 07:52:40 -0400
+Date: Wed, 27 Jun 2007 20:52:45 +0900
+From: Neil Booth <neil@daikokuya.co.uk>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070627115245.GP7590@daikokuya.co.uk>
+References: <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070626233226.GO7590@daikokuya.co.uk> <20070627001803.GJ21478@ftp.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070627001803.GJ21478@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Al Viro wrote:-
 
+> 
+> sparse simply doesn't check that.  We don't have anything resembling
+> support of VLA.  Note that check for integer constant expression
+> has nothing to do with that;
+> 
+> 	int x[(int)(0.6 + 0.6)];
+> 
+> is valid (if stupid).
 
-On Wed, 27 Jun 2007, Pim Zandbergen wrote:
+It isn't valid; it fails the test twice.  Both 0.6 are not "immediate
+operands of casts".  Their sum is, but that's irrelevant.
+Therefore the dimension is not an ICE and a diagnostic is required.
 
-> Andi Kleen wrote:
->
->> That's impossible. Either it limited your RAM or it didn't change anything.
->
-> OK, maybe it's cosmetic, but I would not expect a negative number
->
-> With old BIOS it printed
-> **** MTRRs don't cover all of memory, trimmed 196608 pages
->
-> with new BIOS it prints
-> **** MTRRs don't cover all of memory, trimmed -65536 pages
->
-> Pim
->
-
-It works ok for me:
-
-[    0.000000] **** MTRRs don't cover all of memory, trimmed 16384 pages
-
-This is using his latest patch with 2.6.22-rc6.
-
-Justin.
+Neil.
