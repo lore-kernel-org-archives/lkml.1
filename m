@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762422AbXF0Rva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbXF0RzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762422AbXF0Rva (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758112AbXF0RvY
+	id S1762186AbXF0RzT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbXF0RzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:51:24 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:50558 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756636AbXF0RvX (ORCPT
+	Wed, 27 Jun 2007 13:55:07 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:59368
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755516AbXF0RzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:51:23 -0400
-Subject: Re: [PATCH] Documentation/firmware_class/firmware_sample_driver.c
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Anders Blomdell <anders.blomdell@control.lth.se>
-Cc: linux-kernel@vger.kernel.org, Manuel Estrada Sainz <ranty@debian.org>
-In-Reply-To: <46827B20.6000501@control.lth.se>
-References: <46827B20.6000501@control.lth.se>
-Content-Type: text/plain
-Date: Wed, 27 Jun 2007 19:49:29 +0200
-Message-Id: <1182966569.9499.1.camel@aeonflux.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 27 Jun 2007 13:55:06 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH RFC #2] hwrng: Add type categories
+Date: Wed, 27 Jun 2007 19:54:16 +0200
+User-Agent: KMail/1.9.6
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <200706262021.51410.mb@bu3sch.de> <200706271505.33970.mb@bu3sch.de> <20070627170331.GB6508@khazad-dum.debian.net>
+In-Reply-To: <20070627170331.GB6508@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706271954.16963.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Anders,
+On Wednesday 27 June 2007 19:03:31 Henrique de Moraes Holschuh wrote:
+> On Wed, 27 Jun 2007, Michael Buesch wrote:
+> > Well, we have that userspace ABI of one hwrng char device. I did not
+> 
+> Yeah.  Talk about shortsighted ABIs that deserve to die an horrible death.
+> The same goes for the watchdog ABI.
+> 
+> > And changing it in a compatible way is probably difficult.
+> 
+> Well, sort of.  Some sort of compromise will have to be taken.
+> 
+> IMHO, anything worth bothering with in userspace will react well to a
+> symlink in /dev/hw_random, which is userspace's problem to set.  Anyone else
+> is expected to fix his /dev or whatever when they upgrade kernels, and we
+> can always provide the old hw_random char device returning EFAULT or
+> somesuch, so that it becomes very obvious that something is in need of
+> attention (and it FAILS instead of just disappearing).
+> 
+> > And then we would _still_ export some kind of hint for rngd that
+> > the CPU rng device should be preferred over the bcm43xx device.
+> 
+> Yes, export all the characterisitics of the RNG, and let userspace decide
+> what to do.
+> 
+> > How would you implement that? (We're back to my TYPE_XXX definitions ;) )
+> 
+> I'd implement it as an IOCTL with gives back:
+> 
+> 1. Hardware device name
+> 2. Hardware device revision
+> 3. expected worst-case minimum entropy per bit of output
+> 4. current config expected minimum entropy per bit of output
+> 5. average bit rate (worst config)
+> 6. average bit rate (current config)
+> 
+> There are probably others, but they don't come to mind at the moment.  We
+> could add something for type of device (oscilators, radioactive decay,
+> whatever), I suppose.
+> 
+> Use some magic value (0x00 ?) for unknown.  I won't bother with the scales,
+> if someone is going to write this, we can decide that later.  Just remember
+> that there are 10 Mbit/s RNGs out there, and 100 bit/s RNGs out there, and
+> that entropy goes from 0/unknown to 1 and needs at least a precison of
+> 10^-3.
+> 
+> You also need a way to lock the RNG configuration, and you need to detect if
+> you ever read a byte from it that was produced by a different
+> configuration, which probably means a few more IOCTLs.
 
-> Signed-off-by: Anders Blomdell <anders.blomdell@control.lth.se>
-> 
-> Minor modifications to make the example load and unload without Oops
-> 
-> This is what unpatched version generates with 2.6.21.3
-> 
-> kernel: Oops: 0000 [#2]
-> ...
-> kernel: Call Trace:
-> kernel:  [<c04ae541>] sysfs_create_dir+0x49/0x63
-> kernel:  [<c04e76ae>] kobject_shadow_add+0xd5/0x17d
-> kernel:  [<c04e7908>] kobject_set_name+0x2b/0x92
-> kernel:  [<c0556444>] device_add+0x9a/0x58e
-> kernel:  [<c0620b65>] klist_init+0x23/0x2e
-> kernel:  [<c055bfee>] _request_firmware+0x116/0x29f
-> kernel:  [<c062149f>] wait_for_completion+0x8b/0x93
-> kernel:  [<c055c20b>] request_firmware+0xf/0x11
-> kernel:  [<e09420d9>] sample_init+0x59/0xc0 [firmware_sample_driver]
-> kernel:  [<c0446c92>] sys_init_module+0x16b7/0x17ee
-> kernel:  [<c04294de>] printk+0x0/0x1f
-> kernel:  [<c0488436>] mntput_no_expire+0x11/0x6e
-> kernel:  [<c0404fa8>] syscall_call+0x7/0xb
-> 
-> 
-> 
-> diff -u Documentation/firmware_class/firmware_sample_driver.c
-> /tmp/fw/firmware_sample_driver.c
-> --- Documentation/firmware_class/firmware_sample_driver.c       2007-05-24
-> 23:22:47.000000000 +0200
-> +++ /tmp/fw/firmware_sample_driver.c    2007-06-27 16:51:16.000000000 +0200
-> @@ -15,11 +15,16 @@
-> 
->  #include "linux/firmware.h"
-> 
-> +static void ghost_release(struct device *dev)
-> +{
-> +       printk(KERN_DEBUG "firmware_sample_driver: ghost_release\n");
-> +}
-> +
+Ok, all very good ideas. Patches are welcome ;)
 
-I know it is a sample driver, but you can't do that. You have to
-allocate the device and then free it here.
+> I don't much like sysfs over IOCTLs for this, as you will probably need to
+> be able to set and get things in an atomic way.  A sysfs binary attribute
+> would also work.  A sysfs one-value-per-attribute bunch of them is
+> completely useless from a security point of view.
 
-Regards
-
-Marcel
+hm? Why?
 
 
+-- 
+Greetings Michael.
