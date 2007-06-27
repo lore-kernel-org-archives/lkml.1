@@ -1,109 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbXF0QfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761653AbXF0Qfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760098AbXF0QfL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbXF0Qe6
+	id S1761653AbXF0Qfm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbXF0Qfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:34:58 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:57182 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754462AbXF0Qe5 (ORCPT
+	Wed, 27 Jun 2007 12:35:33 -0400
+Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:57155 "EHLO
+	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756216AbXF0Qfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:34:57 -0400
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Neil Booth <neil@daikokuya.co.uk>, Al Viro <viro@ftp.linux.org.uk>,
-       Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-In-Reply-To: <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org>
-References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk>
-	 <20070624174732.GZ21478@ftp.linux.org.uk>
-	 <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org>
-	 <20070624183547.GA21478@ftp.linux.org.uk>
-	 <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
-	 <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org>
-	 <20070624203837.GE21478@ftp.linux.org.uk>
-	 <467F531A.3030702@freedesktop.org>
-	 <20070626221040.GI21478@ftp.linux.org.uk>
-	 <20070626221134.GA21350@ftp.linux.org.uk>
-	 <20070627121021.GQ7590@daikokuya.co.uk>
-	 <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 27 Jun 2007 09:34:55 -0700
-Message-Id: <1182962095.8970.87.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 12:35:32 -0400
+Date: Wed, 27 Jun 2007 18:35:29 +0200
+From: Uwe Kleine-Koenig <ukleinek@informatik.uni-freiburg.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Dynamic ticks make system jerking
+Message-ID: <20070627163529.GA12978@informatik.uni-freiburg.de>
+Mail-Followup-To: Uwe Kleine-Koenig <ukleinek@informatik.uni-freiburg.de>,
+	Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>
+References: <20070626150015.GA20233@informatik.uni-freiburg.de> <1182872749.11854.27.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182872749.11854.27.camel@chaos>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+Organization: Universitaet Freiburg, Institut f. Informatik
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-27 at 09:19 -0700, Linus Torvalds wrote:
-> 
-> On Wed, 27 Jun 2007, Neil Booth wrote:
+Hello,
+
+Thomas Gleixner wrote:
+> On Tue, 2007-06-26 at 17:00 +0200, Uwe Kleine-K??nig wrote:
+> > If I enable NO_HZ, the system jerks (I hope this is an understandable
+> > term ...).   E.g. 
 > > 
-> > Here are three independently invalid non-ICEs that sparse doesn't
-> > diagnose.
+> > 	# time find /sys
+> > 	...
+> > 	real    1m 19.52s
+> > 	user    0m 0.18s
+> > 	sys     0m 0.15s
 > > 
-> > extern int f(void);
-> > enum { cast_to_ptr = (int) (void *) 0 };
-> > enum { cast_to_float = (int) (double) 1 };
+> > on a freshly booted machine.  The output comes in several hunks with
+> > pausing between them.  With no_hz=off, I get approx. the same.
 > 
-> Those two *really* shouldn't fail. I don't care if the C standard says so, 
-> that is *fine*.
-[...]
-> And I think standards can go screw themselves, and you can make it an 
-> error with some "--standard-pedantic" switch or similar.
+> it's nohz=off not no_hz=off
+Currently I'm not sure, which I was really using.  I think it was the
+right one, because dmesg changed.  But anyhow, I will retest if I made
+it wrong.
+ 
+> > First I wondered why set_next_event is called twice between two timer
+> > interrupts most of the time.  I found out that the timer is programed
+> > for the next tick in any case and if nothing needs the next tick, the
+> > interval is enlarged.  I didn't spend time yet to check if it is
+> > easier/faster to only program the timer once.
+> 
+> We optimize for the non-idle path, i.e. we keep the timer running as
+> long as we are not idle. Once we go idle we reprogram it.
+OK, sounds sane.
+ 
+> I looked at the patch and as far as I can understand it, there is
+> nothing obviously wrong about it.
+What a pity.
 
-Agreed.  Issuing a warning on these kinds of constructs does not seem
-useful, but if people really want it, it should go in some warning
-option that does not get turned on by default, and probably should not
-get turned on by -Wall either.
+> One remark: why did you expand the clocksource to be 64 bit? The generic
+> code handles the 32 bit wrap already, so the expansion in your read
+> routine is adding overhead. The counter will wrap every 24 seconds, so
+> there is nothing to worry about.
+OK, I thought it to be better to have 64bit + some overhead.  I will
+change that.
+ 
+> The behavior you are describing is might be related to some problem with
+> the clocksource readout, as the reprogramming values are calculated from
+> there. 
+Any hints how I can debug that?
 
-> > enum { fncall = 0 ? f(): 3 };
-> 
-> Again, I think that's a deficiency of a standard that tries to be 
-> acceptable to everybody rather than about a "really good language".
-> 
-> So I personally think we should allow it too if at all possible, and 
-> again, use some "--standard-pedantic" to flag it as an error.
-> 
-> Why? Because things like that may not look sensible when written out, but 
-> they are often _very_ sensible when they are the result of a macro that 
-> does some error checking or other thing. 
-> 
-> The classic example of this is "__builtin_constant_p()". It is a *great* 
-> way to make a macro that does different things depending on whether 
-> something is a compile-time constant or not, and no, it's not standard, 
-> but dang, it's so useful that a standard that doesn't allow sane use of it 
-> is basically bogus.
-> 
-> So look at the "ntohl()" kind of thing, and realize that it's just "Good 
-> Practice(tm)" to be able to make a ntohl() macro that can be used for 
-> initializers, including very much enum initializers. Ie
-> 
-> 	enum { defaultport = htons(9418) };
-> 
-> is actually nice code for something like the kernel, but it turns out that 
-> in order to make this work, you have to do it as
-> 
-> 	#define htons(x) (__builtin_constant_p(x) ? constant_htons(x) : __htons(x))
-> 
-> and that in turn generates *exactly* the kind of thing you talk of above.
-> 
-> And when you give _your_ example, it looks insane. When I give _my_ 
-> example, it generates exactly the same thing, but suddenly it has a great 
-> reason for doing so, and it's no longer insane.
+Currently I cannot retest, but I will dig into it again and rereport.
 
-Also agreed.  Same goes for other short-circuiting operations like &&,
-||, and ?: without the center argument; if you can determine at
-compilation time that it does not need to evaluate part of the
-expression at all, go ahead and ignore that part of the expression even
-if it does not constitute an integer constant expression.  If you want
-to optionally check for this case and issue a diagnostic, put it under
--Wstrict-constant-expressions or similar.
+Thanks for your answer.
 
-- Josh Triplett
+Best regards
+Uwe
 
+-- 
+Uwe Kleine-Koenig
 
+http://www.google.com/search?q=speed+of+light%3D
