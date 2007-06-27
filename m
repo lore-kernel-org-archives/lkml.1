@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761841AbXF0Pwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbXF0Pw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761841AbXF0Pwo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761126AbXF0Pvl
+	id S1762139AbXF0Pw7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbXF0Pvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:51:41 -0400
-Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:39358 "EHLO
+	Wed, 27 Jun 2007 11:51:46 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:39362 "EHLO
 	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756687AbXF0Pvk (ORCPT
+	by vger.kernel.org with ESMTP id S1761237AbXF0Pvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:51:40 -0400
+	Wed, 27 Jun 2007 11:51:44 -0400
 From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 4/6] iw_cxgb3: ctrl-qp init/clear shouldn't set the gen bit.
-Date: Wed, 27 Jun 2007 10:51:40 -0500
+Subject: [PATCH 5/6] iw_cxgb3: Don't post TID_RELEASE message.
+Date: Wed, 27 Jun 2007 10:51:45 -0500
 To: rdreier@cisco.com
 Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org, divy@chelsio.com
-Message-Id: <20070627155140.24944.61647.stgit@dell3.ogc.int>
+Message-Id: <20070627155145.24944.64064.stgit@dell3.ogc.int>
 In-Reply-To: <20070627155119.24944.44172.stgit@dell3.ogc.int>
 References: <20070627155119.24944.44172.stgit@dell3.ogc.int>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -26,33 +26,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-iw_cxgb3: ctrl-qp init/clear shouldn't set the gen bit.
+iw_cxgb3: Don't post TID_RELEASE message.
+
+The LLD does this for us in cxgb3_remove_tid().
+
+Also fixed active open failure cases where we shouldn't
+be releasing the TID as well.
 
 Signed-off-by: Steve Wise <swise@opengridcomputing.com>
 ---
 
- drivers/infiniband/hw/cxgb3/cxio_hal.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/infiniband/hw/cxgb3/iwch_cm.c |   13 ++++++++++---
+ 1 files changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.c b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-index 215bbe5..1518b41 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
-+++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-@@ -144,7 +144,7 @@ static int cxio_hal_clear_qp_ctx(struct 
- 	}
- 	wqe = (struct t3_modify_qp_wr *) skb_put(skb, sizeof(*wqe));
- 	memset(wqe, 0, sizeof(*wqe));
--	build_fw_riwrh((struct fw_riwrh *) wqe, T3_WR_QP_MOD, 3, 1, qpid, 7);
-+	build_fw_riwrh((struct fw_riwrh *) wqe, T3_WR_QP_MOD, 3, 0, qpid, 7);
- 	wqe->flags = cpu_to_be32(MODQP_WRITE_EC);
- 	sge_cmd = qpid << 8 | 3;
- 	wqe->sge_cmd = cpu_to_be64(sge_cmd);
-@@ -548,7 +548,7 @@ static int cxio_hal_init_ctrl_qp(struct 
- 			V_EC_UP_TOKEN(T3_CTL_QP_TID) | F_EC_VALID)) << 32;
- 	wqe = (struct t3_modify_qp_wr *) skb_put(skb, sizeof(*wqe));
- 	memset(wqe, 0, sizeof(*wqe));
--	build_fw_riwrh((struct fw_riwrh *) wqe, T3_WR_QP_MOD, 0, 1,
-+	build_fw_riwrh((struct fw_riwrh *) wqe, T3_WR_QP_MOD, 0, 0,
- 		       T3_CTL_QP_TID, 7);
- 	wqe->flags = cpu_to_be32(MODQP_WRITE_EC);
- 	sge_cmd = (3ULL << 56) | FW_RI_SGEEC_START << 8 | 3;
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
+index 4d7c277..228721f 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
+@@ -254,8 +254,6 @@ static void release_ep_resources(struct 
+ 	cxgb3_remove_tid(ep->com.tdev, (void *)ep, ep->hwtid);
+ 	dst_release(ep->dst);
+ 	l2t_release(L2DATA(ep->com.tdev), ep->l2t);
+-	if (ep->com.tdev->type == T3B)
+-		release_tid(ep->com.tdev, ep->hwtid, NULL);
+ 	put_ep(&ep->com);
+ }
+ 
+@@ -1103,6 +1101,15 @@ static int abort_rpl(struct t3cdev *tdev
+ 	return CPL_RET_BUF_DONE;
+ }
+ 
++/*
++ * Return whether a failed active open has allocated a TID
++ */
++static inline int act_open_has_tid(int status)
++{
++	return status != CPL_ERR_TCAM_FULL && status != CPL_ERR_CONN_EXIST &&
++	       status != CPL_ERR_ARP_MISS;
++}
++
+ static int act_open_rpl(struct t3cdev *tdev, struct sk_buff *skb, void *ctx)
+ {
+ 	struct iwch_ep *ep = ctx;
+@@ -1112,7 +1119,7 @@ static int act_open_rpl(struct t3cdev *t
+ 	     status2errno(rpl->status));
+ 	connect_reply_upcall(ep, status2errno(rpl->status));
+ 	state_set(&ep->com, DEAD);
+-	if (ep->com.tdev->type == T3B)
++	if (ep->com.tdev->type == T3B && act_open_has_tid(rpl->status))
+ 		release_tid(ep->com.tdev, GET_TID(rpl), NULL);
+ 	cxgb3_free_atid(ep->com.tdev, ep->atid);
+ 	dst_release(ep->dst);
