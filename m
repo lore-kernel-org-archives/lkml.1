@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbXF0UmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763153AbXF0Uml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761752AbXF0UmQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 16:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbXF0UmF
+	id S1763153AbXF0Uml (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 16:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbXF0Umb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 16:42:05 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:41145 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbXF0UmE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 16:42:04 -0400
-Subject: Re: [PATCH] balance parenthesis in serial core
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070627133717.d19d82c9.akpm@linux-foundation.org>
-References: <200706271030.l5RAUgKE015163@imap1.linux-foundation.org>
-	 <200706272222.01300.m.kozlowski@tuxland.pl>
-	 <20070627133717.d19d82c9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 27 Jun 2007 21:42:38 +0100
-Message-Id: <1182976958.19006.50.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+	Wed, 27 Jun 2007 16:42:31 -0400
+Received: from mail.suse.de ([195.135.220.2]:39546 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757235AbXF0Um3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 16:42:29 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: [RFD 0/4] AppArmor - Don't pass NULL nameidata to vfs_create/lookup/permission IOPs
+Date: Wed, 27 Jun 2007 22:42:26 +0200
+User-Agent: KMail/1.9.5
+Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070626231510.883881222@suse.de> <1182901575.12836.54.camel@heimdal.trondhjem.org>
+In-Reply-To: <1182901575.12836.54.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200706272242.26618.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-27 at 13:37 -0700, Andrew Morton wrote:
-> Thanks.  so...  why shouldn't we just remove the buggy&&unused
-> RELEVANT_CFLAG defines??
+On Wednesday 27 June 2007 01:46, Trond Myklebust wrote:
+> On Tue, 2007-06-26 at 16:15 -0700, jjohansen@suse.de wrote:
+> > To remove conditionally passing of vfsmounts to the LSM, a nameidata
+> > struct can be instantiated in the nfsd and mqueue filesystems.  This
+> > however results in useless information being passed down, as not
+> > all fields in the nameidata struct will be meaingful.  The nameidata
+> > struct is split creating struct nameidata2 that contains only the
+> > fields
+> > that will carry meaningful information.
+> 
+> I don't object to the concept per se, but could you please give it a
+> more descriptive name please? "struct vfs_intent" would be a lot more
+> accurate than "nameidata2".
 
-I was just about to suggest that. I originally intended to use them for
-the obvious purpose, but then realised that we can just rely on the
-integers i_speed and o_speed instead.
+Yes, the name is pretty arbitrary. vfs_intent is better, even though the 
+struct doesn't only include the intent data.
 
-Do you want a replacement/incremental patch?
-
--- 
-dwmw2
-
+Thanks,
+Andreas
