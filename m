@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762487AbXF0QJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762382AbXF0QK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762487AbXF0QJA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761109AbXF0QIw
+	id S1762382AbXF0QK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXF0QKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:08:52 -0400
-Received: from mail-in-05.arcor-online.net ([151.189.21.45]:49851 "EHLO
-	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761089AbXF0QIv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:08:51 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: "Peer Chen" <pchen@nvidia.com>
-Subject: Re: [PATCH] ata: Add the SW NCQ support to sata_nv for MCP51/MCP55/MCP61
-Date: Wed, 27 Jun 2007 18:09:00 +0200
-User-Agent: KMail/1.9.7
-Cc: "Robert Hancock" <hancockr@shaw.ca>, "kuan luo" <kuanluo@gmail.com>,
-       linux-kernel@vger.kernel.org, jeff@garzik.org,
-       akpm@linux-foundation.org, "Kuan Luo" <kluo@nvidia.com>
-References: <fa.5TBvnXzjCgAIfcuKOLBWeXi+y5I@ifi.uio.no> <4681F06F.1050302@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B15830128@hkemmail01.nvidia.com>
-In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B15830128@hkemmail01.nvidia.com>
+	Wed, 27 Jun 2007 12:10:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39228 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752894AbXF0QKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 12:10:16 -0400
+Message-ID: <46828B6C.6010203@redhat.com>
+Date: Wed, 27 Jun 2007 12:08:12 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3690130.qVjj7LFRMG";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Adrian Bunk <bunk@stusta.de>
+CC: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: Please release a stable kernel Linux 3.0
+References: <200706271653.58870.a1426z@gawab.com> <20070627155254.GO1094@stusta.de>
+In-Reply-To: <20070627155254.GO1094@stusta.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706271809.03814.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3690130.qVjj7LFRMG
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On 06/27/2007 11:52 AM, Adrian Bunk wrote:
+> On Wed, Jun 27, 2007 at 04:53:58PM +0300, Al Boldi wrote:
+>> Al Viro wrote:
+>>> On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
+>>>> And as I understand it, this is (was ?) the whole point of
+>>>> stable/development kernels. "We" can trust a newer stable
+>>>> kernel to be a drop-in replacement for an older stable
+>>>> kernel (from the same series), while development kernels
+>>>> need time to stabilise with the new whizz-bang-pfouit stuff
+>>>> that you all so nicely add.
+>>> "Drop-in" in which sense?  That out-of-tree modules keep working?
+>>> Not really...
+>> Al, be reasonable.  There are many out-of-tree GPL modules that won't be 
+>> accepted into mainline, never mind those that shouldn't be accepted.  But 
+>> these modules do have a right to not be obsoleted by constant API changes.
+> 
+> "have a right" are strong words.
+> Who is granting them this right?
+> 
+>> You are effectively inhibiting the development of an out-of-tree GPL module 
+>> pool, by constantly pulling the rug under that community.
+>>
+>> Do you think this is fair?
+> 
+> Why are these modules not submitted for inclusion into the kernel?
+> 
 
-Am Mittwoch 27 Juni 2007 schrieb Peer Chen:
-> We did the many test with the new version driver and didn't encounter
-> that problem, but in certain cases, DMASETUP command packets from drive
-> to the controller are corrupted, and the controller issues an R_ERR to
-> the drive. Drives that comply with SATA spec will re-transmit the
-> corrupted packet and normal operation continues. However, some Maxtor
-> NCQ drives do not re-transmit the DMASETUP command packet, resulting in
-> software timeout for this command. So if you are using the Maxtor HD and
-> meet this problem,please don't enable the NCQ function.
+I was trying to figure that out for this one:
 
-Out of interest I tested the patch again with my Maxtor drive I mentioned i=
-n=20
-the other thread. Ths time it got worse. I couldn't boot anymore, ie init=20
-starts some services and then dies at random places as if corrupt data was=
-=20
-transfered. With the previous patch the system worked, except the port=20
-resets.
+http://code.ximeta.com/trac-ndas
 
-Anyway, I'll ask Maxtor or rather Seagate to fix their firmware pointing at=
-=20
-your diagnosis.
+No mention of ever trying to get this upstream AFAICT... but this is
+interesting:
 
-bye,
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+  The linux market is limited comparing that of MS Windows.
+  it is very hard for us to support the various linux distros.
+  we, Ximeta, are trying to support those requests as many as
+  we can, though the resources are very limited.
 
---nextPart3690130.qVjj7LFRMG
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGgoufxU2n/+9+t5gRAkWcAJ9BzdE1qReZH1dmYuINjEymvKV3fwCg3nA0
-3wQFE1kaozNkwvAimaeeu50=
-=hhtt
------END PGP SIGNATURE-----
-
---nextPart3690130.qVjj7LFRMG--
