@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbXF0Kym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXF0K7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758734AbXF0Kym (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 06:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXF0Kyf
+	id S1758135AbXF0K7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 06:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbXF0K7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 06:54:35 -0400
-Received: from systemlinux.org ([83.151.29.59]:42923 "EHLO m18s25.vlinux.de"
+	Wed, 27 Jun 2007 06:59:07 -0400
+Received: from smtpout.mac.com ([17.250.248.174]:57304 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754716AbXF0Kye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 06:54:34 -0400
-X-Greylist: delayed 2173 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 06:54:34 EDT
-Date: Wed, 27 Jun 2007 12:16:08 +0200
-From: Andre Noll <maan@systemlinux.org>
-To: mchan@broadcom.com
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: 2.6.21.x kernel panic (tg3 and nfs related)
-Message-ID: <20070627101608.GQ22589@skl-net.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="eBTWNsZZiigckDWV"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	id S1754350AbXF0K7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 06:59:06 -0400
+In-Reply-To: <20070627022403.GB14656@suse.de>
+References: <20070626230756.519733902@suse.de> <20070626165202.bfe8e6df.akpm@linux-foundation.org> <20070627022403.GB14656@suse.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0BE96E7A-204A-4CEC-BA8F-0112434F7B2C@mac.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+Date: Wed, 27 Jun 2007 06:58:46 -0400
+To: John Johansen <jjohansen@suse.de>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Jun 26, 2007, at 22:24:03, John Johansen wrote:
+> other issues that have been raised are:
+> - the use of d_path to generate the pathname used for mediation when a
+>   file is opened.
+>   - Generating the pathname using a reverse walk is considered ugly
 
---eBTWNsZZiigckDWV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+A little more than "ugly".  In this basic concurrent rename() and  
+path-lookup load:
 
-Hi
+mkdir -p /a/b/0
+mkdir -p /a/b/2
+mkdir -p /c
+touch /a/b/0/1
 
-Our nfs server recently paniced under heavy nfs load. The backtrace
-indicates that this might be a problem with the tigon3 network driver
-which drives the onboard chips of the machine.
+cd /a/b
+while true; mv 0/1 2/3; mv 2/3 0/1; done &
+cd /
+while true; do mv a/b c/d; mv c/d a/b; done &
+while true; do cat a/b/0/1 & done
+while true; do cat a/b/2/3 & done
+while true; do cat c/d/0/1 & done
+while true; do cat c/d/2/3 & done
 
-The first crash under 2.6.21.1 happened after about 4 days of uptime,=20
-2.6.21.5 already crashed after 15 Minutes.
+I seem to recall you could actually end up racing and building a path  
+to the file in those directories as "a/d/0/3" or some other path at  
+which it never even remotely existed.  I'd love to be wrong, but I  
+can't help but see this problem in any reverse-pathname-generation  
+proposal which gets the locking right.
 
-Screenshots of the resulting kernel panics are available at
+Cheers,
+Kyle Moffett
 
-	http://www.systemlinux.org/~maan/shots/huangho-crash-2.6.21.1.png
-and
-	http://www.systemlinux.org/~maan/shots/huangho-crash-2.6.21.5.png
-
-We're now running 2.6.18.6 again which happens to be rock solid for our
-workload. However, this kernel now spits out zillons of messages like
-
-	[55122.674290] RPC: bad TCP reclen 0x00010094 (large)
-
-I'm sure it didn't do that half a year ago when it was running for
-several months. The 2.6.21.x kernels did not print these messages
-either, but from what I understand this is due to a patch which went
-in somewhere between 2.6.18 and 2.6.21 and which just ratelimited
-the message.
-
-So something weird seems to be going on in our network and this might
-well be related to the 2.6.21.x crashes we are seeing.
-
-Thanks
-Andre
---=20
-The only person who always got his work done by Friday was Robinson Crusoe
-
---eBTWNsZZiigckDWV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFGgjjoWto1QDEAkw8RAvaKAJ9zSErbii7/q3BWzxVrKbXDXbP5WQCfRO3a
-pBdoip/KNTMfzhUiCGEHm+s=
-=Uu70
------END PGP SIGNATURE-----
-
---eBTWNsZZiigckDWV--
