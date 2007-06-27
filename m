@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761841AbXF1Oss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbXF1OtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761841AbXF1Oss (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 28 Jun 2007 10:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbXF1Osl
+	id S1762667AbXF1OtG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 28 Jun 2007 10:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762092AbXF1Osv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 28 Jun 2007 10:48:41 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2976 "EHLO spitz.ucw.cz"
+	Thu, 28 Jun 2007 10:48:51 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2981 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752289AbXF1Osk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 28 Jun 2007 10:48:40 -0400
-Date: Thu, 28 Jun 2007 14:23:31 +0000
+	id S1761069AbXF1Ost (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 28 Jun 2007 10:48:49 -0400
+Date: Wed, 27 Jun 2007 20:49:24 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, zohar@us.ibm.com
-Subject: Re: [RFC][Patch 0/3] integrity: Linux Integrity Module(LIM) and provider
-Message-ID: <20070628142330.GB5339@ucw.cz>
-References: <1182199230.8577.4.camel@localhost.localdomain>
+To: David Chinner <dgc@sgi.com>
+Cc: David Greaves <david@dgreaves.com>, David Robinson <zxvdr.au@gmail.com>,
+       LVM general discussion and development 
+	<linux-lvm@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, linux-pm <linux-pm@lists.osdl.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>
+Subject: Re: [linux-lvm] 2.6.22-rc4 XFS fails after hibernate/resume
+Message-ID: <20070627204924.GA4777@ucw.cz>
+References: <46744065.6060605@dgreaves.com> <4674645F.5000906@gmail.com> <46751D37.5020608@dgreaves.com> <4676390E.6010202@dgreaves.com> <20070618145007.GE85884050@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1182199230.8577.4.camel@localhost.localdomain>
+In-Reply-To: <20070618145007.GE85884050@sgi.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> This is a request for comments for a subset of the original integrity
-> patches. By submitting this subset of the original patches, we hope to
-> simplify its review and ultimately ease its inclusion into the kernel.
+> FWIW, I'm on record stating that "sync" is not sufficient to quiesce an XFS
+> filesystem for a suspend/resume to work safely and have argued that the only
 
-We still don't know what these are good for...
+Hmm, so XFS writes to disk even when its threads are frozen?
 
-...preventing user from taking out hdd and modifying binaries?
+> safe thing to do is freeze the filesystem before suspend and thaw it after
+> resume. This is why I originally asked you to test that with the other problem
 
-...if user can do that, why is he unable to remove the lim.ko, too?
-
-TPM?
-
-Why this won't be abused to prevent me from playing with hardware I
-own?
+Could you add that to the XFS threads if it is really required? They
+do know that they are being frozen for suspend.
 
 							Pavel
 -- 
