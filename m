@@ -1,158 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762637AbXF0QRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbXF0QTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762637AbXF0QRT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbXF0QRJ
+	id S1762326AbXF0QTn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757104AbXF0QTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:17:09 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:13919 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752894AbXF0QRI (ORCPT
+	Wed, 27 Jun 2007 12:19:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41354 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754750AbXF0QTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:17:08 -0400
-Date: Wed, 27 Jun 2007 09:19:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: david@lang.hm
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org
-Subject: Re: long-term regression
-Message-Id: <20070627091903.635e9388.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0706270034560.6551@asgard.lang.hm>
-References: <Pine.LNX.4.64.0706171052240.28371@asgard.lang.hm>
-	<20070621052807.cc64605d.akpm@linux-foundation.org>
-	<20070621083659.dabf3a22.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0706242157570.6215@asgard.lang.hm>
-	<4680445C.8000703@oracle.com>
-	<Pine.LNX.4.64.0706251555330.20356@asgard.lang.hm>
-	<20070626121425.e92ba2e5.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0706270034560.6551@asgard.lang.hm>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 27 Jun 2007 12:19:34 -0400
+Date: Wed, 27 Jun 2007 09:19:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Neil Booth <neil@daikokuya.co.uk>
+cc: Al Viro <viro@ftp.linux.org.uk>, Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+In-Reply-To: <20070627121021.GQ7590@daikokuya.co.uk>
+Message-ID: <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk>
+ <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org>
+ <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org>
+ <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org>
+ <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org>
+ <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk>
+ <20070627121021.GQ7590@daikokuya.co.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[adding linux-acpi@vger.kernel.org]
 
-On Wed, 27 Jun 2007 00:38:17 -0700 (PDT) david@lang.hm wrote:
 
-> On Tue, 26 Jun 2007, Randy Dunlap wrote:
+On Wed, 27 Jun 2007, Neil Booth wrote:
 > 
-> > On Mon, 25 Jun 2007 15:56:17 -0700 (PDT) david@lang.hm wrote:
-> >
-> >> due to the size the files are posted at http://linux.lang.hm/linux
-> >>
-> >> let me know what else I can send to help.
-> >>
-> >> David Lang
-> >
-> >
-> > I suggest that you test 2.6.22-rcN using one or both of these
-> > boot options:
-> >
-> > noisapnp
-> > pnpacpi=off
-> >
-> > Somewhere between 2.6.18 and 2.6.22-development, the ACPI config
-> > symbol also starting enabling (selecting) PNP.  That's one of many
-> > differences....
+> Here are three independently invalid non-ICEs that sparse doesn't
+> diagnose.
 > 
-> with the 2.6.22-rc4 kernel that I was useing earlier, adding these two 
-> options clears up the problem. Thanks.
-> 
-> should I test the two individually? or just plan on useing both from now 
-> on?
+> extern int f(void);
+> enum { cast_to_ptr = (int) (void *) 0 };
+> enum { cast_to_float = (int) (double) 1 };
 
-Yes, please test them individually.  I expect that just one of them
-will suffice, but I don't know which one.
+Those two *really* shouldn't fail. I don't care if the C standard says so, 
+that is *fine*.
 
-> I normally disable PnP (both ISA and PCI), should I leave it enabled with 
-> the newer kernels and this motherboard?
+In particular, "offsetof()" should be portably able to basically be the 
+standard #define, which involves an integer cast from a constant pointer. 
+That had *better* be a valid constant integer expression, because it's 
+very useful.
 
-ACPI recently began enabling (selecting) PNP for you...
+And I think standards can go screw themselves, and you can make it an 
+error with some "--standard-pedantic" switch or similar.
 
-How do you normally disable PCI PNP?
+Standards are just random pieces of paper, for crying out loud! They have 
+zero relevance in the end. 
 
-What kind of hardware is this?  Please show us lspci output.
+> enum { fncall = 0 ? f(): 3 };
 
-> > I would also disable CONFIG_USB_USS720, at least for testing.
-> 
-> for ease of testing (I got time to reboot the box around midnight) I used 
-> the same config as before, so this is still on.
-> 
-> David Lang
-> 
-> >
-> >> On Mon, 25 Jun 2007, Randy Dunlap wrote:
-> >>
-> >>> Date: Mon, 25 Jun 2007 15:40:28 -0700
-> >>> From: Randy Dunlap <randy.dunlap@oracle.com>
-> >>> To: david@lang.hm
-> >>> Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-> >>>     linux-usb-devel@lists.sourceforge.net
-> >>> Subject: Re: long-term regression
-> >>>
-> >>> david@lang.hm wrote:
-> >>>>  On Thu, 21 Jun 2007, Randy Dunlap wrote:
-> >>>>
-> >>>>>  Date: Thu, 21 Jun 2007 08:36:59 -0700
-> >>>>>  From: Randy Dunlap <randy.dunlap@oracle.com>
-> >>>>>  To: Andrew Morton <akpm@linux-foundation.org>
-> >>>>>  Cc: david@lang.hm, linux-kernel@vger.kernel.org,
-> >>>>>      linux-usb-devel@lists.sourceforge.net
-> >>>>>  Subject: Re: long-term regression
-> >>>>>
-> >>>>>  On Thu, 21 Jun 2007 05:28:07 -0700 Andrew Morton wrote:
-> >>>>>
-> >>>>>>>  On Sun, 17 Jun 2007 10:57:55 -0700 (PDT) david@lang.hm wrote:
-> >>>>>>>  I haven't had time to bisect this, but I'm having a problem on a
-> >>>>>>>  AMD64
-> >>>>>>>  gentoo system where the printer doesn't work with recent kernels.
-> >>>>>>>
-> >>>>>>>  2.6.18-rc3 worked
-> >>>>>>>  2.6.21.1 doesn't
-> >>>>>>>  2.6.22-rc4 doesn't
-> >>>>>>>
-> >>>>>>>  unfortunantly the system is gooted on 2.6.18 at the moment and I'm
-> >>>>>>>  out of
-> >>>>>>>  town so my ability to test is limited I can provide the 2.6.22-rc4
-> >>>>>>>  (attached) and 2.6.18-rc3 configs.
-> >>>>>>>
-> >>>>>>>  dmesg appears to show the port being detected, but writes to the
-> >>>>>>>  port
-> >>>>>>>  under newer kernels appear to complete, but no data gets to the
-> >>>>>>>  printer.
-> >>>>>>>
-> >>>>>>>  any suggestions other then doing the large bisect?
-> >>>>>>
-> >>>>>>  That would be good, thanks.  Please be sure to cc linux-usb-devel on
-> >>>>>>  the results.
-> >>>>>
-> >>>>>  OK, I'm curious about how someone deduced that this is a problem
-> >>>>>  with a USB printer vs. parallel port printer since the config file has:
-> >>>>>
-> >>>>>  CONFIG_PRINTER=y
-> >>>>>  CONFIG_USB_PRINTER=y
-> >>>>>
-> >>>>>  The kernel boot log should probably be posted also.
-> >>>>
-> >>>>  here is the dmesg from 2.6.22-rc4 and kern.log showing 2.6.22.-rc4 and
-> >>>>  2.6.180rc3
-> >>>>
-> >>>>  the printer not working is the parallel port.
-> >>>
-> >>> This email didn't show up on lkml or linux-usb-devel due to size limits (it
-> >>> was 900+ KB).
-> >>>
-> >>> David, please send your working 2.6.18 config file.
-> >>>
-> >>> Can you post the kernel log files on the web somewhere?
+Again, I think that's a deficiency of a standard that tries to be 
+acceptable to everybody rather than about a "really good language".
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+So I personally think we should allow it too if at all possible, and 
+again, use some "--standard-pedantic" to flag it as an error.
+
+Why? Because things like that may not look sensible when written out, but 
+they are often _very_ sensible when they are the result of a macro that 
+does some error checking or other thing. 
+
+The classic example of this is "__builtin_constant_p()". It is a *great* 
+way to make a macro that does different things depending on whether 
+something is a compile-time constant or not, and no, it's not standard, 
+but dang, it's so useful that a standard that doesn't allow sane use of it 
+is basically bogus.
+
+So look at the "ntohl()" kind of thing, and realize that it's just "Good 
+Practice(tm)" to be able to make a ntohl() macro that can be used for 
+initializers, including very much enum initializers. Ie
+
+	enum { defaultport = htons(9418) };
+
+is actually nice code for something like the kernel, but it turns out that 
+in order to make this work, you have to do it as
+
+	#define htons(x) (__builtin_constant_p(x) ? constant_htons(x) : __htons(x))
+
+and that in turn generates *exactly* the kind of thing you talk of above.
+
+And when you give _your_ example, it looks insane. When I give _my_ 
+example, it generates exactly the same thing, but suddenly it has a great 
+reason for doing so, and it's no longer insane.
+
+			Linus
