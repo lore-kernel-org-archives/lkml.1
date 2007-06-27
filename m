@@ -1,146 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763996AbXF0XQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763614AbXF0XWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763996AbXF0XQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 19:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758839AbXF0XQN
+	id S1763614AbXF0XWV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 19:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759724AbXF0XWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 19:16:13 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:54455 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276AbXF0XQL (ORCPT
+	Wed, 27 Jun 2007 19:22:13 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:28246 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752276AbXF0XWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 19:16:11 -0400
-Message-ID: <4682EEDD.4020501@gmail.com>
-Date: Thu, 28 Jun 2007 01:12:29 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
-MIME-Version: 1.0
-To: Andreas Hartmetz <ahartmetz@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
-References: <200706271825.17459.ahartmetz@gmail.com> <46829E82.6080804@gmail.com> <200706272110.50744.ahartmetz@gmail.com>
-In-Reply-To: <200706272110.50744.ahartmetz@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 27 Jun 2007 19:22:12 -0400
+Date: Wed, 27 Jun 2007 16:16:48 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Adrian Bunk <bunk@stusta.de>, LKML Kernel <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>, david@lang.hm,
+       linux-arch@vger.kernel.org
+Subject: Re: Userspace compiler support of "long long"
+Message-Id: <20070627161648.52d3786d.randy.dunlap@oracle.com>
+In-Reply-To: <20070627155715.60ebc48f.randy.dunlap@oracle.com>
+References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
+	<Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
+	<467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
+	<1182483527.10524.31.camel@shinybook.infradead.org>
+	<20070622150038.GN23017@stusta.de>
+	<E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com>
+	<20070627154046.GN1094@stusta.de>
+	<468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de>
+	<20070627173240.GR1094@stusta.de>
+	<B3C8EEBF-71FB-4169-8ED7-7C4A410BBEE1@mac.com>
+	<20070627155715.60ebc48f.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/27/2007 09:10 PM, Andreas Hartmetz wrote:
+On Wed, 27 Jun 2007 15:57:15 -0700 Randy Dunlap wrote:
 
->>> I don't like random applications blocking my sound card.
->> 
->> So don't use random applications.
->> 
-> I imitated the style of the mail I replied to. Besides, choosing apps
-> based on sound system is retarded if you wanted to indicate that this
-> should be done more often or something.
-
-What I indicated was that if someone wants to use multiple applications that 
-work together bringing you The One Integrated Sound Experience it might make 
-sense to use applications... that work together. Don't go blame ALSA for 
-either the fact that aRTs isn't actually useful nor KDE's decision to stick 
-with it for way too long. See -- the problem is again not ALSA (or OSS for 
-that matter) but userspace not getting its act together.
-
-KDE has finally dropped aRts from KDE4 and, again, ALSA has been mixing by 
-default for some time now so we're talking history anyway. You want mixing 
-on your card? You got it.
-
-Many don't -- they might not care about desktop sounds period and/or they 
-might use a clumsy chip/card for that and use a nice one for music without 
-any need for mixing on it (such as I do). Admittedly, mixing Abba's Dancing 
-Queen with Slayer's Angel of Death is great fun for quite a while but at 
-some point you do actually grow weary of it...
-
-> Exactly! And the config file is hostile if you want to change it.
-
-It could be a bit nicer yes. Since software mixing is enabled by default now 
-no configuration is generally needed though and it seems not a particularly 
-huge priority. Now that it's an advanced feature, maybe the flexibility pays 
-off in fact -- not sure, I don't use any configuration myself other than for 
-some testing and playing around every once in a while.
-
-> KDE 2 *was* released in 2000. Why would you care, I already admitted that
-> sound daemons were there before ALSA.
-
-Because blaming ALSA for bad decisions made by others seems a little off and 
-you did exactly that a few messages back. Not nice!
-
->> You give up reporting small hardware problems that bother you because the
->> application developer documentation for something is not in great shape?
+> On Wed, 27 Jun 2007 18:30:52 -0400 Kyle Moffett wrote:
 > 
-> Yep, because I was frustrated with the whole thing. Having huge bad APIs
-> with no documentation is telling your fellow developers to piss off and
-> do something else. I did.
+> > On Jun 27, 2007, at 13:32:40, Adrian Bunk wrote:
+> > > AFAIR the Intel compiler claims to be gcc.
+> > >
+> > > But these are by far not the only C compilers under Linux, and the  
+> > > more important points are:
+> > >
+> > > Is there any userspace Linux compiler that does not support "long  
+> > > long"?
+> > 
+> > Don't know, but I'd guess not.
+> > 
+> > 
+> > > If yes, is there any other way to tell that something is a 64bit  
+> > > int on 32bit architectures?
+> > 
+> > Not that I know of.  Probably the straight #else conditional is OK.   
+> > We should also merge up the types since *EVERY* linux architecture  
+> > has these same types:
+> > 
+> > typedef   signed char      __s8;
+> > typedef unsigned char      __u8;
+> > typedef   signed short     __s16;
+> > typedef unsigned short     __u16;
+> > typedef   signed int       __s32;
+> > typedef unsigned int       __u32;
+> > 
+> > Then all 64-bit archs have:
+> > typedef   signed long      __s64;
+> > typedef unsigned long      __u64;
+> > 
+> > While all 32-bit archs have:
+> > typedef   signed long long __s64;
+> > typedef unsigned long long __u64;
+> > 
+> > The only trick is if you care about building 32-bit compat code using  
+> > 64-bit linux kernel headers.  In that case we should probably just  
+> > make all archs use "long long" for their 64-bit integers, unless  
+> > there's some platform I'm not remembering where "long long" is 128- 
+> > bits or bigger.  The other benefit is that people could then just use  
+> > the printf format "%llu" for 64-bit integers instead of having to  
+> > conditionalize it all over the place.
+> > 
+> > I'm working on a patch now.
+> 
+> LDD3 ch. 11 says that long on Sparc64 is 32 bits.
+> Same for "ppc" (don't know which power* arch. they mean by that).
 
-You weren't having a developer problem but a user problem. Your problem was 
-not with the API documentation but with what would appear to be a simple 
-glitch in one particular driver. Mixing that in with a "ALSA sucks because 
-its documentation isn't upto par" is a little disingenious.
+Hm, I suppose that table only applies to userspace, not kernel...
 
-Sure the (library) documentation blows donkeys. So wat else's is new in the 
-land of Linux? I recently did a block-ish driver. Documentation? Whahahaha!
-
-So that leaves that "bad" that you prefixed API with but keep in mind that 
-ALSA is designed as an audio system suitable for advanced/professional use 
-while also still filling the needs of consumer users and that it does in 
-fact do so is obvious from the fact that everyone's using it. A complex API 
-is the downside of flexibility. Perhaps it would've been better if alsa-lib 
-had also made a very simple API available to non-demanding users from the 
-start but other software can do that as well.
-
-For my current purposes libao does, but I hope in the future something like 
-Phonon does. The ideal situation is that anyone in userspace is using a 
-single API _such_ as Phonon since userspace has to synchronise things itself 
-as well -- it might for example want to provide you with the option to 
-automatically mute your music when you get an incoming call and this is not 
-something which alsa-lib can do by itself.
-
-If it looks like I'm shifting blame -- you bet I am. It's userspace which 
-has for years failed to get its multimedia act together, with KDE and GNOME 
-going out of their way to pick other infrastructure than the other one. The 
-kernel is not a guilty party and improvements should be sought where the 
-problems lie.
-
-As said earlier, KDE4 might just be such an improvement. Personally I'm 
-hoping I'll even manage to start running it this time because damnit, I miss 
-solitaire...
-
->>> hacking (i.e. more features faster). Latency is an issue? - Well you
->>> can't play sound without userspace creating it so you're not adding any
->>> new problems.
->> 
->> Capture.
->> 
-> If you are not doing DMA from the sound card to kernel memory and then 
-> directly to disk blocks, you are using user space apps period. So what's 
-> different with capture?
-
-The latency in this case is defined as the time between data arriving at the 
-machine from the outside and it being available for further processing by an 
-application. Think looping stuff out again in realtime after doing something 
-to it to see why you want it to be low. If you'll grant that all those users 
-who were dissatisfied with early 2.6 weren't just blowing smoke, I assume 
-you'll grant that latency matters and that putting it all in userspace is 
-not an obvious step in minimising it -- even interrupt latency matters.
-
-Note also it's certainly not (just) PCM but also very much MIDI. A musician 
-hitting a key on a keyboard needs to hear the sound he's making, processed, 
-recorded, stretched, whatever the computer does to it, with _very_ minimal 
-latency. Yes, this means that the userspace application(s) have to be fast 
-themselves but if they aren't getting their data delivered to them in time 
-to begin with they're SOL. Perhaps it's possible to get okay results with a 
-top-priority, realtime scheduled full stack in userspace which bangs I/O 
-ports and does all those pesky driver thingies but why do we have a kernel 
-again?
-
-As to going the other way and putting it _all_ in the kernel; why? Why would 
-you care about the split from an API standpoint? The alsa-lib API is the 
-API, period. At which point it crosses over into the kernel is something an 
-application gets to see as an implementation detail. Rejoice -- you now 
-don't have to worry about floating point for example in the context of 
-resampling and/or soft-volume, or ...
-
-Rene.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
