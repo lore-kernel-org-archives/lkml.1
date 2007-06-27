@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbXF0TXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbXF0T3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757982AbXF0TXP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbXF0TXB
+	id S1759859AbXF0T3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXF0T3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:23:01 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3014 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbXF0TXA (ORCPT
+	Wed, 27 Jun 2007 15:29:04 -0400
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:35653 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330AbXF0T3B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:23:00 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 27 Jun 2007 12:22:52 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Rik van Riel <riel@redhat.com>
-cc: Ulrich Drepper <drepper@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-In-Reply-To: <4682B3B0.2040500@redhat.com>
-Message-ID: <Pine.LNX.4.64.0706271218280.5219@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
- <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
- <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
- <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
- <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
- <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
- <4682B3B0.2040500@redhat.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 27 Jun 2007 15:29:01 -0400
+Date: Wed, 27 Jun 2007 15:28:57 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@localhost.localdomain
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: Kyle Moffett <mrmacman_g4@mac.com>, Andreas Gruenbacher <agruen@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       linux-security-module@vger.kernel.org, Andrew Morgan <agm@google.com>,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
+In-Reply-To: <20070627185125.GA17059@sergelap.austin.ibm.com>
+Message-ID: <Line.LNX.4.64.0706271528110.7196@localhost.localdomain>
+References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org>
+ <Line.LNX.4.64.0706250031350.15974@localhost.localdomain>
+ <200706252237.59226.agruen@suse.de> <11C35822-4E11-4365-BADE-C1AE41F15B50@mac.com>
+ <20070626134712.GA8615@sergelap.austin.ibm.com> <B189F69D-B63E-4EE3-8580-39C8AFA97E5A@mac.com>
+ <20070627134149.GB2679@sergelap> <Line.LNX.4.64.0706271031220.5258@localhost.localdomain>
+ <20070627172102.GB16764@sergelap.austin.ibm.com> <20070627185125.GA17059@sergelap.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Rik van Riel wrote:
+On Wed, 27 Jun 2007, Serge E. Hallyn wrote:
 
-> Ulrich Drepper wrote:
-> > On 6/27/07, Hugh Dickins <hugh@veritas.com> wrote:
-> > > Not so: if an mmap can be done by extending either adjacent vma (prot
-> > > and flags and file and offset all match up), that's what's done and no
-> > > separate vma is created.  (And adjacent vmas get merged when mprotect
-> > > removes the difference in protection.)
-> > 
-> > mmap return values are randomized.  If they would be mergable
-> > something would be wrong.
+> Patch tests fine for me for expected capability behavior with lsm=n,
+> lsm=y, lsm=y+capability=y, lsm=y+selinux=y, and lsm=y+caps=y+selinux=y.
 > 
-> You can easily pass a hint address to mmap(), causing it to
-> extend a malloc arena instead of creating a new VMA.
+> So while I'm opposed to the patch, it appears to be safe.
 
-You mean something like the F_DUPFD, where you pass an fd and that serves 
-as from-there-up hint?
-
+I've also tested a bunch of scenarios: allmodconfig, lsm=y,cap=n, 
+selinux=y,cap=n  etc.
 
 
-- Davide
-
-
+-- 
+James Morris
+<jmorris@namei.org>
