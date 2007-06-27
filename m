@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbXF0QDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbXF0QFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762081AbXF0QDR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757623AbXF0QDI
+	id S1762168AbXF0QFJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbXF0QE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:03:08 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:37972 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754385AbXF0QDH (ORCPT
+	Wed, 27 Jun 2007 12:04:58 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:56877 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756636AbXF0QE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:03:07 -0400
-X-Originating-Ip: 99.246.112.70
-Date: Wed, 27 Jun 2007 11:59:18 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
-cc: mrmacman_g4@mac.com, bunk@stusta.de, linux-kernel@vger.kernel.org,
-       dwmw2@infradead.org, david@lang.hm
+	Wed, 27 Jun 2007 12:04:58 -0400
 Subject: Re: Linux Kernel include files
-In-Reply-To: <468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de>
-Message-ID: <Pine.LNX.4.64.0706271159001.4668@localhost.localdomain>
-References: <467afc63.OnsqEXOk5zqMYzym%Joerg.Schilling@fokus.fraunhofer.de>
- <Pine.LNX.4.64.0706211620080.31603@asgard.lang.hm>
- <467b0bf2.Xfs7T8Ys4nY9ZNLW%Joerg.Schilling@fokus.fraunhofer.de>
- <1182483527.10524.31.camel@shinybook.infradead.org> <20070622150038.GN23017@stusta.de>
- <E27BAC4D-2F1E-4191-A75D-4DD18231C320@mac.com> <20070627154046.GN1094@stusta.de>
- <468287a8.spBb6PdAZ4QV0j2Y%Joerg.Schilling@fokus.fraunhofer.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+From: David Woodhouse <dwmw2@infradead.org>
+To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
+Cc: harald@skogtun.org, david@lang.hm, linux-kernel@vger.kernel.org,
+       schilling@fokus.fraunhofer.de
+In-Reply-To: <46826d62.lTsuVo9cC7wGjcjf%Joerg.Schilling@fokus.fraunhofer.de>
+References: <46826d62.lTsuVo9cC7wGjcjf%Joerg.Schilling@fokus.fraunhofer.de>
+Content-Type: text/plain
+Date: Wed, 27 Jun 2007 17:04:42 +0100
+Message-Id: <1182960282.1170.4.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Joerg Schilling wrote:
+On Wed, 2007-06-27 at 16:00 +0200, Joerg Schilling wrote:
+> Warning: *** linux/ext2_fs.h is not usable at all ***
+> Warning: *** This makes it impossible to support Linux file flags ***
+> You may try to compile using 'make COPTX=-DTRY_EXT2_FS'
 
-> Adrian Bunk <bunk@stusta.de> wrote:
->
-> > That's a good point I missed.
-> >
-> > What about:
-> >
-> > #if defined(__GNUC__) && __STDC_VERSION__ < 19901L
-> > __extension__ typedef   signed long long __s64;
-> > __extension__ typedef unsigned long long __u64;
-> > #else
-> > typedef   signed long long __s64;
-> > typedef unsigned long long __u64;
-> > #endif
->
-> What about using:
->
-> #if (defined(__GNUC__) || defined(__SUNPRO_C)) && !defined(__STRICT_ANSI__)
->
-> Well, there seems to be one other compiler (the one from Intel).
-> It may be that if this compiler does not claim to be GCC, another
-> definituion needs to be added.
+Again, can you be _specific_? Amusing though your consistent 'Lunix is
+broken' chants are, the only reason I'm bothering to participate in this
+thread is on the off-chance that something _productive_ will come of it.
 
-the intel compiler does indeed claim to be gcc.
+By the way, your mailer seems to be sometimes omitting In-Reply-To: and
+References: headers, which RFC2822 says you SHOULD include in replies. 
 
-rday
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+dwmw2
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
