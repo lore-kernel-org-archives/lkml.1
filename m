@@ -1,113 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbXF0VLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbXF0VYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762539AbXF0VLJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 17:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbXF0VK5
+	id S1762063AbXF0VYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 17:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbXF0VYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 17:10:57 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:36589 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbXF0VK5 (ORCPT
+	Wed, 27 Jun 2007 17:24:08 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:5060 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbXF0VYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 17:10:57 -0400
-Date: Wed, 27 Jun 2007 22:10:54 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@google.com>, Ethan Solomita <solo@google.com>,
-       linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
-       a.p.zijlstra@chello.nl
-Subject: Re: [RFC 1/7] cpuset write dirty map
-Message-ID: <20070627211054.GA30007@skynet.ie>
-References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com> <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com> <468023CA.2090401@google.com> <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com> <20070626152204.b6b4bc3f.akpm@google.com> <Pine.LNX.4.64.0706262017260.24504@schroedinger.engr.sgi.com> <20070627021408.493812fe.akpm@google.com> <Pine.LNX.4.64.0706270527010.26731@schroedinger.engr.sgi.com>
+	Wed, 27 Jun 2007 17:24:07 -0400
+Date: Wed, 27 Jun 2007 23:24:07 +0200
+From: Carlo Wood <carlo@alinoe.com>
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: NVidia Driver Support - 1680x1050 mode
+Message-ID: <20070627212407.GA26615@alinoe.com>
+Mail-Followup-To: Carlo Wood <carlo@alinoe.com>,
+	Marc Perkel <mperkel@yahoo.com>, linux-kernel@vger.kernel.org
+References: <fc94aae90706262226p417ed77ex97dd20f9bec46e25@mail.gmail.com> <964847.10954.qm@web52510.mail.re2.yahoo.com> <fc94aae90706270718o1704822csea1371a780ca5d23@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0706270527010.26731@schroedinger.engr.sgi.com>
+In-Reply-To: <fc94aae90706270718o1704822csea1371a780ca5d23@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (27/06/07 05:44), Christoph Lameter didst pronounce:
-> On Wed, 27 Jun 2007, Andrew Morton wrote:
-> 
-> > I'm more concerned about all of Mel's code in -mm actually.  I don't recall
-> > anyone doing a full review recently and I'm still not sure that this is the
-> > overall direction in which we wish to go.  Last time I asked this everyone
-> > seemed a bit waffly and non-committal.
-> 
-> I have looked over this several times lately and it all seems quite okay. 
-> Still cannot find a justification for the movable zone (never had to 
-> use it in testing) but it seems that it makes memory unplug easier.
+Or use the same hardware as me (and debian)-- and read on my home page how
+I got things working :p
 
-As well as helping memory hot-remove, it provides a known lower-limit that
-the hugepage pool can be resized to at runtime. Grouping pages by mobility
-on its own does not give a known number of pageblocks that could be used
-for hugepage allocation. On it's own, it provides a high probability that
-the hugepage pool can be grown but how large depends on the workload. With
-the zone, an administrator can set aside X amount of memory that can be used
-for hugepages if necessary and base pages otherwise.
-
-> The 
-> antifrag patchset together with a page migration patch simplifies the 
-> unplug patchset significantly.
-> 
-> I think the antifrag code is a significant step forward and will enable 
-> lots of other features (memory unplug, larger page use in SLUB, huge page 
-> allocs after boot). It may be useful to put memory compaction and memory 
-> unplug in at the same time (I think we can get there even for .23) so that 
-> we have a full package.
-
-The memory unplug patches already migrate pages without the help of memory
-compaction. Memory compaction needs a bit more work before I try sending
-it towards -mm for wider testing. It's important to get right because
-with compaction, the migration code is getting a lot more exercise than it
-does today. However, memory compaction needing more work should not hold
-back memory unplug nor does it impact on the utility of grouping pages
-by mobility or the movable zone.
-
-> With compaction we can finally recover from loads 
-> that typically cause memory to be split in a lot of disjoint pieces and 
-> get to a sitaution were we can dynamically reconfigure the number of huge 
-> pages at run time (Our customers currently reboot to do this which is a 
-> pain). Compaction increases the chance of I/O controllers being able to 
-> merge I/O requests since contiguous pages can be served by the page 
-> allocator again. Antifrag almost gets there but I can still construct 
-> allocation scenarios that fragment memory significantly.
-> 
-
-The number of scenarios that cause fragmentation have dropped over time.
-It's something I see as constantly improving over time.
-
-> Also compaction is a requirement if we ever want to support larger 
-> blocksizes. That would allow the removal of various layers that are now 
-> needed to compensate for not supporting larger pages.
-> 
-> The whole approach is useful to increase performance. We have seen 
-> several percentage points of performance wins with SLUB when allowing 
-> larger pages sizes. The use of huge pages is also mainly done for 
-> performance reasons. The large blocksize patch has shown a 50% performance 
-> increase even in its prototype form where we certainly have not solved 
-> server performance issues.
-> 
-> Even without large blocksize: The ability to restore the capability of the 
-> page allocator to serve pages that are in sequence can be used to shorten
-> the scatter gather lists in the I/O layer speeding up I/O.
-> 
-> I think this is an important contribution that will move a lot of other 
-> issues forward.
-> 
-
-Thanks Christoph for your reviewing of the code, your comments here and the
-quite rigorous exercise of the anti-fragmentation code. I too believe
-there are performance gains to be had through the use of larger pages
-and working on this does not preclude work on improving the use of base
-pages.
-
-For larger pages to be used though, external fragmentation has to be
-addressed in some fashion and no other viable implementation exists
-besides anti-fragmentation right now.
+hikaru:/usr/lib>dpkg -l | grep nvidia
+ii  nvidia-glx									 100.14.11-0          NVIDIA binary Xorg driver
+ii  nvidia-glx-dev								 100.14.11-0          NVIDIA binary Xorg driver development files
+ii  nvidia-kernel-2.6-amd64							 100.14.11+beta       NVIDIA binary kernel module for 2.6 series c
+ii  nvidia-kernel-2.6.18-4-amd64						 100.14.11+beta       NVIDIA binary kernel module for Linux 2.6.18
+ii  nvidia-kernel-2.6.22-rc5-agp1-188e1f81ba31af1b65a2f3611df4c670b092bbac-amd64 100.14.11+beta       NVIDIA binary kernel module for Linux 2.6.22
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Carlo Wood <carlo@alinoe.com>
+
+PS I use two of my Samsung SyncMaster 205BW (1650x1050) as dual head
+   on an ASUS EN8600 GTS (dual-head). You need nvidia's beta drivers
+   (>= 100.14.06) for that to work though.
+
