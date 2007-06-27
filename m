@@ -1,66 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbXF0ASS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759931AbXF0ATT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148AbXF0ASS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 20:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbXF0ASH
+	id S1759931AbXF0ATT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 20:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbXF0ATE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 20:18:07 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50069 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752050AbXF0ASG (ORCPT
+	Tue, 26 Jun 2007 20:19:04 -0400
+Received: from imf22aec.mail.bellsouth.net ([205.152.59.70]:34958 "EHLO
+	imf22aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753260AbXF0ATB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 20:18:06 -0400
-Date: Wed, 27 Jun 2007 01:18:03 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Neil Booth <neil@daikokuya.co.uk>
-Cc: Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627001803.GJ21478@ftp.linux.org.uk>
-References: <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070626233226.GO7590@daikokuya.co.uk>
+	Tue, 26 Jun 2007 20:19:01 -0400
+Date: Tue, 26 Jun 2007 19:16:01 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, "Jay L. T. Cornwall" <jay@esuna.co.uk>,
+       linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] atl1: disable 64bit DMA
+Message-ID: <20070626191601.5c4c4808@osprey.hogchain.net>
+In-Reply-To: <20070625211855.GA19275@dreamland.darkstar.lan>
+References: <467B12CA.5060405@esuna.co.uk>
+	<467BE118.4090308@redhat.com>
+	<467BE4F1.7040308@esuna.co.uk>
+	<467D0EB0.9030100@esuna.co.uk>
+	<20070624125957.2e27820c@osprey.hogchain.net>
+	<467ED4A8.4080500@esuna.co.uk>
+	<20070624164519.04f215b8@osprey.hogchain.net>
+	<467FB237.2030703@esuna.co.uk>
+	<467FB844.6060702@bellsouth.net>
+	<20070625211855.GA19275@dreamland.darkstar.lan>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.13; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070626233226.GO7590@daikokuya.co.uk>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 08:32:26AM +0900, Neil Booth wrote:
-> Al Viro wrote:-
+On Mon, 25 Jun 2007 23:18:55 +0200
+Luca Tettamanti <kronos.it@gmail.com> wrote:
+
+> Il Mon, Jun 25, 2007 at 07:42:44AM -0500, Jay Cliburn ha scritto: 
+> > Jay L. T. Cornwall wrote:
+> > >Jay Cliburn wrote:
+> > >
+> > >>For reasons not yet clear to me, it appears the L1 driver has a
+> > >>bug or the device itself has trouble with DMA in high memory.
+> > >>This patch, drafted by Luca Tettamanti, is being explored as a
+> > >>workaround.  I'd be interested to know if it fixes your problem.
+> > >
+> > >Yes, it certainly seems to. Now running with this patch and 4GB
+> > >active, I've transferred about 15GB with no problem so far. It
+> > >usually oopses after a GB or two.
+> > >
+> > >I guess it's not an ideal solution, architecturally speaking, but
+> > >it's a good deal better than an unstable driver. If there's any
+> > >other patches you'd like me to test or traces to capture, I'm
+> > >happy to help out. Otherwise I'll run with this one for now since
+> > >it does the job!
+> > 
+> > Okay Jay, thanks.
+> > 
+> > Luca, would you please submit your patch to Jeff Garzik and netdev?
 > 
-> > Hopefully correct handling of integer constant expressions.  Please, review.
+> Hi Jeff,
+> a couple of users reported hard lockups when using L1 NICs on machines
+> with 4GB or more of RAM. We're still waiting official confirmation
+> from the vendor, but it seems that L1 has problems doing DMA to/from
+> high memory (physical address above the 4GB limit). Passing 32bit DMA
+> mask cures the problem.
 > 
-> Am I invoking sparse wrongly?  ./sparse -W -Wall doesn't diagnose
-> the following TU, for example.
+> Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
 > 
-> extern int a;
-> extern int as1[(a = 2)];
+> ---
+> I think that the patch should be included in 2.6.22.
+> 
+>  drivers/net/atl1/atl1_main.c |   15 +++------------
+>  1 file changed, 3 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/net/atl1/atl1_main.c
+> b/drivers/net/atl1/atl1_main.c index 6862c11..a730f15 100644
+> --- a/drivers/net/atl1/atl1_main.c
+> +++ b/drivers/net/atl1/atl1_main.c
+> @@ -2097,21 +2097,16 @@ static int __devinit atl1_probe(struct
+> pci_dev *pdev, struct net_device *netdev;
+>  	struct atl1_adapter *adapter;
+>  	static int cards_found = 0;
+> -	bool pci_using_64 = true;
+>  	int err;
+>  
+>  	err = pci_enable_device(pdev);
+>  	if (err)
+>  		return err;
+>  
+> -	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
+> +	err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+>  	if (err) {
+> -		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+> -		if (err) {
+> -			dev_err(&pdev->dev, "no usable DMA
+> configuration\n");
+> -			goto err_dma;
+> -		}
+> -		pci_using_64 = false;
+> +		dev_err(&pdev->dev, "no usable DMA configuration\n");
+> +		goto err_dma;
+>  	}
+>  	/* Mark all PCI regions associated with PCI device
+>  	 * pdev as being reserved by owner atl1_driver_name
+> @@ -2176,7 +2171,6 @@ static int __devinit atl1_probe(struct pci_dev
+> *pdev, 
+>  	netdev->ethtool_ops = &atl1_ethtool_ops;
+>  	adapter->bd_number = cards_found;
+> -	adapter->pci_using_64 = pci_using_64;
+>  
+>  	/* setup the private structure */
+>  	err = atl1_sw_init(adapter);
+> @@ -2193,9 +2187,6 @@ static int __devinit atl1_probe(struct pci_dev
+> *pdev, */
+>  	/* netdev->features |= NETIF_F_TSO; */
+>  
+> -	if (pci_using_64)
+> -		netdev->features |= NETIF_F_HIGHDMA;
+> -
+>  	netdev->features |= NETIF_F_LLTX;
+>  
+>  	/*
 
-sparse simply doesn't check that.  We don't have anything resembling
-support of VLA.  Note that check for integer constant expression
-has nothing to do with that;
-
-	int x[(int)(0.6 + 0.6)];
-
-is valid (if stupid).  And yes, footnote in 6.6 contradicts 6.7.5.2(1);
-too bad...
-
-We certainly need to do checks on array sizes; however, that part
-("if it has static storage duration, it should not be a VLA") is minor.
-And then there are gccisms:
-size_t foo(int n)
-{
-	struct {
-		int a[n];
-		char b;
-	} x;
-	return offsetof(typeof(x), b);
-}
-
-Yes, it's eaten up just fine.  And yes, such structures are silently
-accepted even with -pedantic -std=c99, which is a bug.  Sigh...
-
-We'll need to tackle VLAs at some point, but it certainly won't be fun ;-/
+Acked-by: Jay Cliburn <jacliburn@bellsouth.net>
