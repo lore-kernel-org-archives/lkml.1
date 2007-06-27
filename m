@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762134AbXF0Q0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762626AbXF0Q0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762134AbXF0Q0J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbXF0QZ4
+	id S1762626AbXF0Q0h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbXF0Q03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:25:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:64602 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbXF0QZz (ORCPT
+	Wed, 27 Jun 2007 12:26:29 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42257 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758225AbXF0Q02 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:25:55 -0400
-Message-ID: <46828F91.9050405@anagramm.de>
-Date: Wed, 27 Jun 2007 18:25:53 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Wed, 27 Jun 2007 12:26:28 -0400
+Date: Wed, 27 Jun 2007 18:26:50 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+Subject: Re: Please release a stable kernel Linux 3.0
+Message-ID: <20070627162650.GP1094@stusta.de>
+References: <200706271653.58870.a1426z@gawab.com> <20070627155254.GO1094@stusta.de> <46828B6C.6010203@redhat.com>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21.5 BUG: USB FTDI FT323BM usb exports duplicate symbols
-References: <46826EA3.2020707@anagramm.de> <200706271612.46175.oliver@neukum.org>
-In-Reply-To: <200706271612.46175.oliver@neukum.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX1/lP8nvW1JmRht76nNYIGIIFb4b25otZlbp8nm
- grYcR54JcjANrvFVrxZq6kXpRBGDvfMdEeXzweOgAQWjAjon3v
- /OtTtbFBt6sTgSbvPwauQ==
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46828B6C.6010203@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum schrieb:
-> Am Mittwoch, 27. Juni 2007 schrieb Clemens Koller:
->> Whenever I plug/unplug the FTDI FT232BM USB-RS232 converter, the latest
->> 2.6.21.5 kernel complains:
->>
->> usb 2-1: USB disconnect, address 7
->> ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
->> ftdi_sio 2-1:1.0: device disconnected
->> usb 3-1: new full speed USB device using ohci_hcd and address 43
->> usb 3-1: configuration #1 chosen from 1 choice
->> ftdi_sio 3-1:1.0: FTDI USB Serial Device converter detected
->> drivers/usb/serial/ftdi_sio.c: Detected FT232BM
->> usb 3-1: FTDI USB Serial Device converter now attached to ttyUSB0
->> usbcore: exports duplicate symbol usb_buffer_unmap_sg (owned by kernel)
->> usbserial: exports duplicate symbol usb_serial_port_softint (owned by kernel)
+On Wed, Jun 27, 2007 at 12:08:12PM -0400, Chuck Ebbert wrote:
+> On 06/27/2007 11:52 AM, Adrian Bunk wrote:
+> > On Wed, Jun 27, 2007 at 04:53:58PM +0300, Al Boldi wrote:
+> >> Al Viro wrote:
+> >>> On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
+> >>>> And as I understand it, this is (was ?) the whole point of
+> >>>> stable/development kernels. "We" can trust a newer stable
+> >>>> kernel to be a drop-in replacement for an older stable
+> >>>> kernel (from the same series), while development kernels
+> >>>> need time to stabilise with the new whizz-bang-pfouit stuff
+> >>>> that you all so nicely add.
+> >>> "Drop-in" in which sense?  That out-of-tree modules keep working?
+> >>> Not really...
+> >> Al, be reasonable.  There are many out-of-tree GPL modules that won't be 
+> >> accepted into mainline, never mind those that shouldn't be accepted.  But 
+> >> these modules do have a right to not be obsoleted by constant API changes.
+> > 
+> > "have a right" are strong words.
+> > Who is granting them this right?
+> > 
+> >> You are effectively inhibiting the development of an out-of-tree GPL module 
+> >> pool, by constantly pulling the rug under that community.
+> >>
+> >> Do you think this is fair?
+> > 
+> > Why are these modules not submitted for inclusion into the kernel?
+> > 
 > 
-> Please rebuild your kernel and modules from scratch. It looks like you are
-> mixing builds.
+> I was trying to figure that out for this one:
+> 
+> http://code.ximeta.com/trac-ndas
+> 
+> No mention of ever trying to get this upstream AFAICT... but this is
+> interesting:
+> 
+>   The linux market is limited comparing that of MS Windows.
+>   it is very hard for us to support the various linux distros.
+>   we, Ximeta, are trying to support those requests as many as
+>   we can, though the resources are very limited.
 
-Okay, I rebuilt the kernel in a new tree and cleaned up /lib/modules/*
-so, the problem is solved.
+One of their module contains a 180 kB binary blob and
+MODULE_LICENSE("Proprietary, Send bug reports to support@ximeta.com").
 
-Thank you.
+And it calls tons of functions EXPORT_SYMBOL'ed by their other
+3 modules that are MODULE_LICENSE("Dual BSD/GPL")...
+
+cu
+Adrian
+
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
