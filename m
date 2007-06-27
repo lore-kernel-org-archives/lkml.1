@@ -1,94 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762367AbXF0Rnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762668AbXF0Roa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762367AbXF0Rnq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbXF0Rnj
+	id S1762668AbXF0Roa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbXF0RoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:43:39 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:44400 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752158AbXF0Rni (ORCPT
+	Wed, 27 Jun 2007 13:44:22 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:32786 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbXF0RoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:43:38 -0400
-Date: Wed, 27 Jun 2007 18:43:02 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Ulrich Drepper <drepper@gmail.com>
-cc: Davide Libenzi <davidel@xmailserver.org>, blaisorblade@yahoo.it,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-In-Reply-To: <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
- <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
- <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
- <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
- <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
- <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
+	Wed, 27 Jun 2007 13:44:22 -0400
+Date: Wed, 27 Jun 2007 19:45:40 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070627174537.GM13886@enneenne.com>
+References: <20070626100628.GO24183@enneenne.com> <1182855427.12109.203.camel@pmac.infradead.org> <20070626170622.GA13886@enneenne.com> <1182879520.3263.19.camel@shinybook.infradead.org> <20070627101449.GH13886@enneenne.com> <1182939510.6409.17.camel@pmac.infradead.org> <20070627125802.GI13886@enneenne.com> <1182960660.1170.12.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGJsYWlzb3JibGFkZUB5YWhvby5pdABkYXZpZGVsQHhtYWlsc2VydmVyLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGRyZXBwZXJAZ21haWwuY29tAA==
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: multipart/mixed; boundary="x+RZeZVNR8VILNfK"
+Content-Disposition: inline
+In-Reply-To: <1182960660.1170.12.camel@pmac.infradead.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Ulrich Drepper wrote:
-> On 6/27/07, Hugh Dickins <hugh@veritas.com> wrote:
-> > Not so: if an mmap can be done by extending either adjacent vma (prot
-> > and flags and file and offset all match up), that's what's done and no
-> > separate vma is created.  (And adjacent vmas get merged when mprotect
-> > removes the difference in protection.)
-> 
-> mmap return values are randomized.  If they would be mergable
-> something would be wrong.
 
-The absolute virtual addresses are randomized, yes; but do a sequence
-of mmaps and they come back adjacent to each other, and so mergable.
-Or does your distro include a kernel patch to randomize them relative
-to each other?
+--x+RZeZVNR8VILNfK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> > I don't think there's any such reason to prefer brk to mmap.
-> 
-> Talk to the Quadrics people.  Some of their interconnect adapters
-> incur significant costs with separate VMAs.
-> 
-> > Please let me know if you've a test case which shows more vmas than
-> > expected.
-> 
-> Not related to this, but we already have "too many" VMAs for some
-> definition of "too many".  Since we split VMA when the protection
-> changes each thread stack consists at least of two VMA (three for
-> ia64).  There was an approach at some point to push the access flags
-> down and allow VMAs to stretch further.  Why was this deemed
-> unsuitable?
+On Wed, Jun 27, 2007 at 05:11:00PM +0100, David Woodhouse wrote:
 
-Blaisorblade's patch, yes.  I disliked it at the time I reviewed
-it a couple of years back: it made a system call many of us regret
-even nastier, and relied on tiresome per-arch pagetable encodings.
-It seemed likely to cause us trouble down the line - though
-undoubtedly it provides real benefits too.
+> No, because you're passing a _kernel_ pointer to sys_time_pps_fetch()
+> where it expects a userspace pointer. Use compat_alloc_user_space() to
+> find somewhere to put it in user space, instead. Or change your internal
+> __sys_time_pps_fetch() function to take a number of ticks instead of a
+> pointer to a timespec, then call that directly with appropriate
+> arguments, from both the normal and compat syscall routines.
 
-I never found time to review it when it came around again recently,
-thought Blaisorblade might prefer me to turn a blind eye to it ;)
-and let others opine instead.  But I think noone else found time to
-review it either.  I expect it's rather nicer now, but doubt it's
-actually attractive.
+Ok. Please see the attached patch.
 
-It _might_ turn out to be more attractive, not to rely on that
-peculiar sys_remap_file_pages, but make all our vmas independent
-of protections, and hang differently protected ranges off them.
-Maybe.
+Thanks a lot,
 
-> It could have quite a bit with situations with many
-> threads (Java).  As I've told back when this came up, we had one
-> customer where the VMA lookup actually showed up in profiles.
+Rodolfo
 
-In honesty, I should add that I dislike and distrust Davide's
-MAP_NOZERO very much indeed!  Would much rather leave my cpus
-spending a little time in clear_page().  A uid in struct page
-(though I'm sure we could find somewhere to tuck it away) -
-the horror, the horror!  But I've so far failed to find a killer
-argument against it, and am hoping for someone else to do so.
+-- 
 
-Curmudgeonly,
-Hugh
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
+
+--x+RZeZVNR8VILNfK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=patch
+
+diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
+index befe292..820cc9a 100644
+--- a/drivers/pps/pps.c
++++ b/drivers/pps/pps.c
+@@ -26,6 +26,7 @@
+ #include <linux/init.h>
+ #include <linux/linkage.h>
+ #include <linux/sched.h>
++#include <linux/compat.h>
+ #include <linux/pps.h>
+ #include <asm/uaccess.h>
+ 
+@@ -284,13 +285,12 @@ sys_time_pps_getcap_exit:
+ 	return ret;
+ }
+ 
+-asmlinkage long sys_time_pps_fetch(int source, const int tsformat,
++static long __sys_time_pps_fetch(int source, const int tsformat,
+ 					struct pps_info __user *info, 
+-					const struct timespec __user *timeout)
++					const struct timespec *timeout)
+ {
+ 	unsigned long ticks;
+ 	struct pps_info pi;
+-	struct timespec to;
+ 	int ret;
+ 
+ 	pps_dbg("%s: source %d", __FUNCTION__, source);
+@@ -317,24 +317,19 @@ asmlinkage long sys_time_pps_fetch(int source, const int tsformat,
+ 	pps_source[source].go = 0;
+ 
+  	/* Manage the timeout */
+-	if (timeout) {
+-		ret = copy_from_user(&to, timeout, sizeof(struct timespec));
+-		if (ret)
+-			goto sys_time_pps_fetch_exit;
+-		if (to.tv_sec != -1) {
+-			pps_dbg("timeout %ld.%09ld", to.tv_sec, to.tv_nsec);
+-			ticks = to.tv_sec * HZ;
+-			ticks += to.tv_nsec / (NSEC_PER_SEC / HZ);
+-
+-			if (ticks != 0) {
+-				ret = wait_event_interruptible_timeout(
+-					pps_source[source].queue,
+-					pps_source[source].go, ticks);
+-  				if (ret == 0) {
+-					pps_dbg("timeout expired");
+-					ret = -ETIMEDOUT;
+-					goto sys_time_pps_fetch_exit;
+-				}
++	if (timeout->tv_sec != -1) {
++		pps_dbg("timeout %ld.%09ld", timeout->tv_sec, timeout->tv_nsec);
++		ticks = timeout->tv_sec * HZ;
++		ticks += timeout->tv_nsec / (NSEC_PER_SEC / HZ);
++
++		if (ticks != 0) {
++			ret = wait_event_interruptible_timeout(
++				pps_source[source].queue,
++				pps_source[source].go, ticks);
++  			if (ret == 0) {
++				pps_dbg("timeout expired");
++				ret = -ETIMEDOUT;
++				goto sys_time_pps_fetch_exit;
+ 			}
+ 		}
+  	} else
+@@ -362,6 +357,44 @@ sys_time_pps_fetch_exit:
+ 	return ret;
+ }
+ 
++asmlinkage long sys_time_pps_fetch(int source, const int tsformat,
++					struct pps_info __user *info, 
++					const struct timespec __user *timeout)
++{
++	int ret;
++	struct timespec to;
++
++	if (timeout) {
++		ret = copy_from_user(&to, timeout, sizeof(struct timespec));
++		if (ret)
++			return ret;
++	}
++	else
++		to.tv_sec = -1;	
++
++	return __sys_time_pps_fetch(source, tsformat, info, timeout);
++}
++
++#ifdef CONFIG_COMPAT
++asmlinkage long compat_sys_time_pps_fetch(int source, const int tsformat,
++				struct pps_info __user *info, 
++				const struct compat_timespec __user *timeout)
++{
++	int ret;
++	struct timespec to;
++
++	if (timeout) {
++		ret = get_compat_timespec(&to, timeout);
++		if (ret)
++			return -EFAULT;
++	}
++	else
++		to.tv_sec = -1;	
++	
++	return __sys_time_pps_fetch(source, tsformat, info, &to);
++}
++#endif
++
+ /*
+  * Module staff
+  */
+
+--x+RZeZVNR8VILNfK--
