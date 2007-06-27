@@ -1,94 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762915AbXF0TAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762737AbXF0TBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762915AbXF0TAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbXF0TAf
+	id S1762737AbXF0TBM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbXF0TA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:00:35 -0400
-Received: from anchor-post-31.mail.demon.net ([194.217.242.89]:2796 "EHLO
-	anchor-post-31.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757746AbXF0TAe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:00:34 -0400
-Date: Wed, 27 Jun 2007 20:00:26 +0100 (BST)
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, linux-mm@kvack.org
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
-       William Lee Irwin III <wli@holomorphy.com>, Andi Kleen <ak@suse.de>,
-       discuss@x86-64.org, Ioan Ionita <opslynx@gmail.com>
-Subject: Re: [1/2] 2.6.22-rc6: known regressions
-In-Reply-To: <467F8F78.8090700@googlemail.com>
-Message-ID: <Pine.LNX.4.61.0706271944590.16177@mtfhpc.demon.co.uk>
-References: <467F8B35.4010906@googlemail.com> <467F8F78.8090700@googlemail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 27 Jun 2007 15:00:57 -0400
+Received: from mail.screens.ru ([213.234.233.54]:36511 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752655AbXF0TA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 15:00:56 -0400
+Date: Wed, 27 Jun 2007 22:59:52 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Chris Snook <csnook@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, John Stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sys_time-speedup-small-cleanup
+Message-ID: <20070627185952.GA91@tv-sign.ru>
+References: <20070626123424.GA259@tv-sign.ru> <46813D1C.9080107@redhat.com> <20070627112908.GB108@tv-sign.ru> <4682AAB3.6050704@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4682AAB3.6050704@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
-
-I have done some more work on the sun4c Sparc32 random invalid instruction 
-occourances. The issue only affects the SLAB allocator. The SLUB and SLOB 
-allocators both work OK but SLOB is dreadfully slow making it totally 
-impractical for use on my sun4c. Isolating the problem to the SLAB 
-allocator should make it a bit easier to track down the problem.
-
-It may be desirable to put a comment into Kconfig to indicate that the 
-SLAB allocator is currently broaken for sun4c but that SLUB works well as 
-I dought that I will have found/fixed the problem before 2.6.22.
-
-Regards
- 	Mark Fortescue.
-
-On Mon, 25 Jun 2007, Michal Piotrowski wrote:
-
-> Hi all,
-> 
-> Here is a list of some known regressions in 2.6.22-rc6.
-> 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
-> 
-> *STATISTICS* (a.k.a. list of aces)
-> 
-> Name                    Regressions fixed since 21-Jun-2007
-> Andi Kleen                             1
-> Hugh Dickins                           1
-> Jean Delvare                           1
-> 
-> 
-> 
-> Sparc64
-> 
-> Subject    : random invalid instruction occourances on sparc32 (sun4c)
-> References : http://lkml.org/lkml/2007/6/17/111
-> Submitter  : Mark Fortescue <mark@mtfhpc.demon.co.uk>
-> Status     : problem is being debugged
-> 
-> Subject    : 2.6.22-rc broke X on Ultra5
-> References : http://lkml.org/lkml/2007/5/22/78
-> Submitter  : Mikael Pettersson <mikpe@it.uu.se>
-> Handled-By : David Miller <davem@davemloft.net>
-> Status     : problem is being debugged
-> 
-> 
-> 
-> x86-64
-> 
-> Subject    : x86-64 2.6.22-rc2 random segfaults
-> References : http://lkml.org/lkml/2007/5/24/275
-> Submitter  : Ioan Ionita <opslynx@gmail.com>
-> Status     : Unknown
-> 
-> 
-> 
-> Regards,
-> Michal
-> 
-> --
-> LOG
-> http://www.stardust.webpages.pl/log/
+On 06/27, Chris Snook wrote:
 >
+> Oleg Nesterov wrote:
+> >On 06/26, Chris Snook wrote:
+> >>Oleg Nesterov wrote:
+> >>>on top of sys_time-speedup.patch
+> >>>
+> >>>Ingo Molnar wrote:
+> >>>>asmlinkage long sys_time(time_t __user * tloc)
+> >>>>{
+> >>>>-	time_t i;
+> >>>>-	struct timeval tv;
+> >>>>+	/*
+> >>>>+	 * We read xtime.tv_sec atomically - it's updated
+> >>>>+	 * atomically by update_wall_time(), so no need to
+> >>>>+	 * even read-lock the xtime seqlock:
+> >>>>+	 */
+> >>>>+	time_t i = xtime.tv_sec;
+> >>>>
+> >>>>-	do_gettimeofday(&tv);
+> >>>>-	i = tv.tv_sec;
+> >>>>+	smp_rmb(); /* sys_time() results are coherent */
+> >>>Why do we need this barrier? My guess it is needed to prevent
+> >>>the reading of xtime.tv_sec twice, yes? In that case a simple
+> >>>barrier() should be enough.
+> >>Without the smp_rmb, you can potentially have a situation where one CPU 
+> >>is still reading an old value from cache while another has the new value. 
+> >
+> >I can't understand this.
+> >
+> >Fisrt, smp_rmb() can't help in this case. It can't influence the preceeding
+> >LOAD if it was from cache.
+> >
+> >Even if it could, another CPU can alter the value just after the reading
+> >completes, and we have the same situation.
+> >
+> >Could you please clarify if I am wrong?
+> >
+> >Oleg.
+> >
+> 
+> You're right, but so is Ingo's patch.  We're not trying to enforce some 
+> notion of absolute time, just  make it possible for userspace to guarantee 
+> that time cannot be *observed* to travel backwards.  It's still the 
+> responsibility of the user to use proper synchronization in multithreaded 
+> apps.  Without the smp_rmb() it would be possible on some architectures for 
+> the results of the race you describe to leak across other lock-prefixed 
+> instructions used to ensure monotonicity in userspace.  Relativity applies 
+> to SMP timekeeping, not just space travelers, so if there's no way to prove 
+> a race occurred, it doesn't matter whether or not it occurred in some frame 
+> of reference.
+
+This doesn't make sense to me, sorry. Could provide more details to explain
+the race? Some ascii diagram?
+
+I believe smp_rmb() can't make _any_ difference in this case.
+
+Oleg.
+
