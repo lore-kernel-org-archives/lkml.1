@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761275AbXF0SS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760928AbXF0SWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761275AbXF0SS4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 14:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756942AbXF0SSt
+	id S1760928AbXF0SWc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 14:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbXF0SWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 14:18:49 -0400
-Received: from web30504.mail.mud.yahoo.com ([68.142.200.117]:20715 "HELO
-	web30504.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754904AbXF0SSs (ORCPT
+	Wed, 27 Jun 2007 14:22:25 -0400
+Received: from eastrmmtao102.cox.net ([68.230.240.8]:52515 "EHLO
+	eastrmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754277AbXF0SWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 14:18:48 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 14:18:48 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=lH0ytsLtg/sfMu8wQ/cROPF4jZ/TzxRbjwwJc464kuktq/mYQgBo6cMZShmgnvdin5mPJmyT8rHDuCVLsp6Ei/DjeXeQ62w+DjpGaF1/GbuQRxTiCXxXykNUFOTpsWyXuXybC5bNz+y+e1fU5DmQE5/I0918p/41c3bRgBqZ8OM=  ;
-Message-ID: <20070627181208.98426.qmail@web30504.mail.mud.yahoo.com>
-X-YMail-OSG: Vu1PVrMVM1ke65AoylXliVHJyjr3jc0TG9DtZQj8d1XruD3JOyB4mVDEUup7wITjxA--
-Date: Wed, 27 Jun 2007 11:12:08 -0700 (PDT)
-From: Casey Leedom <casey_leedom@yahoo.com>
-Subject: ZERO_PAGE() vs. loadable modules in Redhat 4.4 i386 kernels ...
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Wed, 27 Jun 2007 14:22:25 -0400
+X-Greylist: delayed 990 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 14:22:24 EDT
+Date: Wed, 27 Jun 2007 14:05:52 -0400
+From: Chris Shoemaker <c.shoemaker@cox.net>
+To: Josh Triplett <josht@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, josh@kernel.org
+Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
+Message-ID: <20070627180552.GA746@pe.Belkin>
+References: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Jun 27, 2007 at 10:59:20AM -0700, Josh Triplett wrote:
+> +Do not leave trailing whitespace at the ends of lines.  Some editors with
+> +"smart" indentation will insert whitespace at the beginning of new lines as
+> +appropriate, so you can start typing the next line of code right away.
+> +However, some such editors do not remove the whitespace if you end up not
+> +putting a line of code there, such as if you leave a blank line.  As a result,
+> +you end up with lines containing trailing whitespace.
+> +
+> +Git will warn you about patches that introduce trailing whitespace, and can
+> +optionally strip the trailing whitespace for you; however, if applying a series
+> +of patches, this may make later patches in the series fail by changing their
+> +context lines.
 
-  I'm working on a driver that does a get_user_pages() for a DMA write.  We
-have a timeout on the DMA completion where we mark the pages as COW and return
-to the application so it can potentially generate more data in order to
-increase throughput, etc.  The problem is that when we traverse the
-PGT/PUD/PMD/PTE hierarchy to mark the pages, we sometime fault out when the PUD
-covering [0x80000000, 0xc0000000) comes out as zero when that entire region is
-covered by a single large malloc()'ed buffer.  This happens because
-get_user_pages() returns a reference to empty_zero_page without passing through
-the fault path when a page is backed by anonymous memory.  I put a check this
-in my driver using ZERO_PAGE() and everything is great.  Except that it doesn't
-work on 32-bit i386 Redhat 4.4 kernels because the symbol for empty_zero_page
-is not only not exported via EXPORT_SYMBOL() but has also somehow been stripped
-from the kallsyms table.  This means that I can't check for the ZERO_PAGE() in
-a module.
+What I'd really like to see is, _why_ is trailing whitespace
+considered harmful?  Something about MUAs not preserving it or
+something?
 
-  Can someone suggest a better way of doing this?  Either by some subterfuge to
-get empty_zero_page or perhaps by asking the kernel to instantiate the
-PGT/PUD/PMD/PTE hierarchy for a page?  I'm sort of stuck here.  Thanks for any
-help and/or advice you can offer.
-
-Casey
+-chris
