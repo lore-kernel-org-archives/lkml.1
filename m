@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbXF0NGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760577AbXF0NJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761005AbXF0NGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 09:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbXF0NGM
+	id S1760577AbXF0NJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 09:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757091AbXF0NJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 09:06:12 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:44838
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755916AbXF0NGM (ORCPT
+	Wed, 27 Jun 2007 09:09:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:23068 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757122AbXF0NJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 09:06:12 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH RFC #2] hwrng: Add type categories
-Date: Wed, 27 Jun 2007 15:05:33 +0200
-User-Agent: KMail/1.9.6
-Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200706262021.51410.mb@bu3sch.de> <20070626224517.GG11115@waste.org> <20070627024856.GB5491@khazad-dum.debian.net>
-In-Reply-To: <20070627024856.GB5491@khazad-dum.debian.net>
+	Wed, 27 Jun 2007 09:09:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=LQ+p8ofq+f0aizf00ga0GQ3W3J6+E1VZe/RynMxbi4ns2GZymC91wIX06M1WrLJgk+8agqN3VKz+JRP23P2pgUhmIHB1Z1KNbDDrHNi+XkoZ95rbwTvw1vUESTaNUHRAFh3boJ3J2AbTMgR5S/QGiZojuQ/YY+xBVmY3J2Rw82w=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Jan Kandziora <jjj@gmx.de>
+Subject: Re: Limiting load of certain processes
+Date: Wed, 27 Jun 2007 16:06:48 +0300
+User-Agent: KMail/1.9.4
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200706211950.40825.jjj@gmx.de> <200706260444.35818.maximlevitsky@gmail.com> <200706261148.32478.jjj@gmx.de>
+In-Reply-To: <200706261148.32478.jjj@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200706271505.33970.mb@bu3sch.de>
+Message-Id: <200706271606.48773.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 June 2007 04:48:56 Henrique de Moraes Holschuh wrote:
-> (a) is just broken, unless one is to take it as "never use it".  And I am
-> really not sure about (b).  It *is* better than just using whatever crap we
-> found first (or last), but it is the wrong solution for a problem that we
-> really should not have in the first place if someone had thought a bit
-> before adding a misc device for something that has no reason to be unique in
-> a system.
-
-Well, we have that userspace ABI of one hwrng char device. I did not
-invent that. It's kind of broken, yes.
-And changing it in a compatible way is probably difficult.
-
-> Instead of papering over the problem with borked solutions, maybe we should
-> just export ALL HRNGs to userspace.  While at it, please add whatever is
-
-And then we would _still_ export some kind of hint for rngd that
-the CPU rng device should be preferred over the bcm43xx device.
-rngd needs some basic hint about the devices.
-How would you implement that? (We're back to my TYPE_XXX definitions ;) )
-
-> needed so that userspace can talk to the kernel driver to get vital
-> information about the HRNG device the driver might have (the current
-> interface is a bad simplistic hack).
-
-What is "vital information"? My TYPE_XXX categories? ;)
-
-> Let userspace get the data from whichever HRNG it wants, process it in any
-
-It _can_. We can switch the RNG in sysfs. So userspace _can_ get data
-from whichever HWRNG it wants.
-
-> way it wants and pipe it back through /dev/random IOCTLs.  And let it do it
-> for as many HRNGs it wants at the same time.
-
-That's an improvement, yes.
-
-> And if you must have /dev/hw_random point somewhere, let udev scripts or
-> something else like that take care of it.
-
-Could do that, yes.
+On Tuesday 26 June 2007 12:48, Jan Kandziora wrote:
+> Am Dienstag, 26. Juni 2007 03:44 schrieb Maxim Levitsky:
+> > Hi.
+> >
+> > Try  to set $_hogthreshold = (1) in dosemu.conf
+> >
+> > This helps a lot for me.
+>
+> This "nice"s the dosemu process -- I already use this setting. However, if
+> no other process is runnable, dosemu will get again all CPU power, which
+> disturbs power-saving. Thanks for sharing ideas, anyway.
+>
+> Kind regards
+>
+> 	Jan
 
 
--- 
-Greetings Michael.
+Hi,
+
+Well, I almost sure that this is not true, 
+or maybe you are not using dosemu 1.4.0, and other one behaves differently.
+
+Anyway, if I run dosemu 1.4.0 with that setting and stock freedos
+command.com the cpu usage is well below 5%, and dosemu task is not reniced
+There are even times that I forget that dosemu is running.
+
+Also I don't know why but dosemu 1.4.0 has new sound system that is way better 
+that 1.2 one, but it is not enabled so you need to set $_sound=(2) to get it,
+what is nice is that this one uses SDL ( read alsa) for output, and has OPL3  
+emulation, so MIDI plays out of box
+
+Regards,
+	Maxim Levitsky
