@@ -1,80 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbXF0MxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760811AbXF0M4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbXF0MxH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 08:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758211AbXF0Mwy
+	id S1760811AbXF0M4v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 08:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbXF0M4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 08:52:54 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:42625
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758218AbXF0Mwx (ORCPT
+	Wed, 27 Jun 2007 08:56:43 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:56781 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756340AbXF0M4m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 08:52:53 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH] hw_random: add quality categories
-Date: Wed, 27 Jun 2007 14:52:10 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200706241555.22957.mb@bu3sch.de> <200706261645.24360.mb@bu3sch.de> <20070627031800.GJ11115@waste.org>
-In-Reply-To: <20070627031800.GJ11115@waste.org>
+	Wed, 27 Jun 2007 08:56:42 -0400
+Date: Wed, 27 Jun 2007 14:58:02 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070627125802.GI13886@enneenne.com>
+References: <20070626100628.GO24183@enneenne.com> <1182855427.12109.203.camel@pmac.infradead.org> <20070626170622.GA13886@enneenne.com> <1182879520.3263.19.camel@shinybook.infradead.org> <20070627101449.GH13886@enneenne.com> <1182939510.6409.17.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200706271452.11036.mb@bu3sch.de>
+In-Reply-To: <1182939510.6409.17.camel@pmac.infradead.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 June 2007 05:18:00 Matt Mackall wrote:
-> On Tue, Jun 26, 2007 at 04:45:24PM +0200, Michael Buesch wrote:
-> > On Tuesday 26 June 2007 16:32:37 Matt Mackall wrote:
-> > > > No wait. You are missing the whole point of this
-> > > > quality category.
-> > > > The whole point of it is to prevent defaulting to a bad RNG, if
-> > > > there's a bad and a good one in a machine.
-> > > > Well, what's bad.
-> > > > It's easy. HWRNGs like the one in bcm43xx are bad.
-> > > > It's proprietary and nobody knows what it does (I guess
-> > > > it gathers the entropy from the network or something
-> > > > and hashes that in hardware).
-> > > > So such a device would be QUAL_LOW.
+On Wed, Jun 27, 2007 at 11:18:30AM +0100, David Woodhouse wrote:
+> On Wed, 2007-06-27 at 12:14 +0200, Rodolfo Giometti wrote:
+> > On Tue, Jun 26, 2007 at 06:38:40PM +0100, David Woodhouse wrote:
 > > > 
-> > > If it's gathering its entropy from the network, it is not a QUAL_LOW
-> > > RNG because it is not a hardware random number generator at all!
+> > > 64-bit kernels can run 32-bit userspace programs. But some structures
+> > > come out _differently_ between 32-bit and 64-bit compilation, so the
+> > > system call needs a special 'compat' handler instead of just running the
+> > > normal 64-bit system call.
 > > > 
-> > > Such a device is QUAL_PSEUDO or QUAL_UNKNOWN. If it's known or
-> > > suspected to be bogus, it should be so marked. 
+> > > The 'struct timespec' is one structure which is sometimes different for
+> > > 32-bit vs. 64-bit, so any system call taking a 'struct timespec' must
+> > > have a separate compat_sys_xxxx() to handle that. See something like
+> > > compat_sys_clock_settime() in kernel/compat.c for an example (but don't
+> > > use set_fs() like it does; just see how it handles the compat_timespec).
 > > 
-> > No, it should not be marked pseudo. It _is_ a RNG in hardware.
+> > Did you mean something like this?
 > 
-> Again, if it's not using an underlying physical process that's
-> unpredictable, it does not deserve to be called a real HWRNG. It's no
-> better than the software PRNG in the kernel at that point.
-> 
-> If you have a reasonable suspicion that this is the case with the BCM
-> part, then you should so mark it.
+> How will 64-bit system calls work if you do it like that? You need to
+> provide _both_ sys_time_pps_fetch() and compat_sys_time_pps_fetch().
 
-Done so in the new patch.
+Sorry, I'm new to this 32/64 bits issues...
 
-> > No, that's not true. I explained the difference to you and it's even
-> > explained in the kdoc help text. Re-read it, please.
-> > HIGH is for seperate dedicated extension devices that you buy and
-> > stick into your machine. So it would default to that, as you want
-> > to use that by default (why would you otherwise stick it in).
-> 
-> I do not believe there exist devices that deserve to be classified as
-> "HIGH".
+Now is it correct?
 
-You still didn't understand what I am trying to explain.
-Please look at my new patch. The "DEDICATED" type is what QUAL_HIGH
-meant.
+diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
+index befe292..b9df17b 100644
+--- a/drivers/pps/pps.c
++++ b/drivers/pps/pps.c
+@@ -26,6 +26,7 @@
+ #include <linux/init.h>
+ #include <linux/linkage.h>
+ #include <linux/sched.h>
++#include <linux/compat.h>
+ #include <linux/pps.h>
+ #include <asm/uaccess.h>
+ 
+@@ -362,6 +363,22 @@ sys_time_pps_fetch_exit:
+        return ret;
+ }
+ 
++#ifdef CONFIG_COMPAT
++asmlinkage long compat_sys_time_pps_fetch(int source, const int tsformat,
++                               struct pps_info __user *info, 
++                               const struct compat_timespec __user *timeout)
++{
++       int ret;
++       struct timespec to;
++
++       ret = get_compat_timespec(&to, timeout);
++       if (ret)
++               return -EFAULT;
++       
++       return sys_time_pps_fetch(source, tsformat, info, &to);
++}
++#endif
++
+ /*
+  * Module staff
+  */
 
-Again: It is _just_ for selecting a default policy of which RNG
-to enable by default. It is _not_ about quality. (And so the QUAL_XXX
-defines were misnamed).
+Since I have no way to test this code maybe is better add no function
+at all and simply using a warning message if someone try compiling
+this code with CONFIG_COMPAT enabled...
+
+Ciao,
+
+Rodolfo
 
 -- 
-Greetings Michael.
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
