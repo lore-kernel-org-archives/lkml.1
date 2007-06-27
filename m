@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759894AbXF0Byj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbXF0By4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759894AbXF0Byj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 21:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbXF0Bve
+	id S1759480AbXF0By4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 21:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757240AbXF0Bvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 21:51:34 -0400
-Received: from mga01.intel.com ([192.55.52.88]:61156 "EHLO mga01.intel.com"
+	Tue, 26 Jun 2007 21:51:39 -0400
+Received: from mga02.intel.com ([134.134.136.20]:38936 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754657AbXF0BvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 21:51:16 -0400
+	id S1754465AbXF0BvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 21:51:22 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.16,465,1175497200"; 
-   d="scan'208";a="261537475"
+   d="scan'208";a="259271357"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [md-accel PATCH 08/19] md: common infrastructure for running
-	operations with raid5_run_ops
+Subject: [md-accel PATCH 09/19] md: handle_stripe5 - add request/completion
+	logic for async write ops
 To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
 Cc: neilb@suse.de, akpm@linux-foundation.org, davem@davemloft.net,
        christopher.leech@intel.com, shannon.nelson@intel.com,
        herbert@gondor.apana.org.au, jeff@garzik.org
-Date: Tue, 26 Jun 2007 18:51:15 -0700
-Message-ID: <20070627015115.18962.76642.stgit@dwillia2-linux.ch.intel.com>
+Date: Tue, 26 Jun 2007 18:51:20 -0700
+Message-ID: <20070627015120.18962.89311.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
 References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.12.1
@@ -30,161 +30,216 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All the handle_stripe operations that are to be transitioned to use
-raid5_run_ops need a method to coherently gather work under the stripe-lock
-and hand that work off to raid5_run_ops.  The 'get_stripe_work' routine
-runs under the lock to read all the bits in sh->ops.pending that do not
-have the corresponding bit set in sh->ops.ack.  This modified 'pending'
-bitmap is then passed to raid5_run_ops for processing.
+After handle_stripe5 decides whether it wants to perform a
+read-modify-write, or a reconstruct write it calls
+handle_write_operations5.  A read-modify-write operation will perform an
+xor subtraction of the blocks marked with the R5_Wantprexor flag, copy the
+new data into the stripe (biodrain) and perform a postxor operation across
+all up-to-date blocks to generate the new parity.  A reconstruct write is run
+when all blocks are already up-to-date in the cache so all that is needed
+is a biodrain and postxor.
 
-The transition from 'ack' to 'completion' does not need similar protection
-as the existing release_stripe infrastructure will guarantee that
-handle_stripe will run again after a completion bit is set, and
-handle_stripe can tolerate a sh->ops.completed bit being set while the lock
-is held.
+On the completion path STRIPE_OP_PREXOR will be set if the operation was a
+read-modify-write.  The STRIPE_OP_BIODRAIN flag is used in the completion
+path to differentiate write-initiated postxor operations versus
+expansion-initiated postxor operations.  Completion of a write triggers i/o
+to the drives.
 
-A call to async_tx_issue_pending_all() is added to raid5d to kick the
-offload engines once all pending stripe operations work has been submitted.
-This enables batching of the submission and completion of operations.
+Changelog:
+* make the 'rcw' parameter to handle_write_operations5 a simple flag, Neil Brown
+* remove test_and_set/test_and_clear BUG_ONs, Neil Brown
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Acked-By: NeilBrown <neilb@suse.de>
 ---
 
- drivers/md/raid5.c |   67 +++++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 58 insertions(+), 9 deletions(-)
+ drivers/md/raid5.c |  161 +++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 138 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 34fcda0..7c688f6 100644
+index 7c688f6..b2e88fe 100644
 --- a/drivers/md/raid5.c
 +++ b/drivers/md/raid5.c
-@@ -124,6 +124,7 @@ static void __release_stripe(raid5_conf_t *conf, struct stripe_head *sh)
- 			}
- 			md_wakeup_thread(conf->mddev->thread);
- 		} else {
-+			BUG_ON(sh->ops.pending);
- 			if (test_and_clear_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
- 				atomic_dec(&conf->preread_active_stripes);
- 				if (atomic_read(&conf->preread_active_stripes) < IO_THRESHOLD)
-@@ -225,7 +226,8 @@ static void init_stripe(struct stripe_head *sh, sector_t sector, int pd_idx, int
- 
- 	BUG_ON(atomic_read(&sh->count) != 0);
- 	BUG_ON(test_bit(STRIPE_HANDLE, &sh->state));
--	
-+	BUG_ON(sh->ops.pending || sh->ops.ack || sh->ops.complete);
-+
- 	CHECK_DEVLOCK();
- 	pr_debug("init_stripe called, stripe %llu\n",
- 		(unsigned long long)sh->sector);
-@@ -241,11 +243,11 @@ static void init_stripe(struct stripe_head *sh, sector_t sector, int pd_idx, int
- 	for (i = sh->disks; i--; ) {
- 		struct r5dev *dev = &sh->dev[i];
- 
--		if (dev->toread || dev->towrite || dev->written ||
-+		if (dev->toread || dev->read || dev->towrite || dev->written ||
- 		    test_bit(R5_LOCKED, &dev->flags)) {
--			printk("sector=%llx i=%d %p %p %p %d\n",
-+			printk(KERN_ERR "sector=%llx i=%d %p %p %p %p %d\n",
- 			       (unsigned long long)sh->sector, i, dev->toread,
--			       dev->towrite, dev->written,
-+			       dev->read, dev->towrite, dev->written,
- 			       test_bit(R5_LOCKED, &dev->flags));
- 			BUG();
- 		}
-@@ -325,6 +327,44 @@ static struct stripe_head *get_active_stripe(raid5_conf_t *conf, sector_t sector
- 	return sh;
+@@ -1815,7 +1815,79 @@ static void compute_block_2(struct stripe_head *sh, int dd_idx1, int dd_idx2)
+ 	}
  }
  
-+/* test_and_ack_op() ensures that we only dequeue an operation once */
-+#define test_and_ack_op(op, pend) \
-+do {							\
-+	if (test_bit(op, &sh->ops.pending) &&		\
-+		!test_bit(op, &sh->ops.complete)) {	\
-+		if (test_and_set_bit(op, &sh->ops.ack)) \
-+			clear_bit(op, &pend);		\
-+		else					\
-+			ack++;				\
-+	} else						\
-+		clear_bit(op, &pend);			\
-+} while (0)
-+
-+/* find new work to run, do not resubmit work that is already
-+ * in flight
-+ */
-+static unsigned long get_stripe_work(struct stripe_head *sh)
++static int
++handle_write_operations5(struct stripe_head *sh, int rcw, int expand)
 +{
-+	unsigned long pending;
-+	int ack = 0;
++	int i, pd_idx = sh->pd_idx, disks = sh->disks;
++	int locked = 0;
 +
-+	pending = sh->ops.pending;
-+
-+	test_and_ack_op(STRIPE_OP_BIOFILL, pending);
-+	test_and_ack_op(STRIPE_OP_COMPUTE_BLK, pending);
-+	test_and_ack_op(STRIPE_OP_PREXOR, pending);
-+	test_and_ack_op(STRIPE_OP_BIODRAIN, pending);
-+	test_and_ack_op(STRIPE_OP_POSTXOR, pending);
-+	test_and_ack_op(STRIPE_OP_CHECK, pending);
-+	if (test_and_clear_bit(STRIPE_OP_IO, &sh->ops.pending))
-+		ack++;
-+
-+	sh->ops.count -= ack;
-+	BUG_ON(sh->ops.count < 0);
-+
-+	return pending;
-+}
-+
- static int
- raid5_end_read_request(struct bio *bi, unsigned int bytes_done, int error);
- static int
-@@ -2487,7 +2527,6 @@ static void handle_stripe_expansion(raid5_conf_t *conf, struct stripe_head *sh,
-  *    schedule a write of some buffers
-  *    return confirmation of parity correctness
-  *
-- * Parity calculations are done inside the stripe lock
-  * buffers are taken off read_list or write_list, and bh_cache buffers
-  * get BH_Lock set before the stripe lock is released.
-  *
-@@ -2500,11 +2539,13 @@ static void handle_stripe5(struct stripe_head *sh)
- 	struct bio *return_bi = NULL, *bi;
- 	struct stripe_head_state s;
- 	struct r5dev *dev;
-+	unsigned long pending = 0;
- 
- 	memset(&s, 0, sizeof(s));
--	pr_debug("handling stripe %llu, cnt=%d, pd_idx=%d\n",
--		(unsigned long long)sh->sector, atomic_read(&sh->count),
--		sh->pd_idx);
-+	pr_debug("handling stripe %llu, state=%#lx cnt=%d, pd_idx=%d "
-+		"ops=%lx:%lx:%lx\n", (unsigned long long)sh->sector, sh->state,
-+		atomic_read(&sh->count), sh->pd_idx,
-+		sh->ops.pending, sh->ops.ack, sh->ops.complete);
- 
- 	spin_lock(&sh->lock);
- 	clear_bit(STRIPE_HANDLE, &sh->state);
-@@ -2667,8 +2708,14 @@ static void handle_stripe5(struct stripe_head *sh)
- 	if (s.expanding && s.locked == 0)
- 		handle_stripe_expansion(conf, sh, NULL);
- 
-+	if (sh->ops.count)
-+		pending = get_stripe_work(sh);
-+
- 	spin_unlock(&sh->lock);
- 
-+	if (pending)
-+		raid5_run_ops(sh, pending);
-+
- 	while ((bi=return_bi)) {
- 		int bytes = bi->bi_size;
- 
-@@ -3808,8 +3855,10 @@ static void raid5d (mddev_t *mddev)
- 			handled++;
- 		}
- 
--		if (list_empty(&conf->handle_list))
-+		if (list_empty(&conf->handle_list)) {
-+			async_tx_issue_pending_all();
- 			break;
++	if (rcw) {
++		/* if we are not expanding this is a proper write request, and
++		 * there will be bios with new data to be drained into the
++		 * stripe cache
++		 */
++		if (!expand) {
++			set_bit(STRIPE_OP_BIODRAIN, &sh->ops.pending);
++			sh->ops.count++;
 +		}
++
++		set_bit(STRIPE_OP_POSTXOR, &sh->ops.pending);
++		sh->ops.count++;
++
++		for (i = disks; i--; ) {
++			struct r5dev *dev = &sh->dev[i];
++
++			if (dev->towrite) {
++				set_bit(R5_LOCKED, &dev->flags);
++				if (!expand)
++					clear_bit(R5_UPTODATE, &dev->flags);
++				locked++;
++			}
++		}
++	} else {
++		BUG_ON(!(test_bit(R5_UPTODATE, &sh->dev[pd_idx].flags) ||
++			test_bit(R5_Wantcompute, &sh->dev[pd_idx].flags)));
++
++		set_bit(STRIPE_OP_PREXOR, &sh->ops.pending);
++		set_bit(STRIPE_OP_BIODRAIN, &sh->ops.pending);
++		set_bit(STRIPE_OP_POSTXOR, &sh->ops.pending);
++
++		sh->ops.count += 3;
++
++		for (i = disks; i--; ) {
++			struct r5dev *dev = &sh->dev[i];
++			if (i == pd_idx)
++				continue;
++
++			/* For a read-modify write there may be blocks that are
++			 * locked for reading while others are ready to be
++			 * written so we distinguish these blocks by the
++			 * R5_Wantprexor bit
++			 */
++			if (dev->towrite &&
++			    (test_bit(R5_UPTODATE, &dev->flags) ||
++			    test_bit(R5_Wantcompute, &dev->flags))) {
++				set_bit(R5_Wantprexor, &dev->flags);
++				set_bit(R5_LOCKED, &dev->flags);
++				clear_bit(R5_UPTODATE, &dev->flags);
++				locked++;
++			}
++		}
++	}
++
++	/* keep the parity disk locked while asynchronous operations
++	 * are in flight
++	 */
++	set_bit(R5_LOCKED, &sh->dev[pd_idx].flags);
++	clear_bit(R5_UPTODATE, &sh->dev[pd_idx].flags);
++	locked++;
  
- 		first = conf->handle_list.next;
- 		sh = list_entry(first, struct stripe_head, lru);
++	pr_debug("%s: stripe %llu locked: %d pending: %lx\n",
++		__FUNCTION__, (unsigned long long)sh->sector,
++		locked, sh->ops.pending);
++
++	return locked;
++}
+ 
+ /*
+  * Each stripe/dev can have one or more bion attached.
+@@ -2210,27 +2282,8 @@ static void handle_issuing_new_write_requests5(raid5_conf_t *conf,
+ 	 * we can start a write request
+ 	 */
+ 	if (s->locked == 0 && (rcw == 0 || rmw == 0) &&
+-	    !test_bit(STRIPE_BIT_DELAY, &sh->state)) {
+-		pr_debug("Computing parity...\n");
+-		compute_parity5(sh, rcw == 0 ?
+-			RECONSTRUCT_WRITE : READ_MODIFY_WRITE);
+-		/* now every locked buffer is ready to be written */
+-		for (i = disks; i--; )
+-			if (test_bit(R5_LOCKED, &sh->dev[i].flags)) {
+-				pr_debug("Writing block %d\n", i);
+-				s->locked++;
+-				set_bit(R5_Wantwrite, &sh->dev[i].flags);
+-				if (!test_bit(R5_Insync, &sh->dev[i].flags)
+-				    || (i == sh->pd_idx && s->failed == 0))
+-					set_bit(STRIPE_INSYNC, &sh->state);
+-			}
+-		if (test_and_clear_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
+-			atomic_dec(&conf->preread_active_stripes);
+-			if (atomic_read(&conf->preread_active_stripes) <
+-			    IO_THRESHOLD)
+-				md_wakeup_thread(conf->mddev->thread);
+-		}
+-	}
++	    !test_bit(STRIPE_BIT_DELAY, &sh->state))
++		s->locked += handle_write_operations5(sh, rcw == 0, 0);
+ }
+ 
+ static void handle_issuing_new_write_requests6(raid5_conf_t *conf,
+@@ -2649,8 +2702,70 @@ static void handle_stripe5(struct stripe_head *sh)
+ 		(s.syncing && (s.uptodate < disks)) || s.expanding)
+ 		handle_issuing_new_read_requests5(sh, &s, disks);
+ 
+-	/* now to consider writing and what else, if anything should be read */
+-	if (s.to_write)
++	/* Now we check to see if any write operations have recently
++	 * completed
++	 */
++
++	/* leave prexor set until postxor is done, allows us to distinguish
++	 * a rmw from a rcw during biodrain
++	 */
++	if (test_bit(STRIPE_OP_PREXOR, &sh->ops.complete) &&
++		test_bit(STRIPE_OP_POSTXOR, &sh->ops.complete)) {
++
++		clear_bit(STRIPE_OP_PREXOR, &sh->ops.complete);
++		clear_bit(STRIPE_OP_PREXOR, &sh->ops.ack);
++		clear_bit(STRIPE_OP_PREXOR, &sh->ops.pending);
++
++		for (i = disks; i--; )
++			clear_bit(R5_Wantprexor, &sh->dev[i].flags);
++	}
++
++	/* if only POSTXOR is set then this is an 'expand' postxor */
++	if (test_bit(STRIPE_OP_BIODRAIN, &sh->ops.complete) &&
++		test_bit(STRIPE_OP_POSTXOR, &sh->ops.complete)) {
++
++		clear_bit(STRIPE_OP_BIODRAIN, &sh->ops.complete);
++		clear_bit(STRIPE_OP_BIODRAIN, &sh->ops.ack);
++		clear_bit(STRIPE_OP_BIODRAIN, &sh->ops.pending);
++
++		clear_bit(STRIPE_OP_POSTXOR, &sh->ops.complete);
++		clear_bit(STRIPE_OP_POSTXOR, &sh->ops.ack);
++		clear_bit(STRIPE_OP_POSTXOR, &sh->ops.pending);
++
++		/* All the 'written' buffers and the parity block are ready to
++		 * be written back to disk
++		 */
++		BUG_ON(!test_bit(R5_UPTODATE, &sh->dev[sh->pd_idx].flags));
++		for (i = disks; i--; ) {
++			dev = &sh->dev[i];
++			if (test_bit(R5_LOCKED, &dev->flags) &&
++				(i == sh->pd_idx || dev->written)) {
++				pr_debug("Writing block %d\n", i);
++				set_bit(R5_Wantwrite, &dev->flags);
++				if (!test_and_set_bit(
++				    STRIPE_OP_IO, &sh->ops.pending))
++					sh->ops.count++;
++				if (!test_bit(R5_Insync, &dev->flags) ||
++				    (i == sh->pd_idx && s.failed == 0))
++					set_bit(STRIPE_INSYNC, &sh->state);
++			}
++		}
++		if (test_and_clear_bit(STRIPE_PREREAD_ACTIVE, &sh->state)) {
++			atomic_dec(&conf->preread_active_stripes);
++			if (atomic_read(&conf->preread_active_stripes) <
++				IO_THRESHOLD)
++				md_wakeup_thread(conf->mddev->thread);
++		}
++	}
++
++	/* Now to consider new write requests and what else, if anything
++	 * should be read.  We do not handle new writes when:
++	 * 1/ A 'write' operation (copy+xor) is already in flight.
++	 * 2/ A 'check' operation is in flight, as it may clobber the parity
++	 *    block.
++	 */
++	if (s.to_write && !test_bit(STRIPE_OP_POSTXOR, &sh->ops.pending) &&
++			  !test_bit(STRIPE_OP_CHECK, &sh->ops.pending))
+ 		handle_issuing_new_write_requests5(conf, sh, &s, disks);
+ 
+ 	/* maybe we need to check and possibly fix the parity for this stripe
