@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbXF0SRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760734AbXF0SSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759920AbXF0SRb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 14:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbXF0SRX
+	id S1760734AbXF0SSG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 14:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756942AbXF0SRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 14:17:23 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:57511 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756152AbXF0SRW (ORCPT
+	Wed, 27 Jun 2007 14:17:55 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:20895 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755946AbXF0SRy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 14:17:22 -0400
-Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: Chris Shoemaker <c.shoemaker@cox.net>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, josh@kernel.org
-In-Reply-To: <20070627180552.GA746@pe.Belkin>
-References: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
-	 <20070627180552.GA746@pe.Belkin>
-Content-Type: text/plain
-Date: Wed, 27 Jun 2007 11:17:09 -0700
-Message-Id: <1182968229.8970.124.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Wed, 27 Jun 2007 14:17:54 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=JxEqLh7xccAdwSPnQitPt56p6wsBdZh3ObpGQ2EbACEdEtSLG/Ou69p414NyJAIUR
+	XF7utNjWdPCHmQ/lWvXfw==
+Message-ID: <4682A9B6.8070003@google.com>
+Date: Wed, 27 Jun 2007 14:17:26 -0400
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@google.com>
+CC: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
+Subject: Re: [RFC 1/7] cpuset write dirty map
+References: <465FB6CF.4090801@google.com>	<Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>	<46646A33.6090107@google.com>	<Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>	<468023CA.2090401@google.com>	<Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com> <20070626152204.b6b4bc3f.akpm@google.com>
+In-Reply-To: <20070626152204.b6b4bc3f.akpm@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-27 at 14:05 -0400, Chris Shoemaker wrote:
-> On Wed, Jun 27, 2007 at 10:59:20AM -0700, Josh Triplett wrote:
-> > +Do not leave trailing whitespace at the ends of lines.  Some editors with
-> > +"smart" indentation will insert whitespace at the beginning of new lines as
-> > +appropriate, so you can start typing the next line of code right away.
-> > +However, some such editors do not remove the whitespace if you end up not
-> > +putting a line of code there, such as if you leave a blank line.  As a result,
-> > +you end up with lines containing trailing whitespace.
-> > +
-> > +Git will warn you about patches that introduce trailing whitespace, and can
-> > +optionally strip the trailing whitespace for you; however, if applying a series
-> > +of patches, this may make later patches in the series fail by changing their
-> > +context lines.
+Andrew Morton wrote:
 > 
-> What I'd really like to see is, _why_ is trailing whitespace
-> considered harmful?  Something about MUAs not preserving it or
-> something?
+> One open question is the interaction between these changes and with Peter's
+> per-device-dirty-throttling changes.  They also are in my queue somewhere. 
 
-When the trailing whitespace later disappears, that change shows up in
-diffs, and since you can't see the whitespace difference, it just looks
-like a mysterious change until you check it more closely.  It also
-introduces gratuitous conflicts and other such annoyances.
-
-- Josh Triplett
-
-
+	I looked over it at one point. Most of the code doesn't conflict, but I
+believe that the code path which calculates the dirty limits will need
+some merging. Doable but non-trivial.
+	-- Ethan
