@@ -1,66 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbXF0Qxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761883AbXF0Qyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760596AbXF0Qxr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbXF0Qxk
+	id S1761883AbXF0Qyj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbXF0Qyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:53:40 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51116 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755295AbXF0Qxk (ORCPT
+	Wed, 27 Jun 2007 12:54:32 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:34758 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755420AbXF0Qyb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:53:40 -0400
-Subject: Re: scheduling while atomic and DEBUG_SPINLOCK_SLEEP
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jon Ringle <jon@ringle.org>
-Cc: Jon Ringle <JRingle@vertical.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <46820316.7070406@ringle.org>
-References: <4DD3AF7ECBBC43409BA36508938D01851B0E7E@CVAEX1.VERTICAL.COM>
-	 <1182919609.3201.2.camel@laptopd505.fenrus.org>
-	 <46820316.7070406@ringle.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 27 Jun 2007 06:28:40 -0700
-Message-Id: <1182950920.3201.4.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 27 Jun 2007 12:54:31 -0400
+Date: Wed, 27 Jun 2007 10:54:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Matt Domsch <Matt_Domsch@dell.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: pci.h stubs
+Message-ID: <20070627165429.GY22063@parisc-linux.org>
+References: <20070626132622.3226261a.randy.dunlap@oracle.com> <20070627024505.GA30197@humbolt.us.dell.com> <20070627113048.GU22063@parisc-linux.org> <20070627145500.2e66fd49@the-village.bc.nu> <46829345.1000607@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46829345.1000607@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-27 at 02:26 -0400, Jon Ringle wrote:
-> Arjan van de Ven wrote:
-> > On Tue, 2007-06-26 at 22:55 -0400, Jon Ringle wrote:
-> >   
-> >> Hello,
-> >> Out of these two, the first one that is showing "in_atomic():1" seems
-> >> more likely to me to be a potential cause of the "scheduling while
-> >> atomic" dump.
-> >>
-> >> Does this logic seem reasonable? Are there other debugging techniques I
-> >> can use to narrow down the cause for the "scheduling while atomic"?
-> >>     
-> >
-> >
-> > you could start by giving us pointers to the sources of the two
-> > drivers... without that... how can we look and help?
-> >
-> >   
-> You can get Intel's source from here:
-> GPL_ixp400LinuxEthernetDriverPatch-1_5.zip:
-> http://downloadcenter.intel.com/detail_desc.aspx?agr=N&ProductID=2100&DwnldID=9519
-> 
-> BSD_ixp400AccessLibrary-2_1.zip:
-> http://downloadfinder.intel.com/scripts-df/detail_desc.asp?agr=Y&ProductID=2100&DwnldID=10146
+On Wed, Jun 27, 2007 at 12:41:41PM -0400, H. Peter Anvin wrote:
+> Note that EDD has no way of referencing anything but the zero domain 
+> (which is presumably the one which is addressed by I/O ports CF8/CFC on 
+> the BSP.)  So in this particular case I would say pci_get_bus_and_slot() 
+> is fine.
 
-
-ok that intel driver is quite buggy; I'll try to find the right folks at
-work. You forgot to put the URL for your driver in though; based on the
-backtrace it's also buggy, but without the code.... 
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+Except that you're not guaranteed to get the bus that's in domain zero.
