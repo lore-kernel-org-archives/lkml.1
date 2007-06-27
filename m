@@ -1,39 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbXF0EZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbXF0Ec5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757096AbXF0EZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 00:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbXF0EZM
+	id S1757499AbXF0Ec5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 00:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbXF0Ecs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 00:25:12 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:47165 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751357AbXF0EZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 00:25:10 -0400
-Date: Tue, 26 Jun 2007 21:24:11 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Crispin Cowan <crispin@novell.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andreas Gruenbacher <agruen@suse.de>, James Morris <jmorris@namei.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       linux-security-module@vger.kernel.org, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
-Message-ID: <20070627042411.GW3723@sequoia.sous-sol.org>
-References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org> <Line.LNX.4.64.0706250031350.15974@localhost.localdomain> <200706252237.59226.agruen@suse.de> <11C35822-4E11-4365-BADE-C1AE41F15B50@mac.com> <20070626134712.GA8615@sergelap.austin.ibm.com> <B189F69D-B63E-4EE3-8580-39C8AFA97E5A@mac.com> <4681B611.1000704@novell.com>
+	Wed, 27 Jun 2007 00:32:48 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3182 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbXF0Ecs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 00:32:48 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 26 Jun 2007 21:32:44 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Rik van Riel <riel@redhat.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 1/3] MAP_NOZERO - implement a new VM_NOZERO/MAP_NOZERO
+ page retirement policy
+In-Reply-To: <4681E52A.8030300@redhat.com>
+Message-ID: <Pine.LNX.4.64.0706262127300.26540@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912259.1>
+ <4681D37E.2020706@redhat.com> <Pine.LNX.4.64.0706262016080.26540@alien.or.mcafeemobile.com>
+ <4681E52A.8030300@redhat.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4681B611.1000704@novell.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Crispin Cowan (crispin@novell.com) wrote:
-> and simple LSMs that can be
-> unloaded safely can permit it.
+On Wed, 27 Jun 2007, Rik van Riel wrote:
 
-there are none, and making the above possible is prohibitively
-expensive.
+> Davide Libenzi wrote:
+> > On Tue, 26 Jun 2007, Rik van Riel wrote:
+> > 
+> > > SUID programs should not be able to use this feature,
+> > > either.
+> > 
+> > Why? A SUID programs runs under the UID of the owner, and should be no
+> > problems in it seeing the owners data.
+> 
+> Because an SUID program can change its UID back.
+> 
+> At least, one that was SUID root.  OTOH, any
+> program running as root can change UID, so we
+> should probably not allow root to get nonzeroed
+> pages.
+
+Well, root can in general access the whole system in any case. At the 
+moment, root cannot access othe UIDs pages. Only their own. And this 
+differs from standard security policies where root can access everything.
+Pages used internally by the kernel, cannot be reused by anyone.
+
+
+
+> > I tried to look, and the attempt to reuse _mapcount failed miserably :)
+> > The last time we have the owner info (vma->mm) available, is before
+> > processing of the other fields ends. OTOH I'm not VM guru either, so I may
+> > be wrong. It can share ->virtual (when enabled).
+> 
+> I think the process that actually calls the page freeing
+> functions is always the process that owned the page, so
+> going for current->mm should work.
+
+I'll try to see if that works out...
+
+
+
+- Davide
+
+
