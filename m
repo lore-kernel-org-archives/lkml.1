@@ -1,55 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761207AbXF0GpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbXF0HQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761207AbXF0GpX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 02:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759242AbXF0GpG
+	id S1756316AbXF0HQV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 03:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbXF0HQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 02:45:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37932 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752933AbXF0GpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 02:45:04 -0400
-Message-ID: <4682076D.2080104@garzik.org>
-Date: Wed, 27 Jun 2007 02:45:01 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HPT374 is UDMA100 not UDMA133
-References: <20070622141728.34b1b91c@the-village.bc.nu>
-In-Reply-To: <20070622141728.34b1b91c@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	Wed, 27 Jun 2007 03:16:09 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:45017 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751973AbXF0HQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 03:16:07 -0400
+Date: Wed, 27 Jun 2007 09:24:15 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Wessel\, Jason" <jason.wessel@windriver.com>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       stable@kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole module
+Message-ID: <20070627072415.GA1899@ff.dom.local>
+References: <20070626160753.f86d8803.akpm@linux-foundation.org> <7ED098B05D69FE41B380586BF1474DBA441F47@ala-mail08.corp.ad.wrs.com> <20070626180000.5974e942.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070626180000.5974e942.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> Propogate change from drivers/ide
+On Tue, Jun 26, 2007 at 06:00:00PM -0700, Andrew Morton wrote:
+> On Tue, 26 Jun 2007 17:46:13 -0700 "Wessel, Jason" <jason.wessel@windriver.com> wrote:
+...
+> > > Everything went quiet?
+> > > 
+> > > If this patch has been tested and fixes the bug, can you 
+> > > please send a version which is ready for merging?  (ie: add a 
+> > > suitable description of what it does).
+> > > 
+> > > 
+> > 
+> > I mailed Jarek separately.
+> > 
+> > I had tested the patch with netconsole and kgdb and it does in fact fix
+> > the problem that was reported.
 > 
-> Signed-off-by: Alan Cox <alan@redhat.com>
+> OK, thanks.  Please don't mail people separately!
 > 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc4-mm2/drivers/ata/pata_hpt37x.c linux-2.6.22-rc4-mm2/drivers/ata/pata_hpt37x.c
-> --- linux.vanilla-2.6.22-rc4-mm2/drivers/ata/pata_hpt37x.c	2007-06-07 14:26:08.000000000 +0100
-> +++ linux-2.6.22-rc4-mm2/drivers/ata/pata_hpt37x.c	2007-06-14 12:58:22.000000000 +0100
-> @@ -931,13 +931,13 @@
->  		.udma_mask = 0x7f,
->  		.port_ops = &hpt372_port_ops
->  	};
-> -	/* HPT374 - UDMA133 */
-> +	/* HPT374 - UDMA100 */
->  	static const struct ata_port_info info_hpt374 = {
->  		.sht = &hpt37x_sht,
->  		.flags = ATA_FLAG_SLAVE_POSS,
->  		.pio_mask = 0x1f,
->  		.mwdma_mask = 0x07,
-> -		.udma_mask = 0x7f,
-> +		.udma_mask = 0x3f,
+> I queued this up with a null changelog for now.
+> 
 
-applied manually, since this does not apply to any upstream tree. 
-Please diff against upstream or libata-dev.git...
+I pasted here this queued version - only the changelog is added.
 
+Regards,
+Jarek P.
 
+------------------------------------------------------
+Subject: netconsole: fix soft lockup (2.6.21) and memory leak when removing module
+From: Jarek Poplawski <jarkao2@o2.pl>
+
+#1
+Until kernel ver. 2.6.21 (including) cancel_rearming_delayed_work()
+required a work function should always (unconditionally) rearm with
+delay > 0 - otherwise it would endlessly loop. This patch replaces
+this function with cancel_delayed_work(). Later kernel versions don't
+require this, so here it's only for uniformity.
+
+#2
+After deleting a timer in cancel_[rearming_]delayed_work() there could
+stay a last skb queued in npinfo->txq causing a memory leak after
+kfree(npinfo).
+
+Initial patch & testing by: Jason Wessel <jason.wessel@windriver.com>
+
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ net/core/netpoll.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff -puN net/core/netpoll.c~netconsole-fix-soft-lockup-when-removing-module net/core/netpoll.c
+--- a/net/core/netpoll.c~netconsole-fix-soft-lockup-when-removing-module
++++ a/net/core/netpoll.c
+@@ -72,7 +72,8 @@ static void queue_process(struct work_st
+ 			netif_tx_unlock(dev);
+ 			local_irq_restore(flags);
+ 
+-			schedule_delayed_work(&npinfo->tx_work, HZ/10);
++			if (atomic_read(&npinfo->refcnt))
++				schedule_delayed_work(&npinfo->tx_work, HZ/10);
+ 			return;
+ 		}
+ 		netif_tx_unlock(dev);
+@@ -785,9 +786,15 @@ void netpoll_cleanup(struct netpoll *np)
+ 			if (atomic_dec_and_test(&npinfo->refcnt)) {
+ 				skb_queue_purge(&npinfo->arp_tx);
+ 				skb_queue_purge(&npinfo->txq);
+-				cancel_rearming_delayed_work(&npinfo->tx_work);
++				cancel_delayed_work(&npinfo->tx_work);
+ 				flush_scheduled_work();
+ 
++				/* clean after last, unfinished work */
++				if (!skb_queue_empty(&npinfo->txq)) {
++					struct sk_buff *skb;
++					skb = __skb_dequeue(&npinfo->txq);
++					kfree_skb(skb);
++				}
+ 				kfree(npinfo);
+ 			}
+ 		}
