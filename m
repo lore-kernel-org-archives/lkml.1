@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbXF0PNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761888AbXF0PQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761851AbXF0PNQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759181AbXF0PND
+	id S1761888AbXF0PQR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbXF0PQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:13:03 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:46887 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759169AbXF0PNB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:13:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=iQx0kjEh/K6XChRdKQUjEzV/alYLwc/la7qoF6TfDwEM3CRLkEsVV7JNHXzpxqgOM/jktBQFFYZ8WLtAINcov6uSYAP7otYDdv35kjp3W3Qi+SIZ7RKt8jNawEl8u+UBtEuCw2C8R07qH2YDjUGKKBuuMS/isVYNdfHbCZr/DK0=
-Message-ID: <69ff73b20706270812m3a9e0615g795531f9b23ee52e@mail.gmail.com>
-Date: Wed, 27 Jun 2007 11:12:59 -0400
-From: "Martin Owens" <doctormo@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Passive port support
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 27 Jun 2007 11:16:07 -0400
+Received: from smtp24.orange.fr ([193.252.22.27]:53854 "EHLO smtp24.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753036AbXF0PQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 11:16:06 -0400
+X-ME-UUID: 20070627151602881.D72441C0009D@mwinf2458.orange.fr
+Subject: Re: NVidia Driver Support - 1680x1050 mode
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: Kyle Moffett <mrmacman_g4@mac.com>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <698083.6027.qm@web52505.mail.re2.yahoo.com>
+References: <698083.6027.qm@web52505.mail.re2.yahoo.com>
+Content-Type: text/plain
+Date: Wed, 27 Jun 2007 17:15:57 +0200
+Message-Id: <1182957357.342.41.camel@frg-rhel40-em64t-04>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 2007-06-27 at 05:58 -0700, Marc Perkel wrote:
+> Quite frankly, I don't understand why digital LCD
+> monitor even have scan rates in the first place. It's
+> not a CRT that actually has an electron beam. You
+> would thing that it would have a digital interface
+> where the computer told the monitor what to draw and
+> the monitor deals with it.
 
-I've been pondering and searching for answers on the level of support
-currently in linux for  passive port devices (serial, parallel, vga
-etc) for some time wondering if it's time we looking at integrating
-user selectable or identifiable components through the standard device
-paths we currently use for pci/usb/iee1394; at the moment the onus is
-on driver modules or user land programs to communicate, identify,
-select and manage all devices connected in this way with no methods to
-let the kernel know what has been identified, no standard way to tag
-passive devices with ids or models (thus no way to have modules load
-on selection, or identifiable strings in device managers etc)
+That's it. Information is simply the content of the video RAM, given
+serially at a certain rate (as the DVI interface is a serial interface
+with a fixed rate, you can't redraw the display at 60fps above a certain
+pixel quantity).
 
-This amounts to a virtual plug (the user or detection/probe software
-tells the kernel what is plugged in rather than the hardware)
+	Xav
 
-I'm proposing a small kernel manager which handles identified passive
-ports and what has been identified as plugged into them (hopefully so
-that the state lasts a reboot) and it may also be good to have a way
-for passive ports to be registered (for instance graphics card vga)
-but that's not the most important since xorg handles all that quite
-well these days.
 
-Once such support exists I can foresee simple gui and cli tools that
-allow users to probe or select devices for such ports in a standard
-way; even for ports that I am currently unaware of.
-
-One point against doing this is that such devices are now quite old
-and most new things are usb anyway. but I still see people struggle
-with the odd bit of old hardware, printer etc.
-
-Overview:
-
-User Selection -> Kernel Registered -> Normal module autoloads /
-automounts, udev etc
-
-Please do CC me back in any replies, and er forgive me if I'm posting
-incorrectly; I've asked around a LOT weather it's a valid
-question/suggestion.
-
-Best Regards, Martin Owens
