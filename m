@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbXF0QWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbXF0QXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759920AbXF0QWt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbXF0QWk
+	id S1762235AbXF0QXF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757708AbXF0QWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:22:40 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2236 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752218AbXF0QWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:22:39 -0400
-Date: Thu, 28 Jun 2007 00:22:31 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: [md-accel PATCH 03/19] xor: make 'xor_blocks' a library routine for use with async_tx
-Message-ID: <20070627162231.GA14606@gondor.apana.org.au>
-References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com> <20070627015049.18962.54083.stgit@dwillia2-linux.ch.intel.com> <a781481a0706262339w4c92e295s62a6c041dd1e9666@mail.gmail.com> <e9c3a7c20706270913v64ff933aj11e4bb227268311c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 27 Jun 2007 12:22:54 -0400
+Received: from mga03.intel.com ([143.182.124.21]:61455 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753192AbXF0QWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 12:22:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,467,1175497200"; 
+   d="scan'208";a="243999049"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Pim Zandbergen <P.Zandbergen@macroscoop.nl>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+Date: Wed, 27 Jun 2007 09:22:05 -0700
+User-Agent: KMail/1.9.7
+Cc: Mauro Giachero <mauro.giachero@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Andi Kleen <andi@firstfloor.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+References: <200706251434.43863.jesse.barnes@intel.com> <200706270804.53263.jesse.barnes@intel.com> <468289A1.3080709@macroscoop.nl>
+In-Reply-To: <468289A1.3080709@macroscoop.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <e9c3a7c20706270913v64ff933aj11e4bb227268311c@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200706270922.05801.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 09:13:21AM -0700, Dan Williams wrote:
-> 
-> The hope is that other subsystems beyond md could benefit from offload
-> engines.  For example, the crc32c calculations in btrfs might be a
-> good candidate, and kcopyd integration has crossed my mind.
+On Wednesday, June 27, 2007 9:00:33 Pim Zandbergen wrote:
+> Jesse Barnes wrote:
+> > Yeah, you're right I should use an unsigned format string.  Pim, if
+> > you change it to %lu does the printk in your dmesg look better?
+>
+> Er, no.
+>
+> **** MTRRs don't cover all of memory, trimmed 18446744073709486080
+> pages
 
-Yes hopefully we will actually integrate this into the crypto API
-(as an async operation) at some point so having them in crypto/
-does make sense.
+It looks like end_pfn might be ~0UL now... can you print that out in 
+your configuration?
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thanks,
+Jesse
