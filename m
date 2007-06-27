@@ -1,51 +1,552 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbXF0PtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbXF0Pt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758867AbXF0PtP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbXF0PtA
+	id S1760580AbXF0Pt2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbXF0PtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:49:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52567 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752894AbXF0Ps7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:48:59 -0400
-Date: Wed, 27 Jun 2007 08:48:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata fixes
-In-Reply-To: <46821613.9010305@garzik.org>
-Message-ID: <alpine.LFD.0.98.0706270844370.8675@woody.linux-foundation.org>
-References: <20070627073526.GA18787@havoc.gtf.org>
- <20070627003841.68fd0ea9.akpm@linux-foundation.org>
- <46821613.9010305@garzik.org>
+	Wed, 27 Jun 2007 11:49:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53232 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754750AbXF0PtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 11:49:04 -0400
+Date: Wed, 27 Jun 2007 16:43:39 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, pavel.urban@ct.cz, metan@atrey.karlin.mff.cuni.cz,
+       thommycheck@gmail.com, milan@ucw.cz, patches@arm.linux.org.uk
+Subject: [PATCH] touchscreen support for collie (sharp zaurus sl-5500)
+Message-ID: <20070627144338.GA15584@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Add driver for collie touchscreen, partly based on ucb1x00-ts.c, but
+this one actually works.
 
-On Wed, 27 Jun 2007, Jeff Garzik wrote:
-> 
-> Such would be a diagnostic that would trigger on valid SCSI commands, when the
-> user is doing nothing wrong and the system can indeed complete the command
-> just fine.  Additionally, this is moving us in the direction of what the IDE
-> driver has apparently been doing.
+From: Cyril Hrubis <metan@atrey.karlin.mff.cuni.cz>
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Indeed. At least the IDE CD-ROM driver does
+PATCH FOLLOWS
+KernelVersion: 2.6.22-rc6-git
 
-	if ((rq->data_len & 15) || (addr & mask))
-		info->dma = 0;
+---
+commit 2a18a9f134617ceacccb7f15fe1c383715dc769a
+tree 04f026730fc0b96b749cb6a629db87d3e5f96fc7
+parent a4df00d46ea436724a07da7c180bdfca2162ea98
+author Pavel <pavel@amd.ucw.cz> Wed, 27 Jun 2007 16:40:25 +0200
+committer Pavel <pavel@amd.ucw.cz> Wed, 27 Jun 2007 16:40:25 +0200
 
-where the "mask" is the dma_alignment mask. So it requires the length to 
-be a multiple of 16, and also requires a certain alignment of the data 
-(which defaults to 32 bytes for some reason I cannot for the life of me 
-remember).
+ drivers/mfd/Kconfig     |    6 +
+ drivers/mfd/Makefile    |    1 
+ drivers/mfd/collie-ts.c |  449 +++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/mfd/ucb1x00.h   |    3 
+ 4 files changed, 459 insertions(+), 0 deletions(-)
 
-The generic BIO layer does that DMA alignment check too when mapping user 
-pages.
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 56576ba..e8d5668 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -42,4 +42,10 @@ config MCP_UCB1200_TS
+ 	tristate "Touchscreen interface support"
+ 	depends on MCP_UCB1200 && INPUT
+ 
++config MCP_COLLIE_TS
++	tristate "Touchscreen collie support"
++	depends on MCP_UCB1200 && INPUT && !MCP_UCB1200_TS
++	 ---help---
++	  Driver for touchscreen on collie - sharp sl-5500.
++
+ endmenu
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index 8f3cb8b..64b3c4c 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_MCP_SA11X0)	+= mcp-sa11x0.o
+ obj-$(CONFIG_MCP_UCB1200)	+= ucb1x00-core.o
+ obj-$(CONFIG_MCP_UCB1200_TS)	+= ucb1x00-ts.o
+ obj-$(CONFIG_MCP_UCB1200_AUDIO)	+= ucb1x00-audio.o
++obj-$(CONFIG_MCP_COLLIE_TS)     += collie-ts.o
+  
+ ifeq ($(CONFIG_SA1100_ASSABET),y)
+ obj-$(CONFIG_MCP_UCB1200)	+= ucb1x00-assabet.o
+diff --git a/drivers/mfd/collie-ts.c b/drivers/mfd/collie-ts.c
+new file mode 100644
+index 0000000..759f03a
+--- /dev/null
++++ b/drivers/mfd/collie-ts.c
+@@ -0,0 +1,449 @@
++/*
++ *  Touchscreen driver for UCB1x00-based touchscreens
++ *
++ *  Copyright (C) 2001 Russell King, All Rights Reserved.
++ *  Copyright (C) 2005 Pavel Machek
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * 21-Jan-2002 <jco@ict.es> :
++ *
++ * Added support for synchronous A/D mode. This mode is useful to
++ * avoid noise induced in the touchpanel by the LCD, provided that
++ * the UCB1x00 has a valid LCD sync signal routed to its ADCSYNC pin.
++ * It is important to note that the signal connected to the ADCSYNC
++ * pin should provide pulses even when the LCD is blanked, otherwise
++ * a pen touch needed to unblank the LCD will never be read.
++ */
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/init.h>
++#include <linux/smp.h>
++#include <linux/smp_lock.h>
++#include <linux/sched.h>
++#include <linux/completion.h>
++#include <linux/delay.h>
++#include <linux/string.h>
++#include <linux/input.h>
++#include <linux/device.h>
++#include <linux/freezer.h>
++#include <linux/slab.h>
++#include <linux/kthread.h>
++
++#include <asm/dma.h>
++#include <asm/semaphore.h>
++#include <asm/arch/collie.h>
++#include <asm/mach-types.h>
++
++#include "ucb1x00.h"
++
++struct ucb1x00_ts {
++	struct input_dev	*idev;
++	struct ucb1x00		*ucb;
++
++	wait_queue_head_t	irq_wait;
++	struct task_struct	*rtask;
++	u16			x_res;
++	u16			y_res;
++
++	unsigned int		adcsync:1;
++};
++
++static int adcsync;
++
++/**********************************
++
++     ................
++     .              . = 340
++     .              .
++     .             ^.
++     .             ^.
++     .             ^.
++     .             ^.
++     .              .
++     .             X. = 10
++     .  <<<<<<<<  Y .
++     ................
++     .   Sharp    =200
++     .              .
++     .  -   O    -  .
++     .              .
++     ................
++
++**********************************/
++
++
++static inline void ucb1x00_ts_evt_add(struct ucb1x00_ts *ts, u16 pressure, u16 x, u16 y)
++{
++	struct input_dev *idev = ts->idev;
++
++	input_report_abs(idev, ABS_X, x);
++	input_report_abs(idev, ABS_Y, y);
++	input_report_abs(idev, ABS_PRESSURE, pressure);
++        input_report_key(idev, BTN_TOUCH, 1);
++	input_sync(idev);
++}
++
++static inline void ucb1x00_ts_event_release(struct ucb1x00_ts *ts)
++{
++	struct input_dev *idev = ts->idev;
++
++	input_report_abs(idev, ABS_PRESSURE, 0);
++        input_report_key(idev, BTN_TOUCH, 0);
++	input_sync(idev);
++}
++
++/*
++ * Switch to interrupt mode. This set touchscreen to interrupt 
++ * mode, so that chip is able to send interrupt.
++ */
++static inline void ucb1x00_ts_mode_int(struct ucb1x00_ts *ts)
++{
++	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
++			UCB_TS_CR_TSMX_POW | UCB_TS_CR_TSPX_POW |
++			UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_GND |
++			UCB_TS_CR_MODE_INT);
++}
++
++/*
++ * Switch to pressure mode, and read pressure.  We don't need to wait
++ * here, since both plates are being driven.
++ *
++ * set_read_pressure() in sharp code
++ */
++static inline void ucb1x00_ts_read_pressure(struct ucb1x00_ts *ts)
++{
++	ucb1x00_io_write(ts->ucb, COLLIE_TC35143_GPIO_TBL_CHK, 0);
++	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
++			  UCB_TS_CR_TSPX_POW | UCB_TS_CR_TSMX_POW |
++			  UCB_TS_CR_MODE_POS | UCB_TS_CR_BIAS_ENA);
++
++	ucb1x00_reg_write(ts->ucb, UCB_ADC_CR, ts->ucb->adc_cr | 
++			  UCB_ADC_INP_AD2 | 
++			  UCB_ADC_SYNC_ENA);
++	udelay(100);
++	ucb1x00_reg_write(ts->ucb, UCB_ADC_CR, ts->ucb->adc_cr | 
++			  UCB_ADC_INP_AD2 | 
++			  UCB_ADC_SYNC_ENA | UCB_ADC_START);
++}
++
++/*
++ * Switch to X position mode and measure Y plate.  We switch the plate
++ * configuration in pressure mode, then switch to position mode.  This
++ * gives a faster response time.  Even so, we need to wait about 55us
++ * for things to stabilise.
++ */
++static inline void ucb1x00_ts_read_xpos(struct ucb1x00_ts *ts)
++{
++	ucb1x00_io_write(ts->ucb, 0, COLLIE_TC35143_GPIO_TBL_CHK);
++	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
++			UCB_TS_CR_TSMX_GND | UCB_TS_CR_TSPX_POW |
++			UCB_TS_CR_MODE_POS | UCB_TS_CR_BIAS_ENA);
++
++
++	ucb1x00_reg_write(ts->ucb, UCB_ADC_CR, ts->ucb->adc_cr | 
++			  UCB_ADC_INP_TSPY | UCB_ADC_SYNC_ENA);
++	udelay(100);
++	ucb1x00_reg_write(ts->ucb, UCB_ADC_CR, ts->ucb->adc_cr | 
++			  UCB_ADC_INP_TSPY | UCB_ADC_SYNC_ENA | 
++		 	  UCB_ADC_START);
++}
++
++/*
++ * Switch to Y position mode and measure X plate.  We switch the plate
++ * configuration in pressure mode, then switch to position mode.  This
++ * gives a faster response time.  Even so, we need to wait about 55us
++ * for things to stabilise.
++ */
++static inline void ucb1x00_ts_read_ypos(struct ucb1x00_ts *ts)
++{
++	ucb1x00_io_write(ts->ucb, 0, COLLIE_TC35143_GPIO_TBL_CHK);
++
++	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
++			UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_POW |
++			UCB_TS_CR_MODE_POS | UCB_TS_CR_BIAS_ENA);
++
++
++	ucb1x00_reg_write(ts->ucb, UCB_ADC_CR, ts->ucb->adc_cr | 
++			  UCB_ADC_INP_TSPX | UCB_ADC_SYNC_ENA);
++	udelay(100);
++	ucb1x00_reg_write(ts->ucb, UCB_ADC_CR, ts->ucb->adc_cr |
++			  UCB_ADC_INP_TSPX | UCB_ADC_SYNC_ENA | 
++			  UCB_ADC_START);
++}
++
++/*
++ * Switch to X plate resistance mode.  Set MX to ground, PX to
++ * supply.  Measure current.
++ */
++static inline unsigned int ucb1x00_ts_read_xres(struct ucb1x00_ts *ts)
++{
++	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
++			UCB_TS_CR_TSMX_GND | UCB_TS_CR_TSPX_POW |
++			UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
++	return ucb1x00_adc_read(ts->ucb, 0, ts->adcsync);
++}
++
++/*
++ * Switch to Y plate resistance mode.  Set MY to ground, PY to
++ * supply.  Measure current.
++ */
++static inline unsigned int ucb1x00_ts_read_yres(struct ucb1x00_ts *ts)
++{
++	ucb1x00_reg_write(ts->ucb, UCB_TS_CR,
++			UCB_TS_CR_TSMY_GND | UCB_TS_CR_TSPY_POW |
++			UCB_TS_CR_MODE_PRES | UCB_TS_CR_BIAS_ENA);
++	return ucb1x00_adc_read(ts->ucb, 0, ts->adcsync);
++}
++
++/*
++ * This is a RT kernel thread that handles the ADC accesses
++ * (mainly so we can use semaphores in the UCB1200 core code
++ * to serialise accesses to the ADC).
++ */
++static int ucb1x00_thread(void *_ts)
++{
++	struct ucb1x00_ts *ts = _ts;
++	struct task_struct *tsk = current;
++	DECLARE_WAITQUEUE(wait, tsk);
++	int state;
++
++	/*
++	 * We could run as a real-time thread.  However, thus far
++	 * this doesn't seem to be necessary.
++	 */
++
++	add_wait_queue(&ts->irq_wait, &wait);	
++
++	while (!kthread_should_stop()) {
++		unsigned int data[3];
++			
++		for (state=0; state<3; state++) {
++			
++			ucb1x00_adc_enable(ts->ucb);
++			ucb1x00_enable_irq(ts->ucb, UCB_IRQ_ADC, UCB_FALLING);
++			switch (state) {
++			/* Order matters here; last measurement seems to be more noisy then the
++			   rest, and we care about pressure least */
++				case 2: ucb1x00_ts_read_pressure(ts);
++					break;
++				case 0: ucb1x00_ts_read_ypos(ts);
++					break;
++				case 1: ucb1x00_ts_read_xpos(ts);
++					break;
++			}
++			/* wait for adc */
++			try_to_freeze();
++			schedule_timeout(1000 * HZ);
++			ucb1x00_disable_irq(ts->ucb, UCB_IRQ_ADC, UCB_FALLING);
++			data[state] = UCB_ADC_DAT(ucb1x00_reg_read(ts->ucb, UCB_ADC_DATA));
++			ucb1x00_adc_disable(ts->ucb);
++		}	
++		
++		/* If not pressed any more, try to sleep! */
++		if (data[2] < 300) {
++			set_task_state(tsk, TASK_INTERRUPTIBLE);
++			ucb1x00_enable_irq(ts->ucb, UCB_IRQ_TSPX, UCB_RISING);
++			ucb1x00_ts_mode_int(ts);
++			ucb1x00_disable(ts->ucb);
++			ucb1x00_ts_event_release(ts);
++			try_to_freeze();
++			schedule_timeout(1000 * HZ);
++			ucb1x00_disable_irq(ts->ucb, UCB_IRQ_TSPX, UCB_RISING);
++			ucb1x00_enable(ts->ucb);
++		} else {	
++			ucb1x00_ts_evt_add(ts, data[2], data[1], data[0]);
++		}
++		ucb1x00_disable(ts->ucb);
++		msleep(20);
++		ucb1x00_enable(ts->ucb);
++	}
++
++	remove_wait_queue(&ts->irq_wait, &wait);
++
++	ts->rtask = NULL;
++	return 0;
++}
++
++/*
++ * We only detect touch screen _touches_ with this interrupt
++ * handler, and even then we just schedule our task.
++ */
++static void ucb1x00_ts_irq(int idx, void *id)
++{
++	struct ucb1x00_ts *ts = id;
++	wake_up(&ts->irq_wait);
++}
++
++static void ucb1x00_adc_irq(int idx, void *id)
++{
++	struct ucb1x00_ts *ts = id;
++	wake_up(&ts->irq_wait);
++}
++
++static int ucb1x00_ts_open(struct input_dev *idev)
++{
++	struct ucb1x00_ts *ts = idev->private;
++	int ret = 0;
++
++	BUG_ON(ts->rtask);
++
++	init_waitqueue_head(&ts->irq_wait);
++	
++	ret = ucb1x00_hook_irq(ts->ucb, UCB_IRQ_TSPX, ucb1x00_ts_irq, ts);
++	if (ret < 0)
++		return ret;
++	
++	ret = ucb1x00_hook_irq(ts->ucb, UCB_IRQ_ADC, ucb1x00_adc_irq, ts);
++	if (ret < 0) {
++		ucb1x00_free_irq(ts->ucb, UCB_IRQ_TSPX, ts);
++		return ret;
++	}
++
++	ucb1x00_enable_irq(ts->ucb, UCB_IRQ_TSPX, UCB_RISING);
++	
++	/*
++	 * If we do this at all, we should allow the user to
++	 * measure and read the X and Y resistance at any time.
++	 */
++	ucb1x00_adc_enable(ts->ucb);
++	ts->x_res = ucb1x00_ts_read_xres(ts);
++	ts->y_res = ucb1x00_ts_read_yres(ts);
++	ucb1x00_adc_disable(ts->ucb);
++
++	if (machine_is_collie()) {
++		ucb1x00_io_set_dir(ts->ucb, 0, COLLIE_TC35143_GPIO_TBL_CHK);
++	}
++
++	ts->rtask = kthread_run(ucb1x00_thread, ts, "ktsd");
++	if (!IS_ERR(ts->rtask)) {
++		ret = 0;
++	} else {
++		ucb1x00_free_irq(ts->ucb, UCB_IRQ_TSPX, ts);
++		ts->rtask = NULL;
++		ret = -EFAULT;
++	}
++	
++	return ret;
++}
++
++/*
++ * Release touchscreen resources.  Disable IRQs.
++ */
++static void ucb1x00_ts_close(struct input_dev *idev)
++{
++	struct ucb1x00_ts *ts = idev->private;
++
++	if (ts->rtask)
++		kthread_stop(ts->rtask);
++
++	ucb1x00_enable(ts->ucb);
++	ucb1x00_free_irq(ts->ucb, UCB_IRQ_TSPX, ts);
++	ucb1x00_free_irq(ts->ucb, UCB_IRQ_ADC, ts);
++	ucb1x00_reg_write(ts->ucb, UCB_TS_CR, 0);
++	ucb1x00_disable(ts->ucb);
++}
++
++#ifdef CONFIG_PM
++static int ucb1x00_ts_resume(struct ucb1x00_dev *dev)
++{
++	struct ucb1x00_ts *ts = dev->priv;
++
++	if (ts->rtask != NULL) {
++		/*
++		 * Restart the TS thread to ensure the
++		 * TS interrupt mode is set up again
++		 * after sleep.
++		 */
++		wake_up(&ts->irq_wait);
++	}
++	return 0;
++}
++#else
++#define ucb1x00_ts_resume NULL
++#endif
++
++
++/*
++ * Initialisation.
++ */
++static int ucb1x00_ts_add(struct ucb1x00_dev *dev)
++{
++	struct ucb1x00_ts *ts;
++	struct input_dev *idev;
++	int err;
++
++	ts = kzalloc(sizeof(struct ucb1x00_ts), GFP_KERNEL);
++	idev = input_allocate_device();
++	if (!ts || !idev) {
++		err = -ENOMEM;
++		goto fail;
++	}
++
++	ts->ucb = dev->ucb;
++	ts->idev = idev;
++	ts->adcsync = adcsync ? UCB_SYNC : UCB_NOSYNC;
++
++	idev->private    = ts;
++	idev->name       = "Touchscreen panel";
++	idev->id.product = ts->ucb->id;
++	idev->open       = ucb1x00_ts_open;
++	idev->close      = ucb1x00_ts_close;
++
++	__set_bit(EV_ABS, idev->evbit);
++	__set_bit(ABS_X, idev->absbit);
++	__set_bit(ABS_Y, idev->absbit);
++	__set_bit(ABS_PRESSURE, idev->absbit);
++
++        input_set_abs_params(ts->idev, ABS_X, 0, 450, 0, 0);
++        input_set_abs_params(ts->idev, ABS_Y, 200, 800, 0, 0);
++        input_set_abs_params(ts->idev, ABS_PRESSURE, 400, 800, 0, 0);
++
++
++	err = input_register_device(idev);
++	if (err)
++		goto fail;
++
++	dev->priv = ts;
++
++	return 0;
++
++ fail:
++	input_free_device(idev);
++	kfree(ts);
++	return err;
++}
++
++static void ucb1x00_ts_remove(struct ucb1x00_dev *dev)
++{
++	struct ucb1x00_ts *ts = dev->priv;
++
++	input_unregister_device(ts->idev);
++	kfree(ts);
++}
++
++static struct ucb1x00_driver ucb1x00_ts_driver = {
++	.add		= ucb1x00_ts_add,
++	.remove		= ucb1x00_ts_remove,
++	.resume		= ucb1x00_ts_resume,
++};
++
++static int __init ucb1x00_ts_init(void)
++{
++	return ucb1x00_register_driver(&ucb1x00_ts_driver);
++}
++
++static void __exit ucb1x00_ts_exit(void)
++{
++	ucb1x00_unregister_driver(&ucb1x00_ts_driver);
++}
++
++module_param(adcsync, int, 0444);
++module_init(ucb1x00_ts_init);
++module_exit(ucb1x00_ts_exit);
++
++MODULE_AUTHOR("Russell King <rmk@arm.linux.org.uk>");
++MODULE_DESCRIPTION("UCB1x00 touchscreen driver");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/mfd/ucb1x00.h b/drivers/mfd/ucb1x00.h
+index ca8df80..81237f5 100644
+--- a/drivers/mfd/ucb1x00.h
++++ b/drivers/mfd/ucb1x00.h
+@@ -34,7 +34,10 @@ #define UCB_IE_TSMX		(1 << 13)
+ #define UCB_IE_TCLIP		(1 << 14)
+ #define UCB_IE_ACLIP		(1 << 15)
+ 
++/* UCB1200 irqs */
++#define UCB_IRQ_ADC		11
+ #define UCB_IRQ_TSPX		12
++#define UCB_IRQ_TSMX		13
+ 
+ #define UCB_TC_A	0x05
+ #define UCB_TC_A_LOOP		(1 << 7)	/* UCB1200 */
 
-		Linus
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
