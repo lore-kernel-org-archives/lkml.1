@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760577AbXF0Mam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbXF0MdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760577AbXF0Mam (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 08:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757467AbXF0Maf
+	id S1760037AbXF0MdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 08:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbXF0MdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 08:30:35 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41049 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757028AbXF0Mae (ORCPT
+	Wed, 27 Jun 2007 08:33:12 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:2775 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756531AbXF0MdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 08:30:34 -0400
-Date: Wed, 27 Jun 2007 13:30:31 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Neil Booth <neil@daikokuya.co.uk>
-Cc: Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627123031.GO21478@ftp.linux.org.uk>
-References: <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070627121021.GQ7590@daikokuya.co.uk>
-User-Agent: Mutt/1.4.1i
+	Wed, 27 Jun 2007 08:33:11 -0400
+Date: Wed, 27 Jun 2007 13:32:35 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Ulrich Drepper <drepper@gmail.com>
+cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
+In-Reply-To: <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
+ <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
+ <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com>
+ <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAA2luYm94AGRhdmlkZWxAeG1haWxzZXJ2ZXIub3JnAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAZHJlcHBlckBnbWFpbC5jb20A
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 09:10:21PM +0900, Neil Booth wrote:
-> Al Viro wrote:-
+On Tue, 26 Jun 2007, Ulrich Drepper wrote:
+> On 6/26/07, Davide Libenzi <davidel@xmailserver.org> wrote:
 > 
-> > Hopefully correct handling of integer constant expressions.  Please, review.
+> > OTOH glibc could implement __morecore using mmap(MAP_NOZERO), and hence
+> > brk2() would not be needed, no?
 > 
-> Here are three independently invalid non-ICEs that sparse doesn't
-> diagnose.
-> 
-> extern int f(void);
-> enum { cast_to_ptr = (int) (void *) 0 };
-> enum { cast_to_float = (int) (double) 1 };
-> enum { fncall = 0 ? f(): 3 };
-> 
-> Hey, I did warn you it was tricky :)
+> No.  mmap calls create individual VMAs which gets expensive.  There
+> are also some hardware drivers which get more expensive the more VMAs
+> there are.  I want to go away as much as possible from mmap for
+> malloc.
 
-Nope.  They are recognized as non-ICE (try with struct { int n :<expr>;};
-for tester).  Again, no check for ICE in enums, and that one is for
-a good reason - we might very well want non-integer enums as an extension
-at some point.  We certainly need to check that they are constant, though.
+Not so: if an mmap can be done by extending either adjacent vma (prot
+and flags and file and offset all match up), that's what's done and no
+separate vma is created.  (And adjacent vmas get merged when mprotect
+removes the difference in protection.)
 
-If you want to test ICE recognition, right now only the following places
-are checking for it:
-	* bitfield width
-	* __attribute__((aligned(<number>)))
-	* __attribute__((address_space(<number>)))
-	* [<index>] in designators within initializer list
-	* [<index> ... <index>] - ditto, gccism
+I don't think there's any such reason to prefer brk to mmap.  But you
+may have encountered something which we in the kernel are thinking of
+as an insignificant corner case, which is actually breaking things up
+badly in practice (I recall the kernel's internal VM_ACCOUNT flag,
+relating to non-overcommit accounting, which might get turned on at
+any time, sometimes preventing a vma merge you'd otherwise expect).
+Please let me know if you've a test case which shows more vmas than
+expected.
 
-That's it.  We can use it elsewhere too, but that's a separate bunch of
-patches (trivial to do now).
+Hugh
