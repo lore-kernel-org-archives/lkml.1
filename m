@@ -1,372 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763602AbXF0Xoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763625AbXF0XyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763602AbXF0Xoe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 19:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762039AbXF0XoZ
+	id S1763625AbXF0XyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 19:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763167AbXF0XyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 19:44:25 -0400
-Received: from science.horizon.com ([192.35.100.1]:18796 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759521AbXF0XoX (ORCPT
+	Wed, 27 Jun 2007 19:54:15 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2520 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763111AbXF0XyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 19:44:23 -0400
-Date: 27 Jun 2007 19:44:17 -0400
-Message-ID: <20070627234417.1009.qmail@science.horizon.com>
-From: linux@horizon.com
-To: cebbert@redhat.com, linux@horizon.com
-Subject: Re: 2.6.22-rcX Transmeta/APM regression
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, linux-laptop@vger.kernel.org
-In-Reply-To: <4682D5FA.4050005@redhat.com>
+	Wed, 27 Jun 2007 19:54:15 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: how about mutual compatibility between Linux's GPLv2 and GPLv3?
+Date: Wed, 27 Jun 2007 16:53:14 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKAELBEOAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <or3b0d0zdz.fsf@oliva.athome.lsd.ic.unicamp.br>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 16:53:12 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 27 Jun 2007 16:53:14 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> .config and contents of /proc/cpuinfo would be helpful...
 
-Apologies!  I'm still working on the bisection, but...
+Alexandre Oliva writes:
 
-The following is from 2.6.21-gae1ee11b, which works.
+> Yes, but in the scenario I proposed, the source code *is* in the
+> preferred form for making modifications, it just so happens to be
+> behind a barrier you cannot trespass.  This is not different from
+> shipping binaries and sources in a CD inside a locked box that you
+> can't open.  You've received both, but how is the fact that you can't
+> reach the source code (or the binaries) a violation of the GPL in this
+> case?
 
-$ cat /tmp/cpuinfo
-processor	: 0
-vendor_id	: GenuineTMx86
-cpu family	: 6
-model		: 4
-model name	: Transmeta(tm) Crusoe(tm) Processor TM5800
-stepping	: 3
-cpu MHz		: 300.000
-cache size	: 512 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 1
-wp		: yes
-flags		: fpu vme de pse tsc msr cx8 sep cmov mmx longrun lrti constant_tsc
-bogomips	: 1608.38
-clflush size	: 32
-$ lspci -nn
-00:00.0 Host bridge [0600]: Transmeta Corporation LongRun Northbridge [1279:0395] (rev 01)
-00:00.1 RAM memory [0500]: Transmeta Corporation SDRAM controller [1279:0396]
-00:00.2 RAM memory [0500]: Transmeta Corporation BIOS scratchpad [1279:0397]
-00:02.0 USB Controller [0c03]: ALi Corporation USB 1.1 Controller [10b9:5237] (rev 03)
-00:04.0 Multimedia audio controller [0401]: ALi Corporation M5451 PCI AC-Link Controller Audio Device [10b9:5451] (rev 01)
-00:06.0 Bridge [0680]: ALi Corporation M7101 Power Management Controller [PMU] [10b9:7101]
-00:07.0 ISA bridge [0601]: ALi Corporation M1533/M1535 PCI to ISA Bridge [Aladdin IV/V/V+] [10b9:1533]
-00:0c.0 CardBus bridge [0607]: Texas Instruments PCI1410 PC card Cardbus Controller [104c:ac50] (rev 01)
-00:0f.0 IDE interface [0101]: ALi Corporation M5229 IDE [10b9:5229] (rev c3)
-00:12.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd. RTL-8139/8139C/8139C+ [10ec:8139] (rev 10)
-00:13.0 FireWire (IEEE 1394) [0c00]: Texas Instruments TSB43AB21 IEEE-1394a-2000 Controller (PHY/Link) [104c:8026]
-00:14.0 VGA compatible controller [0300]: ATI Technologies Inc Rage Mobility P/M [1002:4c52] (rev 64)
-$ grep ^CONFIG /usr/src/linux/.config
-CONFIG_X86_32=y
-CONFIG_GENERIC_TIME=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_X86=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_DMI=y
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_IKCONFIG=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SHMEM=y
-CONFIG_SLAB=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-CONFIG_MODULE_UNLOAD=y
-CONFIG_MODULE_FORCE_UNLOAD=y
-CONFIG_KMOD=y
-CONFIG_BLOCK=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_CFQ=y
-CONFIG_DEFAULT_IOSCHED="cfq"
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_X86_PC=y
-CONFIG_MCRUSOE=y
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=5
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_CMPXCHG64=y
-CONFIG_X86_TSC=y
-CONFIG_HPET_TIMER=y
-CONFIG_PREEMPT_NONE=y
-CONFIG_X86_UP_APIC=y
-CONFIG_X86_UP_IOAPIC=y
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-CONFIG_VM86=y
-CONFIG_X86_MSR=y
-CONFIG_X86_CPUID=y
-CONFIG_NOHIGHMEM=y
-CONFIG_PAGE_OFFSET=0xC0000000
-CONFIG_ARCH_FLATMEM_ENABLE=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPARSEMEM_STATIC=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_MTRR=y
-CONFIG_SECCOMP=y
-CONFIG_HZ_100=y
-CONFIG_HZ=100
-CONFIG_PHYSICAL_START=0x100000
-CONFIG_PHYSICAL_ALIGN=0x100000
-CONFIG_PM=y
-CONFIG_PM_DEBUG=y
-CONFIG_SOFTWARE_SUSPEND=y
-CONFIG_PM_STD_PARTITION="/dev/hda2"
-CONFIG_APM=y
-CONFIG_APM_CPU_IDLE=y
-CONFIG_APM_DISPLAY_BLANK=y
-CONFIG_APM_RTC_IS_GMT=y
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-CONFIG_CPU_FREQ_DEBUG=y
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-CONFIG_X86_LONGRUN=y
-CONFIG_PCI=y
-CONFIG_PCI_GOANY=y
-CONFIG_PCI_BIOS=y
-CONFIG_PCI_DIRECT=y
-CONFIG_ISA_DMA_API=y
-CONFIG_PCCARD=y
-CONFIG_PCMCIA=y
-CONFIG_PCMCIA_LOAD_CIS=y
-CONFIG_PCMCIA_IOCTL=y
-CONFIG_CARDBUS=y
-CONFIG_YENTA=y
-CONFIG_YENTA_O2=y
-CONFIG_YENTA_RICOH=y
-CONFIG_YENTA_TI=y
-CONFIG_YENTA_ENE_TUNE=y
-CONFIG_YENTA_TOSHIBA=y
-CONFIG_PCCARD_NONSTATIC=y
-CONFIG_BINFMT_ELF=y
-CONFIG_NET=y
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_INET=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_SYN_COOKIES=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_IEEE80211=m
-CONFIG_IEEE80211_CRYPT_WEP=m
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_CDROM_PKTCDVD=m
-CONFIG_CDROM_PKTCDVD_BUFFERS=8
-CONFIG_IDE=y
-CONFIG_BLK_DEV_IDE=y
-CONFIG_BLK_DEV_IDEDISK=y
-CONFIG_BLK_DEV_IDECD=y
-CONFIG_IDE_GENERIC=y
-CONFIG_BLK_DEV_IDEPCI=y
-CONFIG_IDEPCI_SHARE_IRQ=y
-CONFIG_BLK_DEV_IDEDMA_PCI=y
-CONFIG_BLK_DEV_ALI15X3=y
-CONFIG_BLK_DEV_IDEDMA=y
-CONFIG_SCSI=m
-CONFIG_BLK_DEV_SD=m
-CONFIG_NETDEVICES=y
-CONFIG_DUMMY=y
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-CONFIG_NET_PCI=y
-CONFIG_8139TOO=y
-CONFIG_NET_PCMCIA=y
-CONFIG_PPP=m
-CONFIG_PPP_FILTER=y
-CONFIG_PPP_ASYNC=m
-CONFIG_PPP_DEFLATE=m
-CONFIG_PPP_BSDCOMP=m
-CONFIG_SLHC=m
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1280
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_EVDEV=y
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_8250=m
-CONFIG_SERIAL_8250_PCI=m
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_CORE=m
-CONFIG_UNIX98_PTYS=y
-CONFIG_AGP=y
-CONFIG_DRM=y
-CONFIG_DRM_R128=m
-CONFIG_HWMON=y
-CONFIG_VGA_CONSOLE=y
-CONFIG_VIDEO_SELECT=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_SOUND=y
-CONFIG_SND=m
-CONFIG_SND_TIMER=m
-CONFIG_SND_PCM=m
-CONFIG_SND_RAWMIDI=m
-CONFIG_SND_SEQUENCER=m
-CONFIG_SND_OSSEMUL=y
-CONFIG_SND_MIXER_OSS=m
-CONFIG_SND_PCM_OSS=m
-CONFIG_SND_SEQUENCER_OSS=y
-CONFIG_SND_VERBOSE_PROCFS=y
-CONFIG_SND_VERBOSE_PRINTK=y
-CONFIG_SND_DEBUG=y
-CONFIG_SND_MPU401_UART=m
-CONFIG_SND_AC97_CODEC=m
-CONFIG_SND_ALI5451=m
-CONFIG_AC97_BUS=m
-CONFIG_HID=y
-CONFIG_USB_HID=m
-CONFIG_USB_HIDDEV=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=y
-CONFIG_USB_DEVICEFS=y
-CONFIG_USB_OHCI_HCD=y
-CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-CONFIG_USB_STORAGE=m
-CONFIG_USB_SERIAL=y
-CONFIG_USB_SERIAL_GENERIC=y
-CONFIG_EXT2_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_JBD=y
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-CONFIG_DNOTIFY=y
-CONFIG_ISO9660_FS=y
-CONFIG_JOLIET=y
-CONFIG_UDF_FS=y
-CONFIG_UDF_NLS=y
-CONFIG_FAT_FS=m
-CONFIG_MSDOS_FS=m
-CONFIG_VFAT_FS=m
-CONFIG_FAT_DEFAULT_CODEPAGE=437
-CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-CONFIG_PROC_FS=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_RAMFS=y
-CONFIG_CRAMFS=y
-CONFIG_NFS_FS=m
-CONFIG_NFS_V3=y
-CONFIG_NFSD=m
-CONFIG_NFSD_V3=y
-CONFIG_LOCKD=m
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=m
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=m
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_NLS_CODEPAGE_437=m
-CONFIG_NLS_ASCII=m
-CONFIG_NLS_ISO8859_1=m
-CONFIG_NLS_ISO8859_15=m
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_LOG_BUF_SHIFT=14
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_EARLY_PRINTK=y
-CONFIG_4KSTACKS=y
-CONFIG_X86_FIND_SMP_CONFIG=y
-CONFIG_X86_MPPARSE=y
-CONFIG_DOUBLEFAULT=y
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=m
-CONFIG_CRYPTO_BLKCIPHER=m
-CONFIG_CRYPTO_MANAGER=m
-CONFIG_CRYPTO_SHA1=m
-CONFIG_CRYPTO_SHA256=m
-CONFIG_CRYPTO_ECB=m
-CONFIG_CRYPTO_CBC=m
-CONFIG_CRYPTO_PCBC=m
-CONFIG_CRYPTO_AES=m
-CONFIG_CRYPTO_ARC4=m
-CONFIG_CRYPTO_DEV_GEODE=m
-CONFIG_BITREVERSE=y
-CONFIG_CRC_CCITT=y
-CONFIG_CRC32=y
-CONFIG_ZLIB_INFLATE=y
-CONFIG_ZLIB_DEFLATE=m
-CONFIG_PLIST=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_X86_BIOS_REBOOT=y
-CONFIG_KTIME_SCALAR=y
+Behind a barrier is not the preferred form for modification. Encrypted with
+a key you don't have is not the preferred form for modification.
+
+> And, if it's not a violation, what is it that makes the case of
+> shipping programs in a locked enclosure different from shipping them
+> in a locked computing device?
+
+I honestly don't see what relevance this could possibly have. Getting access
+to the source is a fundamental GPL right. The GPL is clear that you cannot
+burden access to the source.
+
+> When you modify a sculpture, you're modifying it in place, and this
+> requires as much copyright permission as creating a modified copy of
+> it.  Both count as modification.  And if TiVo creates artificial
+> obstacles to your modifying the copy of GPLed programs that ships in
+> its devices, then I believe it counts as a restriction on
+> modification.
+
+Of course your nonsense view leads to nonsense results. What a surprise. By
+this argument, shipping a GPL'd work in ROM would violate the GPL because
+you cannot easily modify that particular copy. Burning a GPL'd work to CDROM
+would also be a violation. (See below for why your 'artificial' distinction
+is wrong.)
+
+> I ought to be entitled to modify any bit in the
+> executable and expect that to have the same effect as modifying that
+> bit on that executable on any other computer.
+
+Nope, sorry. If this were true, you ought to be entitled to modify a bit in
+the Linux kernel and have it have the same effect as modifying that Linux
+kernel on my desktop. Again, nonsense view leads to nonsense conclusions.
+The fix is to reject the nonsense view. There are no special GPL rights to
+particular copies of works or particular hardware.
+
+> The fact that it stops
+> working as a result of TiVo's design to prohibit modification, rather
+> than by any other differences in the computer (e.g., the absence of
+> the signature checks), just goes to show that there is intent to
+> impose further restrictions on modification of the software.
+
+Intent is not the issue. The GPL does not care whether you intended to
+comply or why you cannot comply, it just cares whether you do or don't
+comply. If modifying software in this way is a GPL right, then anything that
+prevents you from modifying software in this way is a GPL violation. If you
+can't distribute so as to give all GPL rights, you can't distribute at all.
+
+If the GPL says I can modify my distributed copy, then distributing on CDROM
+is a GPL violation. It doesn't matter what your intent is. If you can't
+distribute so as to honor all GPL rights, you can't distribute.
+
+It is mind-bogglingly obvious that any sort of "right to modify one
+particular copy" is *not* a GPL right.
+
+> Saying that I can modify the sources and build another copy of the
+> binary and then install that, but then it won't work, but that's fine
+> because this is not modifying, while true, does not disqualify the
+> claim that TiVo's design imposes artificial restrictions on my
+> abilities to modify the copies of the program that I have received.
+
+It doesn't matter. The GPL does not distinguish between artificial
+restrictions and other restrictions. It doesn't permit *ANY* further
+restrictions on GPL rights. If you can't grant all the rights (whether due
+to artificial restrictions or other types of restrictions) you can't
+distribute at all.
+
+You are wasting an awful lot of time and effort analyzing things that have
+*NO* GPL consequence at all.
+
+DS
+
+
