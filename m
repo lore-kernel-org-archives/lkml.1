@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763266AbXF0Tc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbXF0ThZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763266AbXF0Tc5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbXF0Tck
+	id S1762290AbXF0ThZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbXF0ThO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:32:40 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54856 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763057AbXF0Tcj (ORCPT
+	Wed, 27 Jun 2007 15:37:14 -0400
+Received: from mailbackup.inode.at ([213.229.60.24]:57740 "EHLO
+	mailbackup.inode.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbXF0ThN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:32:39 -0400
-Date: Wed, 27 Jun 2007 20:32:04 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Ulrich Drepper <drepper@gmail.com>
-cc: Davide Libenzi <davidel@xmailserver.org>, blaisorblade@yahoo.it,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-In-Reply-To: <a36005b50706271152o2ba87c69h99c51a3605f977ae@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0706272027100.2367@blonde.wat.veritas.com>
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
- <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
- <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
- <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
- <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com> 
- <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com> 
- <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
- <a36005b50706271152o2ba87c69h99c51a3605f977ae@mail.gmail.com>
+	Wed, 27 Jun 2007 15:37:13 -0400
+Message-ID: <4682BC12.2090209@wm1.at>
+Date: Wed, 27 Jun 2007 21:35:46 +0200
+From: Willi Mann <willi@wm1.at>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGJsYWlzb3JibGFkZUB5YWhvby5pdABkYXZpZGVsQHhtYWlsc2VydmVyLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGRyZXBwZXJAZ21haWwuY29tAA==
-X-Brightmail-Tracker: AAAAAA==
+To: linux-kernel@vger.kernel.org
+Subject: PCI: Bus #03 (-#06) is hidden behind transparent bridge ...
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Ulrich Drepper wrote:
-> On 6/27/07, Hugh Dickins <hugh@veritas.com> wrote:
-> > The absolute virtual addresses are randomized, yes; but do a sequence
-> > of mmaps and they come back adjacent to each other, and so mergable.
-> > Or does your distro include a kernel patch to randomize them relative
-> > to each other?
-> 
-> Each individual mmap is supposed to be randomized, yes.  If this
-> doesn't happen in one of our kernels right now something broken.  You
-> wouldn't have effective ASLR if all relative address remain the same.
+Hi!
 
-Ah, I guess it's an exec_shield thing: vanilla kernel gives us
-adjacent mmaps which are mergable.  As Rik suggest, to make your
-mmaps adjacent, use the mmap(addr,...) hint.  (But please don't
-then complain that they're not relatively randomized ;)
+the kernel output said I should report, so I report it:
 
-> > It _might_ turn out to be more attractive, not to rely on that
-> > peculiar sys_remap_file_pages, but make all our vmas independent
-> > of protections, and hang differently protected ranges off them.
-> > Maybe.
-> 
-> That's what I think is done or at least should be done.
+I get the following lines at boot:
 
-Noted.
+ACPI: Interpreter enabled
+ACPI: (supports S0 S3 S4 S5)
+ACPI: Using PIC for interrupt routing
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+PCI: Probing PCI hardware (bus 00)
+PCI quirk: region 1000-107f claimed by ICH4 ACPI/GPIO/TCO
+PCI quirk: region 1180-11bf claimed by ICH4 GPIO
+PCI: Transparent bridge - 0000:00:1e.0
+PCI: Bus #03 (-#06) is hidden behind transparent bridge #02 (-#02) (try
+'pci=assign-busses')
+Please report the result to linux-kernel to fix this permanently
+PCI: Bus #07 (-#0a) is hidden behind transparent bridge #02 (-#02) (try
+'pci=assign-busses')
+Please report the result to linux-kernel to fix this permanently
+PCI: Bus #0b (-#0e) is hidden behind transparent bridge #02 (-#02) (try
+'pci=assign-busses')
+Please report the result to linux-kernel to fix this permanently
 
-Hugh
+With pci=assign-busses, I get
+
+ACPI: Interpreter enabled
+ACPI: (supports S0 S3 S4 S5)
+ACPI: Using PIC for interrupt routing
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+PCI: Probing PCI hardware (bus 00)
+PCI quirk: region 1000-107f claimed by ICH4 ACPI/GPIO/TCO
+PCI quirk: region 1180-11bf claimed by ICH4 GPIO
+PCI: Transparent bridge - 0000:00:1e.0
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCIB._PRT]
+ACPI: PCI Interrupt Link [LNKA] (IRQs *6)
+ACPI: PCI Interrupt Link [LNKB] (IRQs *10)
+ACPI: PCI Interrupt Link [LNKC] (IRQs *6)
+ACPI: PCI Interrupt Link [LNKD] (IRQs *6)
+ACPI: PCI Interrupt Link [LNKE] (IRQs *10)
+ACPI: PCI Interrupt Link [LNKF] (IRQs 10) *0, disabled.
+ACPI: PCI Interrupt Link [LNKG] (IRQs 6) *0, disabled.
+ACPI: PCI Interrupt Link [LNKH] (IRQs *10)
+ACPI: Power Resource [PFN0] (off)
+ACPI: Power Resource [PFN1] (off)
+Linux Plug and Play Support v0.97 (c) Adam Belay
+pnp: PnP ACPI init
+ACPI: bus type pnp registered
+pnp: PnP ACPI: found 10 devices
+ACPI: ACPI bus type pnp unregistered
+
+The kernel version I'm using is:
+
+Linux version 2.6.22-rc6-686 (Debian
+2.6.22~rc6-1~experimental.1~snapshot.9027) (waldi@debian.org) (gcc
+version 4.1.3 20070601 (prerelease) (Debian 4.1.2-12)) #1 SMP Wed Jun 27
+00:31:19 UTC 2007
+
+Willi
+
+Please CC: me on replies.
