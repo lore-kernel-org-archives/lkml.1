@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbXF0OWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXF0O0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760741AbXF0OWd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 10:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbXF0OW1
+	id S1760766AbXF0O0A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbXF0OZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 10:22:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:51240 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755175AbXF0OW0 (ORCPT
+	Wed, 27 Jun 2007 10:25:53 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:39162 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753962AbXF0OZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 10:22:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=txyGtgvTq2F4hbjETqIWSvD6hbtBkn1OBEQ9v4vrY1ayPoRoFFVvqMQtSqcPUt8apLqx/1srZf9ho2yrd8mMLxRgmYK5zn1WRYFIDPpJDT+PislFV/VOhucHKTOTHXqeWFTY24IzGiN/2JDC5fgcmKlP9p+T/u9uvRRtwXHnbro=
-Message-ID: <da3e877f0706270722x67bb0738x4274b4367e04f0c6@mail.gmail.com>
-Date: Wed, 27 Jun 2007 14:22:24 +0000
-From: "Mauro Giachero" <mauro.giachero@gmail.com>
-To: "Pim Zandbergen" <P.Zandbergen@macroscoop.nl>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Cc: "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "Andi Kleen" <andi@firstfloor.org>,
-       "Justin Piszcz" <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-In-Reply-To: <46823F71.6060200@macroscoop.nl>
+	Wed, 27 Jun 2007 10:25:53 -0400
+Message-ID: <46827268.4030104@zytor.com>
+Date: Wed, 27 Jun 2007 10:21:28 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>,
+       linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@pol.net>
+Subject: Re: Problems with fb console [was Re: 2.6.12-rc4-mm2]
+References: <20050516021302.13bd285a.akpm@osdl.org>	<20070627023527.5e643e32@werewolf-wl> <20070626175433.dceee930.akpm@linux-foundation.org>
+In-Reply-To: <20070626175433.dceee930.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200706251434.43863.jesse.barnes@intel.com>
-	 <46823F71.6060200@macroscoop.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/27/07, Pim Zandbergen <P.Zandbergen@macroscoop.nl> wrote:
-> Now:
-> Jesse released a new patch and I tried if for fun on 2.6.22-rc6
-> It looks like the patch is releasing memory rather than trimming it:
->
-> [...]
-> Jun 27 12:22:56 corneille kernel: **** MTRRs don't cover all of memory,
-> trimmed -65536 pages
-> [...]
+Andrew Morton wrote:
+>>
+>> I have a (stupid, I suppose) problem with framebuffer console.
+>> I have builtin VESAFB in this kernel, so:
+>>
+>> werewolf:/boot# grep _FB config-2.6.21-jam09 | grep =y
+                                          ^^^^^^
 
->From Jesse's patch:
-> +       unsigned long i, base, size, highest_addr = 0, def, dummy;
-> [...]
-> +               printk(KERN_WARNING "**** MTRRs don't cover all of "
-> +                      "memory, trimmed %ld pages\n", end_pfn -
-> +                      (highest_addr >> PAGE_SHIFT));
+Is this actually the -mm kernel?  And if so, does it work in earlier 
+kernels?
 
-Since both end_pfn (from arch/x86_64/kernel/e820.c) and highest_addr
-are unsigned long, maybe the problem is just that %ld in the kprintf
-format string? Shouldn't that be %lu?
-
-Mauro
+	-hpa
