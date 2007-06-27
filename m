@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbXF0AMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbXF0AMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbXF0AMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 20:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXF0ALu
+	id S1759580AbXF0AMl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 20:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbXF0AMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 20:11:50 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50193 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbXF0ALt (ORCPT
+	Tue, 26 Jun 2007 20:12:33 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:53326 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752908AbXF0AMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 20:11:49 -0400
-Date: Tue, 26 Jun 2007 20:11:41 -0400
-Message-Id: <200706270011.l5R0BfPO011424@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: jjohansen@suse.de
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: [RFD 1/4] Pass no useless nameidata to the create, lookup, and permission IOPs 
-In-reply-to: Your message of "Tue, 26 Jun 2007 16:15:11 PDT."
-             <20070626231541.697783295@suse.de> 
-X-MailKey: Erez_Zadok
+	Tue, 26 Jun 2007 20:12:32 -0400
+Date: Wed, 27 Jun 2007 01:12:31 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
+cc: linux-kernel@vger.kernel.org
+Subject: [drm patch for 2.6.22-rc6] Add some pci ids for XGI chips
+Message-ID: <Pine.LNX.4.64.0706270111110.17520@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-1978455807-1182903151=:17520"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20070626231541.697783295@suse.de>, jjohansen@suse.de writes:
-> The create, lookup, and permission inode operations are all passed a
-> full nameidata.  This is unfortunate because in nfsd and the mqueue
-> filesystem, we must instantiate a struct nameidata but cannot provide
-> all of the same information that a regular lookup would provide.  The
-> unused fields take up space on the stack, but more importantly, it is
-> not obvious which fields have meaningful values and which don't, and so
-> things might easily break.
-> 
-> This patch introduces struct nameidata2 with only the fields that make
-> sense independent of an actual lookup, and uses that struct in those
-> places where a full nameidat is not needed.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I agree w/ Trond that a better name is needed other than 'nameidata2',
-esp. for something that's a sub-structure (perhaps start it with a '__'?)
+--29444707-1978455807-1182903151=:17520
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
-These changes would probably help stackable file systems (e.g., eCryptfs and
-esp. Unionfs) a lot, b/c stackable f/s often call the lower f/s to lookup
-files and such; and in most cases, we just need to pass the intent down, not
-the full VFS-level state info.
 
-> +/**
-> + * Fields shared between nameidata and nameidata2 -- nameidata2 could
-> + * simply be embedded in nameidata, but then the vfs code would become
-> + * cluttered with dereferences.
-> + */
-> +#define __NAMEIDATA2				\
-> +	struct dentry	*dentry;		\
-> +	struct vfsmount *mnt;			\
-> +	unsigned int	flags;			\
-> +						\
-> +	union {					\
-> +		struct open_intent open;	\
-> +	} intent;
+The attached patch just adds some XGI pci ids to the SIS driver. It should 
+be harmless at this stage..
 
-Perhaps it is also time to put the dentry + mnt into a single struct path?
-It's a small change, but it emphasizes that the two items here, dentry+mnt,
-really define a single path to be passed around:
+Dave.
+--29444707-1978455807-1182903151=:17520
+Content-Type: TEXT/plain; charset=US-ASCII; name=0001-Add-support-SiS-based-XGI-chips-to-SiS-DRM.txt
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0706270112310.17520@skynet.skynet.ie>
+Content-Description: 
+Content-Disposition: attachment; filename=0001-Add-support-SiS-based-XGI-chips-to-SiS-DRM.txt
 
-#define __NAMEIDATA			\
-	struct path path;		\
-	unsigned int flags;		\
-	...
+RnJvbSAwMjAzMWJmOTE5MGY2Njk4ZTQ2ZTE1NzE5NjA4NmZmNDE2ZDBiZjli
+IE1vbiBTZXAgMTcgMDA6MDA6MDAgMjAwMQ0KRnJvbTogSWFuIFJvbWFuaWNr
+IDxpZHJAdXMuaWJtLmNvbT4NCkRhdGU6IFdlZCwgMjcgSnVuIDIwMDcgMDY6
+Mzg6MDAgKzEwMDANClN1YmplY3Q6IFtQQVRDSF0gQWRkIHN1cHBvcnQgU2lT
+IGJhc2VkIFhHSSBjaGlwcyB0byBTaVMgRFJNLg0KDQpUaGlzIGFkZHMgc3Vw
+cG9ydCBmb3Igc29tZSBvZiB0aGUgWEdJIFZvbGFyaSBmYW1pbHkgdGhhdCBh
+cmUgYmFzZWQgb24gdGhlDQpTaVMuDQoNClNpZ25lZC1vZmYtYnk6IERhdmUg
+QWlybGllIDxhaXJsaWVkQGxpbnV4LmllPg0KLS0tDQogZHJpdmVycy9jaGFy
+L2RybS9kcm1fcGNpaWRzLmggfCAgICAyICsrDQogZHJpdmVycy9jaGFyL2Ry
+bS9zaXNfZHJ2LmggICAgfCAgICA4ICsrKystLS0tDQogMiBmaWxlcyBjaGFu
+Z2VkLCA2IGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pDQoNCmRpZmYg
+LS1naXQgYS9kcml2ZXJzL2NoYXIvZHJtL2RybV9wY2lpZHMuaCBiL2RyaXZl
+cnMvY2hhci9kcm0vZHJtX3BjaWlkcy5oDQppbmRleCBhYTYzMzUwLi4zMGIy
+MDBiIDEwMDY0NA0KLS0tIGEvZHJpdmVycy9jaGFyL2RybS9kcm1fcGNpaWRz
+LmgNCisrKyBiL2RyaXZlcnMvY2hhci9kcm0vZHJtX3BjaWlkcy5oDQpAQCAt
+MjE5LDYgKzIxOSw4IEBADQogCXsweDEwMzksIDB4NjMwMCwgUENJX0FOWV9J
+RCwgUENJX0FOWV9JRCwgMCwgMCwgMH0sIFwNCiAJezB4MTAzOSwgMHg2MzMw
+LCBQQ0lfQU5ZX0lELCBQQ0lfQU5ZX0lELCAwLCAwLCBTSVNfQ0hJUF8zMTV9
+LCBcDQogCXsweDEwMzksIDB4NzMwMCwgUENJX0FOWV9JRCwgUENJX0FOWV9J
+RCwgMCwgMCwgMH0sIFwNCisJezB4MThDQSwgMHgwMDQwLCBQQ0lfQU5ZX0lE
+LCBQQ0lfQU5ZX0lELCAwLCAwLCBTSVNfQ0hJUF8zMTV9LCBcDQorCXsweDE4
+Q0EsIDB4MDA0MiwgUENJX0FOWV9JRCwgUENJX0FOWV9JRCwgMCwgMCwgU0lT
+X0NISVBfMzE1fSwgXA0KIAl7MCwgMCwgMH0NCiANCiAjZGVmaW5lIHRkZnhf
+UENJX0lEUyBcDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jaGFyL2RybS9zaXNf
+ZHJ2LmggYi9kcml2ZXJzL2NoYXIvZHJtL3Npc19kcnYuaA0KaW5kZXggMmI4
+ZDZmNi4uNzBkNGVkZSAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvY2hhci9kcm0v
+c2lzX2Rydi5oDQorKysgYi9kcml2ZXJzL2NoYXIvZHJtL3Npc19kcnYuaA0K
+QEAgLTMzLDExICszMywxMSBAQA0KIA0KICNkZWZpbmUgRFJJVkVSX0FVVEhP
+UgkJIlNJUywgVHVuZ3N0ZW4gR3JhcGhpY3MiDQogI2RlZmluZSBEUklWRVJf
+TkFNRQkJInNpcyINCi0jZGVmaW5lIERSSVZFUl9ERVNDCQkiU0lTIDMwMC82
+MzAvNTQwIg0KLSNkZWZpbmUgRFJJVkVSX0RBVEUJCSIyMDA2MDcwNCINCisj
+ZGVmaW5lIERSSVZFUl9ERVNDCQkiU0lTIDMwMC82MzAvNTQwIGFuZCBYR0kg
+VjNYRS9WNS9WOCINCisjZGVmaW5lIERSSVZFUl9EQVRFCQkiMjAwNzA2MjYi
+DQogI2RlZmluZSBEUklWRVJfTUFKT1IJCTENCi0jZGVmaW5lIERSSVZFUl9N
+SU5PUgkJMg0KLSNkZWZpbmUgRFJJVkVSX1BBVENITEVWRUwJMQ0KKyNkZWZp
+bmUgRFJJVkVSX01JTk9SCQkzDQorI2RlZmluZSBEUklWRVJfUEFUQ0hMRVZF
+TAkwDQogDQogZW51bSBzaXNfZmFtaWx5IHsNCiAJU0lTX09USEVSID0gMCwN
+Ci0tIA0KMS40LjQuMg0KDQo=
 
-Of course, you'll have to change instances of nd->dentry to nd->path.dentry
-and so on.
-
-Erez.
+--29444707-1978455807-1182903151=:17520--
