@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXF0SA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbXF0SEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762944AbXF0SA7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 14:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbXF0SAw
+	id S1762206AbXF0SEU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 14:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbXF0SEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 14:00:52 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:36552 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756443AbXF0SAv (ORCPT
+	Wed, 27 Jun 2007 14:04:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:56495 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756443AbXF0SEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 14:00:51 -0400
-Subject: [PATCH] CodingStyle: Add information about editor modelines
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, josh@kernel.org
-Content-Type: text/plain
-Date: Wed, 27 Jun 2007 11:00:46 -0700
-Message-Id: <1182967246.8970.112.camel@josh-work.beaverton.ibm.com>
+	Wed, 27 Jun 2007 14:04:12 -0400
+Date: Wed, 27 Jun 2007 19:04:09 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Neil Booth <neil@daikokuya.co.uk>, Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070627180408.GC21478@ftp.linux.org.uk>
+References: <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk> <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org> <20070627172903.GB21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706271043570.8675@woody.linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706271043570.8675@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Josh Triplett <josh@freedesktop.org>
----
-I recently received a patch including a file that had a vim modeline,
-and I realized that nothing specifically proscribed that practice.
+On Wed, Jun 27, 2007 at 10:45:55AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 27 Jun 2007, Al Viro wrote:
+> > 
+> > Eh...  I'd say that my variant for offsetof() is simply better - it usually
+> > directly turns into EXPR_VALUE, right in place, without rather convoluted
+> > work.  Aside of "should such cast be a constant integer expression"...
+> 
+> Umm. But sparse is meant to parse C code. Which very much includes *other* 
+> projects.
+> 
+> The kernel, for example, has its own offsetof. And yes, these days we use 
+> "__compiler_offsetof()", but we used to do
+> 
+> 	#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+> 
+> and I seriously doubt that the kernel is the only one doing things like 
+> that.
 
- Documentation/CodingStyle |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
+You can't have it both way, really.  If we are talking about annotating
+a codebase we _can_ annotate, that one is not a problem at all.  If we
+are talking about vanilla C project that never heard about sparse...
+We can define whatever extensions we like, but such project has to
+cope with whatever C compilers they had been using.
 
-diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-index 00bffa7..a667eb1 100644
---- a/Documentation/CodingStyle
-+++ b/Documentation/CodingStyle
-@@ -738,6 +738,33 @@ need them.  Feel free to peruse that header file to see what else is already
- defined that you shouldn't reproduce in your code.
- 
-
-+		Chapter 18:  Editor modelines and other cruft
-+
-+Some editors can interpret configuration information embedded in source files,
-+indicated with special markers.  For example, emacs interprets lines marked
-+like this:
-+
-+-*- mode: c -*-
-+
-+Or like this:
-+
-+/*
-+Local Variables:
-+compile-command: "gcc -DMAGIC_DEBUG_FLAG foo.c"
-+End:
-+*/
-+
-+Vim interprets markers that look like this:
-+
-+/* vim:set sw=8 noet */
-+
-+Do not include any of these in source files.  People have their own personal
-+editor configurations, and your source files should not override them.  This
-+includes markers for indentation and mode configuration.  People may use their
-+own custom mode, or may have some other magic method for making indentation
-+work correctly.
-+
-+
- 
- 		Appendix I: References
- 
--- 
-1.5.2.1
-
-
+So "sparse believes that this defintion of offsetof can be used as
+array size" will mean fsck-all outside of #ifdef __CHECKER__ and
+under such ifdef we can always define it to builtin; if anything,
+that will be faster and easier on sparse.
