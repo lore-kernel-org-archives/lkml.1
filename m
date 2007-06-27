@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbXF0Ies@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbXF0IoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757259AbXF0Ies (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 04:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbXF0Iem
+	id S1754087AbXF0IoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 04:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbXF0IoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 04:34:42 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38668 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752953AbXF0Iel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 04:34:41 -0400
-Message-ID: <4682211D.4040808@garzik.org>
-Date: Wed, 27 Jun 2007 04:34:37 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Wed, 27 Jun 2007 04:44:11 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:3652 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751262AbXF0IoK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 04:44:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OY9jJynhIHp3OjHGPGUHNP9Tx4K6F1GtfRR6JcmgVX+Ae3TOGkzRvS1k7TlWb/LiVVfjC2eiYJx/cWDJq2b01nag5mXBxWQs6rv48XZEiJorFsQc3NOIFUB1wFwXhqkFtZA2sGzizHte14F7pbbpOlrxe5BiMvtzcq/K/eI0rKw=
+Message-ID: <5d5443650706270144l2d905d2h142617d01f515785@mail.gmail.com>
+Date: Wed, 27 Jun 2007 14:14:08 +0530
+From: "Trilok Soni" <soni.trilok@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH 01/17] OMAP: Add TI OMAP framebuffer driver
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       akpm@linux-foundation.org, "Tony Lindgren" <tony@atomide.com>,
+       imre.deak@solidboot.com, juha.yrjola@solidboot.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070626165003.GA22389@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Peer Chen <pchen@nvidia.com>
-CC: Robert Hancock <hancockr@shaw.ca>, kuan luo <kuanluo@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Kuan Luo <kluo@nvidia.com>
-Subject: Re: [PATCH] ata: Add the SW NCQ support to sata_nv for MCP51/MCP55/MCP61
-References: <fa.5TBvnXzjCgAIfcuKOLBWeXi+y5I@ifi.uio.no> <4681F06F.1050302@shaw.ca> <15F501D1A78BD343BE8F4D8DB854566B15830128@hkemmail01.nvidia.com>
-In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B15830128@hkemmail01.nvidia.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <5d5443650706260533r218c05b1u5d4336015c4a4a9b@mail.gmail.com>
+	 <20070626165003.GA22389@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peer Chen wrote:
-> We did the many test with the new version driver and didn't encounter
-> that problem, but in certain cases, DMASETUP command packets from drive
-> to the controller are corrupted, and the controller issues an R_ERR to
-> the drive. Drives that comply with SATA spec will re-transmit the
-> corrupted packet and normal operation continues. However, some Maxtor
-> NCQ drives do not re-transmit the DMASETUP command packet, resulting in
-> software timeout for this command. So if you are using the Maxtor HD and
-> meet this problem,please don't enable the NCQ function.
+Hi Sam,
 
-Users should not be expected to know those details, nor be forced to 
-suffer discovering this in the field (over and over again for each 
-customer).
+On 6/26/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> diff --git a/drivers/video/omap/Makefile b/drivers/video/omap/Makefile
+> new file mode 100644
+> index 0000000..5aa7175
+> --- /dev/null
+> +++ b/drivers/video/omap/Makefile
+> @@ -0,0 +1,10 @@
+> +#
+> +# Makefile for the new OMAP framebuffer device driver
+> +#
+> +
+> +obj-$(CONFIG_FB_OMAP) += omapfb.o
+> +
+> +objs-yy := omapfb_main.o
+> +
+> +omapfb-objs := $(objs-yy)
+> +
+>
+> This looks strangs.
+> Please use:
+> obj-$(CONFIG_FB_OMAP) += omapfb.o
+>
+> omapfb-y := omapfb_main.o
+>
+> Or even better rename your .c file to omapfb.c then
+> you only need to use:
+> obj-$(CONFIG_FB_OMAP) += omapfb.o
+>
 
-We have a list of problem devices ata_device_blacklist[] in 
-drivers/ata/libata-core.c that should be modified to note each drive 
-where NCQ should never be used.
+Thanx for the review. I will incorporate your suggestions into the
+next update of fb patches.
 
-	Jeff
-
-
+-- 
+--Trilok Soni
