@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762829AbXF0Rzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762724AbXF0R5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762829AbXF0Rzs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbXF0Rzk
+	id S1762724AbXF0R5B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758630AbXF0R4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:55:40 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42364 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757498AbXF0Rzj (ORCPT
+	Wed, 27 Jun 2007 13:56:54 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:50421 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755604AbXF0R4x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:55:39 -0400
-Date: Wed, 27 Jun 2007 19:01:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: Geode HW Random Number Generator depend on
- X86_3
-Message-ID: <20070627190135.66f2c240@the-village.bc.nu>
-In-Reply-To: <200706271043.23373.yinghai.lu@sun.com>
-References: <200706271043.23373.yinghai.lu@sun.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 13:56:53 -0400
+Message-ID: <4682A4E2.4020206@anagramm.de>
+Date: Wed, 27 Jun 2007 19:56:50 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21.5: BUG: usbtouchscreen.c DMC TSC-10 wrong descriptor type
+ / type->init() failed.
+References: <468294E4.40801@anagramm.de> <d120d5000706271004u5e2304dekd4ad5315cdd4a55@mail.gmail.com>
+In-Reply-To: <d120d5000706271004u5e2304dekd4ad5315cdd4a55@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX1/erSWyttjpP/l5uZnnn4xXxaX56X+yadMIXnc
+ Nk/Lu55ezZa7zCDjxTU/uxkXoi2AME18DbfSM9SJVzeRrvYSoX
+ ybWVkHswJwUvQRKPZUs3w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 10:43:23 -0700
-Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+Hello, Dimitry!
 
-> [PATCH] x86_64: Geode HW Random Number Generator depend on X86_32
+Dmitry Torokhov schrieb:
+> On 6/27/07, Clemens Koller <clemens.koller@anagramm.de> wrote:
+>> drivers/usb/input/usbtouchscreen.c: usbtouch_probe - type->init() 
+>> failed, err: -19
 > 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> dmc_tsc10_init() returns -ENODEV (-19) when device responds with
+> something other than 0x06 0x00 to the "reset" and "set rate" commands.
+> It would be interesting to see what your touchscreen responses are.
 
-Acked-by: Alan Cox <alan@redhat.com>
+Yes, thank you!
+I just had a look into the datasheet.
+(tsc10usb_pi_e.pdf, Rev. 1.2 from November 1, 2005)
+and I will need more debugging info to the dmc_tsc10_init()...
 
-There are no 64bit geode gx series chips
+As I wrote, I am using the TSC-103 without EEPROM.
+(I can add one if it's of any use.)
+The PanelID is 0 (pin 3 [SEL1] is low), so it's the "first"
+device on the bus.
+
+What exact chip version and EEPROM configuration do you use?
+I guess there are different firmware releases for the different
+TSC-10* devices which behave... well... different. :-(
+
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
