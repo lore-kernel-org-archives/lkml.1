@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763541AbXF0WpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763631AbXF0Wrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763541AbXF0WpS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 18:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761669AbXF0WpH
+	id S1763631AbXF0Wrc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 18:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbXF0WrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 18:45:07 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:36173 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755223AbXF0WpF (ORCPT
+	Wed, 27 Jun 2007 18:47:23 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:35804 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759527AbXF0WrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 18:45:05 -0400
-Date: Thu, 28 Jun 2007 00:46:24 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <20070627224623.GO13886@enneenne.com>
-References: <20070626100628.GO24183@enneenne.com> <1182855427.12109.203.camel@pmac.infradead.org> <20070626170622.GA13886@enneenne.com> <1182879520.3263.19.camel@shinybook.infradead.org> <20070627101449.GH13886@enneenne.com> <1182939510.6409.17.camel@pmac.infradead.org> <20070627125802.GI13886@enneenne.com> <1182960660.1170.12.camel@pmac.infradead.org> <20070627174537.GM13886@enneenne.com> <1182966588.1170.28.camel@pmac.infradead.org>
+	Wed, 27 Jun 2007 18:47:22 -0400
+Message-ID: <4682E8E1.6090701@novell.com>
+Date: Wed, 27 Jun 2007 15:46:57 -0700
+From: Crispin Cowan <crispin@novell.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1182966588.1170.28.camel@pmac.infradead.org>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: Sean <seanlkml@sympatico.ca>
+CC: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+References: <20070626230756.519733902@suse.de>	<20070626165202.bfe8e6df.akpm@linux-foundation.org>	<20070627022403.GB14656@suse.de>	<20070626194700.5b0ff477.akpm@linux-foundation.org>	<20070627151114.GM1094@stusta.de>	<4682D13C.6060107@novell.com> <20070627172940.1cabd5c4.seanlkml@sympatico.ca>
+In-Reply-To: <20070627172940.1cabd5c4.seanlkml@sympatico.ca>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 06:49:48PM +0100, David Woodhouse wrote:
-> 
-> Looks better. All I can find to complain about is the fact that you
-> return whatever copy_from_user() returns. Don't -- that's the number of
-> bytes left to copy. It should be if (copy_from_user(..)) return -EFAULT;
+Sean wrote:
+> On Wed, 27 Jun 2007 14:06:04 -0700
+> Crispin Cowan <crispin@novell.com> wrote:
+>   
+>> I am hoping for a reconciliation where the people who don't like
+>> AppArmor live with it by not using it. AppArmor is not intended to
+>> replace SELinux, it is intended to address a different set of goals.
+>>     
+> You keep saying that.   But for that to be true you'd have to believe
+> _everyone_ using Novell distributions has needs that align exactly
+> with AppArmor.  Otherwise, how to explain that you don't offer and
+> support both SELinux and AppArmor to your users?
+>   
+They are meant to co-exist in the Linux kernel source tree.
 
-Ok, I'll fix it.
+It is a fact that there exist use cases where AppArmor is incapable of
+meeting the need and SELinux is just the right thing. It is Novell's
+business judgment that there are not enough of those situations in our
+customer base to be worth the additional expense at this time.
 
-Just last question: I still don't well understand where I should
-declare the new compat_sys_time_pps_fetch() syscall... it's
-automagically defined by the system when CONFIG_COMPAT is enabled? :-o
+But we do not want to prevent other people from using SELinux if it
+suits them. Linux is about choice, and that is especially vital in
+security. As Linus himself observed when LSM was started, there are a
+lot of security models, they have various strengths and weaknesses, and
+often are not compatible with each other. That is why it is important
+that LSM persist, that SELinux not be the only in-tree user of LSM, and
+why we think AppArmor should be included upstream, so that non-SUSE
+users can also use AppArmor if it suits them.
 
-Thanks for your help,
-
-Rodolfo
+Crispin
 
 -- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+Director of Software Engineering   http://novell.com
+	AppArmor Chat: irc.oftc.net/#apparmor
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
