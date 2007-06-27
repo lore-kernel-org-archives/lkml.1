@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbXF0Swi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762805AbXF0Sxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762457AbXF0Swi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 14:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758206AbXF0Sw3
+	id S1762805AbXF0Sxz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 14:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758925AbXF0Sxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 14:52:29 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:34391 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757662AbXF0Sw2 (ORCPT
+	Wed, 27 Jun 2007 14:53:48 -0400
+Received: from web30502.mail.mud.yahoo.com ([68.142.200.115]:22629 "HELO
+	web30502.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758834AbXF0Sxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 14:52:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=J5jb/YxzcHPpUOUBCescIRrWvukcCyWe1A1IPdCyb10QjhxFlYnVi8lcNgr+8pFZVxM6dNMLt0L9klLUtuIx8tW5VH59fzacmZ2egeN3WHTIgD9q/hW6bHmtxWCeB7yEdQaImiJAoJn1RFv2GA1VRl/RifkiJOJH2hYp6Yk0w5Y=
-Message-ID: <a36005b50706271152o2ba87c69h99c51a3605f977ae@mail.gmail.com>
-Date: Wed, 27 Jun 2007 11:52:27 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-Cc: "Davide Libenzi" <davidel@xmailserver.org>, blaisorblade@yahoo.it,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
+	Wed, 27 Jun 2007 14:53:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=YylMILRaLbP66E0hA1asxs2eGWt/go2EHYSv0MNj8vsSvn2TApE0oPGFhRII9pKM2y+2WtobmdTQVnAIm7gGUB3f8GOCRMLXjgmVANq+PbsRzfQLZrTZNclTaAHm9xbp51oX+xH1hMrXtAKl5rNnDcGQMgcwqiayDYoBePP7c/M=;
+X-YMail-OSG: 6AxZKk8VM1ktnrutpIeQNqlhV8vElz8Jjafs97Imhsp6enxHxZ8J70ehfVXqYe232czNx7W2kg--
+Date: Wed, 27 Jun 2007 11:53:46 -0700 (PDT)
+From: Casey Leedom <casey_leedom@yahoo.com>
+Subject: Re: ZERO_PAGE() vs. loadable modules in Redhat 4.4 i386 kernels ...
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1182969547.2718.0.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2>
-	 <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com>
-	 <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com>
-	 <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com>
-	 <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
-	 <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
-	 <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <951709.47871.qm@web30502.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/27/07, Hugh Dickins <hugh@veritas.com> wrote:
-> The absolute virtual addresses are randomized, yes; but do a sequence
-> of mmaps and they come back adjacent to each other, and so mergable.
-> Or does your distro include a kernel patch to randomize them relative
-> to each other?
+--- Arjan van de Ven <arjan@infradead.org> wrote:
 
-Each individual mmap is supposed to be randomized, yes.  If this
-doesn't happen in one of our kernels right now something broken.  You
-wouldn't have effective ASLR if all relative address remain the same.
+> you forgot to attach your source code or provide a URL to it.....
 
+  Sorry, my bad.  I'm just diving into Linux for the first time and wasn't
+aware of the protocols.  Here's the code fragment I'm currently using:
 
-> It _might_ turn out to be more attractive, not to rely on that
-> peculiar sys_remap_file_pages, but make all our vmas independent
-> of protections, and hang differently protected ranges off them.
-> Maybe.
+	address = skb_vaddr(skb) & PAGE_MASK;
+	end = PAGE_ALIGN(skb_vaddr(skb) + len);
 
-That's what I think is done or at least should be done.
+	down_read(&current->mm->mmap_sem);
+	vma = find_vma(current->mm, skb_vaddr(skb));
 
-If you want to be shocked, look at some really big Java apps.
-Hundreds or thousands of threads, lots of mmap allocation.  We might
-have 10,000 VMAs.  Searching becomes a problem and if the protection
-information be stored somewhere else and you safe the VMA data
-structures there is even some memory saving possible.
+	spin_lock(&current->mm->page_table_lock);
+	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++, address += PAGE_SIZE) { 
+		pgd_t *pgd;
+		pud_t *pud;
+		pmd_t *pmd;
+		pte_t *ptep;
+		skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
 
-I definitely thing that this is an area which warrants looking at.  We
-haven't yet seen the worst of VMA usage.  The move to 64-bit is only
-just beginning and wait what people think they can do with 48+ bits of
-address space.
+		/*
+		 * If we're looking at the ZERO_PAGE() then we don't have to
+		 * do anything.  It's never going to be modified.  See also
+		 * where we avoid the ZERO_PAGE() in skb_dma_complete().
+		 */
+		if (frag->page == ZERO_PAGE(address))
+			continue;
+
+		atomic_inc(&frag->page->_mapcount);
+
+		/*
+		 * If we're not dealing with the ZERO_PAGE() then it should
+		 * not be possible to end up without a mapping to the page.
+		 * But just in case we check here and issue a BUG() if the
+		 * mapping is missing ...
+		 */
+		if (unlikely((pgd = pgd_offset(current->mm, address),
+			      pgd_none(*pgd)) ||
+			     (pud = pud_offset(pgd, address),
+			      pud_none(*pud)) ||
+			     (pmd = pmd_offset(pud, address),
+			      pmd_none(*pmd)) ||
+			     (ptep = pte_offset_map(pmd, address),
+			      pte_none(*ptep)))) {
+			printk("skb_dma_pending: missing %s page mapping"
+			       " for vaddr=%#lx, page=%p\n",
+			       pgd_none(*pgd) ? "pgd"
+			       : pud_none(*pud) ? "pud"
+			       : pmd_none(*pmd) ? "pmd"
+			       : "pte",
+			       address, frag->page);
+			BUG();
+		}
+
+		ptep_set_wrprotect(current->mm, address, ptep);
+		pte_unmap(ptep);
+	}
+	spin_unlock(&current->mm->page_table_lock);
+	flush_tlb_range(vma, address, end);
+
+I hope that isn't too large but I wanted to provide sufficient context.
+
+Casey
