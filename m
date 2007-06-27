@@ -1,63 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbXF0JOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbXF0JPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbXF0JOg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 05:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbXF0JOa
+	id S1756617AbXF0JPJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 05:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbXF0JO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 05:14:30 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:28173 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbXF0JO2 (ORCPT
+	Wed, 27 Jun 2007 05:14:57 -0400
+Received: from mesiob.obspm.fr ([145.238.2.2]:46343 "EHLO mesiob.obspm.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752174AbXF0JO4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 05:14:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:in-reply-to:
-	references:x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=f4ZZaywvQiyu+HCljZnAKCxVVAvxAKyn8O8mm0VbNnX/EPIRO7MvZdWtYoJmDYvJO
-	3PgSs2mAVMI/TUqjHIrFA==
-Date: Wed, 27 Jun 2007 02:14:08 -0700
-From: Andrew Morton <akpm@google.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ethan Solomita <solo@google.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, a.p.zijlstra@chello.nl
-Subject: Re: [RFC 1/7] cpuset write dirty map
-Message-Id: <20070627021408.493812fe.akpm@google.com>
-In-Reply-To: <Pine.LNX.4.64.0706262017260.24504@schroedinger.engr.sgi.com>
-References: <465FB6CF.4090801@google.com>
-	<Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com>
-	<46646A33.6090107@google.com>
-	<Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com>
-	<468023CA.2090401@google.com>
-	<Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com>
-	<20070626152204.b6b4bc3f.akpm@google.com>
-	<Pine.LNX.4.64.0706262017260.24504@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 05:14:56 -0400
+From: =?iso-8859-15?q?Zolt=E1n_HUBERT?= <zoltan.hubert@zzaero.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Please release a stable kernel Linux 3.0
+Date: Wed, 27 Jun 2007 11:18:36 +0200
+User-Agent: KMail/1.8
+References: <200706212349.54983.zoltan.hubert@zzaero.com> <200706261637.22820.zoltan.hubert@zzaero.com> <6FD45914-1793-45D5-B0A1-F5D32ED38017@e18.physik.tu-muenchen.de>
+In-Reply-To: <6FD45914-1793-45D5-B0A1-F5D32ED38017@e18.physik.tu-muenchen.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200706271118.36985.zoltan.hubert@zzaero.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0.2 (mesiob.obspm.fr [145.238.2.2]); Wed, 27 Jun 2007 11:14:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 26 Jun 2007 20:18:36 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+Thanks Roland,
 
-> On Tue, 26 Jun 2007, Andrew Morton wrote:
-> 
-> > Is in my queue somewhere.  Could be that by the time I get to it it will
-> > need refreshing (again), we'll see.
-> > 
-> > One open question is the interaction between these changes and with Peter's
-> > per-device-dirty-throttling changes.  They also are in my queue somewhere. 
-> > Having a 100:1 coder:reviewer ratio doesn't exactly make for swift
-> > progress.
-> 
-> Hmmmm.. How can we help? I can look at some aspects of Peter's per device 
-> throttling.
+On Tuesday 26 June 2007 21:03, Roland Kuhn wrote:
+> On 26 Jun 2007, at 16:37, Zoltán HUBERT wrote:
+> > Whatever "stable" means.
+>
+> What you mean by "stable" pretty much excludes any
+> serious development, without which the Linux kernel would
+> very soon be obsolete. If you want a stable system, then
+> don't change it. 
 
-That can't hurt.
+This is a problem. Do you remember that kernel vulnerability 
+in 2.4 that made the Debian servers be attacked ? And 
+mplayerhq.hu too if I remember right ? So what are we 
+supposed to do with a perfect and optimised system, running 
+smoothly, with an older kernel where some nasty bug is 
+discovered ?
 
-I'm more concerned about all of Mel's code in -mm actually.  I don't recall
-anyone doing a full review recently and I'm still not sure that this is the
-overall direction in which we wish to go.  Last time I asked this everyone
-seemed a bit waffly and non-committal.
+In MacOS X, you click "System Update" and you're done. 
+
+In Linux, I expect "download the newest stable kernel, 
+configure, compile, install, reboot". 
+
+If I have to rely on the distribution to help me it spoils 
+the whole benefit of open source. I don't trust Novell or 
+RedHat or Google more than Microsoft or Apple. You "kernel 
+developpers" are the keepers of the flame.
+
+> If you update to a kernel which is 2.5 
+> years newer, you simply cannot have stability, because
+> that would mean stagnation, aka "death".
+
+PostScript is a very old language yet we all still use it 
+every day. HTML is a very old "thing" and we use it 
+every-day, and it's still compatible with newer and older 
+stuff.
+
+I'm a system engineer, and a "stable" system is one where 
+the interfaces are stable. Individual components can 
+change, and do change, but if you change fundamental 
+interfaces it is not the same system. Of course I 
+understand that "sometimes" fundamental things have to 
+change, but here "sometimes" is the keyword. If its 
+"anytime" it simply is no stable system. And yes, designing 
+and maintaining interfaces is a very difficult job.
+
+I don't remember how it was during 2.4 and before, but I 
+find it very suspicious that SuSE and RedHat only provide 
+2.6.10 and 2.6.9 for their OS. It looks as if THEY didn't 
+trust 2.6.x to be a replacement to 2.6.y
+
+And as I understand it, this is (was ?) the whole point of 
+stable/development kernels. "We" can trust a newer stable 
+kernel to be a drop-in replacement for an older stable 
+kernel (from the same series), while development kernels 
+need time to stabilise with the new whizz-bang-pfouit stuff 
+that you all so nicely add. 
+
+Are the good ol' days lost in nostalgia ?
+
+bye
+
+Zoltán
 
 
+
+
+-- 
+ 
+________________________
+
+Zoltan
+________________________
+
+ 
