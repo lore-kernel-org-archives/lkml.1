@@ -1,46 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbXF0Lwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbXF0LyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758588AbXF0Lwv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 07:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbXF0Lwl
+	id S1759301AbXF0LyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 07:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbXF0LyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 07:52:41 -0400
-Received: from v035086.ppp.asahi-net.or.jp ([124.155.35.86]:7568 "HELO
-	daikokuya.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751029AbXF0Lwk (ORCPT
+	Wed, 27 Jun 2007 07:54:01 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:47684 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754314AbXF0Lx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 07:52:40 -0400
-Date: Wed, 27 Jun 2007 20:52:45 +0900
-From: Neil Booth <neil@daikokuya.co.uk>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627115245.GP7590@daikokuya.co.uk>
-References: <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070626233226.GO7590@daikokuya.co.uk> <20070627001803.GJ21478@ftp.linux.org.uk>
+	Wed, 27 Jun 2007 07:53:59 -0400
+Date: Wed, 27 Jun 2007 07:50:56 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: David Chinner <dgc@sgi.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC] fsblock
+Message-ID: <20070627115056.GW14224@think.oraclecorp.com>
+References: <20070624014528.GA17609@wotan.suse.de> <20070626030640.GM989688@sgi.com> <46808E1F.1000509@yahoo.com.au> <20070626092309.GF31489@sgi.com> <20070626123449.GM14224@think.oraclecorp.com> <20070627053245.GA6033@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070627001803.GJ21478@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070627053245.GA6033@wotan.suse.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:-
-
+On Wed, Jun 27, 2007 at 07:32:45AM +0200, Nick Piggin wrote:
+> On Tue, Jun 26, 2007 at 08:34:49AM -0400, Chris Mason wrote:
+> > On Tue, Jun 26, 2007 at 07:23:09PM +1000, David Chinner wrote:
+> > > On Tue, Jun 26, 2007 at 01:55:11PM +1000, Nick Piggin wrote:
+> > 
+> > [ ... fsblocks vs extent range mapping ]
+> > 
+> > > iomaps can double as range locks simply because iomaps are
+> > > expressions of ranges within the file.  Seeing as you can only
+> > > access a given range exclusively to modify it, inserting an empty
+> > > mapping into the tree as a range lock gives an effective method of
+> > > allowing safe parallel reads, writes and allocation into the file.
+> > > 
+> > > The fsblocks and the vm page cache interface cannot be used to
+> > > facilitate this because a radix tree is the wrong type of tree to
+> > > store this information in. A sparse, range based tree (e.g. btree)
+> > > is the right way to do this and it matches very well with
+> > > a range based API.
+> > 
+> > I'm really not against the extent based page cache idea, but I kind of
+> > assumed it would be too big a change for this kind of generic setup.  At
+> > any rate, if we'd like to do it, it may be best to ditch the idea of
+> > "attach mapping information to a page", and switch to "lookup mapping
+> > information and range locking for a page".
 > 
-> sparse simply doesn't check that.  We don't have anything resembling
-> support of VLA.  Note that check for integer constant expression
-> has nothing to do with that;
+> Well the get_block equivalent API is extent based one now, and I'll
+> look at what is required in making map_fsblock a more generic call
+> that could be used for an extent-based scheme.
 > 
-> 	int x[(int)(0.6 + 0.6)];
-> 
-> is valid (if stupid).
+> An extent based thing IMO really isn't appropriate as the main generic
+> layer here though. If it is really useful and popular, then it could
+> be turned into generic code and sit along side fsblock or underneath
+> fsblock...
 
-It isn't valid; it fails the test twice.  Both 0.6 are not "immediate
-operands of casts".  Their sum is, but that's irrelevant.
-Therefore the dimension is not an ICE and a diagnostic is required.
+Lets look at a typical example of how IO actually gets done today,
+starting with sys_write():
 
-Neil.
+sys_write(file, buffer, 1MB)
+for each page:
+    prepare_write()
+	allocate contiguous chunks of disk
+        attach buffers
+    copy_from_user()
+    commit_write()
+        dirty buffers
+
+pdflush:
+    writepages()
+        find pages with contiguous chunks of disk
+	build and submit large bios
+
+So, we replace prepare_write and commit_write with an extent based api,
+but we keep the dirty each buffer part.  writepages has to turn that
+back into extents (bio sized), and the result is completely full of dark
+dark corner cases.
+
+I do think fsblocks is a nice cleanup on its own, but Dave has a good
+point that it makes sense to look for ways generalize things even more.
+
+-chris
