@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763850AbXF0XJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763952AbXF0XJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763850AbXF0XJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 19:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759724AbXF0XJJ
+	id S1763952AbXF0XJk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 19:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762567AbXF0XJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 19:09:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56841 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758839AbXF0XJI (ORCPT
+	Wed, 27 Jun 2007 19:09:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53263 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753518AbXF0XJa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 19:09:08 -0400
-Subject: Re: Linux Kernel include files
-From: Arjan van de Ven <arjan@infradead.org>
-To: 7eggert@gmx.de
-Cc: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>, bunk@stusta.de,
-       schilling@fokus.fraunhofer.de, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <E1I3g6o-00012P-Hn@be1.lrz>
-References: <8AGnE-33a-15@gated-at.bofh.it> <8AISu-6Qn-31@gated-at.bofh.it>
-	 <8AISu-6Qn-29@gated-at.bofh.it> <8AKUp-1wx-41@gated-at.bofh.it>
-	 <E1I3g6o-00012P-Hn@be1.lrz>
-Content-Type: text/plain; charset=UTF-8
-Organization: Intel International BV
-Date: Wed, 27 Jun 2007 16:07:45 -0700
-Message-Id: <1182985665.2800.6.camel@laptopd505.fenrus.org>
+	Wed, 27 Jun 2007 19:09:30 -0400
+Date: Wed, 27 Jun 2007 16:09:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: Adrian Bunk <bunk@stusta.de>, paulus@samba.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: mm snapshot broken-out-2007-06-27-03-28.tar.gz uploaded
+Message-Id: <20070627160908.fe9052e4.akpm@linux-foundation.org>
+In-Reply-To: <200706280057.07481.m.kozlowski@tuxland.pl>
+References: <200706271030.l5RAUgKE015163@imap1.linux-foundation.org>
+	<200706280057.07481.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 Jun 2007 00:57:07 +0200
+Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-> @Jörg: The responsibility to maintain clean headers shifted only recently,
+> Hello,
+> 
+> 	Build problems on iMac G3.
+> 
+> 1) allnoconfig results in this:
+> 
+>  CC      arch/powerpc/mm/tlb_32.o
+> In file included from include/asm/tlb.h:60,
+>                  from arch/powerpc/mm/tlb_32.c:30:
+> include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
+> include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
+> include/asm-generic/tlb.h: In function 'tlb_remove_page':
+> include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
+> make[1]: *** [arch/powerpc/mm/tlb_32.o] Blad 1
+> make: *** [arch/powerpc/mm] Blad 2
+> 
+> 
+> The patch below fixes that for me.
+> 
+> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> 
+>  arch/powerpc/mm/tlb_32.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- linux-2.6.22-rc6-bo-a/arch/powerpc/mm/tlb_32.c	2007-06-27 23:38:49.000000000 +0200
+> +++ linux-2.6.22-rc6-bo-b/arch/powerpc/mm/tlb_32.c	2007-06-27 23:18:05.000000000 +0200
+> @@ -26,6 +26,8 @@
+>  #include <linux/mm.h>
+>  #include <linux/init.h>
+>  #include <linux/highmem.h>
+> +#include <linux/pagemap.h>
+> +
+>  #include <asm/tlbflush.h>
+>  #include <asm/tlb.h>
 
-yes.. from distro to the kernel ;)
+OK.
+  
+> 
+> 
+> 2) These are conflicts introduced by kernel-sys_nic-should-include-linux-syscallsh.patch
+> 
+>   CC      kernel/sys_ni.o
+> kernel/sys_ni.c:16: error: conflicting types for 'sys_nfsservctl'
+> include/linux/syscalls.h:497: error: previous declaration of 'sys_nfsservctl' was here
+> kernel/sys_ni.c:17: error: conflicting types for 'sys_quotactl'
 
-in the old case it was always a distro bug...
-
-> and there is possibly still a lot to do. If you can point out errors, they
-> can and probably will be fixed. But as you know, having a precise error
-> message or description does help.
-
-absolutely. if you find issues with the "real" kernel headers (eg the
-make headers_install ones) ... as you have seen there's lots of interest
-to make sure they're as useful as reasonably possible
-
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+erk, I suspect that's unfixable, or not worth fixing.
