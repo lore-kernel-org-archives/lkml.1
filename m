@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbXF0KwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbXF0Kym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbXF0KwR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 06:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbXF0KwE
+	id S1758734AbXF0Kym (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 06:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXF0Kyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 06:52:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48558 "EHLO mx2.mail.elte.hu"
+	Wed, 27 Jun 2007 06:54:35 -0400
+Received: from systemlinux.org ([83.151.29.59]:42923 "EHLO m18s25.vlinux.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754340AbXF0KwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 06:52:03 -0400
-Date: Wed, 27 Jun 2007 12:51:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v18
-Message-ID: <20070627105153.GC10235@elte.hu>
-References: <20070622220202.GA16872@elte.hu> <F1D642E5A91BC94D9504EC83AE19E6B0128A43@ecqcmtlmail3.quebec.int.ec.gc.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1754716AbXF0Kye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 06:54:34 -0400
+X-Greylist: delayed 2173 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 06:54:34 EDT
+Date: Wed, 27 Jun 2007 12:16:08 +0200
+From: Andre Noll <maan@systemlinux.org>
+To: mchan@broadcom.com
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Subject: 2.6.21.x kernel panic (tg3 and nfs related)
+Message-ID: <20070627101608.GQ22589@skl-net.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="eBTWNsZZiigckDWV"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <F1D642E5A91BC94D9504EC83AE19E6B0128A43@ecqcmtlmail3.quebec.int.ec.gc.ca>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Fortier,Vincent [Montreal] <Vincent.Fortier1@EC.GC.CA> wrote:
+--eBTWNsZZiigckDWV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > -----Message d'origine-----
-> > De : linux-kernel-owner@vger.kernel.org 
-> > [mailto:linux-kernel-owner@vger.kernel.org] De la part de Ingo Molnar
-> > Envoyé : 22 juin 2007 18:02
-> > 
-> > i'm pleased to announce release -v18 of the CFS scheduler patchset.
-> > 
-> > The rolled-up CFS patch against today's -git kernel, 
-> > v2.6.22-rc5, v2.6.22-rc4-mm2, v2.6.21.5 or v2.6.20.14 can be 
-> > downloaded from the usual place:
-> > 
-> >    http://people.redhat.com/mingo/cfs-scheduler/
-> > 
-> > ...
-> 
-> Pre-built kernels for Fedora 7 & Fedora Core 6 (yum reporsitory 
-> available) and Debian Sarge/Etch using latest CFS v18 available at 
-> http://linux-dev.qc.ec.gc.ca
+Hi
 
-thanks Vincent!
+Our nfs server recently paniced under heavy nfs load. The backtrace
+indicates that this might be a problem with the tigon3 network driver
+which drives the onboard chips of the machine.
 
-	Ingo
+The first crash under 2.6.21.1 happened after about 4 days of uptime,=20
+2.6.21.5 already crashed after 15 Minutes.
+
+Screenshots of the resulting kernel panics are available at
+
+	http://www.systemlinux.org/~maan/shots/huangho-crash-2.6.21.1.png
+and
+	http://www.systemlinux.org/~maan/shots/huangho-crash-2.6.21.5.png
+
+We're now running 2.6.18.6 again which happens to be rock solid for our
+workload. However, this kernel now spits out zillons of messages like
+
+	[55122.674290] RPC: bad TCP reclen 0x00010094 (large)
+
+I'm sure it didn't do that half a year ago when it was running for
+several months. The 2.6.21.x kernels did not print these messages
+either, but from what I understand this is due to a patch which went
+in somewhere between 2.6.18 and 2.6.21 and which just ratelimited
+the message.
+
+So something weird seems to be going on in our network and this might
+well be related to the 2.6.21.x crashes we are seeing.
+
+Thanks
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
+
+--eBTWNsZZiigckDWV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFGgjjoWto1QDEAkw8RAvaKAJ9zSErbii7/q3BWzxVrKbXDXbP5WQCfRO3a
+pBdoip/KNTMfzhUiCGEHm+s=
+=Uu70
+-----END PGP SIGNATURE-----
+
+--eBTWNsZZiigckDWV--
