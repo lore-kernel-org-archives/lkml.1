@@ -1,94 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbXF0ULR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759790AbXF0UPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759490AbXF0ULR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 16:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbXF0ULH
+	id S1759790AbXF0UPl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 16:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbXF0UPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 16:11:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39537 "EHLO mx2.mail.elte.hu"
+	Wed, 27 Jun 2007 16:15:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39287 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751752AbXF0ULG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 16:11:06 -0400
-Date: Wed, 27 Jun 2007 22:10:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Eric Dumazet <dada1@cosmosbay.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Jarek Poplawski <jarkao2@o2.pl>,
-       Miklos Szeredi <miklos@szeredi.hu>, chris@atlee.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070627201008.GA957@elte.hu>
-References: <20070621160817.GA22897@elte.hu> <467AAB04.2070409@redhat.com> <alpine.LFD.0.98.0706211024370.3593@woody.linux-foundation.org> <20070621202917.a2bfbfc7.dada1@cosmosbay.com> <alpine.LFD.0.98.0706211135360.3593@woody.linux-foundation.org> <4680D162.9050603@yahoo.com.au> <alpine.LFD.0.98.0706261016200.8675@woody.linux-foundation.org> <4681F448.3040201@yahoo.com.au> <alpine.LFD.0.98.0706262249590.8675@woody.linux-foundation.org> <alpine.LFD.0.98.0706271233300.8675@woody.linux-foundation.org>
+	id S1752289AbXF0UPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 16:15:34 -0400
+Message-ID: <4682C557.8010207@redhat.com>
+Date: Wed, 27 Jun 2007 16:15:19 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706271233300.8675@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: corentincj@iksaif.net, sziwan@users.sourceforge.net,
+       acpi4asus-user@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Oops on rmmod asus_acpi
+References: <Pine.LNX.4.64.0706272113120.11120@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0706272113120.11120@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/27/2007 03:16 PM, Jan Engelhardt wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> Jun 27 21:11:33 su1 kernel: WARNING: at /ws/linux-2.6.22/lib/kref.c:33 kref_get()
+> Jun 27 21:11:33 su1 kernel:  [<c01c5e75>] kref_get+0x34/0x3f
+> Jun 27 21:11:33 su1 kernel:  [<c01c52ef>] kobject_get+0xf/0x13
+> Jun 27 21:11:33 su1 kernel:  [<c0228885>] get_driver+0xe/0x14
+> Jun 27 21:11:33 su1 kernel:  [<c0228896>] driver_remove_file+0xb/0x25
+> Jun 27 21:11:33 su1 kernel:  [<c0227efd>] bus_remove_driver+0x17/0x75
+> Jun 27 21:11:33 su1 kernel:  [<c6a9f018>] asus_acpi_exit+0x18/0x28 [asus_acpi]
+> Jun 27 21:11:33 su1 kernel:  [<c013cebc>] sys_delete_module+0x1a0/0x1c8
+> Jun 27 21:11:33 su1 kernel:  [<c01494bd>] audit_syscall_entry+0x10d/0x137
+> Jun 27 21:11:33 su1 kernel:  [<c0107c18>] do_syscall_trace+0x13d/0x181
+> Jun 27 21:11:33 su1 kernel:  [<c0104d40>] syscall_call+0x7/0xb
 
-> With the sequence counters, the situation is more complex:
-> 
-> 	CPU #0					CPU #1
-> 
-> 	A (= code before the spinlock)
-> 
-> 	lock xadd mem	(serializing instruction)
-> 
-> 	B (= code afte xadd, but not inside lock)
-> 
-> 						lock release
-> 
-> 	cmp head, tail
-> 
-> 	C (= code inside the lock)
-> 
-> Now, B is basically the empty set, but that's not the issue I worry 
-> about. The thing is, I can guarantee by the Intel memory ordering 
-> rules that neither B nor C will ever have memops that leak past the 
-> "xadd", but I'm not at all as sure that we cannot have memops in C 
-> that leak into B!
-> 
-> And B really isn't protected by the lock - it may run while another 
-> CPU still holds the lock, and we know the other CPU released it only 
-> as part of the compare. But that compare isn't a serializing 
-> instruction!
-> 
-> IOW, I could imagine a load inside C being speculated, and being moved 
-> *ahead* of the load that compares the spinlock head with the tail! 
-> IOW, the load that is _inside_ the spinlock has effectively moved to 
-> outside the protected region, and the spinlock isn't really a reliable 
-> mutual exclusion barrier any more!
-> 
-> (Yes, there is a data-dependency on the compare, but it is only used 
-> for a conditional branch, and conditional branches are control 
-> dependencies and can be speculated, so CPU speculation can easily 
-> break that apparent dependency chain and do later loads *before* the 
-> spinlock load completes!)
-> 
-> Now, I have good reason to believe that all Intel and AMD CPU's have a 
-> stricter-than-documented memory ordering, and that your spinlock may 
-> actually work perfectly well. But it still worries me. As far as I can 
-> tell, there's a theoretical problem with your spinlock implementation.
+kref with zero reference count -- nice.
 
-hm, i agree with you that this is problematic. Especially on an SMT CPU 
-it would be a big architectural restriction if prefetches couldnt cross 
-cache misses. (and that's the only way i could see Nick's scheme 
-working: MESI coherency coupled with the speculative use of that 
-cacheline's value never "surviving" a MESI invalidation of that 
-cacheline. That would guarantee that once we have the lock, any 
-speculative result is fully coherent and no other CPU has modified it.)
+> Jun 27 21:11:33 su1 kernel: BUG: unable to handle kernel NULL pointer dereference at virtual address 00000010
+> Jun 27 21:11:33 su1 kernel:  printing eip:
+> Jun 27 21:11:33 su1 kernel: c02ab74b
+> Jun 27 21:11:33 su1 kernel: *pde = 00000000
+> Jun 27 21:11:33 su1 kernel: Oops: 0000 [#1]
+> Jun 27 21:11:33 su1 kernel: SMP 
+> Jun 27 21:11:33 su1 kernel: Modules linked in: asus_acpi ipv6 nfs lockd nfs_acl sunrpc dock button battery ac dm_crypt loop dm_mod xt_hashlimit ip6_tables xt_u32 xt_conntrack xt_connlimit nf_conntrack nfnetlink x_tables rtc_cmos rtc_core rtc_lib pcnet32 mii i2c_piix4 i2c_core mptctl generic piix ide_core shpchp pci_hotplug intel_agp agpgart sg parport_pc lp parport sd_mod edd xfs fan mptspi mptscsih mptbase scsi_transport_spi ata_piix libata scsi_mod thermal processor
+> Jun 27 21:11:33 su1 kernel: CPU:    0
+> Jun 27 21:11:33 su1 kernel: EIP:    0060:[<c02ab74b>]    Not tainted VLI
+> Jun 27 21:11:33 su1 kernel: EFLAGS: 00010246   (2.6.22-rc6+ccj #11)
+> Jun 27 21:11:33 su1 kernel: EIP is at klist_del+0x9/0x31
+> Jun 27 21:11:33 su1 kernel: eax: 00000000   ebx: 00000000   ecx: c02fdc20   edx: 00000001
+> Jun 27 21:11:33 su1 kernel: esi: 00000000   edi: c6aa262c   ebp: c139c000   esp: c139df30
+> Jun 27 21:11:33 su1 kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Jun 27 21:11:33 su1 kernel: Process rmmod (pid: 3004, ti=c139c000 task=c5da0030 task.ti=c139c000)
+> Jun 27 21:11:33 su1 kernel: Stack: c6aa262c 00000000 c0341100 c02ab7c3 c6aa25d0 c0227f36 c6aa2d80 00000000 
+> Jun 27 21:11:33 su1 kernel:        00000880 c6a9f018 c013cebc 73757361 7063615f c2cf0069 00000000 c01494bd 
+> Jun 27 21:11:33 su1 kernel:        bfb59010 00000081 40000003 c5da0030 bfb5b858 00000880 00000000 c139dfb8 
+> Jun 27 21:11:33 su1 kernel: Call Trace:
+> Jun 27 21:11:33 su1 kernel:  [<c02ab7c3>] klist_remove+0x8/0x13
+> Jun 27 21:11:33 su1 kernel:  [<c0227f36>] bus_remove_driver+0x50/0x75
+> Jun 27 21:11:33 su1 kernel:  [<c6a9f018>] asus_acpi_exit+0x18/0x28 [asus_acpi]
+> Jun 27 21:11:33 su1 kernel:  [<c013cebc>] sys_delete_module+0x1a0/0x1c8
+> Jun 27 21:11:33 su1 kernel:  [<c01494bd>] audit_syscall_entry+0x10d/0x137
+> Jun 27 21:11:33 su1 kernel:  [<c0107c18>] do_syscall_trace+0x13d/0x181
+> Jun 27 21:11:33 su1 kernel:  [<c0104d40>] syscall_call+0x7/0xb
+> Jun 27 21:11:33 su1 kernel:  =======================
+> Jun 27 21:11:33 su1 kernel: Code: ff 8b 04 24 8b 16 89 46 08 b0 01 86 02 85 ed 74 08 85 ff 74 04 89 f8 ff d5 8b 04 24 5a 5b 5e 5f 5d c3 57 89 c7 56 53 8b 18 89 d8 <8b> 73 10 e8 d3 22 00 00 89 f8 e8 6f ff ff ff 83 f8 01 19 c0 f7 
+> Jun 27 21:11:33 su1 kernel: EIP: [<c02ab74b>] klist_del+0x9/0x31 SS:ESP 0068:c139df30
 
-	Ingo
+The device's klist_node is not on any list (n->n_klist == NULL)
+in klist_del:
+
+void klist_del(struct klist_node * n)
+{
+        struct klist * k = n->n_klist;
+===>    void (*put)(struct klist_node *) = k->put;
+
+So the driver gets totally screwed up if it loads, finds no compatible
+hardware and then you try to unload it.
