@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbXF0PFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761269AbXF0PKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761550AbXF0PFw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbXF0PFp
+	id S1761269AbXF0PKy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbXF0PKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:05:45 -0400
-Received: from mga09.intel.com ([134.134.136.24]:56517 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753356AbXF0PFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:05:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,467,1175497200"; 
-   d="scan'208";a="100659891"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Mauro Giachero" <mauro.giachero@gmail.com>
-Subject: Re: [PATCH] trim memory not covered by WB MTRRs
-Date: Wed, 27 Jun 2007 08:04:52 -0700
-User-Agent: KMail/1.9.7
-Cc: "Pim Zandbergen" <P.Zandbergen@macroscoop.nl>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Justin Piszcz" <jpiszcz@lucidpixels.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-References: <200706251434.43863.jesse.barnes@intel.com> <46823F71.6060200@macroscoop.nl> <da3e877f0706270722x67bb0738x4274b4367e04f0c6@mail.gmail.com>
-In-Reply-To: <da3e877f0706270722x67bb0738x4274b4367e04f0c6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 27 Jun 2007 11:10:43 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:50105 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883AbXF0PKm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 11:10:42 -0400
+Subject: Re: Documentation of kernel messages (Summary)
+From: Michael Holzheu <holzheu@linux.vnet.ibm.com>
+Reply-To: holzheu@linux.vnet.ibm.com
+To: Rob Landley <rob@landley.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lf_kernel_messages@linux-foundation.org, mtk-manpages@gmx.net,
+       jack@suse.cz, randy.dunlap@oracle.com, gregkh@suse.de, pavel@ucw.cz,
+       kunai@linux-foundation.jp, tim.bird@am.sony.com, gh@us.ibm.com,
+       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
+       hpa@zytor.com, joe@perches.com, auke-jan.h.kok@intel.com,
+       hansendc@us.ibm.com, davem@davemloft.net, Valdis.Kletnieks@vt.edu,
+       kenistoj@us.ibm.com, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
+In-Reply-To: <200706251144.48658.rob@landley.net>
+References: <1181747217.29512.9.camel@localhost.localdomain>
+	 <20070613111549.db1fa4d9.akpm@linux-foundation.org>
+	 <1182779321.7142.15.camel@localhost.localdomain>
+	 <200706251144.48658.rob@landley.net>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 27 Jun 2007 17:11:19 +0200
+Message-Id: <1182957079.6643.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706270804.53263.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, June 27, 2007 7:22:24 Mauro Giachero wrote:
-> On 6/27/07, Pim Zandbergen <P.Zandbergen@macroscoop.nl> wrote:
-> > Now:
-> > Jesse released a new patch and I tried if for fun on 2.6.22-rc6
-> > It looks like the patch is releasing memory rather than trimming
-> > it:
+On Mon, 2007-06-25 at 11:44 -0400, Rob Landley wrote:
+> On Monday 25 June 2007 09:48:41 Michael Holzheu wrote:
+> > Hi all,
 > >
-> > [...]
-> > Jun 27 12:22:56 corneille kernel: **** MTRRs don't cover all of
-> > memory, trimmed -65536 pages
-> > [...]
->
-> From Jesse's patch:
-> > +       unsigned long i, base, size, highest_addr = 0, def, dummy;
-> > [...]
-> > +               printk(KERN_WARNING "**** MTRRs don't cover all of
-> > " +                      "memory, trimmed %ld pages\n", end_pfn - +
-> >                      (highest_addr >> PAGE_SHIFT));
->
-> Since both end_pfn (from arch/x86_64/kernel/e820.c) and highest_addr
-> are unsigned long, maybe the problem is just that %ld in the kprintf
-> format string? Shouldn't that be %lu?
+> > Any idea, how to proceed with this topic? Do you think that any of the
+> > suggested solutions for documentation / translation of kernel messages
+> > will have a chance to be included in the kernel?
+> 
+> Personally?  No to the second question, which renders the first "do it 
+> yourself outside of the tree".
 
-Yeah, you're right I should use an unsigned format string.  Pim, if you 
-change it to %lu does the printk in your dmesg look better?
+If that is the opinion of the majority here, fine. If there is no hard
+rule on how to define printk macros, one option for us would be to
+define some new s390 specific printk macros for our device drivers.
+Similar to hundreds of other driver specific printk macros in the
+kernel.
 
-Thanks,
-Jesse
+> Just a guess, and I don't speak for anyone else here, but I think most of us 
+> are waiting to see how long it takes you to lose interest.
+
+:-) Work is not always fun. Sometimes it is just a duty.
+
+Michael
+
+
