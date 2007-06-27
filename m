@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbXF0MI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbXF0MK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759384AbXF0MI6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 08:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbXF0MIv
+	id S1759920AbXF0MK1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 08:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbXF0MKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 08:08:51 -0400
-Received: from smtp19.orange.fr ([80.12.242.17]:63098 "EHLO smtp19.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753822AbXF0MIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 08:08:51 -0400
-X-ME-UUID: 20070627120849195.2F9D11C00087@mwinf1911.orange.fr
-Subject: Re: NVidia Driver Support - 1680x1050 mode
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Marc Perkel <mperkel@yahoo.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1090CBC0-91B3-49EC-9A69-4864201CA967@mac.com>
-References: <6278d2220706270247k21ccdd24x41b84c631b05fcc0@mail.gmail.com>
-	 <6278d2220706270249v410d7b8eyfca9873d55075c75@mail.gmail.com>
-	 <1090CBC0-91B3-49EC-9A69-4864201CA967@mac.com>
-Content-Type: text/plain
-Date: Wed, 27 Jun 2007 14:08:43 +0200
-Message-Id: <1182946123.342.25.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 08:10:18 -0400
+Received: from v035086.ppp.asahi-net.or.jp ([124.155.35.86]:7549 "HELO
+	daikokuya.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1755441AbXF0MKQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 08:10:16 -0400
+Date: Wed, 27 Jun 2007 21:10:21 +0900
+From: Neil Booth <neil@daikokuya.co.uk>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070627121021.GQ7590@daikokuya.co.uk>
+References: <E1I2N6V-0003g9-8H@ZenIV.linux.org.uk> <20070624174732.GZ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241102160.3593@woody.linux-foundation.org> <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070626221134.GA21350@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-06-27 at 06:42 -0400, Kyle Moffett wrote:
-> > If you're using a DVI cable, ensure it is dual-link.
-> 
-> Uhh, no;  1680x1050 does not require a dual-link DVI port/cable.
+Al Viro wrote:-
 
-FWIW single-link DVI can do 1920x1200 - for that the X server uses a
-"reduced blanking" mode, i.e. the vertical and horizontal retrace
-intervals (useless for LCD/TFT anyway, there's no beam to move) are
-shortened.
+> Hopefully correct handling of integer constant expressions.  Please, review.
 
-	Xav
+Here are three independently invalid non-ICEs that sparse doesn't
+diagnose.
 
+extern int f(void);
+enum { cast_to_ptr = (int) (void *) 0 };
+enum { cast_to_float = (int) (double) 1 };
+enum { fncall = 0 ? f(): 3 };
 
+Hey, I did warn you it was tricky :)
+
+Neil.
