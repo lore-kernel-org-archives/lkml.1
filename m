@@ -1,137 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760758AbXF0MwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbXF0Mwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760758AbXF0MwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 08:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758094AbXF0MwH
+	id S1760975AbXF0Mwb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 08:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbXF0MwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 08:52:07 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:24759 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757678AbXF0MwD (ORCPT
+	Wed, 27 Jun 2007 08:52:16 -0400
+Received: from stinky.trash.net ([213.144.137.162]:56161 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758969AbXF0MwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 08:52:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=U4iCjPRC2FzxH+y62+l+3+8Yh7iAn+7Dvy7p1Qm+IKYni6x6NKoA+rV4szYiqRH9WRHGXhUJiONmwWjP+lGTGXO4mmaX8CDxEOL3ZiJisQg5dxyJ8gDph7VdZHDpEjuNvgwwtONdmRlFGjkNXCd6J313/L68sPwhiQUrjlFk5hU=
-Message-ID: <46825D77.4050608@gmail.com>
-Date: Wed, 27 Jun 2007 20:52:07 +0800
-From: Hawk Xu <hxunix@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Wed, 27 Jun 2007 08:52:15 -0400
+Message-ID: <46825D63.3060500@trash.net>
+Date: Wed, 27 Jun 2007 14:51:47 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: linux-security-module@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, jmorris@namei.org, serue@us.ibm.com,
-       chrisw@sous-sol.org, sds@tycho.nsa.gov, greg@kroah.com,
-       eparis@redhat.com
-Subject: [PATCH] [RFC] security: add hook inode_post_removexattr
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Vasily Averin <vvs@sw.ru>
+CC: netfilter-devel@lists.netfilter.org, rusty@rustcorp.com.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       "David S. Miller" <davem@davemloft.net>, devel@openvz.org
+Subject: Re: [NETFILTER] early_drop() imrovement (v4)
+References: <4615FE1D.80206@sw.ru>	<20070406102433.d3a670a5.dada1@cosmosbay.com>	<4616203A.80203@sw.ru> <4616626C.9020100@trash.net>	<4617845F.7080203@sw.ru> <461789CF.8000106@cosmosbay.com>	<46187770.1070106@sw.ru> <46417137.5080501@sw.ru>	<467FC8D2.5070102@trash.net> <46811292.1010501@sw.ru>	<468223D0.90305@sw.ru> <46822540.2010004@trash.net> <4682523F.6000002@trash.net> <4682582D.7080501@sw.ru>
+In-Reply-To: <4682582D.7080501@sw.ru>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------020009030000050303070108"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add hook inode_post_removexattr for updating inode security field after successful removexattr operation.
+This is a multi-part message in MIME format.
+--------------020009030000050303070108
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Hawk Xu <hxunix@gmail.com>
+Vasily Averin wrote:
+> Patrick McHardy wrote:
+> 
+>>+	for (i = 0; i < NF_CT_EVICTION_RANGE; i++) {
+>>+		hlist_for_each_entry(h, n, &nf_conntrack_hash[hash], hnode) {
+>>+			tmp = nf_ct_tuplehash_to_ctrack(h);
+>>+			if (!test_bit(IPS_ASSURED_BIT, &tmp->status))
+>>+				ct = tmp;
+>>+		}
+>>+		if (ct) {
+>>+			atomic_inc(&ct->ct_general.use);
+>>+			break;
+>>+		}
+>>+		hash = (hash + 1) % nf_conntrack_htable_size;
+> 
+> 
+> it is incorrect,
+> We should count the number of checked _conntracks_, but you count the number of
+> hash buckets. I.e "i" should be incremented/checked inside the nested loop.
+
+
+I misunderstood your patch then. This one should be better.
+
+--------------020009030000050303070108
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+[NETFILTER]: nf_conntrack: early_drop improvement
+
+When the maximum number of conntrack entries is reached and a new
+one needs to be allocated, conntrack tries to drop an unassured
+connection from the same hash bucket the new conntrack would hash
+to. Since with a properly sized hash the average number of entries
+per bucket is 1, the chances of actually finding one are not very
+good. This patch increases those chances by walking over the hash
+until 8 entries are checked.
+
+Based on patch by Vasily Averin <vvs@sw.ru>.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
 ---
+commit df9f4fc41d7d6a7a51d2fe4b28db2557cb9a0d05
+tree 8beb115ce12126b28ce3e5eb3f95b36b71462ea5
+parent 665d98d03473cab252830129f414e1b38fb2b038
+author Patrick McHardy <kaber@trash.net> Wed, 27 Jun 2007 14:51:38 +0200
+committer Patrick McHardy <kaber@trash.net> Wed, 27 Jun 2007 14:51:38 +0200
 
+ net/netfilter/nf_conntrack_core.c |   23 +++++++++++++++--------
+ 1 files changed, 15 insertions(+), 8 deletions(-)
 
-  fs/xattr.c               |    7 +++++--
-  include/linux/security.h |   19 +++++++++++++++++++
-  security/dummy.c         |    6 ++++++
-  3 files changed, 30 insertions(+), 2 deletions(-)
-
-diff --git a/fs/xattr.c b/fs/xattr.c
-index 4523aca..22c2438 100644
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -180,10 +180,13 @@ vfs_removexattr(struct dentry *dentry, char *name)
-
-  	mutex_lock(&inode->i_mutex);
-  	error = inode->i_op->removexattr(dentry, name);
-+	if (!error) {
-+		fsnotify_xattr(dentry);
-+		security_inode_post_removexattr(dentry, name, value,
-+						size, flags);
-+	}
-  	mutex_unlock(&inode->i_mutex);
-
--	if (!error)
--		fsnotify_xattr(dentry);
-  	return error;
-  }
-  EXPORT_SYMBOL_GPL(vfs_removexattr);
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 1a362c8..5100b23 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -393,6 +393,9 @@ struct request_sock;
-   * 	Check permission before removing the extended attribute
-   * 	identified by @name for @dentry.
-   * 	Return 0 if permission is granted.
-+ * @inode_post_removexattr:
-+ * 	Update inode security field after successful removexattr operation.
-+ * 	@value identified by @name for @dentry.
-   * @inode_getsecurity:
-   *	Copy the extended attribute representation of the security label
-   *	associated with @name for @inode into @buffer.  @buffer may be
-@@ -1234,6 +1237,8 @@ struct security_operations {
-  	int (*inode_getxattr) (struct dentry *dentry, char *name);
-  	int (*inode_listxattr) (struct dentry *dentry);
-  	int (*inode_removexattr) (struct dentry *dentry, char *name);
-+	void (*inode_post_removexattr) (struct dentry *dentry, char *name,
-+					void *value, size_t size, int flags);
-  	const char *(*inode_xattr_getsuffix) (void);
-    	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
-    	int (*inode_setsecurity)(struct inode *inode, const char *name, const void *value, size_t size, int flags);
-@@ -1769,6 +1774,15 @@ static inline int security_inode_removexattr (struct dentry *dentry, char *name)
-  	return security_ops->inode_removexattr (dentry, name);
-  }
-
-+static inline void security_inode_post_removexattr (struct dentry *dentry,
-+						char *name, void *value,
-+						size_t size, int flags)
-+{
-+	if (unlikely (IS_PRIVATE (dentry->d_inode)))
-+		return;
-+	security_ops->inode_post_removexattr (dentry, name, value, size, flags);
-+}
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index d7e62ad..bbb52e5 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -377,21 +377,29 @@ nf_conntrack_tuple_taken(const struct nf_conntrack_tuple *tuple,
+ }
+ EXPORT_SYMBOL_GPL(nf_conntrack_tuple_taken);
+ 
++#define NF_CT_EVICTION_RANGE	8
 +
-  static inline const char *security_inode_xattr_getsuffix(void)
-  {
-  	return security_ops->inode_xattr_getsuffix();
-@@ -2452,6 +2466,11 @@ static inline int security_inode_removexattr (struct dentry *dentry, char *name)
-  	return cap_inode_removexattr(dentry, name);
-  }
+ /* There's a small race here where we may free a just-assured
+    connection.  Too bad: we're in trouble anyway. */
+-static int early_drop(struct hlist_head *chain)
++static int early_drop(unsigned int hash)
+ {
+ 	/* Use oldest entry, which is roughly LRU */
+ 	struct nf_conntrack_tuple_hash *h;
+ 	struct nf_conn *ct = NULL, *tmp;
+ 	struct hlist_node *n;
+-	int dropped = 0;
++	unsigned int i;
++	int dropped = 0, cnt = NF_CT_EVICTION_RANGE;
+ 
+ 	read_lock_bh(&nf_conntrack_lock);
+-	hlist_for_each_entry(h, n, chain, hnode) {
+-		tmp = nf_ct_tuplehash_to_ctrack(h);
+-		if (!test_bit(IPS_ASSURED_BIT, &tmp->status))
+-			ct = tmp;
++	for (i = 0; i < nf_conntrack_htable_size; i++) {
++		hlist_for_each_entry(h, n, &nf_conntrack_hash[hash], hnode) {
++			tmp = nf_ct_tuplehash_to_ctrack(h);
++			if (!test_bit(IPS_ASSURED_BIT, &tmp->status))
++				ct = tmp;
++			if (--cnt <= 0)
++				break;
++		}
++		hash = (hash + 1) % nf_conntrack_htable_size;
+ 	}
+ 	if (ct)
+ 		atomic_inc(&ct->ct_general.use);
+@@ -425,8 +433,7 @@ struct nf_conn *nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
+ 	if (nf_conntrack_max
+ 	    && atomic_read(&nf_conntrack_count) > nf_conntrack_max) {
+ 		unsigned int hash = hash_conntrack(orig);
+-		/* Try dropping from this hash chain. */
+-		if (!early_drop(&nf_conntrack_hash[hash])) {
++		if (!early_drop(hash)) {
+ 			atomic_dec(&nf_conntrack_count);
+ 			if (net_ratelimit())
+ 				printk(KERN_WARNING
 
-+static inline void security_inode_post_removexattr (struct dentry *dentry,
-+						char *name, void *value,
-+						size_t size, int flags)
-+{ }
-+
-  static inline const char *security_inode_xattr_getsuffix (void)
-  {
-  	return NULL ;
-diff --git a/security/dummy.c b/security/dummy.c
-index bdd0d70..4953f06 100644
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -377,6 +377,11 @@ static int dummy_inode_removexattr (struct dentry *dentry, char *name)
-  	return 0;
-  }
-
-+static void dummy_inode_post_removexattr (struct dentry *dentry, char *name,
-+					void *value, size_t size, int flags)
-+{
-+}
-+
-  static int dummy_inode_getsecurity(const struct inode *inode, const char *name, void *buffer, size_t size, int err)
-  {
-  	return -EOPNOTSUPP;
-@@ -1014,6 +1019,7 @@ void security_fixup_ops (struct security_operations *ops)
-  	set_to_dummy_if_null(ops, inode_getxattr);
-  	set_to_dummy_if_null(ops, inode_listxattr);
-  	set_to_dummy_if_null(ops, inode_removexattr);
-+	set_to_dummy_if_null(ops, inode_post_removexattr);
-  	set_to_dummy_if_null(ops, inode_xattr_getsuffix);
-  	set_to_dummy_if_null(ops, inode_getsecurity);
-  	set_to_dummy_if_null(ops, inode_setsecurity);
+--------------020009030000050303070108--
