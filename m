@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbXF0OB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761086AbXF0OCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbXF0OB7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 10:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbXF0OBu
+	id S1761086AbXF0OCm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbXF0OCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 10:01:50 -0400
-Received: from mailgw11.fraunhofer.de ([153.96.1.23]:57075 "EHLO
-	mailgw11.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbXF0OBs (ORCPT
+	Wed, 27 Jun 2007 10:02:34 -0400
+Received: from mailgw12.fraunhofer.de ([153.96.1.24]:47635 "EHLO
+	mailgw12.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753295AbXF0OCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 10:01:48 -0400
-X-Greylist: delayed 809 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 10:01:48 EDT
-Date: Wed, 27 Jun 2007 15:58:43 +0200
+	Wed, 27 Jun 2007 10:02:33 -0400
+Date: Wed, 27 Jun 2007 16:00:02 +0200
 From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: sam@ravnborg.org
-Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
+To: harald@skogtun.org
+Cc: david@lang.hm, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
        schilling@fokus.fraunhofer.de
 Subject: Re: Linux Kernel include files
-Message-ID: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
+Message-ID: <46826d62.lTsuVo9cC7wGjcjf%Joerg.Schilling@fokus.fraunhofer.de>
 User-Agent: nail 11.22 3/20/05
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO8859-1
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Jun 2007 14:00:41.0890 (UTC) FILETIME=[8C835820:01C7B8C3]
+X-OriginalArrivalTime: 27 Jun 2007 14:02:01.0235 (UTC) FILETIME=[BBCE6E30:01C7B8C3]
 X-Fraunhofer-Email-Policy: accepted
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg <sam@ravnborg.org> wrote:
+Harald Arnesen <harald@skogtun.org> wrote:
 
-> On Mon, Jun 25, 2007 at 04:53:55PM +0200, Joerg Schilling wrote:
-> > 
-> > star needs "ext2_fs.h". This file is not usable at all on many Linux 
-> > distributions, even with GCC.
+> Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling) writes:
 >
-> I was curious so I did:
+> >> If I actually install smake, as Jörg recommends, the message becomes:
+> >> smake: Can't find any source for 'CCOM_suncc'.
+> >> smake: Couldn't make 'CCOM_suncc'.
+> >
+> > Well, I was in hope that a small typo (in special as the correct spelling is in 
+> > the file README.compile) should not be a problem.
+> >
+> > You need to use CCOM=suncc 
 >
-> $ mkdir ~/foo
-> $ cd ~/kernel/linux-2.6
-> $ make INSTALL_HDR_PATH=~/foo
-> $ cd ~/foo
-> $ cat j.c
-> #include <stdio.h>
-> #include "etx2_fs.h"
->
-> main()
-> {
-> 	printf("helloo\n");
-> }
->
-> $ gcc -o j j.c
-> => No warning, no errors
->
+> Then it (star, I haven't tried cdrtools yes) compiles and links fine.
+> There must be something wrong with your Linux installation.
 
-On Suse Linux 10.0, I get e.g.:
+Maybe because it automatically deactivates the Linux extensions if the 
+autoconfiguration sees broken include files. Did you see something like:
 
-cat t.c
-#include <stdio.h>
-#include <linux/ext2_fs.h>
+checking if Linux include file linux/ext2_fs.h is broken... yes
+checking if Linux include file /usr/src/linux/include/linux/ext2_fs.h is broken... yes
+checking if Linux include file scsi/scsi.h is broken... no
+checking if Linux include file /usr/src/linux/include/scsi/scsi.h is broken... no
+checking if Linux include file scsi/sg.h is broken... no
+checking if Linux include file /usr/src/linux/include/scsi/sg.h is broken... no
 
-gcc -c t.c
-In file included from /usr/include/linux/ext2_fs.h:20,
-                 from t.c:2:
-/usr/include/linux/ext2_fs_sb.h:40: error: syntax error before âuid_tâ
-/usr/include/linux/ext2_fs_sb.h:49: error: syntax error before âs_next_generationâ
-/usr/include/linux/ext2_fs_sb.h:51: error: syntax error before â*â token
-/usr/include/linux/ext2_fs_sb.h:56: error: syntax error before â}â token
+Warning: *** /usr/src/linux/include contains broken include files ***
+Warning: *** /usr/src/linux/include is not used this reason ***
+Warning: This may result in the inability to use recent Linux kernel interfaces
+
+
+Warning: *** linux/ext2_fs.h is not usable at all ***
+Warning: *** This makes it impossible to support Linux file flags ***
+You may try to compile using 'make COPTX=-DTRY_EXT2_FS'
 
 Jörg
 
