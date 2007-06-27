@@ -1,111 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760894AbXF0Gmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760854AbXF0Go4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760894AbXF0Gmg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 02:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbXF0Gm3
+	id S1760854AbXF0Go4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 02:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbXF0Gos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 02:42:29 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:57262 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758178AbXF0Gm2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 02:42:28 -0400
-Message-ID: <468206C0.90009@sgi.com>
-Date: Wed, 27 Jun 2007 16:42:08 +1000
-From: Tim Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Wed, 27 Jun 2007 02:44:48 -0400
+Received: from ns.suse.de ([195.135.220.2]:38202 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754304AbXF0Goq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 02:44:46 -0400
+Date: Tue, 26 Jun 2007 23:43:53 -0700
+From: John Johansen <jjohansen@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+Message-ID: <20070627064353.GC14656@suse.de>
+References: <20070626230756.519733902@suse.de> <20070626165202.bfe8e6df.akpm@linux-foundation.org> <20070627022403.GB14656@suse.de> <20070626194700.5b0ff477.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: xfs-masters@oss.sgi.com
-CC: Jarek Poplawski <jarkao2@o2.pl>, David Chinner <dgc@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, Satyam Sharma <satyam.sharma@gmail.com>,
-       Johannes Weiner <hannes-kernel@saeurebad.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [xfs-masters] Re: [BUG] Lockdep warning with XFS on 2.6.22-rc6
-References: <20070626021617.GK989688@sgi.com> <20070626093520.GB2691@ff.dom.local> <20070626125006.GG31489@sgi.com>
-In-Reply-To: <20070626125006.GG31489@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="lCAWRPmW1mITcIfM"
+Content-Disposition: inline
+In-Reply-To: <20070626194700.5b0ff477.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch looks good, Dave.
-(though, I stuffed up reviewing that bit of code previously:-)
 
-Oh, previous typo: s/inodes at the some time/inodes at the same time/
+--lCAWRPmW1mITcIfM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---Tim
+On Tue, Jun 26, 2007 at 07:47:00PM -0700, Andrew Morton wrote:
+> On Tue, 26 Jun 2007 19:24:03 -0700 John Johansen <jjohansen@suse.de> wrot=
+e:
+>=20
+> > >=20
+> > > so...  where do we stand with this?  Fundamental, irreconcilable
+> > > differences over the use of pathname-based security?
+> > >=20
+> > There certainly seems to be some differences of opinion over the use
+> > of pathname-based-security.
+>=20
+> I was refreshed to have not been cc'ed on a lkml thread for once.  I guess
+> it couldn't last.
+>=20
+sorry about that
 
-David Chinner wrote:
-> On Tue, Jun 26, 2007 at 11:35:20AM +0200, Jarek Poplawski wrote:
->> On 26-06-2007 04:16, David Chinner wrote:
->>> It does both - parent-first/child-second and ascending inode # order,
->>> which is where the problem is. standing alone, these seem fine, but
->>> they don't appear to work when the child has a lower inode number
->>> than the parent.
->> ...
->>
->> >From xfs_inode.h:
->>
->> /*
->>  * Flags for lockdep annotations.
->>  *
->>  * XFS_I[O]LOCK_PARENT - for operations that require locking two inodes
->>  * (ie directory operations that require locking a directory inode and
->>  * an entry inode).  The first inode gets locked with this flag so it
->>  * gets a lockdep subclass of 1 and the second lock will have a lockdep
->>  * subclass of 0.
->>  *
->>  * XFS_I[O]LOCK_INUMORDER - for locking several inodes at the some time
->>  * with xfs_lock_inodes().  This flag is used as the starting subclass
->>  * and each subsequent lock acquired will increment the subclass by one.
->>  * So the first lock acquired will have a lockdep subclass of 2, the
->>  * second lock will have a lockdep subclass of 3, and so on.
->>  */
->>
->> I don't know xfs code, and probably miss something, but it seems
->> there could be some inconsistency: lockdep warning shows mr_lock/1
->> taken both before and after mr_lock (i.e. /0). According to the
->> above comment there should be always 1 before 0...
-> 
-> That just fired some rusty neurons.
-> 
-> #define XFS_IOLOCK_SHIFT        16
-> #define XFS_IOLOCK_PARENT       (1 << XFS_IOLOCK_SHIFT)
-> #define XFS_IOLOCK_INUMORDER    (2 << XFS_IOLOCK_SHIFT)
-> 
-> #define XFS_ILOCK_SHIFT         24
-> #define XFS_ILOCK_PARENT        (1 << XFS_ILOCK_SHIFT)
-> #define XFS_ILOCK_INUMORDER     (2 << XFS_ILOCK_SHIFT)
-> 
-> So, in a lock_mode parameter, the upper 8 bits are for the ILOCK lockdep
-> subclass, and the 16..23 bits are for the IOLOCK lockdep subclass.
-> 
-> Where do we add them?
-> 
-> static inline int
-> xfs_lock_inumorder(int lock_mode, int subclass)
-> {
->         if (lock_mode & (XFS_IOLOCK_SHARED|XFS_IOLOCK_EXCL))
->                 lock_mode |= (subclass + XFS_IOLOCK_INUMORDER) << XFS_IOLOCK_SHIFT;
->         if (lock_mode & (XFS_ILOCK_SHARED|XFS_ILOCK_EXCL))
->                 lock_mode |= (subclass + XFS_ILOCK_INUMORDER) << XFS_ILOCK_SHIFT;
-> 
->         return lock_mode;
-> }
-> 
-> 
-> OH, look at those nice overflow bugs in that in that code. We shift
-> the XFS_IOLOCK_INUMORDER and XFS_ILOCK_INUMORDER bits out the far
-> side of the lock_mode variable result in lock subclasses of 0-3 instead
-> of 2-5....
-> 
-> Bugger, eh?
-> 
-> Patch below should fix this (untested).
-> 
-> Jarek - thanks for pointing what I should have seen earlier.
-> 
-> Cheers,
-> 
-> Dave.
+> Do you agree with the "irreconcilable" part?  I think I do.
+>=20
+I will concede that this may be the case for some.  However I am still
+hopeful (perhaps naive) that this isn't the case in general.
 
+> I suspect that we're at the stage of having to decide between
+>=20
+> a) set aside the technical issues and grudgingly merge this stuff as a
+>    service to Suse and to their users (both of which entities are very
+>    important to us) and leave it all as an object lesson in
+>    how-not-to-develop-kernel-features.
+>=20
+>    Minimisation of the impact on the rest of the kernel is of course
+>    very important here.
+Agreed, and I hope any changes that are made are for the benefit
+of the kernel in general and will find uses in other parts.
+
+>=20
+> versus
+>=20
+> b) leave it out and require that Suse wear the permanent cost and
+>    quality impact of maintaining it out-of-tree.  It will still be an
+>    object lesson in how-not-to-develop-kernel-features.
+>=20
+> Sigh.  Please don't put us in this position again.  Get stuff upstream
+> before shipping it to customers, OK?  It ain't rocket science.
+>=20
+Indeed, I can only appologize for the past, and offer reassurances
+that we intend to do our best to do, it right going forward.
+
+> > > Are there any other sticking points?
+> > >=20
+> > >=20
+> > The conditional passing of the vfsmnt mount in the vfs, as done in this
+> > patch series, has received a NAK.  This problem results from NFS passing
+> > a NULL nameidata into the vfs.  We have a second patch series that we
+> > have posted for discussion that addresses this by splitting the nameida=
+ta
+> > struct.
+> > Message-Id: <20070626231510.883881222@suse.de>
+> > Subject: [RFD 0/4] AppArmor - Don't pass NULL nameidata to
+> > vfs_create/lookup/permission IOPs
+> >=20
+> > other issues that have been raised are:
+> > - AppArmor does not currently mediate IPC and network communications.
+> >   Mediation of these is a wip
+> > - the use of d_path to generate the pathname used for mediation when a
+> >   file is opened.
+> >   - Generating the pathname using a reverse walk is considered ugly
+> >   - A buffer is alloced to store the generated path name.
+> >   - The  buffer size has a configurable upper limit which will cause
+> >     opens to fail if the pathname length exceeds this limit.  This
+> >     is a fail closed behavior.
+> >   - there have been some concerns expressed about the performance
+> >     of this approach
+> >   We are evaluating our options on how best to address this issue.
+>=20
+> OK, useful summary, thanks.  I'd encourage you to proceed apace.
+
+thankyou
+
+--lCAWRPmW1mITcIfM
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFGggcpi/GH5xuqKCcRAs3uAJoDj8x0wu++s9gmSZMvNjzojfuc4wCgi5PQ
+R4Tn6KssPQazOnr2fry4+i8=
+=flXd
+-----END PGP SIGNATURE-----
+
+--lCAWRPmW1mITcIfM--
