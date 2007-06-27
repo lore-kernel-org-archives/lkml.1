@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763101AbXF0U1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763265AbXF0U2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763101AbXF0U1X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 16:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbXF0U1Q
+	id S1763265AbXF0U2u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 16:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbXF0U2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 16:27:16 -0400
-Received: from main.gmane.org ([80.91.229.2]:44347 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753366AbXF0U1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 16:27:15 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: Question about fair schedulers
-Date: Wed, 27 Jun 2007 16:28:21 -0400
-Message-ID: <4682C865.7080307@tmr.com>
-References: <200706230007.15622.info@gnebu.es> <200706231300.18840.info@gnebu.es> <7b9198260706230405y5c4a173dx82a18fcc14a10272@mail.gmail.com> <200706231326.34918.info@gnebu.es>
+	Wed, 27 Jun 2007 16:28:44 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:63430 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757030AbXF0U2n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 16:28:43 -0400
+Date: Wed, 27 Jun 2007 16:28:39 -0400
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>, Tony Luck <tony.luck@intel.com>
+Subject: Re: dma_mapping_ops for i386
+Message-ID: <20070627202839.GC4344@rhun.congress.lan>
+References: <46817016.7090400@goop.org> <200706270021.11434.ak@suse.de> <468270F5.7040408@goop.org> <200706271726.51013.ak@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Tom Spink <tspink@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <200706231326.34918.info@gnebu.es>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706271726.51013.ak@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alberto Gonzalez wrote:
-> On Saturday 23 June 2007, Tom Spink wrote:
->> Alberto,
->>
->> If you're feeling adventurous, grab the latest kernel and patch it
->> with Ingo's scheduler: CFS.
->>
->> You may be pleasantly surprised.
-> 
-> Thanks, I might if I have to courage to patch and compile my own kernel :)
-> 
-> However, I'd also need to change all my applications to set them with the 
-> right priority to see the good results, so I think I might just wait until it 
-> lands in mainline.
+On Wed, Jun 27, 2007 at 05:26:50PM +0200, Andi Kleen wrote:
 
-In general not the case. I generally don't diddle my priorities, there's 
-rarely a need.
+> See the recent "quiet down swiotlb warnings" thread which uncovered
+> quite some corpses in Xen's current IO setup.
 > 
-> Just to check if I understood everything correctly:
+> Xen apparently bounces for multi page IOs which get merged from block
+> lists because the block layer doesn't know they are not really 
+> continuous in machine memory.
 > 
-> The mainline scheduler tries to be smart and guess the priority of each task, 
-> and while it mostly hits the nail right in the head, sometimes it hits you 
-> right in the thumb.
-> 
-> Fair schedulers, on the contrary, forget about trying to be smart and just 
-> care about being fair, leaving the priority settings to where they belong: 
-> applications.
-> 
-> Is this more or less correct?
+> Proper fix is to tell the block layer to not merge in the first
+> place instead.
+>
+> And probably some similar mechanism for network drivers that limits
+> MTUs.
 
-Incomplete. The CFS scheduler seems to do better with latency, so you 
-may get less CPU to a process but it doesn't wind up waiting a long time 
-to get a fair share. So it "feels better" without micro tuning.
+Will that guarantee that block and net IOs will not straddle a page
+boundary?
 
-Face it, if you have more jobs than CPU no scheduler is going to make 
-you really happy.
-> 
-> Alberto.
-> 
-
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+Cheers,
+Muli
