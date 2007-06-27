@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbXF0TTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbXF0TXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbXF0TTR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXF0TTH
+	id S1757982AbXF0TXP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbXF0TXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:19:07 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:3824 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751820AbXF0TTG (ORCPT
+	Wed, 27 Jun 2007 15:23:01 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:3014 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbXF0TXA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:19:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FKx6FkdgfCK9n5+PJZNM618Xa2oIx3gAd1m4GYskd23+CfOmmrSZYIzhFZ9WPglS7mtCAe78QFM4HH7w+BVOkjGzFp4j84l4Pfb2ui3Ef1uK2KwxFarj4akbcgIOA6aCnjOm55SdhWzKdl2Xo4tj5/Ue/iT2+1H7INQj+77QBR4=
-Message-ID: <d120d5000706271219i7a892c27j33b9476bd3d9b2ae@mail.gmail.com>
-Date: Wed, 27 Jun 2007 15:19:03 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Subject: Re: 2.6.21.5: BUG: usbtouchscreen.c DMC TSC-10 wrong descriptor type / type->init() failed.
-Cc: linux-kernel@vger.kernel.org, "Daniel Ritz" <daniel.ritz@gmx.ch>
-In-Reply-To: <4682A4E2.4020206@anagramm.de>
+	Wed, 27 Jun 2007 15:23:00 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 27 Jun 2007 12:22:52 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Rik van Riel <riel@redhat.com>
+cc: Ulrich Drepper <drepper@gmail.com>, Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
+In-Reply-To: <4682B3B0.2040500@redhat.com>
+Message-ID: <Pine.LNX.4.64.0706271218280.5219@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
+ <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
+ <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
+ <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
+ <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
+ <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
+ <4682B3B0.2040500@redhat.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <468294E4.40801@anagramm.de>
-	 <d120d5000706271004u5e2304dekd4ad5315cdd4a55@mail.gmail.com>
-	 <4682A4E2.4020206@anagramm.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/27/07, Clemens Koller <clemens.koller@anagramm.de> wrote:
-> Hello, Dimitry!
->
-> Dmitry Torokhov schrieb:
-> > On 6/27/07, Clemens Koller <clemens.koller@anagramm.de> wrote:
-> >> drivers/usb/input/usbtouchscreen.c: usbtouch_probe - type->init()
-> >> failed, err: -19
-> >
-> > dmc_tsc10_init() returns -ENODEV (-19) when device responds with
-> > something other than 0x06 0x00 to the "reset" and "set rate" commands.
-> > It would be interesting to see what your touchscreen responses are.
->
-> Yes, thank you!
-> I just had a look into the datasheet.
-> (tsc10usb_pi_e.pdf, Rev. 1.2 from November 1, 2005)
-> and I will need more debugging info to the dmc_tsc10_init()...
->
-> As I wrote, I am using the TSC-103 without EEPROM.
-> (I can add one if it's of any use.)
-> The PanelID is 0 (pin 3 [SEL1] is low), so it's the "first"
-> device on the bus.
->
-> What exact chip version and EEPROM configuration do you use?
+On Wed, 27 Jun 2007, Rik van Riel wrote:
 
-I don't.
+> Ulrich Drepper wrote:
+> > On 6/27/07, Hugh Dickins <hugh@veritas.com> wrote:
+> > > Not so: if an mmap can be done by extending either adjacent vma (prot
+> > > and flags and file and offset all match up), that's what's done and no
+> > > separate vma is created.  (And adjacent vmas get merged when mprotect
+> > > removes the difference in protection.)
+> > 
+> > mmap return values are randomized.  If they would be mergable
+> > something would be wrong.
+> 
+> You can easily pass a hint address to mmap(), causing it to
+> extend a malloc arena instead of creating a new VMA.
 
-> I guess there are different firmware releases for the different
-> TSC-10* devices which behave... well... different. :-(
->
+You mean something like the F_DUPFD, where you pass an fd and that serves 
+as from-there-up hint?
 
-Could be, although according to that data sheet 0x0600 is ACK for both
-touchschreens with and without EEPROMs.
 
-I think most of the changes fro USB touchscreen came in from Daniel
-Ritz, let's try CCing him...
 
--- 
-Dmitry
+- Davide
+
+
