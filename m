@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbXF0Sdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbXF0Sec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761650AbXF0Sdb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 14:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbXF0SdX
+	id S1762137AbXF0Sec (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 14:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbXF0SeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 14:33:23 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:48828 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752546AbXF0SdX (ORCPT
+	Wed, 27 Jun 2007 14:34:25 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:34988 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752546AbXF0SeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 14:33:23 -0400
-Date: Wed, 27 Jun 2007 19:32:47 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Ulrich Drepper <drepper@gmail.com>, blaisorblade@yahoo.it,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-In-Reply-To: <Pine.LNX.4.64.0706271111040.32731@alien.or.mcafeemobile.com>
-Message-ID: <Pine.LNX.4.64.0706271921280.29060@blonde.wat.veritas.com>
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
- <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
- <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
- <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
- <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
- <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
- <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0706271111040.32731@alien.or.mcafeemobile.com>
+	Wed, 27 Jun 2007 14:34:24 -0400
+Message-ID: <4682AD9B.9060105@zytor.com>
+Date: Wed, 27 Jun 2007 14:34:03 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGJsYWlzb3JibGFkZUB5YWhvby5pdABkYXZpZGVsQHhtYWlsc2VydmVyLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGRyZXBwZXJAZ21haWwuY29tAA==
-X-Brightmail-Tracker: AAAAAA==
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Matthew Wilcox <matthew@wil.cx>, Matt Domsch <Matt_Domsch@dell.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: Re: pci.h stubs
+References: <20070626132622.3226261a.randy.dunlap@oracle.com>	<20070627024505.GA30197@humbolt.us.dell.com>	<20070627113048.GU22063@parisc-linux.org>	<20070627145500.2e66fd49@the-village.bc.nu>	<46829345.1000607@zytor.com>	<20070627165429.GY22063@parisc-linux.org> <20070627182518.50423241@the-village.bc.nu>
+In-Reply-To: <20070627182518.50423241@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Davide Libenzi wrote:
-> On Wed, 27 Jun 2007, Hugh Dickins wrote:
+Alan Cox wrote:
+> On Wed, 27 Jun 2007 10:54:30 -0600
+> Matthew Wilcox <matthew@wil.cx> wrote:
 > 
-> > In honesty, I should add that I dislike and distrust Davide's
-> > MAP_NOZERO very much indeed!  Would much rather leave my cpus
-> > spending a little time in clear_page().  A uid in struct page
-> > (though I'm sure we could find somewhere to tuck it away) -
-> > the horror, the horror!  But I've so far failed to find a killer
-> > argument against it, and am hoping for someone else to do so.
+>> On Wed, Jun 27, 2007 at 12:41:41PM -0400, H. Peter Anvin wrote:
+>>> Note that EDD has no way of referencing anything but the zero domain 
+>>> (which is presumably the one which is addressed by I/O ports CF8/CFC on 
+>>> the BSP.)  So in this particular case I would say pci_get_bus_and_slot() 
+>>> is fine.
+>> Except that you're not guaranteed to get the bus that's in domain zero.
 > 
-> Little time? Please, do not trust me. Start oprofile and run a kernel 
-> build. Look, I'm not even talking about som micro benchmark explicitly 
-> built to exploit the thing. A kernel build.
-> You will find clear_page to be the *1st* kernel entry after cc1 and as.
-> That is bad for two reasons. The time it spends in there, and the cache it 
-> blows.
+> Which is trivial to fix
 
-I don't doubt that it shows real benefits; but dangerously cutting
-corners usually shows benefits too.  Relying on a uid at this level
-feels very wrong to me - but as I said, I've not found a killer
-argument against it.
+Yes, and that's probably the only sane definition of that API.
 
-And we both know that clear_page features so high in part because
-it's bringing cachelines in from the cold, which are about to be
-accessed again by userspace; so it's often not so bad as it appears.
-
-Though I probably wouldn't be citing that argument if we were
-talking about offloading clear_page to another engine.
-
-Hugh
+	-hpa
