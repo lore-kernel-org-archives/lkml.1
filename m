@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762382AbXF0QK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762563AbXF0QLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762382AbXF0QK0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXF0QKR
+	id S1762563AbXF0QLS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760559AbXF0QLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:10:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39228 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894AbXF0QKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:10:16 -0400
-Message-ID: <46828B6C.6010203@redhat.com>
-Date: Wed, 27 Jun 2007 12:08:12 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-Subject: Re: Please release a stable kernel Linux 3.0
-References: <200706271653.58870.a1426z@gawab.com> <20070627155254.GO1094@stusta.de>
-In-Reply-To: <20070627155254.GO1094@stusta.de>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 27 Jun 2007 12:11:09 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:52711 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755666AbXF0QLI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 12:11:08 -0400
+Subject: Re: [PATCH] LinuxPPS (with new syscalls API)
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070627125802.GI13886@enneenne.com>
+References: <20070626100628.GO24183@enneenne.com>
+	 <1182855427.12109.203.camel@pmac.infradead.org>
+	 <20070626170622.GA13886@enneenne.com>
+	 <1182879520.3263.19.camel@shinybook.infradead.org>
+	 <20070627101449.GH13886@enneenne.com>
+	 <1182939510.6409.17.camel@pmac.infradead.org>
+	 <20070627125802.GI13886@enneenne.com>
+Content-Type: text/plain
+Date: Wed, 27 Jun 2007 17:11:00 +0100
+Message-Id: <1182960660.1170.12.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/27/2007 11:52 AM, Adrian Bunk wrote:
-> On Wed, Jun 27, 2007 at 04:53:58PM +0300, Al Boldi wrote:
->> Al Viro wrote:
->>> On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
->>>> And as I understand it, this is (was ?) the whole point of
->>>> stable/development kernels. "We" can trust a newer stable
->>>> kernel to be a drop-in replacement for an older stable
->>>> kernel (from the same series), while development kernels
->>>> need time to stabilise with the new whizz-bang-pfouit stuff
->>>> that you all so nicely add.
->>> "Drop-in" in which sense?  That out-of-tree modules keep working?
->>> Not really...
->> Al, be reasonable.  There are many out-of-tree GPL modules that won't be 
->> accepted into mainline, never mind those that shouldn't be accepted.  But 
->> these modules do have a right to not be obsoleted by constant API changes.
+On Wed, 2007-06-27 at 14:58 +0200, Rodolfo Giometti wrote: 
+> On Wed, Jun 27, 2007 at 11:18:30AM +0100, David Woodhouse wrote:
+> > On Wed, 2007-06-27 at 12:14 +0200, Rodolfo Giometti wrote:
+> > > On Tue, Jun 26, 2007 at 06:38:40PM +0100, David Woodhouse wrote:
+> > > > 
+> > > > 64-bit kernels can run 32-bit userspace programs. But some structures
+> > > > come out _differently_ between 32-bit and 64-bit compilation, so the
+> > > > system call needs a special 'compat' handler instead of just running the
+> > > > normal 64-bit system call.
+> > > > 
+> > > > The 'struct timespec' is one structure which is sometimes different for
+> > > > 32-bit vs. 64-bit, so any system call taking a 'struct timespec' must
+> > > > have a separate compat_sys_xxxx() to handle that. See something like
+> > > > compat_sys_clock_settime() in kernel/compat.c for an example (but don't
+> > > > use set_fs() like it does; just see how it handles the compat_timespec).
+> > > 
+> > > Did you mean something like this?
+> > 
+> > How will 64-bit system calls work if you do it like that? You need to
+> > provide _both_ sys_time_pps_fetch() and compat_sys_time_pps_fetch().
 > 
-> "have a right" are strong words.
-> Who is granting them this right?
+> Sorry, I'm new to this 32/64 bits issues...
 > 
->> You are effectively inhibiting the development of an out-of-tree GPL module 
->> pool, by constantly pulling the rug under that community.
->>
->> Do you think this is fair?
+> Now is it correct?
+
+No, because you're passing a _kernel_ pointer to sys_time_pps_fetch()
+where it expects a userspace pointer. Use compat_alloc_user_space() to
+find somewhere to put it in user space, instead. Or change your internal
+__sys_time_pps_fetch() function to take a number of ticks instead of a
+pointer to a timespec, then call that directly with appropriate
+arguments, from both the normal and compat syscall routines.
 > 
-> Why are these modules not submitted for inclusion into the kernel?
-> 
+> Since I have no way to test this code maybe is better add no function
+> at all and simply using a warning message if someone try compiling
+> this code with CONFIG_COMPAT enabled...
 
-I was trying to figure that out for this one:
+No. The fact that you cannot test it is no excuse for submitting
+something which is _known_ to be broken. Once you have it to the point
+where a casual observer can't point out errors, then people can test it
+for you.
 
-http://code.ximeta.com/trac-ndas
-
-No mention of ever trying to get this upstream AFAICT... but this is
-interesting:
-
-  The linux market is limited comparing that of MS Windows.
-  it is very hard for us to support the various linux distros.
-  we, Ximeta, are trying to support those requests as many as
-  we can, though the resources are very limited.
-
+-- 
+dwmw2
 
