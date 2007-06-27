@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbXF0Ec5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbXF0EeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbXF0Ec5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 00:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbXF0Ecs
+	id S1757526AbXF0EeS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 00:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbXF0EeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 00:32:48 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3182 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbXF0Ecs (ORCPT
+	Wed, 27 Jun 2007 00:34:10 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:45003 "EHLO
+	asav19.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbXF0EeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 00:32:48 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 26 Jun 2007 21:32:44 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Rik van Riel <riel@redhat.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 1/3] MAP_NOZERO - implement a new VM_NOZERO/MAP_NOZERO
- page retirement policy
-In-Reply-To: <4681E52A.8030300@redhat.com>
-Message-ID: <Pine.LNX.4.64.0706262127300.26540@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.29496.1182912259.1>
- <4681D37E.2020706@redhat.com> <Pine.LNX.4.64.0706262016080.26540@alien.or.mcafeemobile.com>
- <4681E52A.8030300@redhat.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 27 Jun 2007 00:34:09 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AoQrAM+FgUZKhRO4R2dsb2JhbACBT4Vdh3MBARsNBhEB
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Dave Young <hidave.darkstar@gmail.com>, Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] atkbd: cleanup only once
+Date: Wed, 27 Jun 2007 00:34:09 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org
+References: <20070627105907.GA1802@darkstar.te-china.tietoenator.com>
+In-Reply-To: <20070627105907.GA1802@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706270034.09802.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Rik van Riel wrote:
+Hi Dave,
 
-> Davide Libenzi wrote:
-> > On Tue, 26 Jun 2007, Rik van Riel wrote:
-> > 
-> > > SUID programs should not be able to use this feature,
-> > > either.
-> > 
-> > Why? A SUID programs runs under the UID of the owner, and should be no
-> > problems in it seeing the owners data.
+On Wednesday 27 June 2007 06:59, Dave Young wrote:
+> Hi,
 > 
-> Because an SUID program can change its UID back.
+> If you press ctrl+alt+del several times as kernel booting (before user level bootin), the kernel will oops. I found the ps2_command is called more than once, then the ps2dev->serio maybe NULL pointer.
 > 
-> At least, one that was SUID root.  OTOH, any
-> program running as root can change UID, so we
-> should probably not allow root to get nonzeroed
-> pages.
-
-Well, root can in general access the whole system in any case. At the 
-moment, root cannot access othe UIDs pages. Only their own. And this 
-differs from standard security policies where root can access everything.
-Pages used internally by the kernel, cannot be reused by anyone.
-
-
-
-> > I tried to look, and the attempt to reuse _mapcount failed miserably :)
-> > The last time we have the owner info (vma->mm) available, is before
-> > processing of the other fields ends. OTOH I'm not VM guru either, so I may
-> > be wrong. It can share ->virtual (when enabled).
+> 2.6.22-rc5 and 2.6.22-rc6 have same result.
 > 
-> I think the process that actually calls the page freeing
-> functions is always the process that owned the page, so
-> going for current->mm should work.
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> ---
+> diff -upr linux/drivers/input/keyboard/atkbd.c linux.new/drivers/input/keyboard/atkbd.c
+> --- linux/drivers/input/keyboard/atkbd.c	2007-06-27 10:38:37.000000000 +0000
+> +++ linux.new/drivers/input/keyboard/atkbd.c	2007-06-27 10:37:39.000000000 +0000
+> @@ -795,6 +795,11 @@ static int atkbd_activate(struct atkbd *
+>  
+>  static void atkbd_cleanup(struct serio *serio)
+>  {
+> +	static int flag;
+> +
+> +	if(flag)
+> +		return;
+> +	flag = 1;
 
-I'll try to see if that works out...
+Unfortunately this will prevent atkbd from resetting keyboard on 2nd
+suspend attempt. It will also not work if you have an active MUX and
+have a couple of keyboards connected.
 
+Greg, now that you removed rwsem from subsystem (and subsystem itself
+for that matter) there is nothing as far as I can see that stops
+several threads from running device_shutdown() simultaneously. I also
+do not see what would isolate device probing and shutting them down
+at the same time. Am I missing something?
 
-
-- Davide
-
-
+-- 
+Dmitry
