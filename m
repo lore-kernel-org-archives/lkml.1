@@ -1,140 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763336AbXF0VEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763155AbXF0VGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763336AbXF0VEb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 17:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbXF0VEW
+	id S1763155AbXF0VGq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 17:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757623AbXF0VGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 17:04:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57028 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752289AbXF0VEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 17:04:21 -0400
+	Wed, 27 Jun 2007 17:06:37 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:33586 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289AbXF0VGf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 17:06:35 -0400
+Message-ID: <4682D13C.6060107@novell.com>
+Date: Wed, 27 Jun 2007 14:06:04 -0700
+From: Crispin Cowan <crispin@novell.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+References: <20070626230756.519733902@suse.de> <20070626165202.bfe8e6df.akpm@linux-foundation.org> <20070627022403.GB14656@suse.de> <20070626194700.5b0ff477.akpm@linux-foundation.org> <20070627151114.GM1094@stusta.de>
+In-Reply-To: <20070627151114.GM1094@stusta.de>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-X-Fcc: ~/Mail/utrace
-Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
-In-Reply-To: Alan Stern's message of  Tuesday, 26 June 2007 23:26:37 -0400 <Pine.LNX.4.44L0.0706262244100.23864-100000@netrider.rowland.org>
-Emacs: the prosecution rests its case.
-Message-Id: <20070627210417.879DC4D05E6@magilla.localdomain>
-Date: Wed, 27 Jun 2007 14:04:17 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So far this work has all been based on the vanilla kernel.  Should I 
-> switch over to basing it on -mm?
+Adrian Bunk wrote:
+> On Tue, Jun 26, 2007 at 07:47:00PM -0700, Andrew Morton wrote:
+>   
+>> Do you agree with the "irreconcilable" part?  I think I do. 
+I am hoping for a reconciliation where the people who don't like
+AppArmor live with it by not using it. AppArmor is not intended to
+replace SELinux, it is intended to address a different set of goals.
 
-It doesn't much matter at the moment.  Sticking with vanilla is the easiest
-for you and me testing it right now.
+>> I suspect that we're at the stage of having to decide between
+>>
+>> a) set aside the technical issues and grudgingly merge this stuff as a
+>>    service to Suse and to their users (both of which entities are very
+>>    important to us) and leave it all as an object lesson in
+>>    how-not-to-develop-kernel-features.
+>>
+>>    Minimisation of the impact on the rest of the kernel is of course
+>>    very important here.
+>>
+>> versus
+>>
+>> b) leave it out and require that Suse wear the permanent cost and
+>>    quality impact of maintaining it out-of-tree.  It will still be an
+>>    object lesson in how-not-to-develop-kernel-features.
+>> ...    
+> versus
+>
+> c) if [1] AppArmor is considered to be something that wouldn't 
+>    be merged if it wasn't already widely deployed by Suse: leave it out, 
+>    work on an ideal solution [2], and let Suse wear the one-time cost
+>    of migrating their users to the ideal solution
+>   
+We argue that the proposed patch is a viable solution for providing
+AppArmor functionality. We would be happy for specific suggestions on
+how to make it better.
 
-> > Calling send_sigtrap twice during the same exception does happen to be
-> > harmless, but I don't think it should be presumed to be.  It is just not
-> > the right way to go about things that you send a signal twice when there
-> > is one signal you want to generate.
-> 
-> What happens when there are two ptrace exceptions at different points
-> during the same system call?  Won't we end up sending the signal twice
-> no matter what?
+> I'm not claiming to understand the technical details, but from both 
+> slightly reading over the previous discussions and the "What are the 
+> advantages of AppArmor over SELinux?" section in the AppArmor FAQ [3] my 
+> impression is that a main advantage of AppArmor are more user friendly 
+> userspace tools. Therefore, if [1] AppArmor is considered technically 
+> inferior to SELinux, it might still become more popular than SELinux 
+> simply because it's easier to use - and although it's technically 
+> inferior.  
+AppArmor's advantages come from the model, not the tools. AppArmor is
+not inferior to SELinux, it is different than SELinux. Neither can
+replace the other without horrid kludges.
 
-Well then that is two signals for good reason, so that is a different
-story.  It winds up indistinguishable from only sending the second, but as
-far as the organization of the code and thinking about the semantics, twice
-is right in this case and once is right in the simpler case.
+Crispin
 
-> In theory we should get an exception with both DR_STEP and DR_TRAPn 
-> set, meaning that neither notifier will return NOTIFY_STOP.  But if the 
-> kprobes handler clears DR_STEP in the DR6 image passed to the 
-> hw_breakpoint handler, it should work out better.
+-- 
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+Director of Software Engineering   http://novell.com
+	AppArmor Chat: irc.oftc.net/#apparmor
 
-It's since occurred to me that kprobes can and should do:
-
-	args->err &= ~(unsigned long) DR_STEP;
-	if (args->err == 0)
-		return NOTIFY_STOP;
-
-This doesn't affect do_debug directly, but it will change the value seen by
-the next notifier.  So if hw_breakpoint_handler is responsible for setting
-vdr6 based on its args->err value, we should win.
-
-> > vdr6 belongs wholly to hw_breakpoint, no other code refers to it
-> > directly.  hw_breakpoint's notifier sets vdr6 with non-DR_TRAPn bits,
-> > if it's a user-mode exception.  If it's a ptrace exception it also
-> > sets the mapped DR_TRAPn bits.  If it's not a ptrace exception and
-> > only DR_TRAPn bits were newly set, then it returns NOTIFY_STOP.  If
-> > it's a spurious exception from lazy db7 setting, hw_breakpoint just
-> > returns NOTIFY_STOP early.
-> 
-> That sounds not quite right.  To a user-space debugger, a system call
-> should appear as an atomic operation.  If multiple ptrace exceptions
-> occur during a system call, all the relevant DR_TRAPn bits should be
-> set in vdr6 together and all the other ones reset.  How can we arrange
-> that?
-
-That would be nice.  But it's more than the old code did.  I don't feel any
-strong need to improve the situation when using ptrace.  The old code
-disabled breakpoints after the first hit, so userland would only see the
-first DR_TRAPn bit.  (Even if it didn't, with the blind copying of the
-hardware %db6 value, we now know it would only see one DR_TRAPn bit still
-set after a second exception.)  With my suggestion above, userland would
-only see the last DR_TRAPn bit.  So it's not worse.
-
-In the ptrace case, we know it's always going to wind up with a signal
-before it finishes and returns to user mode.  So one approach would be in
-e.g. do_notify_resume, do:
-
-	if (thread_info_flags & _TIF_DEBUG)
-		current->thread.hw_breakpoint_info->someflag = 0;
-
-Then ptrace_triggered could set someflag, and know from it still being set
-on entry that it's a second trigger without getting back to user mode yet
-(and so accumulate bits instead reset old ones).
-
-But I just would not bother improving ptrace beyond the status quo for a
-corner case noone has cared about in practice so far.  In sensible
-mechanisms of the future, nothing will examine db6 values directly.
-
-> There's also the question of whether to send the SIGTRAP.  If
-> extraneous bits are set in DR6 (e.g., because the CPU always sets some
-> extra bits) then we will never get NOTIFY_STOP.  Nevertheless, the
-> signal should not always be sent.
-
-Yeah.  The current Intel manual describes all the unspecified DR6 bits as
-explicitly reserved and set to 1 (except 0x1000 reserved and 0).  If new
-meanings are assigned in future chips, presumably those will only be
-enabled by some new explicit cr/msr setting.  Those might be enabled by
-some extra module or something, but there is only so much we can do to
-accomodate.  I think the best plan is that notifiers should do:
-
-	args->err &= ~bits_i_recognize_as_mine;
-	if (!(args->err & known_bits))
-		return NOTIFY_STOP;
-
-known_bits are the ones we use, plus 0x8000 (DR_SWITCH/BS) and 0x2000 (BD).
-(Those two should be impossible without some strange new kernel bug.)
-Probably should write it as ~DR_STATUS_RESERVED, to parallel existing macros.
-
-Then we only possibly interfere with a newfangled debug exception flavor
-that occurs in the same one debug exception for an instruction also
-triggering for hw_breakpoint or step.  In the more likely cases of a new
-flavor of exception happening by itself, or the aforementioned strange new
-kernel bugs, we will get to the bottom of do_debug and do the SIGTRAP.
-
-For this plan, hw_breakpoint_handler also needs not to return NOTIFY_STOP
-as a special case for a ptrace trigger.
-
-> I disagree.  kfree() is documented to return harmlessly when passed a
-> NULL pointer, and lots of places in the kernel have been changed to
-> remove useless tests for NULL before calls to kfree().  This is just
-> another example.
-
-Ok.  I have no special opinions about that.  I just tend to avoid folding
-miscellaneous changes into a patch adding new code.  It would be better
-form to send first the trivial cleanup patch removing that second condition.
-
-
-Thanks,
-Roland
