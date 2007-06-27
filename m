@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbXF0Utc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761942AbXF0U5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762662AbXF0Utc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 16:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbXF0UtZ
+	id S1761942AbXF0U5f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 16:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXF0U50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 16:49:25 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55440 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754644AbXF0UtY (ORCPT
+	Wed, 27 Jun 2007 16:57:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:60318 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753234AbXF0U5Z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 16:49:24 -0400
-Date: Wed, 27 Jun 2007 13:49:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] balance parenthesis in serial core
-Message-Id: <20070627134912.b1c5c428.akpm@linux-foundation.org>
-In-Reply-To: <1182976958.19006.50.camel@shinybook.infradead.org>
-References: <200706271030.l5RAUgKE015163@imap1.linux-foundation.org>
-	<200706272222.01300.m.kozlowski@tuxland.pl>
-	<20070627133717.d19d82c9.akpm@linux-foundation.org>
-	<1182976958.19006.50.camel@shinybook.infradead.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 16:57:25 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/5 v2] Add the platform device support with RapidIO to MPC8641HPCN platform.
+Date: Wed, 27 Jun 2007 22:56:15 +0200
+User-Agent: KMail/1.9.6
+Cc: Zhang Wei <wei.zhang@freescale.com>, mporter@kernel.crashing.org,
+       paulus@samba.org, linux-kernel@vger.kernel.org
+References: <11829333481420-git-send-email-wei.zhang@freescale.com> <11829333481375-git-send-email-wei.zhang@freescale.com> <1182933348216-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <1182933348216-git-send-email-wei.zhang@freescale.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200706272256.16418.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18JZYXMkcHAjh4AMcSx55qnc2GMjamfW8t1zb+
+ WILyYOkVznmYbbR97GqXtgiZUnO9d80ibH7B2WX5yPHWKZid1q
+ zncPBFmwzp1nuwsv8dUxw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 21:42:38 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
+On Wednesday 27 June 2007, Zhang Wei wrote:
+> +static struct of_device_id mpc86xx_of_ids[] = {
+> +       { .type = "soc", },
+> +       { .compatible = "fsl,rapidio-delta", },
+> +       {},
+> +};
+> +
+> +static __init int mpc86xx_of_device_init(void)
+> +{
+> +       return of_platform_bus_probe(NULL, mpc86xx_of_ids, NULL);
+> +}
 
-> On Wed, 2007-06-27 at 13:37 -0700, Andrew Morton wrote:
-> > Thanks.  so...  why shouldn't we just remove the buggy&&unused
-> > RELEVANT_CFLAG defines??
-> 
-> I was just about to suggest that. I originally intended to use them for
-> the obvious purpose, but then realised that we can just rely on the
-> integers i_speed and o_speed instead.
+This will add any devices below the "fsl,rapidio-delta" device
+as an of_device. Is that what you actually want? I would guess that
+you want to add the bridge itself, not the devices below it.
 
-OK.
+Is the rapidio device at the root of the device tree, and if so, why
+not under the soc bus?
 
-> Do you want a replacement/incremental patch?
-
-I'll take care of it, thanks.
+	Arnd <><
