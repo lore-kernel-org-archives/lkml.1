@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762626AbXF0Q0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbXF0Q07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762626AbXF0Q0h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbXF0Q03
+	id S1762817AbXF0Q07 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbXF0Q0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:26:29 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42257 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758225AbXF0Q02 (ORCPT
+	Wed, 27 Jun 2007 12:26:48 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:26361 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757161AbXF0Q0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:26:28 -0400
-Date: Wed, 27 Jun 2007 18:26:50 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+	Wed, 27 Jun 2007 12:26:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AapXYLuIq8CgHyPyndLgXHbWVw8ls4yYyyqgxZDXqybQbqoX231WBzlpa97r5R3L4SDXSRW/nDXEes37nR2KwzuKsNJlZhx24iizWSZAtgCfTz+lCsQj41aOvW0sWOjXvcWv0ap9dKnKWbAmOOC1MKiu77DvlfmS9qgc+oAsdvo=
+Message-ID: <d120d5000706270926u15ed7f78ve760e40a1f6a87e9@mail.gmail.com>
+Date: Wed, 27 Jun 2007 12:26:46 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Chuck Ebbert" <cebbert@redhat.com>
 Subject: Re: Please release a stable kernel Linux 3.0
-Message-ID: <20070627162650.GP1094@stusta.de>
-References: <200706271653.58870.a1426z@gawab.com> <20070627155254.GO1094@stusta.de> <46828B6C.6010203@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Cc: "Adrian Bunk" <bunk@stusta.de>, "Al Boldi" <a1426z@gawab.com>,
+       linux-kernel@vger.kernel.org
 In-Reply-To: <46828B6C.6010203@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200706271653.58870.a1426z@gawab.com>
+	 <20070627155254.GO1094@stusta.de> <46828B6C.6010203@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 12:08:12PM -0400, Chuck Ebbert wrote:
-> On 06/27/2007 11:52 AM, Adrian Bunk wrote:
-> > On Wed, Jun 27, 2007 at 04:53:58PM +0300, Al Boldi wrote:
-> >> Al Viro wrote:
-> >>> On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
-> >>>> And as I understand it, this is (was ?) the whole point of
-> >>>> stable/development kernels. "We" can trust a newer stable
-> >>>> kernel to be a drop-in replacement for an older stable
-> >>>> kernel (from the same series), while development kernels
-> >>>> need time to stabilise with the new whizz-bang-pfouit stuff
-> >>>> that you all so nicely add.
-> >>> "Drop-in" in which sense?  That out-of-tree modules keep working?
-> >>> Not really...
-> >> Al, be reasonable.  There are many out-of-tree GPL modules that won't be 
-> >> accepted into mainline, never mind those that shouldn't be accepted.  But 
-> >> these modules do have a right to not be obsoleted by constant API changes.
-> > 
-> > "have a right" are strong words.
-> > Who is granting them this right?
-> > 
-> >> You are effectively inhibiting the development of an out-of-tree GPL module 
-> >> pool, by constantly pulling the rug under that community.
-> >>
-> >> Do you think this is fair?
-> > 
-> > Why are these modules not submitted for inclusion into the kernel?
-> > 
-> 
+Hi Chuck,
+
+On 6/27/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+>
 > I was trying to figure that out for this one:
-> 
+>
 > http://code.ximeta.com/trac-ndas
-> 
+>
 > No mention of ever trying to get this upstream AFAICT... but this is
 > interesting:
-> 
->   The linux market is limited comparing that of MS Windows.
->   it is very hard for us to support the various linux distros.
->   we, Ximeta, are trying to support those requests as many as
->   we can, though the resources are very limited.
+>
+>  The linux market is limited comparing that of MS Windows.
+>  it is very hard for us to support the various linux distros.
+>  we, Ximeta, are trying to support those requests as many as
+>  we can, though the resources are very limited.
+>
 
-One of their module contains a 180 kB binary blob and
-MODULE_LICENSE("Proprietary, Send bug reports to support@ximeta.com").
+I would not worry about that one too much:
 
-And it calls tons of functions EXPORT_SYMBOL'ed by their other
-3 modules that are MODULE_LICENSE("Dual BSD/GPL")...
-
-cu
-Adrian
+[~] ls -la ndas-1.1-6/*.sfx
+-rw-r--r-- 1 TOROKHDM mkgroup-l-d 60416 Jun 27 12:22 ndas-1.1-6/libndas.a.sfx
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Dmitry
