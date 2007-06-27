@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760955AbXF0B6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbXF0CBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760955AbXF0B6q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 21:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757857AbXF0BwZ
+	id S1760098AbXF0CBH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 22:01:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbXF0CAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 21:52:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:51733 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754369AbXF0BwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 21:52:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,465,1175497200"; 
-   d="scan'208";a="261537720"
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: [md-accel PATCH 19/19] ARM: Add drivers/dma to arch/arm/Kconfig
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Cc: neilb@suse.de, akpm@linux-foundation.org, davem@davemloft.net,
-       christopher.leech@intel.com, shannon.nelson@intel.com,
-       herbert@gondor.apana.org.au, jeff@garzik.org
-Date: Tue, 26 Jun 2007 18:52:10 -0700
-Message-ID: <20070627015210.18962.99133.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
-References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGIT/0.12.1
+	Tue, 26 Jun 2007 22:00:55 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:36696 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753996AbXF0CAy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 22:00:54 -0400
+X-Sasl-enc: QVq7Hiz34XMjJDv0MyEExiMYupESFBh0XUXyxz8p9HMP 1182909653
+Date: Tue, 26 Jun 2007 23:00:46 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] hw_random: add quality categories
+Message-ID: <20070627020045.GA5491@khazad-dum.debian.net>
+References: <200706241555.22957.mb@bu3sch.de> <20070626031340.GQ11166@waste.org> <20070626140624.GC30655@khazad-dum.debian.net> <200706261620.33898.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200706261620.33898.mb@bu3sch.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: Russell King <rmk@arm.linux.org.uk>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
+On Tue, 26 Jun 2007, Michael Buesch wrote:
+> On Tuesday 26 June 2007 16:06:25 Henrique de Moraes Holschuh wrote:
+> > Which, AFAIK, we can quantify as the minimum expected entropy in the output.
+> 
+> The category is _not_ a measure of the entropy in the output.
+> It is _just_ to get the chance to get a sane _default_ policy
+> for which RNG is enabled by default, in the kernel.
+> It's just about a default policy. _Nothing_ else.
 
- arch/arm/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Then why don't you call it "preference", or something to that effect?
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 50d9f3e..0cb2d4f 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -1034,6 +1034,8 @@ source "drivers/mmc/Kconfig"
- 
- source "drivers/rtc/Kconfig"
- 
-+source "drivers/dma/Kconfig"
-+
- endmenu
- 
- source "fs/Kconfig"
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
