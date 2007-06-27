@@ -1,41 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760169AbXF0R5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbXF0R72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760169AbXF0R5V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758630AbXF0R5I
+	id S1762873AbXF0R72 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbXF0R7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:57:08 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:59646
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762871AbXF0R5H (ORCPT
+	Wed, 27 Jun 2007 13:59:21 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:48405 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755604AbXF0R7U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:57:07 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH] hw_random: add quality categories
-Date: Wed, 27 Jun 2007 19:56:29 +0200
-User-Agent: KMail/1.9.6
-Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200706241555.22957.mb@bu3sch.de> <200706271458.51884.mb@bu3sch.de> <20070627164041.GA6508@khazad-dum.debian.net>
-In-Reply-To: <20070627164041.GA6508@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 27 Jun 2007 13:59:20 -0400
+Subject: [PATCH] CodingStyle: Add information about trailing whitespace.
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, josh@kernel.org
+Content-Type: text/plain
+Date: Wed, 27 Jun 2007 10:59:20 -0700
+Message-Id: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706271956.29244.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 27 June 2007 18:40:41 Henrique de Moraes Holschuh wrote:
-> There *is* a much better way to deal with it, though.  Add the fail always
-> RNG device, and always select it by default.  Let the user specifically set
-> which RNG he wants, and it now rates as "trusted", which is the only
-> fail-proof way to go about it IMHO.
+Signed-off-by: Josh Triplett <josh@kernel.org>
+---
+ Documentation/CodingStyle |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-Well, but it changes ABI, which is forbidden.
-After a kernel update your system will partially not work anymore.
-
+diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+index b49b92e..00bffa7 100644
+--- a/Documentation/CodingStyle
++++ b/Documentation/CodingStyle
+@@ -218,6 +218,18 @@ no space after the prefix increment & decrement unary operators:
+ 
+ and no space around the '.' and "->" structure member operators.
+ 
++Do not leave trailing whitespace at the ends of lines.  Some editors with
++"smart" indentation will insert whitespace at the beginning of new lines as
++appropriate, so you can start typing the next line of code right away.
++However, some such editors do not remove the whitespace if you end up not
++putting a line of code there, such as if you leave a blank line.  As a result,
++you end up with lines containing trailing whitespace.
++
++Git will warn you about patches that introduce trailing whitespace, and can
++optionally strip the trailing whitespace for you; however, if applying a series
++of patches, this may make later patches in the series fail by changing their
++context lines.
++
+ 
+ 		Chapter 4: Naming
+ 
 -- 
-Greetings Michael.
+1.5.2.1
+
+
