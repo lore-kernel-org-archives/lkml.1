@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbXF0SEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbXF0SOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762206AbXF0SEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 14:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbXF0SEN
+	id S1758892AbXF0SOI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 14:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXF0SN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 14:04:13 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:56495 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756443AbXF0SEM (ORCPT
+	Wed, 27 Jun 2007 14:13:58 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1288 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752263AbXF0SN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 14:04:12 -0400
-Date: Wed, 27 Jun 2007 19:04:09 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Neil Booth <neil@daikokuya.co.uk>, Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627180408.GC21478@ftp.linux.org.uk>
-References: <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk> <alpine.LFD.0.98.0706270910000.8675@woody.linux-foundation.org> <20070627172903.GB21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706271043570.8675@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0706271043570.8675@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	Wed, 27 Jun 2007 14:13:57 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 27 Jun 2007 11:13:52 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Ulrich Drepper <drepper@gmail.com>, blaisorblade@yahoo.it,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
+In-Reply-To: <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0706271111040.32731@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
+ <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
+ <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
+ <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
+ <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
+ <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com>
+ <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 10:45:55AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 27 Jun 2007, Al Viro wrote:
-> > 
-> > Eh...  I'd say that my variant for offsetof() is simply better - it usually
-> > directly turns into EXPR_VALUE, right in place, without rather convoluted
-> > work.  Aside of "should such cast be a constant integer expression"...
-> 
-> Umm. But sparse is meant to parse C code. Which very much includes *other* 
-> projects.
-> 
-> The kernel, for example, has its own offsetof. And yes, these days we use 
-> "__compiler_offsetof()", but we used to do
-> 
-> 	#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-> 
-> and I seriously doubt that the kernel is the only one doing things like 
-> that.
+On Wed, 27 Jun 2007, Hugh Dickins wrote:
 
-You can't have it both way, really.  If we are talking about annotating
-a codebase we _can_ annotate, that one is not a problem at all.  If we
-are talking about vanilla C project that never heard about sparse...
-We can define whatever extensions we like, but such project has to
-cope with whatever C compilers they had been using.
+> In honesty, I should add that I dislike and distrust Davide's
+> MAP_NOZERO very much indeed!  Would much rather leave my cpus
+> spending a little time in clear_page().  A uid in struct page
+> (though I'm sure we could find somewhere to tuck it away) -
+> the horror, the horror!  But I've so far failed to find a killer
+> argument against it, and am hoping for someone else to do so.
 
-So "sparse believes that this defintion of offsetof can be used as
-array size" will mean fsck-all outside of #ifdef __CHECKER__ and
-under such ifdef we can always define it to builtin; if anything,
-that will be faster and easier on sparse.
+Little time? Please, do not trust me. Start oprofile and run a kernel 
+build. Look, I'm not even talking about som micro benchmark explicitly 
+built to exploit the thing. A kernel build.
+You will find clear_page to be the *1st* kernel entry after cc1 and as.
+That is bad for two reasons. The time it spends in there, and the cache it 
+blows.
+
+
+
+- Davide
+
+
