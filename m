@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761507AbXF0OQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761321AbXF0OSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761507AbXF0OQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 10:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXF0OQI
+	id S1761321AbXF0OSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXF0OSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 10:16:08 -0400
-Received: from gw.goop.org ([64.81.55.164]:38353 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751330AbXF0OQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 10:16:07 -0400
-Message-ID: <468270F5.7040408@goop.org>
-Date: Wed, 27 Jun 2007 10:15:17 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Wed, 27 Jun 2007 10:18:07 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:55919 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752925AbXF0OSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 10:18:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=NBzDIFzmqmJDlog9Ar2clvD2sbPF3Ksxfl7TRIbTRt5SxtIVnTeFQhLJLmuc6szF0Zk0ALM329dvRukBixLiuEMHZ3pJizxKw2mLT4ycY9nF5/le6ZdFfs61ONGw6141q/fCRf0wx1QXlAKEr2IMDVLu525fVl2lCJprsUkN16o=
+Message-ID: <fc94aae90706270718o1704822csea1371a780ca5d23@mail.gmail.com>
+Date: Wed, 27 Jun 2007 15:18:04 +0100
+From: "Michael Lothian" <mike@fireburn.co.uk>
+To: "Marc Perkel" <mperkel@yahoo.com>
+Subject: Re: NVidia Driver Support - 1680x1050 mode
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <964847.10954.qm@web52510.mail.re2.yahoo.com>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Beulich <jbeulich@novell.com>, Tony Luck <tony.luck@intel.com>,
-       Muli Ben-Yehuda <muli@il.ibm.com>
-Subject: Re: dma_mapping_ops for i386
-References: <46817016.7090400@goop.org> <200706270021.11434.ak@suse.de>
-In-Reply-To: <200706270021.11434.ak@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fc94aae90706262226p417ed77ex97dd20f9bec46e25@mail.gmail.com>
+	 <964847.10954.qm@web52510.mail.re2.yahoo.com>
+X-Google-Sender-Auth: 20683c0e029e8be1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Ok, if you can do it without ifdefs. 
->   
+I would probably have recommended an Intel chipset they have truly
+open drivers which are coming along an absolute treat. Hopefully the
+Neuveau drivers will get to a usable stage soon and the r300 (for
+radeon cards) will start to support r400 and r500 cards,
 
-That should be OK.  All the existing i386 mapping operations would just 
-have their own ops structure, right?
+Mike
 
-> And no swiotlb on i386; that is something that is completely broken
-> in upstream Xen and needs to be fixed properly anyways.
->   
-
-Hm, OK.  I'm not really familiar with the issues here.  What are they?  
-Looks like Jan has made a number of Xen-ish changes to lib/swiotlb.c; 
-are more changes be needed?
-
-    J
+On 27/06/07, Marc Perkel <mperkel@yahoo.com> wrote:
+> If I were to try a different brand of video card to
+> get 1680x1050 where the main criteria was "just
+> works", what brand should I get?
+>
