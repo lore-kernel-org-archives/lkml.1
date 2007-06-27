@@ -1,73 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761429AbXF0OGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXF0OL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761429AbXF0OGs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 10:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXF0OGk
+	id S1760766AbXF0OL6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXF0OLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 10:06:40 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:50739 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754340AbXF0OGj (ORCPT
+	Wed, 27 Jun 2007 10:11:50 -0400
+Received: from mailgw1.fraunhofer.de ([153.96.1.18]:53384 "EHLO
+	mailgw1.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752926AbXF0OLt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 10:06:39 -0400
-Date: Wed, 27 Jun 2007 15:06:36 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Neil Booth <neil@daikokuya.co.uk>
-Cc: Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627140636.GT21478@ftp.linux.org.uk>
-References: <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk> <20070627123031.GO21478@ftp.linux.org.uk> <20070627125958.GA16758@daikokuya.co.uk> <20070627131823.GR21478@ftp.linux.org.uk> <20070627133546.GC16758@daikokuya.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070627133546.GC16758@daikokuya.co.uk>
-User-Agent: Mutt/1.4.1i
+	Wed, 27 Jun 2007 10:11:49 -0400
+Date: Wed, 27 Jun 2007 15:45:44 +0200
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: bunk@stusta.de, dwmw2@infradead.org
+Cc: david@lang.hm, linux-kernel@vger.kernel.org, schilling@fokus.fraunhofer.de
+Subject: Re: Linux Kernel include files
+Message-ID: <46826a08.aydgAULQ8LQL0IWi%Joerg.Schilling@fokus.fraunhofer.de>
+User-Agent: nail 11.22 3/20/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 27 Jun 2007 13:47:42.0354 (UTC) FILETIME=[BBDF9720:01C7B8C1]
+X-Fraunhofer-Email-Policy: accepted
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 10:35:46PM +0900, Neil Booth wrote:
-> Al Viro wrote:-
-> 
-> > 
-> > Son of a...  expand_comma() cannibalizes the node, should restore ->flags
-> > to 0 (same as other similar suckers).
-> > 
-> > > struct c { unsigned int c1: 1 ? 2: a++; };
-> > 
-> > Ditto for expand_conditional, but there we should preserve the original
-> > ->flags instead - might be non-zero and we ought to do that after
-> > expanding the taken branch...
-> > 
-> > From: Al Viro <viro@zeniv.linux.org.uk>
-> > Date: Wed, 27 Jun 2007 09:10:54 -0400
-> > Subject: [PATCH] fix the missed cannibalizing simplifications
-> > 
-> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> 
-> Now I think I only see one class of issues; the following is valid
-> C99 (I believe that's what you intend to follow) but being rejected:
-> 
->    struct a { int comma: 1 ? 2: (2, 3); };
+Adrian Bunk <bunk@stusta.de> wrote:
 
-*unprintable*
+> > Personally, I think that's a load of bollocks. And it certainly doesn't
+> > apply to Linux-specific files like <linux/cdrom.h>, which are perfectly
+> > entitled to use a C standard from last millennium, regardless of
+> > namespace 'pollution' issues. That's why we continue to use the crappy
+> > __u32 types. Can you be more specific about why this is a problem? Don't
+> > we mostly define those crappy types using arch-specific knowledge, as
+> > 'int', 'long', etc?
+> >...
+>
+> It would certainly help if Joerg would tell what exactly breaks, but I 
+> spot one likely problem in include/asm-i386/types.h:
+>
+> #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+> typedef __signed__ long long __s64;
+> typedef unsigned long long __u64;
+> #endif
+>
+> It might make sense to remove the #if and simply require that
+> a C compiler under Linux must know about the C99 "long long"?
 
-Yes, I see...  OK, null pointer constants handling (next patch in the
-queue) introduces is_zero_constant() (silent evaluation of integer
-constant expression, with division by 0/too large shift/- on lowest
-value of signed integer type leaving the branch as-is, so that later
-expand would generate a proper error on it; then checking if we'd
-reduced the sucker to EXPR_VALUE[0]).  I'll pull it into a separate
-patch, along with is_nonzero_constant(), and change rules for potential
-ICE on parser stage to
-	maybe-ICE && y => maybe-ICE
-	maybe-ICE || y => maybe-ICE
-	maybe-ICE ? x : y => maybe-ICE if at least one of x and y is maybe-ICE
-	maybe-ICE ? : y => maybe-ICE
-letting evaluate_expression() on such suckers use them if the first argument
-turns out to be ICE after its evaluate_expression()...
+The Sun compiler did support the long long type before gcc did.
+This is not a problem.
 
-It really stinks, especially since we can't say "oh, parent it known to
-be non-ICE, no need to bother" - subexpression might be shared.
+I get e.g.:
+
+ ==> COMPILING "scsihack.o"
+"/usr/include/linux/byteorder/little_endian.h", line 43: inline keyword applied to __le64: must be a function identifier
+"/usr/include/linux/byteorder/little_endian.h", line 43: syntax error before or at: __cpu_to_le64p
+"/usr/include/linux/byteorder/little_endian.h", line 45: operands must have arithmetic type: op "*"
+"/usr/include/linux/byteorder/little_endian.h", line 47: syntax error before or at: *
+"/usr/include/linux/byteorder/little_endian.h", line 49: undefined symbol: p
+"/usr/include/linux/byteorder/little_endian.h", line 49: cannot dereference non-pointer type
+"/usr/include/linux/byteorder/little_endian.h", line 67: inline keyword applied to __be64: must be a function identifier
+"/usr/include/linux/byteorder/little_endian.h", line 67: syntax error before or at: __cpu_to_be64p
+"/usr/include/linux/byteorder/little_endian.h", line 69: syntax error before or at: __swab64p
+"/usr/include/linux/byteorder/little_endian.h", line 71: syntax error before or at: *
+"/usr/include/linux/byteorder/little_endian.h", line 73: undefined symbol: p
+"scsi-linux-sg.c", line 1152: warning: statement not reached
+cc: acomp failed for scsihack.c
+
+And it seems that yout proposal did point into the right direction.
+
+After copying /usr/include/linux/types.h  to
+/opt/sunstudio12/prod/include/cc/linux/types.h and removing all 
+
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) 
+...
+#endif
+
+stuff, I got cdrtools compiled using "suncc" and I did even get a woring 
+cdrecord.
+
+Thanks for the help!
+
+Jörg
+
+-- 
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
