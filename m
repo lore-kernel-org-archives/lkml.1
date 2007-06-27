@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbXF0Afy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbXF0Ahu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbXF0Afy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 26 Jun 2007 20:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXF0Afp
+	id S1756055AbXF0Ahu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 26 Jun 2007 20:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbXF0Ahm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 26 Jun 2007 20:35:45 -0400
-Received: from smtp.ono.com ([62.42.230.12]:35725 "EHLO resmaa01.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752894AbXF0Afo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 26 Jun 2007 20:35:44 -0400
-Date: Wed, 27 Jun 2007 02:35:27 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Problems with fb console [was Re: 2.6.12-rc4-mm2]
-Message-ID: <20070627023527.5e643e32@werewolf-wl>
-In-Reply-To: <20050516021302.13bd285a.akpm@osdl.org>
-References: <20050516021302.13bd285a.akpm@osdl.org>
-X-Mailer: Claws Mail 2.9.2cvs70 (GTK+ 2.11.4; i686-pc-linux-gnu)
+	Tue, 26 Jun 2007 20:37:42 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38295 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752994AbXF0Ahl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 26 Jun 2007 20:37:41 -0400
+Date: Wed, 27 Jun 2007 01:37:38 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Neil Booth <neil@daikokuya.co.uk>, Josh Triplett <josh@freedesktop.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
+Message-ID: <20070627003737.GK21478@ftp.linux.org.uk>
+References: <20070624183547.GA21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070626233226.GO7590@daikokuya.co.uk> <20070627001803.GJ21478@ftp.linux.org.uk> <alpine.LFD.0.98.0706261721550.8675@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0706261721550.8675@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 May 2005 02:13:02 -0700, Andrew Morton <akpm@osdl.org> wrote:
-
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.12-rc4/2.6.12-rc4-mm2/
+On Tue, Jun 26, 2007 at 05:25:06PM -0700, Linus Torvalds wrote:
 > 
 > 
+> On Wed, 27 Jun 2007, Al Viro wrote:
+> >
+> > > extern int a;
+> > > extern int as1[(a = 2)];
+> > 
+> > sparse simply doesn't check that.  We don't have anything resembling
+> > support of VLA.
+> 
+> Well, the above has two bugs that sparse could notice _independently_ of 
+> variable-sized arrays:
+>  - assignment outside of a function
+>  - variable size array that isn't an automatic variable
 
-Hi...
+Right; what I'm saying is that we don't do any checks on array sizes at
+all, mostly since nobody is brave enough to deal with VLAs (which we'll
+have to do if we start doing that).
+ 
+> (strictly speaking, that's not even a variable size - it's a constant 2, 
+> just with a non-constant expression - maybe you misread the "=" as an 
+> "==")
 
-I have a (stupid, I suppose) problem with framebuffer console.
-I have builtin VESAFB in this kernel, so:
+With == it would be a different bug ;-)
 
-werewolf:/boot# grep _FB config-2.6.21-jam09 | grep =y
-CONFIG_FB=y
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-CONFIG_FB_DEFERRED_IO=y
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_VESA=y
-werewolf:/boot# grep CONSO config-2.6.21-jam09
-# CONFIG_NETCONSOLE is not set
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-# CONFIG_VT_HW_CONSOLE_BINDING is not set
-CONFIG_VGA_CONSOLE=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE=y
-# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
-# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
+BTW, VLA can be not just auto variable - it can be used in derivation of
+such (i.e. you can say int (*p)[n], just not for anything not in block
+or prototype scope).  And $DEITY help us[1] when ({...}) comes into the
+game, since it allows leaking types out of the scope they'd been
+declared in...
 
-I put this line in grub's menu.lst:
-
-kernel /boot/vmlinuz video=vesafb:mtrr,ywrap vga=0x31A ro root=/dev/sdc1
-
-(tried both with hex and decimal).
-
-but grub keeps telling me it can't set that video mode, and I have no
-/dev/fb0 device to try with fbset. I have a '29 fb' line in /proc/devices.
-
-Any ideas about why the device is missing ? udev is 113...
-I have followed al the info I could get (linux/Documentation/fb/, Google ;) )
-and all say that what I'm doing should work. What am I doing wrong ?
-
-TIA
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.0 (Cooker) for i586
-Linux 2.6.21-jam09 (gcc 4.1.2 20070302 (4.1.2-1mdv2007.1)) SMP PREEMPT
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
+[1] or gcc - it gets an ICE galore in that class of testcases
