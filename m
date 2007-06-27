@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbXF0Q07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761772AbXF0Qaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762817AbXF0Q07 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbXF0Q0s
+	id S1761772AbXF0Qaj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbXF0Qac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:26:48 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:26361 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757161AbXF0Q0r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:26:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AapXYLuIq8CgHyPyndLgXHbWVw8ls4yYyyqgxZDXqybQbqoX231WBzlpa97r5R3L4SDXSRW/nDXEes37nR2KwzuKsNJlZhx24iizWSZAtgCfTz+lCsQj41aOvW0sWOjXvcWv0ap9dKnKWbAmOOC1MKiu77DvlfmS9qgc+oAsdvo=
-Message-ID: <d120d5000706270926u15ed7f78ve760e40a1f6a87e9@mail.gmail.com>
-Date: Wed, 27 Jun 2007 12:26:46 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Chuck Ebbert" <cebbert@redhat.com>
-Subject: Re: Please release a stable kernel Linux 3.0
-Cc: "Adrian Bunk" <bunk@stusta.de>, "Al Boldi" <a1426z@gawab.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46828B6C.6010203@redhat.com>
+	Wed, 27 Jun 2007 12:30:32 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:47950 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752209AbXF0Qab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 12:30:31 -0400
+Date: Wed, 27 Jun 2007 09:30:25 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       josh@freedesktop.org, dipankar@in.ibm.com
+Subject: Re: [PATCH] Force rcutorture tasks to spread over CPUs
+Message-ID: <20070627163025.GB8604@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070613042804.GA6132@linux.vnet.ibm.com> <20070626161317.767d5ec0.akpm@linux-foundation.org> <20070627063055.GB3186@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200706271653.58870.a1426z@gawab.com>
-	 <20070627155254.GO1094@stusta.de> <46828B6C.6010203@redhat.com>
+In-Reply-To: <20070627063055.GB3186@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chuck,
+On Wed, Jun 27, 2007 at 08:30:55AM +0200, Ingo Molnar wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Tue, 12 Jun 2007 21:28:04 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > +	while (!startwriters)
+> > > +		barrier();	/* Force scheduler to spread over CPUs. */
+> > 
+> > one wonders whether a cpu_relax() would be a bit nicer here.  That 
+> > implicitly does a barrier().
+> > 
+> > This patch doesn't make much sense for non-SMP builds?
+> 
+> i think this patch should be unnecessary because we found the real SMP 
+> balancing bug in the upstream scheduler causing this rcu problem, see:
+> 
+>  commit 92c4ca5c3a5e180e9762438db235f41d192cb955
+>  Author: Christoph Lameter <clameter@sgi.com>
+>  Date:   Sat Jun 23 17:16:33 2007 -0700
+> 
+>      sched: fix next_interval determination in idle_balance()
 
-On 6/27/07, Chuck Ebbert <cebbert@redhat.com> wrote:
->
-> I was trying to figure that out for this one:
->
-> http://code.ximeta.com/trac-ndas
->
-> No mention of ever trying to get this upstream AFAICT... but this is
-> interesting:
->
->  The linux market is limited comparing that of MS Windows.
->  it is very hard for us to support the various linux distros.
->  we, Ximeta, are trying to support those requests as many as
->  we can, though the resources are very limited.
->
+Ingo is correct -- applying the above patch caused the scheduler to
+correctly balance the rcutorture tasks, so that my patch to rcutorture
+is no longer needed.  Which is a very good thing!  ;-)
 
-I would not worry about that one too much:
-
-[~] ls -la ndas-1.1-6/*.sfx
--rw-r--r-- 1 TOROKHDM mkgroup-l-d 60416 Jun 27 12:22 ndas-1.1-6/libndas.a.sfx
-
--- 
-Dmitry
+							Thanx, Paul
