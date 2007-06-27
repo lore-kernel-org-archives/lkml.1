@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763061AbXF0Tcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763266AbXF0Tc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763061AbXF0Tcj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbXF0TcN
+	id S1763266AbXF0Tc5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbXF0Tck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:32:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34207 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761242AbXF0TcL (ORCPT
+	Wed, 27 Jun 2007 15:32:40 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54856 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763057AbXF0Tcj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:32:11 -0400
-Date: Wed, 27 Jun 2007 12:31:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Josh Triplett <josht@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, josh@kernel.org
-Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
-Message-Id: <20070627123122.257661e3.akpm@linux-foundation.org>
-In-Reply-To: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
-References: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 15:32:39 -0400
+Date: Wed, 27 Jun 2007 20:32:04 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Ulrich Drepper <drepper@gmail.com>
+cc: Davide Libenzi <davidel@xmailserver.org>, blaisorblade@yahoo.it,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
+In-Reply-To: <a36005b50706271152o2ba87c69h99c51a3605f977ae@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0706272027100.2367@blonde.wat.veritas.com>
+References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
+ <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
+ <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com> 
+ <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com> 
+ <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com> 
+ <a36005b50706271001o191f3e24n83b25988739429fb@mail.gmail.com> 
+ <Pine.LNX.4.64.0706271807330.22337@blonde.wat.veritas.com>
+ <a36005b50706271152o2ba87c69h99c51a3605f977ae@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGJsYWlzb3JibGFkZUB5YWhvby5pdABkYXZpZGVsQHhtYWlsc2VydmVyLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGRyZXBwZXJAZ21haWwuY29tAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007 10:59:20 -0700
-Josh Triplett <josht@linux.vnet.ibm.com> wrote:
+On Wed, 27 Jun 2007, Ulrich Drepper wrote:
+> On 6/27/07, Hugh Dickins <hugh@veritas.com> wrote:
+> > The absolute virtual addresses are randomized, yes; but do a sequence
+> > of mmaps and they come back adjacent to each other, and so mergable.
+> > Or does your distro include a kernel patch to randomize them relative
+> > to each other?
+> 
+> Each individual mmap is supposed to be randomized, yes.  If this
+> doesn't happen in one of our kernels right now something broken.  You
+> wouldn't have effective ASLR if all relative address remain the same.
 
-> +Do not leave trailing whitespace at the ends of lines.  Some editors with
-> +"smart" indentation will insert whitespace at the beginning of new lines as
-> +appropriate, so you can start typing the next line of code right away.
-> +However, some such editors do not remove the whitespace if you end up not
-> +putting a line of code there, such as if you leave a blank line.  As a result,
-> +you end up with lines containing trailing whitespace.
-> +
-> +Git will warn you about patches that introduce trailing whitespace, and can
-> +optionally strip the trailing whitespace for you; however, if applying a series
-> +of patches, this may make later patches in the series fail by changing their
-> +context lines.
+Ah, I guess it's an exec_shield thing: vanilla kernel gives us
+adjacent mmaps which are mergable.  As Rik suggest, to make your
+mmaps adjacent, use the mmap(addr,...) hint.  (But please don't
+then complain that they're not relatively randomized ;)
 
-quilt has ways of detecting and/or correcting newly-added trailing
-whitespace, but I don't know the details.
+> > It _might_ turn out to be more attractive, not to rely on that
+> > peculiar sys_remap_file_pages, but make all our vmas independent
+> > of protections, and hang differently protected ranges off them.
+> > Maybe.
+> 
+> That's what I think is done or at least should be done.
 
-One could share the various scriptlets which detect and fix trailing
-whitespace but I think this issue is getting less and less important
-now, because most maintainers will zap the new whitespace prior to
-merging.
+Noted.
 
-<checks>
-
-akpm:/usr/src/25> grep -l "^+.*[        ]$" patches/git-*.patch
-patches/git-acpi.patch
-patches/git-alsa.patch
-patches/git-battery.patch
-patches/git-cifs.patch
-patches/git-drm.patch
-patches/git-gfs2-nmw.patch
-patches/git-hid.patch
-patches/git-ipwireless_cs.patch
-patches/git-ixgbe.patch
-patches/git-kgdb.patch
-patches/git-leds.patch
-patches/git-libata-all.patch
-patches/git-md-accel.patch
-patches/git-netdev-all.patch
-patches/git-newsetup.patch
-patches/git-nfs.patch
-patches/git-ocfs2.patch
-patches/git-pciseg.patch
-patches/git-qla3xxx.patch
-patches/git-selinux.patch
-patches/git-sym2.patch
-patches/git-unionfs.patch
-patches/git-watchdog.patch
-patches/git-wireless.patch
-
-damn.  Bunch of lamers.
-
-But there's less than there used to be.
+Hugh
