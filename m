@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbXF0QAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbXF0QBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762190AbXF0QAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbXF0QAF
+	id S1762115AbXF0QBc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759839AbXF0QBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:00:05 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3381 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752894AbXF0QAB (ORCPT
+	Wed, 27 Jun 2007 12:01:23 -0400
+Received: from mondriaan.macroscoop.nl ([82.94.9.2]:1366 "EHLO
+	mondriaan.macroscoop.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752945AbXF0QBX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:00:01 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 27 Jun 2007 08:59:52 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Ulrich Drepper <drepper@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2/3] MAP_NOZERO - implement sys_brk2()
-In-Reply-To: <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0706270845460.32400@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.29496.1182912260.2> 
- <a36005b50706262048y5eb8ba80kb0d852d649d1ac10@mail.gmail.com> 
- <Pine.LNX.4.64.0706262052060.26540@alien.or.mcafeemobile.com>
- <a36005b50706262202w4aaa4494qc2322e49c71d8d7c@mail.gmail.com>
- <Pine.LNX.4.64.0706271309500.26951@blonde.wat.veritas.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 27 Jun 2007 12:01:23 -0400
+Message-ID: <468289A1.3080709@macroscoop.nl>
+Date: Wed, 27 Jun 2007 18:00:33 +0200
+From: Pim Zandbergen <P.Zandbergen@macroscoop.nl>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jesse Barnes <jesse.barnes@intel.com>
+CC: Mauro Giachero <mauro.giachero@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Andi Kleen <andi@firstfloor.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+References: <200706251434.43863.jesse.barnes@intel.com> <46823F71.6060200@macroscoop.nl> <da3e877f0706270722x67bb0738x4274b4367e04f0c6@mail.gmail.com> <200706270804.53263.jesse.barnes@intel.com>
+In-Reply-To: <200706270804.53263.jesse.barnes@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Hugh Dickins wrote:
+Jesse Barnes wrote:
 
-> On Tue, 26 Jun 2007, Ulrich Drepper wrote:
-> > On 6/26/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > 
-> > > OTOH glibc could implement __morecore using mmap(MAP_NOZERO), and hence
-> > > brk2() would not be needed, no?
-> > 
-> > No.  mmap calls create individual VMAs which gets expensive.  There
-> > are also some hardware drivers which get more expensive the more VMAs
-> > there are.  I want to go away as much as possible from mmap for
-> > malloc.
-> 
-> Not so: if an mmap can be done by extending either adjacent vma (prot
-> and flags and file and offset all match up), that's what's done and no
-> separate vma is created.  (And adjacent vmas get merged when mprotect
-> removes the difference in protection.)
-> 
-> I don't think there's any such reason to prefer brk to mmap.  But you
-> may have encountered something which we in the kernel are thinking of
-> as an insignificant corner case, which is actually breaking things up
-> badly in practice (I recall the kernel's internal VM_ACCOUNT flag,
-> relating to non-overcommit accounting, which might get turned on at
-> any time, sometimes preventing a vma merge you'd otherwise expect).
-> Please let me know if you've a test case which shows more vmas than
-> expected.
+> Yeah, you're right I should use an unsigned format string.  Pim, if you 
+> change it to %lu does the printk in your dmesg look better?
 
-The only way I can see vma fragmentation happen in that case, is if 
-userspace uses a mixture of mmaps and mallocs, and flags+prots of the two 
-does not match. The glibc allocator seems to support it just fine. There's 
-a macro where you specify if the heaps are contiguous or not.
+Er, no.
 
+**** MTRRs don't cover all of memory, trimmed 18446744073709486080 pages
 
-- Davide
-
-
+Thanks,
+Pim
