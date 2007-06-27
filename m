@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbXF0NxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbXF0OBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758887AbXF0NxX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 09:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbXF0NxR
+	id S1759170AbXF0OBn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbXF0OBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 09:53:17 -0400
-Received: from [212.12.190.29] ([212.12.190.29]:32929 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752135AbXF0NxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 09:53:16 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Please release a stable kernel Linux 3.0
-Date: Wed, 27 Jun 2007 16:53:58 +0300
-User-Agent: KMail/1.5
+	Wed, 27 Jun 2007 10:01:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48778 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752890AbXF0OBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 10:01:33 -0400
+X-Authenticated: #1474915
+X-Provags-ID: V01U2FsdGVkX1+dWglmy82d3vJAZN+EasJ62YKfKdrB3zo4hQ8fDb
+	o4j/bbSHIsmVsn
+Message-ID: <46826DBB.8090409@gmx.de>
+Date: Wed, 27 Jun 2007 16:01:31 +0200
+From: Thomas Sattler <tsattler@gmx.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: David Chinner <dgc@sgi.com>
+CC: Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Johannes Weiner <hannes-kernel@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xfs-masters@oss.sgi.com
+Subject: Re: [BUG] Lockdep warning with XFS on 2.6.22-rc6
+References: <20070626021617.GK989688@sgi.com> <20070626093520.GB2691@ff.dom.local> <20070626125006.GG31489@sgi.com>
+In-Reply-To: <20070626125006.GG31489@sgi.com>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200706271653.58870.a1426z@gawab.com>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
-> > And as I understand it, this is (was ?) the whole point of
-> > stable/development kernels. "We" can trust a newer stable
-> > kernel to be a drop-in replacement for an older stable
-> > kernel (from the same series), while development kernels
-> > need time to stabilise with the new whizz-bang-pfouit stuff
-> > that you all so nicely add.
->
-> "Drop-in" in which sense?  That out-of-tree modules keep working?
-> Not really...
+> Patch below should fix this (untested).
+Just tested 2.6.22-rc6: message is gone when patch is applied. But
+deleting some directories in /var/tmp (which lives on xfs) I got:
 
-Al, be reasonable.  There are many out-of-tree GPL modules that won't be 
-accepted into mainline, never mind those that shouldn't be accepted.  But 
-these modules do have a right to not be obsoleted by constant API changes.
+  BUG: MAX_LOCK_DEPTH too low!
+  turning off the locking correctness validator.
 
-You are effectively inhibiting the development of an out-of-tree GPL module 
-pool, by constantly pulling the rug under that community.
+Thomas
 
-Do you think this is fair?
-
-
-Thanks!
-
---
-Al
+-- 
+keep mailinglists in english, feel free to send PM in german
 
