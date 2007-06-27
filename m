@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbXF0MhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbXF0Mj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbXF0MhU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 08:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbXF0MhK
+	id S1760681AbXF0Mj2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 08:39:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbXF0MjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 08:37:10 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:42366 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755192AbXF0MhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 08:37:08 -0400
-Date: Wed, 27 Jun 2007 13:37:05 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Neil Booth <neil@daikokuya.co.uk>
-Cc: Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627123705.GP21478@ftp.linux.org.uk>
-References: <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070626233226.GO7590@daikokuya.co.uk> <20070627001803.GJ21478@ftp.linux.org.uk> <20070627115245.GP7590@daikokuya.co.uk> <20070627121948.GN21478@ftp.linux.org.uk> <20070627122628.GR7590@daikokuya.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070627122628.GR7590@daikokuya.co.uk>
-User-Agent: Mutt/1.4.1i
+	Wed, 27 Jun 2007 08:39:18 -0400
+Received: from smtpout.mac.com ([17.250.248.184]:59214 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756340AbXF0MjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 08:39:17 -0400
+In-Reply-To: <20070626111414.GA9352@wotan.suse.de>
+References: <20070624014528.GA17609@wotan.suse.de> <20070626030640.GM989688@sgi.com> <46808E1F.1000509@yahoo.com.au> <20070626092309.GF31489@sgi.com> <20070626111414.GA9352@wotan.suse.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <05245412-9053-408B-900E-19DCF0D8BBEA@mac.com>
+Cc: David Chinner <dgc@sgi.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [RFC] fsblock
+Date: Wed, 27 Jun 2007 08:39:08 -0400
+To: Nick Piggin <npiggin@suse.de>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 09:26:28PM +0900, Neil Booth wrote:
-> DR 312 clarified the meaning of "known constant size"
-> 
->    http://www.open-std.org/jtc1/sc22/wg14/www/docs/dr_312.htm
-> 
-> in the sensible way, thankfully, so your example is actually invalid.
+On Jun 26, 2007, at 07:14:14, Nick Piggin wrote:
+> On Tue, Jun 26, 2007 at 07:23:09PM +1000, David Chinner wrote:
+>> Can we call it a block mapping layer or something like that? e.g.  
+>> struct blkmap?
+>
+> I'm not fixed on fsblock, but blkmap doesn't grab me either. It is  
+> a map from the pagecache to the block layer, but blkmap sounds like  
+> it is a map from the block to somewhere.
+>
+> fsblkmap ;)
 
-<looks>  Aha.  OK...
+vmblock? pgblock?
 
-I'd say that 6.7.5.2[4] should simply have "element type is not a variable
-length array" instead, regardless of clarification of "known constant size",
-since element type is not allowed to be incomplete in any case.  Would be
-more readable...  But yes, clarification makes sense anyway.
+Cheers,
+Kyle Moffett
+
