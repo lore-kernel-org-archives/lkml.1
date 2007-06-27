@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764019AbXF0XJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763924AbXF0XMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764019AbXF0XJx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 19:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763843AbXF0XJj
+	id S1763924AbXF0XMV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 19:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbXF0XMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 19:09:39 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:58742 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763943AbXF0XJi (ORCPT
+	Wed, 27 Jun 2007 19:12:14 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44426 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752797AbXF0XMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 19:09:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=rE7XI8R24rQ+LwIsJlMj9nEId7NgHgXbNe+N/tyqEvtMBd4fMk5AT54eqdlloyRf0ngrq8Wkt5CLDtikC/yeMQjCGEld4ndQTmMOu72v3DcBsYOI4JUurZ6pbECm7oyQ+o6Qgvs/CMLkUYqQsJswJYZkA2YNkijam/STqJZNCH8=
-Message-ID: <6f703f960706271609m6fdfb9c1ha3555a68fe1d9d55@mail.gmail.com>
-Date: Wed, 27 Jun 2007 15:09:37 -0800
-From: "Kent Overstreet" <kent.overstreet@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [RFC] LVM/RAID/FS integration
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 19:12:13 -0400
+Date: Thu, 28 Jun 2007 00:12:12 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Please release a stable kernel Linux 3.0
+Message-ID: <20070627231212.GD21478@ftp.linux.org.uk>
+References: <200706271653.58870.a1426z@gawab.com> <20070627171149.GZ21478@ftp.linux.org.uk> <200706280132.23739.a1426z@gawab.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200706280132.23739.a1426z@gawab.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I believe I have the right way of going about it. I agree with the
-kernel developers who've stated that ZFS is a layering violation, and
-we can do better.
+On Thu, Jun 28, 2007 at 01:32:23AM +0300, Al Boldi wrote:
+> > > You are effectively inhibiting the development of an out-of-tree GPL
+> > > module pool, by constantly pulling the rug under that community.
+> >
+> > The same thing happens with any yet-to-be-merged code.
+> >
+> > > Do you think this is fair?
+> >
+> > Yes, it is fair.  Decision to maintain your code out of tree indefinitely
+> > is your decision.
+> 
+> It's not my decision, it's the kernel maintainers decision to reject 
+> inclusion for one reason or another.  One reason could be a simple "we don't 
+> think this is useful".
+ 
+"I maintain a patch to $PROGRAM; maintainers of $PROGRAM don't think it's
+useful; they should abstain from making changes that might require rewrite
+of that patch".  Would you argue that this is fair?
 
- Consider a filesystem on a set of drives; it may want some data to be
-in a raid5 and some to be mirrored. The correct interface for the
-filesystem is to have two or more opaque volumes, which it may be able
-to resize depending on usage.
+BTW, "if it's GPLed, it's entitled to any internal function" is a shell game;
+it tries to convert GPL-given right to get to those functions into some kind
+of promise that those functions won't be changed.
 
-Basically, the order we want is fs -> raid -> lvm. Given a set of
-identical drives, we want LVM to handle them separately and divide
-them up into LVs identically; then corresponding LVs are raided
-together. We might have a raid5 volume and a raid1 volume, each of
-which can be resized independently. The FS then makes use of both of
-them, putting metadata and frequently used data on the raid1 and
-everything else on the raid5 (btrfs, as I understand it, will be able
-to do this sort of thing eventually).
+EXPORT_SYMBOL_GPL() should've been EXPORT_SYMBOL_INTERNAL(); like it or not,
+in-tree code *is* in different position exactly because it can be modified
+by whoever makes a change affecting such code.  For in-tree module one
+can expect such modifications to be done; for out-of-tree the same is
+obviously not true, but conclusion is not "you can't do changes", it's
+"authors of out-of-tree module get to do such modifications themselves".
 
-The trouble is it's completely impractical with current tools; we need
-tighter integration between md and LVM. Basically, we need a new type
-of VG; you'd only be able to make it out of PVs that are the same size
-(or close). Then, when you create an LV you decide what kind of
-redundancy you want; the LVM internally creates multiple LVs and raids
-them together to make the LV the fs sees.
+Sure, there are subsets of exports that have stronger promise of not being
+changed often; if a set of functions makes sense as an interface, it's
+less likely to change than randomly selected function that just had an
+export slapped on it at some point.  The promise is not absolute and it's
+not based on some obligations to out-of-tree modules; it's simply a common
+sense.
 
-This could, sort of, be done in userspace, but I think it'll work
-better if dm and md are better integrated in the kernel. I thought i'd
-throw out my ideas before I get too far in. Thoughts?
+Again, most of the exports had been added with very little justification
+at request of out-of-tree module authors.  That pile is many years past
+the stage when it could be described as set of sane interfaces and it's
+your [collective] fault.  Don't expect sympathy when you find the resulting
+devalvation unpleasant to deal with...
