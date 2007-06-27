@@ -1,90 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762105AbXF0RRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762461AbXF0RRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762105AbXF0RRR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 13:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbXF0RRJ
+	id S1762461AbXF0RRg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 13:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbXF0RR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 13:17:09 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:36746 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757520AbXF0RRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 13:17:08 -0400
-Date: Wed, 27 Jun 2007 19:18:12 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
-Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
-       schilling@fokus.fraunhofer.de
-Subject: Re: Linux Kernel include files
-Message-ID: <20070627171812.GA31705@uranus.ravnborg.org>
-References: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 27 Jun 2007 13:17:28 -0400
+Received: from mondriaan.macroscoop.nl ([82.94.9.2]:2674 "EHLO
+	mondriaan.macroscoop.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758218AbXF0RR1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 13:17:27 -0400
+Message-ID: <46829B8E.3010000@macroscoop.nl>
+Date: Wed, 27 Jun 2007 19:17:02 +0200
+From: Pim Zandbergen <P.Zandbergen@macroscoop.nl>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Jesse Barnes <jesse.barnes@intel.com>
+CC: Mauro Giachero <mauro.giachero@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Andi Kleen <andi@firstfloor.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] trim memory not covered by WB MTRRs
+References: <200706251434.43863.jesse.barnes@intel.com> <200706270922.05801.jesse.barnes@intel.com> <4682982B.8060200@macroscoop.nl> <200706271006.16956.jesse.barnes@intel.com>
+In-Reply-To: <200706271006.16956.jesse.barnes@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 03:58:43PM +0200, Joerg Schilling wrote:
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > On Mon, Jun 25, 2007 at 04:53:55PM +0200, Joerg Schilling wrote:
-> > > 
-> > > star needs "ext2_fs.h". This file is not usable at all on many Linux 
-> > > distributions, even with GCC.
-> >
-> > I was curious so I did:
-> >
-> > $ mkdir ~/foo
-> > $ cd ~/kernel/linux-2.6
-> > $ make INSTALL_HDR_PATH=~/foo
-> > $ cd ~/foo
-> > $ cat j.c
-> > #include <stdio.h>
-> > #include "etx2_fs.h"
-> >
-> > main()
-> > {
-> > 	printf("helloo\n");
-> > }
-> >
-> > $ gcc -o j j.c
-> > => No warning, no errors
-> >
-> 
-> On Suse Linux 10.0, I get e.g.:
-> 
-> cat t.c
-> #include <stdio.h>
-> #include <linux/ext2_fs.h>
-> 
-> gcc -c t.c
-> In file included from /usr/include/linux/ext2_fs.h:20,
->                  from t.c:2:
-> /usr/include/linux/ext2_fs_sb.h:40: error: syntax error before âuid_tâ
-> /usr/include/linux/ext2_fs_sb.h:49: error: syntax error before âs_next_generationâ
-> /usr/include/linux/ext2_fs_sb.h:51: error: syntax error before â*â token
-> /usr/include/linux/ext2_fs_sb.h:56: error: syntax error before â}â token
+Jesse Barnes wrote:
 
-Hi Jörg.
+> Yeah, that's what I needed.  end_pfn looks ok, but I guess my test is a 
+> little too precise.  It should be if ((highest_addr >> PAGE_SHIFT) < 
+> end_pfn) rather than !=. 
 
-For my test I used latest -git of the Linux kernel.
-In this version the include of ext2_fs_bh.h is guarded
-by __KERNEL__ like this:
+Right. That made the message disappear. Nice to know my BIOS is really 
+fixed.
 
-#ifdef __KERNEL__
-#include <linux/ext2_fs_sb.h>
-static inline struct ext2_sb_info *EXT2_SB(struct super_block *sb)
-{
-        return sb->s_fs_info;
-}
-
-And therefore the include statement is removed in the exported set of kernel
-include files.
-So this particular issue is solved with the latest kernel and using the headers
-prepared for export.
-
-This tells me that we are on the right track with exporting the headers and sanitize them.
-
-	Sam
+Thanks,
+Pim
