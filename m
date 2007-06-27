@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761457AbXF0TmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762683AbXF0Tnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761457AbXF0TmS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXF0TmF
+	id S1762683AbXF0Tnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbXF0Tnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:42:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53576 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752393AbXF0TmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:42:04 -0400
-Message-ID: <4682BD79.8080904@redhat.com>
-Date: Wed, 27 Jun 2007 15:41:45 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: corentincj@iksaif.net, sziwan@users.sourceforge.net,
-       acpi4asus-user@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Oops on rmmod asus_acpi
-References: <Pine.LNX.4.64.0706272113120.11120@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0706272113120.11120@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 27 Jun 2007 15:43:33 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:33611 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753202AbXF0Tnd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 15:43:33 -0400
+Message-Id: <20070627194327.938450052@goodmis.org>
+References: <20070627193633.025544061@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 27 Jun 2007 15:36:38 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       john stultz <johnstul@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, kuznet@ms2.inr.ac.ru,
+       Jonathan Corbet <corbet@lwn.net>,
+       Arjan van de Ven <arjan@infradead.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: [RFC PATCH 5/8] Convert net wireless tasklet to workqueue
+Content-Disposition: inline; filename=convert-net-wireless-tasklet-workqueue.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/27/2007 03:16 PM, Jan Engelhardt wrote:
-> Hi,
-> 
-> 
-> 
-> 	modprobe asus_acpi
-> 	rmmod asus_acpi
-> 
-> is all that is needed to trigger an Oops in 2.6.22-rc6 (x86).
-> If you need more info, please let me know, thanks.
-> 
-> Note that the machine is not ASUS at all (vmware).
-> (But suse_factory loads asus_acpi anyway -wtf?!)
+Since we want to remove DECLARE_TASKLET API, there wasn't a simple way
+to do that elegantly with net/core/wireless.c, so this patch just
+replaces that tasklet with a work queue directly.
 
-Probably just like Fedora 6: rc.sysinit has:
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-# Initialize ACPI bits
-if [ -d /proc/acpi ]; then
-    for module in /lib/modules/$unamer/kernel/drivers/acpi/* ; do
-        module=${module##*/}
-        module=${module%.ko}
-        modprobe $module >/dev/null 2>&1
-    done
-fi
+
+Index: linux-2.6-test/net/core/wireless.c
+===================================================================
+--- linux-2.6-test.orig/net/core/wireless.c
++++ linux-2.6-test/net/core/wireless.c
+@@ -1916,7 +1916,7 @@ static int __init wireless_nlevent_init(
+ 
+ subsys_initcall(wireless_nlevent_init);
+ 
+-static void wireless_nlevent_process(unsigned long data)
++static void wireless_nlevent_process(struct work_struct *work)
+ {
+ 	struct sk_buff *skb;
+ 
+@@ -1924,7 +1924,7 @@ static void wireless_nlevent_process(uns
+ 		rtnl_notify(skb, 0, RTNLGRP_LINK, NULL, GFP_ATOMIC);
+ }
+ 
+-static DECLARE_TASKLET(wireless_nlevent_tasklet, wireless_nlevent_process, 0);
++static DECLARE_WORK(wireless_nlevent_wq, wireless_nlevent_process);
+ 
+ /* ---------------------------------------------------------------- */
+ /*
+@@ -1989,7 +1989,7 @@ static inline void rtmsg_iwinfo(struct n
+ 	}
+ 	NETLINK_CB(skb).dst_group = RTNLGRP_LINK;
+ 	skb_queue_tail(&wireless_nlevent_queue, skb);
+-	tasklet_schedule(&wireless_nlevent_tasklet);
++	schedule_work(&wireless_nlevent_wq);
+ }
+ 
+ #endif	/* WE_EVENT_RTNETLINK */
+
+-- 
