@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbXF0Nfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbXF0Nhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbXF0Nfq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 09:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXF0Nfh
+	id S1759290AbXF0Nhx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 09:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbXF0Nhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 09:35:37 -0400
-Received: from v035086.ppp.asahi-net.or.jp ([124.155.35.86]:7430 "HELO
-	daikokuya.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751330AbXF0Nfh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 09:35:37 -0400
-Date: Wed, 27 Jun 2007 22:35:46 +0900
-From: Neil Booth <neil@daikokuya.co.uk>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Josh Triplett <josh@freedesktop.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Re: [PATCH 16/16] fix handling of integer constant expressions
-Message-ID: <20070627133546.GC16758@daikokuya.co.uk>
-References: <alpine.LFD.0.98.0706241203530.3593@woody.linux-foundation.org> <1a25667a20e43a072f733a3ec2b8e79d@kernel.crashing.org> <20070624203837.GE21478@ftp.linux.org.uk> <467F531A.3030702@freedesktop.org> <20070626221040.GI21478@ftp.linux.org.uk> <20070626221134.GA21350@ftp.linux.org.uk> <20070627121021.GQ7590@daikokuya.co.uk> <20070627123031.GO21478@ftp.linux.org.uk> <20070627125958.GA16758@daikokuya.co.uk> <20070627131823.GR21478@ftp.linux.org.uk>
+	Wed, 27 Jun 2007 09:37:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:41162 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752170AbXF0Nhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 09:37:43 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [AppArmor 00/44] AppArmor security module overview
+Date: Wed, 27 Jun 2007 15:37:10 +0200
+User-Agent: KMail/1.9.5
+Cc: John Johansen <jjohansen@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20070626230756.519733902@suse.de> <20070627022403.GB14656@suse.de> <0BE96E7A-204A-4CEC-BA8F-0112434F7B2C@mac.com>
+In-Reply-To: <0BE96E7A-204A-4CEC-BA8F-0112434F7B2C@mac.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070627131823.GR21478@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200706271537.10566.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:-
+On Wednesday 27 June 2007 12:58, Kyle Moffett wrote:
+> I seem to recall you could actually end up racing and building a path
+> to the file in those directories as "a/d/0/3" or some other path at
+> which it never even remotely existed. I'd love to be wrong,
 
-> 
-> Son of a...  expand_comma() cannibalizes the node, should restore ->flags
-> to 0 (same as other similar suckers).
-> 
-> > struct c { unsigned int c1: 1 ? 2: a++; };
-> 
-> Ditto for expand_conditional, but there we should preserve the original
-> ->flags instead - might be non-zero and we ought to do that after
-> expanding the taken branch...
-> 
-> From: Al Viro <viro@zeniv.linux.org.uk>
-> Date: Wed, 27 Jun 2007 09:10:54 -0400
-> Subject: [PATCH] fix the missed cannibalizing simplifications
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Cheer up, you recall wrong.
 
-Now I think I only see one class of issues; the following is valid
-C99 (I believe that's what you intend to follow) but being rejected:
+> but I can't help but see this problem in any reverse-pathname-generation
+> proposal which gets the locking right.
 
-   struct a { int comma: 1 ? 2: (2, 3); };
+Have a look at how __d_path() is implemented (with the fixes): It takes the 
+dcache_lock, and the vfsmount_lock where necessary, and this ensures that the 
+pathname can't change under it, neither because of a rename nor unlink nor 
+remount. The pathname computed is *exactly* the name the file has at that 
+specific point time.
 
-It's invalid C90.
+A few more details about how pathnames work are explained in the tech doc at:
+http://forge.novell.com/modules/xfcontent/downloads.php/apparmor/LKML_Submission-May_07
 
-Neil.
+Andreas
