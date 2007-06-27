@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761921AbXF0PLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbXF0PNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761921AbXF0PLT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 11:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761280AbXF0PKz
+	id S1761851AbXF0PNQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 11:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759181AbXF0PND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 11:10:55 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42103 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760833AbXF0PKw (ORCPT
+	Wed, 27 Jun 2007 11:13:03 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:46887 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759169AbXF0PNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 11:10:52 -0400
-Date: Wed, 27 Jun 2007 17:11:14 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 00/44] AppArmor security module overview
-Message-ID: <20070627151114.GM1094@stusta.de>
-References: <20070626230756.519733902@suse.de> <20070626165202.bfe8e6df.akpm@linux-foundation.org> <20070627022403.GB14656@suse.de> <20070626194700.5b0ff477.akpm@linux-foundation.org>
+	Wed, 27 Jun 2007 11:13:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=iQx0kjEh/K6XChRdKQUjEzV/alYLwc/la7qoF6TfDwEM3CRLkEsVV7JNHXzpxqgOM/jktBQFFYZ8WLtAINcov6uSYAP7otYDdv35kjp3W3Qi+SIZ7RKt8jNawEl8u+UBtEuCw2C8R07qH2YDjUGKKBuuMS/isVYNdfHbCZr/DK0=
+Message-ID: <69ff73b20706270812m3a9e0615g795531f9b23ee52e@mail.gmail.com>
+Date: Wed, 27 Jun 2007 11:12:59 -0400
+From: "Martin Owens" <doctormo@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Passive port support
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070626194700.5b0ff477.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 26, 2007 at 07:47:00PM -0700, Andrew Morton wrote:
-> On Tue, 26 Jun 2007 19:24:03 -0700 John Johansen <jjohansen@suse.de> wrote:
-> 
-> > > 
-> > > so...  where do we stand with this?  Fundamental, irreconcilable
-> > > differences over the use of pathname-based security?
-> > > 
-> > There certainly seems to be some differences of opinion over the use
-> > of pathname-based-security.
-> 
-> I was refreshed to have not been cc'ed on a lkml thread for once.  I guess
-> it couldn't last.
-> 
-> Do you agree with the "irreconcilable" part?  I think I do.
-> 
-> I suspect that we're at the stage of having to decide between
-> 
-> a) set aside the technical issues and grudgingly merge this stuff as a
->    service to Suse and to their users (both of which entities are very
->    important to us) and leave it all as an object lesson in
->    how-not-to-develop-kernel-features.
-> 
->    Minimisation of the impact on the rest of the kernel is of course
->    very important here.
-> 
-> versus
-> 
-> b) leave it out and require that Suse wear the permanent cost and
->    quality impact of maintaining it out-of-tree.  It will still be an
->    object lesson in how-not-to-develop-kernel-features.
->...
+Hello,
 
-versus
+I've been pondering and searching for answers on the level of support
+currently in linux for  passive port devices (serial, parallel, vga
+etc) for some time wondering if it's time we looking at integrating
+user selectable or identifiable components through the standard device
+paths we currently use for pci/usb/iee1394; at the moment the onus is
+on driver modules or user land programs to communicate, identify,
+select and manage all devices connected in this way with no methods to
+let the kernel know what has been identified, no standard way to tag
+passive devices with ids or models (thus no way to have modules load
+on selection, or identifiable strings in device managers etc)
 
-c) if [1] AppArmor is considered to be something that wouldn't 
-   be merged if it wasn't already widely deployed by Suse: leave it out, 
-   work on an ideal solution [2], and let Suse wear the one-time cost
-   of migrating their users to the ideal solution
+This amounts to a virtual plug (the user or detection/probe software
+tells the kernel what is plugged in rather than the hardware)
 
-One important point is that if AppArmor gets merged there will be much 
-more distribution support for it, and many people on !Suse will start 
-using it.
+I'm proposing a small kernel manager which handles identified passive
+ports and what has been identified as plugged into them (hopefully so
+that the state lasts a reboot) and it may also be good to have a way
+for passive ports to be registered (for instance graphics card vga)
+but that's not the most important since xorg handles all that quite
+well these days.
 
-I'm not claiming to understand the technical details, but from both 
-slightly reading over the previous discussions and the "What are the 
-advantages of AppArmor over SELinux?" section in the AppArmor FAQ [3] my 
-impression is that a main advantage of AppArmor are more user friendly 
-userspace tools. Therefore, if [1] AppArmor is considered technically 
-inferior to SELinux, it might still become more popular than SELinux 
-simply because it's easier to use - and although it's technically 
-inferior.
+Once such support exists I can foresee simple gui and cli tools that
+allow users to probe or select devices for such ports in a standard
+way; even for ports that I am currently unaware of.
 
-cu
-Adrian
+One point against doing this is that such devices are now quite old
+and most new things are usb anyway. but I still see people struggle
+with the odd bit of old hardware, printer etc.
 
-[1] note the "if"
-[2] could be, but not necessarily, SELinux
-[3] http://developer.novell.com/wiki/index.php/Apparmor_FAQ
+Overview:
 
--- 
+User Selection -> Kernel Registered -> Normal module autoloads /
+automounts, udev etc
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Please do CC me back in any replies, and er forgive me if I'm posting
+incorrectly; I've asked around a LOT weather it's a valid
+question/suggestion.
 
+Best Regards, Martin Owens
