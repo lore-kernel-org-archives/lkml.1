@@ -1,65 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762583AbXF0Qo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbXF0Qsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762583AbXF0Qo6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757708AbXF0Qoj
+	id S1761354AbXF0Qsq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbXF0Qsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:44:39 -0400
-Received: from mailgw1.fraunhofer.de ([153.96.1.18]:63914 "EHLO
-	mailgw1.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752130AbXF0Qof (ORCPT
+	Wed, 27 Jun 2007 12:48:39 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:56569 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbXF0Qsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:44:35 -0400
-Date: Wed, 27 Jun 2007 18:41:17 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: bunk@stusta.de
-Cc: schilling@fokus.fraunhofer.de, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org, arjan@infradead.org
-Subject: Re: Linux Kernel include files
-Message-ID: <4682932d.pVHCxteMR+otOnHO%Joerg.Schilling@fokus.fraunhofer.de>
-References: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
- <20070627164012.GQ1094@stusta.de>
-In-Reply-To: <20070627164012.GQ1094@stusta.de>
-User-Agent: nail 11.22 3/20/05
+	Wed, 27 Jun 2007 12:48:38 -0400
+Message-ID: <468294E4.40801@anagramm.de>
+Date: Wed, 27 Jun 2007 18:48:36 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO8859-1
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.21.5: BUG: usbtouchscreen.c DMC TSC-10 wrong descriptor type
+ / type->init() failed.
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Jun 2007 16:43:15.0298 (UTC) FILETIME=[41FF4C20:01C7B8DA]
-X-Fraunhofer-Email-Policy: accepted
+X-Provags-ID: V01U2FsdGVkX18rBAZLMrpBuQ2AsqnHTvogF6dQL9seBHfaKaf
+ WnbHSbhfiQ6emmVmg238UxjWqLoWwA3aYiLm0v3cTT6FtFhR5F
+ PyU4ftXvmpIubbSdv6EYw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> wrote:
+Hello, again!
 
-> > On Suse Linux 10.0, I get e.g.:
-> > 
-> > cat t.c
-> > #include <stdio.h>
-> > #include <linux/ext2_fs.h>
-> > 
-> > gcc -c t.c
-> > In file included from /usr/include/linux/ext2_fs.h:20,
-> >                  from t.c:2:
-> > /usr/include/linux/ext2_fs_sb.h:40: error: syntax error before Ã¢uid_tÃ¢
-> > /usr/include/linux/ext2_fs_sb.h:49: error: syntax error before Ã¢s_next_generationÃ¢
-> > /usr/include/linux/ext2_fs_sb.h:51: error: syntax error before Ã¢*Ã¢ token
-> > /usr/include/linux/ext2_fs_sb.h:56: error: syntax error before Ã¢}Ã¢ token
->
-> Already fixed since kernel 2.6.18.
->
-> Our header were a mess and we are working on getting them better.
-> But we can't timetravel and fix old distributions.
+Well, with lots of debugging enabled, I got to some more details about the
+non working DMC TSC-10 USB Touchscreen:
 
-Well, I did report these kind of problems many years ago and as it has not been 
-fixed after some years, I was asuming that it is still the way I see it on Suse 
-10.0.
+(see also: http://lkml.org/lkml/2007/6/26/228 )
+
+Whenever I plug in the TSC-10 I get the following output
+
+hub 3-0:1.0: state 7 ports 4 chg 0000 evt 0004
+ehci_hcd 0000:00:14.2: GetStatus port 2 status 001403 POWER sig=k CSC CONNECT
+hub 3-0:1.0: port 2, status 0501, change 0001, 480 Mb/s
+hub 3-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x501
+ehci_hcd 0000:00:14.2: port 2 low speed --> companion
+ehci_hcd 0000:00:14.2: GetStatus port 2 status 003402 POWER OWNER sig=k CSC
+hub 3-0:1.0: state 7 ports 4 chg 0000 evt 0004
+hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0002
+ohci_hcd 0000:00:14.1: GetStatus roothub.portstatus [0] = 0x00010301 CSC LSDA PPS CCS
+hub 2-0:1.0: port 1, status 0301, change 0001, 1.5 Mb/s
+hub 2-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x301
+ohci_hcd 0000:00:14.1: GetStatus roothub.portstatus [0] = 0x00100303 PRSC LSDA PPS PES CCS
+usb 2-1: new low speed USB device using ohci_hcd and address 16
+ohci_hcd 0000:00:14.1: GetStatus roothub.portstatus [0] = 0x00100303 PRSC LSDA PPS PES CCS
+usb 2-1: default language 0x0054
+usb 2-1: wrong descriptor type 00 for string 1 ("TSC-10 DM")
+usb 2-1: new device strings: Mfr=1, Product=0, SerialNumber=0
+usb 2-1: Manufacturer: TSC-10 DM
+usb 2-1: uevent
+usb 2-1: usb_probe_device
+usb 2-1: configuration #1 chosen from 1 choice
+usb 2-1: adding 2-1:1.0 (config #1, interface 0)
+usb 2-1:1.0: uevent
+usbtouchscreen 2-1:1.0: usb_probe_interface
+usbtouchscreen 2-1:1.0: usb_probe_interface - got id
+drivers/usb/input/usbtouchscreen.c: usbtouch_probe - type->init() failed, err: -19
+drivers/usb/core/inode.c: creating file '016'
+hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0002
 
 
+And when I unplug it, it cleans up the device properly:
 
-Jörg
+hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0002
+ohci_hcd 0000:00:14.1: GetStatus roothub.portstatus [0] = 0x00010100 CSC PPS
+hub 2-0:1.0: port 1, status 0100, change 0001, 12 Mb/s
+usb 2-1: USB disconnect, address 16
+usb 2-1: unregistering device
+usb 2-1: usb_disable_device nuking all URBs
+usb 2-1: unregistering interface 2-1:1.0
+  usbdev2.16_ep81: ep_device_release called for usbdev2.16_ep81
+usb 2-1:1.0: uevent
+  usbdev2.16_ep00: ep_device_release called for usbdev2.16_ep00
+usb 2-1: uevent
+hub 2-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x100
+
+Any ideas of what's wrong here before I have to start to
+dig deeper in the source?!
+
+The touchscreen controller chip is a TSC-103 088 F3J0
+it has no EEPROM attached. (which should be optional to save
+calibration data)
+The USB controller is a Philips ISP1563BM PCI Host Controller
+DateCode April-2006.
+
+The same problem appears with 2.6.21.5 and 2.6.20.1-ubuntu-something
+on x86 platform.
 
 -- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
