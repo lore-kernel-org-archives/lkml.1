@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763624AbXF0Wb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbXF0Wc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763624AbXF0Wb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 18:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759790AbXF0Wbt
+	id S1763642AbXF0Wc7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 18:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762172AbXF0Wcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 18:31:49 -0400
-Received: from [212.12.190.30] ([212.12.190.30]:33021 "EHLO raad.intranet"
+	Wed, 27 Jun 2007 18:32:52 -0400
+Received: from [212.12.190.30] ([212.12.190.30]:33025 "EHLO raad.intranet"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759064AbXF0Wbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 18:31:48 -0400
+	id S1761298AbXF0Wcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 18:32:50 -0400
 From: Al Boldi <a1426z@gawab.com>
-To: Al Viro <viro@ftp.linux.org.uk>
+To: Adrian Bunk <bunk@stusta.de>
 Subject: Re: Please release a stable kernel Linux 3.0
-Date: Thu, 28 Jun 2007 01:32:23 +0300
+Date: Thu, 28 Jun 2007 01:32:04 +0300
 User-Agent: KMail/1.5
 Cc: linux-kernel@vger.kernel.org
-References: <200706271653.58870.a1426z@gawab.com> <20070627171149.GZ21478@ftp.linux.org.uk>
-In-Reply-To: <20070627171149.GZ21478@ftp.linux.org.uk>
+References: <200706271653.58870.a1426z@gawab.com> <20070627155254.GO1094@stusta.de>
+In-Reply-To: <20070627155254.GO1094@stusta.de>
 MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200706280132.23739.a1426z@gawab.com>
+Message-Id: <200706280132.04798.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
+Adrian Bunk wrote:
 > On Wed, Jun 27, 2007 at 04:53:58PM +0300, Al Boldi wrote:
 > > Al Viro wrote:
 > > > On Wed, Jun 27, 2007 at 11:18:36AM +0200, Zolt?n HUBERT wrote:
@@ -45,30 +45,20 @@ Al Viro wrote:
 > > But these modules do have a right to not be obsoleted by constant API
 > > changes.
 >
-> Modules do not have any rights; it's software...
+> "have a right" are strong words.
+> Who is granting them this right?
 
-Ok, this should have been read as kernel/module dev/user right to leverage 
-each others code under GPL and out of good-will to yield an increased 
-harvest.
+Good-will GPL style.
 
 > > You are effectively inhibiting the development of an out-of-tree GPL
 > > module pool, by constantly pulling the rug under that community.
->
-> The same thing happens with any yet-to-be-merged code.
->
+> >
 > > Do you think this is fair?
 >
-> Yes, it is fair.  Decision to maintain your code out of tree indefinitely
-> is your decision.
+> Why are these modules not submitted for inclusion into the kernel?
 
-It's not my decision, it's the kernel maintainers decision to reject 
-inclusion for one reason or another.  One reason could be a simple "we don't 
-think this is useful".
-
-Also, I think it's unrealistic to expect thousands of little-used modules to 
-be included into mainline.
-
-But, should we hinder that community to grow?
+There are many reasons for this, but basically they are too under-developed 
+to be included, and need more time to mature out-of-tree.
 
 
 Thanks!
