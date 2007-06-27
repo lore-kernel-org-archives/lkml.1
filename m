@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760928AbXF0SWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbXF0SXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760928AbXF0SWc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 14:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbXF0SWZ
+	id S1761650AbXF0SXj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 14:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbXF0SXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 14:22:25 -0400
-Received: from eastrmmtao102.cox.net ([68.230.240.8]:52515 "EHLO
-	eastrmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754277AbXF0SWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 14:22:25 -0400
-X-Greylist: delayed 990 seconds by postgrey-1.27 at vger.kernel.org; Wed, 27 Jun 2007 14:22:24 EDT
-Date: Wed, 27 Jun 2007 14:05:52 -0400
-From: Chris Shoemaker <c.shoemaker@cox.net>
-To: Josh Triplett <josht@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, josh@kernel.org
-Subject: Re: [PATCH] CodingStyle: Add information about trailing whitespace.
-Message-ID: <20070627180552.GA746@pe.Belkin>
-References: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1182967160.8970.108.camel@josh-work.beaverton.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Wed, 27 Jun 2007 14:23:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44245 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752546AbXF0SXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 14:23:31 -0400
+Message-ID: <4682AAB3.6050704@redhat.com>
+Date: Wed, 27 Jun 2007 14:21:39 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Ingo Molnar <mingo@elte.hu>, John Stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sys_time-speedup-small-cleanup
+References: <20070626123424.GA259@tv-sign.ru> <46813D1C.9080107@redhat.com> <20070627112908.GB108@tv-sign.ru>
+In-Reply-To: <20070627112908.GB108@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 10:59:20AM -0700, Josh Triplett wrote:
-> +Do not leave trailing whitespace at the ends of lines.  Some editors with
-> +"smart" indentation will insert whitespace at the beginning of new lines as
-> +appropriate, so you can start typing the next line of code right away.
-> +However, some such editors do not remove the whitespace if you end up not
-> +putting a line of code there, such as if you leave a blank line.  As a result,
-> +you end up with lines containing trailing whitespace.
-> +
-> +Git will warn you about patches that introduce trailing whitespace, and can
-> +optionally strip the trailing whitespace for you; however, if applying a series
-> +of patches, this may make later patches in the series fail by changing their
-> +context lines.
+Oleg Nesterov wrote:
+> On 06/26, Chris Snook wrote:
+>> Oleg Nesterov wrote:
+>>> on top of sys_time-speedup.patch
+>>>
+>>> Ingo Molnar wrote:
+>>>> asmlinkage long sys_time(time_t __user * tloc)
+>>>> {
+>>>> -	time_t i;
+>>>> -	struct timeval tv;
+>>>> +	/*
+>>>> +	 * We read xtime.tv_sec atomically - it's updated
+>>>> +	 * atomically by update_wall_time(), so no need to
+>>>> +	 * even read-lock the xtime seqlock:
+>>>> +	 */
+>>>> +	time_t i = xtime.tv_sec;
+>>>>
+>>>> -	do_gettimeofday(&tv);
+>>>> -	i = tv.tv_sec;
+>>>> +	smp_rmb(); /* sys_time() results are coherent */
+>>> Why do we need this barrier? My guess it is needed to prevent
+>>> the reading of xtime.tv_sec twice, yes? In that case a simple
+>>> barrier() should be enough.
+>> Without the smp_rmb, you can potentially have a situation where one CPU is 
+>> still reading an old value from cache while another has the new value.  
+> 
+> I can't understand this.
+> 
+> Fisrt, smp_rmb() can't help in this case. It can't influence the preceeding
+> LOAD if it was from cache.
+> 
+> Even if it could, another CPU can alter the value just after the reading
+> completes, and we have the same situation.
+> 
+> Could you please clarify if I am wrong?
+> 
+> Oleg.
+> 
 
-What I'd really like to see is, _why_ is trailing whitespace
-considered harmful?  Something about MUAs not preserving it or
-something?
+You're right, but so is Ingo's patch.  We're not trying to enforce some notion 
+of absolute time, just  make it possible for userspace to guarantee that time 
+cannot be *observed* to travel backwards.  It's still the responsibility of the 
+user to use proper synchronization in multithreaded apps.  Without the smp_rmb() 
+it would be possible on some architectures for the results of the race you 
+describe to leak across other lock-prefixed instructions used to ensure 
+monotonicity in userspace.  Relativity applies to SMP timekeeping, not just 
+space travelers, so if there's no way to prove a race occurred, it doesn't 
+matter whether or not it occurred in some frame of reference.
 
--chris
+	-- Chris
