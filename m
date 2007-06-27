@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbXF0T3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbXF0TcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759859AbXF0T3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 15:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXF0T3E
+	id S1760912AbXF0TcJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 15:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbXF0Tbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 15:29:04 -0400
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:35653 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbXF0T3B (ORCPT
+	Wed, 27 Jun 2007 15:31:55 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:36598 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751250AbXF0Tby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 15:29:01 -0400
-Date: Wed, 27 Jun 2007 15:28:57 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@localhost.localdomain
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: Kyle Moffett <mrmacman_g4@mac.com>, Andreas Gruenbacher <agruen@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       linux-security-module@vger.kernel.org, Andrew Morgan <agm@google.com>,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH try #2] security: Convert LSM into a static interface
-In-Reply-To: <20070627185125.GA17059@sergelap.austin.ibm.com>
-Message-ID: <Line.LNX.4.64.0706271528110.7196@localhost.localdomain>
-References: <20070617135239.GA17689@sergelap> <20070624220903.GB3723@sequoia.sous-sol.org>
- <Line.LNX.4.64.0706250031350.15974@localhost.localdomain>
- <200706252237.59226.agruen@suse.de> <11C35822-4E11-4365-BADE-C1AE41F15B50@mac.com>
- <20070626134712.GA8615@sergelap.austin.ibm.com> <B189F69D-B63E-4EE3-8580-39C8AFA97E5A@mac.com>
- <20070627134149.GB2679@sergelap> <Line.LNX.4.64.0706271031220.5258@localhost.localdomain>
- <20070627172102.GB16764@sergelap.austin.ibm.com> <20070627185125.GA17059@sergelap.austin.ibm.com>
+	Wed, 27 Jun 2007 15:31:54 -0400
+Message-ID: <4682BB2B.7030002@opengridcomputing.com>
+Date: Wed, 27 Jun 2007 14:31:55 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roland Dreier <rdreier@cisco.com>
+CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, divy@chelsio.com
+Subject: Re: [PATCH 0/6] iw_cxgb3: Bug Fixes for 2.6.23
+References: <20070627155119.24944.44172.stgit@dell3.ogc.int> <adafy4dryzf.fsf@cisco.com>
+In-Reply-To: <adafy4dryzf.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jun 2007, Serge E. Hallyn wrote:
-
-> Patch tests fine for me for expected capability behavior with lsm=n,
-> lsm=y, lsm=y+capability=y, lsm=y+selinux=y, and lsm=y+caps=y+selinux=y.
+Roland Dreier wrote:
+>  > Here are some bug fixes to the iw_cxgb3 driver that I'd like included
+>  > for 2.6.23. NOTE: Patch 1 requires a firmware interface change, so
+>  > there is a version bump to 4.3 included in that patch that hits cxgb3.
+>  > This will likely conflict with a previous version change that is in
+>  > Jeff's upstream branch.  The net is: we need the firmware version bumped
+>  > to 4.3 with these iw_cxgb3 changes.
 > 
-> So while I'm opposed to the patch, it appears to be safe.
+> OK, I'll probably pull this into my tree and hold off on asking Linus
+> to pull until after he pulls Jeff's net driver tree.  Once that
+> happens I'll fix up any conflicts and ask Linus to pull.
 
-I've also tested a bunch of scenarios: allmodconfig, lsm=y,cap=n, 
-selinux=y,cap=n  etc.
+Sounds good.
 
+Thanks,
 
--- 
-James Morris
-<jmorris@namei.org>
+Steve.
