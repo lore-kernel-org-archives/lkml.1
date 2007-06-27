@@ -1,90 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXF0OL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761466AbXF0OMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760766AbXF0OL6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 10:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXF0OLu
+	id S1761466AbXF0OMk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 10:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbXF0OMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 10:11:50 -0400
-Received: from mailgw1.fraunhofer.de ([153.96.1.18]:53384 "EHLO
-	mailgw1.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbXF0OLt (ORCPT
+	Wed, 27 Jun 2007 10:12:33 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:45393 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836AbXF0OMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 10:11:49 -0400
-Date: Wed, 27 Jun 2007 15:45:44 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: bunk@stusta.de, dwmw2@infradead.org
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, schilling@fokus.fraunhofer.de
-Subject: Re: Linux Kernel include files
-Message-ID: <46826a08.aydgAULQ8LQL0IWi%Joerg.Schilling@fokus.fraunhofer.de>
-User-Agent: nail 11.22 3/20/05
+	Wed, 27 Jun 2007 10:12:32 -0400
+Message-ID: <4682708A.5040509@oracle.com>
+Date: Wed, 27 Jun 2007 07:13:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Jun 2007 13:47:42.0354 (UTC) FILETIME=[BBDF9720:01C7B8C1]
-X-Fraunhofer-Email-Policy: accepted
+To: gshan <gshan@alcatel-lucent.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6 Linux for PowerPC supports kdb?
+References: <4681D39B.2000604@alcatel-lucent.com> <20070626220520.380c1798.randy.dunlap@oracle.com> <4682007F.2080504@alcatel-lucent.com>
+In-Reply-To: <4682007F.2080504@alcatel-lucent.com>
+Content-Type: text/plain; charset=windows-1256; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> wrote:
+gshan wrote:
+> Randy Dunlap wrote:
+>> On Tue, 26 Jun 2007 23:03:55 -0400 Shan, Guo Wen (Gavin) wrote:
+>>
+>>  
+>>> Does anybody knew if 2.6 linux for PowerPC supports kdb?
+>>>     
+>>
+>> PowerPC isn't listed AFAICT:
+>> ftp://oss.sgi.com/www/projects/kdb/download/v4.4/README
+>>
+>> I.e., all that I see are i386, x86_64, and ia64.
+>>
+>> ---
+>> ~Randy
+>> *** Remember to use Documentation/SubmitChecklist when testing your 
+>> code ***
+>>   
+> Thanks, Randy. So the kgdb is the only tool I could use to debug the 
+> kernel right now?
 
-> > Personally, I think that's a load of bollocks. And it certainly doesn't
-> > apply to Linux-specific files like <linux/cdrom.h>, which are perfectly
-> > entitled to use a C standard from last millennium, regardless of
-> > namespace 'pollution' issues. That's why we continue to use the crappy
-> > __u32 types. Can you be more specific about why this is a problem? Don't
-> > we mostly define those crappy types using arch-specific knowledge, as
-> > 'int', 'long', etc?
-> >...
->
-> It would certainly help if Joerg would tell what exactly breaks, but I 
-> spot one likely problem in include/asm-i386/types.h:
->
-> #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-> typedef __signed__ long long __s64;
-> typedef unsigned long long __u64;
-> #endif
->
-> It might make sense to remove the #if and simply require that
-> a C compiler under Linux must know about the C99 "long long"?
-
-The Sun compiler did support the long long type before gcc did.
-This is not a problem.
-
-I get e.g.:
-
- ==> COMPILING "scsihack.o"
-"/usr/include/linux/byteorder/little_endian.h", line 43: inline keyword applied to __le64: must be a function identifier
-"/usr/include/linux/byteorder/little_endian.h", line 43: syntax error before or at: __cpu_to_le64p
-"/usr/include/linux/byteorder/little_endian.h", line 45: operands must have arithmetic type: op "*"
-"/usr/include/linux/byteorder/little_endian.h", line 47: syntax error before or at: *
-"/usr/include/linux/byteorder/little_endian.h", line 49: undefined symbol: p
-"/usr/include/linux/byteorder/little_endian.h", line 49: cannot dereference non-pointer type
-"/usr/include/linux/byteorder/little_endian.h", line 67: inline keyword applied to __be64: must be a function identifier
-"/usr/include/linux/byteorder/little_endian.h", line 67: syntax error before or at: __cpu_to_be64p
-"/usr/include/linux/byteorder/little_endian.h", line 69: syntax error before or at: __swab64p
-"/usr/include/linux/byteorder/little_endian.h", line 71: syntax error before or at: *
-"/usr/include/linux/byteorder/little_endian.h", line 73: undefined symbol: p
-"scsi-linux-sg.c", line 1152: warning: statement not reached
-cc: acomp failed for scsihack.c
-
-And it seems that yout proposal did point into the right direction.
-
-After copying /usr/include/linux/types.h  to
-/opt/sunstudio12/prod/include/cc/linux/types.h and removing all 
-
-#if defined(__GNUC__) && !defined(__STRICT_ANSI__) 
-...
-#endif
-
-stuff, I got cdrtools compiled using "suncc" and I did even get a woring 
-cdrecord.
-
-Thanks for the help!
-
-Jörg
+AFAIK, yes.
 
 -- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
+~Randy
