@@ -1,84 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763155AbXF0VGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762539AbXF0VLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763155AbXF0VGq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 17:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757623AbXF0VGh
+	id S1762539AbXF0VLJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 17:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbXF0VK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 17:06:37 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33586 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752289AbXF0VGf (ORCPT
+	Wed, 27 Jun 2007 17:10:57 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:36589 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbXF0VK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 17:06:35 -0400
-Message-ID: <4682D13C.6060107@novell.com>
-Date: Wed, 27 Jun 2007 14:06:04 -0700
-From: Crispin Cowan <crispin@novell.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Wed, 27 Jun 2007 17:10:57 -0400
+Date: Wed, 27 Jun 2007 22:10:54 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@google.com>, Ethan Solomita <solo@google.com>,
+       linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       a.p.zijlstra@chello.nl
+Subject: Re: [RFC 1/7] cpuset write dirty map
+Message-ID: <20070627211054.GA30007@skynet.ie>
+References: <465FB6CF.4090801@google.com> <Pine.LNX.4.64.0706041138410.24412@schroedinger.engr.sgi.com> <46646A33.6090107@google.com> <Pine.LNX.4.64.0706041250440.25535@schroedinger.engr.sgi.com> <468023CA.2090401@google.com> <Pine.LNX.4.64.0706261216110.20282@schroedinger.engr.sgi.com> <20070626152204.b6b4bc3f.akpm@google.com> <Pine.LNX.4.64.0706262017260.24504@schroedinger.engr.sgi.com> <20070627021408.493812fe.akpm@google.com> <Pine.LNX.4.64.0706270527010.26731@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       John Johansen <jjohansen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 00/44] AppArmor security module overview
-References: <20070626230756.519733902@suse.de> <20070626165202.bfe8e6df.akpm@linux-foundation.org> <20070627022403.GB14656@suse.de> <20070626194700.5b0ff477.akpm@linux-foundation.org> <20070627151114.GM1094@stusta.de>
-In-Reply-To: <20070627151114.GM1094@stusta.de>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0706270527010.26731@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Tue, Jun 26, 2007 at 07:47:00PM -0700, Andrew Morton wrote:
->   
->> Do you agree with the "irreconcilable" part?  I think I do. 
-I am hoping for a reconciliation where the people who don't like
-AppArmor live with it by not using it. AppArmor is not intended to
-replace SELinux, it is intended to address a different set of goals.
+On (27/06/07 05:44), Christoph Lameter didst pronounce:
+> On Wed, 27 Jun 2007, Andrew Morton wrote:
+> 
+> > I'm more concerned about all of Mel's code in -mm actually.  I don't recall
+> > anyone doing a full review recently and I'm still not sure that this is the
+> > overall direction in which we wish to go.  Last time I asked this everyone
+> > seemed a bit waffly and non-committal.
+> 
+> I have looked over this several times lately and it all seems quite okay. 
+> Still cannot find a justification for the movable zone (never had to 
+> use it in testing) but it seems that it makes memory unplug easier.
 
->> I suspect that we're at the stage of having to decide between
->>
->> a) set aside the technical issues and grudgingly merge this stuff as a
->>    service to Suse and to their users (both of which entities are very
->>    important to us) and leave it all as an object lesson in
->>    how-not-to-develop-kernel-features.
->>
->>    Minimisation of the impact on the rest of the kernel is of course
->>    very important here.
->>
->> versus
->>
->> b) leave it out and require that Suse wear the permanent cost and
->>    quality impact of maintaining it out-of-tree.  It will still be an
->>    object lesson in how-not-to-develop-kernel-features.
->> ...    
-> versus
->
-> c) if [1] AppArmor is considered to be something that wouldn't 
->    be merged if it wasn't already widely deployed by Suse: leave it out, 
->    work on an ideal solution [2], and let Suse wear the one-time cost
->    of migrating their users to the ideal solution
->   
-We argue that the proposed patch is a viable solution for providing
-AppArmor functionality. We would be happy for specific suggestions on
-how to make it better.
+As well as helping memory hot-remove, it provides a known lower-limit that
+the hugepage pool can be resized to at runtime. Grouping pages by mobility
+on its own does not give a known number of pageblocks that could be used
+for hugepage allocation. On it's own, it provides a high probability that
+the hugepage pool can be grown but how large depends on the workload. With
+the zone, an administrator can set aside X amount of memory that can be used
+for hugepages if necessary and base pages otherwise.
 
-> I'm not claiming to understand the technical details, but from both 
-> slightly reading over the previous discussions and the "What are the 
-> advantages of AppArmor over SELinux?" section in the AppArmor FAQ [3] my 
-> impression is that a main advantage of AppArmor are more user friendly 
-> userspace tools. Therefore, if [1] AppArmor is considered technically 
-> inferior to SELinux, it might still become more popular than SELinux 
-> simply because it's easier to use - and although it's technically 
-> inferior.  
-AppArmor's advantages come from the model, not the tools. AppArmor is
-not inferior to SELinux, it is different than SELinux. Neither can
-replace the other without horrid kludges.
+> The 
+> antifrag patchset together with a page migration patch simplifies the 
+> unplug patchset significantly.
+> 
+> I think the antifrag code is a significant step forward and will enable 
+> lots of other features (memory unplug, larger page use in SLUB, huge page 
+> allocs after boot). It may be useful to put memory compaction and memory 
+> unplug in at the same time (I think we can get there even for .23) so that 
+> we have a full package.
 
-Crispin
+The memory unplug patches already migrate pages without the help of memory
+compaction. Memory compaction needs a bit more work before I try sending
+it towards -mm for wider testing. It's important to get right because
+with compaction, the migration code is getting a lot more exercise than it
+does today. However, memory compaction needing more work should not hold
+back memory unplug nor does it impact on the utility of grouping pages
+by mobility or the movable zone.
+
+> With compaction we can finally recover from loads 
+> that typically cause memory to be split in a lot of disjoint pieces and 
+> get to a sitaution were we can dynamically reconfigure the number of huge 
+> pages at run time (Our customers currently reboot to do this which is a 
+> pain). Compaction increases the chance of I/O controllers being able to 
+> merge I/O requests since contiguous pages can be served by the page 
+> allocator again. Antifrag almost gets there but I can still construct 
+> allocation scenarios that fragment memory significantly.
+> 
+
+The number of scenarios that cause fragmentation have dropped over time.
+It's something I see as constantly improving over time.
+
+> Also compaction is a requirement if we ever want to support larger 
+> blocksizes. That would allow the removal of various layers that are now 
+> needed to compensate for not supporting larger pages.
+> 
+> The whole approach is useful to increase performance. We have seen 
+> several percentage points of performance wins with SLUB when allowing 
+> larger pages sizes. The use of huge pages is also mainly done for 
+> performance reasons. The large blocksize patch has shown a 50% performance 
+> increase even in its prototype form where we certainly have not solved 
+> server performance issues.
+> 
+> Even without large blocksize: The ability to restore the capability of the 
+> page allocator to serve pages that are in sequence can be used to shorten
+> the scatter gather lists in the I/O layer speeding up I/O.
+> 
+> I think this is an important contribution that will move a lot of other 
+> issues forward.
+> 
+
+Thanks Christoph for your reviewing of the code, your comments here and the
+quite rigorous exercise of the anti-fragmentation code. I too believe
+there are performance gains to be had through the use of larger pages
+and working on this does not preclude work on improving the use of base
+pages.
+
+For larger pages to be used though, external fragmentation has to be
+addressed in some fashion and no other viable implementation exists
+besides anti-fragmentation right now.
 
 -- 
-Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
-Director of Software Engineering   http://novell.com
-	AppArmor Chat: irc.oftc.net/#apparmor
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
