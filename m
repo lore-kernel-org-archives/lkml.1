@@ -1,87 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759676AbXF0Qj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbXF0Qk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759676AbXF0Qj5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbXF0Qju
+	id S1762051AbXF0Qk6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbXF0Qkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:39:50 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42279 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752209AbXF0Qjt (ORCPT
+	Wed, 27 Jun 2007 12:40:51 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48039 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753984AbXF0Qkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:39:49 -0400
-Date: Wed, 27 Jun 2007 18:40:12 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
-Cc: sam@ravnborg.org, arjan@infradead.org, linux-kernel@vger.kernel.org,
-       schilling@fokus.fraunhofer.de
-Subject: Re: Linux Kernel include files
-Message-ID: <20070627164012.GQ1094@stusta.de>
-References: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
+	Wed, 27 Jun 2007 12:40:49 -0400
+X-Sasl-enc: NXOeoOp963BRLRF8v38hCyPmvo6jZSAhv2eUZ4bVn0Lh 1182962448
+Date: Wed, 27 Jun 2007 13:40:41 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] hw_random: add quality categories
+Message-ID: <20070627164041.GA6508@khazad-dum.debian.net>
+References: <200706241555.22957.mb@bu3sch.de> <200706261620.33898.mb@bu3sch.de> <20070627020045.GA5491@khazad-dum.debian.net> <200706271458.51884.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46826d13.44vmeDzVCWEJhtNJ%Joerg.Schilling@fokus.fraunhofer.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200706271458.51884.mb@bu3sch.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 27, 2007 at 03:58:43PM +0200, Joerg Schilling wrote:
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
-> > On Mon, Jun 25, 2007 at 04:53:55PM +0200, Joerg Schilling wrote:
+Hi Michael!
+
+On Wed, 27 Jun 2007, Michael Buesch wrote:
+
+> On Wednesday 27 June 2007 04:00:46 Henrique de Moraes Holschuh wrote:
+> > On Tue, 26 Jun 2007, Michael Buesch wrote:
+> > > On Tuesday 26 June 2007 16:06:25 Henrique de Moraes Holschuh wrote:
+> > > > Which, AFAIK, we can quantify as the minimum expected entropy in the output.
 > > > 
-> > > star needs "ext2_fs.h". This file is not usable at all on many Linux 
-> > > distributions, even with GCC.
-> >
-> > I was curious so I did:
-> >
-> > $ mkdir ~/foo
-> > $ cd ~/kernel/linux-2.6
-> > $ make INSTALL_HDR_PATH=~/foo
-> > $ cd ~/foo
-> > $ cat j.c
-> > #include <stdio.h>
-> > #include "etx2_fs.h"
-> >
-> > main()
-> > {
-> > 	printf("helloo\n");
-> > }
-> >
-> > $ gcc -o j j.c
-> > => No warning, no errors
-> >
+> > > The category is _not_ a measure of the entropy in the output.
+> > > It is _just_ to get the chance to get a sane _default_ policy
+> > > for which RNG is enabled by default, in the kernel.
+> > > It's just about a default policy. _Nothing_ else.
+> > 
+> > Then why don't you call it "preference", or something to that effect?
 > 
-> On Suse Linux 10.0, I get e.g.:
-> 
-> cat t.c
-> #include <stdio.h>
-> #include <linux/ext2_fs.h>
-> 
-> gcc -c t.c
-> In file included from /usr/include/linux/ext2_fs.h:20,
->                  from t.c:2:
-> /usr/include/linux/ext2_fs_sb.h:40: error: syntax error before âuid_tâ
-> /usr/include/linux/ext2_fs_sb.h:49: error: syntax error before âs_next_generationâ
-> /usr/include/linux/ext2_fs_sb.h:51: error: syntax error before â*â token
-> /usr/include/linux/ext2_fs_sb.h:56: error: syntax error before â}â token
+> Why? Because I did not get the same idea as you?
+> So, please make up "preference" categories and give me some examples.
 
-Already fixed since kernel 2.6.18.
+preference: 
 
-Our header were a mess and we are working on getting them better.
-But we can't timetravel and fix old distributions.
+	scalar, unsigned 32 bit value.  Higher values mean higher
+	preference.
 
-> Jörg
+	values:
 
-cu
-Adrian
+	0 - ANYTHING that has no peer-review papers for both design and
+	implementation, done by third-parties with reasonable credence in
+	the field.  Anything for which the expected minimum entropy per bit
+	of output is unknown, or below 50%.  This includes all pseudo-random
+	RNGs, as we are not evaulating the seeding here.
+
+	Never use anything with preference zero by default.
+
+	
+	For H-RNGs that have their design and implementation public and
+	peer-reviewed by at least one third-party with reasonable credence
+	in the field, and for which the minimum worst-case expected entropy
+	per bit of output is known and equal or higher than 50.000% (if it
+	was reviewed, it will be known), calculate preference as follows:
+
+	LSW (lower 16 bits) should be the average bandwidth of the RNG, in
+	10^3 bit/s. Use 0 for RNGs slower than 10^3 bits/s.  Use 0xFFFF for
+	RNGs faster than 65535*10^3 bits/s (if this scale is not good
+	enough, I suggest one with 0 being 10^3 bit/s or lower, and 0xFFFF
+	being 10^7 bit/s or higher).
+
+	MSW (higher 16 bits) should be the expected worst-case minimum
+	entropy per bit of output of the RNG with at least 1% confidence. 0
+	means a minimum worst-case entropy per bit of output of 50.000%,
+	0xFFFF means a minimum worst-case entropy per bit of output of
+	99.999% or higher.
+
+
+Add a "fail always" RNG device to select by default if only RNGs of
+preference zero are available, and select by default the RNG with highest
+preference (or the first one you find, in case of a tie), and you are set.
+
+It is not perfect, but it at least it makes some sense.
+
+There *is* a much better way to deal with it, though.  Add the fail always
+RNG device, and always select it by default.  Let the user specifically set
+which RNG he wants, and it now rates as "trusted", which is the only
+fail-proof way to go about it IMHO.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
