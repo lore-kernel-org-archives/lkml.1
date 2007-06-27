@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761183AbXF0NCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbXF0NGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761183AbXF0NCg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 09:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbXF0NC3
+	id S1761005AbXF0NGU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 09:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbXF0NGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 09:02:29 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:16091 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758441AbXF0NC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 09:02:29 -0400
-Message-ID: <46825FE0.7060306@sw.ru>
-Date: Wed, 27 Jun 2007 17:02:24 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Wed, 27 Jun 2007 09:06:12 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:44838
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755916AbXF0NGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 09:06:12 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH RFC #2] hwrng: Add type categories
+Date: Wed, 27 Jun 2007 15:05:33 +0200
+User-Agent: KMail/1.9.6
+Cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <200706262021.51410.mb@bu3sch.de> <20070626224517.GG11115@waste.org> <20070627024856.GB5491@khazad-dum.debian.net>
+In-Reply-To: <20070627024856.GB5491@khazad-dum.debian.net>
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: netfilter-devel@lists.netfilter.org, rusty@rustcorp.com.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       "David S. Miller" <davem@davemloft.net>, devel@openvz.org
-Subject: Re: [NETFILTER] early_drop() imrovement (v4)
-References: <4615FE1D.80206@sw.ru>	<20070406102433.d3a670a5.dada1@cosmosbay.com>	<4616203A.80203@sw.ru> <4616626C.9020100@trash.net>	<4617845F.7080203@sw.ru> <461789CF.8000106@cosmosbay.com>	<46187770.1070106@sw.ru> <46417137.5080501@sw.ru>	<467FC8D2.5070102@trash.net> <46811292.1010501@sw.ru>	<468223D0.90305@sw.ru> <46822540.2010004@trash.net> <4682523F.6000002@trash.net> <4682582D.7080501@sw.ru> <46825D63.3060500@trash.net>
-In-Reply-To: <46825D63.3060500@trash.net>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200706271505.33970.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
-> Vasily Averin wrote:
->> it is incorrect,
->> We should count the number of checked _conntracks_, but you count the number of
->> hash buckets. I.e "i" should be incremented/checked inside the nested loop.
-> 
-> 
-> I misunderstood your patch then. This one should be better.
-> +static int early_drop(unsigned int hash)
->  {
->  	/* Use oldest entry, which is roughly LRU */
->  	struct nf_conntrack_tuple_hash *h;
->  	struct nf_conn *ct = NULL, *tmp;
->  	struct hlist_node *n;
-> -	int dropped = 0;
-> +	unsigned int i;
-> +	int dropped = 0, cnt = NF_CT_EVICTION_RANGE;
->  
->  	read_lock_bh(&nf_conntrack_lock);
-> -	hlist_for_each_entry(h, n, chain, hnode) {
-> -		tmp = nf_ct_tuplehash_to_ctrack(h);
-> -		if (!test_bit(IPS_ASSURED_BIT, &tmp->status))
-> -			ct = tmp;
-> +	for (i = 0; i < nf_conntrack_htable_size; i++) {
-> +		hlist_for_each_entry(h, n, &nf_conntrack_hash[hash], hnode) {
-> +			tmp = nf_ct_tuplehash_to_ctrack(h);
-> +			if (!test_bit(IPS_ASSURED_BIT, &tmp->status))
-> +				ct = tmp;
-> +			if (--cnt <= 0)
-> +				break;
-> +		}
-> +		hash = (hash + 1) % nf_conntrack_htable_size;
->  	}
+On Wednesday 27 June 2007 04:48:56 Henrique de Moraes Holschuh wrote:
+> (a) is just broken, unless one is to take it as "never use it".  And I am
+> really not sure about (b).  It *is* better than just using whatever crap we
+> found first (or last), but it is the wrong solution for a problem that we
+> really should not have in the first place if someone had thought a bit
+> before adding a misc device for something that has no reason to be unique in
+> a system.
 
-it is incorrect again: when cnt=0 you should break both cycles.
+Well, we have that userspace ABI of one hwrng char device. I did not
+invent that. It's kind of broken, yes.
+And changing it in a compatible way is probably difficult.
 
-thank you,
-	Vasily Averin
+> Instead of papering over the problem with borked solutions, maybe we should
+> just export ALL HRNGs to userspace.  While at it, please add whatever is
+
+And then we would _still_ export some kind of hint for rngd that
+the CPU rng device should be preferred over the bcm43xx device.
+rngd needs some basic hint about the devices.
+How would you implement that? (We're back to my TYPE_XXX definitions ;) )
+
+> needed so that userspace can talk to the kernel driver to get vital
+> information about the HRNG device the driver might have (the current
+> interface is a bad simplistic hack).
+
+What is "vital information"? My TYPE_XXX categories? ;)
+
+> Let userspace get the data from whichever HRNG it wants, process it in any
+
+It _can_. We can switch the RNG in sysfs. So userspace _can_ get data
+from whichever HWRNG it wants.
+
+> way it wants and pipe it back through /dev/random IOCTLs.  And let it do it
+> for as many HRNGs it wants at the same time.
+
+That's an improvement, yes.
+
+> And if you must have /dev/hw_random point somewhere, let udev scripts or
+> something else like that take care of it.
+
+Could do that, yes.
+
+
+-- 
+Greetings Michael.
