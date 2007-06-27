@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762597AbXF0QNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762693AbXF0QNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762597AbXF0QNW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 12:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759121AbXF0QNP
+	id S1762693AbXF0QNh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 12:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762610AbXF0QNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 12:13:15 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:59147 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752967AbXF0QNN (ORCPT
+	Wed, 27 Jun 2007 12:13:24 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:57273 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762463AbXF0QNW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 12:13:13 -0400
+	Wed, 27 Jun 2007 12:13:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cVwRO3n3/90INVBOqpjzXqzc7MVmwxa3bJisHz+HZUc1RtT/3cnhI90u1UHMdA18tMHmRoH2vydFqyfAkzx+rFmGEHlJo9PcfN6A2Xf8mYP1/LJwX2H4cXVrF8jkfsWf8Bhm6YZMIqZbAhNpzF5MuRHgIh0DAh0KzXQjUHDyVs0=
-Message-ID: <d120d5000706270913l50389090x8dbbdd5d3e4c7314@mail.gmail.com>
-Date: Wed, 27 Jun 2007 12:13:09 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: [PATCH] touchscreen support for collie (sharp zaurus sl-5500)
-Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Russell King" <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, metan@atrey.karlin.mff.cuni.cz,
-       thommycheck@gmail.com, milan@ucw.cz, patches@arm.linux.org.uk
-In-Reply-To: <20070627144338.GA15584@elf.ucw.cz>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FLerftd3zwvr3FrXRe5kW9mCDh2+Pbp9QaJA2lV9bGnbabetnzP8N58tnaklsZQ205Dw4Nku1SG2PeeHdwqf81fgASmrX2efCnctHjc4TesBUt+ow4gp88zWH0ZggvIHbPKg+ylJG95/WJas8Kap93PlCRkeZlupucQzOkNx7HI=
+Message-ID: <e9c3a7c20706270913v64ff933aj11e4bb227268311c@mail.gmail.com>
+Date: Wed, 27 Jun 2007 09:13:21 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: [md-accel PATCH 03/19] xor: make 'xor_blocks' a library routine for use with async_tx
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       herbert@gondor.apana.org.au
+In-Reply-To: <a781481a0706262339w4c92e295s62a6c041dd1e9666@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070627144338.GA15584@elf.ucw.cz>
+References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
+	 <20070627015049.18962.54083.stgit@dwillia2-linux.ch.intel.com>
+	 <a781481a0706262339w4c92e295s62a6c041dd1e9666@mail.gmail.com>
+X-Google-Sender-Auth: 55f0e0f00036c707
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+[ trimmed the cc ]
 
-On 6/27/07, Pavel Machek <pavel@ucw.cz> wrote:
+On 6/26/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> Hi Dan,
 >
-> Add driver for collie touchscreen, partly based on ucb1x00-ts.c, but
-> this one actually works.
+> [ Minor thing ... ]
 >
+Not a problem, thanks for taking a look...
+
+> On 6/27/07, Dan Williams <dan.j.williams@intel.com> wrote:
+> > The async_tx api tries to use a dma engine for an operation, but will fall
+> > back to an optimized software routine otherwise.  Xor support is
+> > implemented using the raid5 xor routines.  For organizational purposes this
+> > routine is moved to a common area.
 >
-> +config MCP_COLLIE_TS
-> +       tristate "Touchscreen collie support"
-> +       depends on MCP_UCB1200 && INPUT && !MCP_UCB1200_TS
-> +        ---help---
-> +         Driver for touchscreen on collie - sharp sl-5500.
-> +
+> This isn't quite crypto code and isn't connected to or through the cryptoapi
+> (at least not in this patchset), so I somehow find it misplaced in the crypto/
+> directory. If all its users are in drivers/md/ then that would be a
+> better place.
+> If it is something kernel-global, lib/ sounds more appropriate?
+>
 
-Can't ucb1x00-ts be modified to properly support collie hardware?
-These drivers look almost like twin brothers.
+True, it isn't quite crypto code, but I gravitated to this location because:
+1/ the models are similar, both are general purpose apis with a driver component
+2/ there are already some algorithms in the crypto layer that are not
+strictly cryptographic like crc32c, and other checksums
+3/ having the code under that directory is a reminder to consider
+closer integration when adding support for more complex algorithms
+like raid6 p+q (at what point does a 'dma-offload' engine become a
+'crypto' engine?  at some point they converge)
 
-> +       input_report_abs(idev, ABS_X, x);
-> +       input_report_abs(idev, ABS_Y, y);
-> +       input_report_abs(idev, ABS_PRESSURE, pressure);
-> +        input_report_key(idev, BTN_TOUCH, 1);
+The hope is that other subsystems beyond md could benefit from offload
+engines.  For example, the crc32c calculations in btrfs might be a
+good candidate, and kcopyd integration has crossed my mind.
 
-Whitespace damage...
+> Satyam
 
-> +       input_sync(idev);
-> +}
-> +
-> +static inline void ucb1x00_ts_event_release(struct ucb1x00_ts *ts)
-> +{
-> +       struct input_dev *idev = ts->idev;
-> +
-> +       input_report_abs(idev, ABS_PRESSURE, 0);
-> +        input_report_key(idev, BTN_TOUCH, 0);
-
-And here...
-
-> +
-> +static int ucb1x00_ts_open(struct input_dev *idev)
-> +{
-> +       struct ucb1x00_ts *ts = idev->private;
-
-Please use input_get_drvdata();
-
-> +/*
-> + * Release touchscreen resources.  Disable IRQs.
-> + */
-> +static void ucb1x00_ts_close(struct input_dev *idev)
-> +{
-> +       struct ucb1x00_ts *ts = idev->private;
-
-And here as well.
-
-> +
-> +       idev->private    = ts;
-
-input_set_drvdata();
-
--- 
-Dmitry
+Dan
