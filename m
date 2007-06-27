@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763924AbXF0XMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763817AbXF0XPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763924AbXF0XMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 19:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbXF0XMO
+	id S1763817AbXF0XPm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 19:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758921AbXF0XPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 19:12:14 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44426 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752797AbXF0XMN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 19:12:13 -0400
-Date: Thu, 28 Jun 2007 00:12:12 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Please release a stable kernel Linux 3.0
-Message-ID: <20070627231212.GD21478@ftp.linux.org.uk>
-References: <200706271653.58870.a1426z@gawab.com> <20070627171149.GZ21478@ftp.linux.org.uk> <200706280132.23739.a1426z@gawab.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200706280132.23739.a1426z@gawab.com>
-User-Agent: Mutt/1.4.1i
+	Wed, 27 Jun 2007 19:15:35 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:42616 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752276AbXF0XPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 19:15:34 -0400
+Message-ID: <4682EF80.9050504@hp.com>
+Date: Wed, 27 Jun 2007 19:15:12 -0400
+From: Mark Seger <Mark.Seger@hp.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: util-linux-ng@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: announcing collectl - a new performance monitoring tool
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 28, 2007 at 01:32:23AM +0300, Al Boldi wrote:
-> > > You are effectively inhibiting the development of an out-of-tree GPL
-> > > module pool, by constantly pulling the rug under that community.
-> >
-> > The same thing happens with any yet-to-be-merged code.
-> >
-> > > Do you think this is fair?
-> >
-> > Yes, it is fair.  Decision to maintain your code out of tree indefinitely
-> > is your decision.
-> 
-> It's not my decision, it's the kernel maintainers decision to reject 
-> inclusion for one reason or another.  One reason could be a simple "we don't 
-> think this is useful".
- 
-"I maintain a patch to $PROGRAM; maintainers of $PROGRAM don't think it's
-useful; they should abstain from making changes that might require rewrite
-of that patch".  Would you argue that this is fair?
+Just a quick plug for a utility I wrote a number of years ago and have 
+recently open sourced.  It's been around as an internal tool for about 4 
+years and so has been pretty well shaken out.  There's a pretty good 
+description and some example output at 
+http://collectl.sourceforge.net/index.html and you can download it at 
+http://sourceforge.net/projects/collectl.
 
-BTW, "if it's GPLed, it's entitled to any internal function" is a shell game;
-it tries to convert GPL-given right to get to those functions into some kind
-of promise that those functions won't be changed.
+What I believe makes this tool different from the already large number 
+of 'stat' and other performance monitoring tools is its goal is to be a 
+one-stop place for everything and it can collect data on most system 
+counters as well as non-standard things such as lustre, infiniband, 
+quadrics to name a few.  The data of your choice (the default is cpu, 
+disk and network) is displayed horizontally for easy reading, one line 
+per sample, which is only limited by how wide you want to make your 
+window.  You can display summaries, such as aggregate cpu, disk, 
+network, slabs or even lustre traffic OR you can report detail level 
+data such as individual NIC traffic, disks, cpus and in the case of 
+lustre individual OSTs!  How about only reporting those slabs that 
+changed in size between polling intervals?  Or how about seeing nfsstat 
+output on a single line!  You can even choose fractional polling 
+intervals.  Did you know network stats are only updated once a second?  
+Run collectl with a 0.1 second polling interval and see for yourself!
 
-EXPORT_SYMBOL_GPL() should've been EXPORT_SYMBOL_INTERNAL(); like it or not,
-in-tree code *is* in different position exactly because it can be modified
-by whoever makes a change affecting such code.  For in-tree module one
-can expect such modifications to be done; for out-of-tree the same is
-obviously not true, but conclusion is not "you can't do changes", it's
-"authors of out-of-tree module get to do such modifications themselves".
+Another biggie is collectl can generate data in 'space separated' format 
+so that you can easily plot it using gnuplot, openoffice or if you're of 
+that persuasion you can even use excel.
 
-Sure, there are subsets of exports that have stronger promise of not being
-changed often; if a set of functions makes sense as an interface, it's
-less likely to change than randomly selected function that just had an
-export slapped on it at some point.  The promise is not absolute and it's
-not based on some obligations to out-of-tree modules; it's simply a common
-sense.
+And the best news of all, collectl is very light-weight, using about 
+0.03% of the cpu on my amd/xeon boxes.  Naturally your mileage may vary 
+depending how many processes or devices may be on your system, but we 
+run it continuously on most of our systems and don't even know it's there.
 
-Again, most of the exports had been added with very little justification
-at request of out-of-tree module authors.  That pile is many years past
-the stage when it could be described as set of sane interfaces and it's
-your [collective] fault.  Don't expect sympathy when you find the resulting
-devalvation unpleasant to deal with...
+There's far too much to say about it so I won't try.  Install it, read 
+the FAQ and check out the 'extended help' and all the man pages - yes, 
+there are multiple ones.
+
+Feel free to download it and let me know what you think.  Just be aware 
+I'm getting ready to release a new version so if you like what you see 
+check back in a day or so and get a newer version.
+
+-mark
+
+
