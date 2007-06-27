@@ -1,89 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbXF0LSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbXF0LSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbXF0LSU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 27 Jun 2007 07:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbXF0LSL
+	id S1758219AbXF0LSx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 27 Jun 2007 07:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbXF0LSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 27 Jun 2007 07:18:11 -0400
-Received: from mail.screens.ru ([213.234.233.54]:52270 "EHLO mail.screens.ru"
+	Wed, 27 Jun 2007 07:18:44 -0400
+Received: from animx.eu.org ([216.98.75.249]:42035 "EHLO animx.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752928AbXF0LSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 27 Jun 2007 07:18:10 -0400
-Date: Wed, 27 Jun 2007 15:18:31 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Uli Luckas <u.luckas@road.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: synchronize_qrcu_timeout()
-Message-ID: <20070627111831.GA108@tv-sign.ru>
-References: <20070625104332.GA147@tv-sign.ru> <20070625145851.GB12976@linux.vnet.ibm.com> <20070625152011.GA160@tv-sign.ru> <20070625154957.GA197@tv-sign.ru> <20070626145308.GA8929@linux.vnet.ibm.com>
+	id S1755131AbXF0LSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 27 Jun 2007 07:18:43 -0400
+Date: Wed, 27 Jun 2007 07:11:45 -0400
+From: Wakko Warner <wakko@animx.eu.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Is it time for remove (crap) ALSA from kernel tree ?
+Message-ID: <20070627111145.GA23580@animx.eu.org>
+Mail-Followup-To: Takashi Iwai <tiwai@suse.de>,
+	linux-kernel@vger.kernel.org
+References: <Pine.BSO.4.63.0706241943190.25800@rudy.mif.pg.gda.pl> <s5h4pkwi9u0.wl%tiwai@suse.de> <4680310D.6060206@opensound.com> <20070625231750.GF1094@stusta.de> <20070626162515.GA19677@animx.eu.org> <s5habumfykr.wl%tiwai@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070626145308.GA8929@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <s5habumfykr.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.6+20040907i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/26, Paul E. McKenney wrote:
->
-> On Mon, Jun 25, 2007 at 07:49:57PM +0400, Oleg Nesterov wrote:
-> > On 06/25, Oleg Nesterov wrote:
-> > >
-> > > On 06/25, Paul E. McKenney wrote:
-> > > >
-> > > > On Mon, Jun 25, 2007 at 02:43:32PM +0400, Oleg Nesterov wrote:
-> > > > > 
-> > > > > Sadly, you can't use srcu/qrcu because it doesn't handle timeouts.	
-> > > > 
-> > > > Interesting...  So the thought is to have a synchronize_srcu_timeout()
-> > > > or something similar that waited for a grace period to elapse or for
-> > > > a timeout to expire, whichever comes first?  It should not be too hard
-> > > > to arrange something, if needed.
-> > > 
-> > > Yes. As for qrcu (see http://marc.info/?t=116484476500001), I think it is easy.
-> > > First, we add "int interrupted" into struct qrcu_struct, then something like this
-> > 
-> > Even simpler, we don't need ->interrupted.
+Takashi Iwai wrote:
+> At Tue, 26 Jun 2007 12:25:16 -0400,
+> Wakko Warner wrote:
+> > I have a motherboard with an intel chipset and onboard audio.  I have a
+> > problem with alsa.  There's no pcm* files in /proc/asound/card0.
 > 
-> I have to ask...
-> 
-> What sorts of performance characteristics are needed here?  The reason
-> that I ask is because putting a straight synchronize_qrcu() into a
-> workqueue (or something similar) and then using a timer to provide
-> any needed wakeup seems a lot simpler than rearranging the innards of
-> synchronize_qrcu().
+> Set CONFIG_SND_VERBOSE_PROCFS=y.
 
-Didn't think about that... But yes, we can implement synchronize_qrcu_timeout()
-on top of synchronize_qrcu() as you suggested. Hovewer, this implementation
-will add more code to .text compared to changing synchronize_qrcu().
+GAH!  Thanks, I didn't think I needed it but it is set on the one that
+works.
 
-Note also that we can't share the "context" of synchronize_qrcu_timeout() in
-that case. Each caller of synchronize_qrcu_timeout() needs a separate
-wait_queue_head_t + work_struct. This context can't live on stack, because
-it should survive after the timeout.
-
-
-If we change synchronize_qrcu() instead, we only add
-
- 		if (unlikely(atomic_read(qp->ctr + prv))) {
- 			__wait_event_timeout(qp->wq, !atomic_read(qp->ctr + prv), tout);
- 			if (unlikely(!tout))
- 				goto out;
- 		}
-
-to the slow path. This has nearly zero perfomance penalty. Yes, we have
-to wait if the previous call was interrupted by timeout. But in that case
-we lost nothing, we spend the same time waiting for qp->mutex when the
-previous call succeeds.
-
-
-That said, I am not sure synchronize_Xrcu_timeout() is terribly useful.
-Rafael could use it, but it is not better for this particular case.
-Except the code re-use, which is always good.
-
-Oleg.
-
+-- 
+ Lab tests show that use of micro$oft causes cancer in lab animals
+ Got Gas???
